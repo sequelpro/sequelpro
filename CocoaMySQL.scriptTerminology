@@ -1,0 +1,31 @@
+{
+    "Name" = "CocoaMySQL suite";
+    "Description" = "Suite for handling tunnel management";
+    "Classes" = {
+        "MainController" = {
+            "Name" = "application";
+            "PluralName" = "applications";
+            "Description" = "CocoaMySQL application";
+        };
+    };
+    "Commands" = {
+        "authenticate" = {
+            "Name" = "authenticate";
+            "Description" = "Open the dialog asking for password or passphrase";
+            "Arguments" = {
+                "query" =  {
+                    "Name" = "query phrase";
+                    "Description" = "The string to show in the dialog";
+                };
+                "fifo" =  {
+                    "Name" = "fifo";
+                    "Description" = "The FIFO file where expecting the passphrase";
+                };
+                "tunnelName" =  {
+                    "Name" = "tunnel";
+                    "Description" = "Tunnel's name";
+                };
+            };
+        };
+    };
+}

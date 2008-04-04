@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>CocoaMySQL Help - Data Management</title>
+<meta name="AppleTitle" content="Data Management">
+<meta name="AppleFont" content="Lucida Grande">
+<meta ROBOTS="robots" CONTENT="anchors">
+</head>
+<body text="#000000" link="#0000FF" alink="#0000FF" vlink="#0000FF" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0">
+
+<font face="Lucida Grande,Geneva,Arial">
+
+<br>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="80">
+	<tr>
+		<td align="left" valign="top" width="70">
+		<img src="cocoamysql_logo.jpg" width="60" height="60" border="0">
+		</td>
+		<td align="left"><h1>Data Management</h1>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+		<img src="bar.gif" width="100%" height="20">
+		</td>
+	</tr>
+</table>
+
+<br>
+<font size="-1">
+&nbsp;<a href="../index.html">Back to the main menu</a>
+<br>
+<br>
+
+&nbsp;In order to view, add, modify, or change data (rows) in your database tables you must either be in the "Content" tab or the "Custom Query" tab.
+<br>
+<br>
+<b>Adding and editing fields</b>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+	<tr>
+		<td bgcolor="#fff8dc" valign="top">
+		<font size="-1" face="Lucida Grande,Geneva,Arial">
+		<ul>
+			<li>Add or remove entries with the plus- and minus-buttons. You can select more than one entry and remove them together.</li>
+			<li>Edit entries by double-clicking on the value you want to change. If the button with the three lines on it is clicked, double clicking on a value opens a sheet where you can edit it. This is preferred to edit large entries or entries with multiple lines.</li>
+			<li>Use the value specified in the preferences (NULL by default) to enter NULL-values.</li>
+			<li><font color="red">Changes aren't written to the database until you deselect the row!</font></li>
+			<li>It is recommended that you edit only tables which have a primary key.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+<br>
+<br>
+<b>Sorting and filtering the table content</b>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+	<tr>
+		<td bgcolor="#fff8dc" valign="top">
+		<font size="-1" face="Lucida Grande,Geneva,Arial">
+		<ul>
+			<li>To sort a table by a field, click on the header of the appropriate column in the content-view.</li>
+			<li>Click on it twice to sort the table in descending order.</li>
+			<li>Select a field and operator and enter a keyword to filter a table. Click on the Show All-button to disable filtering.</li>
+			<li>As wildcards use % and _ (% matches any number of characters, even zero characters; _ matches exactly one character)</li>
+			<li>If you have selected "Limit result..." in the Preferences, you can specify the first row to be returned and hit "Go".</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+<br>
+<br>
+<b>Binary Data (Images, Strings, Hex Representations)</b>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+	<tr>
+		<td bgcolor="#fff8dc" valign="top">
+		<font size="-1" face="Lucida Grande,Geneva,Arial">
+		<ul>
+			<li>Field type should be Blob or Longblob</li>
+			<li>To edit/enter the data, double select the field in the Content tab</li>
+			<li>Click on Open and load an image</li>
+			<li>Change to image and hex view</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+</font>
+
+</body>
+</html>

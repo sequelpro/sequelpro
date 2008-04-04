@@ -1,0 +1,67 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {
+                export = id; 
+                import = id; 
+                viewContent = id; 
+                viewQuery = id; 
+                viewStatus = id; 
+                viewStructure = id; 
+            }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = KeyChain; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                addFavorite = id; 
+                checkForUpdates = id; 
+                chooseLimitRows = id; 
+                closeFavoriteSheet = id; 
+                closePreferences = id; 
+                copyFavorite = id; 
+                donate = id; 
+                openPreferences = id; 
+                removeFavorite = id; 
+                toggleUseSSH = id; 
+                visitHelpWebsite = id; 
+                visitWebsite = id; 
+            }; 
+            CLASS = MainController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                databaseField = id; 
+                dontShowBlobSwitch = id; 
+                encodingPopUpButton = id; 
+                favoriteSheet = id; 
+                hostField = id; 
+                keyChainInstance = id; 
+                limitRowsField = id; 
+                limitRowsSwitch = id; 
+                nameField = id; 
+                nullValueField = id; 
+                passwordField = id; 
+                portField = id; 
+                preferencesWindow = id; 
+                reloadAfterAddingSwitch = id; 
+                reloadAfterEditingSwitch = id; 
+                reloadAfterRemovingSwitch = id; 
+                showErrorSwitch = id; 
+                socketField = id; 
+                sshCheckbox = id; 
+                sshHostField = id; 
+                sshPasswordField = id; 
+                sshPortField = id; 
+                sshUserField = id; 
+                tableView = id; 
+                useMonospacedFontsSwitch = id; 
+                userField = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = SSHTunnelApp; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+    ); 
+    IBVersion = 1; 
+}
