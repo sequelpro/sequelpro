@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3861DD760DA78690003236DE /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */; };
+		3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD750DA78690003236DE /* sequel-pro.scriptSuite */; };
 		9B0646E409AF165700428D0B /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B0646E309AF165700428D0B /* MCPKit_bundled.framework */; };
 		9B0646E809AF167C00428D0B /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B0646E309AF165700428D0B /* MCPKit_bundled.framework */; };
 		9B9ACE9208DEBE70009E313E /* TableDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */; };
@@ -90,8 +92,6 @@
 		9BE828B70908269400A18070 /* SSHTunnel.h in Headers */ = {isa = PBXBuildFile; fileRef = 9BE828B50908269400A18070 /* SSHTunnel.h */; };
 		9BE828B80908269400A18070 /* SSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE828B60908269400A18070 /* SSHTunnel.m */; };
 		9BFF53B208F44B40004D6BCB /* askForPass.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BFF53AF08F44B40004D6BCB /* askForPass.sh */; };
-		9BFF53B308F44B40004D6BCB /* CocoaMySQL.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 9BFF53B008F44B40004D6BCB /* CocoaMySQL.scriptSuite */; };
-		9BFF53B408F44B40004D6BCB /* CocoaMySQL.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 9BFF53B108F44B40004D6BCB /* CocoaMySQL.scriptTerminology */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -116,6 +116,8 @@
 		2A37F4BAFDCFA73011CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
+		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
 		9B0646E309AF165700428D0B /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MCPKit_bundled.framework; sourceTree = "<group>"; };
 		9B220E640751EE2700DA3E19 /* TableStatus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableStatus.h; sourceTree = "<group>"; };
 		9B220E650751EE2700DA3E19 /* TableStatus.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableStatus.m; sourceTree = "<group>"; };
@@ -134,8 +136,6 @@
 		9BFF536B08F43B9D004D6BCB /* SSHTunnel_old.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SSHTunnel_old.h; sourceTree = "<group>"; };
 		9BFF536C08F43B9E004D6BCB /* SSHTunnel_old.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = SSHTunnel_old.m; sourceTree = "<group>"; };
 		9BFF53AF08F44B40004D6BCB /* askForPass.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = askForPass.sh; sourceTree = "<group>"; };
-		9BFF53B008F44B40004D6BCB /* CocoaMySQL.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.scriptSuite; path = CocoaMySQL.scriptSuite; sourceTree = "<group>"; };
-		9BFF53B108F44B40004D6BCB /* CocoaMySQL.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.scriptTerminology; path = CocoaMySQL.scriptTerminology; sourceTree = "<group>"; };
 		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = images/appicon.icns; sourceTree = "<group>"; };
 		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = images/selectnone.tiff; sourceTree = "<group>"; };
 		F51B86B3050A4E4F01000103 /* connectioncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectioncopy.tiff; path = images/connectioncopy.tiff; sourceTree = "<group>"; };
@@ -329,8 +329,8 @@
 				9BE828B50908269400A18070 /* SSHTunnel.h */,
 				9BE828B60908269400A18070 /* SSHTunnel.m */,
 				9BFF53AF08F44B40004D6BCB /* askForPass.sh */,
-				9BFF53B008F44B40004D6BCB /* CocoaMySQL.scriptSuite */,
-				9BFF53B108F44B40004D6BCB /* CocoaMySQL.scriptTerminology */,
+				3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */,
+				3861DD750DA78690003236DE /* sequel-pro.scriptSuite */,
 				9BFF536B08F43B9D004D6BCB /* SSHTunnel_old.h */,
 				9BFF536C08F43B9E004D6BCB /* SSHTunnel_old.m */,
 			);
@@ -458,9 +458,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		9B9ACE9008DEBE70009E313E /* CocoaMySQL */ = {
+		9B9ACE9008DEBE70009E313E /* Sequel Pro */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9B9ACEE508DEBE70009E313E /* Build configuration list for PBXNativeTarget "CocoaMySQL" */;
+			buildConfigurationList = 9B9ACEE508DEBE70009E313E /* Build configuration list for PBXNativeTarget "Sequel Pro" */;
 			buildPhases = (
 				9B9ACE9108DEBE70009E313E /* Headers */,
 				9B9ACE9F08DEBE70009E313E /* Resources */,
@@ -472,7 +472,7 @@
 			);
 			dependencies = (
 			);
-			name = CocoaMySQL;
+			name = "Sequel Pro";
 			productName = cocoaMySQL;
 			productReference = 9B9ACEEA08DEBE70009E313E /* CocoaMySQL.app */;
 			productType = "com.apple.product-type.application";
@@ -482,14 +482,14 @@
 /* Begin PBXProject section */
 		2A37F4A9FDCFA73011CA2CEA /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 9BED648908C0E73200C18B6E /* Build configuration list for PBXProject "CocoaMySQL" */;
+			buildConfigurationList = 9BED648908C0E73200C18B6E /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* cocoaMySQL */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				9B9ACE9008DEBE70009E313E /* CocoaMySQL */,
+				9B9ACE9008DEBE70009E313E /* Sequel Pro */,
 			);
 		};
 /* End PBXProject section */
@@ -546,8 +546,8 @@
 				9B9ACECD08DEBE70009E313E /* english_help in Resources */,
 				9B9ACECE08DEBE70009E313E /* Localizable.strings in Resources */,
 				9BFF53B208F44B40004D6BCB /* askForPass.sh in Resources */,
-				9BFF53B308F44B40004D6BCB /* CocoaMySQL.scriptSuite in Resources */,
-				9BFF53B408F44B40004D6BCB /* CocoaMySQL.scriptTerminology in Resources */,
+				3861DD760DA78690003236DE /* sequel-pro.scriptTerminology in Resources */,
+				3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -675,6 +675,7 @@
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.3;
 				PRODUCT_NAME = CocoaMySQL;
 				SECTORDER_FLAGS = "";
+				VALID_ARCHS = "ppc64 ppc7400 ppc970 ppc";
 				VERSIONING_SYSTEM = "";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -738,7 +739,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9B9ACEE508DEBE70009E313E /* Build configuration list for PBXNativeTarget "CocoaMySQL" */ = {
+		9B9ACEE508DEBE70009E313E /* Build configuration list for PBXNativeTarget "Sequel Pro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9B9ACEE608DEBE70009E313E /* Development */,
@@ -748,7 +749,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
 		};
-		9BED648908C0E73200C18B6E /* Build configuration list for PBXProject "CocoaMySQL" */ = {
+		9BED648908C0E73200C18B6E /* Build configuration list for PBXProject "sequel-pro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9BED648A08C0E73200C18B6E /* Development */,

@@ -258,6 +258,9 @@ reused when user hits the close button of the variablseSheet or of the createTab
     //    } else if ( [favoritesButton indexOfSelectedItem] == 2 ) {
     //        [favoritesButton selectItemWithTitle:selectedFavorite];
   } else {*/
+  if ([[prefs objectForKey:@"favorites"] count] == 0)
+    return;
+	
   NSDictionary *favorite = [[prefs objectForKey:@"favorites"] objectAtIndex:[favoritesController selectionIndex]];
   NSString *name = [favorite objectForKey:@"name"];
   NSString *host = [favorite objectForKey:@"host"];
