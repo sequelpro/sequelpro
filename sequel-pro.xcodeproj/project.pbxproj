@@ -124,7 +124,7 @@
 		9B40F86207461DC500D81DFB /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
 		9B40F86307461DC500D81DFB /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
 		9B9ACEE908DEBE70009E313E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B9ACEEA08DEBE70009E313E /* CocoaMySQL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CocoaMySQL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B9ACEEA08DEBE70009E313E /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BC3EEB809AC6EE100F6B295 /* CMTextView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMTextView.h; sourceTree = "<group>"; };
 		9BC3EEB909AC6EE100F6B295 /* CMTextView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMTextView.m; sourceTree = "<group>"; };
 		9BDFCCE408D4285100891F07 /* CMMCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPConnection.h; sourceTree = "<group>"; };
@@ -240,7 +240,7 @@
 		19C28FB0FE9D524F11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9B9ACEEA08DEBE70009E313E /* CocoaMySQL.app */,
+				9B9ACEEA08DEBE70009E313E /* Sequel Pro.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -474,7 +474,7 @@
 			);
 			name = "Sequel Pro";
 			productName = cocoaMySQL;
-			productReference = 9B9ACEEA08DEBE70009E313E /* CocoaMySQL.app */;
+			productReference = 9B9ACEEA08DEBE70009E313E /* Sequel Pro.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -673,7 +673,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.3;
-				PRODUCT_NAME = CocoaMySQL;
+				PRODUCT_NAME = "Sequel Pro";
 				SECTORDER_FLAGS = "";
 				VALID_ARCHS = "ppc64 ppc7400 ppc970 ppc";
 				VERSIONING_SYSTEM = "";

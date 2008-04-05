@@ -2,7 +2,7 @@
 {
 	2A37F4A9FDCFA73011CA2CEA /* Project object */ = {
 		activeArchitecture = ppc;
-		activeBuildConfigurationName = Development;
+		activeBuildConfigurationName = Deployment;
 		activeExecutable = 38B873E00DA3ABFE009FC6AE /* Sequel Pro */;
 		activeTarget = 9B9ACE9008DEBE70009E313E /* Sequel Pro */;
 		addToTargets = (
