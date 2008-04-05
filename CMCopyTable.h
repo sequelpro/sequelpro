@@ -1,6 +1,6 @@
 /*!
  @header CMCopyTable.h
- @abstract   CocoaMySQL
+ @abstract   sequel-pro
  @discussion <pre>
  $Id:$
  Created by Stuart Glenn on Wed Apr 21 2004.

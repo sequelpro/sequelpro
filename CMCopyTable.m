@@ -1,6 +1,6 @@
 //
 //  CMCopyTable.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by Stuart Glenn on Wed Apr 21 2004.
 //  Changed by Lorenz Textor on Sat Nov 13 2004

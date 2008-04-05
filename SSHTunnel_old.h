@@ -3,7 +3,7 @@
 SSHTunnel.h
 
 Original code by tynsoe.org, Copyright 2002
-Modified by Lorenz Textor for use with CocoaMySQL
+Modified by Lorenz Textor for use with Sequel Pro
 
 */
 

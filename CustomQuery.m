@@ -1,6 +1,6 @@
 //
 //  CustomQuery.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "CustomQuery.h"
@@ -418,7 +418,7 @@ sets the connection (received from TableDocument) and makes things that have to 
         [textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     }
     [textView setContinuousSpellCheckingEnabled:NO];
-    [queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"CocoaMySQLPasteboard", nil]];
+    [queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
     while ( (column = [enumerator nextObject]) )
     {
         if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
@@ -549,11 +549,11 @@ inserts the query in the textView and performs query
     {
         if ( [rows count] == 1 ) 
         {
-            pboardTypes = [NSArray arrayWithObjects:@"CocoaMySQLPasteboard", nil];
+            pboardTypes = [NSArray arrayWithObjects:@"SequelProPasteboard", nil];
             originalRow = [[rows objectAtIndex:0] intValue];
     
             [pboard declareTypes:pboardTypes owner:nil];
-            [pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"CocoaMySQLPasteboard"];
+            [pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"SequelProPasteboard"];
             
             return YES;
         } 
@@ -587,9 +587,9 @@ inserts the query in the textView and performs query
     if ( aTableView == queryFavoritesView ) {
         if ([pboardTypes count] == 1 && row != -1)
         {
-            if ([[pboardTypes objectAtIndex:0] isEqualToString:@"CocoaMySQLPasteboard"]==YES && operation==NSTableViewDropAbove)
+            if ([[pboardTypes objectAtIndex:0] isEqualToString:@"SequelProPasteboard"]==YES && operation==NSTableViewDropAbove)
             {
-                originalRow = [[[info draggingPasteboard] stringForType:@"CocoaMySQLPasteboard"] intValue];
+                originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
     
                 if (row != originalRow && row != (originalRow+1))
                 {
@@ -610,7 +610,7 @@ inserts the query in the textView and performs query
     NSMutableDictionary *draggedRow;
 
     if ( aTableView == queryFavoritesView ) {
-        originalRow = [[[info draggingPasteboard] stringForType:@"CocoaMySQLPasteboard"] intValue];
+        originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
         destinationRow = row;
     
         if ( destinationRow > originalRow )

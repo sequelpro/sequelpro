@@ -1,6 +1,6 @@
 //
 //  CMMCPConnection.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed Sept 21 2005.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMMCPConnection.h"
@@ -100,7 +100,7 @@
 
 - (CMMCPResult *) queryString:(NSString *) query
 /*
-modified version of queryString to be used in CocoaMySQL
+modified version of queryString to be used in sequel-pro
 */
 {
     CMMCPResult     *theResult;

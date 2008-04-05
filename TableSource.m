@@ -1,6 +1,6 @@
 //
 //  TableSource.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "TableSource.h"
@@ -461,7 +461,7 @@ sets the connection (received from TableDocument) and makes things that have to 
     prefs = [[NSUserDefaults standardUserDefaults] retain];
 
 //set up tableView
-    [tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"CocoaMySQLPasteboard", nil]];
+    [tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 
 //    [[[tableSourceView tableColumnWithIdentifier:@"Null"] dataCell] addItemsWithTitles:[NSArray arrayWithObjects:@"YES", @"NO", nil]];
     [[[tableSourceView tableColumnWithIdentifier:@"unsigned"] dataCell] setImagePosition:NSImageOnly];
@@ -795,11 +795,11 @@ returns a dictionary containing enum/set field names as key and possible values 
         return NO;
 
     if ( ([rows count] == 1)  && (tableView == tableSourceView) ) {
-        pboardTypes=[NSArray arrayWithObjects:@"CocoaMySQLPasteboard", nil];
+        pboardTypes=[NSArray arrayWithObjects:@"SequelProPasteboard", nil];
         originalRow = [[rows objectAtIndex:0] intValue];
 
 	[pboard declareTypes:pboardTypes owner:nil];
-	[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"CocoaMySQLPasteboard"];
+	[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"SequelProPasteboard"];
 
         return YES;
     } else {
@@ -815,9 +815,9 @@ returns a dictionary containing enum/set field names as key and possible values 
 
     if ([pboardTypes count] == 1 && row != -1)
     {
-        if ([[pboardTypes objectAtIndex:0] isEqualToString:@"CocoaMySQLPasteboard"]==YES && operation==NSTableViewDropAbove)
+        if ([[pboardTypes objectAtIndex:0] isEqualToString:@"SequelProPasteboard"]==YES && operation==NSTableViewDropAbove)
         {
-            originalRow = [[[info draggingPasteboard] stringForType:@"CocoaMySQLPasteboard"] intValue];
+            originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
 
             if (row != originalRow && row != (originalRow+1))
             {
@@ -841,7 +841,7 @@ returns a dictionary containing enum/set field names as key and possible values 
     int i;
 
 
-    originalRow = [[[info draggingPasteboard] stringForType:@"CocoaMySQLPasteboard"] intValue];
+    originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
     destinationRow = row;
 
     if ( ![[[tableFields objectAtIndex:originalRow] objectForKey:@"Key"] isEqualToString:@""] ) {

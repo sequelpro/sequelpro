@@ -1,6 +1,6 @@
 //
 //  MainController.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "MainController.h"
@@ -168,12 +168,12 @@ adds a favorite
         [favorites addObject:favorite];
         if ( ![[passwordField stringValue] isEqualToString:@""] )
             [keyChainInstance addPassword:[passwordField stringValue]
-                forName:[NSString stringWithFormat:@"CocoaMySQL : %@", [nameField stringValue]]
+                forName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
                 account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
                     [databaseField stringValue]]];
         if ( ![sshPassword isEqualToString:@""] )
             [keyChainInstance addPassword:sshPassword
-                forName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", [nameField stringValue]]
+                forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
                 account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
                     [databaseField stringValue]]];
         [tableView reloadData];
@@ -195,9 +195,9 @@ removes a favorite
     NSString *user = [[favorites objectAtIndex:[tableView selectedRow]] objectForKey:@"user"];
     NSString *host = [[favorites objectAtIndex:[tableView selectedRow]] objectForKey:@"host"];
     NSString *database = [[favorites objectAtIndex:[tableView selectedRow]] objectForKey:@"database"];
-    [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"CocoaMySQL : %@", name]
+    [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
             account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-    [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", name]
+    [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
             account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
     [favorites removeObjectAtIndex:[tableView selectedRow]];
     [tableView reloadData];
@@ -333,7 +333,7 @@ passes the query to the last created document
 opens donate link in default browser
 */
 {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://www.paypal.com/xclick/business=lorenz%40textor.ch&item_name=CocoaMySQL+donation&no_shipping=1&return=http%3A//cocoamysql.sourceforge.net/thanks.html&cancel_return=http%3A//cocoamysql.sourceforge.net/thanks.html&cn=Note&tax=0&currency_code=USD"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/Donations"]];
 }
 
 //menu methods
@@ -342,7 +342,7 @@ opens donate link in default browser
 opens donate link in default browser
 */
 {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://cocoamysql.sourceforge.net"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro"]];
 }
 
 - (IBAction)visitHelpWebsite:(id)sender
@@ -350,7 +350,7 @@ opens donate link in default browser
 opens donate link in default browser
 */
 {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://cocoamysql.sourceforge.net/faq.php"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/faq.php"]];
 }
 
 - (IBAction)checkForUpdates:(id)sender
@@ -358,46 +358,47 @@ opens donate link in default browser
 checks for updates and opens download page in default browser
 */
 {
-    CMMCPConnection *tempConnection = [[CMMCPConnection alloc] initToHost:@"cocoamysql.textor.ch"
-                                            withLogin:@"cocoamysql"
-                                            password:@""
-                                            usingPort:nil];
-    CMMCPResult *tempResult;
-    NSString *version;
-    int code;
-
-//connect to db
-    if ( ![tempConnection isConnected] ) {
-    //no connection
-        NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-        return;
-    }
-    if ( ![tempConnection selectDB:@"usr_web8_1"] ) {
-    //db not found
-        NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-        return;
-    }
-//get current version
-    tempResult = [tempConnection queryString:@"SELECT * FROM cocoamysql"];
-    if ( ![tempResult numOfRows] ) {
-    //error in query
-        NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-        return;
-    }
-    version = [[tempResult fetchRowAsArray] objectAtIndex:0];
-//check versions
-    if ( [version isEqualToString:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]] ) {
-    //no new version
-        NSRunInformationalAlertPanel(NSLocalizedString(@"No update available", @"title of panel when no update is available"), NSLocalizedString(@"There is no newer version available!", @"message of panel when no update is available"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-    } else {
-    //new version available
-        code = NSRunInformationalAlertPanel(NSLocalizedString(@"Update available", @"title of panel when update is available"), [NSString stringWithFormat:NSLocalizedString(@"There is a newer version available (version %@)!\nClick OK to open the download site.", @"message of panel when update is available"), version], NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil);
-        if ( code == NSAlertDefaultReturn ) {
-            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://cocoamysql.sourceforge.net/download.php"]];
-        }
-    }
-    [tempConnection disconnect];
-    [tempConnection release];
+  NSLog(@"[MainController checkForUpdates:] is not currently functional.");
+//     CMMCPConnection *tempConnection = [[CMMCPConnection alloc] initToHost:@"com.google.code.sequel-pro"
+//                                             withLogin:@"sequel-pro"
+//                                             password:@""
+//                                             usingPort:nil];
+//     CMMCPResult *tempResult;
+//     NSString *version;
+//     int code;
+// 
+// //connect to db
+//     if ( ![tempConnection isConnected] ) {
+//     //no connection
+//         NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+//         return;
+//     }
+//     if ( ![tempConnection selectDB:@"usr_web8_1"] ) {
+//     //db not found
+//         NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+//         return;
+//     }
+// //get current version
+//     tempResult = [tempConnection queryString:@"SELECT * FROM sequel-pro"];
+//     if ( ![tempResult numOfRows] ) {
+//     //error in query
+//         NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+//         return;
+//     }
+//     version = [[tempResult fetchRowAsArray] objectAtIndex:0];
+// //check versions
+//     if ( [version isEqualToString:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]] ) {
+//     //no new version
+//         NSRunInformationalAlertPanel(NSLocalizedString(@"No update available", @"title of panel when no update is available"), NSLocalizedString(@"There is no newer version available!", @"message of panel when no update is available"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+//     } else {
+//     //new version available
+//         code = NSRunInformationalAlertPanel(NSLocalizedString(@"Update available", @"title of panel when update is available"), [NSString stringWithFormat:NSLocalizedString(@"There is a newer version available (version %@)!\nClick OK to open the download site.", @"message of panel when update is available"), version], NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil);
+//         if ( code == NSAlertDefaultReturn ) {
+//             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/download.php"]];
+//         }
+//     }
+//     [tempConnection disconnect];
+//     [tempConnection release];
 }
 
 
@@ -422,11 +423,11 @@ checks for updates and opens download page in default browser
     NSArray *pboardTypes;
 
     if ( [rows count] == 1 ) {
-        pboardTypes=[NSArray arrayWithObjects:@"CocoaMySQLPreferencesPasteboard", nil];
+        pboardTypes=[NSArray arrayWithObjects:@"SequelProPreferencesPasteboard", nil];
         originalRow = [[rows objectAtIndex:0] intValue];
 
 	[pboard declareTypes:pboardTypes owner:nil];
-	[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"CocoaMySQLPreferencesPasteboard"];
+	[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"SequelProPreferencesPasteboard"];
 
         return YES;
     } else {
@@ -442,9 +443,9 @@ checks for updates and opens download page in default browser
 
     if ([pboardTypes count] == 1 && row != -1)
     {
-        if ([[pboardTypes objectAtIndex:0] isEqualToString:@"CocoaMySQLPreferencesPasteboard"]==YES && operation==NSTableViewDropAbove)
+        if ([[pboardTypes objectAtIndex:0] isEqualToString:@"SequelProPreferencesPasteboard"]==YES && operation==NSTableViewDropAbove)
         {
-            originalRow = [[[info draggingPasteboard] stringForType:@"CocoaMySQLPreferencesPasteboard"] intValue];
+            originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPreferencesPasteboard"] intValue];
 
             if (row != originalRow && row != (originalRow+1))
             {
@@ -462,7 +463,7 @@ checks for updates and opens download page in default browser
     int destinationRow;
     NSMutableDictionary *draggedRow;
 
-    originalRow = [[[info draggingPasteboard] stringForType:@"CocoaMySQLPreferencesPasteboard"] intValue];
+    originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPreferencesPasteboard"] intValue];
     destinationRow = row;
 
     if ( destinationRow > originalRow )
@@ -494,7 +495,7 @@ opens sheet to edit favorite and saves favorite if user hit OK
     [portField setStringValue:[favorite objectForKey:@"port"]];
     [databaseField setStringValue:[favorite objectForKey:@"database"]];
     [passwordField setStringValue:[keyChainInstance
-        getPasswordForName:[NSString stringWithFormat:@"CocoaMySQL : %@", [nameField stringValue]]
+        getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
         account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
                     [databaseField stringValue]]]];
 // set up ssh fields
@@ -508,7 +509,7 @@ opens sheet to edit favorite and saves favorite if user hit OK
 		[sshUserField setStringValue:[favorite objectForKey:@"sshUser"]];
 		[sshPortField setStringValue:[favorite objectForKey:@"sshPort"]];
 		[sshPasswordField setStringValue:[keyChainInstance
-			getPasswordForName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", [nameField stringValue]]
+			getPasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
 			account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
 						[databaseField stringValue]]]];
 	} else {
@@ -571,21 +572,21 @@ opens sheet to edit favorite and saves favorite if user hit OK
 			ssh = [NSNumber numberWithInt:0];
 		}
 //replace password
-        [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"CocoaMySQL : %@", [favorite objectForKey:@"name"]]
+        [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]]
                 account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"],
                     [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
         if ( ![[passwordField stringValue] isEqualToString:@""] )
             [keyChainInstance addPassword:[passwordField stringValue]
-                forName:[NSString stringWithFormat:@"CocoaMySQL : %@", [nameField stringValue]]
+                forName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
                 account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
                             [databaseField stringValue]]];
 //replace ssh password
-		[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", [favorite objectForKey:@"name"]]
+		[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [favorite objectForKey:@"name"]]
 				account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"],
 					[favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 		if ( ([sshCheckbox state] == NSOnState) && ![sshPassword isEqualToString:@""] ) {
 			[keyChainInstance addPassword:sshPassword
-				forName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", [nameField stringValue]]
+				forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
 				account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
 							[databaseField stringValue]]];
 		}
@@ -713,7 +714,7 @@ code that need to be executed when the nib file is loaded
         [prefs removeObjectForKey:@"allowDragAndDropReordering"];
         //rewrite passwords to keychain (with new format)
         if ( [prefs objectForKey:@"favorites"] ) {
-            NSRunAlertPanel(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"With version 0.4 CocoaMySQL has introduced a new format to save passwords in the Keychain.\nPlease allow CocoaMySQL to decrypt all passwords of your favorites. Otherwise you have to reenter all passwords of your saved favorites in the Preferences.", @"message of panel when passwords have to be updated for v0.4"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+            NSRunAlertPanel(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"With version 0.4 Sequel Pro has introduced a new format to save passwords in the Keychain.\nPlease allow Sequel Pro to decrypt all passwords of your favorites. Otherwise you have to reenter all passwords of your saved favorites in the Preferences.", @"message of panel when passwords have to be updated for v0.4"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
             enumerator = [[prefs objectForKey:@"favorites"] objectEnumerator];
             while ( (favorite = [enumerator nextObject]) ) {
             //replace password
@@ -726,7 +727,7 @@ code that need to be executed when the nib file is loaded
                 [keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"%@/%@", host, database] account:user];
                 if ( ![password isEqualToString:@""] )
                     [keyChainInstance addPassword:password
-                        forName:[NSString stringWithFormat:@"CocoaMySQL : %@", name]
+                        forName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
                         account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
             }
         }
@@ -759,10 +760,6 @@ code that need to be executed when the nib file is loaded
         [prefs setObject:@"0.7b3" forKey:@"version"];
         [prefs setObject:@"Autodetect" forKey:@"encoding"];
         [prefs setBool:YES forKey:@"fetchRowCount"];
-        code = NSRunInformationalAlertPanel(NSLocalizedString(@"Donation", @"title of donation panel"), NSLocalizedString(@"CocoaMySQL lives from donations. Thank you for donating!","message of donation panel"), NSLocalizedString(@"Donate", @"donate button"), NSLocalizedString(@"Later", @"later button"), nil);
-        if ( code == NSAlertDefaultReturn ) {
-            [self donate:self];
-        }
 	}
 
 //set up interface
@@ -773,7 +770,7 @@ code that need to be executed when the nib file is loaded
         [[column dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     }
 */
-    [tableView registerForDraggedTypes:[NSArray arrayWithObjects:@"CocoaMySQLPreferencesPasteboard", nil]];
+    [tableView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPreferencesPasteboard", nil]];
     [tableView reloadData];
 }
 

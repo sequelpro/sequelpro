@@ -1,6 +1,6 @@
 //
 //  TableDocument.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "TableDocument.h"
@@ -276,7 +276,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
     [portField setStringValue:port];
     [databaseField setStringValue:database];
     [passwordField setStringValue:[keyChainInstance
-                                   getPasswordForName:[NSString stringWithFormat:@"CocoaMySQL : %@", name]
+                                   getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
                                    account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]]];
 		if ( useSSH ) {
 			[sshCheckbox setState:NSOnState];
@@ -284,7 +284,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 			[sshUserField setStringValue:sshUser];
 			[sshPortField setStringValue:sshPort];
 			[sshPasswordField setStringValue:[keyChainInstance
-                                        getPasswordForName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", name]
+                                        getPasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
                                         account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]]];
 			[sshUserField setEnabled:YES];
 			[sshPasswordField setEnabled:YES];
@@ -403,10 +403,10 @@ add actual connection to favorites
                         forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"useSSH", @"sshHost", @"sshUser", @"sshPort", nil]];
     favorites = [[favorites arrayByAddingObject:newFavorite] retain];
     if ( ![password isEqualToString:@""] )
-        [keyChainInstance addPassword:password forName:[NSString stringWithFormat:@"CocoaMySQL : %@", favoriteName]
+        [keyChainInstance addPassword:password forName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteName]
                 account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
     if ( ![sshPassword isEqualToString:@""] )
-        [keyChainInstance addPassword:sshPassword forName:[NSString stringWithFormat:@"CocoaMySQL SSHTunnel : %@", favoriteName]
+        [keyChainInstance addPassword:sshPassword forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", favoriteName]
                 account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
     [prefs setObject:favorites forKey:@"favorites"];
 
@@ -1316,7 +1316,7 @@ toolbar delegate method
 	//set the text label to be displayed in the toolbar and customization palette 
 	[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
 	//set up tooltip and image
-	[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by CocoaMySQL", @"tooltip for toolbar item for show/hide console")];
+	[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
         if ( [self consoleIsOpened] ) {
             [toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
             [toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
@@ -1332,7 +1332,7 @@ toolbar delegate method
 	[toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 	[toolbarItem setPaletteLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 	//set up tooltip and image
-	[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by CocoaMySQL", @"tooltip for toolbar item for clear console")];
+	[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
 	[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 	//set up the target action
 	[toolbarItem setTarget:self];
@@ -1490,7 +1490,7 @@ sets upt the interface (small fonts)
 
 //tunnel test
 /*
-NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys:@"CocoaMySQL Tunnel",@"connName",
+NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys:@"Sequel Pro Tunnel",@"connName",
 				@"xy",@"connUser",
 				@"textor.ch",@"connHost",
 				[NSNumber numberWithBool:YES],@"connAuth",

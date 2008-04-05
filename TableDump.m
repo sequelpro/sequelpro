@@ -1,6 +1,6 @@
 //
 //  TableDump.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "TableDump.h"
@@ -605,11 +605,11 @@ returns a dump string for the selected tables
     k = 0;
 
 //add header of dump-file
-//    [dump appendString:[NSString stringWithFormat:@"# Tables dumped %@\n# Created by CocoaMySQL (Copyright (c) 2002-2003 Lorenz Textor)\n#\n# Host: %@   Database: %@\n# ******************************\n\n", [NSDate date], [tableDocumentInstance host], [tableDocumentInstance database]]];
-    [dump appendString:@"# CocoaMySQL dump\n"];
+//    [dump appendString:[NSString stringWithFormat:@"# Tables dumped %@\n# Created by Sequel Pro (Copyright (c) 2002-2003 Lorenz Textor)\n#\n# Host: %@   Database: %@\n# ******************************\n\n", [NSDate date], [tableDocumentInstance host], [tableDocumentInstance database]]];
+    [dump appendString:@"# Sequel Pro dump\n"];
     [dump appendString:[NSString stringWithFormat:@"# Version %@\n",
                             [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-    [dump appendString:@"# http://cocoamysql.sourceforge.net\n#\n"];
+    [dump appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
     [dump appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
                             [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
     [dump appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
@@ -972,10 +972,10 @@ takes an array and returns it as a xml string
 //add header
         [string appendString:@"<?xml version=\"1.0\"?>\n\n"];
         [string appendString:@"<!--\n-\n"];
-        [string appendString:@"- CocoaMySQL dump\n"];
+        [string appendString:@"- Sequel Pro dump\n"];
         [string appendString:[NSString stringWithFormat:@"- Version %@\n",
                             [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-        [string appendString:@"- http://cocoamysql.sourceforge.net\n-\n"];
+        [string appendString:@"- http://code.google.com/p/sequel-pro\n-\n"];
         [string appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n",
                             [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
         [string appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
@@ -1058,10 +1058,10 @@ type has to be "csv" or "xml"
     } else if ( [type isEqualToString:@"xml"] ) {
         [dump appendString:@"<?xml version=\"1.0\"?>\n\n"];
         [dump appendString:@"<!--\n-\n"];
-        [dump appendString:@"- CocoaMySQL dump\n"];
+        [dump appendString:@"- Sequel Pro dump\n"];
         [dump appendString:[NSString stringWithFormat:@"- Version %@\n",
                             [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-        [dump appendString:@"- http://cocoamysql.sourceforge.net\n-\n"];
+        [dump appendString:@"- http://code.google.com/p/sequel-pro\n-\n"];
         [dump appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n",
                             [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
         [dump appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];

@@ -1,11 +1,11 @@
 {
-    "Name" = "CocoaMySQL suite";
+    "Name" = "Sequel Pro suite";
     "Description" = "Suite for handling tunnel management";
     "Classes" = {
         "MainController" = {
             "Name" = "application";
             "PluralName" = "applications";
-            "Description" = "CocoaMySQL application";
+            "Description" = "Sequel Pro application";
         };
     };
     "Commands" = {

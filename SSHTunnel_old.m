@@ -3,7 +3,7 @@
 SSHTunnel.m
 
 Original code by tynsoe.org, Copyright 2002
-Modified by Lorenz Textor for use with CocoaMySQL
+Modified by Lorenz Textor for use with Sequel Pro
 
 */
 
@@ -132,7 +132,7 @@ Modified by Lorenz Textor for use with CocoaMySQL
 	[ environment setObject: pathToAuthentifier forKey: @"SSH_ASKPASS" ];
 	[ environment setObject:@":0" forKey:@"DISPLAY" ];
     
-    [ environment setObject: @"CocoaMySQL Tunnel" forKey: @"TUNNEL_NAME" ];
+    [ environment setObject: @"Sequel Pro Tunnel" forKey: @"TUNNEL_NAME" ];
     [ task setEnvironment: environment ];
 	
     stdErrPipe = [[ NSPipe alloc ] init ];
@@ -145,14 +145,14 @@ Modified by Lorenz Textor for use with CocoaMySQL
     
     [[ stdErrPipe fileHandleForReading] waitForDataInBackgroundAndNotify ];
 
-    NSLog(T_START,@"CocoaMySQL Tunnel");
+    NSLog(T_START,@"Sequel Pro Tunnel");
     [ self setValue: S_CONNECTING forKey: @"status" ];
     [ task launch ];
     [[ NSNotificationCenter defaultCenter]  postNotificationName:@"STMStatusChanged" object:self ];
     [ task waitUntilExit ];
     sleep(1);
     [ self setValue: S_IDLE forKey: @"status" ];
-    NSLog(T_STOP,@"CocoaMySQL Tunnel");
+    NSLog(T_STOP,@"Sequel Pro Tunnel");
     [[ NSNotificationCenter defaultCenter] removeObserver:self 
 						     name: @"NSFileHandleDataAvailableNotification"
 						   object:[ stdErrPipe fileHandleForReading]];    

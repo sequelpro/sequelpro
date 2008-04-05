@@ -26,21 +26,21 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>CocoaMySQL</string>
+	<string>Sequel Pro</string>
 	<key>CFBundleGetInfoString</key>
-	<string>CocoaMySQL</string>
+	<string>Sequel Pro</string>
 	<key>CFBundleHelpBookFolder</key>
 	<string>english_help</string>
 	<key>CFBundleHelpBookName</key>
-	<string>CocoaMySQL Help</string>
+	<string>Sequel Pro Help</string>
 	<key>CFBundleIconFile</key>
 	<string>appicon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.textor.CocoaMySQL</string>
+	<string>com.google.code.sequel-pro</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>CocoaMySQL</string>
+	<string>Sequel Pro</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -66,12 +66,12 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>CocoaMySQL/Perform selection as MySQL query</string>
+				<string>Sequel Pro/Perform selection as MySQL query</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>doPerformQueryService</string>
 			<key>NSPortName</key>
-			<string>CocoaMySQL</string>
+			<string>Sequel Pro</string>
 			<key>NSSendTypes</key>
 			<array>
 				<string>NSStringPboardType</string>

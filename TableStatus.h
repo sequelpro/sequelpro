@@ -1,9 +1,9 @@
 //
 //  TableContent.h
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by Jason Hallford (jason.hallford@byu.edu) on Th July 08 2004.
-//  CocoaMySQL Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  sequel-pro Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>

@@ -1,6 +1,6 @@
 //
 //  TableContent.m
-//  CocoaMySQL
+//  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
@@ -19,7 +19,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://cocoamysql.sourceforge.net/>
+//  More info at <http://code.google.com/p/sequel-pro/>
 //  Or mail to <lorenz@textor.ch>
 
 #import "TableContent.h"
@@ -1030,7 +1030,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
         if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"nullValue"]] ||
                 ([rowObject isMemberOfClass:[NSConstantString class]] && [[rowObject description] isEqualToString:@""]) ) {
         //NULL when user entered the nullValue string defined in the prefs or when a number field isn't set
-        //	problem: when a number isn't set, cocoamysql enters 0
+        //	problem: when a number isn't set, sequel-pro enters 0
         //	-> second if argument isn't necessary!
             [rowValue setString:@"NULL"];
 		} else {
