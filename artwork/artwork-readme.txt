@@ -1,0 +1,1 @@
+The logo for Sequel Pro is based on a similar icon from the Crystal icon set by Everaldo Coelho (http://www.everaldo.com/crystal/), modified by Abhi Beckert. It is released under LGPL (see artwork-license.txt).
