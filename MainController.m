@@ -350,7 +350,7 @@ opens donate link in default browser
 opens donate link in default browser
 */
 {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/faq.php"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/FAQ"]];
 }
 
 - (IBAction)checkForUpdates:(id)sender
