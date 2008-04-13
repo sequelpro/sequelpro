@@ -198,7 +198,7 @@
 		environmentEntries = (
 		);
 		isa = PBXExecutable;
-		name = CocoaMySQL;
+		name = "Sequel Pro";
 		shlibInfoDictList = (
 		);
 		sourceDirectories = (
