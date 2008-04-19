@@ -30,60 +30,60 @@
 
 @interface TableDocument : NSDocument
 {
-
-//IBOutlets
-    IBOutlet id keyChainInstance;
-    IBOutlet id tablesListInstance;
-    IBOutlet id tableSourceInstance;
-    IBOutlet id tableContentInstance;
-    IBOutlet id customQueryInstance;
-    IBOutlet id tableDumpInstance;
-    IBOutlet id tableStatusInstance;
-
-    IBOutlet id tableWindow;
-    IBOutlet id connectSheet;
-    IBOutlet id databaseSheet;
-    IBOutlet id variablesSheet;
-    IBOutlet id createTableSyntaxSheet;
-    IBOutlet id tableOperationsSheet;
-    IBOutlet id consoleDrawer;
-    
-    IBOutlet id queryProgressBar;
-    IBOutlet id favoritesButton;
-    IBOutlet NSArrayController *favoritesController;
-    IBOutlet id hostField;
-    IBOutlet id socketField;
-    IBOutlet id userField;
-    IBOutlet id passwordField;
-    IBOutlet id portField;
-    IBOutlet id databaseField;
-
+  //IBOutlets
+  IBOutlet id keyChainInstance;
+  IBOutlet id tablesListInstance;
+  IBOutlet id tableSourceInstance;
+  IBOutlet id tableContentInstance;
+  IBOutlet id customQueryInstance;
+  IBOutlet id tableDumpInstance;
+  IBOutlet id tableStatusInstance;
+  
+  IBOutlet id tableWindow;
+  IBOutlet id connectSheet;
+  IBOutlet id databaseSheet;
+  IBOutlet id variablesSheet;
+  IBOutlet id createTableSyntaxSheet;
+  IBOutlet id tableOperationsSheet;
+  IBOutlet id consoleDrawer;
+  
+  IBOutlet id queryProgressBar;
+  IBOutlet id favoritesButton;
+  IBOutlet NSArrayController *favoritesController;
+  IBOutlet id hostField;
+  IBOutlet id socketField;
+  IBOutlet id userField;
+  IBOutlet id passwordField;
+  IBOutlet id portField;
+  IBOutlet id databaseField;
+  
 	IBOutlet id sshCheckbox;
-    IBOutlet id sshUserField;
-    IBOutlet id sshPasswordField;
-    IBOutlet id sshHostField;
-    IBOutlet id sshPortField;
-
-    IBOutlet id connectProgressBar;
-    IBOutlet id databaseNameField;
-    IBOutlet id chooseDatabaseButton;
-    IBOutlet id consoleTextView;
-    IBOutlet id variablesTableView;
-    IBOutlet id createTableSyntaxView;
-    IBOutlet id chooseEncodingButton;
-    IBOutlet id chooseTableOperationButton;
-    IBOutlet NSTabView *tableTabView;
-
-    CMMCPConnection *mySQLConnection;
+  IBOutlet id sshUserField;
+  IBOutlet id sshPasswordField;
+  IBOutlet id sshHostField;
+  IBOutlet id sshPortField;
+  
+  IBOutlet id connectProgressBar;
+  IBOutlet id connectProgressStatusText;
+  IBOutlet id databaseNameField;
+  IBOutlet id chooseDatabaseButton;
+  IBOutlet id consoleTextView;
+  IBOutlet id variablesTableView;
+  IBOutlet id createTableSyntaxView;
+  IBOutlet id chooseEncodingButton;
+  IBOutlet id chooseTableOperationButton;
+  IBOutlet NSTabView *tableTabView;
+  
+  CMMCPConnection *mySQLConnection;
 	
 	SSHTunnel *tunnel;
-
-    NSArray *favorites;
-    NSArray *variables;
-    NSString *selectedDatabase;
-    NSString *selectedFavorite;
-    NSString *mySQLVersion;
-    NSUserDefaults *prefs;
+  
+  NSArray *favorites;
+  NSArray *variables;
+  NSString *selectedDatabase;
+  NSString *selectedFavorite;
+  NSString *mySQLVersion;
+  NSUserDefaults *prefs;
 }
 
 //start sheet

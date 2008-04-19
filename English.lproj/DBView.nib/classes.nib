@@ -509,6 +509,8 @@
 				<string>id</string>
 				<key>connectProgressBar</key>
 				<string>id</string>
+				<key>connectProgressStatusText</key>
+				<string>id</string>
 				<key>connectSheet</key>
 				<string>id</string>
 				<key>consoleDrawer</key>

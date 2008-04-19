@@ -153,8 +153,6 @@ alert-sheets when no success
     }
 }
 
-
-- (IBAction)connect:(id)sender
 /*
 invoked when user hits the connect-button of the connectSheet
 stops modal session with code:
@@ -163,39 +161,43 @@ stops modal session with code:
 3 when no connection to db
 4 when hostField and socketField are empty
 */
+- (IBAction)connect:(id)sender
 {
-    int code;
-
-    [connectProgressBar startAnimation:self];
-
-    code = 0;
-    if ( [[hostField stringValue] isEqualToString:@""]  && [[socketField stringValue] isEqualToString:@""] ) {
-        code = 4;
+  int code;
+  
+  [connectProgressBar startAnimation:self];
+  [connectProgressStatusText setHidden:NO];
+  [connectProgressStatusText display];
+  
+  code = 0;
+  if ( [[hostField stringValue] isEqualToString:@""]  && [[socketField stringValue] isEqualToString:@""] ) {
+    code = 4;
+  } else {
+    if ( ![[socketField stringValue] isEqualToString:@""] ) {
+      //connect to socket
+      mySQLConnection = [[CMMCPConnection alloc] initToSocket:[socketField stringValue]
+                                                    withLogin:[userField stringValue]
+                                                     password:[passwordField stringValue]];
+      [hostField setStringValue:@"localhost"];
     } else {
-        if ( ![[socketField stringValue] isEqualToString:@""] ) {
-        //connect to socket
-            mySQLConnection = [[CMMCPConnection alloc] initToSocket:[socketField stringValue]
-                                    withLogin:[userField stringValue]
-                                    password:[passwordField stringValue]];
-            [hostField setStringValue:@"localhost"];
-        } else {
-        //connect to host
-            mySQLConnection = [[CMMCPConnection alloc] initToHost:[hostField stringValue]
-                                    withLogin:[userField stringValue]
-                                    password:[passwordField stringValue]
-                                    usingPort:[portField intValue]];
-        }
-        if ( ![mySQLConnection isConnected] )
-            code = 2;
-        if ( !code && ![[databaseField stringValue] isEqualToString:@""] )
-            if ( ![mySQLConnection selectDB:[databaseField stringValue]] )
-                code = 3;
-        if ( !code )
-            code = 1;
+      //connect to host
+      mySQLConnection = [[CMMCPConnection alloc] initToHost:[hostField stringValue]
+                                                  withLogin:[userField stringValue]
+                                                   password:[passwordField stringValue]
+                                                  usingPort:[portField intValue]];
     }
-    [NSApp stopModalWithCode:code];
-    
-    [connectProgressBar stopAnimation:self];
+    if ( ![mySQLConnection isConnected] )
+      code = 2;
+    if ( !code && ![[databaseField stringValue] isEqualToString:@""] )
+      if ( ![mySQLConnection selectDB:[databaseField stringValue]] )
+        code = 3;
+    if ( !code )
+      code = 1;
+  }
+  [NSApp stopModalWithCode:code];
+  
+  [connectProgressBar stopAnimation:self];
+  [connectProgressStatusText setHidden:YES];
 }
 
 - (IBAction)closeSheet:(id)sender
