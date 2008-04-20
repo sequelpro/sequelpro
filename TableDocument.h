@@ -87,7 +87,6 @@
 - (IBAction)chooseFavorite:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
-- (void)setFavorites;
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
                       user:(NSString *)user password:(NSString *)password
                       port:(NSString *)port database:(NSString *)database
