@@ -53,23 +53,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 
 //start sheet
-- (IBAction)toggleUseSSH:(id)sender
-/*
-enables/disables ssh tunneling
-*/
-{
-  if ([sshCheckbox state] == NSOnState) {
-		[sshUserField setEnabled:YES];
-		[sshPasswordField setEnabled:YES];
-		[sshHostField setEnabled:YES];
-		[sshPortField setEnabled:YES];
-	} else {
-		[sshUserField setEnabled:NO];
-		[sshPasswordField setEnabled:NO];
-		[sshHostField setEnabled:NO];
-		[sshPortField setEnabled:NO];
-	}
-}
 
 - (IBAction)connectToDB:(id)sender
 /*
@@ -210,56 +193,11 @@ reused when user hits the close button of the variablseSheet or of the createTab
     [NSApp stopModalWithCode:0];
 }
 
-- (IBAction)chooseFavorite:(id)sender
-/*
- sets fields for the choosen favorite
+/**
+ * sets fields for the chosen favorite.
  */
+- (IBAction)chooseFavorite:(id)sender
 {
-	/*
-  BOOL useSSH = NO;
-  
-  if ( [favoritesButton indexOfSelectedItem] == 0 ) {
-    [hostField setStringValue:@""];
-    [socketField setStringValue:@""];
-    [userField setStringValue:@""];
-    [portField setStringValue:@""];
-    [databaseField setStringValue:@""];
-    [passwordField setStringValue:@""];
-		[sshCheckbox setState:NSOffState];
-		[sshUserField setEnabled:NO];
-		[sshPasswordField setEnabled:NO];
-		[sshHostField setEnabled:NO];
-		[sshPortField setEnabled:NO];
-		[sshHostField setStringValue:@""];
-		[sshUserField setStringValue:@""];
-		[sshPasswordField setStringValue:@""];
-		[sshPortField setStringValue:@"8888"];
-    [hostField selectText:self];
-    [selectedFavorite release];
-    selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
-  } else if ( [favoritesButton indexOfSelectedItem] == 1 ) {
-    if ( ![[socketField stringValue] isEqualToString:@""] ) {
-      [hostField setStringValue:@"localhost"];
-    }
-		if ( [sshCheckbox state] == NSOnState ) {
-			useSSH = YES;
-		} else {
-			useSSH = NO;
-		}
-    [self addToFavoritesHost:[hostField stringValue]
-                      socket:[socketField stringValue]
-                        user:[userField stringValue]
-                    password:[passwordField stringValue]
-                        port:[portField stringValue]
-                    database:[databaseField stringValue]
-                      useSSH:useSSH
-                     sshHost:[sshHostField stringValue]
-                     sshUser:[sshUserField stringValue]
-                 sshPassword:[sshPasswordField stringValue]
-                     sshPort:[sshPortField stringValue]];
-    //    } else if ( [favoritesButton indexOfSelectedItem] == 2 ) {
-    //        [favoritesButton selectItemWithTitle:selectedFavorite];
-  } else {*/
   if ([[prefs objectForKey:@"favorites"] count] == 0)
     return;
 	
@@ -270,46 +208,18 @@ reused when user hits the close button of the variablseSheet or of the createTab
   NSString *user = [favorite objectForKey:@"user"];
   NSString *port = [favorite objectForKey:@"port"];
   NSString *database = [favorite objectForKey:@"database"];
-  int useSSH = [[favorite objectForKey:@"useSSH"] intValue];
-  NSString *sshHost = [favorite objectForKey:@"sshHost"];
-  NSString *sshUser = [favorite objectForKey:@"sshUser"];
-  NSString *sshPort = [favorite objectForKey:@"sshPort"];
   
-    [hostField setStringValue:host];
-    [socketField setStringValue:socket];
-    [userField setStringValue:user];
-    [portField setStringValue:port];
-    [databaseField setStringValue:database];
-    [passwordField setStringValue:[keyChainInstance
-                                   getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
-                                   account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]]];
-		if ( useSSH ) {
-			[sshCheckbox setState:NSOnState];
-			[sshHostField setStringValue:sshHost];
-			[sshUserField setStringValue:sshUser];
-			[sshPortField setStringValue:sshPort];
-			[sshPasswordField setStringValue:[keyChainInstance
-                                        getPasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
-                                        account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]]];
-			[sshUserField setEnabled:YES];
-			[sshPasswordField setEnabled:YES];
-			[sshHostField setEnabled:YES];
-			[sshPortField setEnabled:YES];
-		} else {
-			[sshCheckbox setState:NSOffState];
-			[sshHostField setStringValue:@""];
-			[sshUserField setStringValue:@""];
-			[sshPortField setStringValue:@""];
-			[sshPasswordField setStringValue:@""];
-			[sshUserField setEnabled:NO];
-			[sshPasswordField setEnabled:NO];
-			[sshHostField setEnabled:NO];
-			[sshPortField setEnabled:NO];
-		}
-    
-    [selectedFavorite release];
-    selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
-  /*}*/
+  [hostField setStringValue:host];
+  [socketField setStringValue:socket];
+  [userField setStringValue:user];
+  [portField setStringValue:port];
+  [databaseField setStringValue:database];
+  [passwordField setStringValue:[keyChainInstance
+                                 getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
+                                 account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]]];
+  
+  [selectedFavorite release];
+  selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
 }
 
 - (NSArray *)favorites
@@ -317,513 +227,341 @@ reused when user hits the close button of the variablseSheet or of the createTab
   return favorites;
 }
 
-- (void)setFavorites
-/*
- set up the favorites popUpButton and notifiy bindings that it's changed
+/**
+ * notifies bindings that the favorites list has changed
  */
+- (void)setFavorites
 {
   [self willChangeValueForKey:@"favorites"];
   [self didChangeValueForKey:@"favorites"];
-  
-  NSEnumerator *enumerator = [favorites objectEnumerator];
-  id favorite;
-  
-  [favoritesButton removeAllItems];
-  [favoritesButton addItemWithTitle:NSLocalizedString(@"Custom", @"menu item for custom connection")];
-  [favoritesButton addItemWithTitle:NSLocalizedString(@"Save to favorites...", @"menu item for saving connection to favorites")];
-  //    [favoritesButton addItemWithTitle:@""];
-  [[favoritesButton menu] addItem:[NSMenuItem separatorItem]];
-  while ( (favorite = [enumerator nextObject]) ) {
-    [favoritesButton addItemWithTitle:[favorite objectForKey:@"name"]];
-  }
 }
 
+/**
+ * add actual connection to favorites
+ */
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
                       user:(NSString *)user password:(NSString *)password
                       port:(NSString *)port database:(NSString *)database
-					  useSSH:(BOOL)useSSH sshHost:(NSString *)sshHost
-					  sshUser:(NSString *)sshUser sshPassword:(NSString *)sshPassword
-					  sshPort:(NSString *)sshPort
-/*
-add actual connection to favorites
-*/
+					          useSSH:(BOOL)useSSH // no-longer in use
+					         sshHost:(NSString *)sshHost // no-longer in use
+					         sshUser:(NSString *)sshUser // no-longer in use
+					     sshPassword:(NSString *)sshPassword // no-longer in use
+					         sshPort:(NSString *)sshPort // no-longer in use
 {
-    NSEnumerator *enumerator = [favorites objectEnumerator];
-    id favorite;
-    NSString *favoriteName = [NSString stringWithFormat:@"%@@%@/%@", user, host, database];
-	NSNumber *ssh;
+  NSEnumerator *enumerator = [favorites objectEnumerator];
+  id favorite;
+  NSString *favoriteName = [NSString stringWithFormat:@"%@@%@/%@", user, host, database];
 
-//test if host and socket are not nil
-    if ( [host isEqualToString:@""] && [socket isEqualToString:@""] )
-    {
-        NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-        [favoritesButton selectItemWithTitle:selectedFavorite];
-        return;
+  // test if host and socket are not nil
+  if ([host isEqualToString:@""] && [socket isEqualToString:@""]) {
+    NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+    return;
+  }
+
+  // test if favorite name isn't used by another favorite
+  while (favorite = [enumerator nextObject]) {
+    if ([[favorite objectForKey:@"name"] isEqualToString:favoriteName]) {
+      NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), [NSString stringWithFormat:NSLocalizedString(@"Favorite %@ has already been saved!\nOpen Preferences to change the names of the favorites.", @"message of panel when favorite name has already been used"), favoriteName], NSLocalizedString(@"OK", @"OK button"), nil, nil);
+      return;
     }
-//test if all fields are specified for ssh tunnel
-	if ( useSSH ) {
-		if ( [sshHost isEqualToString:@""] ) {
-			sshHost = host;
-		}
-		if ( [sshUser isEqualToString:@""] ) {
-			sshUser = user;
-		}
-		if ( [sshPassword isEqualToString:@""] ) {
-			sshPassword = password;
-		}
-		if ( [sshPort isEqualToString:@""] ) {
-			sshPort = port;
-		}
-		ssh = [NSNumber numberWithInt:1];
-	} else {
-		sshHost = @"";
-		sshUser = @"";
-		sshPassword = @"";
-		sshPort = @"";
-		ssh = [NSNumber numberWithInt:0];
-	}
+  }
 
-//test if favorite name isn't used by another favorite and if no favorite with the same host, user and db exists
-    while ( (favorite = [enumerator nextObject]) ) {
-        if ( [[favorite objectForKey:@"name"] isEqualToString:favoriteName] )
-        {
-            NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), [NSString stringWithFormat:NSLocalizedString(@"Favorite %@ has already been saved!\nOpen Preferences to change the names of the favorites.", @"message of panel when favorite name has already been used"), favoriteName], NSLocalizedString(@"OK", @"OK button"), nil, nil);
-            [favoritesButton selectItemWithTitle:selectedFavorite];
-            return;
-        }
-/*
-        if ( [[favorite objectForKey:@"host"] isEqualToString:host] &&
-               [[favorite objectForKey:@"user"] isEqualToString:user] &&
-               [[favorite objectForKey:@"database"] isEqualToString:database] ) {
-            NSRunAlertPanel(@"Error", @"There is already a favorite with the same host, user and database!", @"OK", nil, nil);
-            [favoritesButton selectItemWithTitle:selectedFavorite];
-            return;
-        }
-*/
-    }
+  // write favorites and password
+  NSDictionary *newFavorite = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,    socket,    user,    port,    database,    nil]
+                                                          forKeys:[NSArray arrayWithObjects:@"name",      @"host", @"socket", @"user", @"port", @"database", nil]];
+  favorites = [[favorites arrayByAddingObject:newFavorite] retain];
+  
+  if (![password isEqualToString:@""]) {
+      [keyChainInstance addPassword:password
+                            forName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteName]
+                            account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+  }
+  [prefs setObject:favorites forKey:@"favorites"];
 
-//write favorites and password
-    NSDictionary *newFavorite = [NSDictionary
-                        dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host, socket, user, port, database, ssh, sshHost, sshUser, sshPort, nil]
-                        forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"useSSH", @"sshHost", @"sshUser", @"sshPort", nil]];
-    favorites = [[favorites arrayByAddingObject:newFavorite] retain];
-    if ( ![password isEqualToString:@""] )
-        [keyChainInstance addPassword:password forName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteName]
-                account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-    if ( ![sshPassword isEqualToString:@""] )
-        [keyChainInstance addPassword:sshPassword forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", favoriteName]
-                account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-    [prefs setObject:favorites forKey:@"favorites"];
-
-//reload favorites and select new favorite
-    [self setFavorites];
-    [favoritesButton selectItemWithTitle:favoriteName];
-    selectedFavorite = [favoriteName retain];
+  // reload favorites and select new favorite
+  [self setFavorites];
+  selectedFavorite = [favoriteName retain];
 }
 
-
-//alert sheets method
+/**
+ * alert sheets method
+ * invoked when alertSheet get closed
+ * if contextInfo == connect -> reopens the connectSheet
+ * if contextInfo == removedatabase -> tries to remove the selected database
+ */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-/*
-invoked when alertSheet get closed
-if contextInfo == connect -> reopens the connectSheet
-if contextInfo == removedatabase -> tries to remove the selected database
-*/
 {
-    [sheet orderOut:self];
+  [sheet orderOut:self];
 
-    if ( [contextInfo isEqualToString:@"connect"] ) {
-        [self connectToDB:nil];
-    } else if ( [contextInfo isEqualToString:@"removedatabase"] ) {
-        if ( returnCode == NSAlertDefaultReturn ) {
-            [mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE `%@`", [self database]]];
-            if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-            //db deleted with success
-                selectedDatabase = nil;
-                [self setDatabases:self];
-                [tablesListInstance setConnection:mySQLConnection];
-                [tableDumpInstance setConnection:mySQLConnection];
-                [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/",
-                                    mySQLVersion, [userField stringValue], [hostField stringValue]]];
-            } else {
-            //error while deleting db
-                NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                        [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), [mySQLConnection getLastErrorMessage]]);
-            }
-        }
+  if ([contextInfo isEqualToString:@"connect"]) {
+    [self connectToDB:nil];
+    return;
+  }
+  
+  if ([contextInfo isEqualToString:@"removedatabase"]) {
+    if (returnCode != NSAlertDefaultReturn)
+      return;
+
+    [mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE `%@`", [self database]]];
+    if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+      // error while deleting db
+      NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), [mySQLConnection getLastErrorMessage]]);
+      return;
     }
+    
+    // db deleted with success
+    selectedDatabase = nil;
+    [self setDatabases:self];
+    [tablesListInstance setConnection:mySQLConnection];
+    [tableDumpInstance setConnection:mySQLConnection];
+    [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/", mySQLVersion, [userField stringValue], [hostField stringValue]]];
+  }
 }
 
 
 //database methods
+
+/**
+ *sets up the chooseDatabaseButton (adds all databases)
+ */
 - (IBAction)setDatabases:(id)sender;
-/*
-sets up the chooseDatabaseButton (adds all databases)
-*/
 {
-    CMMCPResult *queryResult;
-    int i;
+  CMMCPResult *queryResult;
+  int i;
 
-    [chooseDatabaseButton removeAllItems];
-    [chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
-    queryResult = [mySQLConnection listDBs];
-    for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-        [queryResult dataSeek:i];
-        [chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-    }
-    if ( ![self database] ) {
-        [chooseDatabaseButton selectItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
-    } else {
-        [chooseDatabaseButton selectItemWithTitle:[self database]];
-    }
+  [chooseDatabaseButton removeAllItems];
+  [chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
+  queryResult = [mySQLConnection listDBs];
+  for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+    [queryResult dataSeek:i];
+    [chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+  }
+  if ( ![self database] ) {
+    [chooseDatabaseButton selectItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
+  } else {
+    [chooseDatabaseButton selectItemWithTitle:[self database]];
+  }
 }
 
+/**
+ * selects the database choosen by the user
+ * errorsheet if connection failed
+ */
 - (IBAction)chooseDatabase:(id)sender
-/*
-selects the database choosen by the user
-errorsheet if connection failed
-*/
 {
-    if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
-        [chooseDatabaseButton selectItemWithTitle:[self database]];
-        return;
-    }
+  if (![tablesListInstance selectionShouldChangeInTableView:nil]) {
+    [chooseDatabaseButton selectItemWithTitle:[self database]];
+    return;
+  }
 
-    if ( [chooseDatabaseButton indexOfSelectedItem] == 0 ) {
-        if ( ![self database] ) {
-            [chooseDatabaseButton selectItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
-        } else {
-            [chooseDatabaseButton selectItemWithTitle:[self database]];
-        }
-        return;
-    }
-
-    if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
-//connection failed
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"),
-                    [chooseDatabaseButton titleOfSelectedItem]]);
-        [self setDatabases:self];
+  if ( [chooseDatabaseButton indexOfSelectedItem] == 0 ) {
+    if ( ![self database] ) {
+      [chooseDatabaseButton selectItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
     } else {
-//changed database with success
-//setConnection of TablesList and TablesDump to reload tables in db
-        [selectedDatabase release];
-        selectedDatabase = nil;
-        selectedDatabase = [[chooseDatabaseButton titleOfSelectedItem] retain];
-        [tablesListInstance setConnection:mySQLConnection];
-        [tableDumpInstance setConnection:mySQLConnection];
-        [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
-                                    [hostField stringValue], [self database]]];
+      [chooseDatabaseButton selectItemWithTitle:[self database]];
     }
+    return;
+  }
+  
+  // show error on connection failed
+  if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
+    NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
+    [self setDatabases:self];
+    return;
+  }
+  
+  //setConnection of TablesList and TablesDump to reload tables in db
+  [selectedDatabase release];
+  selectedDatabase = nil;
+  selectedDatabase = [[chooseDatabaseButton titleOfSelectedItem] retain];
+  [tablesListInstance setConnection:mySQLConnection];
+  [tableDumpInstance setConnection:mySQLConnection];
+  [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue], [hostField stringValue], [self database]]];
 }
 
+/**
+ * opens the add-db sheet and creates the new db
+ */
 - (IBAction)addDatabase:(id)sender
-/*
-opens the add-db sheet and creates the new db
-*/
 {
-    int code = 0;
+  int code = 0;
 
-    if ( ![tablesListInstance selectionShouldChangeInTableView:nil] )
-        return;
+  if (![tablesListInstance selectionShouldChangeInTableView:nil])
+    return;
+  
+  [databaseNameField setStringValue:@""];
+  [NSApp beginSheet:databaseSheet
+     modalForWindow:tableWindow
+      modalDelegate:self
+     didEndSelector:nil
+        contextInfo:nil];
+  code = [NSApp runModalForWindow:databaseSheet];
+  
+  [NSApp endSheet:databaseSheet];
+  [databaseSheet orderOut:nil];
+  
+  if (!code)
+    return;
+  
+  if ([[databaseNameField stringValue] isEqualToString:@""]) {
+    NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+    return;
+  }
+  
+  [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]]];
+  if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+    //error while creating db
+    NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
+    return;
+  }
 
-    [databaseNameField setStringValue:@""];
-    [NSApp beginSheet:databaseSheet
-            modalForWindow:tableWindow modalDelegate:self
-            didEndSelector:nil contextInfo:nil];
-    code = [NSApp runModalForWindow:databaseSheet];
-    
-    [NSApp endSheet:databaseSheet];
-    [databaseSheet orderOut:nil];
-
-    if ( code ) {
-        if ( [[databaseNameField stringValue] isEqualToString:@""] ) {
-            NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
-        } else {
-            [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]]];
-            if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-            //db created with success
-                if ( ![mySQLConnection selectDB:[databaseNameField stringValue]] ) {
-                //error while selecting new db (is this possible?!)
-                    NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                        [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"),
-                            [databaseNameField stringValue]]);
-                    [self setDatabases:self];
-                } else {
-                //select new db
-                    [selectedDatabase release];
-                    selectedDatabase = nil;
-                    selectedDatabase = [[databaseNameField stringValue] retain];
-                    [self setDatabases:self];
-                    [tablesListInstance setConnection:mySQLConnection];
-                    [tableDumpInstance setConnection:mySQLConnection];
-                    [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@",
-                                        mySQLVersion, [userField stringValue], [hostField stringValue],
-                                        selectedDatabase]];
-                }
-            } else {
-            //error while creating db
-                NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                        [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
-            }
-        }
-    }
+  if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) { //error while selecting new db (is this possible?!)
+    NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"),
+    [databaseNameField stringValue]]);
+    [self setDatabases:self];
+    return;
+  }
+  
+  //select new db
+  [selectedDatabase release];
+  selectedDatabase = nil;
+  selectedDatabase = [[databaseNameField stringValue] retain];
+  [self setDatabases:self];
+  [tablesListInstance setConnection:mySQLConnection];
+  [tableDumpInstance setConnection:mySQLConnection];
+  [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue], [hostField stringValue], selectedDatabase]];
 }
 
+/**
+ * closes the add-db sheet and stops modal session
+ */
 - (IBAction)closeDatabaseSheet:(id)sender
-/*
-closes the add-db sheet and stops modal session
-*/
 {
-    [NSApp stopModalWithCode:[sender tag]];
+  [NSApp stopModalWithCode:[sender tag]];
 }
 
+/**
+ * opens sheet to ask user if he really wants to delete the db
+ */
 - (IBAction)removeDatabase:(id)sender
-/*
-opens sheet to ask user if he really wants to delete the db
-*/
 {
-    if ( [chooseDatabaseButton indexOfSelectedItem] == 0 )
-        return;
-    if ( ![tablesListInstance selectionShouldChangeInTableView:nil] )
-        return;
+  if ([chooseDatabaseButton indexOfSelectedItem] == 0)
+    return;
+  if (![tablesListInstance selectionShouldChangeInTableView:nil])
+    return;
 
-    NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil,
-            @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase",
-            [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]] );
+  NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]]);
 }
 
 
 //console methods
+/**
+ * shows or hides the console
+ */
 - (void)toggleConsole
-/*
-shows or hides the console
-*/
 {
-    NSDrawerState state = [consoleDrawer state];
-    if (NSDrawerOpeningState == state || NSDrawerOpenState == state) {
-        [consoleDrawer close];
-    } else {
-        [consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-        [consoleDrawer openOnEdge:NSMinYEdge];
-    }
+  NSDrawerState state = [consoleDrawer state];
+  if (NSDrawerOpeningState == state || NSDrawerOpenState == state) {
+    [consoleDrawer close];
+  } else {
+    [consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
+    [consoleDrawer openOnEdge:NSMinYEdge];
+  }
 }
 
+/**
+ * clears the console
+ */
 - (void)clearConsole
-/*
-clears the console
-*/
 {
-    [consoleTextView setString:@""];
+  [consoleTextView setString:@""];
 }
 
+/**
+ * returns YES if the console is visible
+ */
 - (BOOL)consoleIsOpened
-/*
-returns YES if the console is visible
-*/
 {
-    if ( [consoleDrawer state] == NSDrawerOpeningState || [consoleDrawer state] == NSDrawerOpenState )
-    {
-        return YES;
-    } else {
-        return NO;
-    }
+  return ([consoleDrawer state] == NSDrawerOpeningState || [consoleDrawer state] == NSDrawerOpenState);
 }
 
+/**
+ * shows a message in the console
+ */
 - (void)showMessageInConsole:(NSString *)message
-/*
-shows a message in the console
-*/
 {
-    int begin, end;
+  int begin, end;
 
-    [consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
-    begin = [[consoleTextView string] length];
-    [consoleTextView replaceCharactersInRange:NSMakeRange(begin,0)
-            withString:message];
-    end = [[consoleTextView string] length];
-    [consoleTextView setTextColor:[NSColor blackColor] range:NSMakeRange(begin,end-begin)];
-    if ( [self consoleIsOpened] ) {
-/*
-        NSClipView *clipView = [consoleTextView superview]; 
-        if (![clipView isKindOfClass:[NSClipView class]]) return; 
-        [clipView scrollToPoint:[clipView constrainScrollPoint:NSMakePoint(0,[consoleTextView frame].size.height)]]; 
-        [[clipView superview] reflectScrolledClipView:clipView];
-*/
-        [consoleTextView displayIfNeeded];
-        [consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-    }
+  [consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
+  begin = [[consoleTextView string] length];
+  [consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:message];
+  end = [[consoleTextView string] length];
+  [consoleTextView setTextColor:[NSColor blackColor] range:NSMakeRange(begin,end-begin)];
+  if ([self consoleIsOpened]) {
+    [consoleTextView displayIfNeeded];
+    [consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
+  }
 }
 
+/**
+ * shows an error in the console (red)
+ */
 - (void)showErrorInConsole:(NSString *)error
-/*
-shows an error in the console (red)
-*/
 {
-    int begin, end;
-    
-    [consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
-    begin = [[consoleTextView string] length];
-    [consoleTextView replaceCharactersInRange:NSMakeRange(begin,0)
-            withString:error];
-    end = [[consoleTextView string] length];
-    [consoleTextView setTextColor:[NSColor redColor] range:NSMakeRange(begin,end-begin)];
-    if ( [self consoleIsOpened] ) {
-/*
-        NSClipView *clipView = [consoleTextView superview]; 
-        if (![clipView isKindOfClass:[NSClipView class]]) return; 
-        [clipView scrollToPoint:[clipView constrainScrollPoint:NSMakePoint(0,[consoleTextView frame].size.height)]]; 
-        [[clipView superview] reflectScrolledClipView:clipView];
-*/
-        [consoleTextView displayIfNeeded];
-        [consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-    }
+  int begin, end;
+  
+  [consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
+  begin = [[consoleTextView string] length];
+  [consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:error];
+  end = [[consoleTextView string] length];
+  [consoleTextView setTextColor:[NSColor redColor] range:NSMakeRange(begin,end-begin)];
+  if ([self consoleIsOpened]) {
+    [consoleTextView displayIfNeeded];
+    [consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
+  }
 }
 
 
 //encoding methods
+/**
+ * set the encoding for the database
+ */
 - (void)setEncoding:(NSString *)encoding
-/*
-set the encoding for the database
-*/
 {
-// set encoding of connection and client
-    [mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", encoding]];
+  // set encoding of connection and client
+  [mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", encoding]];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[encoding cString]]];
 	} else {
 		[self detectEncoding];
 	}
-//NSLog(@"set encoding to %@", encoding);
 		
-    [tableSourceInstance reloadTable:self];
-    [tableContentInstance reloadTable:self];
-    [tableStatusInstance reloadTable:self];
-
-//    int encodingCode;
-
-/*    if( [encoding isEqualToString:@"ISO Latin 1"] ) {
-        encodingCode = NSISOLatin1StringEncoding;
-    } else if( [encoding isEqualToString:@"ISO Latin 2"] ) {
-        encodingCode = NSISOLatin2StringEncoding;
-    } else if( [encoding isEqualToString:@"Win Latin 1"] ) {
-        encodingCode = NSWindowsCP1252StringEncoding;
-    } else if( [encoding isEqualToString:@"Win Latin 2"] ) {
-        encodingCode = NSWindowsCP1250StringEncoding;	
-    } else if( [encoding isEqualToString:@"Cyrillic"] ) {
-        encodingCode = NSWindowsCP1251StringEncoding;
-    } else if( [encoding isEqualToString:@"Greek"] ) {
-        encodingCode = NSWindowsCP1253StringEncoding;
-    } else if( [encoding isEqualToString:@"Turkish"] ) {
-        encodingCode = NSWindowsCP1254StringEncoding;
-    } else if ( [encoding isEqualToString:@"Shift-JIS"] ) {
-        encodingCode = NSShiftJISStringEncoding;
-    } else if ( [encoding isEqualToString:@"EUC-JP"] ) {
-        encodingCode = NSJapaneseEUCStringEncoding;
-    } else if ( [encoding isEqualToString:@"ISO 2022-JP"] ) {
-        encodingCode = NSISO2022JPStringEncoding;
-    } else if ( [encoding isEqualToString:@"UTF-8"] ) {
-        encodingCode = NSUTF8StringEncoding;
-*/
-/*
-    if( [encoding isEqualToString:@"ISO Latin 1"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin1);
-    } else if( [encoding isEqualToString:@"ISO Latin 2"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin2);
-    } else if ( [encoding isEqualToString:@"ISO Cyrillic"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinCyrillic);
-    } else if ( [encoding isEqualToString:@"ISO Greek"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinGreek);
-    } else if ( [encoding isEqualToString:@"ISO Turkish"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin5);
-    } else if ( [encoding isEqualToString:@"ISO Arabic"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinArabic);
-    } else if ( [encoding isEqualToString:@"ISO Hebrew"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinHebrew);
-    } else if ( [encoding isEqualToString:@"ISO Thai"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinThai);
-
-    } else if( [encoding isEqualToString:@"Win Latin 1"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsLatin1);
-    } else if( [encoding isEqualToString:@"Win Latin 2"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsLatin2);
-    } else if( [encoding isEqualToString:@"Win Cyrillic"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsCyrillic);
-    } else if( [encoding isEqualToString:@"Win Greek"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsGreek);
-    } else if( [encoding isEqualToString:@"Win Turkish"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsLatin5);
-    } else if( [encoding isEqualToString:@"Win Arabic"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
-    } else if( [encoding isEqualToString:@"Win Baltic Rim"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsBalticRim);
-    } else if( [encoding isEqualToString:@"Win Korean"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsKoreanJohab);
-    } else if( [encoding isEqualToString:@"Win Vietnamese"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsVietnamese);
-
-    } else if ( [encoding isEqualToString:@"Shift-JIS"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingShiftJIS);
-    } else if ( [encoding isEqualToString:@"EUC-JP"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_JP);
-    } else if ( [encoding isEqualToString:@"ISO 2022-JP"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISO_2022_JP);
-
-    } else if ( [encoding isEqualToString:@"EUC-CN"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_CN);
-    } else if ( [encoding isEqualToString:@"EUC-TW"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_TW);
-    } else if ( [encoding isEqualToString:@"EUC-KR"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
-
-    } else if ( [encoding isEqualToString:@"ISO 2022-KR"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISO_2022_KR);
-    } else if ( [encoding isEqualToString:@"ISO 2022-CN"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISO_2022_CN);
-
-    } else if ( [encoding isEqualToString:@"KOI8-R"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingKOI8_R);
-    } else if ( [encoding isEqualToString:@"HZ"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingHZ_GB_2312);
-
-    } else if ( [encoding isEqualToString:@"UTF-8"] ) {
-        encodingCode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF8);
-
-    } else {
-        encodingCode = NSISOLatin1StringEncoding; // default is ISO Latin 1
-    }
-    
-    if(encodingCode == kCFStringEncodingInvalidId)
-        encodingCode = NSISOLatin1StringEncoding;
-*/
+  [tableSourceInstance reloadTable:self];
+  [tableContentInstance reloadTable:self];
+  [tableStatusInstance reloadTable:self];
 }
 
+/**
+ * autodetects the connection encoding and sets the encoding dropdown
+ */
 - (void)detectEncoding
-/*
-autodetects the connection encoding and sets the encoding dropdown
-*/
 {
 	id mysqlEncoding;
 	
 	// mysql > 4.0
 	mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
-	if ( [mysqlEncoding isKindOfClass:[NSData class]] ) {
-	// MySQL 4.1.14 returns the mysql variables as nsdata
+	if ( [mysqlEncoding isKindOfClass:[NSData class]] ) { // MySQL 4.1.14 returns the mysql variables as nsdata
 		mysqlEncoding = [mySQLConnection stringWithText:mysqlEncoding];
 	}
-	if ( !mysqlEncoding ) {
-	// mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
+	if ( !mysqlEncoding ) { // mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 		[chooseEncodingButton setEnabled:NO];
 	}
-	if ( !mysqlEncoding ) {
-	// older version? -> set encoding to mysql default encoding latin1, chooseEncodingButton is already disabled
+	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1, chooseEncodingButton is already disabled
 		NSLog(@"error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
-	[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];	
-
-//NSLog(@"autodetected %@", mysqlEncoding);
+	[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];
 
 	if ( [mysqlEncoding isEqualToString:@"ucs2"] ) {
 		[chooseEncodingButton selectItemWithTitle:@"UCS-2 Unicode (ucs2)"];
@@ -864,32 +602,35 @@ autodetects the connection encoding and sets the encoding dropdown
 	}
 }
 
+/**
+ * gets the selected mysql encoding
+ */
 - (NSString *)getSelectedEncoding
-/*
-gets the selected mysql encoding
-*/
 {
 	NSString *mysqlEncoding;
 	NSString *encoding = [chooseEncodingButton titleOfSelectedItem];
 
-// unicode
+  // unicode
 	if ( [encoding isEqualToString:@"UCS-2 Unicode (ucs2)"] ) {
 		mysqlEncoding = @"ucs2";
 	} else if ( [encoding isEqualToString:@"UTF-8 Unicode (utf8)"] ) {
 		mysqlEncoding = @"utf8";
-// west european
+  
+  // west european
 	} else if( [encoding isEqualToString:@"US ASCII (ascii)"] ) {
 		mysqlEncoding = @"ascii";
 	} else if ( [encoding isEqualToString:@"ISO Latin 1 (latin1)"] ) {
 		mysqlEncoding = @"latin1";
 	} else if ( [encoding isEqualToString:@"Mac Roman (macroman)"] ) {
 		mysqlEncoding = @"macroman";
-// central european
+  
+  // central european
 	} else if ( [encoding isEqualToString:@"Windows Latin 2 (cp1250)"] ) {
 		mysqlEncoding = @"cp1250";
 	} else if ( [encoding isEqualToString:@"ISO Latin 2 (latin2)"] ) {
 		mysqlEncoding = @"latin2";
-// south european and middle east
+  
+  // south european and middle east
 	} else if ( [encoding isEqualToString:@"Windows Arabic (cp1256)"] ) {
 		mysqlEncoding = @"cp1256";
 	} else if ( [encoding isEqualToString:@"ISO Greek (greek)"] ) {
@@ -898,81 +639,82 @@ gets the selected mysql encoding
 		mysqlEncoding = @"hebrew";
 	} else if ( [encoding isEqualToString:@"ISO Turkish (latin5)"] ) {
 		mysqlEncoding = @"latin5";
-// baltic
+  
+  // baltic
 	} else if ( [encoding isEqualToString:@"Windows Baltic (cp1257)"] ) {
 		mysqlEncoding = @"cp1257";
-// cyrillic
+  
+  // cyrillic
 	} else if ( [encoding isEqualToString:@"Windows Cyrillic (cp1251)"] ) {
 		mysqlEncoding = @"cp1251";
-// asian
+  
+  // asian
 	} else if ( [encoding isEqualToString:@"Big5 Traditional Chinese (big5)"] ) {
 		mysqlEncoding = @"big5";
 	} else if ( [encoding isEqualToString:@"Shift-JIS Japanese (sjis)"] ) {
 		mysqlEncoding = @"sjis";
 	} else if ( [encoding isEqualToString:@"EUC-JP Japanese (ujis)"] ) {
 		mysqlEncoding = @"ujis";
+  
+  // unknown encoding  
 	} else {
-// unknown encoding
-		NSLog(@"error: unknown encoding %@", encoding);
+		NSLog(@"error: unknown encoding %@, assuming utf8", encoding);
 		mysqlEncoding = @"utf8";
 	}
 	
 	return [mysqlEncoding autorelease];
 }
 
+/**
+ * choose encoding
+ */
 - (IBAction)chooseEncoding:(id)sender
-/*
-choose encoding
-*/
 {
-    // Set encoding
-    [self setEncoding:[self getSelectedEncoding]];
+  [self setEncoding:[self getSelectedEncoding]];
 }
 
+/**
+ * return YES if MySQL server supports choosing connection and table encodings (MySQL 4.1 and newer)
+ */
 - (BOOL)supportsEncoding
-/*
-returny YES if MySQL server supports choosing connection and table encodings (MySQL 4.1 and newer)
-*/
 {
 	return [chooseEncodingButton isEnabled];
 }
 
 
 //other methods
+/**
+ * returns the host
+ */
 - (NSString *)host
-/*
-returns the host
-*/
 {
-    return [hostField stringValue];
+  return [hostField stringValue];
 }
 
+/**
+ * passes query to tablesListInstance
+ */
 - (void)doPerformQueryService:(NSString *)query
-/*
-passes query to tablesListInstance
-*/
 {
-    [tableWindow makeKeyAndOrderFront:self];
-    [tablesListInstance doPerformQueryService:query];
+  [tableWindow makeKeyAndOrderFront:self];
+  [tablesListInstance doPerformQueryService:query];
 }
 
+/**
+ * flushes the mysql privileges
+ */
 - (void)flushPrivileges
-/*
-flushes the mysql privileges
-*/
 {
-    [mySQLConnection queryString:@"FLUSH PRIVILEGES"];
-    
-    if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+  [mySQLConnection queryString:@"FLUSH PRIVILEGES"];
+
+  if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
     //flushed privileges without errors
-        NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                NSLocalizedString(@"Succesfully flushed privileges.", @"message of panel when successfully flushed privs"));
-    } else {
+    NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Succesfully flushed privileges.", @"message of panel when successfully flushed privs"));
+  } else {
     //error while flushing privileges
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
-                                [mySQLConnection getLastErrorMessage]]);
-    }
+    NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
+    [mySQLConnection getLastErrorMessage]]);
+  }
 }
 
 - (void)openTableOperationsSheet
@@ -1188,7 +930,6 @@ invoked when the application will terminate
 the status of the tunnel has changed
 */
 {
-	NSLog([tunnel status]);
 }
 
 //menu methods
@@ -1469,8 +1210,6 @@ sets upt the interface (small fonts)
             name:@"SMySQLQueryHasBeenPerformed" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
             name:@"NSApplicationWillTerminateNotification" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tunnelStatusChanged:) 
-						  name: @"STMStatusChanged" object: nil];
 
     //set up interface
     if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
@@ -1490,28 +1229,6 @@ sets upt the interface (small fonts)
 
     //set up toolbar
     [self setupToolbar];
-
-
-
-//tunnel test
-/*
-NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys:@"Sequel Pro Tunnel",@"connName",
-				@"xy",@"connUser",
-				@"textor.ch",@"connHost",
-				[NSNumber numberWithBool:YES],@"connAuth",
-				[NSArray arrayWithObject:[NSDictionary dictionaryWithObjectsAndKeys:@"8888",@"port",
-							@"textor.ch",@"host",
-							@"3306",@"hostport",
-							nil]],@"tunnelsLocal",
-				nil];
-tunnel = [[SSHTunnel alloc] initWithDictionary:args];
-[tunnel startTunnel];
-*/
-//sleep(3);
-//[tunnel startTunnelWithArguments:args];
-//end tunnel test
-
-
     [self connectToDB:nil];
 }
 

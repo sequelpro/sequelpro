@@ -26,7 +26,6 @@
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
-#import "SSHTunnel.h"
 
 @interface TableDocument : NSDocument
 {
@@ -57,12 +56,6 @@
   IBOutlet id portField;
   IBOutlet id databaseField;
   
-	IBOutlet id sshCheckbox;
-  IBOutlet id sshUserField;
-  IBOutlet id sshPasswordField;
-  IBOutlet id sshHostField;
-  IBOutlet id sshPortField;
-  
   IBOutlet id connectProgressBar;
   IBOutlet id connectProgressStatusText;
   IBOutlet id databaseNameField;
@@ -76,8 +69,6 @@
   
   CMMCPConnection *mySQLConnection;
 	
-	SSHTunnel *tunnel;
-  
   NSArray *favorites;
   NSArray *variables;
   NSString *selectedDatabase;
@@ -87,15 +78,19 @@
 }
 
 //start sheet
-- (IBAction)toggleUseSSH:(id)sender;
 - (IBAction)connectToDB:(id)sender;
 - (IBAction)connect:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
 - (void)setFavorites;
-- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket user:(NSString *)user password:(NSString *)password
-            port:(NSString *)port database:(NSString *)database useSSH:(BOOL)useSSH sshHost:(NSString *)sshHost 
-			sshUser:(NSString *)sshUser sshPassword:(NSString *)sshPassword  sshPort:(NSString *)sshPort;
+- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
+                      user:(NSString *)user password:(NSString *)password
+                      port:(NSString *)port database:(NSString *)database
+					          useSSH:(BOOL)useSSH // no-longer in use
+					         sshHost:(NSString *)sshHost // no-longer in use
+					         sshUser:(NSString *)sshUser // no-longer in use
+					     sshPassword:(NSString *)sshPassword // no-longer in use
+                   sshPort:(NSString *)sshPort; // no-longer in use
 
 //alert sheets method
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
