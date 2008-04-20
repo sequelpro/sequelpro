@@ -198,25 +198,15 @@ reused when user hits the close button of the variablseSheet or of the createTab
  */
 - (IBAction)chooseFavorite:(id)sender
 {
-  if ([[prefs objectForKey:@"favorites"] count] == 0)
-    return;
+  if (![self selectedFavorite])
+		return;
 	
-  NSDictionary *favorite = [[prefs objectForKey:@"favorites"] objectAtIndex:[favoritesController selectionIndex]];
-  NSString *name = [favorite objectForKey:@"name"];
-  NSString *host = [favorite objectForKey:@"host"];
-  NSString *socket = [favorite objectForKey:@"socket"];
-  NSString *user = [favorite objectForKey:@"user"];
-  NSString *port = [favorite objectForKey:@"port"];
-  NSString *database = [favorite objectForKey:@"database"];
-  
-  [hostField setStringValue:host];
-  [socketField setStringValue:socket];
-  [userField setStringValue:user];
-  [portField setStringValue:port];
-  [databaseField setStringValue:database];
-  [passwordField setStringValue:[keyChainInstance
-                                 getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
-                                 account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]]];
+	[hostField setStringValue:[self valueForKeyPath:@"selectedFavorite.host"]];
+  [socketField setStringValue:[self valueForKeyPath:@"selectedFavorite.socket"]];
+  [userField setStringValue:[self valueForKeyPath:@"selectedFavorite.user"]];
+  [portField setStringValue:[self valueForKeyPath:@"selectedFavorite.port"]];
+  [databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
+  [passwordField setStringValue:[self selectedFavoritePassword]];
   
   [selectedFavorite release];
   selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
@@ -234,6 +224,36 @@ reused when user hits the close button of the variablseSheet or of the createTab
 {
   [self willChangeValueForKey:@"favorites"];
   [self didChangeValueForKey:@"favorites"];
+}
+
+/**
+ * returns a KVC-compliant proxy to the currently selected favorite, or nil if nothing selected.
+ * 
+ * see [NSObjectController selection]
+ */
+- (id)selectedFavorite
+{
+	if ([favoritesController selectionIndex] == NSNotFound)
+		return nil;
+	
+	return [favoritesController selection];
+}
+
+/**
+ * fetches the password [self selectedFavorite] from the keychain, returns nil if no selection.
+ */
+- (NSString *)selectedFavoritePassword
+{
+	if (![self selectedFavorite])
+		return nil;
+	
+	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [self valueForKeyPath:@"selectedFavorite.name"]];
+	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+															 [self valueForKeyPath:@"selectedFavorite.user"],
+															 [self valueForKeyPath:@"selectedFavorite.host"],
+															 [self valueForKeyPath:@"selectedFavorite.database"]];
+	
+	return [keyChainInstance getPasswordForName:keychainName account:keychainAccount];
 }
 
 /**

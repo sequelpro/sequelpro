@@ -76,6 +76,48 @@
 		<dict>
 			<key>ACTIONS</key>
 			<dict>
+				<key>reloadTable</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>TableStatus</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>commentsBox</key>
+				<string>id</string>
+				<key>rowsAutoIncrement</key>
+				<string>id</string>
+				<key>rowsAvgLength</key>
+				<string>id</string>
+				<key>rowsFormat</key>
+				<string>id</string>
+				<key>rowsNumber</key>
+				<string>id</string>
+				<key>sizeData</key>
+				<string>id</string>
+				<key>sizeFree</key>
+				<string>id</string>
+				<key>sizeIndex</key>
+				<string>id</string>
+				<key>sizeMaxData</key>
+				<string>id</string>
+				<key>tableCreatedAt</key>
+				<string>id</string>
+				<key>tableName</key>
+				<string>id</string>
+				<key>tableType</key>
+				<string>id</string>
+				<key>tableUpdatedAt</key>
+				<string>id</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
 				<key>addRow</key>
 				<string>id</string>
 				<key>closeEditSheet</key>
@@ -156,48 +198,6 @@
 				<key>tableWindow</key>
 				<string>id</string>
 				<key>tablesListInstance</key>
-				<string>id</string>
-			</dict>
-			<key>SUPERCLASS</key>
-			<string>NSObject</string>
-		</dict>
-		<dict>
-			<key>ACTIONS</key>
-			<dict>
-				<key>reloadTable</key>
-				<string>id</string>
-			</dict>
-			<key>CLASS</key>
-			<string>TableStatus</string>
-			<key>LANGUAGE</key>
-			<string>ObjC</string>
-			<key>OUTLETS</key>
-			<dict>
-				<key>commentsBox</key>
-				<string>id</string>
-				<key>rowsAutoIncrement</key>
-				<string>id</string>
-				<key>rowsAvgLength</key>
-				<string>id</string>
-				<key>rowsFormat</key>
-				<string>id</string>
-				<key>rowsNumber</key>
-				<string>id</string>
-				<key>sizeData</key>
-				<string>id</string>
-				<key>sizeFree</key>
-				<string>id</string>
-				<key>sizeIndex</key>
-				<string>id</string>
-				<key>sizeMaxData</key>
-				<string>id</string>
-				<key>tableCreatedAt</key>
-				<string>id</string>
-				<key>tableName</key>
-				<string>id</string>
-				<key>tableType</key>
-				<string>id</string>
-				<key>tableUpdatedAt</key>
 				<string>id</string>
 			</dict>
 			<key>SUPERCLASS</key>
