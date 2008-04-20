@@ -372,122 +372,122 @@ returns YES if table status has already been loaded
     return [tables objectAtIndex:rowIndex];
 }
 
+/**
+ * adds or renames a table (in tables-array and mysql-db)
+ * removes new table from table-array if renaming had no success
+ */
 - (void)tableView:(NSTableView *)aTableView
             setObjectValue:(id)anObject
             forTableColumn:(NSTableColumn *)aTableColumn
             row:(int)rowIndex
-/*
-adds or renames a table (in tables-array and mysql-db)
-removes new table from table-array if renaming had no success
-*/
 {
-    if ( [[tables objectAtIndex:rowIndex] isEqualToString:@""] ) {
-//new table
-        if ( [anObject isEqualToString:@""] ) {
-    //table has no name
-            alertSheetOpened = YES;
-            NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-                @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
-            [tables removeObjectAtIndex:rowIndex];
-            [tablesListView reloadData];
-        } else {
+  if ( [[tables objectAtIndex:rowIndex] isEqualToString:@""] ) {
+    //new table
+    if ( [anObject isEqualToString:@""] ) {
+      //table has no name
+      alertSheetOpened = YES;
+      NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+                        @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+      [tables removeObjectAtIndex:rowIndex];
+      [tablesListView reloadData];
+    } else {
 			if ( [tableDocumentInstance supportsEncoding] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance getSelectedEncoding]]];
-            } else {
+				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance encoding]]];
+      } else {
 				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int)", anObject]];
 			}
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-    //added table with success
-//                NSLog(@"added new table with success");
-                [tables replaceObjectAtIndex:rowIndex withObject:anObject];
-                if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-                    [tableSourceInstance loadTable:anObject];
-                    structureLoaded = YES;
-                    contentLoaded = NO;
-                    statusLoaded = NO;
-                } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-                    [tableSourceInstance loadTable:anObject];
-                    [tableContentInstance loadTable:anObject];
-                    structureLoaded = YES;
-                    contentLoaded = YES;
-                    statusLoaded = NO;
-                } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-                    [tableStatusInstance loadTable:anObject];
-                    statusLoaded = YES;
-                    structureLoaded = NO;
-                    contentLoaded = NO;		    
-                } else {
-                    statusLoaded = NO;
-                    structureLoaded = NO;
-                    contentLoaded = NO;
-                }
-				// set window title
-				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-											[tableDocumentInstance host], [tableDocumentInstance database], anObject]];
-            } else {
-    //error while adding new table
-//                NSLog(@"couldn't add new table");
-                alertSheetOpened = YES;
-                NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-                    @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
-                        anObject, [mySQLConnection getLastErrorMessage]]);
-                [tables removeObjectAtIndex:rowIndex];
-                [tablesListView reloadData];
-            }
-        }
-    } else {
-//table modification
-        if ( [[tables objectAtIndex:rowIndex] isEqualToString:anObject] ) {
-    //no changes in table name
-//            NSLog(@"no changes in table name");
-        } else if ( [anObject isEqualToString:@""] ) {
-    //table has no name
-//            NSLog(@"name is nil");
-            alertSheetOpened = YES;
-            NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-                @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+        //added table with success
+        //                NSLog(@"added new table with success");
+        [tables replaceObjectAtIndex:rowIndex withObject:anObject];
+        if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
+          [tableSourceInstance loadTable:anObject];
+          structureLoaded = YES;
+          contentLoaded = NO;
+          statusLoaded = NO;
+        } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
+          [tableSourceInstance loadTable:anObject];
+          [tableContentInstance loadTable:anObject];
+          structureLoaded = YES;
+          contentLoaded = YES;
+          statusLoaded = NO;
+        } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+          [tableStatusInstance loadTable:anObject];
+          statusLoaded = YES;
+          structureLoaded = NO;
+          contentLoaded = NO;		    
         } else {
-            [mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE `%@` TO `%@`", [tables objectAtIndex:rowIndex], anObject]];
-            if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-//                NSLog(@"renamed table with success");
-    //renamed with success
-                [tables replaceObjectAtIndex:rowIndex withObject:anObject];
-                if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-                    [tableSourceInstance loadTable:anObject];
-                    structureLoaded = YES;
-                    contentLoaded = NO;
-                    statusLoaded = NO;
-                } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-                    [tableSourceInstance loadTable:anObject];
-                    [tableContentInstance loadTable:anObject];
-                    structureLoaded = YES;
-                    contentLoaded = YES;
-                    statusLoaded = NO;
-                } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-                    [tableStatusInstance loadTable:anObject];
-                    structureLoaded = NO;
-                    contentLoaded = NO; 		    
-                    statusLoaded = YES;
-                } else {
-                    statusLoaded = NO;
-                    structureLoaded = NO;
-                    contentLoaded = NO;
-                }
+          statusLoaded = NO;
+          structureLoaded = NO;
+          contentLoaded = NO;
+        }
 				// set window title
 				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-											[tableDocumentInstance host], [tableDocumentInstance database], anObject]];
-            } else {
-    //error while renaming
-//                NSLog(@"couldn't rename table");
-                alertSheetOpened = YES;
-                NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-                    @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename table.\nMySQL said: %@", @"message of panel when table cannot be renamed"),
-                        [mySQLConnection getLastErrorMessage]]);
-            }
-        }
+                               [tableDocumentInstance host], [tableDocumentInstance database], anObject]];
+      } else {
+        //error while adding new table
+        //                NSLog(@"couldn't add new table");
+        alertSheetOpened = YES;
+        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+                          @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
+                          [NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
+                           anObject, [mySQLConnection getLastErrorMessage]]);
+        [tables removeObjectAtIndex:rowIndex];
+        [tablesListView reloadData];
+      }
     }
+  } else {
+    //table modification
+    if ( [[tables objectAtIndex:rowIndex] isEqualToString:anObject] ) {
+      //no changes in table name
+      //            NSLog(@"no changes in table name");
+    } else if ( [anObject isEqualToString:@""] ) {
+      //table has no name
+      //            NSLog(@"name is nil");
+      alertSheetOpened = YES;
+      NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+                        @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+    } else {
+      [mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE `%@` TO `%@`", [tables objectAtIndex:rowIndex], anObject]];
+      if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+        //                NSLog(@"renamed table with success");
+        //renamed with success
+        [tables replaceObjectAtIndex:rowIndex withObject:anObject];
+        if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
+          [tableSourceInstance loadTable:anObject];
+          structureLoaded = YES;
+          contentLoaded = NO;
+          statusLoaded = NO;
+        } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
+          [tableSourceInstance loadTable:anObject];
+          [tableContentInstance loadTable:anObject];
+          structureLoaded = YES;
+          contentLoaded = YES;
+          statusLoaded = NO;
+        } else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+          [tableStatusInstance loadTable:anObject];
+          structureLoaded = NO;
+          contentLoaded = NO; 		    
+          statusLoaded = YES;
+        } else {
+          statusLoaded = NO;
+          structureLoaded = NO;
+          contentLoaded = NO;
+        }
+				// set window title
+				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
+                               [tableDocumentInstance host], [tableDocumentInstance database], anObject]];
+      } else {
+        //error while renaming
+        //                NSLog(@"couldn't rename table");
+        alertSheetOpened = YES;
+        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+                          @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
+                          [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename table.\nMySQL said: %@", @"message of panel when table cannot be renamed"),
+                           [mySQLConnection getLastErrorMessage]]);
+      }
+    }
+  }
 }
 
 //tableView delegate methods

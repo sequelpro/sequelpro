@@ -35,9 +35,23 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 @implementation TableDocument
 
+- (id)init
+{
+  if (![super init])
+    return nil;
+  
+  _encoding = [@"utf8" retain];;
+  
+  return self;
+}
+
 - (void)awakeFromNib
 {
+  // register selection did change handler for favorites controller (used in connect sheet)
   [favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
+  
+  // find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
+  selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
 }
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -51,7 +65,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 
-
 //start sheet
 
 - (IBAction)connectToDB:(id)sender
@@ -60,9 +73,8 @@ tries to connect to the db
 alert-sheets when no success
 */
 {
-    CMMCPResult *theResult;
-	NSString *encoding;
-    int code;
+  CMMCPResult *theResult;
+  int code;
 	id version;
 
     [self setFavorites];
@@ -80,12 +92,11 @@ alert-sheets when no success
         //register as delegate
         [mySQLConnection setDelegate:self];
 		// set encoding
-		encoding = [prefs objectForKey:@"encoding"];
-		if ( [encoding isEqualToString:@"Autodetect"] ) {
+		NSString *encodingName = [prefs objectForKey:@"encoding"];
+		if ( [encodingName isEqualToString:@"Autodetect"] ) {
 			[self detectEncoding];
 		} else {
-			[chooseEncodingButton selectItemWithTitle:encoding];
-			[self setEncoding:[self getSelectedEncoding]];
+			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
 		}
 		// get selected db
         if ( ![[databaseField stringValue] isEqualToString:@""] )
@@ -214,6 +225,16 @@ reused when user hits the close button of the variablseSheet or of the createTab
 
 - (NSArray *)favorites
 {
+  // if no favorites, load from user defaults
+  if (!favorites) {
+    favorites = [[NSArray alloc] initWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"favorites"]];
+  }
+
+	// if no favorites in user defaults, load empty ones
+	if (!favorites) {
+    favorites = [[NSArray array] retain];
+  }
+	
   return favorites;
 }
 
@@ -541,156 +562,157 @@ reused when user hits the close button of the variablseSheet or of the createTab
   }
 }
 
+#pragma mark Encoding Methods
 
-//encoding methods
 /**
- * set the encoding for the database
+ * Set the encoding for the database connection
  */
-- (void)setEncoding:(NSString *)encoding
+- (void)setEncoding:(NSString *)mysqlEncoding
 {
   // set encoding of connection and client
-  [mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", encoding]];
+  [mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[encoding cString]]];
+		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];
+    [_encoding autorelease];
+    _encoding = [mysqlEncoding retain];
 	} else {
 		[self detectEncoding];
 	}
-		
+  
+  // update the selected menu item
+  [self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
+	
+  // reload stuff
   [tableSourceInstance reloadTable:self];
   [tableContentInstance reloadTable:self];
   [tableStatusInstance reloadTable:self];
 }
 
 /**
- * autodetects the connection encoding and sets the encoding dropdown
+ * returns the current mysql encoding for this object
+ */
+- (NSString *)encoding
+{
+  return _encoding;
+}
+
+/**
+ * updates the currently selected item in the encoding menu
+ * 
+ * @param NSString *encoding - the title of the menu item which will be selected
+ */
+- (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding
+{
+  NSEnumerator *dbEncodingMenuEn = [[selectEncodingMenu itemArray] objectEnumerator];
+  id menuItem;
+  int correctStateForMenuItem;
+  while (menuItem = [dbEncodingMenuEn nextObject]) {
+    correctStateForMenuItem = [[menuItem title] isEqualToString:encoding] ? NSOnState : NSOffState;
+    
+    if ([menuItem state] == correctStateForMenuItem) // don't re-apply state incase it causes performance issues
+      continue;
+    
+    [menuItem setState:correctStateForMenuItem];
+  }
+}
+
+/**
+ * Returns the display name for a mysql encoding
+ */
+- (NSString *)encodingNameFromMySQLEncoding:(NSString *)mysqlEncoding
+{
+  NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"UCS-2 Unicode (ucs2)", @"ucs2",
+                                  @"UTF-8 Unicode (utf8)", @"utf8",
+                                  @"US ASCII (ascii)", @"ascii",
+                                  @"ISO Latin 1 (latin1)", @"latin1",
+                                  @"Mac Roman (macroman)", @"macroman",
+                                  @"Windows Latin 2 (cp1250)", @"cp1250",
+                                  @"ISO Latin 2 (latin2)", @"latin2",
+                                  @"Windows Arabic (cp1256)", @"cp1256",
+                                  @"ISO Greek (greek)", @"greek",
+                                  @"ISO Hebrew (hebrew)", @"hebrew",
+                                  @"ISO Turkish (latin5)", @"latin5",
+                                  @"Windows Baltic (cp1257)", @"cp1257",
+                                  @"Windows Cyrillic (cp1251)", @"cp1251",
+                                  @"Big5 Traditional Chinese (big5)", @"big5",
+                                  @"Shift-JIS Japanese (sjis)", @"sjis",
+                                  @"EUC-JP Japanese (ujis)", @"ujis",
+                                  nil];
+  NSString *encodingName = [translationMap valueForKey:mysqlEncoding];
+  
+  if (!encodingName)
+    return [NSString stringWithFormat:@"Unknown Encoding (%@)", mysqlEncoding, nil];
+  
+  return encodingName;
+}
+
+/**
+ * Returns the mysql encoding for an encoding string that is displayed to the user
+ */
+- (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName
+{
+  NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"ucs2", @"UCS-2 Unicode (ucs2)",
+                                  @"utf8", @"UTF-8 Unicode (utf8)",
+                                  @"ascii", @"US ASCII (ascii)",
+                                  @"latin1", @"ISO Latin 1 (latin1)",
+                                  @"macroman", @"Mac Roman (macroman)",
+                                  @"cp1250", @"Windows Latin 2 (cp1250)",
+                                  @"latin2", @"ISO Latin 2 (latin2)",
+                                  @"cp1256", @"Windows Arabic (cp1256)",
+                                  @"greek", @"ISO Greek (greek)",
+                                  @"hebrew", @"ISO Hebrew (hebrew)",
+                                  @"latin5", @"ISO Turkish (latin5)",
+                                  @"cp1257", @"Windows Baltic (cp1257)",
+                                  @"cp1251", @"Windows Cyrillic (cp1251)",
+                                  @"big5", @"Big5 Traditional Chinese (big5)",
+                                  @"sjis", @"Shift-JIS Japanese (sjis)",
+                                  @"ujis", @"EUC-JP Japanese (ujis)",
+                                  nil];
+  NSString *mysqlEncoding = [translationMap valueForKey:encodingName];
+  
+  if (!mysqlEncoding)
+    return @"utf8";
+  
+  return mysqlEncoding;
+}
+
+/**
+ * Autodetect the connection encoding and select the relevant encoding menu item in Database -> Database Encoding
  */
 - (void)detectEncoding
 {
-	id mysqlEncoding;
-	
 	// mysql > 4.0
-	mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
+	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
+  _supportsEncoding = (mysqlEncoding != nil);
+  
 	if ( [mysqlEncoding isKindOfClass:[NSData class]] ) { // MySQL 4.1.14 returns the mysql variables as nsdata
 		mysqlEncoding = [mySQLConnection stringWithText:mysqlEncoding];
 	}
 	if ( !mysqlEncoding ) { // mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
-		[chooseEncodingButton setEnabled:NO];
 	}
-	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1, chooseEncodingButton is already disabled
+	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1
 		NSLog(@"error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
 	[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];
-
-	if ( [mysqlEncoding isEqualToString:@"ucs2"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"UCS-2 Unicode (ucs2)"];
-	} else if ( [mysqlEncoding isEqualToString:@"utf8"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"UTF-8 Unicode (utf8)"];
-	} else if ( [mysqlEncoding isEqualToString:@"ascii"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"US ASCII (ascii)"];
-	} else if ( [mysqlEncoding isEqualToString:@"latin1"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"ISO Latin 1 (latin1)"];
-	} else if ( [mysqlEncoding isEqualToString:@"macroman"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Mac Roman (macroman)"];
-	} else if ( [mysqlEncoding isEqualToString:@"cp1250"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Windows Latin 2 (cp1250)"];
-	} else if ( [mysqlEncoding isEqualToString:@"latin2"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"ISO Latin 2 (latin2)"];
-	} else if ( [mysqlEncoding isEqualToString:@"cp1256"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Windows Arabic (cp1256)"];
-	} else if ( [mysqlEncoding isEqualToString:@"greek"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"ISO Greek (greek)"];
-	} else if ( [mysqlEncoding isEqualToString:@"hebrew"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"ISO Hebrew (hebrew)"];
-	} else if ( [mysqlEncoding isEqualToString:@"latin5"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"ISO Turkish (latin5)"];
-	} else if ( [mysqlEncoding isEqualToString:@"cp1257"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Windows Baltic (cp1257)"];
-	} else if ( [mysqlEncoding isEqualToString:@"cp1251"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Windows Cyrillic (cp1251)"];
-	} else if ( [mysqlEncoding isEqualToString:@"big5"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Big5 Traditional Chinese (big5)"];
-	} else if ( [mysqlEncoding isEqualToString:@"sjis"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"Shift-JIS Japanese (sjis)"];
-	} else if ( [mysqlEncoding isEqualToString:@"ujis"] ) {
-		[chooseEncodingButton selectItemWithTitle:@"EUC-JP Japanese (ujis)"];
-	} else {
-		NSLog(@"unsupported encoding %@! falling back to utf8.", mysqlEncoding);
-		[chooseEncodingButton selectItemWithTitle:@"UTF-8 Unicode (utf8)"];
-		[self setEncoding:[self getSelectedEncoding]];
-	}
+  
+  // save the encoding
+  [_encoding autorelease];
+  _encoding = [mysqlEncoding retain];
+  
+  // update the selected menu item
+  [self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
 }
 
 /**
- * gets the selected mysql encoding
- */
-- (NSString *)getSelectedEncoding
-{
-	NSString *mysqlEncoding;
-	NSString *encoding = [chooseEncodingButton titleOfSelectedItem];
-
-  // unicode
-	if ( [encoding isEqualToString:@"UCS-2 Unicode (ucs2)"] ) {
-		mysqlEncoding = @"ucs2";
-	} else if ( [encoding isEqualToString:@"UTF-8 Unicode (utf8)"] ) {
-		mysqlEncoding = @"utf8";
-  
-  // west european
-	} else if( [encoding isEqualToString:@"US ASCII (ascii)"] ) {
-		mysqlEncoding = @"ascii";
-	} else if ( [encoding isEqualToString:@"ISO Latin 1 (latin1)"] ) {
-		mysqlEncoding = @"latin1";
-	} else if ( [encoding isEqualToString:@"Mac Roman (macroman)"] ) {
-		mysqlEncoding = @"macroman";
-  
-  // central european
-	} else if ( [encoding isEqualToString:@"Windows Latin 2 (cp1250)"] ) {
-		mysqlEncoding = @"cp1250";
-	} else if ( [encoding isEqualToString:@"ISO Latin 2 (latin2)"] ) {
-		mysqlEncoding = @"latin2";
-  
-  // south european and middle east
-	} else if ( [encoding isEqualToString:@"Windows Arabic (cp1256)"] ) {
-		mysqlEncoding = @"cp1256";
-	} else if ( [encoding isEqualToString:@"ISO Greek (greek)"] ) {
-		mysqlEncoding = @"greek";
-	} else if ( [encoding isEqualToString:@"ISO Hebrew (hebrew)"] ) {
-		mysqlEncoding = @"hebrew";
-	} else if ( [encoding isEqualToString:@"ISO Turkish (latin5)"] ) {
-		mysqlEncoding = @"latin5";
-  
-  // baltic
-	} else if ( [encoding isEqualToString:@"Windows Baltic (cp1257)"] ) {
-		mysqlEncoding = @"cp1257";
-  
-  // cyrillic
-	} else if ( [encoding isEqualToString:@"Windows Cyrillic (cp1251)"] ) {
-		mysqlEncoding = @"cp1251";
-  
-  // asian
-	} else if ( [encoding isEqualToString:@"Big5 Traditional Chinese (big5)"] ) {
-		mysqlEncoding = @"big5";
-	} else if ( [encoding isEqualToString:@"Shift-JIS Japanese (sjis)"] ) {
-		mysqlEncoding = @"sjis";
-	} else if ( [encoding isEqualToString:@"EUC-JP Japanese (ujis)"] ) {
-		mysqlEncoding = @"ujis";
-  
-  // unknown encoding  
-	} else {
-		NSLog(@"error: unknown encoding %@, assuming utf8", encoding);
-		mysqlEncoding = @"utf8";
-	}
-	
-	return [mysqlEncoding autorelease];
-}
-
-/**
- * choose encoding
+ * when sent by an NSMenuItem, will set the encoding based on the title of the menu item
  */
 - (IBAction)chooseEncoding:(id)sender
 {
-  [self setEncoding:[self getSelectedEncoding]];
+	[self setEncoding:[self mysqlEncodingFromDisplayEncoding:[(NSMenuItem *)sender title]]];
 }
 
 /**
@@ -698,7 +720,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
  */
 - (BOOL)supportsEncoding
 {
-	return [chooseEncodingButton isEnabled];
+	return _supportsEncoding;
 }
 
 
@@ -961,6 +983,11 @@ passes the request to the tableDump object
     [tableDumpInstance importFile:[sender tag]];
 }
 
+- (IBAction)importCSV:(id)sender
+{
+  return [self import:sender];
+}
+
 - (IBAction)export:(id)sender
 /*
 passes the request to the tableDump object
@@ -969,64 +996,46 @@ passes the request to the tableDump object
     [tableDumpInstance exportFile:[sender tag]];
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem *)anItem
-/*
-do menu validation
-*/
+- (IBAction)exportTable:(id)sender
 {
-    switch ( [anItem tag] ) {
-        case 1:
-        //import dump
-            if ( ![self database] ) {
-                return NO;
-            }
-        break;
-        case 2:
-        //import CSV
-            if ( ![self database] || ![self table] ) {
-                return NO;
-            }
-        break;
-        case 5:
-        //export dump
-            if ( ![self database] ) {
-                return NO;
-            }
-        break;
-        case 6:
-        //export table content as CSV
-            if ( ![self database] || ![self table] ) {
-                return NO;
-            }
-        break;
-        case 7:
-        //export table content as XML
-            if ( ![self database] || ![self table] ) {
-                return NO;
-            }
-        break;
-        case 8:
-        //export custom result as CSV
-            return YES;
-        break;
-        case 9:
-        //export custom result as XML
-            return YES;
-        break;
-        case 10:
-        //export multiple tables as CSV
-            if ( ![self database] ) {
-                return NO;
-            }
-        break;
-        case 11:
-        //export multiple tables as XML
-            if ( ![self database] ) {
-                return NO;
-            }
-        break;
-    }
-    return YES;
+  return [self export:sender];
+}
+
+- (IBAction)exportMultipleTables:(id)sender
+{
+  return [self export:sender];
+}
+
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+  if ([menuItem action] == @selector(import:)) {
+    return ([self database] != nil);
+  }
+  
+  if ([menuItem action] == @selector(importCSV:)) {
+    return ([self database] != nil && [self table] != nil);
+  }
+  
+  if ([menuItem action] == @selector(export:)) {
+    return ([self database] != nil);
+  }
+  
+  if ([menuItem action] == @selector(exportTable:)) {
+    return ([self database] != nil && [self table] != nil);
+  }
+  
+  if ([menuItem action] == @selector(exportMultipleTables:)) {
+    return ([self database] != nil);
+  }
+  
+  if ([menuItem action] == @selector(chooseEncoding:)) {
+    return [self supportsEncoding];
+  }
+  
+  return [super validateMenuItem:menuItem];
 }
 
 - (IBAction)viewStructure:(id)sender
@@ -1216,11 +1225,6 @@ sets upt the interface (small fonts)
 //    [tableWindow makeKeyAndOrderFront:self];
 
     prefs = [[NSUserDefaults standardUserDefaults] retain];
-    if ( [prefs objectForKey:@"favorites"] != nil ) {
-        favorites = [[NSArray alloc] initWithArray:[prefs objectForKey:@"favorites"]];
-    } else {
-        favorites = [[NSArray array] retain];
-    }
     selectedFavorite = [[NSString alloc] initWithString:NSLocalizedString(@"Custom", @"menu item for custom connection")];
     
     //register for notifications

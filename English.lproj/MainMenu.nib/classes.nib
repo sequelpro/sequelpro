@@ -15,9 +15,23 @@
 		<dict>
 			<key>ACTIONS</key>
 			<dict>
+				<key>addDatabase</key>
+				<string>id</string>
+				<key>chooseEncoding</key>
+				<string>id</string>
 				<key>export</key>
 				<string>id</string>
+				<key>exportMultipleTables</key>
+				<string>id</string>
+				<key>exportTable</key>
+				<string>id</string>
 				<key>import</key>
+				<string>id</string>
+				<key>importCSV</key>
+				<string>id</string>
+				<key>removeDatabase</key>
+				<string>id</string>
+				<key>setDatabases</key>
 				<string>id</string>
 				<key>viewContent</key>
 				<string>id</string>

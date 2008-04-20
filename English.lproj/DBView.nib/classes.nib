@@ -478,7 +478,13 @@
 				<string>id</string>
 				<key>export</key>
 				<string>id</string>
+				<key>exportMultipleTables</key>
+				<string>id</string>
+				<key>exportTable</key>
+				<string>id</string>
 				<key>import</key>
+				<string>id</string>
+				<key>importCSV</key>
 				<string>id</string>
 				<key>removeDatabase</key>
 				<string>id</string>
@@ -502,8 +508,6 @@
 			<key>OUTLETS</key>
 			<dict>
 				<key>chooseDatabaseButton</key>
-				<string>id</string>
-				<key>chooseEncodingButton</key>
 				<string>id</string>
 				<key>chooseTableOperationButton</key>
 				<string>id</string>

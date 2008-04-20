@@ -63,7 +63,6 @@
   IBOutlet id consoleTextView;
   IBOutlet id variablesTableView;
   IBOutlet id createTableSyntaxView;
-  IBOutlet id chooseEncodingButton;
   IBOutlet id chooseTableOperationButton;
   IBOutlet NSTabView *tableTabView;
   
@@ -75,6 +74,10 @@
   NSString *selectedFavorite;
   NSString *mySQLVersion;
   NSUserDefaults *prefs;
+  
+  NSMenu *selectEncodingMenu;
+  BOOL _supportsEncoding;
+  NSString *_encoding;
 }
 
 //start sheet
@@ -114,9 +117,11 @@
 //encoding methods
 - (void)setEncoding:(NSString *)encoding;
 - (void)detectEncoding;
-- (NSString *)getSelectedEncoding;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
+- (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;
+- (NSString *)encodingNameFromMySQLEncoding:(NSString *)mysqlEncoding;
+- (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName;
 
 //other methods
 - (NSString *)host;
@@ -141,9 +146,12 @@
 - (void)tunnelStatusChanged:(NSNotification *)notification;
 
 //menu methods
-- (IBAction)import:(id)sender;
-- (IBAction)export:(id)sender;
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
+- (IBAction)import:(id)sender;
+- (IBAction)importCSV:(id)sender;
+- (IBAction)export:(id)sender;
+- (IBAction)exportTable:(id)sender;
+- (IBAction)exportMultipleTables:(id)sender;
 - (IBAction)viewStructure:(id)sender;
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;

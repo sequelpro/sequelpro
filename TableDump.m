@@ -270,7 +270,7 @@ saves the export file
 
 	if ( [fileContent respondsToSelector:@selector(writeToFile:atomically:encoding:error:)] ) {
 	// mac os 10.4 or later
-		success = [fileContent writeToFile:[sheet filename] atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance getSelectedEncoding] cString]]  error:errorStr];
+		success = [fileContent writeToFile:[sheet filename] atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]  error:errorStr];
 	} else {
 	// mac os pre 10.4
 		success = [fileContent writeToFile:[sheet filename] atomically:YES];
@@ -342,7 +342,7 @@ reads mysql-dumpfile
 //load file into string
 	if ( [NSString respondsToSelector:@selector(stringWithContentsOfFile:encoding:error:)] ) {
 	// mac os 10.4 or later
-		dumpFile = [NSString stringWithContentsOfFile:[sheet filename] encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance getSelectedEncoding] cString]] error:errorStr];
+		dumpFile = [NSString stringWithContentsOfFile:[sheet filename] encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]] error:errorStr];
 	} else {
 	// mac os pre 10.4
 		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]];

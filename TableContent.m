@@ -678,7 +678,7 @@ saves a file containing the content of the editSheet
         }
 		if ( [editData respondsToSelector:@selector(writeToFile:atomically:encoding:error:)] ) {
 		// mac os 10.4 or later
-			[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance getSelectedEncoding] cString]]  error:errorStr];
+			[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]  error:errorStr];
 		} else {
 		// mac os pre 10.4
 			[editData writeToFile:fileName atomically:YES];
