@@ -101,9 +101,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		} else {
 			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
 		}
-		// get selected db
-		if ( ![[databaseField stringValue] isEqualToString:@""] )
-			selectedDatabase = [[databaseField stringValue] retain];
 		//get mysql version
 		//        theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE \"version\""];
 		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
@@ -166,6 +163,9 @@ stops modal session with code:
   [connectProgressStatusText setHidden:NO];
   [connectProgressStatusText display];
   
+  [selectedDatabase autorelease];
+  selectedDatabase = nil;
+  
   code = 0;
   if ( [[hostField stringValue] isEqualToString:@""]  && [[socketField stringValue] isEqualToString:@""] ) {
     code = 4;
@@ -185,14 +185,34 @@ stops modal session with code:
     }
     if ( ![mySQLConnection isConnected] )
       code = 2;
-    if ( !code && ![[databaseField stringValue] isEqualToString:@""] )
-      if ( ![mySQLConnection selectDB:[databaseField stringValue]] )
+    if ( !code && ![[databaseField stringValue] isEqualToString:@""] ) {
+      if ([mySQLConnection selectDB:[databaseField stringValue]]) {
+        selectedDatabase = [[databaseField stringValue] retain];
+      } else {
         code = 3;
+      }
+    }
     if ( !code )
       code = 1;
   }
-  [NSApp stopModalWithCode:code];
   
+  // save to favorites?
+  if ([connectAddToFavoritesCheckbox state] == NSOnState) {
+    [self addToFavoritesHost:[hostField stringValue]
+                      socket:[socketField stringValue]
+                        user:[userField stringValue]
+                    password:[passwordField stringValue]
+                        port:[portField stringValue]
+                    database:[databaseField stringValue]
+                      useSSH:NO
+                     sshHost:nil
+                     sshUser:nil
+                 sshPassword:nil
+                     sshPort:nil];
+  }
+  
+  // close sheet
+  [NSApp stopModalWithCode:code];
   [connectProgressBar stopAnimation:self];
   [connectProgressStatusText setHidden:YES];
 }

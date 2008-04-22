@@ -511,6 +511,8 @@
 				<string>id</string>
 				<key>chooseTableOperationButton</key>
 				<string>id</string>
+				<key>connectAddToFavoritesCheckbox</key>
+				<string>NSButton</string>
 				<key>connectProgressBar</key>
 				<string>id</string>
 				<key>connectProgressStatusText</key>
