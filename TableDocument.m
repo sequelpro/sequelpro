@@ -4,6 +4,8 @@
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  
+//  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "TableDocument.h"
 #import "KeyChain.h"
@@ -1404,30 +1405,30 @@ invoked when query gave an error
     [self showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
 }
 
+#pragma mark SplitView delegate methods
 
-//splitView delegate methods
+/**
+ * tells the splitView that it can collapse views
+ */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
-/*
-tells the splitView that it can collapse views
-*/
 {
-    return YES;
+	return YES;
 }
 
+/**
+ * defines max position of splitView
+ */
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-/*
-defines max position of splitView
-*/
 {
-        return proposedMax - 600;
+  return proposedMax - 600;
 }
 
+/**
+ * defines min position of splitView
+ */
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-/*
-defines min position of splitView
-*/
 {
-        return proposedMin + 160;
+	return proposedMin + 160;
 }
 
 

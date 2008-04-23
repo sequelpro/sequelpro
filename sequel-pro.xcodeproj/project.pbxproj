@@ -11,6 +11,8 @@
 		3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD750DA78690003236DE /* sequel-pro.scriptSuite */; };
 		38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C92B0DBF71C5009E9395 /* MainMenu.xib */; };
 		38E9C9320DBF7293009E9395 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C9300DBF7293009E9395 /* DBView.xib */; };
+		38F42AE00DBFF16500B58FFB /* TableDocumentSplitView.h in Headers */ = {isa = PBXBuildFile; fileRef = 38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */; };
+		38F42AE10DBFF16500B58FFB /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */; };
 		9B0646E409AF165700428D0B /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B0646E309AF165700428D0B /* MCPKit_bundled.framework */; };
 		9B0646E809AF167C00428D0B /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B0646E309AF165700428D0B /* MCPKit_bundled.framework */; };
 		9B9ACE9208DEBE70009E313E /* TableDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */; };
@@ -119,6 +121,8 @@
 		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
 		38E9C92C0DBF71C5009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		38E9C9310DBF7293009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
+		38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
+		38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
 		9B0646E309AF165700428D0B /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MCPKit_bundled.framework; sourceTree = "<group>"; };
 		9B220E640751EE2700DA3E19 /* TableStatus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableStatus.h; sourceTree = "<group>"; };
 		9B220E650751EE2700DA3E19 /* TableStatus.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableStatus.m; sourceTree = "<group>"; };
@@ -248,35 +252,16 @@
 		2A37F4AAFDCFA73011CA2CEA /* Sequel Pro */ = {
 			isa = PBXGroup;
 			children = (
-				2A37F4ABFDCFA73011CA2CEA /* Classes */,
-				2A37F4AFFDCFA73011CA2CEA /* Other Sources */,
+				38F42AC20DBFEEA000B58FFB /* Controllers */,
+				38F42AD90DBFF03E00B58FFB /* Model */,
+				38F42ADD0DBFF14A00B58FFB /* Views */,
+				38F42ADA0DBFF0EE00B58FFB /* Other */,
 				2A37F4B8FDCFA73011CA2CEA /* Resources */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
 				F55ECCBE02C6156601738522 /* gpl.txt */,
 			);
 			name = "Sequel Pro";
-			sourceTree = "<group>";
-		};
-		2A37F4ABFDCFA73011CA2CEA /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				F548086D027F831E01DDA526 /* tabView classes */,
-				F52BA07F03BA15DA0100012B /* other classes */,
-				2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */,
-				2A37F4ACFDCFA73011CA2CEA /* TableDocument.m */,
-				F5FB320C029E966601566C24 /* MainController.h */,
-				F5FB320D029E966601566C24 /* MainController.m */,
-			);
-			name = Classes;
-			sourceTree = "<group>";
-		};
-		2A37F4AFFDCFA73011CA2CEA /* Other Sources */ = {
-			isa = PBXGroup;
-			children = (
-				2A37F4B0FDCFA73011CA2CEA /* main.m */,
-			);
-			name = "Other Sources";
 			sourceTree = "<group>";
 		};
 		2A37F4B8FDCFA73011CA2CEA /* Resources */ = {
@@ -297,6 +282,66 @@
 				1058C7A8FEA54F5311CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		38F42AC20DBFEEA000B58FFB /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */,
+				2A37F4ACFDCFA73011CA2CEA /* TableDocument.m */,
+				F5FB320C029E966601566C24 /* MainController.h */,
+				F5FB320D029E966601566C24 /* MainController.m */,
+				F548087C027F870A01DDA526 /* TableSource.h */,
+				F548087D027F870A01DDA526 /* TableSource.m */,
+				F548087A027F870A01DDA526 /* TableContent.h */,
+				F548087B027F870A01DDA526 /* TableContent.m */,
+				F5C810CE0281C5A20139D141 /* CustomQuery.h */,
+				F5C810CF0281C5A20139D141 /* CustomQuery.m */,
+				F5A1A33A02A16816018594E7 /* TableDump.h */,
+				F5A1A33B02A16816018594E7 /* TableDump.m */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
+		38F42AD90DBFF03E00B58FFB /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9B220E640751EE2700DA3E19 /* TableStatus.h */,
+				9B220E650751EE2700DA3E19 /* TableStatus.m */,
+				F548087E027F870A01DDA526 /* TablesList.h */,
+				F548087F027F870A01DDA526 /* TablesList.m */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		38F42ADA0DBFF0EE00B58FFB /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				2A37F4B0FDCFA73011CA2CEA /* main.m */,
+				38F42ADB0DBFF11100B58FFB /* KeyChain */,
+				9BC3EEB409AC6EAB00F6B295 /* MCPKit */,
+				9BC3EEB509AC6EBB00F6B295 /* GUI */,
+				9BFF53AE08F44AFF004D6BCB /* SSHTunnel */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
+		38F42ADB0DBFF11100B58FFB /* KeyChain */ = {
+			isa = PBXGroup;
+			children = (
+				F52BA08003BA16430100012B /* KeyChain.h */,
+				F52BA45F03BA3D0B0100012B /* KeyChain.m */,
+			);
+			name = KeyChain;
+			sourceTree = "<group>";
+		};
+		38F42ADD0DBFF14A00B58FFB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */,
+				38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */,
+			);
+			name = Views;
 			sourceTree = "<group>";
 		};
 		9BC3EEB409AC6EAB00F6B295 /* MCPKit */ = {
@@ -335,37 +380,6 @@
 				9BFF536C08F43B9E004D6BCB /* SSHTunnel_old.m */,
 			);
 			name = SSHTunnel;
-			sourceTree = "<group>";
-		};
-		F52BA07F03BA15DA0100012B /* other classes */ = {
-			isa = PBXGroup;
-			children = (
-				9BFF53AE08F44AFF004D6BCB /* SSHTunnel */,
-				9BC3EEB409AC6EAB00F6B295 /* MCPKit */,
-				9BC3EEB509AC6EBB00F6B295 /* GUI */,
-				F52BA08003BA16430100012B /* KeyChain.h */,
-				F52BA45F03BA3D0B0100012B /* KeyChain.m */,
-			);
-			name = "other classes";
-			sourceTree = "<group>";
-		};
-		F548086D027F831E01DDA526 /* tabView classes */ = {
-			isa = PBXGroup;
-			children = (
-				9B220E640751EE2700DA3E19 /* TableStatus.h */,
-				9B220E650751EE2700DA3E19 /* TableStatus.m */,
-				F548087E027F870A01DDA526 /* TablesList.h */,
-				F548087F027F870A01DDA526 /* TablesList.m */,
-				F548087C027F870A01DDA526 /* TableSource.h */,
-				F548087D027F870A01DDA526 /* TableSource.m */,
-				F548087A027F870A01DDA526 /* TableContent.h */,
-				F548087B027F870A01DDA526 /* TableContent.m */,
-				F5C810CE0281C5A20139D141 /* CustomQuery.h */,
-				F5C810CF0281C5A20139D141 /* CustomQuery.m */,
-				F5A1A33A02A16816018594E7 /* TableDump.h */,
-				F5A1A33B02A16816018594E7 /* TableDump.m */,
-			);
-			name = "tabView classes";
 			sourceTree = "<group>";
 		};
 		F5C0859D04A82C0E01B3137E /* English */ = {
@@ -452,6 +466,7 @@
 				9B9ACE9E08DEBE70009E313E /* CMMCPResult.h in Headers */,
 				9BE828B70908269400A18070 /* SSHTunnel.h in Headers */,
 				9BC3EEBA09AC6EE100F6B295 /* CMTextView.h in Headers */,
+				38F42AE00DBFF16500B58FFB /* TableDocumentSplitView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -574,6 +589,7 @@
 				9B9ACEDD08DEBE70009E313E /* CMMCPResult.m in Sources */,
 				9BE828B80908269400A18070 /* SSHTunnel.m in Sources */,
 				9BC3EEBB09AC6EE100F6B295 /* CMTextView.m in Sources */,
+				38F42AE10DBFF16500B58FFB /* TableDocumentSplitView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

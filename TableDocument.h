@@ -4,6 +4,8 @@
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  
+//  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,12 +22,15 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+
+/**
+ * The TableDocument class controls the primary database view window.
+ */
 
 @interface TableDocument : NSDocument
 {
