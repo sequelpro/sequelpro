@@ -79,6 +79,8 @@
   NSMenu *selectEncodingMenu;
   BOOL _supportsEncoding;
   NSString *_encoding;
+  
+  NSToolbar *mainToolbar;
 }
 
 //start sheet
