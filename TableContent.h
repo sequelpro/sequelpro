@@ -1,9 +1,11 @@
 //
-//  TableContent.h
+//  TableDocument.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  
+//  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
+
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
@@ -30,44 +32,44 @@
 
 
 @interface TableContent : NSObject {
-
-    IBOutlet id tableDocumentInstance;
-    IBOutlet id tablesListInstance;
-    IBOutlet id tableSourceInstance;
-
-    IBOutlet id tableWindow;
-    IBOutlet CMCopyTable *tableContentView;
-    IBOutlet id editSheet;
-    IBOutlet id editImage;
-    IBOutlet id editTextView;
-    IBOutlet id hexTextView;
-    IBOutlet id fieldField;
-    IBOutlet id compareField;
-    IBOutlet id argumentField;
-    IBOutlet id filterButton;
-    IBOutlet id showAllButton;
-    IBOutlet id addButton;
-    IBOutlet id copyButton;
-    IBOutlet id removeButton;
-    IBOutlet id multipleLineEditingButton;
-    IBOutlet id countText;
-    IBOutlet id limitRowsField;
-    IBOutlet id limitRowsButton;
-    IBOutlet id limitRowsStepper;
-    IBOutlet id limitRowsText;
-
-    CMMCPConnection *mySQLConnection;
-
-    id editData;
-    NSString *selectedTable;
-    NSMutableArray *fullResult, *filteredResult, *keys;
-    NSMutableDictionary *oldRow;
-    NSArray *fieldNames, *fieldTypes;
-    NSString *compareType, *sortField;
-    BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
-    NSUserDefaults *prefs;
+	
+	IBOutlet id tableDocumentInstance;
+	IBOutlet id tablesListInstance;
+	IBOutlet id tableSourceInstance;
+	
+	IBOutlet id tableWindow;
+	IBOutlet CMCopyTable *tableContentView;
+	IBOutlet id editSheet;
+	IBOutlet id editImage;
+	IBOutlet id editTextView;
+	IBOutlet id hexTextView;
+	IBOutlet id fieldField;
+	IBOutlet id compareField;
+	IBOutlet id argumentField;
+	IBOutlet id filterButton;
+	IBOutlet id addButton;
+	IBOutlet id copyButton;
+	IBOutlet id removeButton;
+	IBOutlet id multipleLineEditingButton;
+	IBOutlet id countText;
+	IBOutlet id limitRowsField;
+	IBOutlet id limitRowsButton;
+	IBOutlet id limitRowsStepper;
+	IBOutlet id limitRowsText;
+	
+	CMMCPConnection *mySQLConnection;
+	
+	id editData;
+	NSString *selectedTable;
+	NSMutableArray *fullResult, *filteredResult, *keys;
+	NSMutableDictionary *oldRow;
+	NSArray *fieldNames, *fieldTypes;
+	NSString *compareType, *sortField;
+	BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
+	NSUserDefaults *prefs;
 	int numRows;
-
+	bool areShowingAllRows;
+	
 }
 
 //table methods
@@ -109,12 +111,12 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
+objectValueForTableColumn:(NSTableColumn *)aTableColumn
             row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView
-            setObjectValue:(id)anObject
-            forTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+	 setObjectValue:(id)anObject
+	 forTableColumn:(NSTableColumn *)aTableColumn
+							row:(int)rowIndex;
 
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;

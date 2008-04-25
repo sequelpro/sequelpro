@@ -1,9 +1,11 @@
 //
-//  TableContent.m
+//  TableDocument.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  
+//  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "TableContent.h"
 #import "TableDocument.h"
@@ -30,6 +31,19 @@
 
 
 @implementation TableContent
+
+- (id)init
+{
+	if (![super init])
+		return nil;
+	
+	fullResult = [[NSMutableArray alloc] init];
+	filteredResult = [[NSMutableArray alloc] init];
+	oldRow = [[NSMutableDictionary alloc] init];
+	areShowingAllRows = false;
+	
+	return self;
+}
 
 - (void)loadTable:(NSString *)aTable
 /*
@@ -88,7 +102,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
         [argumentField setEnabled:NO];
         [argumentField setStringValue:@""];
         [filterButton setEnabled:NO];
-        [showAllButton setEnabled:NO];
+        areShowingAllRows = YES;
 
     //disable limit fields
         if ( [prefs boolForKey:@"limitRows"] ) {
@@ -164,7 +178,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
     [argumentField setEnabled:YES];
     [argumentField setStringValue:@""];
     [filterButton setEnabled:YES];
-    [showAllButton setEnabled:NO];
+    areShowingAllRows = YES;
 
 //enable or disable limit fields
     if ( [prefs boolForKey:@"limitRows"] ) {
@@ -351,7 +365,7 @@ reload the table values without reconfiguring the tableView (with filter and lim
 //    [fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
     [fullResult setArray:[self fetchResultAsArray:queryResult]];
 	numRows = [self getNumberOfRows];
-    if ( [showAllButton isEnabled] ) {
+    if ( !areShowingAllRows ) {
         [self filterTable:self];
         [countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
     } else {
@@ -364,108 +378,109 @@ reload the table values without reconfiguring the tableView (with filter and lim
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
+/**
+ * filter the table with arguments given by the user
+ */
 - (IBAction)filterTable:(id)sender
-/*
-filter the table with arguments given by the user
-*/
 {
-    CMMCPResult *theResult;
-    int tag = [[compareField selectedItem] tag];
-    NSString *compareOperator = @"";
-    NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
-    NSString *queryString;
-    int i;
-
-    if ( ![self selectionShouldChangeInTableView:nil] ) {
+	CMMCPResult *theResult;
+	int tag = [[compareField selectedItem] tag];
+	NSString *compareOperator = @"";
+	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
+	NSString *queryString;
+	int i;
+	
+	if ([argument length] == 0) {
 		[argument release];
-        return;
+		[self showAll:sender];
+		return;
 	}
-
-//query started
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-
-    BOOL doQuote = YES;
-
-    if ( ![compareType isEqualToString:@""] ) {
-        if ( [compareType isEqualToString:@"string"] ) {
-//string comparision
-            switch ( tag ) {
-                case 0:
-                    compareOperator = @"LIKE";
-                    break;
-                case 1:
-                    compareOperator = @"NOT LIKE";
-                    break;
-                case 2:
-                    compareOperator = @"LIKE";
-                    [argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-                    break;
-                case 3:
-                    compareOperator = @"NOT LIKE";
-                    [argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-                    break;
-                case 4:
-                    compareOperator = @"IN";
-                    doQuote = NO;
-                    [argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-                    break;
-            }
-        } else if ( [compareType isEqualToString:@"number"] ) {
-//number comparision
-            switch ( tag ) {
-                case 0:
-                    compareOperator = @"=";
-                    break;
-                case 1:
-                    compareOperator = @"!=";
-                    break;
-                case 2:
-                    compareOperator = @">";
-                    break;
-                case 3:
-                    compareOperator = @"<";
-                    break;
-               case 4:
-                    compareOperator = @">=";
-                    break;
-               case 5:
-                    compareOperator = @"<=";
-                    break;
-               case 6:
-                    compareOperator = @"IN";
-                    doQuote = NO;
-                    [argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-                    break;
-            }
-        } else if ( [compareType isEqualToString:@"date"] ) {
-//date comparision
-            switch ( tag ) {
-                case 0:
-                    compareOperator = @"=";
-                    break;
-                case 1:
-                    compareOperator = @"!=";
-                    break;
-                case 2:
-                    compareOperator = @"<";
-                    break;
-                case 3:
-                    compareOperator = @">";
-                    break;
-                case 4:
-                    compareOperator = @"<=";
-                    break;
-                case 5:
-                    compareOperator = @">=";
-                    break;
-            }
-        }
-
-//        queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ '%@'",
-//                            [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-//                            compareOperator, argument];
-        if (doQuote) {
-//escape special characters
+	
+	//query started
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	
+	BOOL doQuote = YES;
+	
+	if ( ![compareType isEqualToString:@""] ) {
+		if ( [compareType isEqualToString:@"string"] ) {
+			//string comparision
+			switch ( tag ) {
+				case 0:
+					compareOperator = @"LIKE";
+					break;
+				case 1:
+					compareOperator = @"NOT LIKE";
+					break;
+				case 2:
+					compareOperator = @"LIKE";
+					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
+					break;
+				case 3:
+					compareOperator = @"NOT LIKE";
+					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
+					break;
+				case 4:
+					compareOperator = @"IN";
+					doQuote = NO;
+					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+					break;
+			}
+		} else if ( [compareType isEqualToString:@"number"] ) {
+			//number comparision
+			switch ( tag ) {
+				case 0:
+					compareOperator = @"=";
+					break;
+				case 1:
+					compareOperator = @"!=";
+					break;
+				case 2:
+					compareOperator = @">";
+					break;
+				case 3:
+					compareOperator = @"<";
+					break;
+				case 4:
+					compareOperator = @">=";
+					break;
+				case 5:
+					compareOperator = @"<=";
+					break;
+				case 6:
+					compareOperator = @"IN";
+					doQuote = NO;
+					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+					break;
+			}
+		} else if ( [compareType isEqualToString:@"date"] ) {
+			//date comparision
+			switch ( tag ) {
+				case 0:
+					compareOperator = @"=";
+					break;
+				case 1:
+					compareOperator = @"!=";
+					break;
+				case 2:
+					compareOperator = @"<";
+					break;
+				case 3:
+					compareOperator = @">";
+					break;
+				case 4:
+					compareOperator = @"<=";
+					break;
+				case 5:
+					compareOperator = @">=";
+					break;
+			}
+		}
+		
+		//        queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ '%@'",
+		//                            [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
+		//                            compareOperator, argument];
+		if (doQuote) {
+			//escape special characters
 			for ( i = 0 ; i < [argument length] ; i++ ) {
 				if ( [argument characterAtIndex:i] == '\\' ) {
 					[argument insertString:@"\\" atIndex:i];
@@ -474,58 +489,55 @@ filter the table with arguments given by the user
 			}
 			[argument setString:[mySQLConnection prepareString:argument]];
 			queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ \"%@\"",
-								[self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-								compareOperator, argument];            
-        } else {
+										 [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
+										 compareOperator, argument];            
+		} else {
 			queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ %@",
-								[self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-								compareOperator, argument];
-        }
-        if ( sortField ) {
-//            queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
-            queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
-            if ( isDesc )
-                queryString = [queryString stringByAppendingString:@" DESC"];
-        }
-        if ( [prefs boolForKey:@"limitRows"] ) {
-            if ( [limitRowsField intValue] <= 0 ) {
-                [limitRowsField setStringValue:@"1"];
-            }
-            queryString = [queryString stringByAppendingString:
-                                [NSString stringWithFormat:@" LIMIT %d,%d",
-                                [limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
-        }
-    } else {
-        NSLog(@"ERROR: unknown compare type %@", compareType);
-        queryString = @"";
-    }
-
-    theResult = [mySQLConnection queryString:queryString];
-    [filteredResult setArray:[self fetchResultAsArray:theResult]];
-
-    [countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
-
-    [tableContentView reloadData];
-    [showAllButton setEnabled:YES];
-
-//query finished
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-    [argument release];
+										 [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
+										 compareOperator, argument];
+		}
+		if ( sortField ) {
+			//            queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
+			queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
+			if ( isDesc )
+				queryString = [queryString stringByAppendingString:@" DESC"];
+		}
+		if ( [prefs boolForKey:@"limitRows"] ) {
+			if ( [limitRowsField intValue] <= 0 ) {
+				[limitRowsField setStringValue:@"1"];
+			}
+			queryString = [queryString stringByAppendingString:
+										 [NSString stringWithFormat:@" LIMIT %d,%d",
+											[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
+		}
+	} else {
+		NSLog(@"ERROR: unknown compare type %@", compareType);
+		queryString = @"";
+	}
+	
+	theResult = [mySQLConnection queryString:queryString];
+	[filteredResult setArray:[self fetchResultAsArray:theResult]];
+	
+	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
+	
+	[tableContentView reloadData];
+	areShowingAllRows = NO;
+	
+	//query finished
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	[argument release];
 }
 
+/**
+ * reload tableView with all results shown (no new mysql-query, it uses simply the fullResult array)
+ */
 - (IBAction)showAll:(id)sender
-/*
-reload tableView with all results shown (no new mysql-query, it uses simply the fullResult array)
-*/
 {
-    if ( ![self selectionShouldChangeInTableView:nil] )
-        return;
+	[filteredResult setArray:fullResult];
+	[tableContentView reloadData];
+	areShowingAllRows = YES;
 
-    [filteredResult setArray:fullResult];
-    [tableContentView reloadData];
-    [showAllButton setEnabled:NO];
-    
-    [countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
+	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
 }
 
 
@@ -607,7 +619,7 @@ asks user if he really wants to delete the selected rows
         return;
 /*
     if ( ([tableContentView numberOfSelectedRows] == [self numberOfRowsInTableView:tableContentView]) &&
-                ![showAllButton isEnabled] &&
+                areShowingAllRows &&
                 (![prefs boolForKey:@"limitRows"] || ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"limitRowsValue"])) ) {
 */
     if ( ([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && 
@@ -1352,7 +1364,7 @@ if contextInfo == removerow: removes row if user hits OK
         if ( returnCode == NSAlertDefaultReturn ) {
 /*
             if ( ([tableContentView numberOfSelectedRows] == [self numberOfRowsInTableView:tableContentView]) &&
-                    ![showAllButton isEnabled] &&
+                    areShowingAllRows &&
                     ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"limitRowsValue"]) ) {
 */
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM `%@`", selectedTable]];
@@ -1397,7 +1409,7 @@ if contextInfo == removerow: removes row if user hits OK
 				}
 				[filteredResult setArray:tempResult];
 				numRows = [self getNumberOfRows];
-				if ( [showAllButton isEnabled] ) {
+				if ( !areShowingAllRows ) {
 //                    queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
 					queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
 					if ( sortField ) {
@@ -1571,7 +1583,7 @@ if clicked twice, order is descending
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
 //if filter is activated filters the result, otherwise shows fullResult
-    if ( [showAllButton isEnabled] ) {
+    if ( !areShowingAllRows ) {
 	[self filterTable:self];
     } else {
         [filteredResult setArray:fullResult];
@@ -1581,22 +1593,22 @@ if clicked twice, order is descending
 
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {
-/*
-    int row = [tableContentView editedRow];
-    int column = [tableContentView editedColumn];
-    NSTableColumn *tableColumn;
-    NSCell *cell;
-
-    if ( row != -1 ) {
-        tableColumn = [[tableContentView tableColumns] objectAtIndex:column]; 
-        cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[tableContentView currentEditor]]; 
-    }
-*/
-//end editing (otherwise problems when user hits reload button)
-    [tableWindow endEditingFor:nil];
-
-    return [self addRowToDB];
+	/*
+	 int row = [tableContentView editedRow];
+	 int column = [tableContentView editedColumn];
+	 NSTableColumn *tableColumn;
+	 NSCell *cell;
+	 
+	 if ( row != -1 ) {
+	 tableColumn = [[tableContentView tableColumns] objectAtIndex:column]; 
+	 cell = [tableColumn dataCellForRow:row]; 
+	 [cell endEditing:[tableContentView currentEditor]]; 
+	 }
+	 */
+	//end editing (otherwise problems when user hits reload button)
+	[tableWindow endEditingFor:nil];
+	
+	return [self addRowToDB];
 }
 
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
@@ -1868,16 +1880,6 @@ traps enter and return key and closes editSheet instead of inserting a linebreak
 
 
 //last but not least
-- (id)init
-{
-    self = [super init];
-
-    fullResult = [[NSMutableArray alloc] init];
-    filteredResult = [[NSMutableArray alloc] init];
-    oldRow = [[NSMutableDictionary alloc] init];
-
-    return self;
-}
 
 - (void)dealloc
 {
