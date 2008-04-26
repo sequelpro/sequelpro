@@ -45,6 +45,10 @@
 	return self;
 }
 
+- (void)awakeFromNib
+{
+}
+
 - (void)loadTable:(NSString *)aTable
 /*
 loads aTable, put it in an array, update the tableViewColumns and reload the tableView
