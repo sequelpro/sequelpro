@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		381459B80DC42ADF009489A6 /* DatabaseSelectToolbarItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */; };
+		381459B90DC42ADF009489A6 /* DatabaseSelectToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */; };
+		381459D60DC430CF009489A6 /* DatabaseSelectToolbarView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */; };
 		3861DD760DA78690003236DE /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */; };
 		3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD750DA78690003236DE /* sequel-pro.scriptSuite */; };
 		38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C92B0DBF71C5009E9395 /* MainMenu.xib */; };
@@ -117,6 +120,9 @@
 		2A37F4BAFDCFA73011CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseSelectToolbarItem.h; sourceTree = "<group>"; };
+		381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseSelectToolbarItem.m; sourceTree = "<group>"; };
+		381459D50DC430CF009489A6 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DatabaseSelectToolbarView.xib; sourceTree = "<group>"; };
 		3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
 		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
 		38E9C92C0DBF71C5009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -270,7 +276,12 @@
 				F503C88F02B387CB01C66673 /* appicon.icns */,
 				9B9ACEE908DEBE70009E313E /* Info.plist */,
 				F5E4F1AC03C8B2CB01000125 /* images */,
-				F5C0859D04A82C0E01B3137E /* English */,
+				38E9C92B0DBF71C5009E9395 /* MainMenu.xib */,
+				38E9C9300DBF7293009E9395 /* DBView.xib */,
+				381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */,
+				F58CAF13052C84EB01B3ED40 /* Localizable.strings */,
+				2A37F4B9FDCFA73011CA2CEA /* Credits.rtf */,
+				F5DB91380510F4B60186457F /* english_help */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -340,6 +351,8 @@
 			children = (
 				38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */,
 				38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */,
+				381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */,
+				381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -380,18 +393,6 @@
 				9BFF536C08F43B9E004D6BCB /* SSHTunnel_old.m */,
 			);
 			name = SSHTunnel;
-			sourceTree = "<group>";
-		};
-		F5C0859D04A82C0E01B3137E /* English */ = {
-			isa = PBXGroup;
-			children = (
-				38E9C92B0DBF71C5009E9395 /* MainMenu.xib */,
-				38E9C9300DBF7293009E9395 /* DBView.xib */,
-				F58CAF13052C84EB01B3ED40 /* Localizable.strings */,
-				2A37F4B9FDCFA73011CA2CEA /* Credits.rtf */,
-				F5DB91380510F4B60186457F /* english_help */,
-			);
-			name = English;
 			sourceTree = "<group>";
 		};
 		F5E4F1AC03C8B2CB01000125 /* images */ = {
@@ -467,6 +468,7 @@
 				9BE828B70908269400A18070 /* SSHTunnel.h in Headers */,
 				9BC3EEBA09AC6EE100F6B295 /* CMTextView.h in Headers */,
 				38F42AE00DBFF16500B58FFB /* TableDocumentSplitView.h in Headers */,
+				381459B80DC42ADF009489A6 /* DatabaseSelectToolbarItem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -563,6 +565,7 @@
 				3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */,
 				38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */,
 				38E9C9320DBF7293009E9395 /* DBView.xib in Resources */,
+				381459D60DC430CF009489A6 /* DatabaseSelectToolbarView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -590,6 +593,7 @@
 				9BE828B80908269400A18070 /* SSHTunnel.m in Sources */,
 				9BC3EEBB09AC6EE100F6B295 /* CMTextView.m in Sources */,
 				38F42AE10DBFF16500B58FFB /* TableDocumentSplitView.m in Sources */,
+				381459B90DC42ADF009489A6 /* DatabaseSelectToolbarItem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,6 +606,14 @@
 				2A37F4BAFDCFA73011CA2CEA /* English */,
 			);
 			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				381459D50DC430CF009489A6 /* English */,
+			);
+			name = DatabaseSelectToolbarView.xib;
 			sourceTree = "<group>";
 		};
 		38E9C92B0DBF71C5009E9395 /* MainMenu.xib */ = {

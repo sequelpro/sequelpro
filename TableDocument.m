@@ -41,7 +41,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
   if (![super init])
     return nil;
   
-  _encoding = [@"utf8" retain];;
+  _encoding = [@"utf8" retain];
+  chooseDatabaseButton = nil;
   
   return self;
 }
@@ -381,25 +382,27 @@ reused when user hits the close button of the variablseSheet or of the createTab
 }
 
 
-//database methods
+#pragma mark database methods
 
 /**
- *sets up the chooseDatabaseButton (adds all databases)
+ * sets up the database select toolbar item
  */
 - (IBAction)setDatabases:(id)sender;
 {
-  CMMCPResult *queryResult;
-  int i;
+  if (!chooseDatabaseButton)
+    return;
 
   [chooseDatabaseButton removeAllItems];
-  [chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
-  queryResult = [mySQLConnection listDBs];
+  [chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
+  
+  MCPResult *queryResult = [mySQLConnection listDBs];
+  int i;
   for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
     [queryResult dataSeek:i];
     [chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
   }
   if ( ![self database] ) {
-    [chooseDatabaseButton selectItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
+    [chooseDatabaseButton selectItemAtIndex:0];
   } else {
     [chooseDatabaseButton selectItemWithTitle:[self database]];
   }
@@ -417,9 +420,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
   }
 
   if ( [chooseDatabaseButton indexOfSelectedItem] == 0 ) {
-    if ( ![self database] ) {
-      [chooseDatabaseButton selectItemWithTitle:NSLocalizedString(@"Choose database...", @"menu item for choose db")];
-    } else {
+    if ([self database]) {
       [chooseDatabaseButton selectItemWithTitle:[self database]];
     }
     return;
@@ -1117,7 +1118,13 @@ passes the request to the tableDump object
 {
   NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
   
-  if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
+  if ([itemIdentifier isEqualToString:DatabaseSelectToolbarItemIdentifier]) {
+    toolbarItem = [[[DatabaseSelectToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+    chooseDatabaseButton = [[(DatabaseSelectToolbarItem *)toolbarItem databaseSelectPopupButton] retain];
+    
+    [chooseDatabaseButton setTarget:self];
+  	[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
+  } else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
     //set the text label to be displayed in the toolbar and customization palette 
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
     //set up tooltip and image
@@ -1232,6 +1239,7 @@ passes the request to the tableDump object
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [NSArray arrayWithObjects:
+          DatabaseSelectToolbarItemIdentifier,
           @"ToggleConsoleIdentifier",
           @"ClearConsoleIdentifier",
           @"ShowVariablesIdentifier",
@@ -1255,14 +1263,8 @@ passes the request to the tableDump object
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
   return [NSArray arrayWithObjects:
+          DatabaseSelectToolbarItemIdentifier,
           NSToolbarSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSeparatorItemIdentifier,
           @"SwitchToTableStructureToolbarItemIdentifier",
           @"SwitchToTableContentToolbarItemIdentifier",
           @"SwitchToRunQueryToolbarItemIdentifier",
@@ -1453,24 +1455,18 @@ invoked when query gave an error
     return theValue;
 }
 
-
-//for freeing up memory
 - (void)dealloc
 {
-//    NSLog(@"TableDocument dealloc");
-
-    [mySQLConnection release];
-    [favorites release];
-    if (nil != variables )
-    {
-        [variables release];
-    }
-    [selectedDatabase release];
-    [selectedFavorite release];
-    [mySQLVersion release];
-    [prefs release];
-    
-    [super dealloc];
+	[chooseDatabaseButton release];
+  [mySQLConnection release];
+  [favorites release];
+  [variables release];
+  [selectedDatabase release];
+  [selectedFavorite release];
+  [mySQLVersion release];
+  [prefs release];
+  
+  [super dealloc];
 }
 
 @end
