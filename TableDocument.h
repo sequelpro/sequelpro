@@ -48,7 +48,6 @@
   IBOutlet id connectSheet;
   IBOutlet id databaseSheet;
   IBOutlet id variablesSheet;
-  IBOutlet id createTableSyntaxSheet;
   IBOutlet id tableOperationsSheet;
   IBOutlet id consoleDrawer;
   
@@ -69,9 +68,11 @@
   IBOutlet id chooseDatabaseButton;
   IBOutlet id consoleTextView;
   IBOutlet id variablesTableView;
-  IBOutlet id createTableSyntaxView;
   IBOutlet id chooseTableOperationButton;
   IBOutlet NSTabView *tableTabView;
+	
+	IBOutlet id syntaxView;
+	IBOutlet id syntaxViewContent;
   
   CMMCPConnection *mySQLConnection;
 	
@@ -131,14 +132,19 @@
 - (NSString *)encodingNameFromMySQLEncoding:(NSString *)mysqlEncoding;
 - (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName;
 
+//table methods
+- (IBAction)createTableSyntax:(id)sender;
+- (IBAction)checkTable:(id)sender;
+- (IBAction)analyzeTable:(id)sender;
+- (IBAction)optimizeTable:(id)sender;
+- (IBAction)repairTable:(id)sender;
+- (IBAction)flushTable:(id)sender;
+
 //other methods
 - (NSString *)host;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)flushPrivileges;
-- (void)openTableOperationsSheet;
-- (IBAction)doTableOperation:(id)sender;
 - (void)showVariables;
-- (void)showCreateTable;
 - (void)closeConnection;
 
 //getter methods

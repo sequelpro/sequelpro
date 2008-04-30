@@ -746,7 +746,140 @@ reused when user hits the close button of the variablseSheet or of the createTab
 }
 
 
-//other methods
+#pragma mark Table Methods
+
+- (IBAction)createTableSyntax:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	id tableSyntax;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+		
+		if ( [tableSyntax isKindOfClass:[NSData class]] )
+		{
+			tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+		}
+		
+		[syntaxViewContent setString:tableSyntax];
+		[syntaxViewContent selectAll:self];
+		
+		NSAlert* alert = [NSAlert new];
+		[alert setMessageText:@"Table Syntax"];
+		[alert setInformativeText:[NSString stringWithFormat:@"Syntax for '%@' table:", [self table]]];
+		[alert setAccessoryView:syntaxView];
+		[alert runModal];
+	} else {
+		// If there was an error
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+}
+
+- (IBAction)checkTable:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	NSDictionary *theRow;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"CHECK TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+		NSRunInformationalAlertPanel(@"Check Table", [NSString stringWithFormat:@"Check: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	} else {
+	// If there was an error
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while checking table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+}
+
+- (IBAction)analyzeTable:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	NSDictionary *theRow;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"ANALYZE TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+		NSRunInformationalAlertPanel(@"Analyze Table", [NSString stringWithFormat:@"Analyze: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	} else {
+		// If there was an error
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while analyzing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+}
+
+- (IBAction)optimizeTable:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	NSDictionary *theRow;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"OPTIMIZE TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+		NSRunInformationalAlertPanel(@"Optimize Table", [NSString stringWithFormat:@"Optimize: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	} else {
+		// If there was an error
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while optimizing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+}
+
+- (IBAction)repairTable:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	NSDictionary *theRow;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"REPAIR TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+		NSRunInformationalAlertPanel(@"Repair Table", [NSString stringWithFormat:@"Repair: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	} else {
+		// If there was an error
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while repairing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+}
+
+- (IBAction)flushTable:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"FLUSH TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		NSRunInformationalAlertPanel(@"Flush Table", @"Flushed", @"OK", nil, nil);
+	} else {
+		// If there was an error
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while flushing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+}
+
+#pragma mark Other Methods
 /**
  * returns the host
  */
@@ -781,91 +914,6 @@ reused when user hits the close button of the variablseSheet or of the createTab
   }
 }
 
-- (void)openTableOperationsSheet
-/*
-opens the sheet for table operations (check/analyze/optimize/repair/flush) and performs desired operation
-*/
-{
-	int code, operation;
-    CMMCPResult *theResult;
-    NSDictionary *theRow;
-	NSString *query;
-    NSString *operationText;
-    NSString *messageType;
-    NSString *messageText;
-
-    [NSApp beginSheet:tableOperationsSheet
-            modalForWindow:tableWindow modalDelegate:self
-            didEndSelector:nil contextInfo:nil];
-    code = [NSApp runModalForWindow:tableOperationsSheet];
-    
-    [NSApp endSheet:tableOperationsSheet];
-    [tableOperationsSheet orderOut:nil];
-NSLog(@"%d",code);
-	if ( !code )
-		return;
-
-	// get operation
-	operation = [[chooseTableOperationButton selectedItem] tag];
-	switch ( operation ) {
-		case 0:
-		// check table
-			query = [NSString stringWithFormat:@"CHECK TABLE `%@`", [self table]];
-			break;
-		case 1:
-		// analyze table
-			query = [NSString stringWithFormat:@"ANALYZE TABLE `%@`", [self table]];
-			break;
-		case 2:
-		// optimize table
-			query = [NSString stringWithFormat:@"OPTIMIZE TABLE `%@`", [self table]];
-			break;
-		case 3:
-		// repair table
-			query = [NSString stringWithFormat:@"REPAIR TABLE `%@`", [self table]];
-			break;
-		case 4:
-		// flush table
-			query = [NSString stringWithFormat:@"FLUSH TABLE `%@`", [self table]];
-			break;
-	}
-
-    // perform operation
-    theResult = [mySQLConnection queryString:query];
-
-    if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-    // no errors
-		if ( operation == 4 ) {
-		// flushed -> no return values
-			operationText = [NSString stringWithString:@"flush"];
-			messageType = [NSString stringWithString:@"-"];
-			messageText = [NSString stringWithString:@"-"];
-		} else {
-		// other operations -> get return values
-			theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-			operationText = [NSString stringWithString:[theRow objectForKey:@"Op"]];
-			messageType = [NSString stringWithString:[theRow objectForKey:@"Msg_type"]];
-			messageText = [NSString stringWithString:[theRow objectForKey:@"Msg_text"]];
-		}
-		NSBeginAlertSheet(NSLocalizedString(@"Successfully performed table operation", @"title of panel when successfully performed table operation"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"Operation: %@\nMsg_type: %@\nMsg_text: %@", @"message of panel when successfully performed table operation"),
-										operationText, messageType, messageText]);
-    } else {
-    // error
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                [NSString stringWithFormat:NSLocalizedString(@"Couldn't perform table operation.\nMySQL said: %@", @"message of panel when table operation failed"),
-                                [mySQLConnection getLastErrorMessage]]);
-    }
-}
-
-- (IBAction)doTableOperation:(id)sender
-/*
-closes the sheet and ends modal with 0 if cancel and 1 if ok
-*/
-{
-	[NSApp stopModalWithCode:[sender tag]];
-}
-
 - (void)showVariables
 /*
 shows the mysql variables
@@ -895,33 +943,6 @@ shows the mysql variables
     
     [NSApp endSheet:variablesSheet];
     [variablesSheet orderOut:nil];
-}
-
-- (void)showCreateTable
-/*
-shows the mysql command used to create the selected table
-*/
-{
-	id createTableSyntax;
-
-    CMMCPResult *result = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`",
-                                                            [self table]]];
-	createTableSyntax = [[result fetchRowAsArray] objectAtIndex:1];
-    if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
-        createTableSyntax = [[NSString alloc] initWithData:createTableSyntax encoding:[mySQLConnection encoding]];
-    }
-
-    [createTableSyntaxView setString:createTableSyntax];
-    [createTableSyntaxView selectAll:self];
-
-    //show createTableSyntaxSheet
-    [NSApp beginSheet:createTableSyntaxSheet
-            modalForWindow:tableWindow modalDelegate:self
-            didEndSelector:nil contextInfo:nil];
-    [NSApp runModalForWindow:createTableSyntaxSheet];
-    
-    [NSApp endSheet:createTableSyntaxSheet];
-    [createTableSyntaxSheet orderOut:nil];
 }
 
 - (void)closeConnection
@@ -1033,31 +1054,41 @@ passes the request to the tableDump object
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-  if ([menuItem action] == @selector(import:)) {
-    return ([self database] != nil);
-  }
-  
-  if ([menuItem action] == @selector(importCSV:)) {
-    return ([self database] != nil && [self table] != nil);
-  }
-  
-  if ([menuItem action] == @selector(export:)) {
-    return ([self database] != nil);
-  }
-  
-  if ([menuItem action] == @selector(exportTable:)) {
-    return ([self database] != nil && [self table] != nil);
-  }
-  
-  if ([menuItem action] == @selector(exportMultipleTables:)) {
-    return ([self database] != nil);
-  }
-  
-  if ([menuItem action] == @selector(chooseEncoding:)) {
-    return [self supportsEncoding];
-  }
-  
-  return [super validateMenuItem:menuItem];
+	if ([menuItem action] == @selector(import:)) {
+	  return ([self database] != nil);
+	}
+	
+	if ([menuItem action] == @selector(importCSV:)) {
+	  return ([self database] != nil && [self table] != nil);
+	}
+	
+	if ([menuItem action] == @selector(export:)) {
+	  return ([self database] != nil);
+	}
+	
+	if ([menuItem action] == @selector(exportTable:)) {
+	  return ([self database] != nil && [self table] != nil);
+	}
+	
+	if ([menuItem action] == @selector(exportMultipleTables:)) {
+	  return ([self database] != nil);
+	}
+	
+	if ([menuItem action] == @selector(chooseEncoding:)) {
+		return [self supportsEncoding];
+	}
+	
+	// table menu items
+	if ([menuItem action] == @selector(createTableSyntax:) ||
+		[menuItem action] == @selector(checkTable:) || 
+		[menuItem action] == @selector(analyzeTable:) || 
+		[menuItem action] == @selector(optimizeTable:) || 
+		[menuItem action] == @selector(repairTable:) || 
+		[menuItem action] == @selector(flushTable:))
+	{
+		return ([self table] != nil);
+	}
+	return [super validateMenuItem:menuItem];
 }
 
 - (IBAction)viewStructure:(id)sender
@@ -1159,16 +1190,6 @@ passes the request to the tableDump object
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(flushPrivileges)];
-  } else if ([itemIdentifier isEqualToString:@"OptimizeTableIdentifier"]) {
-    //set the text label to be displayed in the toolbar and customization palette 
-    [toolbarItem setLabel:NSLocalizedString(@"Table Operations", @"toolbar item for perform table operations")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Operations", @"toolbar item for perform table operations")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Perform table operations for the selected table", @"tooltip for toolbar item for perform table operations")];
-    [toolbarItem setImage:[NSImage imageNamed:@"optimizetable"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(openTableOperationsSheet)];
   } else if ([itemIdentifier isEqualToString:@"ShowVariablesIdentifier"]) {
     //set the text label to be displayed in the toolbar and customization palette 
     [toolbarItem setLabel:NSLocalizedString(@"Show Variables", @"toolbar item for show variables")];
@@ -1179,16 +1200,6 @@ passes the request to the tableDump object
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(showVariables)];
-  } else if ([itemIdentifier isEqualToString:@"ShowCreateTableIdentifier"]) {
-    //set the text label to be displayed in the toolbar and customization palette 
-    [toolbarItem setLabel:NSLocalizedString(@"Create Table Syntax", @"toolbar item for create table syntax")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Create Table Syntax", @"toolbar item for create table syntax")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Show the MySQL command used to create the selected table", @"tooltip for toolbar item for create table syntax")];
-    [toolbarItem setImage:[NSImage imageNamed:@"createtablesyntax"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(showCreateTable)];
   } else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
     [toolbarItem setLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
@@ -1244,8 +1255,6 @@ passes the request to the tableDump object
           @"ClearConsoleIdentifier",
           @"ShowVariablesIdentifier",
           @"FlushPrivilegesIdentifier",
-          @"OptimizeTableIdentifier",
-          @"ShowCreateTableIdentifier",
           NSToolbarCustomizeToolbarItemIdentifier,
           NSToolbarFlexibleSpaceItemIdentifier,
           NSToolbarSpaceItemIdentifier,
@@ -1263,7 +1272,7 @@ passes the request to the tableDump object
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
   return [NSArray arrayWithObjects:
-          DatabaseSelectToolbarItemIdentifier,
+		  DatabaseSelectToolbarItemIdentifier,
           NSToolbarSpaceItemIdentifier,
           @"SwitchToTableStructureToolbarItemIdentifier",
           @"SwitchToTableContentToolbarItemIdentifier",
@@ -1288,23 +1297,17 @@ passes the request to the tableDump object
  */
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
-  if ( [[toolbarItem itemIdentifier] isEqualToString:@"OptimizeTableIdentifier"] ) {
-    if ( ![self table] )
-      return NO;
-  } else if ( [[toolbarItem itemIdentifier] isEqualToString:@"ShowCreateTableIdentifier"] ) {
-    if ( ![self table] )
-      return NO;
-  } else if ( [[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"] ) {
-    if ( [self consoleIsOpened] ) {
-      [toolbarItem setLabel:@"Hide Console"];
-      [toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-    } else {
-      [toolbarItem setLabel:@"Show Console"];
-      [toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
-    }
-  }
-  
-  return YES;
+	if ( [[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"] ) {
+		if ( [self consoleIsOpened] ) {
+			[toolbarItem setLabel:@"Hide Console"];
+			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
+		} else {
+			[toolbarItem setLabel:@"Show Console"];
+			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
+		}
+	}
+
+	return YES;
 }
 
 
@@ -1345,13 +1348,14 @@ sets upt the interface (small fonts)
     //set up interface
     if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
         [consoleTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-        [createTableSyntaxView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+        [syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		
         while ( (theCol = [theCols nextObject]) ) {
             [[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
         }
     } else {
         [consoleTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-        [createTableSyntaxView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+        [syntaxViewContent setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
         while ( (theCol = [theCols nextObject]) ) {
             [[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
         }
