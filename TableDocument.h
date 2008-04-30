@@ -73,6 +73,7 @@
 	
 	IBOutlet id syntaxView;
 	IBOutlet id syntaxViewContent;
+  IBOutlet NSWindow *createTableSyntaxWindow;
   
   CMMCPConnection *mySQLConnection;
 	

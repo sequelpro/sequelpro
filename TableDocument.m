@@ -750,35 +750,24 @@ reused when user hits the close button of the variablseSheet or of the createTab
 
 - (IBAction)createTableSyntax:(id)sender
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	id tableSyntax;
-	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
-	theResult = [mySQLConnection queryString:query];
+	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
+	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for no errors
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
-		
-		if ( [tableSyntax isKindOfClass:[NSData class]] )
-		{
-			tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-		}
-		
-		[syntaxViewContent setString:tableSyntax];
-		[syntaxViewContent selectAll:self];
-		
-		NSAlert* alert = [NSAlert new];
-		[alert setMessageText:@"Table Syntax"];
-		[alert setInformativeText:[NSString stringWithFormat:@"Syntax for '%@' table:", [self table]]];
-		[alert setAccessoryView:syntaxView];
-		[alert runModal];
-	} else {
-		// If there was an error
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
-	}
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+    NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+    return;
+  }
+  
+  id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+  
+  if ([tableSyntax isKindOfClass:[NSData class]])
+    tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+  
+  [syntaxViewContent setString:tableSyntax];
+  [syntaxViewContent selectAll:self];
+  [createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
 - (IBAction)checkTable:(id)sender
