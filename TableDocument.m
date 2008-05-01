@@ -756,19 +756,42 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	
 	// Check for no errors
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-    NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
-    return;
-  }
-  
-  id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
-  
-  if ([tableSyntax isKindOfClass:[NSData class]])
-    tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-  
-  [syntaxViewContent setString:tableSyntax];
-  [syntaxViewContent selectAll:self];
-  [createTableSyntaxWindow makeKeyAndOrderFront:self];
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		return;
+	}
+	
+	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+	
+	if ([tableSyntax isKindOfClass:[NSData class]])
+		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+	
+	[syntaxViewContent setString:tableSyntax];
+	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
+
+- (IBAction)copyTableSyntax:(id)sender
+{
+	//Create the query and get results
+	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
+	CMMCPResult *theResult = [mySQLConnection queryString:query];
+	
+	// Check for no errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		return;
+	}
+	
+	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+	
+	if ([tableSyntax isKindOfClass:[NSData class]])
+		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+	
+	// copy to the clipboard
+	
+	[[NSPasteboard generalPasteboard] setString:tableSyntax forType:NSStringPboardType];
+
+}
+
 
 - (IBAction)checkTable:(id)sender
 {
@@ -1190,7 +1213,7 @@ passes the request to the tableDump object
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(showVariables)];
   } else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
+    [toolbarItem setLabel:NSLocalizedString(@"Table", @"toolbar item label for switching to the Table Structure tab")];
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Structure tab", @"tooltip for toolbar item for switching to the Table Structure tab")];
@@ -1199,7 +1222,7 @@ passes the request to the tableDump object
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(viewStructure:)];
   } else if ([itemIdentifier isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Table Content", @"toolbar item label for switching to the Table Content tab")];
+    [toolbarItem setLabel:NSLocalizedString(@"Browse", @"toolbar item label for switching to the Table Content tab")];
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Content", @"toolbar item label for switching to the Table Content tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Content tab", @"tooltip for toolbar item for switching to the Table Content tab")];
@@ -1208,7 +1231,7 @@ passes the request to the tableDump object
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(viewContent:)];
   } else if ([itemIdentifier isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Run Query", @"toolbar item label for switching to the Run Query tab")];
+    [toolbarItem setLabel:NSLocalizedString(@"SQL", @"toolbar item label for switching to the Run Query tab")];
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Run Query", @"toolbar item label for switching to the Run Query tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Run Query tab", @"tooltip for toolbar item for switching to the Run Query tab")];
