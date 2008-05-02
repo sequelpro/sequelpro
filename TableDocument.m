@@ -1217,7 +1217,7 @@ passes the request to the tableDump object
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Structure tab", @"tooltip for toolbar item for switching to the Table Structure tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"createtablesyntax"]];
+    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-structure"]];
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(viewStructure:)];
@@ -1226,7 +1226,7 @@ passes the request to the tableDump object
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Content", @"toolbar item label for switching to the Table Content tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Content tab", @"tooltip for toolbar item for switching to the Table Content tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"createtablesyntax"]];
+    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-browse"]];
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(viewContent:)];
@@ -1235,7 +1235,7 @@ passes the request to the tableDump object
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Run Query", @"toolbar item label for switching to the Run Query tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Run Query tab", @"tooltip for toolbar item for switching to the Run Query tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"createtablesyntax"]];
+    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(viewQuery:)];
@@ -1244,7 +1244,7 @@ passes the request to the tableDump object
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Status", @"toolbar item label for switching to the Table Status tab")];
     //set up tooltip and image
     [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Status tab", @"tooltip for toolbar item for switching to the Table Status tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"createtablesyntax"]];
+    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-table-info"]];
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(viewStatus:)];
@@ -1289,7 +1289,6 @@ passes the request to the tableDump object
           @"SwitchToTableStructureToolbarItemIdentifier",
           @"SwitchToTableContentToolbarItemIdentifier",
           @"SwitchToRunQueryToolbarItemIdentifier",
-          @"SwitchToTableStatusToolbarItemIdentifier",
           nil];
 }
 

@@ -10,6 +10,11 @@
 		381459B80DC42ADF009489A6 /* DatabaseSelectToolbarItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */; };
 		381459B90DC42ADF009489A6 /* DatabaseSelectToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */; };
 		381459D60DC430CF009489A6 /* DatabaseSelectToolbarView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */; };
+		383DAC110DCACB4B000499B6 /* logo-48.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC100DCACB4B000499B6 /* logo-48.png */; };
+		383DAC160DCACE1D000499B6 /* toolbar-switch-to-browse.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */; };
+		383DAC170DCACE1D000499B6 /* toolbar-switch-to-structure.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC140DCACE1D000499B6 /* toolbar-switch-to-structure.png */; };
+		383DAC180DCACE1D000499B6 /* toolbar-switch-to-sql.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */; };
+		383DAC1A0DCACE68000499B6 /* toolbar-switch-to-table-info.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */; };
 		3861DD760DA78690003236DE /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */; };
 		3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD750DA78690003236DE /* sequel-pro.scriptSuite */; };
 		38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C92B0DBF71C5009E9395 /* MainMenu.xib */; };
@@ -123,6 +128,11 @@
 		381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseSelectToolbarItem.h; sourceTree = "<group>"; };
 		381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseSelectToolbarItem.m; sourceTree = "<group>"; };
 		381459D50DC430CF009489A6 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DatabaseSelectToolbarView.xib; sourceTree = "<group>"; };
+		383DAC100DCACB4B000499B6 /* logo-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "logo-48.png"; path = "images/logo-48.png"; sourceTree = "<group>"; };
+		383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-browse.png"; path = "images/toolbar-switch-to-browse.png"; sourceTree = "<group>"; };
+		383DAC140DCACE1D000499B6 /* toolbar-switch-to-structure.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-structure.png"; path = "images/toolbar-switch-to-structure.png"; sourceTree = "<group>"; };
+		383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-sql.png"; path = "images/toolbar-switch-to-sql.png"; sourceTree = "<group>"; };
+		383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-table-info.png"; path = "images/toolbar-switch-to-table-info.png"; sourceTree = "<group>"; };
 		3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
 		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
 		38E9C92C0DBF71C5009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -398,6 +408,7 @@
 		F5E4F1AC03C8B2CB01000125 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				383DAC100DCACB4B000499B6 /* logo-48.png */,
 				F52FA4B40509F1B801000103 /* connectionadd.tiff */,
 				F52FA4B50509F1B801000103 /* connectiondelete.tiff */,
 				F51B86B3050A4E4F01000103 /* connectioncopy.tiff */,
@@ -441,6 +452,10 @@
 				F5A1F6DD04EE666101FE0D2B /* flushprivileges.tiff */,
 				F5A1F6DE04EE666101FE0D2B /* optimizetable.tiff */,
 				F5A1F6DC04EE666101FE0D2B /* createtablesyntax.tiff */,
+				383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */,
+				383DAC140DCACE1D000499B6 /* toolbar-switch-to-structure.png */,
+				383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */,
+				383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */,
 			);
 			name = images;
 			sourceTree = "<group>";
@@ -566,6 +581,11 @@
 				38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */,
 				38E9C9320DBF7293009E9395 /* DBView.xib in Resources */,
 				381459D60DC430CF009489A6 /* DatabaseSelectToolbarView.xib in Resources */,
+				383DAC110DCACB4B000499B6 /* logo-48.png in Resources */,
+				383DAC160DCACE1D000499B6 /* toolbar-switch-to-browse.png in Resources */,
+				383DAC170DCACE1D000499B6 /* toolbar-switch-to-structure.png in Resources */,
+				383DAC180DCACE1D000499B6 /* toolbar-switch-to-sql.png in Resources */,
+				383DAC1A0DCACE68000499B6 /* toolbar-switch-to-table-info.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
