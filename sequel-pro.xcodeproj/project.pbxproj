@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		381459B80DC42ADF009489A6 /* DatabaseSelectToolbarItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */; };
-		381459B90DC42ADF009489A6 /* DatabaseSelectToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */; };
-		381459D60DC430CF009489A6 /* DatabaseSelectToolbarView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */; };
 		383DAC110DCACB4B000499B6 /* logo-48.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC100DCACB4B000499B6 /* logo-48.png */; };
 		383DAC160DCACE1D000499B6 /* toolbar-switch-to-browse.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */; };
 		383DAC170DCACE1D000499B6 /* toolbar-switch-to-structure.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC140DCACE1D000499B6 /* toolbar-switch-to-structure.png */; };
@@ -125,9 +122,6 @@
 		2A37F4BAFDCFA73011CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseSelectToolbarItem.h; sourceTree = "<group>"; };
-		381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseSelectToolbarItem.m; sourceTree = "<group>"; };
-		381459D50DC430CF009489A6 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DatabaseSelectToolbarView.xib; sourceTree = "<group>"; };
 		383DAC100DCACB4B000499B6 /* logo-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "logo-48.png"; path = "images/logo-48.png"; sourceTree = "<group>"; };
 		383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-browse.png"; path = "images/toolbar-switch-to-browse.png"; sourceTree = "<group>"; };
 		383DAC140DCACE1D000499B6 /* toolbar-switch-to-structure.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-structure.png"; path = "images/toolbar-switch-to-structure.png"; sourceTree = "<group>"; };
@@ -288,7 +282,6 @@
 				F5E4F1AC03C8B2CB01000125 /* images */,
 				38E9C92B0DBF71C5009E9395 /* MainMenu.xib */,
 				38E9C9300DBF7293009E9395 /* DBView.xib */,
-				381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */,
 				F58CAF13052C84EB01B3ED40 /* Localizable.strings */,
 				2A37F4B9FDCFA73011CA2CEA /* Credits.rtf */,
 				F5DB91380510F4B60186457F /* english_help */,
@@ -361,8 +354,6 @@
 			children = (
 				38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */,
 				38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */,
-				381459B60DC42ADF009489A6 /* DatabaseSelectToolbarItem.h */,
-				381459B70DC42ADF009489A6 /* DatabaseSelectToolbarItem.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -483,7 +474,6 @@
 				9BE828B70908269400A18070 /* SSHTunnel.h in Headers */,
 				9BC3EEBA09AC6EE100F6B295 /* CMTextView.h in Headers */,
 				38F42AE00DBFF16500B58FFB /* TableDocumentSplitView.h in Headers */,
-				381459B80DC42ADF009489A6 /* DatabaseSelectToolbarItem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -580,7 +570,6 @@
 				3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */,
 				38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */,
 				38E9C9320DBF7293009E9395 /* DBView.xib in Resources */,
-				381459D60DC430CF009489A6 /* DatabaseSelectToolbarView.xib in Resources */,
 				383DAC110DCACB4B000499B6 /* logo-48.png in Resources */,
 				383DAC160DCACE1D000499B6 /* toolbar-switch-to-browse.png in Resources */,
 				383DAC170DCACE1D000499B6 /* toolbar-switch-to-structure.png in Resources */,
@@ -613,7 +602,6 @@
 				9BE828B80908269400A18070 /* SSHTunnel.m in Sources */,
 				9BC3EEBB09AC6EE100F6B295 /* CMTextView.m in Sources */,
 				38F42AE10DBFF16500B58FFB /* TableDocumentSplitView.m in Sources */,
-				381459B90DC42ADF009489A6 /* DatabaseSelectToolbarItem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -626,14 +614,6 @@
 				2A37F4BAFDCFA73011CA2CEA /* English */,
 			);
 			name = Credits.rtf;
-			sourceTree = "<group>";
-		};
-		381459D40DC430CF009489A6 /* DatabaseSelectToolbarView.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				381459D50DC430CF009489A6 /* English */,
-			);
-			name = DatabaseSelectToolbarView.xib;
 			sourceTree = "<group>";
 		};
 		38E9C92B0DBF71C5009E9395 /* MainMenu.xib */ = {

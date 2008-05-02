@@ -71,6 +71,8 @@
   IBOutlet id chooseTableOperationButton;
   IBOutlet NSTabView *tableTabView;
 	
+  IBOutlet NSTableView *dbTablesTableView;
+  
 	IBOutlet id syntaxView;
 	IBOutlet id syntaxViewContent;
   IBOutlet NSWindow *createTableSyntaxWindow;
@@ -89,6 +91,7 @@
   NSString *_encoding;
   
   NSToolbar *mainToolbar;
+  NSToolbarItem *chooseDatabaseToolbarItem;
 }
 
 //start sheet
@@ -179,6 +182,7 @@
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar;
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar;
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
+- (void)updateChooseDatabaseToolbarItemWidth;
 
 //NSDocument methods
 - (NSString *)windowNibName;

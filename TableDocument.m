@@ -43,6 +43,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
   
   _encoding = [@"utf8" retain];
   chooseDatabaseButton = nil;
+  chooseDatabaseToolbarItem = nil;
   
   return self;
 }
@@ -1150,22 +1151,32 @@ passes the request to the tableDump object
   
   // select the structure toolbar item
   [self viewStructure:self];
+  
+  // update the toolbar item size
+  [self updateChooseDatabaseToolbarItemWidth];
 }
 
 /**
  * toolbar delegate method
  */
-- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)willBeInsertedIntoToolbar
 
 {
   NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
   
   if ([itemIdentifier isEqualToString:DatabaseSelectToolbarItemIdentifier]) {
-    toolbarItem = [[[DatabaseSelectToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
-    chooseDatabaseButton = [[(DatabaseSelectToolbarItem *)toolbarItem databaseSelectPopupButton] retain];
-    
+    [toolbarItem setLabel:NSLocalizedString(@"Select Database", @"toolbar item for selecting a db")];
+    [toolbarItem setPaletteLabel:[toolbarItem label]];
+    [toolbarItem setView:chooseDatabaseButton];
+    [toolbarItem setMinSize:NSMakeSize(200,26)];
+    [toolbarItem setMaxSize:NSMakeSize(200,32)];
     [chooseDatabaseButton setTarget:self];
   	[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
+    
+    if (willBeInsertedIntoToolbar) {
+	    chooseDatabaseToolbarItem = toolbarItem;
+  	  [self updateChooseDatabaseToolbarItemWidth];
+    } 
   } else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
     //set the text label to be displayed in the toolbar and customization palette 
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
@@ -1424,6 +1435,34 @@ invoked when query gave an error
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
 {
 	return proposedMin + 160;
+}
+
+- (void)splitViewDidResizeSubviews:(NSNotification *)notification
+{
+  [self updateChooseDatabaseToolbarItemWidth];
+}
+
+- (void)updateChooseDatabaseToolbarItemWidth
+{
+  // make sure the toolbar item is actually in the toolbar
+  if (!chooseDatabaseToolbarItem)
+    return;
+  
+  // grab the width of the left pane
+  float leftPaneWidth = [dbTablesTableView frame].size.width;
+  
+  // subtract some pixels to allow for misc stuff
+  leftPaneWidth -= 12;
+  
+  // make sure it's not too small or to big
+  if (leftPaneWidth < 130)
+    leftPaneWidth = 130;
+	if (leftPaneWidth > 360)
+    leftPaneWidth = 360;
+  
+  // apply the size
+  [chooseDatabaseToolbarItem setMinSize:NSMakeSize(leftPaneWidth, 26)];
+  [chooseDatabaseToolbarItem setMaxSize:NSMakeSize(leftPaneWidth, 32)];
 }
 
 
