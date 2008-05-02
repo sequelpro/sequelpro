@@ -134,8 +134,8 @@
 - (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName;
 
 //table methods
-- (IBAction)createTableSyntax:(id)sender;
-- (IBAction)copyTableSyntax:(id)sender;
+- (IBAction)showCreateTableSyntax:(id)sender;
+- (IBAction)copyCreateTableSyntax:(id)sender;
 - (IBAction)checkTable:(id)sender;
 - (IBAction)analyzeTable:(id)sender;
 - (IBAction)optimizeTable:(id)sender;

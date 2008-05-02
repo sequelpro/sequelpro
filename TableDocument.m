@@ -748,7 +748,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 
 #pragma mark Table Methods
 
-- (IBAction)createTableSyntax:(id)sender
+- (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
 	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
@@ -769,9 +769,9 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
-- (IBAction)copyTableSyntax:(id)sender
+- (IBAction)copyCreateTableSyntax:(id)sender
 {
-	//Create the query and get results
+	// Create the query and get results
 	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
@@ -787,11 +787,10 @@ reused when user hits the close button of the variablseSheet or of the createTab
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 	
 	// copy to the clipboard
-	
-	[[NSPasteboard generalPasteboard] setString:tableSyntax forType:NSStringPboardType];
-
+  NSPasteboard *pb = [NSPasteboard generalPasteboard];
+  [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+  [pb setString:tableSyntax forType:NSStringPboardType];
 }
-
 
 - (IBAction)checkTable:(id)sender
 {
