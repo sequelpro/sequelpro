@@ -925,7 +925,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
   }
 }
 
-- (void)showVariables
+- (void)showVariables:(id)sender
 /*
 shows the mysql variables
 */
@@ -1201,16 +1201,6 @@ passes the request to the tableDump object
     //set up the target action
     [toolbarItem setTarget:self];
     [toolbarItem setAction:@selector(flushPrivileges)];
-  } else if ([itemIdentifier isEqualToString:@"ShowVariablesIdentifier"]) {
-    //set the text label to be displayed in the toolbar and customization palette 
-    [toolbarItem setLabel:NSLocalizedString(@"Show Variables", @"toolbar item for show variables")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Show Variables", @"toolbar item for show variables")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Show the MySQL Variables", @"tooltip for toolbar item for show variables")];
-    [toolbarItem setImage:[NSImage imageNamed:@"showvariables"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(showVariables)];
   } else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
     [toolbarItem setLabel:NSLocalizedString(@"Table", @"toolbar item label for switching to the Table Structure tab")];
     [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
@@ -1264,7 +1254,6 @@ passes the request to the tableDump object
           DatabaseSelectToolbarItemIdentifier,
           @"ToggleConsoleIdentifier",
           @"ClearConsoleIdentifier",
-          @"ShowVariablesIdentifier",
           @"FlushPrivilegesIdentifier",
           NSToolbarCustomizeToolbarItemIdentifier,
           NSToolbarFlexibleSpaceItemIdentifier,

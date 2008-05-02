@@ -146,7 +146,7 @@
 - (NSString *)host;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)flushPrivileges;
-- (void)showVariables;
+- (void)showVariables:(id)sender;
 - (void)closeConnection;
 
 //getter methods
