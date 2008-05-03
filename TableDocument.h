@@ -52,6 +52,7 @@
   
   IBOutlet id queryProgressBar;
   IBOutlet id favoritesButton;
+  IBOutlet NSTableView *connectFavoritesTableView;
   IBOutlet NSArrayController *favoritesController;
   IBOutlet id hostField;
   IBOutlet id socketField;

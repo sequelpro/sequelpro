@@ -53,6 +53,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
   // register selection did change handler for favorites controller (used in connect sheet)
   [favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
   
+  // register double click for the favorites view (double click favorite to connect)
+  [connectFavoritesTableView setTarget:self];
+  [connectFavoritesTableView setDoubleAction:@selector(connect:)];
+  
   // find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
   selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
   
@@ -311,7 +315,9 @@ reused when user hits the close button of the variablseSheet or of the createTab
 {
   NSEnumerator *enumerator = [favorites objectEnumerator];
   id favorite;
-  NSString *favoriteName = [NSString stringWithFormat:@"%@@%@/%@", user, host, database];
+  NSString *favoriteName = [NSString stringWithFormat:@"%@@%@", user, host];
+  if (![database isEqualToString:@""])
+    favoriteName = [NSString stringWithFormat:@"%@ %@", database, favoriteName];
 
   // test if host and socket are not nil
   if ([host isEqualToString:@""] && [socket isEqualToString:@""]) {
