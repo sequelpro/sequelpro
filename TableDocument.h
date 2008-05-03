@@ -27,7 +27,6 @@
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
-#import "DatabaseSelectToolbarItem.h"
 
 /**
  * The TableDocument class controls the primary database view window.

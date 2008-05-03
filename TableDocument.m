@@ -977,7 +977,7 @@ returns the currently selected database
 returns the currently selected table (passing the request to TablesList)
 */
 {
-    return [tablesListInstance table];
+    return (NSString *)[tablesListInstance table];
 }
 
 - (NSString *)mySQLVersion
@@ -1164,7 +1164,7 @@ passes the request to the tableDump object
 {
   NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
   
-  if ([itemIdentifier isEqualToString:DatabaseSelectToolbarItemIdentifier]) {
+  if ([itemIdentifier isEqualToString:@"DatabaseSelectToolbarItemIdentifier"]) {
     [toolbarItem setLabel:NSLocalizedString(@"Select Database", @"toolbar item for selecting a db")];
     [toolbarItem setPaletteLabel:[toolbarItem label]];
     [toolbarItem setView:chooseDatabaseButton];
@@ -1252,7 +1252,7 @@ passes the request to the tableDump object
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [NSArray arrayWithObjects:
-          DatabaseSelectToolbarItemIdentifier,
+          @"DatabaseSelectToolbarItemIdentifier",
           @"ToggleConsoleIdentifier",
           @"ClearConsoleIdentifier",
           @"FlushPrivilegesIdentifier",
@@ -1273,7 +1273,7 @@ passes the request to the tableDump object
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
   return [NSArray arrayWithObjects:
-		  DatabaseSelectToolbarItemIdentifier,
+		  @"DatabaseSelectToolbarItemIdentifier",
           NSToolbarSpaceItemIdentifier,
           @"SwitchToTableStructureToolbarItemIdentifier",
           @"SwitchToTableContentToolbarItemIdentifier",
