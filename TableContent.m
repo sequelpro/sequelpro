@@ -677,29 +677,28 @@ loads a file into the editSheet
 
 - (IBAction)saveEditSheet:(id)sender
 /*
-saves a file containing the content of the editSheet
-*/
+ saves a file containing the content of the editSheet
+ */
 {
-    NSSavePanel *panel = [NSSavePanel savePanel];
-    
-    if ( [panel runModal] == NSOKButton ) {
-        NSString *fileName = [panel filename];
+  NSSavePanel *panel = [NSSavePanel savePanel];
+  
+  if ( [panel runModal] == NSOKButton ) {
+    NSString *fileName = [panel filename];
 		NSString *data;
-		NSError **errorStr; 
-        
-        if ( [editData isKindOfClass:[NSData class]] ) {
+    
+    if ( [editData isKindOfClass:[NSData class]] ) {
 			data = editData;
-        } else {
+    } else {
 			data = [editData description];
-        }
+    }
 		if ( [editData respondsToSelector:@selector(writeToFile:atomically:encoding:error:)] ) {
-		// mac os 10.4 or later
-			[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]  error:errorStr];
+      // mac os 10.4 or later
+			[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[(NSString *)[tableDocumentInstance encoding] cString]] error:NULL];
 		} else {
-		// mac os pre 10.4
+      // mac os pre 10.4
 			[editData writeToFile:fileName atomically:YES];
 		}
-    }
+  }
 }
 
 - (IBAction)dropImage:(id)sender
@@ -840,7 +839,7 @@ returns the current result (as shown in table content view) as array, the first 
     
     //load table if not already done
     if ( ![tablesListInstance contentLoaded] ) {
-        [self loadTable:[tablesListInstance table]];
+        [self loadTable:(NSString *)[tablesListInstance table]];
     }
     
     tableColumns = [tableContentView tableColumns];
@@ -1617,32 +1616,36 @@ if clicked twice, order is descending
 
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
 /*
-saves the new column size in the preferences
-*/
+ saves the new column size in the preferences
+ */
 {
+  // sometimes the column has no identifier. I can't figure out what is causing it, so we just skip over this item
+  if (![[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier])
+    return;
+  
 	NSMutableDictionary *tableColumnWidths;
 	NSString *database = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
-	NSString *table = [tablesListInstance table];
-
-// get tableColumnWidths object
+	NSString *table = (NSString *)[tablesListInstance table];
+  
+  // get tableColumnWidths object
 	if ( [prefs objectForKey:@"tableColumnWidths"] != nil ) {
-        tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"tableColumnWidths"]];
-    } else {
-        tableColumnWidths = [NSMutableDictionary dictionary];
-    }
-// get database object
+    tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"tableColumnWidths"]];
+  } else {
+    tableColumnWidths = [NSMutableDictionary dictionary];
+  }
+  // get database object
 	if  ( [tableColumnWidths objectForKey:database] == nil ) {
 		[tableColumnWidths setObject:[NSMutableDictionary dictionary] forKey:database];
 	} else {
 		[tableColumnWidths setObject:[[tableColumnWidths objectForKey:database] mutableCopy] forKey:database];
 	}
-// get table object
+  // get table object
 	if  ( [[tableColumnWidths objectForKey:database] objectForKey:table] == nil ) {
 		[[tableColumnWidths objectForKey:database] setObject:[NSMutableDictionary dictionary] forKey:table];
 	} else {
 		[[tableColumnWidths objectForKey:database] setObject:[[[tableColumnWidths objectForKey:database] objectForKey:table] mutableCopy] forKey:table];
 	}
-// save column size
+  // save column size
 	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier]];
 	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
 }

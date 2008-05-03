@@ -30,99 +30,99 @@
 
 - (void)loadTable:(NSString *)aTable
 /*
-loads aTable, put it in an array, update the tableViewColumns and reload the tableView
-*/
+ loads aTable, put it in an array, update the tableViewColumns and reload the tableView
+ */
 {
-    NSEnumerator *enumerator;
-    id field;
-    NSScanner *scanner = [NSScanner alloc];
-    NSArray *extrasArray;
-    NSMutableDictionary *tempDefaultValues;
-    NSEnumerator *extrasEnumerator;
-    id extra;
-    int i;
-
-    selectedTable = aTable;
-    [tableSourceView deselectAll:self];
-    if ( isEditingRow )
-        return;
-
+  NSEnumerator *enumerator;
+  id field;
+  NSScanner *scanner = [NSScanner alloc];
+  NSArray *extrasArray;
+  NSMutableDictionary *tempDefaultValues;
+  NSEnumerator *extrasEnumerator;
+  id extra;
+  int i;
+  
+  selectedTable = aTable;
+  [tableSourceView deselectAll:self];
+  if ( isEditingRow )
+    return;
+  
 	// empty variables
 	[enumFields removeAllObjects];
-
-    //query started
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-
-    if ( [aTable isEqualToString:@""] || !aTable ) {
-        [tableFields removeAllObjects];
-        [indexes removeAllObjects];
-        [tableSourceView reloadData];
-        [indexView reloadData];
-        [addFieldButton setEnabled:NO];
-        [copyFieldButton setEnabled:NO];
-        [removeFieldButton setEnabled:NO];
-        [addIndexButton setEnabled:NO];
-        [removeIndexButton setEnabled:NO];
-
-        // set the table type menu back to the default, and disable it
-        [tableTypeButton selectItemAtIndex:0];
-        [tableTypeButton setEnabled:NO];
-        tableType = nil;
-        
-        //query finished
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-        
-        [scanner release];
-        
-        return;
+  
+  //query started
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+  
+  if ( [aTable isEqualToString:@""] || !aTable ) {
+    [tableFields removeAllObjects];
+    [indexes removeAllObjects];
+    [tableSourceView reloadData];
+    [indexView reloadData];
+    [addFieldButton setEnabled:NO];
+    [copyFieldButton setEnabled:NO];
+    [removeFieldButton setEnabled:NO];
+    [addIndexButton setEnabled:NO];
+    [removeIndexButton setEnabled:NO];
+    
+    // set the table type menu back to the default, and disable it
+    [tableTypeButton selectItemAtIndex:0];
+    [tableTypeButton setEnabled:NO];
+    tableType = nil;
+    
+    //query finished
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+    
+    [scanner release];
+    
+    return;
+  }
+  
+  //perform queries and load results in array (each row as a dictionary)
+  tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
+  // listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
+  //    tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
+  //    [tableFields setArray:[[self fetchResultAsArray:tableSourceResult] retain]];
+  [tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
+  [tableSourceResult release];
+  indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]] retain];
+  //    [indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
+  [indexes setArray:[self fetchResultAsArray:indexResult]];
+  [indexResult release];
+  CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", selectedTable]];
+  [tableType release];
+  NSDictionary *tempRow = [tableStatusResult fetchRowAsDictionary];
+  if ( [tempRow objectForKey:@"Type"]) {
+    tableType = [tempRow objectForKey:@"Type"];
+  } else {
+    tableType = [tempRow objectForKey:@"Engine"];
+  }
+  [tableType retain];
+  //get table default values
+  if ( defaultValues ) {
+    [defaultValues release];
+    defaultValues = nil;
+  }
+  tempDefaultValues = [NSMutableDictionary dictionary];
+  for ( i = 0 ; i < [tableFields count] ; i++ ) {
+    [tempDefaultValues setObject:[[tableFields objectAtIndex:i] objectForKey:@"Default"] forKey:[[tableFields objectAtIndex:i] objectForKey:@"Field"]];
+  }
+  defaultValues = [[NSDictionary dictionaryWithDictionary:tempDefaultValues] retain];
+  //put field length and extras in separate key
+  enumerator = [tableFields objectEnumerator];
+  while ( (field = [enumerator nextObject]) ) {
+    NSString *type;
+    NSString *length;
+    NSString *extras;
+    // scan for length and extras like unsigned
+    [scanner initWithString:[field objectForKey:@"Type"]];
+    [scanner scanUpToString:@"(" intoString:&type];
+    [scanner scanString:@"(" intoString:nil];
+    if ( ![scanner scanUpToString:@")" intoString:&length] )
+      length = @"";
+    [scanner scanString:@")" intoString:nil];
+    if ( ![scanner scanUpToString:@"" intoString:&extras] ) {
+      extras = @"";
     }
-
-//perform queries and load results in array (each row as a dictionary)
-    tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
-// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
-//    tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
-//    [tableFields setArray:[[self fetchResultAsArray:tableSourceResult] retain]];
-    [tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
-    [tableSourceResult release];
-    indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]] retain];
-//    [indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
-    [indexes setArray:[self fetchResultAsArray:indexResult]];
-    [indexResult release];
-    CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", selectedTable]];
-    [tableType release];
-    NSDictionary *tempRow = [tableStatusResult fetchRowAsDictionary];
-    if ( [tempRow objectForKey:@"Type"]) {
-        tableType = [tempRow objectForKey:@"Type"];
-    } else {
-        tableType = [tempRow objectForKey:@"Engine"];
-    }
-    [tableType retain];
-//get table default values
-    if ( defaultValues ) {
-        [defaultValues release];
-        defaultValues = nil;
-    }
-    tempDefaultValues = [NSMutableDictionary dictionary];
-    for ( i = 0 ; i < [tableFields count] ; i++ ) {
-        [tempDefaultValues setObject:[[tableFields objectAtIndex:i] objectForKey:@"Default"] forKey:[[tableFields objectAtIndex:i] objectForKey:@"Field"]];
-    }
-    defaultValues = [[NSDictionary dictionaryWithDictionary:tempDefaultValues] retain];
-//put field length and extras in separate key
-    enumerator = [tableFields objectEnumerator];
-    while ( (field = [enumerator nextObject]) ) {
-        NSString *type;
-        NSString *length;
-        NSString *extras;
-        // scan for length and extras like unsigned
-        [scanner initWithString:[field objectForKey:@"Type"]];
-        [scanner scanUpToString:@"(" intoString:&type];
-        [scanner scanString:@"(" intoString:nil];
-        if ( ![scanner scanUpToString:@")" intoString:&length] )
-            length = @"";
-        [scanner scanString:@")" intoString:nil];
-        if ( ![scanner scanUpToString:@"" intoString:&extras] ) {
-            extras = @"";
-        }
 		// get possible values if field is enum or set
 		if ( [type isEqualToString:@"enum"] || [type isEqualToString:@"set"] ) {
 			NSMutableArray *possibleValues = [[[length substringWithRange:NSMakeRange(1,[length length]-2)] componentsSeparatedByString:@"','"] mutableCopy];
@@ -136,27 +136,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 			[enumFields setObject:[NSArray arrayWithArray:possibleValues] forKey:[field objectForKey:@"Field"]];
 			[possibleValues release];
 		}
-
+    
 		// scan extras for values like unsigned, zerofill, binary
-        extrasArray = [extras componentsSeparatedByString:@" "];
-        extrasEnumerator = [extrasArray objectEnumerator];
-        while ( (extra = [extrasEnumerator nextObject]) ) {
-            if ( [extra isEqualToString:@"unsigned"] ) {
-                [field setObject:@"1" forKey:@"unsigned"];
-            } else if ( [extra isEqualToString:@"zerofill"] ) {
-                [field setObject:@"1" forKey:@"zerofill"];
-            } else if ( [extra isEqualToString:@"binary"] ) {
-                [field setObject:@"1" forKey:@"binary"];
-            } else {
-                if ( ![extra isEqualToString:@""] )
-                    NSLog(@"ERROR: unknown option in field definition: %@", extra);
-            }
-        }
-        [field setObject:type forKey:@"Type"];
-        [field setObject:length forKey:@"Length"];
+    extrasArray = [extras componentsSeparatedByString:@" "];
+    extrasEnumerator = [extrasArray objectEnumerator];
+    while ( (extra = [extrasEnumerator nextObject]) ) {
+      if ( [extra isEqualToString:@"unsigned"] ) {
+        [field setObject:@"1" forKey:@"unsigned"];
+      } else if ( [extra isEqualToString:@"zerofill"] ) {
+        [field setObject:@"1" forKey:@"zerofill"];
+      } else if ( [extra isEqualToString:@"binary"] ) {
+        [field setObject:@"1" forKey:@"binary"];
+      } else {
+        if ( ![extra isEqualToString:@""] )
+          NSLog(@"ERROR: unknown option in field definition: %@", extra);
+      }
     }
-
-// Determine the table type
+    [field setObject:type forKey:@"Type"];
+    [field setObject:length forKey:@"Length"];
+  }
+  
+  // Determine the table type
 	if ( ![tableType isKindOfClass:[NSNull class]] ) {
 		[tableTypeButton selectItemWithTitle:tableType];
 		[tableTypeButton setEnabled:YES];
@@ -164,33 +164,37 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		[tableTypeButton selectItemWithTitle:@"--"];
 		[tableTypeButton setEnabled:NO];
 	}
-
-//enable buttons
-    [addFieldButton setEnabled:YES];
-    [copyFieldButton setEnabled:YES];
-    [removeFieldButton setEnabled:YES];
-    [addIndexButton setEnabled:YES];
-    [removeIndexButton setEnabled:YES];
-
-//add columns to indexedColumnsField
-    [indexedColumnsField removeAllItems];
-    enumerator = [tableFields objectEnumerator];
-    while ( (field = [enumerator nextObject]) ) {
-        [indexedColumnsField addItemWithObjectValue:[field objectForKey:@"Field"]];
-    }
-    if ( [tableFields count] < 10 ) {
-        [indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
-    } else {
-        [indexedColumnsField setNumberOfVisibleItems:10];
-    }
-
-    [tableSourceView reloadData];
-    [indexView reloadData];
-    
-    //query finished
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-
-    [scanner release];
+  
+  //enable buttons
+  [addFieldButton setEnabled:YES];
+  [copyFieldButton setEnabled:YES];
+  [removeFieldButton setEnabled:YES];
+  [addIndexButton setEnabled:YES];
+  [removeIndexButton setEnabled:YES];
+  
+  //add columns to indexedColumnsField
+  [indexedColumnsField removeAllItems];
+  enumerator = [tableFields objectEnumerator];
+  while ( (field = [enumerator nextObject]) ) {
+    [indexedColumnsField addItemWithObjectValue:[field objectForKey:@"Field"]];
+  }
+  if ( [tableFields count] < 10 ) {
+    [indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
+  } else {
+    [indexedColumnsField setNumberOfVisibleItems:10];
+  }
+  
+  [tableSourceView reloadData];
+  [indexView reloadData];
+  
+  // display and *then* tile to force scroll bars to be in the correct position
+  [[tableSourceView enclosingScrollView] display];
+  [[tableSourceView enclosingScrollView] tile];
+  
+  //query finished
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+  
+  [scanner release];
 }
 
 - (IBAction)reloadTable:(id)sender
@@ -714,24 +718,24 @@ get the default value for a specified field
 
 - (NSArray *)fieldNames
 /*
-returns an array containing the field names of the selected table
-*/
+ returns an array containing the field names of the selected table
+ */
 {
-    NSMutableArray *tempArray = [NSMutableArray array];
-    NSEnumerator *enumerator;
-    id field;
-
-    //load table if not already done
-    if ( ![tablesListInstance structureLoaded] ) {
-        [self loadTable:[tablesListInstance table]];
-    }
-    //get field names
-    enumerator = [tableFields objectEnumerator];
-    while ( (field = [enumerator nextObject]) ) {
-        [tempArray addObject:[field objectForKey:@"Field"]];
-    }
-    
-    return [NSArray arrayWithArray:tempArray];
+  NSMutableArray *tempArray = [NSMutableArray array];
+  NSEnumerator *enumerator;
+  id field;
+  
+  //load table if not already done
+  if ( ![tablesListInstance structureLoaded] ) {
+    [self loadTable:(NSString *)[tablesListInstance table]];
+  }
+  //get field names
+  enumerator = [tableFields objectEnumerator];
+  while ( (field = [enumerator nextObject]) ) {
+    [tempArray addObject:[field objectForKey:@"Field"]];
+  }
+  
+  return [NSArray arrayWithArray:tempArray];
 }
 
 - (NSDictionary *)enumFields
