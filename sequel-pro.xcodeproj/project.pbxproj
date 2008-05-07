@@ -159,8 +159,8 @@
 		B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
 		B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
-		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
-		B5E36E4F0DCDEA1E00B0DA06 /* sl-icon_table.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "sl-icon_table.tiff"; sourceTree = "<group>"; };
+		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "toolbar-switch-to-structure.tiff"; path = "images/toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
+		B5E36E4F0DCDEA1E00B0DA06 /* sl-icon_table.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "sl-icon_table.tiff"; path = "images/sl-icon_table.tiff"; sourceTree = "<group>"; };
 		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = images/appicon.icns; sourceTree = "<group>"; };
 		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = images/selectnone.tiff; sourceTree = "<group>"; };
 		F51B86B3050A4E4F01000103 /* connectioncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectioncopy.tiff; path = images/connectioncopy.tiff; sourceTree = "<group>"; };
