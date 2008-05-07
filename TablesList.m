@@ -27,7 +27,7 @@
 #import "TableSource.h"
 #import "TableContent.h"
 #import "TableDump.h"
-
+#import "ImageAndTextCell.h"
 
 @implementation TablesList
 
@@ -45,6 +45,7 @@ loads all table names in array tables and reload the tableView
 
     [tablesListView deselectAll:self];
     [tables removeAllObjects];
+	[tables addObject:@"TABLES"];
 
     theResult = [mySQLConnection listTables];
     for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
@@ -329,9 +330,11 @@ returns the currently selected table or nil if no table or mulitple tables are s
 {
     if ( [tablesListView numberOfSelectedRows] == 1 ) {
         return [tables objectAtIndex:[tablesListView selectedRow]];
+    } else if ([tablesListView numberOfSelectedRows] > 1) {
+        return @"";
     } else {
-        return nil;
-    }
+		return nil;
+	}
 }
 
 - (BOOL)structureLoaded
@@ -369,7 +372,7 @@ returns YES if table status has already been loaded
             objectValueForTableColumn:(NSTableColumn *)aTableColumn
             row:(int)rowIndex
 {
-    return [tables objectAtIndex:rowIndex];
+		return [tables objectAtIndex:rowIndex];
 }
 
 /**
@@ -580,6 +583,7 @@ loads a table in content or source view (if tab selected)
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
 									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
+		 
     } else {
         [tableSourceInstance loadTable:nil];
         [tableContentInstance loadTable:nil];
@@ -590,7 +594,7 @@ loads a table in content or source view (if tab selected)
 		// set window title
         [tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
 									[tableDocumentInstance host], [tableDocumentInstance database]]];
-    }
+    }	
 }
 
 //tabView delegate methods
@@ -629,6 +633,30 @@ loads structure or source if tab selected the first time
 */
 }
 
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
+{
+	return (rowIndex != 0);
+}
+
+
+- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
+{
+	return (row == 0);	
+}
+
+- (void)tableView:(NSTableView *)aTableView 
+  willDisplayCell:(id)aCell 
+   forTableColumn:(NSTableColumn *)aTableColumn 
+			  row:(int)rowIndex
+{
+	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"tables"]) {
+		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"sl-icon_table"]];
+		[(ImageAndTextCell*)aCell setIndentationLevel:1];
+	} else {
+		[(ImageAndTextCell*)aCell setImage:nil];
+		[(ImageAndTextCell*)aCell setIndentationLevel:0];
+	}
+}
 
 //last but not least
 - (id)init
@@ -638,7 +666,7 @@ loads structure or source if tab selected the first time
     tables = [[NSMutableArray alloc] init];
     structureLoaded = NO;
     contentLoaded = NO;
-
+	[tables addObject:@"TABLES"];
     return self;
 }
 

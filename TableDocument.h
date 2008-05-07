@@ -113,6 +113,9 @@
 //alert sheets method
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
+//connection getter
+- (CMMCPConnection *)sharedConnection;
+
 //database methods
 - (IBAction)setDatabases:(id)sender;
 - (IBAction)chooseDatabase:(id)sender;

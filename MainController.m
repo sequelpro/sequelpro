@@ -672,7 +672,7 @@ code that need to be executed when the nib file is loaded
     NSEnumerator *enumerator;
     id favorite;
     NSString *name, *host, *user, *database, *password;
-	int code;
+//	int code;
 
 //register MainController as services provider
     [NSApp setServicesProvider:self];

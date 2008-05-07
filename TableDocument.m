@@ -31,6 +31,7 @@
 #import "CustomQuery.h"
 #import "TableDump.h"
 #import "TableStatus.h"
+#import "ImageAndTextCell.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 
@@ -72,6 +73,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
   else {
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
   }
+}
+
+
+- (CMMCPConnection *)sharedConnection
+{
+	return mySQLConnection;
 }
 
 
@@ -761,7 +768,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
+	// Check for errors
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		return;
@@ -782,7 +789,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
+	// Check for errors
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		return;
@@ -794,9 +801,9 @@ reused when user hits the close button of the variablseSheet or of the createTab
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 	
 	// copy to the clipboard
-  NSPasteboard *pb = [NSPasteboard generalPasteboard];
-  [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-  [pb setString:tableSyntax forType:NSStringPboardType];
+	NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+	[pb setString:tableSyntax forType:NSStringPboardType];
 }
 
 - (IBAction)checkTable:(id)sender
@@ -809,14 +816,15 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	query = [NSString stringWithFormat:@"CHECK TABLE `%@`", [self table]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-		NSRunInformationalAlertPanel(@"Check Table", [NSString stringWithFormat:@"Check: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
-	} else {
-	// If there was an error
+	// Check for errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while checking table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		return;
 	}
+	
+	// Process result
+	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	NSRunInformationalAlertPanel(@"Check Table", [NSString stringWithFormat:@"Check: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)analyzeTable:(id)sender
@@ -829,14 +837,15 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	query = [NSString stringWithFormat:@"ANALYZE TABLE `%@`", [self table]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-		NSRunInformationalAlertPanel(@"Analyze Table", [NSString stringWithFormat:@"Analyze: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
-	} else {
-		// If there was an error
+	// Check for errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while analyzing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		return;
 	}
+	
+	// Process result
+	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	NSRunInformationalAlertPanel(@"Analyze Table", [NSString stringWithFormat:@"Analyze: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)optimizeTable:(id)sender
@@ -849,14 +858,14 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	query = [NSString stringWithFormat:@"OPTIMIZE TABLE `%@`", [self table]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-		NSRunInformationalAlertPanel(@"Optimize Table", [NSString stringWithFormat:@"Optimize: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
-	} else {
-		// If there was an error
+	// Check for errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while optimizing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 	}
+	
+	// Process result
+	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	NSRunInformationalAlertPanel(@"Optimize Table", [NSString stringWithFormat:@"Optimize: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)repairTable:(id)sender
@@ -869,14 +878,14 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	query = [NSString stringWithFormat:@"REPAIR TABLE `%@`", [self table]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-		NSRunInformationalAlertPanel(@"Repair Table", [NSString stringWithFormat:@"Repair: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
-	} else {
-		// If there was an error
+	// Check for errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while repairing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 	}
+	
+	// Process result
+	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	NSRunInformationalAlertPanel(@"Repair Table", [NSString stringWithFormat:@"Repair: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)flushTable:(id)sender
@@ -888,13 +897,14 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	query = [NSString stringWithFormat:@"FLUSH TABLE `%@`", [self table]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for no errors
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		NSRunInformationalAlertPanel(@"Flush Table", @"Flushed", @"OK", nil, nil);
-	} else {
-		// If there was an error
+	// Check for errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while flushing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		return;
 	}
+	
+	// Process result
+	NSRunInformationalAlertPanel(@"Flush Table", @"Flushed", @"OK", nil, nil);
 }
 
 #pragma mark Other Methods
@@ -1102,7 +1112,7 @@ passes the request to the tableDump object
 		[menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 
 		[menuItem action] == @selector(repairTable:) || 
-		[menuItem action] == @selector(flushTable:))
+		[menuItem action] == @selector(flushTable:)) 
 	{
 		return ([self table] != nil);
 	}
