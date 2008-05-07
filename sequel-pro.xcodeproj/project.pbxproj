@@ -100,10 +100,6 @@
 		9BFF53B208F44B40004D6BCB /* askForPass.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BFF53AF08F44B40004D6BCB /* askForPass.sh */; };
 		B51C20700DCFEA4F00A9A004 /* SPTableInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = B51C206E0DCFEA4F00A9A004 /* SPTableInfo.h */; };
 		B51C20710DCFEA4F00A9A004 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */; };
-		B51C207C0DCFEF3000A9A004 /* CodeAssistantProtocol.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B51C20790DCFEF3000A9A004 /* CodeAssistantProtocol.tiff */; };
-		B51C207D0DCFEF3000A9A004 /* CodeAssistantMacro.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B51C207A0DCFEF3000A9A004 /* CodeAssistantMacro.tiff */; };
-		B51C207E0DCFEF3000A9A004 /* CodeAssistantProperty.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B51C207B0DCFEF3000A9A004 /* CodeAssistantProperty.tiff */; };
-		B522E0F60DCB37F100791159 /* SplitterHandle.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B522E0F50DCB37F100791159 /* SplitterHandle.tiff */; };
 		B5BD35050DCF31CB005723A7 /* ImageAndTextCell.h in Headers */ = {isa = PBXBuildFile; fileRef = B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */; };
 		B5BD35060DCF31CB005723A7 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */; };
 		B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */; };
@@ -161,10 +157,6 @@
 		9BFF53AF08F44B40004D6BCB /* askForPass.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = askForPass.sh; sourceTree = "<group>"; };
 		B51C206E0DCFEA4F00A9A004 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableInfo.h; sourceTree = "<group>"; };
 		B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
-		B51C20790DCFEF3000A9A004 /* CodeAssistantProtocol.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = CodeAssistantProtocol.tiff; path = Library/PrivateFrameworks/DevToolsInterface.framework/Versions/A/Resources/CodeAssistantProtocol.tiff; sourceTree = SYSTEM_DEVELOPER_DIR; };
-		B51C207A0DCFEF3000A9A004 /* CodeAssistantMacro.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = CodeAssistantMacro.tiff; path = Library/PrivateFrameworks/DevToolsInterface.framework/Versions/A/Resources/CodeAssistantMacro.tiff; sourceTree = SYSTEM_DEVELOPER_DIR; };
-		B51C207B0DCFEF3000A9A004 /* CodeAssistantProperty.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = CodeAssistantProperty.tiff; path = Library/PrivateFrameworks/DevToolsInterface.framework/Versions/A/Resources/CodeAssistantProperty.tiff; sourceTree = SYSTEM_DEVELOPER_DIR; };
-		B522E0F50DCB37F100791159 /* SplitterHandle.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = SplitterHandle.tiff; sourceTree = "<group>"; };
 		B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
 		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
@@ -421,11 +413,7 @@
 		F5E4F1AC03C8B2CB01000125 /* images */ = {
 			isa = PBXGroup;
 			children = (
-				B51C20790DCFEF3000A9A004 /* CodeAssistantProtocol.tiff */,
-				B51C207A0DCFEF3000A9A004 /* CodeAssistantMacro.tiff */,
-				B51C207B0DCFEF3000A9A004 /* CodeAssistantProperty.tiff */,
 				B5E36E4F0DCDEA1E00B0DA06 /* sl-icon_table.tiff */,
-				B522E0F50DCB37F100791159 /* SplitterHandle.tiff */,
 				383DAC100DCACB4B000499B6 /* logo-48.png */,
 				F52FA4B40509F1B801000103 /* connectionadd.tiff */,
 				F52FA4B50509F1B801000103 /* connectiondelete.tiff */,
@@ -603,12 +591,8 @@
 				383DAC160DCACE1D000499B6 /* toolbar-switch-to-browse.png in Resources */,
 				383DAC180DCACE1D000499B6 /* toolbar-switch-to-sql.png in Resources */,
 				383DAC1A0DCACE68000499B6 /* toolbar-switch-to-table-info.png in Resources */,
-				B522E0F60DCB37F100791159 /* SplitterHandle.tiff in Resources */,
 				B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */,
 				B5E36E500DCDEA1E00B0DA06 /* sl-icon_table.tiff in Resources */,
-				B51C207C0DCFEF3000A9A004 /* CodeAssistantProtocol.tiff in Resources */,
-				B51C207D0DCFEF3000A9A004 /* CodeAssistantMacro.tiff in Resources */,
-				B51C207E0DCFEF3000A9A004 /* CodeAssistantProperty.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
