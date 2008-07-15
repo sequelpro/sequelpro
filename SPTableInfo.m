@@ -24,10 +24,10 @@
 
 - (void)awakeFromNib
 {
-//	[[NSNotificationCenter defaultCenter] addObserver:self
-//											 selector:@selector(tableChanged:) 
-//												 name:NSTableViewSelectionDidChangeNotification 
-//											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(tableChanged:) 
+												 name:NSTableViewSelectionDidChangeNotification 
+											   object:nil];
 	[info addObject:@"TABLE INFORMATION"];
 	[infoTable reloadData];
 }
@@ -35,7 +35,7 @@
 
 - (void)dealloc
 {
-	//[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[tableListInstance release];
 	

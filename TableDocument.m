@@ -55,6 +55,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
   [favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
   
   // register double click for the favorites view (double click favorite to connect)
+	//[[connectFavoritesTableView tableColumnWithIdentifier:@"favorites"] setHeaderCell:[[[iTableColumnHeaderCell alloc] initTextCell:@"Favorites"] autorelease]];
   [connectFavoritesTableView setTarget:self];
   [connectFavoritesTableView setDoubleAction:@selector(connect:)];
   
@@ -535,7 +536,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 /**
  * shows or hides the console
  */
-- (void)toggleConsole
+- (void)toggleConsole:(id)sender
 {
   NSDrawerState state = [consoleDrawer state];
   if (NSDrawerOpeningState == state || NSDrawerOpenState == state) {
@@ -549,7 +550,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 /**
  * clears the console
  */
-- (void)clearConsole
+- (void)clearConsole:(id)sender
 {
   [consoleTextView setString:@""];
 }
@@ -824,7 +825,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	
 	// Process result
 	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel(@"Check Table", [NSString stringWithFormat:@"Check: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Check '%@' table", [self table]], [NSString stringWithFormat:@"Check: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)analyzeTable:(id)sender
@@ -845,7 +846,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	
 	// Process result
 	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel(@"Analyze Table", [NSString stringWithFormat:@"Analyze: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Analyze '%@' table", [self table]], [NSString stringWithFormat:@"Analyze: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)optimizeTable:(id)sender
@@ -865,7 +866,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	
 	// Process result
 	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel(@"Optimize Table", [NSString stringWithFormat:@"Optimize: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Optimize '%@' table", [self table]], [NSString stringWithFormat:@"Optimize: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)repairTable:(id)sender
@@ -885,7 +886,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	
 	// Process result
 	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel(@"Repair Table", [NSString stringWithFormat:@"Repair: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Repair '%@' table", [self table]], [NSString stringWithFormat:@"Repair: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
 }
 
 - (IBAction)flushTable:(id)sender
@@ -904,7 +905,27 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	}
 	
 	// Process result
-	NSRunInformationalAlertPanel(@"Flush Table", @"Flushed", @"OK", nil, nil);
+	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Flush '%@' table", [self table]], @"Flushed", @"OK", nil, nil);
+}
+
+- (IBAction)checksumTable:(id)sender
+{
+	NSString *query;
+	CMMCPResult *theResult;
+	NSDictionary *theRow;
+	
+	//Create the query and get results
+	query = [NSString stringWithFormat:@"CHECKSUM TABLE `%@`", [self table]];
+	theResult = [mySQLConnection queryString:query];
+	
+	// Check for errors
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while performming checksum on table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	}
+	
+	// Process result
+	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Checksum '%@' table", [self table]], [NSString stringWithFormat:@"Checksum: %@", [theRow objectForKey:@"Checksum"]], @"OK", nil, nil);
 }
 
 #pragma mark Other Methods
@@ -1107,14 +1128,16 @@ passes the request to the tableDump object
 	}
 	
 	// table menu items
-	if ([menuItem action] == @selector(createTableSyntax:) ||
+	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
+		[menuItem action] == @selector(copyCreateTableSyntax:) ||
 		[menuItem action] == @selector(checkTable:) || 
 		[menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 
 		[menuItem action] == @selector(repairTable:) || 
-		[menuItem action] == @selector(flushTable:)) 
+		[menuItem action] == @selector(flushTable:) ||
+		[menuItem action] == @selector(checksumTable:)) 
 	{
-		return ([self table] != nil);
+		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
 	return [super validateMenuItem:menuItem];
 }
@@ -1272,14 +1295,14 @@ passes the request to the tableDump object
           @"ToggleConsoleIdentifier",
           @"ClearConsoleIdentifier",
           @"FlushPrivilegesIdentifier",
-          NSToolbarCustomizeToolbarItemIdentifier,
-          NSToolbarFlexibleSpaceItemIdentifier,
-          NSToolbarSpaceItemIdentifier,
-          NSToolbarSeparatorItemIdentifier,
           @"SwitchToTableStructureToolbarItemIdentifier",
           @"SwitchToTableContentToolbarItemIdentifier",
           @"SwitchToRunQueryToolbarItemIdentifier",
           @"SwitchToTableStatusToolbarItemIdentifier",
+			NSToolbarCustomizeToolbarItemIdentifier,
+			NSToolbarFlexibleSpaceItemIdentifier,
+			NSToolbarSpaceItemIdentifier,
+			NSToolbarSeparatorItemIdentifier,
         	nil];
 }
 
@@ -1290,10 +1313,11 @@ passes the request to the tableDump object
 {
   return [NSArray arrayWithObjects:
 		  @"DatabaseSelectToolbarItemIdentifier",
-          NSToolbarSpaceItemIdentifier,
+          NSToolbarFlexibleSpaceItemIdentifier,
           @"SwitchToTableStructureToolbarItemIdentifier",
           @"SwitchToTableContentToolbarItemIdentifier",
           @"SwitchToRunQueryToolbarItemIdentifier",
+		  NSToolbarFlexibleSpaceItemIdentifier,
           nil];
 }
 
@@ -1342,7 +1366,7 @@ code that need to be executed once the windowController has loaded the document'
 sets upt the interface (small fonts)
 */
 {
-    [aController setShouldCascadeWindows:NO];
+    [aController setShouldCascadeWindows:YES];
     [super windowControllerDidLoadNib:aController];
 
     NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
@@ -1456,6 +1480,15 @@ invoked when query gave an error
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
   [self updateChooseDatabaseToolbarItemWidth];
+}
+
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
+{
+	if (sidebarGrabber != nil) {
+		return [sidebarGrabber convertRect:[sidebarGrabber bounds] toView:splitView];
+	} else {
+		return NSZeroRect;
+	}
 }
 
 - (void)updateChooseDatabaseToolbarItemWidth
