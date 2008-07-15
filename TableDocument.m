@@ -535,7 +535,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 /**
  * shows or hides the console
  */
-- (void)toggleConsole
+- (void)toggleConsole:(id)sender;
 {
   NSDrawerState state = [consoleDrawer state];
   if (NSDrawerOpeningState == state || NSDrawerOpenState == state) {
@@ -549,7 +549,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
 /**
  * clears the console
  */
-- (void)clearConsole
+- (void)clearConsole:(id)sender;
 {
   [consoleTextView setString:@""];
 }

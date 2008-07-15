@@ -124,8 +124,8 @@
 - (IBAction)removeDatabase:(id)sender;
 
 //console methods
-- (void)toggleConsole;
-- (void)clearConsole;
+- (void)toggleConsole:(id)sender;
+- (void)clearConsole:(id)sender;
 - (BOOL)consoleIsOpened;
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;
