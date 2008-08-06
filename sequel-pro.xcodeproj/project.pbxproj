@@ -730,7 +730,7 @@
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.3;
 				PRODUCT_NAME = "Sequel Pro";
 				SECTORDER_FLAGS = "";
-				VALID_ARCHS = "ppc64 ppc7400 ppc970 ppc";
+				VALID_ARCHS = "i386 ppc64 ppc7400 ppc970 ppc";
 				VERSIONING_SYSTEM = "";
 				WARNING_CFLAGS = (
 					"-Wmost",
