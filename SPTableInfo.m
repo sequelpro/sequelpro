@@ -28,7 +28,7 @@
 //											 selector:@selector(tableChanged:) 
 //												 name:NSTableViewSelectionDidChangeNotification 
 //											   object:nil];
-	[info addObject:@"TABLE INFORMATION"];
+	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
 	[infoTable reloadData];
 }
 
