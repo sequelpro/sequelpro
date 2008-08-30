@@ -47,6 +47,7 @@
     IBOutlet id indexedColumnsField;
     IBOutlet id chooseKeyButton;
     IBOutlet id tableTypeButton;
+	IBOutlet id structureGrabber;
 
     CMMCPConnection *mySQLConnection;
     CMMCPResult *tableSourceResult;
@@ -117,6 +118,7 @@
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex;
 
 //last but not least
 - (id)init;

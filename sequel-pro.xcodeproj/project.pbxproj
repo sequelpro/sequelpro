@@ -103,10 +103,13 @@
 		B51C20700DCFEA4F00A9A004 /* SPTableInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = B51C206E0DCFEA4F00A9A004 /* SPTableInfo.h */; };
 		B51C20710DCFEA4F00A9A004 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */; };
 		B550AF9E0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B550AF9D0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff */; };
+		B5A78E700E4AC08D00684D3F /* grabber-horizontal.png in Resources */ = {isa = PBXBuildFile; fileRef = B5A78E6C0E4AC08D00684D3F /* grabber-horizontal.png */; };
+		B5A78E710E4AC08D00684D3F /* grabber-vertical.png in Resources */ = {isa = PBXBuildFile; fileRef = B5A78E6D0E4AC08D00684D3F /* grabber-vertical.png */; };
+		B5A78E720E4AC08D00684D3F /* spyglass.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A78E6E0E4AC08D00684D3F /* spyglass.tiff */; };
+		B5A78E730E4AC08D00684D3F /* table-small.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5A78E6F0E4AC08D00684D3F /* table-small.tif */; };
 		B5BD35050DCF31CB005723A7 /* ImageAndTextCell.h in Headers */ = {isa = PBXBuildFile; fileRef = B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */; };
 		B5BD35060DCF31CB005723A7 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */; };
 		B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */; };
-		B5E36E500DCDEA1E00B0DA06 /* sl-icon_table.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E36E4F0DCDEA1E00B0DA06 /* sl-icon_table.tiff */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -172,10 +175,13 @@
 		B51C206E0DCFEA4F00A9A004 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableInfo.h; sourceTree = "<group>"; };
 		B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
 		B550AF9D0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = CodeAssistantProtocol.tiff; path = images/CodeAssistantProtocol.tiff; sourceTree = "<group>"; };
+		B5A78E6C0E4AC08D00684D3F /* grabber-horizontal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "grabber-horizontal.png"; path = "images/grabber-horizontal.png"; sourceTree = "<group>"; };
+		B5A78E6D0E4AC08D00684D3F /* grabber-vertical.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "grabber-vertical.png"; path = "images/grabber-vertical.png"; sourceTree = "<group>"; };
+		B5A78E6E0E4AC08D00684D3F /* spyglass.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = spyglass.tiff; path = images/spyglass.tiff; sourceTree = "<group>"; };
+		B5A78E6F0E4AC08D00684D3F /* table-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "table-small.tif"; path = "images/table-small.tif"; sourceTree = "<group>"; };
 		B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
 		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "toolbar-switch-to-structure.tiff"; path = "images/toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
-		B5E36E4F0DCDEA1E00B0DA06 /* sl-icon_table.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "sl-icon_table.tiff"; path = "images/sl-icon_table.tiff"; sourceTree = "<group>"; };
 		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = images/appicon.icns; sourceTree = "<group>"; };
 		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = images/selectnone.tiff; sourceTree = "<group>"; };
 		F51B86B3050A4E4F01000103 /* connectioncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectioncopy.tiff; path = images/connectioncopy.tiff; sourceTree = "<group>"; };
@@ -431,7 +437,6 @@
 			isa = PBXGroup;
 			children = (
 				B550AF9D0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff */,
-				B5E36E4F0DCDEA1E00B0DA06 /* sl-icon_table.tiff */,
 				383DAC100DCACB4B000499B6 /* logo-48.png */,
 				F52FA4B40509F1B801000103 /* connectionadd.tiff */,
 				F52FA4B50509F1B801000103 /* connectiondelete.tiff */,
@@ -475,6 +480,10 @@
 				F5A1F6E004EE666101FE0D2B /* showvariables.tiff */,
 				F5A1F6DD04EE666101FE0D2B /* flushprivileges.tiff */,
 				F5A1F6DE04EE666101FE0D2B /* optimizetable.tiff */,
+				B5A78E6C0E4AC08D00684D3F /* grabber-horizontal.png */,
+				B5A78E6D0E4AC08D00684D3F /* grabber-vertical.png */,
+				B5A78E6E0E4AC08D00684D3F /* spyglass.tiff */,
+				B5A78E6F0E4AC08D00684D3F /* table-small.tif */,
 				F5A1F6DC04EE666101FE0D2B /* createtablesyntax.tiff */,
 				383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */,
 				B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */,
@@ -611,8 +620,11 @@
 				383DAC180DCACE1D000499B6 /* toolbar-switch-to-sql.png in Resources */,
 				383DAC1A0DCACE68000499B6 /* toolbar-switch-to-table-info.png in Resources */,
 				B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */,
-				B5E36E500DCDEA1E00B0DA06 /* sl-icon_table.tiff in Resources */,
 				B550AF9E0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff in Resources */,
+				B5A78E700E4AC08D00684D3F /* grabber-horizontal.png in Resources */,
+				B5A78E710E4AC08D00684D3F /* grabber-vertical.png in Resources */,
+				B5A78E720E4AC08D00684D3F /* spyglass.tiff in Resources */,
+				B5A78E730E4AC08D00684D3F /* table-small.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

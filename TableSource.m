@@ -1130,6 +1130,10 @@ defines min position of splitView
         return proposedMin + 150;
 }
 
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
+{	
+	return [structureGrabber convertRect:[structureGrabber bounds] toView:splitView];
+}
 
 //last but not least
 - (id)init
