@@ -53,6 +53,8 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>SUFeedURL</key>
+	<string>http://sequelpro.com/appcast/app-releases.xml</string>
 	<key>NSServices</key>
 	<array>
 		<dict>

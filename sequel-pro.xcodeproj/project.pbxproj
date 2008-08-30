@@ -17,6 +17,8 @@
 		38E9C9320DBF7293009E9395 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C9300DBF7293009E9395 /* DBView.xib */; };
 		38F42AE00DBFF16500B58FFB /* TableDocumentSplitView.h in Headers */ = {isa = PBXBuildFile; fileRef = 38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */; };
 		38F42AE10DBFF16500B58FFB /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */; };
+		4B370C660E699C3D0002ABD0 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B370C650E699C3D0002ABD0 /* Sparkle.framework */; };
+		4B370C770E699D9E0002ABD0 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4B370C650E699C3D0002ABD0 /* Sparkle.framework */; };
 		9B0646E409AF165700428D0B /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B0646E309AF165700428D0B /* MCPKit_bundled.framework */; };
 		9B0646E809AF167C00428D0B /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B0646E309AF165700428D0B /* MCPKit_bundled.framework */; };
 		9B9ACE9208DEBE70009E313E /* TableDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */; };
@@ -108,12 +110,22 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		4B370C6C0E699D230002ABD0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B9ACEDE08DEBE70009E313E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				4B370C770E699D9E0002ABD0 /* Sparkle.framework in CopyFiles */,
 				9B0646E809AF167C00428D0B /* MCPKit_bundled.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -138,12 +150,13 @@
 		38E9C9310DBF7293009E9395 /* English */ = {isa = PBXFileReference; languageSpecificationIdentifier = html; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
 		38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
 		38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
+		4B370C650E699C3D0002ABD0 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		9B0646E309AF165700428D0B /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MCPKit_bundled.framework; sourceTree = "<group>"; };
 		9B220E640751EE2700DA3E19 /* TableStatus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableStatus.h; sourceTree = "<group>"; };
 		9B220E650751EE2700DA3E19 /* TableStatus.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableStatus.m; sourceTree = "<group>"; };
 		9B40F86207461DC500D81DFB /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
 		9B40F86307461DC500D81DFB /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
-		9B9ACEE908DEBE70009E313E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B9ACEE908DEBE70009E313E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B9ACEEA08DEBE70009E313E /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BC3EEB809AC6EE100F6B295 /* CMTextView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMTextView.h; sourceTree = "<group>"; };
 		9BC3EEB909AC6EE100F6B295 /* CMTextView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMTextView.m; sourceTree = "<group>"; };
@@ -238,6 +251,7 @@
 				9B9ACEE208DEBE70009E313E /* Carbon.framework in Frameworks */,
 				9B9ACEE308DEBE70009E313E /* Foundation.framework in Frameworks */,
 				9B0646E409AF165700428D0B /* MCPKit_bundled.framework in Frameworks */,
+				4B370C660E699C3D0002ABD0 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +261,7 @@
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4B370C650E699C3D0002ABD0 /* Sparkle.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
 			);
 			name = "Linked Frameworks";
@@ -509,6 +524,7 @@
 				9B9ACECF08DEBE70009E313E /* Sources */,
 				9B9ACEDE08DEBE70009E313E /* CopyFiles */,
 				9B9ACEE008DEBE70009E313E /* Frameworks */,
+				4B370C6C0E699D230002ABD0 /* CopyFiles */,
 			);
 			buildRules = (
 			);
