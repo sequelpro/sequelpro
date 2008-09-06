@@ -56,7 +56,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
   
   // register double click for the favorites view (double click favorite to connect)
   [connectFavoritesTableView setTarget:self];
-  [connectFavoritesTableView setDoubleAction:@selector(connect:)];
   
   // find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
   selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
