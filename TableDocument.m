@@ -35,6 +35,7 @@
 #import <Growl/Growl.h>
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
+NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
 
 @implementation TableDocument
 
@@ -54,6 +55,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {
   // register selection did change handler for favorites controller (used in connect sheet)
   [favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
+	
+	// register value change handler for favourites, so we can save them to preferences
+	[self addObserver:self forKeyPath:@"favorites" options:0 context:TableDocumentFavoritesControllerFavoritesDidChange];
   
   // register double click for the favorites view (double click favorite to connect)
   [connectFavoritesTableView setTarget:self];
@@ -69,10 +73,15 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {
   if (context == TableDocumentFavoritesControllerSelectionIndexDidChange) {
     [self chooseFavorite:self];
+		return;
   }
-  else {
-    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-  }
+	
+	if (context == TableDocumentFavoritesControllerFavoritesDidChange) {
+		[prefs setObject:[self favorites] forKey:@"favorites"];
+		return;
+	}
+	
+	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 
@@ -275,16 +284,16 @@ reused when user hits the close button of the variablseSheet or of the createTab
   selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
 }
 
-- (NSArray *)favorites
+- (NSMutableArray *)favorites
 {
   // if no favorites, load from user defaults
   if (!favorites) {
-    favorites = [[NSArray alloc] initWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"favorites"]];
+    favorites = [[NSMutableArray alloc] initWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"favorites"]];
   }
 
 	// if no favorites in user defaults, load empty ones
 	if (!favorites) {
-    favorites = [[NSArray array] retain];
+    favorites = [[NSMutableArray array] retain];
   }
 	
   return favorites;
@@ -325,12 +334,6 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	[self addToFavoritesHost:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
 }
 
-- (void)connectSheetRemoveFromFavorites:(id)sender
-{
-	NSBeep();
-	NSLog(@"Remove from favourites is not yet implemented.");
-}
-
 /**
  * add actual connection to favorites
  */
@@ -343,8 +346,6 @@ reused when user hits the close button of the variablseSheet or of the createTab
 					     sshPassword:(NSString *)sshPassword // no-longer in use
 					         sshPort:(NSString *)sshPort // no-longer in use
 {
-  NSEnumerator *enumerator = [favorites objectEnumerator];
-  id favorite;
   NSString *favoriteName = [NSString stringWithFormat:@"%@@%@", user, host];
   if (![database isEqualToString:@""])
     favoriteName = [NSString stringWithFormat:@"%@ %@", database, favoriteName];
@@ -354,28 +355,19 @@ reused when user hits the close button of the variablseSheet or of the createTab
     NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
     return;
   }
-
-  // test if favorite name isn't used by another favorite
-  while (favorite = [enumerator nextObject]) {
-    if ([[favorite objectForKey:@"name"] isEqualToString:favoriteName]) {
-      NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), [NSString stringWithFormat:NSLocalizedString(@"Favorite %@ has already been saved!\nOpen Preferences to change the names of the favorites.", @"message of panel when favorite name has already been used"), favoriteName], NSLocalizedString(@"OK", @"OK button"), nil, nil);
-      return;
-    }
-  }
 	
 	[self willChangeValueForKey:@"favorites"];
 
   // write favorites and password
   NSDictionary *newFavorite = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,    socket,    user,    port,    database,    nil]
                                                           forKeys:[NSArray arrayWithObjects:@"name",      @"host", @"socket", @"user", @"port", @"database", nil]];
-  favorites = [[favorites arrayByAddingObject:newFavorite] retain];
+  [favorites addObject:newFavorite];
   
   if (![password isEqualToString:@""]) {
       [keyChainInstance addPassword:password
                             forName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteName]
                             account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
   }
-  [prefs setObject:favorites forKey:@"favorites"];
 
   // select new favorite
   selectedFavorite = [favoriteName retain];
