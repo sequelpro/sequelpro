@@ -101,6 +101,8 @@
 - (IBAction)chooseFavorite:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
+- (void)connectSheetAddToFavorites:(id)sender;
+- (void)connectSheetRemoveFromFavorites:(id)sender;
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
                       user:(NSString *)user password:(NSString *)password
                       port:(NSString *)port database:(NSString *)database

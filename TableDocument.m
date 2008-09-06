@@ -307,6 +307,17 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	return [keyChainInstance getPasswordForName:keychainName account:keychainAccount];
 }
 
+- (void)connectSheetAddToFavorites:(id)sender
+{
+	[self addToFavoritesHost:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
+}
+
+- (void)connectSheetRemoveFromFavorites:(id)sender
+{
+	NSBeep();
+	NSLog(@"Remove from favourites is not yet implemented.");
+}
+
 /**
  * add actual connection to favorites
  */
