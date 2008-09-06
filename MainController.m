@@ -680,6 +680,8 @@ code that need to be executed when the nib file is loaded
 //register MainController for AppleScript events
 	[[ NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject: self ];
 
+	[GrowlApplicationBridge setGrowlDelegate:self];
+	
     prefs = [[NSUserDefaults standardUserDefaults] retain];
     isNewFavorite = NO;
 

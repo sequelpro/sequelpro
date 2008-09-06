@@ -109,6 +109,9 @@
 		B5A78E730E4AC08D00684D3F /* table-small.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5A78E6F0E4AC08D00684D3F /* table-small.tif */; };
 		B5BD35050DCF31CB005723A7 /* ImageAndTextCell.h in Headers */ = {isa = PBXBuildFile; fileRef = B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */; };
 		B5BD35060DCF31CB005723A7 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */; };
+		B5C801AC0E7210030011253E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5C801AB0E7210030011253E /* Growl.framework */; };
+		B5C801B60E7211BD0011253E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B5C801AB0E7210030011253E /* Growl.framework */; };
+		B5C801C60E7212E00011253E /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */; };
 		B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */; };
 /* End PBXBuildFile section */
 
@@ -128,6 +131,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				B5C801B60E7211BD0011253E /* Growl.framework in CopyFiles */,
 				4B370C770E699D9E0002ABD0 /* Sparkle.framework in CopyFiles */,
 				9B0646E809AF167C00428D0B /* MCPKit_bundled.framework in CopyFiles */,
 			);
@@ -181,6 +185,8 @@
 		B5A78E6F0E4AC08D00684D3F /* table-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "table-small.tif"; path = "images/table-small.tif"; sourceTree = "<group>"; };
 		B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
+		B5C801AB0E7210030011253E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
+		B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "toolbar-switch-to-structure.tiff"; path = "images/toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
 		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = images/appicon.icns; sourceTree = "<group>"; };
 		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = images/selectnone.tiff; sourceTree = "<group>"; };
@@ -258,6 +264,7 @@
 				9B9ACEE308DEBE70009E313E /* Foundation.framework in Frameworks */,
 				9B0646E409AF165700428D0B /* MCPKit_bundled.framework in Frameworks */,
 				4B370C660E699C3D0002ABD0 /* Sparkle.framework in Frameworks */,
+				B5C801AC0E7210030011253E /* Growl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,8 +274,10 @@
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B5C801AB0E7210030011253E /* Growl.framework */,
 				4B370C650E699C3D0002ABD0 /* Sparkle.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
+				9B0646E309AF165700428D0B /* MCPKit_bundled.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -279,7 +288,6 @@
 				2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */,
 				2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */,
 				F5981AA203BA574A0100012B /* Carbon.framework */,
-				9B0646E309AF165700428D0B /* MCPKit_bundled.framework */,
 			);
 			name = "Other Frameworks";
 			sourceTree = "<group>";
@@ -310,6 +318,7 @@
 		2A37F4B8FDCFA73011CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */,
 				F503C88F02B387CB01C66673 /* appicon.icns */,
 				9B9ACEE908DEBE70009E313E /* Info.plist */,
 				F5E4F1AC03C8B2CB01000125 /* images */,
@@ -566,6 +575,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5C801C60E7212E00011253E /* Growl Registration Ticket.growlRegDict in Resources */,
 				9B9ACEA008DEBE70009E313E /* Credits.rtf in Resources */,
 				9B9ACEA408DEBE70009E313E /* sort-down.tiff in Resources */,
 				9B9ACEA508DEBE70009E313E /* sort-up.tiff in Resources */,

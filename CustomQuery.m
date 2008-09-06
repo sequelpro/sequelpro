@@ -24,6 +24,7 @@
 
 #import "CustomQuery.h"
 #import "TableDump.h"
+#import <Growl/Growl.h>
 
 
 @implementation CustomQuery
@@ -133,6 +134,16 @@ sets the tableView columns corresponding to the mysql-result
         //query finished
         [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
+		// Query Finished Growl Notification
+		[GrowlApplicationBridge notifyWithTitle:@"Query Finished"
+									description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]]
+							   notificationName:@"Query Finished"
+									   iconData:nil
+									   priority:0
+									   isSticky:NO
+								   clickContext:nil
+		 ];
+		
         return;
     }
 
@@ -202,6 +213,16 @@ sets the tableView columns corresponding to the mysql-result
     
     //query finished
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	
+	// Query Finished Growl Notification
+	[GrowlApplicationBridge notifyWithTitle:@"Query Finished"
+								description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]]
+						   notificationName:@"Query Finished"
+								   iconData:nil
+								   priority:0
+								   isSticky:NO
+							   clickContext:nil
+	 ];
 }
 
 - (IBAction)chooseQueryFavorite:(id)sender

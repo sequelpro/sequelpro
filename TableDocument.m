@@ -32,6 +32,7 @@
 #import "TableDump.h"
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
+#import <Growl/Growl.h>
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 
@@ -138,6 +139,18 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 											 [hostField stringValue], [databaseField stringValue]]];
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
 													 [hostField stringValue], [databaseField stringValue]]];
+		
+		// Connected Growl Notification
+		[GrowlApplicationBridge notifyWithTitle:@"Connected"
+									description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
+							   notificationName:@"Connected"
+									   iconData:nil
+									   priority:0
+									   isSticky:NO
+								   clickContext:nil
+		 ];
+		
+		
 	} else if (code == 2) {
 		//can't connect to host
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
@@ -814,6 +827,16 @@ reused when user hits the close button of the variablseSheet or of the createTab
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
 	[pb setString:tableSyntax forType:NSStringPboardType];
+	
+	// Table Syntax Copied Growl Notification
+	[GrowlApplicationBridge notifyWithTitle:@"Table Syntax Copied"
+								description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]]
+						   notificationName:@"Table Syntax Copied"
+								   iconData:nil
+								   priority:0
+								   isSticky:NO
+							   clickContext:nil
+	 ];
 }
 
 - (IBAction)checkTable:(id)sender
@@ -1006,6 +1029,16 @@ shows the mysql variables
 - (void)closeConnection
 {
     [mySQLConnection disconnect];
+	
+	// Disconnected Growl Notification
+	[GrowlApplicationBridge notifyWithTitle:@"Disconnected"
+								description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]]
+						   notificationName:@"Disconnected"
+								   iconData:nil
+								   priority:0
+								   isSticky:NO
+							   clickContext:nil
+	 ];
 }
 
 
