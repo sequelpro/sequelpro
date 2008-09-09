@@ -545,6 +545,7 @@ reused when user hits the close button of the variablseSheet or of the createTab
   NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]]);
 }
 
+#pragma mark console methods
 
 //console methods
 /**
@@ -1233,90 +1234,96 @@ passes the request to the tableDump object
  * toolbar delegate method
  */
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)willBeInsertedIntoToolbar
-
 {
-  NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
-  
-  if ([itemIdentifier isEqualToString:@"DatabaseSelectToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Select Database", @"toolbar item for selecting a db")];
-    [toolbarItem setPaletteLabel:[toolbarItem label]];
-    [toolbarItem setView:chooseDatabaseButton];
-    [toolbarItem setMinSize:NSMakeSize(200,26)];
-    [toolbarItem setMaxSize:NSMakeSize(200,32)];
-    [chooseDatabaseButton setTarget:self];
-  	[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
-    
-    if (willBeInsertedIntoToolbar) {
-	    chooseDatabaseToolbarItem = toolbarItem;
-  	  [self updateChooseDatabaseToolbarItemWidth];
-    } 
-  } else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
-    //set the text label to be displayed in the toolbar and customization palette 
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
-    if ( [self consoleIsOpened] ) {
-      [toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
-      [toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-    } else {
-      [toolbarItem setLabel:NSLocalizedString(@"Show Console", @"toolbar item for showconsole")];
-      [toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
-    }
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(toggleConsole)];
-  } else if ([itemIdentifier isEqualToString:@"ClearConsoleIdentifier"]) {
-    //set the text label to be displayed in the toolbar and customization palette 
-    [toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
-    [toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(clearConsole)];
-  } else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Table", @"toolbar item label for switching to the Table Structure tab")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Structure tab", @"tooltip for toolbar item for switching to the Table Structure tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-structure"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(viewStructure:)];
-  } else if ([itemIdentifier isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Browse", @"toolbar item label for switching to the Table Content tab")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Content", @"toolbar item label for switching to the Table Content tab")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Content tab", @"tooltip for toolbar item for switching to the Table Content tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-browse"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(viewContent:)];
-  } else if ([itemIdentifier isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"SQL", @"toolbar item label for switching to the Run Query tab")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Run Query", @"toolbar item label for switching to the Run Query tab")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Run Query tab", @"tooltip for toolbar item for switching to the Run Query tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(viewQuery:)];
-  } else if ([itemIdentifier isEqualToString:@"SwitchToTableStatusToolbarItemIdentifier"]) {
-    [toolbarItem setLabel:NSLocalizedString(@"Table Status", @"toolbar item label for switching to the Table Status tab")];
-    [toolbarItem setPaletteLabel:NSLocalizedString(@"Table Status", @"toolbar item label for switching to the Table Status tab")];
-    //set up tooltip and image
-    [toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Status tab", @"tooltip for toolbar item for switching to the Table Status tab")];
-    [toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-table-info"]];
-    //set up the target action
-    [toolbarItem setTarget:self];
-    [toolbarItem setAction:@selector(viewStatus:)];
-  } else {
-    //itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
-    toolbarItem = nil;
-  }
-  
-  return toolbarItem;
+	NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+	
+	if ([itemIdentifier isEqualToString:@"DatabaseSelectToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Select Database", @"toolbar item for selecting a db")];
+		[toolbarItem setPaletteLabel:[toolbarItem label]];
+		[toolbarItem setView:chooseDatabaseButton];
+		[toolbarItem setMinSize:NSMakeSize(200,26)];
+		[toolbarItem setMaxSize:NSMakeSize(200,32)];
+		[chooseDatabaseButton setTarget:self];
+		[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
+		
+		if (willBeInsertedIntoToolbar) {
+			chooseDatabaseToolbarItem = toolbarItem;
+			[self updateChooseDatabaseToolbarItemWidth];
+		} 
+		
+	} else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
+		//set the text label to be displayed in the toolbar and customization palette 
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
+		if ( [self consoleIsOpened] ) {
+			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
+			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
+		} else {
+			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"toolbar item for showconsole")];
+			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
+		}
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(toggleConsole:)];
+		
+	} else if ([itemIdentifier isEqualToString:@"ClearConsoleIdentifier"]) {
+		//set the text label to be displayed in the toolbar and customization palette 
+		[toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
+		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(clearConsole:)];
+		
+	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Table", @"toolbar item label for switching to the Table Structure tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Structure tab", @"tooltip for toolbar item for switching to the Table Structure tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-structure"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewStructure:)];
+		
+	} else if ([itemIdentifier isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Browse", @"toolbar item label for switching to the Table Content tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Content", @"toolbar item label for switching to the Table Content tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Content tab", @"tooltip for toolbar item for switching to the Table Content tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-browse"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewContent:)];
+		
+	} else if ([itemIdentifier isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"SQL", @"toolbar item label for switching to the Run Query tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Run Query", @"toolbar item label for switching to the Run Query tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Run Query tab", @"tooltip for toolbar item for switching to the Run Query tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewQuery:)];
+		
+	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStatusToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Table Status", @"toolbar item label for switching to the Table Status tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Status", @"toolbar item label for switching to the Table Status tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Status tab", @"tooltip for toolbar item for switching to the Table Status tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-table-info"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewStatus:)];
+		
+	} else {
+		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
+		toolbarItem = nil;
+	}
+	
+	return toolbarItem;
 }
 
 /**
