@@ -60,7 +60,6 @@
 	IBOutlet id portField;
 	IBOutlet id databaseField;
 
-	IBOutlet NSButton *connectAddToFavoritesCheckbox;
 	IBOutlet id connectProgressBar;
 	IBOutlet id connectProgressStatusText;
 	IBOutlet id databaseNameField;

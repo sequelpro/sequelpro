@@ -234,21 +234,6 @@ stops modal session with code:
       code = 1;
   }
   
-  // save to favorites?
-  if ([connectAddToFavoritesCheckbox state] == NSOnState) {
-    [self addToFavoritesHost:[hostField stringValue]
-                      socket:[socketField stringValue]
-                        user:[userField stringValue]
-                    password:[passwordField stringValue]
-                        port:[portField stringValue]
-                    database:[databaseField stringValue]
-                      useSSH:NO
-                     sshHost:nil
-                     sshUser:nil
-                 sshPassword:nil
-                     sshPort:nil];
-  }
-  
   // close sheet
   [NSApp stopModalWithCode:code];
   [connectProgressBar stopAnimation:self];
