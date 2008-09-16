@@ -406,9 +406,13 @@ reused when user hits the close button of the variablseSheet or of the createTab
   if (!chooseDatabaseButton)
     return;
 
-  [chooseDatabaseButton removeAllItems];
-  [chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
-  
+	[chooseDatabaseButton removeAllItems];
+	[chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
+	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
+	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
+	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
+
+	
   MCPResult *queryResult = [mySQLConnection listDBs];
   int i;
   for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
