@@ -28,7 +28,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Sequel Pro</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Sequel Pro</string>
+	<string>Sequel Pro v0.9.1</string>
 	<key>CFBundleHelpBookFolder</key>
 	<string>english_help</string>
 	<key>CFBundleHelpBookName</key>
@@ -46,7 +46,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.9</string>
+	<string>0.9.1</string>
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
 	<key>NSMainNibFile</key>
