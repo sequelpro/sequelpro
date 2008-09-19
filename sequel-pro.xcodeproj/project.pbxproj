@@ -141,117 +141,117 @@
 
 /* Begin PBXFileReference section */
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		2A37F4ACFDCFA73011CA2CEA /* TableDocument.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableDocument.m; sourceTree = "<group>"; };
-		2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableDocument.h; sourceTree = "<group>"; };
-		2A37F4B0FDCFA73011CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		2A37F4BAFDCFA73011CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
+		2A37F4ACFDCFA73011CA2CEA /* TableDocument.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TableDocument.m; path = Controllers/TableDocument.m; sourceTree = "<group>"; };
+		2A37F4AEFDCFA73011CA2CEA /* TableDocument.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TableDocument.h; path = Controllers/TableDocument.h; sourceTree = "<group>"; };
+		2A37F4B0FDCFA73011CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Other/main.m; sourceTree = "<group>"; };
+		2A37F4BAFDCFA73011CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = Resources/English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		383DAC100DCACB4B000499B6 /* logo-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "logo-48.png"; path = "images/logo-48.png"; sourceTree = "<group>"; };
-		383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-browse.png"; path = "images/toolbar-switch-to-browse.png"; sourceTree = "<group>"; };
-		383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-sql.png"; path = "images/toolbar-switch-to-sql.png"; sourceTree = "<group>"; };
-		383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-table-info.png"; path = "images/toolbar-switch-to-table-info.png"; sourceTree = "<group>"; };
-		3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
-		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
-		38E9C92C0DBF71C5009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		38E9C9310DBF7293009E9395 /* English */ = {isa = PBXFileReference; languageSpecificationIdentifier = html; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
-		38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
-		38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
+		383DAC100DCACB4B000499B6 /* logo-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "logo-48.png"; path = "Resources/images/logo-48.png"; sourceTree = "<group>"; };
+		383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-browse.png"; path = "Resources/images/toolbar-switch-to-browse.png"; sourceTree = "<group>"; };
+		383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-sql.png"; path = "Resources/images/toolbar-switch-to-sql.png"; sourceTree = "<group>"; };
+		383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-table-info.png"; path = "Resources/images/toolbar-switch-to-table-info.png"; sourceTree = "<group>"; };
+		3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; name = "sequel-pro.scriptTerminology"; path = "Other/sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
+		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; name = "sequel-pro.scriptSuite"; path = "Other/sequel-pro.scriptSuite"; sourceTree = "<group>"; };
+		38E9C92C0DBF71C5009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Resources/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		38E9C9310DBF7293009E9395 /* English */ = {isa = PBXFileReference; languageSpecificationIdentifier = html; lastKnownFileType = file.xib; name = English; path = Resources/English.lproj/DBView.xib; sourceTree = "<group>"; };
+		38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TableDocumentSplitView.h; path = Views/TableDocumentSplitView.h; sourceTree = "<group>"; };
+		38F42ADF0DBFF16500B58FFB /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TableDocumentSplitView.m; path = Views/TableDocumentSplitView.m; sourceTree = "<group>"; };
 		4B370C650E699C3D0002ABD0 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
-		9B220E640751EE2700DA3E19 /* TableStatus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableStatus.h; sourceTree = "<group>"; };
-		9B220E650751EE2700DA3E19 /* TableStatus.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableStatus.m; sourceTree = "<group>"; };
-		9B40F86207461DC500D81DFB /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
-		9B40F86307461DC500D81DFB /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
-		9B9ACEE908DEBE70009E313E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B220E640751EE2700DA3E19 /* TableStatus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TableStatus.h; path = Model/TableStatus.h; sourceTree = "<group>"; };
+		9B220E650751EE2700DA3E19 /* TableStatus.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TableStatus.m; path = Model/TableStatus.m; sourceTree = "<group>"; };
+		9B40F86207461DC500D81DFB /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CMCopyTable.h; path = Other/CMCopyTable.h; sourceTree = "<group>"; };
+		9B40F86307461DC500D81DFB /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = CMCopyTable.m; path = Other/CMCopyTable.m; sourceTree = "<group>"; };
+		9B9ACEE908DEBE70009E313E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		9B9ACEEA08DEBE70009E313E /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9BC3EEB809AC6EE100F6B295 /* CMTextView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMTextView.h; sourceTree = "<group>"; };
-		9BC3EEB909AC6EE100F6B295 /* CMTextView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMTextView.m; sourceTree = "<group>"; };
-		9BDFCCE408D4285100891F07 /* CMMCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPConnection.h; sourceTree = "<group>"; };
-		9BDFCCE508D4285100891F07 /* CMMCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMMCPConnection.m; sourceTree = "<group>"; };
-		9BDFCD1208D42B1900891F07 /* CMMCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPResult.h; sourceTree = "<group>"; };
-		9BDFCD1308D42B1900891F07 /* CMMCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMMCPResult.m; sourceTree = "<group>"; };
-		9BE828B50908269400A18070 /* SSHTunnel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SSHTunnel.h; sourceTree = "<group>"; };
-		9BE828B60908269400A18070 /* SSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = SSHTunnel.m; sourceTree = "<group>"; };
-		9BFF536B08F43B9D004D6BCB /* SSHTunnel_old.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SSHTunnel_old.h; sourceTree = "<group>"; };
-		9BFF536C08F43B9E004D6BCB /* SSHTunnel_old.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = SSHTunnel_old.m; sourceTree = "<group>"; };
-		9BFF53AF08F44B40004D6BCB /* askForPass.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = askForPass.sh; sourceTree = "<group>"; };
-		B51C206E0DCFEA4F00A9A004 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableInfo.h; sourceTree = "<group>"; };
-		B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
-		B550AF9D0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = CodeAssistantProtocol.tiff; path = images/CodeAssistantProtocol.tiff; sourceTree = "<group>"; };
+		9BC3EEB809AC6EE100F6B295 /* CMTextView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CMTextView.h; path = Other/CMTextView.h; sourceTree = "<group>"; };
+		9BC3EEB909AC6EE100F6B295 /* CMTextView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = CMTextView.m; path = Other/CMTextView.m; sourceTree = "<group>"; };
+		9BDFCCE408D4285100891F07 /* CMMCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CMMCPConnection.h; path = Other/CMMCPConnection.h; sourceTree = "<group>"; };
+		9BDFCCE508D4285100891F07 /* CMMCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CMMCPConnection.m; path = Other/CMMCPConnection.m; sourceTree = "<group>"; };
+		9BDFCD1208D42B1900891F07 /* CMMCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CMMCPResult.h; path = Other/CMMCPResult.h; sourceTree = "<group>"; };
+		9BDFCD1308D42B1900891F07 /* CMMCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CMMCPResult.m; path = Other/CMMCPResult.m; sourceTree = "<group>"; };
+		9BE828B50908269400A18070 /* SSHTunnel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SSHTunnel.h; path = Other/SSHTunnel.h; sourceTree = "<group>"; };
+		9BE828B60908269400A18070 /* SSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = SSHTunnel.m; path = Other/SSHTunnel.m; sourceTree = "<group>"; };
+		9BFF536B08F43B9D004D6BCB /* SSHTunnel_old.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SSHTunnel_old.h; path = Other/SSHTunnel_old.h; sourceTree = "<group>"; };
+		9BFF536C08F43B9E004D6BCB /* SSHTunnel_old.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = SSHTunnel_old.m; path = Other/SSHTunnel_old.m; sourceTree = "<group>"; };
+		9BFF53AF08F44B40004D6BCB /* askForPass.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; name = askForPass.sh; path = Other/askForPass.sh; sourceTree = "<group>"; };
+		B51C206E0DCFEA4F00A9A004 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPTableInfo.h; path = Model/SPTableInfo.h; sourceTree = "<group>"; };
+		B51C206F0DCFEA4F00A9A004 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPTableInfo.m; path = Model/SPTableInfo.m; sourceTree = "<group>"; };
+		B550AF9D0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = CodeAssistantProtocol.tiff; path = Resources/images/CodeAssistantProtocol.tiff; sourceTree = "<group>"; };
 		B55D81370E7A4E3F00FF337B /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MCPKit_bundled.framework; sourceTree = "<group>"; };
-		B5A78E6C0E4AC08D00684D3F /* grabber-horizontal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "grabber-horizontal.png"; path = "images/grabber-horizontal.png"; sourceTree = "<group>"; };
-		B5A78E6D0E4AC08D00684D3F /* grabber-vertical.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "grabber-vertical.png"; path = "images/grabber-vertical.png"; sourceTree = "<group>"; };
-		B5A78E6E0E4AC08D00684D3F /* spyglass.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = spyglass.tiff; path = images/spyglass.tiff; sourceTree = "<group>"; };
-		B5A78E6F0E4AC08D00684D3F /* table-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "table-small.tif"; path = "images/table-small.tif"; sourceTree = "<group>"; };
-		B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
-		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
+		B5A78E6C0E4AC08D00684D3F /* grabber-horizontal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "grabber-horizontal.png"; path = "Resources/images/grabber-horizontal.png"; sourceTree = "<group>"; };
+		B5A78E6D0E4AC08D00684D3F /* grabber-vertical.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "grabber-vertical.png"; path = "Resources/images/grabber-vertical.png"; sourceTree = "<group>"; };
+		B5A78E6E0E4AC08D00684D3F /* spyglass.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = spyglass.tiff; path = Resources/images/spyglass.tiff; sourceTree = "<group>"; };
+		B5A78E6F0E4AC08D00684D3F /* table-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "table-small.tif"; path = "Resources/images/table-small.tif"; sourceTree = "<group>"; };
+		B5BD35030DCF31CB005723A7 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageAndTextCell.h; path = Views/ImageAndTextCell.h; sourceTree = "<group>"; };
+		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ImageAndTextCell.m; path = Views/ImageAndTextCell.m; sourceTree = "<group>"; };
 		B5C801AB0E7210030011253E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
-		B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
-		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "toolbar-switch-to-structure.tiff"; path = "images/toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
-		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = images/appicon.icns; sourceTree = "<group>"; };
-		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = images/selectnone.tiff; sourceTree = "<group>"; };
-		F51B86B3050A4E4F01000103 /* connectioncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectioncopy.tiff; path = images/connectioncopy.tiff; sourceTree = "<group>"; };
-		F51B86B4050A4E4F01000103 /* querycopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = querycopy.tiff; path = images/querycopy.tiff; sourceTree = "<group>"; };
-		F51B8773050A8A1701000103 /* CMImageView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CMImageView.h; sourceTree = "<group>"; };
-		F51B8774050A8A1701000103 /* CMImageView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CMImageView.m; sourceTree = "<group>"; };
-		F52BA08003BA16430100012B /* KeyChain.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = KeyChain.h; sourceTree = "<group>"; };
-		F52BA45F03BA3D0B0100012B /* KeyChain.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = KeyChain.m; sourceTree = "<group>"; };
-		F52FA4AC0509EF6201000103 /* columnadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columnadd.tiff; path = images/columnadd.tiff; sourceTree = "<group>"; };
-		F52FA4AE0509F05101000103 /* columndelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columndelete.tiff; path = images/columndelete.tiff; sourceTree = "<group>"; };
-		F52FA4B00509F0CA01000103 /* columnrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columnrefresh.tiff; path = images/columnrefresh.tiff; sourceTree = "<group>"; };
-		F52FA4B40509F1B801000103 /* connectionadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectionadd.tiff; path = images/connectionadd.tiff; sourceTree = "<group>"; };
-		F52FA4B50509F1B801000103 /* connectiondelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectiondelete.tiff; path = images/connectiondelete.tiff; sourceTree = "<group>"; };
-		F52FA4B60509F1B801000103 /* connectionrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectionrefresh.tiff; path = images/connectionrefresh.tiff; sourceTree = "<group>"; };
-		F52FA4BA0509F6C601000103 /* hideconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = hideconsole.tiff; path = images/hideconsole.tiff; sourceTree = "<group>"; };
-		F52FA4BB0509F6C601000103 /* showconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = showconsole.tiff; path = images/showconsole.tiff; sourceTree = "<group>"; };
-		F52FA4BE0509FB3E01000103 /* query.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = query.tiff; path = images/query.tiff; sourceTree = "<group>"; };
-		F52FA4BF0509FB3E01000103 /* queryadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = queryadd.tiff; path = images/queryadd.tiff; sourceTree = "<group>"; };
-		F52FA4C00509FB3E01000103 /* querydelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = querydelete.tiff; path = images/querydelete.tiff; sourceTree = "<group>"; };
-		F52FA4C10509FB3E01000103 /* queryrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = queryrefresh.tiff; path = images/queryrefresh.tiff; sourceTree = "<group>"; };
-		F52FA4C90509FDDF01000103 /* rowadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowadd.tiff; path = images/rowadd.tiff; sourceTree = "<group>"; };
-		F52FA4CA0509FDDF01000103 /* rowdelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowdelete.tiff; path = images/rowdelete.tiff; sourceTree = "<group>"; };
-		F52FA4CB0509FDDF01000103 /* rowrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowrefresh.tiff; path = images/rowrefresh.tiff; sourceTree = "<group>"; };
-		F52FA4CF0509FF6401000103 /* sheettotable.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = sheettotable.tiff; path = images/sheettotable.tiff; sourceTree = "<group>"; };
-		F52FA4D00509FF6401000103 /* tabletosheet.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tabletosheet.tiff; path = images/tabletosheet.tiff; sourceTree = "<group>"; };
-		F52FA4D10509FF6401000103 /* textencode.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = textencode.tiff; path = images/textencode.tiff; sourceTree = "<group>"; };
-		F548087A027F870A01DDA526 /* TableContent.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableContent.h; sourceTree = "<group>"; };
-		F548087B027F870A01DDA526 /* TableContent.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableContent.m; sourceTree = "<group>"; };
-		F548087C027F870A01DDA526 /* TableSource.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableSource.h; sourceTree = "<group>"; };
-		F548087D027F870A01DDA526 /* TableSource.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableSource.m; sourceTree = "<group>"; };
-		F548087E027F870A01DDA526 /* TablesList.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TablesList.h; sourceTree = "<group>"; };
-		F548087F027F870A01DDA526 /* TablesList.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TablesList.m; sourceTree = "<group>"; };
+		B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = "Growl Registration Ticket.growlRegDict"; path = "Resources/Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
+		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "toolbar-switch-to-structure.tiff"; path = "Resources/images/toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
+		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = Resources/images/appicon.icns; sourceTree = "<group>"; };
+		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = Resources/images/selectnone.tiff; sourceTree = "<group>"; };
+		F51B86B3050A4E4F01000103 /* connectioncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectioncopy.tiff; path = Resources/images/connectioncopy.tiff; sourceTree = "<group>"; };
+		F51B86B4050A4E4F01000103 /* querycopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = querycopy.tiff; path = Resources/images/querycopy.tiff; sourceTree = "<group>"; };
+		F51B8773050A8A1701000103 /* CMImageView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CMImageView.h; path = Other/CMImageView.h; sourceTree = "<group>"; };
+		F51B8774050A8A1701000103 /* CMImageView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = CMImageView.m; path = Other/CMImageView.m; sourceTree = "<group>"; };
+		F52BA08003BA16430100012B /* KeyChain.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = KeyChain.h; path = Other/KeyChain.h; sourceTree = "<group>"; };
+		F52BA45F03BA3D0B0100012B /* KeyChain.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = KeyChain.m; path = Other/KeyChain.m; sourceTree = "<group>"; };
+		F52FA4AC0509EF6201000103 /* columnadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columnadd.tiff; path = Resources/images/columnadd.tiff; sourceTree = "<group>"; };
+		F52FA4AE0509F05101000103 /* columndelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columndelete.tiff; path = Resources/images/columndelete.tiff; sourceTree = "<group>"; };
+		F52FA4B00509F0CA01000103 /* columnrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columnrefresh.tiff; path = Resources/images/columnrefresh.tiff; sourceTree = "<group>"; };
+		F52FA4B40509F1B801000103 /* connectionadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectionadd.tiff; path = Resources/images/connectionadd.tiff; sourceTree = "<group>"; };
+		F52FA4B50509F1B801000103 /* connectiondelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectiondelete.tiff; path = Resources/images/connectiondelete.tiff; sourceTree = "<group>"; };
+		F52FA4B60509F1B801000103 /* connectionrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectionrefresh.tiff; path = Resources/images/connectionrefresh.tiff; sourceTree = "<group>"; };
+		F52FA4BA0509F6C601000103 /* hideconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = hideconsole.tiff; path = Resources/images/hideconsole.tiff; sourceTree = "<group>"; };
+		F52FA4BB0509F6C601000103 /* showconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = showconsole.tiff; path = Resources/images/showconsole.tiff; sourceTree = "<group>"; };
+		F52FA4BE0509FB3E01000103 /* query.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = query.tiff; path = Resources/images/query.tiff; sourceTree = "<group>"; };
+		F52FA4BF0509FB3E01000103 /* queryadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = queryadd.tiff; path = Resources/images/queryadd.tiff; sourceTree = "<group>"; };
+		F52FA4C00509FB3E01000103 /* querydelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = querydelete.tiff; path = Resources/images/querydelete.tiff; sourceTree = "<group>"; };
+		F52FA4C10509FB3E01000103 /* queryrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = queryrefresh.tiff; path = Resources/images/queryrefresh.tiff; sourceTree = "<group>"; };
+		F52FA4C90509FDDF01000103 /* rowadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowadd.tiff; path = Resources/images/rowadd.tiff; sourceTree = "<group>"; };
+		F52FA4CA0509FDDF01000103 /* rowdelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowdelete.tiff; path = Resources/images/rowdelete.tiff; sourceTree = "<group>"; };
+		F52FA4CB0509FDDF01000103 /* rowrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowrefresh.tiff; path = Resources/images/rowrefresh.tiff; sourceTree = "<group>"; };
+		F52FA4CF0509FF6401000103 /* sheettotable.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = sheettotable.tiff; path = Resources/images/sheettotable.tiff; sourceTree = "<group>"; };
+		F52FA4D00509FF6401000103 /* tabletosheet.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tabletosheet.tiff; path = Resources/images/tabletosheet.tiff; sourceTree = "<group>"; };
+		F52FA4D10509FF6401000103 /* textencode.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = textencode.tiff; path = Resources/images/textencode.tiff; sourceTree = "<group>"; };
+		F548087A027F870A01DDA526 /* TableContent.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TableContent.h; path = Controllers/TableContent.h; sourceTree = "<group>"; };
+		F548087B027F870A01DDA526 /* TableContent.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TableContent.m; path = Controllers/TableContent.m; sourceTree = "<group>"; };
+		F548087C027F870A01DDA526 /* TableSource.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TableSource.h; path = Controllers/TableSource.h; sourceTree = "<group>"; };
+		F548087D027F870A01DDA526 /* TableSource.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TableSource.m; path = Controllers/TableSource.m; sourceTree = "<group>"; };
+		F548087E027F870A01DDA526 /* TablesList.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TablesList.h; path = Model/TablesList.h; sourceTree = "<group>"; };
+		F548087F027F870A01DDA526 /* TablesList.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TablesList.m; path = Model/TablesList.m; sourceTree = "<group>"; };
 		F55ECCBE02C6156601738522 /* gpl.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = gpl.txt; sourceTree = "<group>"; };
-		F570FC9502A05DFD0127F14A /* sort-down.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "sort-down.tiff"; path = "images/sort-down.tiff"; sourceTree = "<group>"; };
-		F570FC9602A05DFD0127F14A /* sort-up.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "sort-up.tiff"; path = "images/sort-up.tiff"; sourceTree = "<group>"; };
-		F58CAF14052C84EB01B3ED40 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F570FC9502A05DFD0127F14A /* sort-down.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "sort-down.tiff"; path = "Resources/images/sort-down.tiff"; sourceTree = "<group>"; };
+		F570FC9602A05DFD0127F14A /* sort-up.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "sort-up.tiff"; path = "Resources/images/sort-up.tiff"; sourceTree = "<group>"; };
+		F58CAF14052C84EB01B3ED40 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F5981AA203BA574A0100012B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		F5A1A33A02A16816018594E7 /* TableDump.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TableDump.h; sourceTree = "<group>"; };
-		F5A1A33B02A16816018594E7 /* TableDump.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TableDump.m; sourceTree = "<group>"; };
-		F5A1F6DB04EE666101FE0D2B /* clearconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = clearconsole.tiff; path = images/clearconsole.tiff; sourceTree = "<group>"; };
-		F5A1F6DC04EE666101FE0D2B /* createtablesyntax.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = createtablesyntax.tiff; path = images/createtablesyntax.tiff; sourceTree = "<group>"; };
-		F5A1F6DD04EE666101FE0D2B /* flushprivileges.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = flushprivileges.tiff; path = images/flushprivileges.tiff; sourceTree = "<group>"; };
-		F5A1F6DE04EE666101FE0D2B /* optimizetable.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = optimizetable.tiff; path = images/optimizetable.tiff; sourceTree = "<group>"; };
-		F5A1F6E004EE666101FE0D2B /* showvariables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = showvariables.tiff; path = images/showvariables.tiff; sourceTree = "<group>"; };
-		F5C810CE0281C5A20139D141 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
-		F5C810CF0281C5A20139D141 /* CustomQuery.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = CustomQuery.m; sourceTree = "<group>"; };
+		F5A1A33A02A16816018594E7 /* TableDump.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TableDump.h; path = Controllers/TableDump.h; sourceTree = "<group>"; };
+		F5A1A33B02A16816018594E7 /* TableDump.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TableDump.m; path = Controllers/TableDump.m; sourceTree = "<group>"; };
+		F5A1F6DB04EE666101FE0D2B /* clearconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = clearconsole.tiff; path = Resources/images/clearconsole.tiff; sourceTree = "<group>"; };
+		F5A1F6DC04EE666101FE0D2B /* createtablesyntax.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = createtablesyntax.tiff; path = Resources/images/createtablesyntax.tiff; sourceTree = "<group>"; };
+		F5A1F6DD04EE666101FE0D2B /* flushprivileges.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = flushprivileges.tiff; path = Resources/images/flushprivileges.tiff; sourceTree = "<group>"; };
+		F5A1F6DE04EE666101FE0D2B /* optimizetable.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = optimizetable.tiff; path = Resources/images/optimizetable.tiff; sourceTree = "<group>"; };
+		F5A1F6E004EE666101FE0D2B /* showvariables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = showvariables.tiff; path = Resources/images/showvariables.tiff; sourceTree = "<group>"; };
+		F5C810CE0281C5A20139D141 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CustomQuery.h; path = Controllers/CustomQuery.h; sourceTree = "<group>"; };
+		F5C810CF0281C5A20139D141 /* CustomQuery.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = CustomQuery.m; path = Controllers/CustomQuery.m; sourceTree = "<group>"; };
 		F5DB91390510F4B60186457F /* English */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = English; path = English.lproj/english_help; sourceTree = "<group>"; };
-		F5E57A3702B2B518018C3E81 /* reload.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = reload.tiff; path = images/reload.tiff; sourceTree = "<group>"; };
-		F5E57A3902B2B518018C3E81 /* selectall.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectall.tiff; path = images/selectall.tiff; sourceTree = "<group>"; };
-		F5EC12FC04EE385401FE0D2B /* rowcopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowcopy.tiff; path = images/rowcopy.tiff; sourceTree = "<group>"; };
-		F5EC12FD04EE385401FE0D2B /* columncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columncopy.tiff; path = images/columncopy.tiff; sourceTree = "<group>"; };
-		F5EC130004EE444801FE0D2B /* tablecopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tablecopy.tiff; path = images/tablecopy.tiff; sourceTree = "<group>"; };
-		F5EC130104EE444801FE0D2B /* databases.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = databases.tiff; path = images/databases.tiff; sourceTree = "<group>"; };
-		F5EC130204EE444801FE0D2B /* dbadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = dbadd.tiff; path = images/dbadd.tiff; sourceTree = "<group>"; };
-		F5EC130304EE444801FE0D2B /* dbdelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = dbdelete.tiff; path = images/dbdelete.tiff; sourceTree = "<group>"; };
-		F5EC130404EE444801FE0D2B /* dbrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = dbrefresh.tiff; path = images/dbrefresh.tiff; sourceTree = "<group>"; };
-		F5EC130704EE444801FE0D2B /* indexadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = indexadd.tiff; path = images/indexadd.tiff; sourceTree = "<group>"; };
-		F5EC130804EE444801FE0D2B /* indexdelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = indexdelete.tiff; path = images/indexdelete.tiff; sourceTree = "<group>"; };
-		F5EC130B04EE444801FE0D2B /* tableadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tableadd.tiff; path = images/tableadd.tiff; sourceTree = "<group>"; };
-		F5EC130C04EE444801FE0D2B /* tabledelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tabledelete.tiff; path = images/tabledelete.tiff; sourceTree = "<group>"; };
-		F5EC130D04EE444801FE0D2B /* tablerefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tablerefresh.tiff; path = images/tablerefresh.tiff; sourceTree = "<group>"; };
-		F5EC130E04EE444801FE0D2B /* tables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tables.tiff; path = images/tables.tiff; sourceTree = "<group>"; };
-		F5FB320C029E966601566C24 /* MainController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MainController.h; sourceTree = "<group>"; };
-		F5FB320D029E966601566C24 /* MainController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = MainController.m; sourceTree = "<group>"; };
+		F5E57A3702B2B518018C3E81 /* reload.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = reload.tiff; path = Resources/images/reload.tiff; sourceTree = "<group>"; };
+		F5E57A3902B2B518018C3E81 /* selectall.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectall.tiff; path = Resources/images/selectall.tiff; sourceTree = "<group>"; };
+		F5EC12FC04EE385401FE0D2B /* rowcopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = rowcopy.tiff; path = Resources/images/rowcopy.tiff; sourceTree = "<group>"; };
+		F5EC12FD04EE385401FE0D2B /* columncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = columncopy.tiff; path = Resources/images/columncopy.tiff; sourceTree = "<group>"; };
+		F5EC130004EE444801FE0D2B /* tablecopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tablecopy.tiff; path = Resources/images/tablecopy.tiff; sourceTree = "<group>"; };
+		F5EC130104EE444801FE0D2B /* databases.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = databases.tiff; path = Resources/images/databases.tiff; sourceTree = "<group>"; };
+		F5EC130204EE444801FE0D2B /* dbadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = dbadd.tiff; path = Resources/images/dbadd.tiff; sourceTree = "<group>"; };
+		F5EC130304EE444801FE0D2B /* dbdelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = dbdelete.tiff; path = Resources/images/dbdelete.tiff; sourceTree = "<group>"; };
+		F5EC130404EE444801FE0D2B /* dbrefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = dbrefresh.tiff; path = Resources/images/dbrefresh.tiff; sourceTree = "<group>"; };
+		F5EC130704EE444801FE0D2B /* indexadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = indexadd.tiff; path = Resources/images/indexadd.tiff; sourceTree = "<group>"; };
+		F5EC130804EE444801FE0D2B /* indexdelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = indexdelete.tiff; path = Resources/images/indexdelete.tiff; sourceTree = "<group>"; };
+		F5EC130B04EE444801FE0D2B /* tableadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tableadd.tiff; path = Resources/images/tableadd.tiff; sourceTree = "<group>"; };
+		F5EC130C04EE444801FE0D2B /* tabledelete.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tabledelete.tiff; path = Resources/images/tabledelete.tiff; sourceTree = "<group>"; };
+		F5EC130D04EE444801FE0D2B /* tablerefresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tablerefresh.tiff; path = Resources/images/tablerefresh.tiff; sourceTree = "<group>"; };
+		F5EC130E04EE444801FE0D2B /* tables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = tables.tiff; path = Resources/images/tables.tiff; sourceTree = "<group>"; };
+		F5FB320C029E966601566C24 /* MainController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = MainController.h; path = Controllers/MainController.h; sourceTree = "<group>"; };
+		F5FB320D029E966601566C24 /* MainController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = MainController.m; path = Controllers/MainController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -321,7 +321,7 @@
 				B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */,
 				F503C88F02B387CB01C66673 /* appicon.icns */,
 				9B9ACEE908DEBE70009E313E /* Info.plist */,
-				F5E4F1AC03C8B2CB01000125 /* images */,
+				F5E4F1AC03C8B2CB01000125 /* Images */,
 				38E9C92B0DBF71C5009E9395 /* MainMenu.xib */,
 				38E9C9300DBF7293009E9395 /* DBView.xib */,
 				F58CAF13052C84EB01B3ED40 /* Localizable.strings */,
@@ -442,7 +442,7 @@
 			name = SSHTunnel;
 			sourceTree = "<group>";
 		};
-		F5E4F1AC03C8B2CB01000125 /* images */ = {
+		F5E4F1AC03C8B2CB01000125 /* Images */ = {
 			isa = PBXGroup;
 			children = (
 				B550AF9D0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff */,
@@ -499,7 +499,7 @@
 				383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */,
 				383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */,
 			);
-			name = images;
+			name = Images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
