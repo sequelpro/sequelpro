@@ -13,6 +13,7 @@
 		383DAC1A0DCACE68000499B6 /* toolbar-switch-to-table-info.png in Resources */ = {isa = PBXBuildFile; fileRef = 383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */; };
 		3861DD760DA78690003236DE /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */; };
 		3861DD770DA78690003236DE /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 3861DD750DA78690003236DE /* sequel-pro.scriptSuite */; };
+		3863D2EE0E845D47004172E9 /* toolbar-switch-to-structure.png in Resources */ = {isa = PBXBuildFile; fileRef = 3863D2ED0E845D47004172E9 /* toolbar-switch-to-structure.png */; };
 		38E9C92D0DBF71C5009E9395 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C92B0DBF71C5009E9395 /* MainMenu.xib */; };
 		38E9C9320DBF7293009E9395 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38E9C9300DBF7293009E9395 /* DBView.xib */; };
 		38F42AE00DBFF16500B58FFB /* TableDocumentSplitView.h in Headers */ = {isa = PBXBuildFile; fileRef = 38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */; };
@@ -111,7 +112,6 @@
 		B5C801AC0E7210030011253E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5C801AB0E7210030011253E /* Growl.framework */; };
 		B5C801B60E7211BD0011253E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B5C801AB0E7210030011253E /* Growl.framework */; };
 		B5C801C60E7212E00011253E /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */; };
-		B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */; };
 		B5ED4AF90E7A7D6800928118 /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B55D81370E7A4E3F00FF337B /* MCPKit_bundled.framework */; };
 /* End PBXBuildFile section */
 
@@ -153,6 +153,7 @@
 		383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-table-info.png"; path = "images/toolbar-switch-to-table-info.png"; sourceTree = "<group>"; };
 		3861DD740DA78690003236DE /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
 		3861DD750DA78690003236DE /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
+		3863D2ED0E845D47004172E9 /* toolbar-switch-to-structure.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-switch-to-structure.png"; path = "images/toolbar-switch-to-structure.png"; sourceTree = "<group>"; };
 		38E9C92C0DBF71C5009E9395 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		38E9C9310DBF7293009E9395 /* English */ = {isa = PBXFileReference; languageSpecificationIdentifier = html; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
 		38F42ADE0DBFF16500B58FFB /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
@@ -187,7 +188,6 @@
 		B5BD35040DCF31CB005723A7 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
 		B5C801AB0E7210030011253E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
 		B5C801C50E7212E00011253E /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
-		B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "toolbar-switch-to-structure.tiff"; path = "images/toolbar-switch-to-structure.tiff"; sourceTree = "<group>"; };
 		F503C88F02B387CB01C66673 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = appicon.icns; path = images/appicon.icns; sourceTree = "<group>"; };
 		F51547F604E8E9B901000103 /* selectnone.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = selectnone.tiff; path = images/selectnone.tiff; sourceTree = "<group>"; };
 		F51B86B3050A4E4F01000103 /* connectioncopy.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = connectioncopy.tiff; path = images/connectioncopy.tiff; sourceTree = "<group>"; };
@@ -495,8 +495,8 @@
 				B5A78E6F0E4AC08D00684D3F /* table-small.tif */,
 				F5A1F6DC04EE666101FE0D2B /* createtablesyntax.tiff */,
 				383DAC130DCACE1D000499B6 /* toolbar-switch-to-browse.png */,
-				B5E36DBE0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff */,
 				383DAC150DCACE1D000499B6 /* toolbar-switch-to-sql.png */,
+				3863D2ED0E845D47004172E9 /* toolbar-switch-to-structure.png */,
 				383DAC190DCACE68000499B6 /* toolbar-switch-to-table-info.png */,
 			);
 			name = images;
@@ -629,12 +629,12 @@
 				383DAC160DCACE1D000499B6 /* toolbar-switch-to-browse.png in Resources */,
 				383DAC180DCACE1D000499B6 /* toolbar-switch-to-sql.png in Resources */,
 				383DAC1A0DCACE68000499B6 /* toolbar-switch-to-table-info.png in Resources */,
-				B5E36DBF0DCD59B300B0DA06 /* toolbar-switch-to-structure.tiff in Resources */,
 				B550AF9E0DD1795C006CFEF0 /* CodeAssistantProtocol.tiff in Resources */,
 				B5A78E700E4AC08D00684D3F /* grabber-horizontal.png in Resources */,
 				B5A78E710E4AC08D00684D3F /* grabber-vertical.png in Resources */,
 				B5A78E720E4AC08D00684D3F /* spyglass.tiff in Resources */,
 				B5A78E730E4AC08D00684D3F /* table-small.tif in Resources */,
+				3863D2EE0E845D47004172E9 /* toolbar-switch-to-structure.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
