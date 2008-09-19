@@ -24,18 +24,18 @@
 
 - (void)awakeFromNib
 {
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(tableChanged:) 
-												 name:NSTableViewSelectionDidChangeNotification 
-											   object:nil];
-	[info addObject:@"TABLE INFORMATION"];
+//	[[NSNotificationCenter defaultCenter] addObserver:self
+//											 selector:@selector(tableChanged:) 
+//												 name:NSTableViewSelectionDidChangeNotification 
+//											   object:nil];
+	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
 	[infoTable reloadData];
 }
 
 
 - (void)dealloc
 {
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	//[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[tableListInstance release];
 	

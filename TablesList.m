@@ -677,7 +677,7 @@ loads structure or source if tab selected the first time
     tables = [[NSMutableArray alloc] init];
     structureLoaded = NO;
     contentLoaded = NO;
-	[tables addObject:@"TABLES"];
+	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
     return self;
 }
 

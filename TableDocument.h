@@ -60,7 +60,6 @@
 	IBOutlet id portField;
 	IBOutlet id databaseField;
 
-	IBOutlet NSButton *connectAddToFavoritesCheckbox;
 	IBOutlet id connectProgressBar;
 	IBOutlet id connectProgressStatusText;
 	IBOutlet id databaseNameField;
@@ -79,7 +78,7 @@
 
 	CMMCPConnection *mySQLConnection;
 
-	NSArray *favorites;
+	NSMutableArray *favorites;
 	NSArray *variables;
 	NSString *selectedDatabase;
 	NSString *selectedFavorite;
@@ -101,6 +100,7 @@
 - (IBAction)chooseFavorite:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
+- (void)connectSheetAddToFavorites:(id)sender;
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
                       user:(NSString *)user password:(NSString *)password
                       port:(NSString *)port database:(NSString *)database
@@ -109,6 +109,7 @@
 					         sshUser:(NSString *)sshUser // no-longer in use
 					     sshPassword:(NSString *)sshPassword // no-longer in use
                    sshPort:(NSString *)sshPort; // no-longer in use
+- (NSMutableArray *)favorites;
 
 //alert sheets method
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
@@ -219,3 +220,4 @@
 @end
 
 extern NSString *TableDocumentFavoritesControllerSelectionIndexDidChange;
+extern NSString *TableDocumentFavoritesControllerFavoritesDidChange;

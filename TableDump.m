@@ -28,6 +28,7 @@
 #import "TableSource.h"
 #import "TableContent.h"
 #import "CustomQuery.h"
+#import <Growl/Growl.h>
 
 
 @implementation TableDump
@@ -279,6 +280,16 @@ saves the export file
         NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
             NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
     }
+	
+	// Export Finished Growl Notification
+	[GrowlApplicationBridge notifyWithTitle:@"Export Finished"
+								description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@",@"description for finished exporting growl notification"), [[sheet filename] lastPathComponent]]
+						   notificationName:@"Export Finished"
+								   iconData:nil
+								   priority:0
+								   isSticky:NO
+							   clickContext:nil
+	 ];
 
 }
 
@@ -528,6 +539,17 @@ reads mysql-dumpfile
         fieldMappingArray = nil;
         importArray = nil;
     }
+	
+	// Import Finished Growl Notification
+	[GrowlApplicationBridge notifyWithTitle:@"Import Finished"
+								description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [[sheet filename] lastPathComponent]]
+						   notificationName:@"Import Finished"
+								   iconData:nil
+								   priority:0
+								   isSticky:NO
+							   clickContext:nil
+	];
+	
 }
 
 - (void)setupFieldMappingArray
