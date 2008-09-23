@@ -467,11 +467,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 //set up tableView
     [tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 
-//    [[[tableSourceView tableColumnWithIdentifier:@"Null"] dataCell] addItemsWithTitles:[NSArray arrayWithObjects:@"YES", @"NO", nil]];
-    [[[tableSourceView tableColumnWithIdentifier:@"unsigned"] dataCell] setImagePosition:NSImageOnly];
-    [[[tableSourceView tableColumnWithIdentifier:@"zerofill"] dataCell] setImagePosition:NSImageOnly];
-    [[[tableSourceView tableColumnWithIdentifier:@"binary"] dataCell] setImagePosition:NSImageOnly];
-
     while ( (indexColumn = [indexColumnsEnumerator nextObject]) ) {
         if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
             [[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
