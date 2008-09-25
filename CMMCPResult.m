@@ -87,6 +87,7 @@ modified version for use with sequel-pro
                 case FIELD_TYPE_DECIMAL:
                 case FIELD_TYPE_FLOAT:
                 case FIELD_TYPE_DOUBLE:
+                case FIELD_TYPE_NEW_DECIMAL:					
                     theCurrentObj = [self stringWithCString:theData];
                     break;
                 case FIELD_TYPE_TIMESTAMP:
