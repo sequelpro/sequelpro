@@ -1489,9 +1489,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
         //show only first 50 characters to speed up interface (but return everything when this method is used to return the current result)
 		//        if ( ([theValue length] > 100) && aTableView ) {
     }
-	if ( ([(NSString *)theValue length] > 100) && aTableView ) {
-		theValue = [NSString stringWithFormat:@"%@(...)", [theValue substringToIndex:100]];
-	}
+	
+//	if ( ([(NSString *)theValue length] > 100) && aTableView ) {
+//		theValue = [NSString stringWithFormat:@"%@(...)", [theValue substringToIndex:100]];
+//	}
 	
     return theValue;
 }
