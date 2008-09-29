@@ -682,8 +682,12 @@ code that need to be executed when the nib file is loaded
 
 	[GrowlApplicationBridge setGrowlDelegate:self];
 	
-    prefs = [[NSUserDefaults standardUserDefaults] retain];
-    isNewFavorite = NO;
+  prefs = [[NSUserDefaults standardUserDefaults] retain];
+  isNewFavorite = NO;
+  [prefs registerDefaults:[NSDictionary dictionaryWithObjectsAndKeys:
+                           [NSNumber numberWithBool:YES], @"limitRows",
+                           [NSNumber numberWithInt:1000], @"limitRowsValue",
+                           nil]];
 
 //set standard preferences if no preferences are found
     if ( [prefs objectForKey:@"reloadAfterAdding"] == nil )
@@ -708,8 +712,8 @@ code that need to be executed when the nib file is loaded
         //set standard values for new preferences
         [prefs setBool:YES forKey:@"showError"];
         [prefs setBool:NO forKey:@"dontShowBlob"];
-        [prefs setBool:NO forKey:@"limitRows"];
-        [prefs setInteger:100 forKey:@"limitRowsValue"];
+//        [prefs setBool:NO forKey:@"limitRows"];
+//        [prefs setInteger:100 forKey:@"limitRowsValue"];
         [prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"savePath"];
         [prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"openPath"];
         //remove old preferences
