@@ -258,10 +258,7 @@ stops modal session with code 0
 reused when user hits the close button of the variablseSheet or of the createTableSyntaxSheet
 */
 {
-	if (sender != nil) {
-		[NSApp endSheet:[sender window] returnCode:0];		
-	}
-
+	[NSApp stopModalWithCode:0];
 }
 
 /**
