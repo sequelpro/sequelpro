@@ -99,8 +99,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (IBAction)connectToDB:(id)sender
 {
-  CMMCPResult *theResult;
-  id version;
 	
 	// load the details of the curretnly selected favorite into the text boxes in connect sheet
 	[self chooseFavorite:self];
@@ -109,81 +107,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[NSApp beginSheet:connectSheet
 		 modalForWindow:tableWindow
 			modalDelegate:self
-		 didEndSelector:nil
+	   didEndSelector:@selector(connectSheetDidEnd:returnCode:contextInfo:)
 				contextInfo:nil];
-	int code = [NSApp runModalForWindow:connectSheet];
-	
-	[NSApp endSheet:connectSheet];
-	[connectSheet orderOut:nil];
-	
-	if ( code == 1) {
-		//connected with success
-		//register as delegate
-		[mySQLConnection setDelegate:self];
-		// set encoding
-		NSString *encodingName = [prefs objectForKey:@"encoding"];
-		if ( [encodingName isEqualToString:@"Autodetect"] ) {
-			[self detectEncoding];
-		} else {
-			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
-		}
-		//get mysql version
-		//        theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE \"version\""];
-		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
-		version = [[theResult fetchRowAsArray] objectAtIndex:1];
-		if ( [version isKindOfClass:[NSData class]] ) {
-			// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
-			mySQLVersion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
-		} else {
-			mySQLVersion = [[NSString stringWithString:version] retain];
-		}
-		[self setDatabases:self];
-		[tablesListInstance setConnection:mySQLConnection];
-		[tableSourceInstance setConnection:mySQLConnection];
-		[tableContentInstance setConnection:mySQLConnection];
-		[customQueryInstance setConnection:mySQLConnection];
-		[tableDumpInstance setConnection:mySQLConnection];
-		[tableStatusInstance setConnection:mySQLConnection];
-		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
-											 [hostField stringValue], [databaseField stringValue]]];
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
-													 [hostField stringValue], [databaseField stringValue]]];
-		
-		// Connected Growl Notification
-		[GrowlApplicationBridge notifyWithTitle:@"Connected"
-									description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
-							   notificationName:@"Connected"
-									   iconData:nil
-									   priority:0
-									   isSticky:NO
-								   clickContext:nil
-		 ];
-		
-		
-	} else if (code == 2) {
-		//can't connect to host
-		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
-											@selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
-											[NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@.\nBe sure that the address is correct and that you have the necessary privileges.\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [mySQLConnection getLastErrorMessage]]);
-	} else if (code == 3) {
-		//can't connect to db
-		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
-											@selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
-											[NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that the database exists and that you have the necessary privileges.\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]);
-	} else if (code == 4) {
-		//no host is given
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
-											@selector(sheetDidEnd:returnCode:contextInfo:), @"connect", NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"));
-	} else {
-		//cancel button was pressed
-		//since the window is getting ready to be toast ignore events for awhile
-		//so as not to crash, this happens to me when hitten esc key instead of
-		//cancel button, but with this code it does not crash
-		[[NSApplication sharedApplication] discardEventsMatchingMask:NSAnyEventMask 
-																										 beforeEvent:[[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDownMask | NSLeftMouseUpMask |NSRightMouseDownMask | NSRightMouseUpMask | NSFlagsChangedMask | NSKeyDownMask | NSKeyUpMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
-		[tableWindow close];
-	}
 }
+	
 
 /*
 invoked when user hits the connect-button of the connectSheet
@@ -235,9 +162,93 @@ stops modal session with code:
   }
   
   // close sheet
-  [NSApp stopModalWithCode:code];
+	[connectSheet orderOut:nil];
+	[NSApp endSheet:connectSheet returnCode:code];
+//  [NSApp stopModalWithCode:code]; 
   [connectProgressBar stopAnimation:self];
   [connectProgressStatusText setHidden:YES];
+}
+
+-(void)connectSheetDidEnd:(NSWindow*)sheet returnCode:(int)code contextInfo:(void*)contextInfo
+{
+	[sheet orderOut:self];
+	
+	CMMCPResult *theResult;
+	id version;
+	
+	if ( code == 1) {
+		//connected with success
+		//register as delegate
+		[mySQLConnection setDelegate:self];
+		// set encoding
+		NSString *encodingName = [prefs objectForKey:@"encoding"];
+		if ( [encodingName isEqualToString:@"Autodetect"] ) {
+			[self detectEncoding];
+		} else {
+			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
+		}
+		//get mysql version
+		//        theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE \"version\""];
+		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
+		version = [[theResult fetchRowAsArray] objectAtIndex:1];
+		if ( [version isKindOfClass:[NSData class]] ) {
+			// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
+			mySQLVersion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
+		} else {
+			mySQLVersion = [[NSString stringWithString:version] retain];
+		}
+		[self setDatabases:self];
+		[tablesListInstance setConnection:mySQLConnection];
+		[tableSourceInstance setConnection:mySQLConnection];
+		[tableContentInstance setConnection:mySQLConnection];
+		[customQueryInstance setConnection:mySQLConnection];
+		[tableDumpInstance setConnection:mySQLConnection];
+		[tableStatusInstance setConnection:mySQLConnection];
+		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
+						   [hostField stringValue], [databaseField stringValue]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
+							   [hostField stringValue], [databaseField stringValue]]];
+		
+		// Connected Growl Notification
+		[GrowlApplicationBridge notifyWithTitle:@"Connected"
+									description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
+							   notificationName:@"Connected"
+									   iconData:nil
+									   priority:0
+									   isSticky:NO
+								   clickContext:nil
+		 ];
+		
+		
+	} else if (code == 2) {
+		//can't connect to host
+		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
+						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@.\nBe sure that the address is correct and that you have the necessary privileges.\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [mySQLConnection getLastErrorMessage]]);
+	} else if (code == 3) {
+		//can't connect to db
+		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
+						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that the database exists and that you have the necessary privileges.\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]);
+	} else if (code == 4) {
+		//no host is given
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"));
+	} else {
+		//cancel button was pressed
+		//since the window is getting ready to be toast ignore events for awhile
+		//so as not to crash, this happens to me when hitten esc key instead of
+		//cancel button, but with this code it does not crash
+	//	[[NSApplication sharedApplication] discardEventsMatchingMask:NSAnyEventMask 
+	//													 beforeEvent:[[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDownMask | NSLeftMouseUpMask |NSRightMouseDownMask | NSRightMouseUpMask | NSFlagsChangedMask | NSKeyDownMask | NSKeyUpMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
+	//	[tableWindow close];
+	}
+	
+}
+
+- (IBAction)cancelConnectSheet:(id)sender
+{
+	[NSApp endSheet:connectSheet];
 }
 
 - (IBAction)closeSheet:(id)sender
@@ -247,7 +258,10 @@ stops modal session with code 0
 reused when user hits the close button of the variablseSheet or of the createTableSyntaxSheet
 */
 {
-    [NSApp stopModalWithCode:0];
+	if (sender != nil) {
+		[NSApp endSheet:[sender window] returnCode:0];		
+	}
+
 }
 
 /**
@@ -1434,7 +1448,8 @@ sets upt the interface (small fonts)
 
     //set up toolbar
     [self setupToolbar];
-    [self connectToDB:nil];
+//    [self connectToDB:nil];
+	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
 }
 
 - (void)windowWillClose:(NSNotification *)aNotification
@@ -1564,6 +1579,12 @@ invoked when query gave an error
     }
 
     return theValue;
+}
+
+- (IBAction)terminate:(id)sender
+{
+	[[NSApp orderedDocuments] makeObjectsPerformSelector:@selector(cancelConnectSheet:) withObject:nil];
+	[NSApp terminate:sender];
 }
 
 - (void)dealloc

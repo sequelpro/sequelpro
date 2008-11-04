@@ -96,6 +96,7 @@
 //start sheet
 - (IBAction)connectToDB:(id)sender;
 - (IBAction)connect:(id)sender;
+- (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
 - (id)selectedFavorite;
