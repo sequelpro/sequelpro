@@ -1,0 +1,374 @@
+<html>
+<head>
+<title>Sequel Pro Help - SQL Table Examples</title>
+<meta name="AppleTitle" content="SQL Table Examples">
+<meta name="AppleFont" content="Lucida Grande">
+<meta ROBOTS="robots" CONTENT="anchors">
+</head>
+<body text="#000000" link="#0000FF" alink="#0000FF" vlink="#0000FF" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0">
+
+<font face="Lucida Grande,Geneva,Arial">
+
+<br>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="80">
+	<tr>
+		<td align="left" valign="top" width="70">
+		<img src="sequel-pro_logo.jpg" width="60" height="60" border="0">
+		</td>
+		<td align="left"><h1>SQL Table Examples</h1>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+		<img src="bar.gif" width="100%" height="20">
+		</td>
+	</tr>
+</table>
+
+<br>
+<font size="-1">
+&nbsp;<a href="../index.html">Back to the main menu</a>
+<br>
+<br>
+<table border="0" width="95%">
+	<tr>
+		<td>
+		<font face="Lucida Grande,Geneva,Arial" size="-1">
+		The following tables are only examples and any use of these tables in a company or critical environment
+		signifies the prior knowledge and acceptance, on behalf of the implentor, that the authors of this software are not liable for damages or losses in use of these tables.
+		No guarantees are made as to the quality or reliabity of the table designs listed below. They are listed to help database designers/creators in their
+		work by showing an example.
+		<br>
+		The schema used is non-standard. It shows the table name above three columns. The first is the name of the variable, the second
+		is the type of that variable, and the third is the size (if necessary).
+		</font>
+		</td>
+	</tr>
+</table>
+<br>
+<br>
+<table border="0" cellpadding="5" cellspacing="10" width="100%" align="center">
+	<tr>
+		<td width="50%" valign="top" bgcolor="#EAEAEA">
+		<font face="Lucida Grande,Geneva,Arial" size="-1">
+		<b>Example Accounts Database Table</b>
+		<hr>
+		This table was designed for a custom system needing user accounts where they
+		could have a login and password to a website. It tracks logins, modifications to
+		the data and who created the account. It also allows the account to be locked out.
+		The password should be MD5 encrypted and stored in the database that way.
+		<br>
+		<br>
+		<center>
+		<table width="80%" bgcolor="black" cellspacing="2" border="1" align="center">
+			<tr>
+				<td bgcolor="white" align="center" colspan="3"><font size="-1">
+				tblAccounts
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;AccountID
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				INTEGER
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				11
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Name
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				200
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Login
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				12
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Password
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				32
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Locked
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				TINYINT
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+			
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;LoginCount
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				INTEGER
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				11
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;LastLogin
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DATETIME
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Created
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DATETIME
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;CreatedBy
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				200
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Updated
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DATETIME
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;UpdatedBy
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				200
+				</font></td>
+			</tr>
+		</table>
+		</center>
+		<br>
+		* The AccountID is a PRIMARY KEY (also UNIQUE)
+		<br>
+		* The Password is MD5 encrypted, hence the length of 32
+		<br>
+		* The Locked value is either zero (0) or one (1)
+		</font>
+		</td>
+		<td width="50%" valign="top" bgcolor="#EAEAEA">
+		<font face="Lucida Grande,Geneva,Arial" size="-1">
+		<b>Example Products Database Table</b>
+		<hr>
+		This table was designed to store basic production information, possibly in a
+		small business database or online shopping cart. It is highly recommended
+		that this table be customized to your needs.
+		<br>
+		<br>
+		<center>
+		<table width="80%" bgcolor="black" cellspacing="2" border="1" align="center">
+			<tr>
+				<td bgcolor="white" align="center" colspan="3"><font size="-1">
+				tblProducts
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;ProductID
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				INTEGER
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				11
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Name
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				200
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;ShortDescription
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				250
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;LongDescription
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				TEXT
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Price
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DECIMAL(9,2)
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;ImageURL
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				250
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Locked
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				TINYINT
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+			
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;ViewCount
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				INTEGER
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				11
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;LastViewed
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DATETIME
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Created
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DATETIME
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;CreatedBy
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				200
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;Updated
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				DATETIME
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				</font></td>
+			</tr>
+			<tr>
+				<td width="50%" bgcolor="white"><font size="-1">
+				&nbsp;UpdatedBy
+				</font></td>
+				<td width="35%" bgcolor="white" align="center"><font size="-1">
+				VARCHAR
+				</font></td>
+				<td width="15%" bgcolor="white" align="center"><font size="-1">
+				200
+				</font></td>
+			</tr>
+		</table>
+		</center>
+		<br>
+		* The ProductID is a PRIMARY KEY (also UNIQUE)
+		<br>
+		* The ImageURL points to an image of the product
+		<br>
+		* The Locked value is either zero (0) or one (1)
+		</font>
+		</td>
+	</tr>
+</table>
+
+</font>
+
+</body>
+</html>

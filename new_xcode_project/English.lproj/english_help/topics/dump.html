@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>Sequel Pro Help - Data Dumps</title>
+<meta name="AppleTitle" content="Data Dumps">
+<meta name="AppleFont" content="Lucida Grande">
+<meta ROBOTS="robots" CONTENT="anchors">
+</head>
+<body text="#000000" link="#0000FF" alink="#0000FF" vlink="#0000FF" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0">
+
+<font face="Lucida Grande,Geneva,Arial">
+
+<br>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="80">
+	<tr>
+		<td align="left" valign="top" width="70">
+		<img src="sequel-pro_logo.jpg" width="60" height="60" border="0">
+		</td>
+		<td align="left"><h1>Data Dumps</h1>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+		<img src="bar.gif" width="100%" height="20">
+		</td>
+	</tr>
+</table>
+
+<br>
+<font size="-1">
+&nbsp;<a href="../index.html">Back to the main menu</a>
+<br>
+<br>
+
+&nbsp;In order to perform actions with data dumps, you must use the "File->Import; File->Export" menu options of Sequel Pro. A variety
+of exports/dumps can be performed: Sequel Pro dump, Export of Table Content Results (csv or xml format), Export of Custom
+Query Results (csv or xml format), or Export of Multiple Table data (csv or xml format). On the other hand, you can only import a
+Sequel Pro dump or a CSV file.
+<br>
+<br>
+<b>CSV File Format Information</b>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+	<tr>
+		<td bgcolor="#fff8dc" valign="top">
+		<font size="-1" face="Lucida Grande,Geneva,Arial">
+		<ul>
+			<li>You can choose the following characters: fields enclosed, fields terminated, escaped and line ends</li>
+			<li>The following characters are escaped: the escaped-character itself, the line ends character, the enclosed character (if given) and the fields terminated character if no enclosed character is given</li>
+			<li>NULL values are written without enclosed character. If it is enclosed, it is interpreted as a string.</li>
+			<li>When importing a csv, unenclosed \N is also interpreted as NULL (this format is used by mysqldump)</li>
+			<li>The recommended formats should work best. When importing, enclosed/terminated/escaped characters should be all only one character long (line ends may be longer).	</li>	
+		</ul>
+		</td>
+	</tr>
+</table>
+
+<br>
+<b>Importing Dumps</b>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+	<tr>
+		<td bgcolor="#fff8dc" valign="top">
+		<font size="-1" face="Lucida Grande,Geneva,Arial">
+		<ul>
+			<li>Choose "File->Import" from the Sequel Pro Menu</li>
+			<li>You must choose to import a CSV file (table data) or a Sequel Pro dump (varied information)</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+
+<br>
+<b>Excel CSV Formatting Options</b>
+<br>
+If you wish to export data to a CSV file for use in Excel, use the following settings:
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+	<tr>
+		<td bgcolor="#fff8dc" valign="top">
+		<font size="-1" face="Lucida Grande,Geneva,Arial">
+		<ul>
+			<li>Enclosed by: " (single quote)</li>
+			<li>Escaped by: " (single quote)</li>
+			<li>Line ends: \r (for Macs)</li>
+			<li>Delimiter: , (comma)</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+</font>
+
+</body>
+</html>
