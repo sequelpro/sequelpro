@@ -812,17 +812,14 @@ returns a dictionary containing enum/set field names as key and possible values 
     NSArray *pboardTypes = [[info draggingPasteboard] types];
     int originalRow;
 
-    if ([pboardTypes count] == 1 && row != -1)
+    if ([pboardTypes containsObject:@"SequelProPasteboard"] && operation == NSTableViewDropAbove && row != -1)
     {
-        if ([[pboardTypes objectAtIndex:0] isEqualToString:@"SequelProPasteboard"]==YES && operation==NSTableViewDropAbove)
-        {
-            originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
-
-            if (row != originalRow && row != (originalRow+1))
-            {
-                return NSDragOperationMove;
-            }
-        }
+		originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+		
+		if (row != originalRow && row != (originalRow+1))
+		{
+			return NSDragOperationMove;
+		}
     }
 
     return NSDragOperationNone;
