@@ -103,13 +103,13 @@
 - (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
-                      user:(NSString *)user password:(NSString *)password
-                      port:(NSString *)port database:(NSString *)database
-					          useSSH:(BOOL)useSSH // no-longer in use
-					         sshHost:(NSString *)sshHost // no-longer in use
-					         sshUser:(NSString *)sshUser // no-longer in use
-					     sshPassword:(NSString *)sshPassword // no-longer in use
-                   sshPort:(NSString *)sshPort; // no-longer in use
+					  user:(NSString *)user password:(NSString *)password
+					  port:(NSString *)port database:(NSString *)database
+							  useSSH:(BOOL)useSSH // no-longer in use
+							 sshHost:(NSString *)sshHost // no-longer in use
+							 sshUser:(NSString *)sshUser // no-longer in use
+						 sshPassword:(NSString *)sshPassword // no-longer in use
+				   sshPort:(NSString *)sshPort; // no-longer in use
 - (NSMutableArray *)favorites;
 
 //alert sheets method
@@ -212,8 +212,8 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			objectValueForTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 
 //for freeing up memory
 - (void)dealloc;

@@ -28,39 +28,39 @@
 
 @interface MainController : NSObject <GrowlApplicationBridgeDelegate> {
 
-    IBOutlet id keyChainInstance;
+	IBOutlet id keyChainInstance;
 
-    IBOutlet id preferencesWindow;
-    IBOutlet id favoriteSheet;
-    IBOutlet id reloadAfterAddingSwitch;
-    IBOutlet id reloadAfterEditingSwitch;
-    IBOutlet id reloadAfterRemovingSwitch;
-    IBOutlet id showErrorSwitch;
-    IBOutlet id dontShowBlobSwitch;
-    IBOutlet id useMonospacedFontsSwitch;
-    IBOutlet id fetchRowCountSwitch;
-    IBOutlet id limitRowsSwitch;
-    IBOutlet id limitRowsField;
-    IBOutlet id nullValueField;
-    IBOutlet id tableView;
-    IBOutlet id nameField;
-    IBOutlet id hostField;
-    IBOutlet id socketField;
-    IBOutlet id userField;
-    IBOutlet id passwordField;
-    IBOutlet id portField;
-    IBOutlet id databaseField;
+	IBOutlet id preferencesWindow;
+	IBOutlet id favoriteSheet;
+	IBOutlet id reloadAfterAddingSwitch;
+	IBOutlet id reloadAfterEditingSwitch;
+	IBOutlet id reloadAfterRemovingSwitch;
+	IBOutlet id showErrorSwitch;
+	IBOutlet id dontShowBlobSwitch;
+	IBOutlet id useMonospacedFontsSwitch;
+	IBOutlet id fetchRowCountSwitch;
+	IBOutlet id limitRowsSwitch;
+	IBOutlet id limitRowsField;
+	IBOutlet id nullValueField;
+	IBOutlet id tableView;
+	IBOutlet id nameField;
+	IBOutlet id hostField;
+	IBOutlet id socketField;
+	IBOutlet id userField;
+	IBOutlet id passwordField;
+	IBOutlet id portField;
+	IBOutlet id databaseField;
 	IBOutlet id sshCheckbox;
-    IBOutlet id sshUserField;
-    IBOutlet id sshPasswordField;
-    IBOutlet id sshHostField;
-    IBOutlet id sshPortField;
-    IBOutlet id encodingPopUpButton;
+	IBOutlet id sshUserField;
+	IBOutlet id sshPasswordField;
+	IBOutlet id sshHostField;
+	IBOutlet id sshPortField;
+	IBOutlet id encodingPopUpButton;
 
-    NSMutableArray *favorites;
-    NSUserDefaults *prefs;
-    
-    BOOL isNewFavorite;
+	NSMutableArray *favorites;
+	NSUserDefaults *prefs;
+	
+	BOOL isNewFavorite;
 }
 
 //IBAction methods
@@ -84,15 +84,15 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			objectValueForTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 
 //tableView drag&drop datasource methods
 - (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
 - (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-    proposedDropOperation:(NSTableViewDropOperation)operation;
+	proposedDropOperation:(NSTableViewDropOperation)operation;
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row
-    dropOperation:(NSTableViewDropOperation)operation;
+	dropOperation:(NSTableViewDropOperation)operation;
 
 //tableView delegate methods
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;

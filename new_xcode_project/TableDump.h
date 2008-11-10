@@ -30,59 +30,59 @@
 
 @interface TableDump : NSObject {
 
-    IBOutlet id tableDocumentInstance;
-    IBOutlet id tablesListInstance;
-    IBOutlet id tableSourceInstance;
-    IBOutlet id tableContentInstance;
-    IBOutlet id customQueryInstance;
+	IBOutlet id tableDocumentInstance;
+	IBOutlet id tablesListInstance;
+	IBOutlet id tableSourceInstance;
+	IBOutlet id tableContentInstance;
+	IBOutlet id customQueryInstance;
 
-    IBOutlet id tableWindow;
-    IBOutlet id exportDumpView;
-    IBOutlet id exportCSVView;
-    IBOutlet id exportMultipleCSVView;
-    IBOutlet id exportMultipleXMLView;
-    IBOutlet id exportDumpTableView;
-    IBOutlet id exportMultipleCSVTableView;
-    IBOutlet id exportMultipleXMLTableView;
-    IBOutlet id exportFieldNamesSwitch;
-    IBOutlet id exportFieldsTerminatedField;
-    IBOutlet id exportFieldsEnclosedField;
-    IBOutlet id exportFieldsEscapedField;
-    IBOutlet id exportLinesTerminatedField;
-    IBOutlet id exportMultipleFieldNamesSwitch;
-    IBOutlet id exportMultipleFieldsTerminatedField;
-    IBOutlet id exportMultipleFieldsEnclosedField;
-    IBOutlet id exportMultipleFieldsEscapedField;
-    IBOutlet id exportMultipleLinesTerminatedField;
-    IBOutlet id importCSVView;
-    IBOutlet id importFieldNamesSwitch;
-    IBOutlet id importFieldsTerminatedField;
-    IBOutlet id importFieldsEnclosedField;
-    IBOutlet id importFieldsEscapedField;
-    IBOutlet id importLinesTerminatedField;
-    IBOutlet id addDropTableSwitch;
-    IBOutlet id addCreateTableSwitch;
-    IBOutlet id addTableContentSwitch;
-    IBOutlet id addErrorsSwitch;
-    IBOutlet id errorsSheet;
-    IBOutlet id errorsView;
-    IBOutlet id singleProgressSheet;
-    IBOutlet id singleProgressBar;
-    IBOutlet id singleProgressText;
-    IBOutlet id fieldMappingSheet;
-    IBOutlet id rowUpButton;
-    IBOutlet id rowDownButton;
-    IBOutlet id fieldMappingTableView;
+	IBOutlet id tableWindow;
+	IBOutlet id exportDumpView;
+	IBOutlet id exportCSVView;
+	IBOutlet id exportMultipleCSVView;
+	IBOutlet id exportMultipleXMLView;
+	IBOutlet id exportDumpTableView;
+	IBOutlet id exportMultipleCSVTableView;
+	IBOutlet id exportMultipleXMLTableView;
+	IBOutlet id exportFieldNamesSwitch;
+	IBOutlet id exportFieldsTerminatedField;
+	IBOutlet id exportFieldsEnclosedField;
+	IBOutlet id exportFieldsEscapedField;
+	IBOutlet id exportLinesTerminatedField;
+	IBOutlet id exportMultipleFieldNamesSwitch;
+	IBOutlet id exportMultipleFieldsTerminatedField;
+	IBOutlet id exportMultipleFieldsEnclosedField;
+	IBOutlet id exportMultipleFieldsEscapedField;
+	IBOutlet id exportMultipleLinesTerminatedField;
+	IBOutlet id importCSVView;
+	IBOutlet id importFieldNamesSwitch;
+	IBOutlet id importFieldsTerminatedField;
+	IBOutlet id importFieldsEnclosedField;
+	IBOutlet id importFieldsEscapedField;
+	IBOutlet id importLinesTerminatedField;
+	IBOutlet id addDropTableSwitch;
+	IBOutlet id addCreateTableSwitch;
+	IBOutlet id addTableContentSwitch;
+	IBOutlet id addErrorsSwitch;
+	IBOutlet id errorsSheet;
+	IBOutlet id errorsView;
+	IBOutlet id singleProgressSheet;
+	IBOutlet id singleProgressBar;
+	IBOutlet id singleProgressText;
+	IBOutlet id fieldMappingSheet;
+	IBOutlet id rowUpButton;
+	IBOutlet id rowDownButton;
+	IBOutlet id fieldMappingTableView;
 
-    CMMCPConnection *mySQLConnection;
+	CMMCPConnection *mySQLConnection;
 
-    NSMutableArray *tables;
-    NSArray *importArray;
-    NSMutableArray *fieldMappingArray;
-    int currentRow;
-    NSString *savePath;
-    NSString *openPath;
-    NSUserDefaults *prefs;
+	NSMutableArray *tables;
+	NSArray *importArray;
+	NSMutableArray *fieldMappingArray;
+	int currentRow;
+	NSString *savePath;
+	NSString *openPath;
+	NSUserDefaults *prefs;
 }
 
 //IBAction methods
@@ -106,14 +106,14 @@
 //format methods
 - (NSString *)dumpForSelectedTables;
 - (NSString *)csvForArray:(NSArray *)array useFirstLine:(BOOL)firstLine terminatedBy:(NSString *)terminated
-    enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
+	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
 - (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
-    enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
+	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
 - (NSString *)xmlForArray:(NSArray *)array tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
 - (NSString *)stringForSelectedTablesWithType:(NSString *)type;
 - (NSString *)htmlEscapeString:(NSString *)string;
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
-    escaped:(NSString *)escaped terminated:(NSString *)terminated;
+	escaped:(NSString *)escaped terminated:(NSString *)terminated;
 - (NSArray *)splitQueries:(NSString *)query;
 
 //additional methods
@@ -122,12 +122,12 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			objectValueForTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView
-            setObjectValue:(id)anObject
-            forTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			setObjectValue:(id)anObject
+			forTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 
 //last but not least
 - (id)init;

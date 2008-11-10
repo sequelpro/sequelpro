@@ -1,37 +1,37 @@
 {
-    "Name" = "Sequel Pro";
-    "AppleEventCode" = "cmec";
-    
-    "Classes" = {
-        "MainController" = {
-            "Superclass" = "NSCoreSuite.NSAbstractObject";
-            "AppleEventCode" = "capp";
-            "SupportedCommands" = {
-                "authenticate" = "authenticate:";
+	"Name" = "Sequel Pro";
+	"AppleEventCode" = "cmec";
+	
+	"Classes" = {
+		"MainController" = {
+			"Superclass" = "NSCoreSuite.NSAbstractObject";
+			"AppleEventCode" = "capp";
+			"SupportedCommands" = {
+				"authenticate" = "authenticate:";
 		"NSCoreSuite.Quit" = "handleQuitScriptCommand:";
-            };
-        };
-    };
-    "Commands" = {
-        "authenticate" = {
-            "CommandClass" = "NSScriptCommand";
-            "AppleEventCode" = "auth";
-            "Class" = "NSString";
-            "ResultAppleEventCode" = "****";
-            "Arguments" = {
-                "query" = {
-                    "Type" = "NSString";
-                    "AppleEventCode" = "qery";
-                };
-                "fifo" = {
-                    "Type" = "NSString";
-                    "AppleEventCode" = "fifo";
-                };
-                "tunnelName" = {
-                    "Type" = "NSString";
-                    "AppleEventCode" = "tunn";
-                };
-            };
-        };
-    };
+			};
+		};
+	};
+	"Commands" = {
+		"authenticate" = {
+			"CommandClass" = "NSScriptCommand";
+			"AppleEventCode" = "auth";
+			"Class" = "NSString";
+			"ResultAppleEventCode" = "****";
+			"Arguments" = {
+				"query" = {
+					"Type" = "NSString";
+					"AppleEventCode" = "qery";
+				};
+				"fifo" = {
+					"Type" = "NSString";
+					"AppleEventCode" = "fifo";
+				};
+				"tunnelName" = {
+					"Type" = "NSString";
+					"AppleEventCode" = "tunn";
+				};
+			};
+		};
+	};
 }

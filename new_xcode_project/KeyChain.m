@@ -29,36 +29,36 @@
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account
 {
-    int code;
-    code = kcaddgenericpassword([name UTF8String], [account UTF8String],
-                            [password lengthOfBytesUsingEncoding:NSUTF8StringEncoding ], [password UTF8String], NULL);
+	int code;
+	code = kcaddgenericpassword([name UTF8String], [account UTF8String],
+							[password lengthOfBytesUsingEncoding:NSUTF8StringEncoding ], [password UTF8String], NULL);
 
-    if ( code != 0 )
-        NSLog(@"Error while trying to add password for name: %@ account: %@", name, account);
+	if ( code != 0 )
+		NSLog(@"Error while trying to add password for name: %@ account: %@", name, account);
 }
 
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account
 {
-    int code;
-    UInt32 length;
-    void *p = (void *)malloc(128 * sizeof(char));
-    NSString *password = @"";
-    
-    code = kcfindgenericpassword([name UTF8String], [account UTF8String], 128, p, &length, nil);
+	int code;
+	UInt32 length;
+	void *p = (void *)malloc(128 * sizeof(char));
+	NSString *password = @"";
+	
+	code = kcfindgenericpassword([name UTF8String], [account UTF8String], 128, p, &length, nil);
 
-    if (!code)
-        password = [NSString stringWithCString:(const char*)p length:length];
-    free(p); 
+	if (!code)
+		password = [NSString stringWithCString:(const char*)p length:length];
+	free(p); 
 
-    return password;
+	return password;
 }
 
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account
 {
-    KCItemRef itemref = nil ;
+	KCItemRef itemref = nil ;
 
-    kcfindgenericpassword([name UTF8String],[account UTF8String],nil,nil,nil,&itemref);
-        KCDeleteItem(itemref);
+	kcfindgenericpassword([name UTF8String],[account UTF8String],nil,nil,nil,&itemref);
+		KCDeleteItem(itemref);
 }
 
 @end

@@ -30,24 +30,24 @@
 
 @interface TablesList : NSObject {
 
-    IBOutlet id tableDocumentInstance;
-    IBOutlet id tableSourceInstance;
-    IBOutlet id tableContentInstance;
-    IBOutlet id customQueryInstance;
-    IBOutlet id tableDumpInstance;
-    IBOutlet id tableStatusInstance;
+	IBOutlet id tableDocumentInstance;
+	IBOutlet id tableSourceInstance;
+	IBOutlet id tableContentInstance;
+	IBOutlet id customQueryInstance;
+	IBOutlet id tableDumpInstance;
+	IBOutlet id tableStatusInstance;
 
-    IBOutlet id tableWindow;
-    IBOutlet id copyTableSheet;
-    IBOutlet id tablesListView;
-    IBOutlet id copyTableNameField;
-    IBOutlet id copyTableContentSwitch;
-    IBOutlet id tabView;
+	IBOutlet id tableWindow;
+	IBOutlet id copyTableSheet;
+	IBOutlet id tablesListView;
+	IBOutlet id copyTableNameField;
+	IBOutlet id copyTableContentSwitch;
+	IBOutlet id tabView;
 
-    CMMCPConnection *mySQLConnection;
-    NSMutableArray *tables;
-//    NSUserDefaults *prefs;
-    BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
+	CMMCPConnection *mySQLConnection;
+	NSMutableArray *tables;
+//	NSUserDefaults *prefs;
+	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
 }
 
 //IBAction methods
@@ -76,12 +76,12 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			objectValueForTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView
-            setObjectValue:(id)anObject
-            forTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			setObjectValue:(id)anObject
+			forTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 
 //tableView delegate methods
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;

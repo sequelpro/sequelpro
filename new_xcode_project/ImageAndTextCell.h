@@ -44,7 +44,7 @@
 @interface ImageAndTextCell : NSTextFieldCell
 {
 @private
-    NSImage	*image;
+	NSImage	*image;
 	int _indentationLevel;
 }
 

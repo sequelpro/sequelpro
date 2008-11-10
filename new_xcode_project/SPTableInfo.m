@@ -48,12 +48,12 @@
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-    return [info count];
+	return [info count];
 }
 
 - (id)tableView:(NSTableView *)aTableView
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex
+			row:(int)rowIndex
 {
 	return [info objectAtIndex:rowIndex];
 }

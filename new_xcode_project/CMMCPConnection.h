@@ -27,7 +27,7 @@
 #import "CMMCPResult.h"
 
 @interface CMMCPConnection : MCPConnection {
-    id			delegate;
+	id			delegate;
 }
 
 - (CMMCPResult *) queryString:(NSString *) query;

@@ -29,25 +29,25 @@
 
 @interface TableStatus : NSObject
 {
-    IBOutlet id commentsBox;
-    IBOutlet id rowsNumber;
-    IBOutlet id rowsFormat;
-    IBOutlet id rowsAvgLength;
-    IBOutlet id rowsAutoIncrement;
-    IBOutlet id sizeData;
-    IBOutlet id sizeFree;
-    IBOutlet id sizeIndex;
-    IBOutlet id sizeMaxData;
-    IBOutlet id tableCreatedAt;
-    IBOutlet id tableName;
-    IBOutlet id tableType;
-    IBOutlet id tableUpdatedAt;
-    
-    CMMCPConnection *mySQLConnection;
-    CMMCPResult *tableStatusResult;
-    
-    NSString *selectedTable;
-    NSDictionary* statusFields;
+	IBOutlet id commentsBox;
+	IBOutlet id rowsNumber;
+	IBOutlet id rowsFormat;
+	IBOutlet id rowsAvgLength;
+	IBOutlet id rowsAutoIncrement;
+	IBOutlet id sizeData;
+	IBOutlet id sizeFree;
+	IBOutlet id sizeIndex;
+	IBOutlet id sizeMaxData;
+	IBOutlet id tableCreatedAt;
+	IBOutlet id tableName;
+	IBOutlet id tableType;
+	IBOutlet id tableUpdatedAt;
+	
+	CMMCPConnection *mySQLConnection;
+	CMMCPResult *tableStatusResult;
+	
+	NSString *selectedTable;
+	NSDictionary* statusFields;
 }
 
 // Table methods

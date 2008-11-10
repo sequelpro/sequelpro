@@ -27,12 +27,12 @@
 
 
 /*!
-    @class copyTable
-    @abstract   subclassed NSTableView to implement copy & drag-n-drop
-    @discussion Allows copying by creating a string with each table row as
-        a separate line and each cell then separate via tabs. The drag out
-        is in similar format. The values for each cell are obtained via the
-        objects description method
+	@class copyTable
+	@abstract   subclassed NSTableView to implement copy & drag-n-drop
+	@discussion Allows copying by creating a string with each table row as
+		a separate line and each cell then separate via tabs. The drag out
+		is in similar format. The values for each cell are obtained via the
+		objects description method
 */
 @interface CMCopyTable : NSTableView 
 {
@@ -40,52 +40,52 @@
 }
 
 /*!
-    @method     copy:
-    @abstract   does the work of copying
-    @discussion gets selected (if any) row(s) as a string setting it 
-       then into th default pasteboard as a string type and tabular text type.
-    @param      sender who asked for this copy?
+	@method	 copy:
+	@abstract   does the work of copying
+	@discussion gets selected (if any) row(s) as a string setting it 
+	   then into th default pasteboard as a string type and tabular text type.
+	@param	  sender who asked for this copy?
 */
 - (void)copy:(id)sender;
 
 /*!
-    @method     validateMenuItem:
-    @abstract   Dynamically enable Copy menu item for the table view
-    @discussion Will only enable the Copy item when something is selected in
-      this table view
-    @param      anItem the menu item being validated
-    @result     YES if there is at least one row selected & the menu item is
-      copy, NO otherwise
+	@method	 validateMenuItem:
+	@abstract   Dynamically enable Copy menu item for the table view
+	@discussion Will only enable the Copy item when something is selected in
+	  this table view
+	@param	  anItem the menu item being validated
+	@result	 YES if there is at least one row selected & the menu item is
+	  copy, NO otherwise
 */
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem;
 
 /*!
-    @method     draggingSourceOperationMaskForLocal:
-    @discussion Allows for dragging out of the table to other applications
-    @param      isLocal who cares
-    @result     Always calls for a copy type drag operation
+	@method	 draggingSourceOperationMaskForLocal:
+	@discussion Allows for dragging out of the table to other applications
+	@param	  isLocal who cares
+	@result	 Always calls for a copy type drag operation
 */
 - (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 /*!
-    @method     selectedRowsAsTabString
-    @abstract   getter of the selected rows of the table for copy
-    @discussion For the selected rows returns a single string with each row
-       separated by a newline and then for each column value separated by a 
-       tab. Values are from the objects description method, so make sure it
-       returns something meaningful. 
-    @result     The above described string, or nil if nothing selected
+	@method	 selectedRowsAsTabString
+	@abstract   getter of the selected rows of the table for copy
+	@discussion For the selected rows returns a single string with each row
+	   separated by a newline and then for each column value separated by a 
+	   tab. Values are from the objects description method, so make sure it
+	   returns something meaningful. 
+	@result	 The above described string, or nil if nothing selected
 */
 - (NSString *)selectedRowsAsTabString;
 
 /*!
-    @method     draggedRowsAsTabString:
-    @abstract   getter of the dragged rows of the table for drag
-    @discussion For the dragged rows returns a single string with each row
-       separated by a newline and then for each column value separated by a 
-       tab. Values are from the objects description method, so make sure it
-       returns something meaningful. 
-    @result     The above described string, or nil if nothing selected
+	@method	 draggedRowsAsTabString:
+	@abstract   getter of the dragged rows of the table for drag
+	@discussion For the dragged rows returns a single string with each row
+	   separated by a newline and then for each column value separated by a 
+	   tab. Values are from the objects description method, so make sure it
+	   returns something meaningful. 
+	@result	 The above described string, or nil if nothing selected
 */
 - (NSString *)draggedRowsAsTabString:(NSArray *)rows;
 

@@ -31,24 +31,24 @@
 
 @interface CustomQuery : NSObject {
 
-    IBOutlet id tableDumpInstance;
+	IBOutlet id tableDumpInstance;
 
-    IBOutlet id tableWindow;
-    IBOutlet id queryFavoritesButton;
-    IBOutlet id queryHistoryButton;
-    IBOutlet id textView;
-    IBOutlet CMCopyTable *customQueryView;
-    IBOutlet id errorText;
-    IBOutlet id affectedRowsText;
-    IBOutlet id valueSheet;
-    IBOutlet id valueTextField;
-    IBOutlet id queryFavoritesSheet;
-    IBOutlet id queryFavoritesView;
+	IBOutlet id tableWindow;
+	IBOutlet id queryFavoritesButton;
+	IBOutlet id queryHistoryButton;
+	IBOutlet id textView;
+	IBOutlet CMCopyTable *customQueryView;
+	IBOutlet id errorText;
+	IBOutlet id affectedRowsText;
+	IBOutlet id valueSheet;
+	IBOutlet id valueTextField;
+	IBOutlet id queryFavoritesSheet;
+	IBOutlet id queryFavoritesView;
 
-    CMMCPConnection *mySQLConnection;
-    NSArray *queryResult;
-    NSUserDefaults *prefs;
-    NSMutableArray *queryFavorites;
+	CMMCPConnection *mySQLConnection;
+	NSArray *queryResult;
+	NSUserDefaults *prefs;
+	NSMutableArray *queryFavorites;
 }
 
 //IBAction methods
@@ -74,17 +74,17 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			objectValueForTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView
-            setObjectValue:(id)anObject
-            forTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			setObjectValue:(id)anObject
+			forTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 
 //tableView drag&drop datasource methods
 - (BOOL)tableView:(NSTableView *)aTableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
 - (NSDragOperation)tableView:(NSTableView*)aTableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-    proposedDropOperation:(NSTableViewDropOperation)operation;
+	proposedDropOperation:(NSTableViewDropOperation)operation;
 - (BOOL)tableView:(NSTableView*)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
 
 //tableView delegate methods

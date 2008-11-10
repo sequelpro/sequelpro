@@ -12,11 +12,11 @@ Modified by Lorenz Textor for use with Sequel Pro
 @interface SSHTunnel : NSObject
 {
 	BOOL shouldStop;
-    NSTask *task;
-    NSPipe *stdErrPipe;
-    NSString *status;
+	NSTask *task;
+	NSPipe *stdErrPipe;
+	NSString *status;
 
-    NSDictionary *tunnelArguments;
+	NSDictionary *tunnelArguments;
 }
 
 // initialization
