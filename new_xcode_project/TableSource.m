@@ -784,7 +784,9 @@ returns a dictionary containing enum/set field names as key and possible values 
     }
 }
 
-//tableView drag&drop datasource methods
+/*
+Begin a drag and drop operation from the table - copy a single dragged row to the drag pasteboard.
+*/
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {
     int originalRow;
@@ -797,8 +799,8 @@ returns a dictionary containing enum/set field names as key and possible values 
         pboardTypes=[NSArray arrayWithObjects:@"SequelProPasteboard", nil];
         originalRow = [[rows objectAtIndex:0] intValue];
 
-	[pboard declareTypes:pboardTypes owner:nil];
-	[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"SequelProPasteboard"];
+		[pboard declareTypes:pboardTypes owner:nil];
+		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"SequelProPasteboard"];
 
         return YES;
     } else {
@@ -806,212 +808,90 @@ returns a dictionary containing enum/set field names as key and possible values 
     }
 }
 
+/*
+Determine whether to allow a drag and drop operation on this table - for the purposes of drag reordering,
+validate that the original source is of the correct type and within the same table, and that the drag
+would result in a position change.
+*/
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
     proposedDropOperation:(NSTableViewDropOperation)operation
 {
     NSArray *pboardTypes = [[info draggingPasteboard] types];
     int originalRow;
 
-    if ([pboardTypes containsObject:@"SequelProPasteboard"] && operation == NSTableViewDropAbove && row != -1)
+	// Ensure the drop is of the correct type
+    if (operation == NSTableViewDropAbove && row != -1 && [pboardTypes containsObject:@"SequelProPasteboard"])
     {
-		originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
-		
-		if (row != originalRow && row != (originalRow+1))
+	
+		// Ensure the drag originated within this table
+		if ([info draggingSource] == tableView)
 		{
-			return NSDragOperationMove;
+			originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+			
+			if (row != originalRow && row != (originalRow+1))
+			{
+				return NSDragOperationMove;
+			}
 		}
-    }
+	}
 
     return NSDragOperationNone;
 }
 
-- (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation
+/*
+Having validated a drop, perform the field/column reordering to match.
+*/
+- (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)destinationRow dropOperation:(NSTableViewDropOperation)operation
 {
     int originalRow;
-    int destinationRow;
-    NSString *tempColName;
     NSMutableString *queryString;
-    NSEnumerator *enumerator = [tableFields objectEnumerator];
-    id field;
-    NSMutableArray *fieldNames = [NSMutableArray array];
-    int i;
 
-
+	// Extract the original row position from the pasteboard.
     originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
-    destinationRow = row;
 
-    if ( ![[[tableFields objectAtIndex:originalRow] objectForKey:@"Key"] isEqualToString:@""] ) {
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Indexed fields cannot be moved!", @"message of panel when trying to move indexed field"));
-        return NO;
-    }
-
-/*
-//alertSheet would be better...
-//try to fix problem of lost values
-    if ( NSRunAlertPanel(@"Warning", [NSString stringWithFormat:@"All values for this field will be lost!\nField will be removed and a new field with the same options will be inserted at the desired position.\nThis is recommended only for empty columns!",
-                        [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"]],
-                        @"Don't Move", @"Move", nil)
-                == NSAlertDefaultReturn ) {
-        return NO;
-    }
-*/
-
-//drop dragged column
-    //query started
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-    //find free column name
-    while ( (field = [enumerator nextObject]) ) {
-        [fieldNames addObject:[field objectForKey:@"Field"]];
-    }
-    i = 1;
-    while ( [fieldNames containsObject:[NSString stringWithFormat:@"%@_temp%d",
-                                            [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"], i]] ) {
-        i++;
-    }
-    tempColName = [NSString stringWithFormat:@"%@_temp%d", [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"], i];
-    //add new column with temp name at desired position
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] isEqualToString:@""] ||
-                ![[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] )
-    {
-        queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@",
-                selectedTable,
-                tempColName,
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Type"]];
-    } else {
-        queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@(%@)",
-                selectedTable,
-                tempColName,
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Type"],
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Length"]];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"unsigned"] intValue] == 1 ) {
-        [queryString appendString:@" UNSIGNED"];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"zerofill"] intValue] == 1 ) {
-        [queryString appendString:@" ZEROFILL"];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"binary"] intValue] == 1 ) {
-        [queryString appendString:@" BINARY"];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"Null"] isEqualToString:@"NO"] )
-        [queryString appendString:@" NOT NULL"];
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
-        [queryString appendString:@" DEFAULT NULL "];
-    } else {
-//        [queryString appendString:[NSString stringWithFormat:@" DEFAULT \"%@\" ",
-//                    [[tableFields objectAtIndex:originalRow] objectForKey:@"Default"]]];
-        [queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@' ",
-                    [mySQLConnection prepareString:[[tableFields objectAtIndex:originalRow] objectForKey:@"Default"]]]];
-    }
-/*
-    if ( ![[[tableFields objectAtIndex:originalRow] objectForKey:@"Default"] isEqualToString:@""] )
-        [queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'",
-                    [[tableFields objectAtIndex:originalRow] objectForKey:@"Default"]]];
-    [queryString appendString:@" "];
-*/
-    if ( [[tableFields objectAtIndex:originalRow] objectForKey:@"Extra"] &&
-            ![[[tableFields objectAtIndex:originalRow] objectForKey:@"Extra"] isEqualToString:@"None"] )
-        [queryString appendString:[[tableFields objectAtIndex:originalRow] objectForKey:@"Extra"]];
-    if ( destinationRow == 0 ) {
+
+	// Begin construction of the reordering query
+	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` MODIFY COLUMN `%@` %@",
+		selectedTable,
+		[[tableFields objectAtIndex:originalRow] objectForKey:@"Field"],
+		[[tableFields objectAtIndex:originalRow] objectForKey:@"Type"]];
+
+	// Add the length parameter if necessary
+    if ( [[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] &&
+		![[[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] isEqualToString:@""])
+	{
+		[queryString appendString:[NSString stringWithFormat:@"(%@)",
+			[[tableFields objectAtIndex:originalRow] objectForKey:@"Length"]]];
+	}
+
+	// Add the new location
+    if ( destinationRow == 0 )
+	{
         [queryString appendString:@" FIRST"];
-    } else {
+    }
+	else
+	{
         [queryString appendString:[NSString stringWithFormat:@" AFTER `%@`",
                         [[tableFields objectAtIndex:destinationRow-1] objectForKey:@"Field"]]];
     }
+
+	// Run the query; report any errors, or reload the table on success
     [mySQLConnection queryString:queryString];
     if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
         NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't add field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
-        //query finished
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-        return NO;
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
     }
-    //copy field values from old to new column
-    queryString = [NSString stringWithFormat:@"UPDATE `%@` SET `%@`=`%@`",
-                        selectedTable,
-                        tempColName,
-                        [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"]];
-    [mySQLConnection queryString:queryString];
-    if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't copy field values. MySQL said: %@", @"message of panel when field content cannot be copied in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
-        //query finished
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-        return NO;
-    }
-    //drop old column
-    [mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP `%@`",
-            selectedTable, [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"]]];
-    if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field. MySQL said: %@", @"message of panel when old field cannot be removed in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
-        //query finished
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-        return NO;
-    }
-    //rename column to original name
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] isEqualToString:@""] ||
-                ![[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] )
-    {
-        queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
-                selectedTable,
-                tempColName,
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"],
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Type"]];
-    } else {
-        queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@(%@)",
-                selectedTable,
-                tempColName,
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Field"],
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Type"],
-                [[tableFields objectAtIndex:originalRow] objectForKey:@"Length"]];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"unsigned"] intValue] == 1 ) {
-        [queryString appendString:@" UNSIGNED"];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"zerofill"] intValue] == 1 ) {
-        [queryString appendString:@" ZEROFILL"];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"binary"] intValue] == 1 ) {
-        [queryString appendString:@" BINARY"];
-    }
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"Null"] isEqualToString:@"NO"] )
-        [queryString appendString:@" NOT NULL"];
-/*
-    if ( ![[[tableFields objectAtIndex:originalRow] objectForKey:@"Default"] isEqualToString:@""] )
-        [queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'",
-                    [[tableFields objectAtIndex:originalRow] objectForKey:@"Default"]]];
-    [queryString appendString:@" "];
-*/
-    if ( [[[tableFields objectAtIndex:originalRow] objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
-        [queryString appendString:@" DEFAULT NULL "];
-    } else {
-//        [queryString appendString:[NSString stringWithFormat:@" DEFAULT \"%@\" ",
-//                    [[tableFields objectAtIndex:originalRow] objectForKey:@"Default"]]];
-        [queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@' ",
-                    [mySQLConnection prepareString:[[tableFields objectAtIndex:originalRow] objectForKey:@"Default"]]]];
+	else
+	{
+		[self loadTable:selectedTable];
+		if ( originalRow < destinationRow ) {
+			[tableSourceView selectRow:destinationRow-1 byExtendingSelection:NO];
+		} else {
+			[tableSourceView selectRow:destinationRow byExtendingSelection:NO];
+		}
+	}
 
-    }
-    if ( [[tableFields objectAtIndex:originalRow] objectForKey:@"Extra"] &&
-            ![[[tableFields objectAtIndex:originalRow] objectForKey:@"Extra"] isEqualToString:@"None"] )
-        [queryString appendString:[[tableFields objectAtIndex:originalRow] objectForKey:@"Extra"]];
-    [mySQLConnection queryString:queryString];
-    if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename field. MySQL said: %@", @"message of panel when field cannot be renamed in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
-        //query finished
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-        return NO;
-    }
-
-    [self loadTable:selectedTable];
-    if ( originalRow < destinationRow ) {
-        [tableSourceView selectRow:destinationRow-1 byExtendingSelection:NO];
-    } else {
-        [tableSourceView selectRow:destinationRow byExtendingSelection:NO];
-    }
-
-    //query finished
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
     return YES;
