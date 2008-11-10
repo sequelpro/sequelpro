@@ -91,12 +91,12 @@
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
-		4DECC4930EC2B447008D359E /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC4920EC2B447008D359E /* Carbon.framework */; };
 		4DECC5000EC2B76E008D359E /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 4DECC4FF0EC2B76E008D359E /* Growl Registration Ticket.growlRegDict */; };
 		8D15AC2C0486D014006FF6A4 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 2A37F4B9FDCFA73011CA2CEA /* Credits.rtf */; };
 		8D15AC2F0486D014006FF6A4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165FFE840EACC02AAC07 /* InfoPlist.strings */; };
 		8D15AC320486D014006FF6A4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A37F4B0FDCFA73011CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -223,10 +223,10 @@
 		4DECC3F90EC2A573008D359E /* SSHTunnel_old.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHTunnel_old.m; sourceTree = "<group>"; };
 		4DECC46E0EC2B109008D359E /* English */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English; path = English.lproj/english_help; sourceTree = "<group>"; };
 		4DECC48B0EC2B180008D359E /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
-		4DECC4920EC2B447008D359E /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		4DECC4FF0EC2B76E008D359E /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		8D15AC360486D014006FF6A4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -238,7 +238,7 @@
 				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
 				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
 				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
-				4DECC4930EC2B447008D359E /* Carbon.framework in Frameworks */,
+				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,7 +259,7 @@
 		1058C7A8FEA54F5311CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4DECC4920EC2B447008D359E /* Carbon.framework */,
+				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
 				2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */,
 				2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */,
 			);

@@ -23,42 +23,86 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "KeyChain.h"
-
+#include <CoreFoundation/CoreFoundation.h>
+#include <Security/Security.h>
 
 @implementation KeyChain
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account
 {
-	int code;
-	code = kcaddgenericpassword([name UTF8String], [account UTF8String],
-							[password lengthOfBytesUsingEncoding:NSUTF8StringEncoding ], [password UTF8String], NULL);
-
-	if ( code != 0 )
-		NSLog(@"Error while trying to add password for name: %@ account: %@", name, account);
+	OSStatus status;
+	status = SecKeychainAddGenericPassword(
+											NULL,						// default keychain
+											[name cStringLength],		// length of service name
+											[name cString],				// service name
+											[account cStringLength],	// length of account name
+											[account cString],			// account name
+											[password cStringLength],	// length of password
+											[password cString],			// pointer to password data
+											NULL						// the item reference
+											);
+	
+    if ( status != noErr )
+		NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
 }
 
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account
 {
-	int code;
-	UInt32 length;
-	void *p = (void *)malloc(128 * sizeof(char));
+	OSStatus status;
+	
+	void *passwordData = nil;
+	UInt32 passwordLength = nil;
+	SecKeychainItemRef itemRef = nil;
 	NSString *password = @"";
 	
-	code = kcfindgenericpassword([name UTF8String], [account UTF8String], 128, p, &length, nil);
-
-	if (!code)
-		password = [NSString stringWithCString:(const char*)p length:length];
-	free(p); 
+	status = SecKeychainFindGenericPassword (
+											NULL,						// default keychain
+											[name cStringLength],		// length of service name
+											[name cString],				// service name
+											[account cStringLength],	// length of account name
+											[account cString],			// account name
+											&passwordLength,			// length of password
+											&passwordData,				// pointer to password data
+											&itemRef					// the item reference
+											);
+	
+	if ( status == noErr ) {
+		password = [NSString stringWithCString:passwordData length:passwordLength];
+		
+		//Free the data allocated by SecKeychainFindGenericPassword:
+		status = SecKeychainItemFreeContent (
+											NULL,           //No attribute data to release
+											passwordData    //Release data
+											 );
+	}
 
 	return password;
 }
 
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account
 {
-	KCItemRef itemref = nil ;
+	OSStatus status;
+	SecKeychainItemRef itemRef = nil;
 
-	kcfindgenericpassword([name UTF8String],[account UTF8String],nil,nil,nil,&itemref);
-		KCDeleteItem(itemref);
+	status = SecKeychainFindGenericPassword (
+											 NULL,						// default keychain
+											 [name cStringLength],		// length of service name
+											 [name cString],			// service name
+											 [account cStringLength],	// length of account name
+											 [account cString],			// account name
+											 nil,						// length of password
+											 nil,						// pointer to password data
+											 &itemRef					// the item reference
+											 );
+
+//	if ( status != noErr )
+		NSLog(@"Error (%i) while trying to find password for name: %@ account: %@", status, name, account);
+	
+	status = SecKeychainItemDelete(itemRef);
+//	if ( status != noErr )
+		NSLog(@"Error (%i) while trying to delete password for name: %@ account: %@", status, name, account);
+	
+	CFRelease(itemRef);
 }
 
 @end

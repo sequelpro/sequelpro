@@ -23,7 +23,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Foundation/Foundation.h>
-#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
 
 
 @interface KeyChain : NSObject {
