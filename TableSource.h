@@ -30,36 +30,36 @@
 
 @interface TableSource : NSObject {
 
-    IBOutlet id tablesListInstance;
+	IBOutlet id tablesListInstance;
 
-    IBOutlet id tableWindow;
-    IBOutlet id indexSheet;
-    IBOutlet id keySheet;
-    IBOutlet id tableSourceView;
-    IBOutlet id indexView;
-    IBOutlet id addFieldButton;
-    IBOutlet id copyFieldButton;
-    IBOutlet id removeFieldButton;
-    IBOutlet id addIndexButton;
-    IBOutlet id removeIndexButton;
-    IBOutlet id indexTypeField;
-    IBOutlet id indexNameField;
-    IBOutlet id indexedColumnsField;
-    IBOutlet id chooseKeyButton;
-    IBOutlet id tableTypeButton;
+	IBOutlet id tableWindow;
+	IBOutlet id indexSheet;
+	IBOutlet id keySheet;
+	IBOutlet id tableSourceView;
+	IBOutlet id indexView;
+	IBOutlet id addFieldButton;
+	IBOutlet id copyFieldButton;
+	IBOutlet id removeFieldButton;
+	IBOutlet id addIndexButton;
+	IBOutlet id removeIndexButton;
+	IBOutlet id indexTypeField;
+	IBOutlet id indexNameField;
+	IBOutlet id indexedColumnsField;
+	IBOutlet id chooseKeyButton;
+	IBOutlet id tableTypeButton;
 	IBOutlet id structureGrabber;
 
-    CMMCPConnection *mySQLConnection;
-    CMMCPResult *tableSourceResult;
-    CMMCPResult *indexResult;
+	CMMCPConnection *mySQLConnection;
+	CMMCPResult *tableSourceResult;
+	CMMCPResult *indexResult;
 
-    NSString *selectedTable;
-    NSString *tableType;
-    NSMutableArray *tableFields, *indexes;
-    NSMutableDictionary *oldRow, *enumFields;
-    NSDictionary *defaultValues;
-    BOOL isEditingRow, isEditingNewRow, alertSheetOpened;
-    NSUserDefaults *prefs;
+	NSString *selectedTable;
+	NSString *tableType;
+	NSMutableArray *tableFields, *indexes;
+	NSMutableDictionary *oldRow, *enumFields;
+	NSDictionary *defaultValues;
+	BOOL isEditingRow, isEditingNewRow, alertSheetOpened;
+	NSUserDefaults *prefs;
 }
 
 //table methods
@@ -97,17 +97,17 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
-            objectValueForTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			objectValueForTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView
-            setObjectValue:(id)anObject
-            forTableColumn:(NSTableColumn *)aTableColumn
-            row:(int)rowIndex;
+			setObjectValue:(id)anObject
+			forTableColumn:(NSTableColumn *)aTableColumn
+			row:(int)rowIndex;
 
 //tableView drag&drop datasource methods
 - (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
 - (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-    proposedDropOperation:(NSTableViewDropOperation)operation;
+	proposedDropOperation:(NSTableViewDropOperation)operation;
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
 
 //tableView delegate methods

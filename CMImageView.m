@@ -32,17 +32,17 @@
 returns the path of the dragged file
 */
 {
-    return [NSString stringWithString:draggedFilePath];
+	return [NSString stringWithString:draggedFilePath];
 }
 
 - (void)concludeDragOperation:(id <NSDraggingInfo>)sender
 {
-    if ( draggedFilePath )
-        [draggedFilePath release];
+	if ( draggedFilePath )
+		[draggedFilePath release];
 
-    draggedFilePath = [[NSString stringWithString:[[[sender draggingPasteboard] propertyListForType:@"NSFilenamesPboardType"] objectAtIndex:0]] retain];
+	draggedFilePath = [[NSString stringWithString:[[[sender draggingPasteboard] propertyListForType:@"NSFilenamesPboardType"] objectAtIndex:0]] retain];
 
-    [super concludeDragOperation:sender];
+	[super concludeDragOperation:sender];
 }
 
 @end

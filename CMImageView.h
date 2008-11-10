@@ -26,9 +26,9 @@
 
 
 @interface CMImageView : NSImageView {
-    
-    NSString *draggedFilePath;
-    
+	
+	NSString *draggedFilePath;
+	
 }
 
 - (NSString *)draggedFilePath;

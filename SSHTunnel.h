@@ -2,26 +2,26 @@
 
 @interface SSHTunnel : NSObject
 {
-    int code;
-    NSArray *tunnelsLocal;
-    NSArray *tunnelsRemote;
-    
-    BOOL shouldStop;
-    NSTask *task;
-    BOOL connAuth;
-    BOOL autoConnect;
-    NSPipe *stdErrPipe;
-    NSString *connName;
-    NSString *status;
-    NSString *connPort;
-    BOOL connRemote;
-    BOOL compression;
-    BOOL v1;
-    NSString * encryption;
-    BOOL socks4;
-    NSNumber *socks4p;
-    NSString *connUser;
-    NSString *connHost;
+	int code;
+	NSArray *tunnelsLocal;
+	NSArray *tunnelsRemote;
+	
+	BOOL shouldStop;
+	NSTask *task;
+	BOOL connAuth;
+	BOOL autoConnect;
+	NSPipe *stdErrPipe;
+	NSString *connName;
+	NSString *status;
+	NSString *connPort;
+	BOOL connRemote;
+	BOOL compression;
+	BOOL v1;
+	NSString * encryption;
+	BOOL socks4;
+	NSNumber *socks4p;
+	NSString *connUser;
+	NSString *connHost;
 }
 -(id)initWithName:(NSString*)aName;
 -(id)initWithDictionary:(NSDictionary*)aDictionary;

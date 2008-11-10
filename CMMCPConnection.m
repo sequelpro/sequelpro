@@ -103,14 +103,14 @@
 modified version of queryString to be used in sequel-pro
 */
 {
-    CMMCPResult     *theResult;
-    const char    *theCQuery = [self cStringFromString:query];
-    int           theQueryCode;
+	CMMCPResult	 *theResult;
+	const char	*theCQuery = [self cStringFromString:query];
+	int		   theQueryCode;
 
 //[DIFF]: check connection
-    if ( ![self checkConnection] ) {
-        NSLog(@"Connection was gone, but should be reestablished now!");
-    }
+	if ( ![self checkConnection] ) {
+		NSLog(@"Connection was gone, but should be reestablished now!");
+	}
 //end [DIFF]
 
 //[DIFF]: inform the delegate about the query
@@ -127,18 +127,18 @@ modified version of queryString to be used in sequel-pro
 		else {
 			return nil;
 		}
-    }
-    else {
-//       NSLog (@"Problem in queryString error code is : %d, query is : %s -in ObjC : %@-\n", theQueryCode, theCQuery, query);
-//       NSLog(@"Error message is : %@\n", [self getLastErrorMessage]);
-//        theResult = [theResult init]; // Old version...
-//       theResult = nil;
+	}
+	else {
+//	   NSLog (@"Problem in queryString error code is : %d, query is : %s -in ObjC : %@-\n", theQueryCode, theCQuery, query);
+//	   NSLog(@"Error message is : %@\n", [self getLastErrorMessage]);
+//		theResult = [theResult init]; // Old version...
+//	   theResult = nil;
 //[DIFF]: inform the delegate about errors
 		if ( delegate && [delegate respondsToSelector:@selector(queryGaveError:)] )
 			[delegate queryGaveError:[self getLastErrorMessage]];
 //end [DIFF]
 		return nil;
-    }
+	}
 	return [theResult autorelease];
 }
 
@@ -147,7 +147,7 @@ modified version of queryString to be used in sequel-pro
 sets the delegate
 */
 {
-    delegate = object;
+	delegate = object;
 }
 
 
