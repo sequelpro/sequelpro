@@ -614,7 +614,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UT]]];
+		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
 	} else {
