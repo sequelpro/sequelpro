@@ -42,31 +42,20 @@ get the tables in db
 	CMMCPResult *queryResult;
 	int i;
 
-//get tables
+	//get tables
 	[tables removeAllObjects];
 	queryResult = [mySQLConnection listTables];
+	
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		[queryResult dataSeek:i];
 		[tables addObject:[NSMutableArray arrayWithObjects:
 				[NSNumber numberWithBool:YES], [[queryResult fetchRowAsArray] objectAtIndex:0], nil]];
 	}
 
-	[exportDumpTableView reloadData];
-	[exportMultipleCSVTableView reloadData];
-	[exportMultipleXMLTableView reloadData];
-/*
-//disable buttons if there are no tables in db (or no db is selected)
-	if ( ![tables count] ) {
-		[dumpButton setEnabled:NO];
-	} else {
-		[dumpButton setEnabled:YES];
-	}
-	if ( ![tableDocumentInstance database] ) {
-		[readButton setEnabled:NO];
-	} else {
-		[readButton setEnabled:YES];
-	}
-*/
+    [exportDumpTableView reloadData];
+    [exportMultipleCSVTableView reloadData];
+    [exportMultipleXMLTableView reloadData];
+
 }
 
 - (IBAction)selectTables:(id)sender
@@ -101,34 +90,8 @@ ends the modal session
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
-- (IBAction)stepRow:(id)sender
-/*
-displays next/previous row in fieldMapping tableView
-*/
-{
-	if ( [sender tag] == 0 ) {
-		currentRow--;
-		[self setupFieldMappingArray];
-	} else {
-		currentRow++;
-		[self setupFieldMappingArray];
-	}
-	
-	//enable/disable buttons
-	if ( currentRow == 0 ) {
-		[rowDownButton setEnabled:NO];
-		[rowUpButton setEnabled:YES];
-	} else if ( currentRow == ([importArray count]-1) ) {
-		[rowDownButton setEnabled:YES];
-		[rowUpButton setEnabled:NO];
-	} else {
-		[rowDownButton setEnabled:YES];
-		[rowUpButton setEnabled:YES];
-	}
-}
+#pragma mark export methods
 
-
-//export methods
 - (void)exportFile:(int)tag
 /*
 invoked when user clicks on an export menuItem
@@ -139,59 +102,60 @@ invoked when user clicks on an export menuItem
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%d.%m.%Y" timeZone:nil locale:nil];
 
-	switch ( tag ) {
-		case 5:
-		//export dump
-			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@_dump %@.sql", [tableDocumentInstance database], currentDate];
-			[savePanel setAccessoryView:exportDumpView];
-			contextInfo = @"exportDump";
-		break;
-		case 6:
-		//export table content as CSV
-			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
-			[savePanel setAccessoryView:exportCSVView];
-			contextInfo = @"exportTableContentAsCSV";
-		break;
-		case 7:
-		//export table content as XML
-			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
-			contextInfo = @"exportTableContentAsXML";
-		break;
-		case 8:
-		//export custom result as CSV
-			file = @"customresult.csv";
-			[savePanel setAccessoryView:exportCSVView];
-			contextInfo = @"exportCustomResultAsCSV";
-		break;
-		case 9:
-		//export custom result as XML
-			file = @"customresult.xml";
-			contextInfo = @"exportCustomResultAsXML";
-		break;
-		case 10:
-		//export multiple tables as CSV
-			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
-			[savePanel setAccessoryView:exportMultipleCSVView];
-			contextInfo = @"exportMultipleTablesAsCSV";
-		break;
-		case 11:
-		//export multiple tables as XML
-			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
-			[savePanel setAccessoryView:exportMultipleXMLView];
-			contextInfo = @"exportMultipleTablesAsXML";
-		break;
-		default:
-			NSLog(@"ERROR: unknown export item with tag %d", tag);
-			return;
-		break;
-	}
-	//open savePanel
-	[savePanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
-			file:file modalForWindow:tableWindow modalDelegate:self
-			didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+    switch ( tag ) {
+        case 5:
+			// export dump
+            [self reloadTables:self];
+            file = [NSString stringWithFormat:@"%@_dump %@.sql", [tableDocumentInstance database], currentDate];
+            [savePanel setAccessoryView:exportDumpView];
+            contextInfo = @"exportDump";
+			break;
+        case 6:
+			// export table content as CSV
+            file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
+            [savePanel setAccessoryView:exportCSVView];
+            contextInfo = @"exportTableContentAsCSV";
+			break;
+        case 7:
+			// export table content as XML
+            file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
+            contextInfo = @"exportTableContentAsXML";
+			break;
+        case 8:
+			// export custom result as CSV
+            file = @"customresult.csv";
+            [savePanel setAccessoryView:exportCSVView];
+            contextInfo = @"exportCustomResultAsCSV";
+			break;
+        case 9:
+			// export custom result as XML
+            file = @"customresult.xml";
+            contextInfo = @"exportCustomResultAsXML";
+			break;
+        case 10:
+			// export multiple tables as CSV
+            [self reloadTables:self];
+            file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
+            [savePanel setAccessoryView:exportMultipleCSVView];
+            contextInfo = @"exportMultipleTablesAsCSV";
+			break;
+        case 11:
+			// export multiple tables as XML
+            [self reloadTables:self];
+            file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
+            [savePanel setAccessoryView:exportMultipleXMLView];
+            contextInfo = @"exportMultipleTablesAsXML";
+			break;
+        default:
+            NSLog(@"ERROR: unknown export item with tag %d", tag);
+            return;
+			break;
+    }
+	
+    //open savePanel
+    [savePanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
+            file:file modalForWindow:tableWindow modalDelegate:self
+            didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
@@ -203,12 +167,14 @@ saves the export file
 	NSError **errorStr; 
 	id fileContent;
 	BOOL success;
-	
-	[sheet orderOut:self];
+    
+    [sheet orderOut:self];
+    
 	if ( returnCode != NSOKButton )
-		return;
-//save path to preferences
-	[prefs setObject:[sheet directory] forKey:@"savePath"];
+        return;
+	
+	//save path to preferences
+    [prefs setObject:[sheet directory] forKey:@"savePath"];
 
 //error if file exists and is not writable
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:[sheet filename]] ) {
@@ -227,60 +193,68 @@ saves the export file
 		}
 	}
 
-	if ( [contextInfo isEqualToString:@"exportDump"] ) {
-	//export dump of selected database
-		fileContent = [self dumpForSelectedTables];
-	} else if ( [contextInfo isEqualToString:@"exportCustomResultAsCSV"] ) {
-	//export custom query result as csv
-		fileContent = [self csvForArray:[customQueryInstance currentResult] useFirstLine:[exportFieldNamesSwitch state]
-								terminatedBy:[exportFieldsTerminatedField stringValue]
-								enclosedBy:[exportFieldsEnclosedField stringValue]
-								escapedBy:[exportFieldsEscapedField stringValue]
-								lineEnds:[exportLinesTerminatedField stringValue]
-								silently:NO];
-	} else if ( [contextInfo isEqualToString:@"exportTableContentAsCSV"] ) {
-	//export table content as csv
-		fileContent = [self csvForArray:[tableContentInstance currentResult] useFirstLine:[exportFieldNamesSwitch state]
-								terminatedBy:[exportFieldsTerminatedField stringValue]
-								enclosedBy:[exportFieldsEnclosedField stringValue]
-								escapedBy:[exportFieldsEscapedField stringValue]
-								lineEnds:[exportLinesTerminatedField stringValue]
-								silently:NO];
-	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsCSV"] ) {
-	//export multiple tables as CSV
-		fileContent = [self stringForSelectedTablesWithType:@"csv"];
-	} else if ( [contextInfo isEqualToString:@"exportCustomResultAsXML"] ) {
-	//export custom query result as XML
-		fileContent = [self xmlForArray:[customQueryInstance currentResult]
-								tableName:@"custom"
-								withHeader:YES
-								silently:NO];
-	} else if ( [contextInfo isEqualToString:@"exportTableContentAsXML"] ) {
-	//export table content as XML
-		fileContent = [self xmlForArray:[tableContentInstance currentResult]
-								tableName:[tableDocumentInstance table]
-								withHeader:YES
-								silently:NO];
-	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsXML"] ) {
-	//export multiple tables as XML
-		fileContent = [self stringForSelectedTablesWithType:@"xml"];
-	} else {
-	//unknown operation
-		NSLog(@"unknown operation %@", [contextInfo description]);
-		fileContent = @"";
-	}
+    if ( [contextInfo isEqualToString:@"exportDump"] ) {
+		//export dump of selected database
+        fileContent = [self dumpForSelectedTables];
+		
+    } else if ( [contextInfo isEqualToString:@"exportCustomResultAsCSV"] ) {
+		//export custom query result as csv
+        fileContent = [self csvForArray:[customQueryInstance currentResult] useFirstLine:[exportFieldNamesSwitch state]
+                                terminatedBy:[exportFieldsTerminatedField stringValue]
+                                enclosedBy:[exportFieldsEnclosedField stringValue]
+                                escapedBy:[exportFieldsEscapedField stringValue]
+                                lineEnds:[exportLinesTerminatedField stringValue]
+                                silently:NO];
+		
+    } else if ( [contextInfo isEqualToString:@"exportTableContentAsCSV"] ) {
+		//export table content as csv
+        fileContent = [self csvForArray:[tableContentInstance currentResult] useFirstLine:[exportFieldNamesSwitch state]
+                                terminatedBy:[exportFieldsTerminatedField stringValue]
+                                enclosedBy:[exportFieldsEnclosedField stringValue]
+                                escapedBy:[exportFieldsEscapedField stringValue]
+                                lineEnds:[exportLinesTerminatedField stringValue]
+                                silently:NO];
+		
+    } else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsCSV"] ) {
+		//export multiple tables as CSV
+        fileContent = [self stringForSelectedTablesWithType:@"csv"];
+		
+    } else if ( [contextInfo isEqualToString:@"exportCustomResultAsXML"] ) {
+		//export custom query result as XML
+        fileContent = [self xmlForArray:[customQueryInstance currentResult]
+                                tableName:@"custom"
+                                withHeader:YES
+                                silently:NO];
+		
+    } else if ( [contextInfo isEqualToString:@"exportTableContentAsXML"] ) {
+		//export table content as XML
+        fileContent = [self xmlForArray:[tableContentInstance currentResult]
+                                tableName:[tableDocumentInstance table]
+                                withHeader:YES
+                                silently:NO];
+		
+    } else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsXML"] ) {
+		//export multiple tables as XML
+        fileContent = [self stringForSelectedTablesWithType:@"xml"];
+		
+    } else {
+		//unknown operation
+        NSLog(@"unknown operation %@", [contextInfo description]);
+        fileContent = @"";
+    }
 
 	if ( [fileContent respondsToSelector:@selector(writeToFile:atomically:encoding:error:)] ) {
-	// mac os 10.4 or later
-		success = [fileContent writeToFile:[sheet filename] atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] UTF8String]]  error:errorStr];
+		// mac os 10.4 or later
+		success = [fileContent writeToFile:[sheet filename] atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]  error:errorStr];
 	} else {
-	// mac os pre 10.4
+		// mac os pre 10.4
 		success = [fileContent writeToFile:[sheet filename] atomically:YES];
 	}
-	if ( !success ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-			NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-	}
+	
+    if ( !success ) {
+        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+            NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+    }
 	
 	// Export Finished Growl Notification
 	[GrowlApplicationBridge notifyWithTitle:@"Export Finished"
@@ -294,46 +268,53 @@ saves the export file
 
 }
 
-//import methods
+#pragma mark import methods
+
+- (void)importFile
 /*
-- (IBAction)openDump:(id)sender
-
-opens the NSOpenPanel
-
-{
-	[[NSOpenPanel openPanel] beginSheetForDirectory:[prefs objectForKey:@"openPath"] file:nil types:nil
-			modalForWindow:tableWindow modalDelegate:self
-			didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:nil];			
-}
-*/
-
-- (void)importFile:(int)tag
-/*
-invoked when user clicks on an export menuItem
+invoked when user clicks on an import menuItem
 */
 {
-	NSString *contextInfo;
-	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setAccessoryView:importCSVView];
 
-	switch ( tag ) {
-		case 1:
-		//import dump
-			contextInfo = @"importDump";
-		break;
-		case 2:
-		//import CSV file
-			[openPanel setAccessoryView:importCSVView];
-			contextInfo = @"importCSVFile";
-		break;
-		default:
-			NSLog(@"ERROR: unknown import item with tag %d", tag);
-			return;
-		break;
-	}
-	//open savePanel
+    // Show openPanel
 	[openPanel beginSheetForDirectory:[prefs objectForKey:@"openPath"]
-			file:nil modalForWindow:tableWindow modalDelegate:self
-			didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+								 file:nil
+					   modalForWindow:tableWindow
+						modalDelegate:self
+					   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
+						  contextInfo:nil];
+}
+
+- (IBAction)changeFormat:(id)sender
+{
+	[importCSVBox setHidden:![[[importFormatPopup selectedItem] title] isEqualToString:@"CSV"]];
+}
+
+- (IBAction)changeTable:(id)sender
+{
+	NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
+	
+	[tableSourceInstance loadTable:[fieldMappingPopup titleOfSelectedItem]];
+	
+	//set up tableView
+	currentRow = 0;
+	fieldMappingArray = nil;
+	[self setupFieldMappingArray];
+	[rowDownButton setEnabled:NO];
+	[rowUpButton setEnabled:([importArray count] > 1)];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+	
+	//set up tableView buttons
+	[buttonCell setControlSize:NSSmallControlSize];
+	[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
+	[buttonCell setBordered:NO];
+	[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
+	[buttonCell addItemsWithTitles:[tableSourceInstance fieldNames]];
+	
+	[[fieldMappingTableView tableColumnWithIdentifier:@"1"] setDataCell:buttonCell];
+	[fieldMappingTableView reloadData];
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
@@ -343,29 +324,43 @@ reads mysql-dumpfile
 {
 	NSString *dumpFile;
 	NSError **errorStr; 
-	NSMutableString *errors = [NSMutableString string];
+    NSMutableString *errors = [NSMutableString string];
+	NSString *fileType = [[importFormatPopup selectedItem] title];
 
-	[sheet orderOut:self];
-	if ( returnCode != NSOKButton )
-		return;
-//save path to preferences
+    [sheet orderOut:self];
+	
+    if ( returnCode != NSOKButton )
+        return;
+
+	//save path to preferences
 	[prefs setObject:[sheet directory] forKey:@"openPath"];
 
-//load file into string
+	//load file into string
 	if ( [NSString respondsToSelector:@selector(stringWithContentsOfFile:encoding:error:)] ) {
-	// mac os 10.4 or later
-		dumpFile = [NSString stringWithContentsOfFile:[sheet filename] encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] UTF8String]] error:errorStr];
+		// mac os 10.4 or later
+		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]
+											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
+												error:errorStr];
 	} else {
-	// mac os pre 10.4
+		// mac os pre 10.4
 		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]];
 	}
+	
 	if ( !dumpFile ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-			NSLocalizedString(@"Couldn't open file. Be sure that the path is correct and that you have the necessary privileges.", @"message of panel when file cannot be opened"));
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil,
+						  nil,
+						  tableWindow,
+						  self,
+						  nil,
+						  nil,
+						  nil,
+						  NSLocalizedString(@"Couldn't open file. Be sure that the path is correct and that you have the necessary privileges.", @"message of panel when file cannot be opened"));
 		return;
 	}
 
-//reset interface
+	// reset interface
 	[errorsView setString:@""];
 	[errorsView displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
@@ -373,173 +368,224 @@ reads mysql-dumpfile
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 
-	if ( [contextInfo isEqualToString:@"importDump"] ) {
-//import dump file
-	NSArray *queries;
-	int i;
-	
-	//open progress sheet
-		[NSApp beginSheet:singleProgressSheet
-				modalForWindow:tableWindow modalDelegate:self
-				didEndSelector:nil contextInfo:nil];
-		[singleProgressBar setIndeterminate:YES];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar startAnimation:self];
-	//get array with an object for each mysql-query
-//		queries = [dumpFile componentsSeparatedByString:@";\n"];
-		queries = [self splitQueries:dumpFile];
-	
-		[singleProgressBar stopAnimation:self];
-		[singleProgressBar setUsesThreadedAnimation:NO];
-		[singleProgressBar setIndeterminate:NO];
-	//perform all mysql-queries
-		for ( i = 0 ; i < [queries count] ; i++ ) {
-			[singleProgressBar setDoubleValue:((i+1)*100/[queries count])];
-			[singleProgressBar displayIfNeeded];
-			[mySQLConnection queryString:[queries objectAtIndex:i]];
-			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]
-						&& ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"])
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
-		}
-	//close progress sheet
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
-	//display errors
-		if ( [errors length] ) {
-			[errorsView setString:errors];
-			[NSApp beginSheet:errorsSheet
-					modalForWindow:tableWindow modalDelegate:self
-					didEndSelector:nil contextInfo:nil];
-			[NSApp runModalForWindow:errorsSheet];
-			
-			[NSApp endSheet:errorsSheet];
-			[errorsSheet orderOut:nil];
-		}
-	} else if ( [contextInfo isEqualToString:@"importCSVFile"] ) {
-//import csv file
-		int code;
-		NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
+    if ( [fileType isEqualToString:@"SQL"] ) {
 		
-	//open progress sheet
-		[NSApp beginSheet:singleProgressSheet
-				modalForWindow:tableWindow modalDelegate:self
-				didEndSelector:nil contextInfo:nil];
-		[singleProgressBar setIndeterminate:YES];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar startAnimation:self];
-	//put file in array
-		if ( importArray )
-			[importArray release];
-		importArray = [[self arrayForCSV:dumpFile
-								terminatedBy:[importFieldsTerminatedField stringValue]
-								enclosedBy:[importFieldsEnclosedField stringValue]
-								escapedBy:[importFieldsEscapedField stringValue]
-								lineEnds:[importLinesTerminatedField stringValue]] retain];
-	//close progress sheet
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
-		[singleProgressBar stopAnimation:self];
-		[singleProgressBar setUsesThreadedAnimation:NO];
-		[singleProgressBar setIndeterminate:NO];
-	//show fieldMapping sheet
-		//set up tableView
-	   	currentRow = 0;
-		fieldMappingArray = nil;
-		[self setupFieldMappingArray];
-		[rowDownButton setEnabled:NO];
-		if ( [importArray count] > 1 ) {
-			[rowUpButton setEnabled:YES];
-		} else {
-			[rowUpButton setEnabled:NO];
-		}
-		//set up tableView buttons
-		[buttonCell setControlSize:NSSmallControlSize];
-		[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
-		[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-		[buttonCell addItemsWithTitles:[tableSourceInstance fieldNames]];
-		[[fieldMappingTableView tableColumnWithIdentifier:@"1"] setDataCell:buttonCell];
-		[NSApp beginSheet:fieldMappingSheet
-				modalForWindow:tableWindow modalDelegate:self
-				didEndSelector:nil contextInfo:nil];
-		code = [NSApp runModalForWindow:fieldMappingSheet];
-
-		[NSApp endSheet:fieldMappingSheet];
-		[fieldMappingSheet orderOut:nil];
-		
-		if ( code ) {
-	//import array into db
-			NSMutableString *fNames = [NSMutableString string];
-			NSMutableArray *fValuesIndexes = [NSMutableArray array];
-			NSMutableString *fValues = [NSMutableString string];
-			int i,j;
-			
+		//import dump file
+		NSArray *queries;
+		int i;
+    
 		//open progress sheet
-			[NSApp beginSheet:singleProgressSheet
-					modalForWindow:tableWindow modalDelegate:self
-					didEndSelector:nil contextInfo:nil];
+        [NSApp beginSheet:singleProgressSheet
+		   modalForWindow:tableWindow
+			modalDelegate:self
+		   didEndSelector:nil
+			  contextInfo:nil];
 		
-		//get fields to be imported
-			for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
-				if ( [[[fieldMappingArray objectAtIndex:i] objectAtIndex:1] intValue] > 0 ) {
-				//field marked for import
-					if ( [fNames length] )
-						[fNames appendString:@","];
-					[fNames appendString:[NSString stringWithFormat:@"`%@`",
-							[[tableSourceInstance fieldNames] objectAtIndex:([[[fieldMappingArray objectAtIndex:i] objectAtIndex:1] intValue]-1)]]];
-					[fValuesIndexes addObject:[NSNumber numberWithInt:i]];
-				}
+        [singleProgressBar setIndeterminate:YES];
+        [singleProgressBar setUsesThreadedAnimation:YES];
+        [singleProgressBar startAnimation:self];
+		
+		//get array with an object for each mysql-query
+        queries = [self splitQueries:dumpFile];
+    
+        [singleProgressBar stopAnimation:self];
+        [singleProgressBar setUsesThreadedAnimation:NO];
+        [singleProgressBar setIndeterminate:NO];
+		
+		//perform all mysql-queries
+        for ( i = 0 ; i < [queries count] ; i++ ) {
+            [singleProgressBar setDoubleValue:((i+1)*100/[queries count])];
+            [singleProgressBar displayIfNeeded];
+            [mySQLConnection queryString:[queries objectAtIndex:i]];
+            
+			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+                [errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
 			}
-		//import array
-			for ( i = 0 ; i < [importArray count] ; i++ ) {
-				//show progress bar
-				[singleProgressBar setDoubleValue:((i+1)*100/[importArray count])];
-				[singleProgressBar displayIfNeeded];
-				if ( ![importFieldNamesSwitch state] || (i != 0) ) {
-				//put values in string
-					[fValues setString:@""];
-					for ( j = 0 ; j < [fValuesIndexes count] ; j++ ) {
-						if ( [fValues length] )
-							[fValues appendString:@","];
-						if ( [[[importArray objectAtIndex:i] objectAtIndex:[[fValuesIndexes objectAtIndex:j] intValue]]
-											isMemberOfClass:[NSNull class]] ) {
-							[fValues appendString:@"NULL"];
-						} else {
-							[fValues appendString:[NSString stringWithFormat:@"'%@'",
-										[mySQLConnection prepareString:
-											[[importArray objectAtIndex:i] objectAtIndex:[[fValuesIndexes objectAtIndex:j] intValue]]]]];
-//							[fValues appendString:[NSString stringWithFormat:@"\"%@\"",
-//										[mySQLConnection prepareString:
-//											[[importArray objectAtIndex:i] objectAtIndex:[[fValuesIndexes objectAtIndex:j] intValue]]]]];
-						}
-					}
-				//perform query
-					[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
-																	[tablesListInstance table],
-																	fNames,
-																	fValues]];
-					if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] )
-						[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];
-				}
-			}
+        }
+		
 		//close progress sheet
-			[NSApp endSheet:singleProgressSheet];
-			[singleProgressSheet orderOut:nil];
-		}
-	//display errors
-		if ( [errors length] ) {
-			[errorsView setString:errors];
-			[NSApp beginSheet:errorsSheet
-					modalForWindow:tableWindow modalDelegate:self
-					didEndSelector:nil contextInfo:nil];
-			[NSApp runModalForWindow:errorsSheet];
+        [NSApp endSheet:singleProgressSheet];
+        [singleProgressSheet orderOut:nil];
+
+		//display errors
+        if ( [errors length] ) {
+            [errorsView setString:errors];
+            [NSApp beginSheet:errorsSheet
+			   modalForWindow:tableWindow
+				modalDelegate:self
+			   didEndSelector:nil
+				  contextInfo:nil];
 			
-			[NSApp endSheet:errorsSheet];
-			[errorsSheet orderOut:nil];
+            [NSApp runModalForWindow:errorsSheet];
+            
+            [NSApp endSheet:errorsSheet];
+            [errorsSheet orderOut:nil];
+        }
+		
+		
+	// 	
+    } else if ( [fileType isEqualToString:@"CSV"] ) {
+		//import csv file
+        int code;
+        NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
+        
+		//open progress sheet
+        [NSApp beginSheet:singleProgressSheet
+		   modalForWindow:tableWindow
+			modalDelegate:self
+		   didEndSelector:nil 
+			  contextInfo:nil];
+		
+        [singleProgressBar setIndeterminate:YES];
+        [singleProgressBar setUsesThreadedAnimation:YES];
+        [singleProgressBar startAnimation:self];
+		
+		//put file in array
+        if ( importArray )
+            [importArray release];
+		
+        importArray = [[self arrayForCSV:dumpFile
+							terminatedBy:[importFieldsTerminatedField stringValue]
+							  enclosedBy:[importFieldsEnclosedField stringValue]
+							   escapedBy:[importFieldsEscapedField stringValue]
+								lineEnds:[importLinesTerminatedField stringValue]] retain];
+		
+		//close progress sheet
+        [NSApp endSheet:singleProgressSheet];
+        [singleProgressSheet orderOut:nil];
+        [singleProgressBar stopAnimation:self];
+        [singleProgressBar setUsesThreadedAnimation:NO];
+        [singleProgressBar setIndeterminate:NO];
+		
+		//show fieldMapping sheet
+		CMMCPResult *theResult;
+		int i;
+		theResult = [mySQLConnection listTables];
+		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+			[theResult dataSeek:i];
+			[fieldMappingPopup addItemWithTitle:[[theResult fetchRowAsArray] objectAtIndex:0]];
 		}
-	//free arrays
-		fieldMappingArray = nil;
-		importArray = nil;
-	}
+		
+		if ([tableDocumentInstance table] != nil && ![(NSString *)[tableDocumentInstance table] isEqualToString:@""]) {
+			[fieldMappingPopup selectItemWithTitle:[tableDocumentInstance table]];
+		} else {
+			[fieldMappingPopup selectItemAtIndex:0];
+		}
+
+		[tableSourceInstance loadTable:[fieldMappingPopup titleOfSelectedItem]];
+		
+        //set up tableView
+       	currentRow = 0;
+        fieldMappingArray = nil;
+        [self setupFieldMappingArray];
+		[rowDownButton setEnabled:NO];
+		[rowUpButton setEnabled:([importArray count] > 1)];
+		[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+
+        //set up tableView buttons
+        [buttonCell setControlSize:NSSmallControlSize];
+        [buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
+		[buttonCell setBordered:NO];
+        [buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
+        [buttonCell addItemsWithTitles:[tableSourceInstance fieldNames]];
+		
+        [[fieldMappingTableView tableColumnWithIdentifier:@"1"] setDataCell:buttonCell];
+		
+        [NSApp beginSheet:fieldMappingSheet
+		   modalForWindow:tableWindow
+			modalDelegate:self
+		   didEndSelector:nil
+			  contextInfo:nil];
+		
+        code = [NSApp runModalForWindow:fieldMappingSheet];
+
+        [NSApp endSheet:fieldMappingSheet];
+        [fieldMappingSheet orderOut:nil];
+        
+        if ( code ) {
+			//import array into db
+            NSMutableString *fNames = [NSMutableString string];
+            NSMutableArray *fValuesIndexes = [NSMutableArray array];
+            NSMutableString *fValues = [NSMutableString string];
+            int i,j;
+            
+			//open progress sheet
+            [NSApp beginSheet:singleProgressSheet
+			   modalForWindow:tableWindow
+				modalDelegate:self
+			   didEndSelector:nil
+				  contextInfo:nil];
+
+			//get fields to be imported
+            for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
+                if ( [[[fieldMappingArray objectAtIndex:i] objectAtIndex:1] intValue] > 0 ) {
+					//field marked for import
+                    if ( [fNames length] )
+                        [fNames appendString:@","];
+					
+                    [fNames appendString:[NSString stringWithFormat:@"`%@`",[[tableSourceInstance fieldNames] objectAtIndex:([[[fieldMappingArray objectAtIndex:i] objectAtIndex:1] intValue]-1)]]];
+                    [fValuesIndexes addObject:[NSNumber numberWithInt:i]];
+                }
+            }
+			
+			//import array
+            for ( i = 0 ; i < [importArray count] ; i++ ) {
+                //show progress bar
+                [singleProgressBar setDoubleValue:((i+1)*100/[importArray count])];
+                [singleProgressBar displayIfNeeded];
+				
+                if ( ![importFieldNamesSwitch state] || (i != 0) ) {
+					//put values in string
+                    [fValues setString:@""];
+					
+                    for ( j = 0 ; j < [fValuesIndexes count] ; j++ ) {
+                        if ( [fValues length] )
+                            [fValues appendString:@","];
+						
+                        if ( [[[importArray objectAtIndex:i] objectAtIndex:[[fValuesIndexes objectAtIndex:j] intValue]] isMemberOfClass:[NSNull class]] ) {
+                            [fValues appendString:@"NULL"];
+                        } else {
+                            [fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[[importArray objectAtIndex:i] objectAtIndex:[[fValuesIndexes objectAtIndex:j] intValue]]]]];
+							//[fValues appendString:[NSString stringWithFormat:@"\"%@\"",[mySQLConnection prepareString:[[importArray objectAtIndex:i] objectAtIndex:[[fValuesIndexes objectAtIndex:j] intValue]]]]];
+                        }
+                    }
+					
+					//perform query
+                    [mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
+												  [tablesListInstance table],
+												  fNames,
+												  fValues]];
+					
+                    if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+						[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];				
+					}
+                }
+            }
+			
+			//close progress sheet
+            [NSApp endSheet:singleProgressSheet];
+            [singleProgressSheet orderOut:nil];
+        }
+		
+		//display errors
+        if ( [errors length] ) {
+            [errorsView setString:errors];
+            [NSApp beginSheet:errorsSheet
+			   modalForWindow:tableWindow
+				modalDelegate:self
+			   didEndSelector:nil
+				  contextInfo:nil];
+			
+            [NSApp runModalForWindow:errorsSheet];
+            
+            [NSApp endSheet:errorsSheet];
+            [errorsSheet orderOut:nil];
+        }
+		
+		//free arrays
+        fieldMappingArray = nil;
+        importArray = nil;
+    }
 	
 	// Import Finished Growl Notification
 	[GrowlApplicationBridge notifyWithTitle:@"Import Finished"
@@ -560,34 +606,54 @@ sets up the fieldMapping array to be shown in the tableView
 {
 	int i, value;
 
-	if ( fieldMappingArray ) {
-		for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
-			if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
-				[[fieldMappingArray objectAtIndex:i] replaceObjectAtIndex:0 withObject:@"NULL"];
-			} else {
-				[[fieldMappingArray objectAtIndex:i] replaceObjectAtIndex:0 withObject:[[importArray objectAtIndex:currentRow] objectAtIndex:i]];
-			}
-		}
-	} else {
-		fieldMappingArray = [NSMutableArray array];
-		for ( i = 0 ; i < [[importArray objectAtIndex:currentRow] count] ; i++ ) {
-			if ( i < [[tableSourceInstance fieldNames] count] ) {
-				value = i + 1;
-			} else {
-				value = 0;
-			}
-			if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
-				[fieldMappingArray addObject:[NSMutableArray arrayWithObjects:@"NULL", [NSNumber numberWithInt:value], nil]];
-			} else {
-				[fieldMappingArray addObject:[NSMutableArray arrayWithObjects:[[importArray objectAtIndex:currentRow] objectAtIndex:i], [NSNumber numberWithInt:value], nil]];
-			}
-		}
-		[fieldMappingArray retain];
-	}
-	[fieldMappingTableView reloadData];
+    if ( fieldMappingArray ) {
+        for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
+            if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
+                [[fieldMappingArray objectAtIndex:i] replaceObjectAtIndex:0 withObject:@"NULL"];
+            } else {
+                [[fieldMappingArray objectAtIndex:i] replaceObjectAtIndex:0 withObject:[[importArray objectAtIndex:currentRow] objectAtIndex:i]];
+            }
+        }
+    } else {
+        fieldMappingArray = [NSMutableArray array];
+        for ( i = 0 ; i < [[importArray objectAtIndex:currentRow] count] ; i++ ) {
+            if ( i < [[tableSourceInstance fieldNames] count] ) {
+                value = i + 1;
+            } else {
+                value = 0;
+            }
+            if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
+                [fieldMappingArray addObject:[NSMutableArray arrayWithObjects:@"NULL", [NSNumber numberWithInt:value], nil]];
+            } else {
+                [fieldMappingArray addObject:[NSMutableArray arrayWithObjects:[[importArray objectAtIndex:currentRow] objectAtIndex:i], [NSNumber numberWithInt:value], nil]];
+            }
+        }
+        [fieldMappingArray retain];
+    }
+    [fieldMappingTableView reloadData];
 }
 
-
+		 
+ - (IBAction)stepRow:(id)sender
+/*
+ displays next/previous row in fieldMapping tableView
+ */
+{
+	if ( [sender tag] == 0 ) {
+		currentRow--;
+	} else {
+		currentRow++;
+	}
+	
+	[self setupFieldMappingArray];
+	
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+	
+	// enable/disable buttons
+	[rowDownButton setEnabled:(currentRow != 0)];
+	[rowUpButton setEnabled:(currentRow != ([importArray count]-1))];
+}
+		 
 //format methods
 - (NSString *)dumpForSelectedTables
 /*
@@ -605,7 +671,7 @@ returns a dump string for the selected tables
 	NSMutableString *errors = [NSMutableString string];
 	id createTableSyntax;
 
-//reset interface
+	//reset interface
 	[errorsView setString:@""];
 	[errorsView displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
@@ -613,7 +679,7 @@ returns a dump string for the selected tables
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 
-//open progress sheet
+	//open progress sheet
 	[NSApp beginSheet:singleProgressSheet
 			modalForWindow:tableWindow modalDelegate:self
 			didEndSelector:nil contextInfo:nil];
