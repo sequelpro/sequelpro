@@ -360,7 +360,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	selectedFavorite = [favoriteName retain];
 
 	[self didChangeValueForKey:@"favorites"];
-	[favoritesController setSelectionIndex:[favorites count]-1];
+	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
 }
 
 /**
