@@ -173,7 +173,6 @@
 //menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
 - (IBAction)import:(id)sender;
-- (IBAction)importCSV:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)exportTable:(id)sender;
 - (IBAction)exportMultipleTables:(id)sender;

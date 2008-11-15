@@ -1099,12 +1099,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  passes the request to the tableDump object
  */
 {
-	[tableDumpInstance importFile:[sender tag]];
-}
-
-- (IBAction)importCSV:(id)sender
-{
-	return [self import:sender];
+	[tableDumpInstance importFile];
 }
 
 - (IBAction)export:(id)sender
