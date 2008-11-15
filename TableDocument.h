@@ -105,10 +105,10 @@
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password
 					  port:(NSString *)port database:(NSString *)database
-							  useSSH:(BOOL)useSSH // no-longer in use
-							 sshHost:(NSString *)sshHost // no-longer in use
-							 sshUser:(NSString *)sshUser // no-longer in use
-						 sshPassword:(NSString *)sshPassword // no-longer in use
+					useSSH:(BOOL)useSSH // no-longer in use
+				   sshHost:(NSString *)sshHost // no-longer in use
+				   sshUser:(NSString *)sshUser // no-longer in use
+			   sshPassword:(NSString *)sshPassword // no-longer in use
 				   sshPort:(NSString *)sshPort; // no-longer in use
 - (NSMutableArray *)favorites;
 

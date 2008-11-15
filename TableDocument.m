@@ -1467,8 +1467,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 //SMySQL delegate methods
 - (void)willQueryString:(NSString *)query
 /*
- invoked when framework will perform a query
- */
+invoked when framework will perform a query
+*/
 {
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	
@@ -1477,8 +1477,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (void)queryGaveError:(NSString *)error
 /*
- invoked when query gave an error
- */
+invoked when query gave an error
+*/
 {
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	
