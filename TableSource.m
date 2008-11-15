@@ -28,135 +28,152 @@
 
 @implementation TableSource
 
-- (void)loadTable:(NSString *)aTable
 /*
- loads aTable, put it in an array, update the tableViewColumns and reload the tableView
- */
+loads aTable, put it in an array, update the tableViewColumns and reload the tableView
+*/
+- (void)loadTable:(NSString *)aTable
 {
-  NSEnumerator *enumerator;
-  id field;
-  NSScanner *scanner = [NSScanner alloc];
-  NSArray *extrasArray;
-  NSMutableDictionary *tempDefaultValues;
-  NSEnumerator *extrasEnumerator;
-  id extra;
-  int i;
+	NSEnumerator *enumerator;
+	id field;
+	NSScanner *scanner = [NSScanner alloc];
+	NSArray *extrasArray;
+	NSMutableDictionary *tempDefaultValues;
+	NSEnumerator *extrasEnumerator;
+	id extra;
+	int i;
   
-  selectedTable = aTable;
-  [tableSourceView deselectAll:self];
-  if ( isEditingRow )
-	return;
+	selectedTable = aTable;
+	[tableSourceView deselectAll:self];
+	
+	if ( isEditingRow )
+		return;
   
 	// empty variables
 	[enumFields removeAllObjects];
   
-  //query started
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	//query started
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
   
-  if ( [aTable isEqualToString:@""] || !aTable ) {
-	[tableFields removeAllObjects];
-	[indexes removeAllObjects];
-	[tableSourceView reloadData];
-	[indexView reloadData];
-	[addFieldButton setEnabled:NO];
-	[copyFieldButton setEnabled:NO];
-	[removeFieldButton setEnabled:NO];
-	[addIndexButton setEnabled:NO];
-	[removeIndexButton setEnabled:NO];
-	
-	// set the table type menu back to the default, and disable it
-	[tableTypeButton selectItemAtIndex:0];
-	[tableTypeButton setEnabled:NO];
-	tableType = nil;
-	
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	
-	[scanner release];
-	
-	return;
-  }
-  
-  //perform queries and load results in array (each row as a dictionary)
-  tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
-  // listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
-  //	tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
-  //	[tableFields setArray:[[self fetchResultAsArray:tableSourceResult] retain]];
-  [tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
-  [tableSourceResult release];
-  indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]] retain];
-  //	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
-  [indexes setArray:[self fetchResultAsArray:indexResult]];
-  [indexResult release];
-  CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", selectedTable]];
-  [tableType release];
-  NSDictionary *tempRow = [tableStatusResult fetchRowAsDictionary];
-  if ( [tempRow objectForKey:@"Type"]) {
-	tableType = [tempRow objectForKey:@"Type"];
-  } else {
-	tableType = [tempRow objectForKey:@"Engine"];
-  }
-  [tableType retain];
-  //get table default values
-  if ( defaultValues ) {
-	[defaultValues release];
-	defaultValues = nil;
-  }
-  tempDefaultValues = [NSMutableDictionary dictionary];
-  for ( i = 0 ; i < [tableFields count] ; i++ ) {
-	[tempDefaultValues setObject:[[tableFields objectAtIndex:i] objectForKey:@"Default"] forKey:[[tableFields objectAtIndex:i] objectForKey:@"Field"]];
-  }
-  defaultValues = [[NSDictionary dictionaryWithDictionary:tempDefaultValues] retain];
-  //put field length and extras in separate key
-  enumerator = [tableFields objectEnumerator];
-  while ( (field = [enumerator nextObject]) ) {
-	NSString *type;
-	NSString *length;
-	NSString *extras;
-	// scan for length and extras like unsigned
-	[scanner initWithString:[field objectForKey:@"Type"]];
-	[scanner scanUpToString:@"(" intoString:&type];
-	[scanner scanString:@"(" intoString:nil];
-	if ( ![scanner scanUpToString:@")" intoString:&length] )
-	  length = @"";
-	[scanner scanString:@")" intoString:nil];
-	if ( ![scanner scanUpToString:@"" intoString:&extras] ) {
-	  extras = @"";
+	if ( [aTable isEqualToString:@""] || !aTable ) {
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+
+		// set the table type menu back to the default, and disable it
+		[tableTypeButton selectItemAtIndex:0];
+		[tableTypeButton setEnabled:NO];
+		tableType = nil;
+
+		//query finished
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
+		[scanner release];
+
+		return;
 	}
+	
+	//perform queries and load results in array (each row as a dictionary)
+	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
+	
+	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
+	//	tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
+	//	[tableFields setArray:[[self fetchResultAsArray:tableSourceResult] retain]];
+	[tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
+	[tableSourceResult release];
+
+	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]] retain];
+	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
+	[indexes setArray:[self fetchResultAsArray:indexResult]];
+	[indexResult release];
+	
+	CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", selectedTable]];
+	[tableType release];
+	
+	NSDictionary *tempRow = [tableStatusResult fetchRowAsDictionary];
+	if ( [tempRow objectForKey:@"Type"]) {
+		tableType = [tempRow objectForKey:@"Type"];
+	} else {
+		tableType = [tempRow objectForKey:@"Engine"];
+	}
+	[tableType retain];
+	
+	//get table default values
+	if ( defaultValues ) {
+		[defaultValues release];
+		defaultValues = nil;
+	}
+	
+	tempDefaultValues = [NSMutableDictionary dictionary];
+	for ( i = 0 ; i < [tableFields count] ; i++ ) {
+		[tempDefaultValues setObject:[[tableFields objectAtIndex:i] objectForKey:@"Default"] forKey:[[tableFields objectAtIndex:i] objectForKey:@"Field"]];
+	}
+	defaultValues = [[NSDictionary dictionaryWithDictionary:tempDefaultValues] retain];
+	
+	//put field length and extras in separate key
+	enumerator = [tableFields objectEnumerator];
+	
+	while ( (field = [enumerator nextObject]) ) {
+		NSString *type;
+		NSString *length;
+		NSString *extras;
+		
+		// scan for length and extras like unsigned
+		[scanner initWithString:[field objectForKey:@"Type"]];
+		[scanner scanUpToString:@"(" intoString:&type];
+		[scanner scanString:@"(" intoString:nil];
+		
+		if ( ![scanner scanUpToString:@")" intoString:&length] )
+			length = @"";
+		
+		[scanner scanString:@")" intoString:nil];
+		if ( ![scanner scanUpToString:@"" intoString:&extras] ) {
+			extras = @"";
+		}
+		
 		// get possible values if field is enum or set
 		if ( [type isEqualToString:@"enum"] || [type isEqualToString:@"set"] ) {
 			NSMutableArray *possibleValues = [[[length substringWithRange:NSMakeRange(1,[length length]-2)] componentsSeparatedByString:@"','"] mutableCopy];
 			NSMutableString *possibleValue = [NSMutableString string];
+			
 			for ( i = 0 ; i < [possibleValues count] ; i++ ) {
 				[possibleValue setString:[possibleValues objectAtIndex:i]];
 				[possibleValue replaceOccurrencesOfString:@"''" withString:@"'" options:nil range:NSMakeRange(0,[possibleValue length])];
 				[possibleValue replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:nil range:NSMakeRange(0,[possibleValue length])];
 				[possibleValues replaceObjectAtIndex:i withObject:[NSString stringWithString:possibleValue]];
 			}
+			
 			[enumFields setObject:[NSArray arrayWithArray:possibleValues] forKey:[field objectForKey:@"Field"]];
 			[possibleValues release];
 		}
-	
+		
 		// scan extras for values like unsigned, zerofill, binary
-	extrasArray = [extras componentsSeparatedByString:@" "];
-	extrasEnumerator = [extrasArray objectEnumerator];
-	while ( (extra = [extrasEnumerator nextObject]) ) {
-	  if ( [extra isEqualToString:@"unsigned"] ) {
-		[field setObject:@"1" forKey:@"unsigned"];
-	  } else if ( [extra isEqualToString:@"zerofill"] ) {
-		[field setObject:@"1" forKey:@"zerofill"];
-	  } else if ( [extra isEqualToString:@"binary"] ) {
-		[field setObject:@"1" forKey:@"binary"];
-	  } else {
-		if ( ![extra isEqualToString:@""] )
-		  NSLog(@"ERROR: unknown option in field definition: %@", extra);
-	  }
+		extrasArray = [extras componentsSeparatedByString:@" "];
+		extrasEnumerator = [extrasArray objectEnumerator];
+		
+		while ( (extra = [extrasEnumerator nextObject]) ) {
+			if ( [extra isEqualToString:@"unsigned"] ) {
+				[field setObject:@"1" forKey:@"unsigned"];
+			} else if ( [extra isEqualToString:@"zerofill"] ) {
+				[field setObject:@"1" forKey:@"zerofill"];
+			} else if ( [extra isEqualToString:@"binary"] ) {
+				[field setObject:@"1" forKey:@"binary"];
+			} else {
+				if ( ![extra isEqualToString:@""] )
+					NSLog(@"ERROR: unknown option in field definition: %@", extra);
+			}
+		}
+		
+		[field setObject:type forKey:@"Type"];
+		[field setObject:length forKey:@"Length"];
 	}
-	[field setObject:type forKey:@"Type"];
-	[field setObject:length forKey:@"Length"];
-  }
-  
-  // Determine the table type
+	
+	// Determine the table type
 	if ( ![tableType isKindOfClass:[NSNull class]] ) {
 		[tableTypeButton selectItemWithTitle:tableType];
 		[tableTypeButton setEnabled:YES];
@@ -164,53 +181,56 @@
 		[tableTypeButton selectItemWithTitle:@"--"];
 		[tableTypeButton setEnabled:NO];
 	}
-  
-  //enable buttons
-  [addFieldButton setEnabled:YES];
-  [copyFieldButton setEnabled:YES];
-  [removeFieldButton setEnabled:YES];
-  [addIndexButton setEnabled:YES];
-  [removeIndexButton setEnabled:YES];
-  
-  //add columns to indexedColumnsField
-  [indexedColumnsField removeAllItems];
-  enumerator = [tableFields objectEnumerator];
-  while ( (field = [enumerator nextObject]) ) {
-	[indexedColumnsField addItemWithObjectValue:[field objectForKey:@"Field"]];
-  }
-  if ( [tableFields count] < 10 ) {
-	[indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
-  } else {
-	[indexedColumnsField setNumberOfVisibleItems:10];
-  }
-  
-  [tableSourceView reloadData];
-  [indexView reloadData];
-  
-  // display and *then* tile to force scroll bars to be in the correct position
-  [[tableSourceView enclosingScrollView] display];
-  [[tableSourceView enclosingScrollView] tile];
-  
-  //query finished
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-  
-  [scanner release];
+	
+	//enable buttons
+	[addFieldButton setEnabled:YES];
+	[copyFieldButton setEnabled:YES];
+	[removeFieldButton setEnabled:YES];
+	[addIndexButton setEnabled:YES];
+	[removeIndexButton setEnabled:YES];
+	
+	//add columns to indexedColumnsField
+	[indexedColumnsField removeAllItems];
+	enumerator = [tableFields objectEnumerator];
+	
+	while ( (field = [enumerator nextObject]) ) {
+		[indexedColumnsField addItemWithObjectValue:[field objectForKey:@"Field"]];
+	}
+	
+	if ( [tableFields count] < 10 ) {
+		[indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
+	} else {
+		[indexedColumnsField setNumberOfVisibleItems:10];
+	}
+	
+	[tableSourceView reloadData];
+	[indexView reloadData];
+	
+	// display and *then* tile to force scroll bars to be in the correct position
+	[[tableSourceView enclosingScrollView] display];
+	[[tableSourceView enclosingScrollView] tile];
+	
+	//query finished
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	
+	[scanner release];
 }
 
-- (IBAction)reloadTable:(id)sender
 /*
 reloads the table (performing a new mysql-query)
 */
+- (IBAction)reloadTable:(id)sender
 {
 	[self loadTable:selectedTable];
 }
 
 
-//edit methods
-- (IBAction)addField:(id)sender
+#pragma mark Edit methods
+
 /*
 adds an empty row to the tableSource-array and goes into edit mode
 */
+- (IBAction)addField:(id)sender
 {
 /*
 	if ( ![self addRowToDB] )
@@ -230,10 +250,10 @@ adds an empty row to the tableSource-array and goes into edit mode
 	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-- (IBAction)copyField:(id)sender
 /*
 copies a field and goes in edit mode for the new field
 */
+- (IBAction)copyField:(id)sender
 {
 	NSMutableDictionary *tempRow;
 
@@ -255,10 +275,10 @@ copies a field and goes in edit mode for the new field
 	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-- (IBAction)addIndex:(id)sender
 /*
 adds the index to the mysql-db and stops modal session with code 1 when success, 0 when error and -1 when no columns specified
 */
+- (IBAction)addIndex:(id)sender
 {
 	NSString *indexName;
 	NSArray *indexedColumns;
@@ -308,10 +328,10 @@ NSLog([NSString stringWithFormat:@"ALTER TABLE `%@` ADD %@ %@ (`%@`)",
 	}
 }
 
-- (IBAction)removeField:(id)sender
 /*
 opens alertsheet and asks for confirmation
 */
+- (IBAction)removeField:(id)sender
 {
 	if ( ![tableSourceView numberOfSelectedRows] )
 		return;
@@ -323,10 +343,10 @@ opens alertsheet and asks for confirmation
 										[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]] );
 }
 
-- (IBAction)removeIndex:(id)sender
 /*
 opens alertsheet and asks for confirmation
 */
+- (IBAction)removeIndex:(id)sender
 {
 	if ( ![indexView numberOfSelectedRows] )
 		return;
@@ -372,11 +392,12 @@ opens alertsheet and asks for confirmation
 }
 
 
-//index sheet methods
-- (IBAction)openIndexSheet:(id)sender
+#pragma mark Index sheet methods
+
 /*
 opens the indexSheet
 */
+- (IBAction)openIndexSheet:(id)sender
 {
 	int code = 0;
 
@@ -396,9 +417,9 @@ opens the indexSheet
 	[NSApp endSheet:indexSheet];
 	[indexSheet orderOut:nil];
 
-//code == -1 -> no columns specified
-//code == 0 -> error while adding index
-//code == 1 -> index added with succes OR sheet closed without adding index
+	//code == -1 -> no columns specified
+	//code == 0 -> error while adding index
+	//code == 1 -> index added with succes OR sheet closed without adding index
 	if ( code == 0 ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"Couldn't add index.\nMySQL said: %@", @"message of panel when index cannot be created"), [mySQLConnection getLastErrorMessage]]);
@@ -408,18 +429,18 @@ opens the indexSheet
 	}
 }
 
-- (IBAction)closeIndexSheet:(id)sender
 /*
 closes the indexSheet without adding the index (stops modal session with code 1)
 */
+- (IBAction)closeIndexSheet:(id)sender
 {
 	[NSApp stopModalWithCode:1];
 }
 
-- (IBAction)chooseIndexType:(id)sender
 /*
 invoked when user chooses an index type
 */
+- (IBAction)chooseIndexType:(id)sender
 {
 	if ( [[indexTypeField titleOfSelectedItem] isEqualToString:@"PRIMARY KEY"] ) {
 		[indexNameField setEnabled:NO];
@@ -431,29 +452,29 @@ invoked when user chooses an index type
 	}
 }
 
-- (void)closeAlertSheet
 /*
 reopens indexSheet after errorSheet (no columns specified)
 */
+- (void)closeAlertSheet
 {
 	[self openIndexSheet:self];
 }
 
-//key sheet methods
-- (IBAction)closeKeySheet:(id)sender
 /*
 closes the keySheet
 */
+- (IBAction)closeKeySheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
 
-//additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection
+#pragma mark Additional methods
+
 /*
 sets the connection (received from TableDocument) and makes things that have to be done only once 
 */
+- (void)setConnection:(CMMCPConnection *)theConnection
 {
 	NSEnumerator *indexColumnsEnumerator = [[indexView tableColumns] objectEnumerator];
 	NSEnumerator *fieldColumnsEnumerator = [[tableSourceView tableColumns] objectEnumerator];
@@ -464,7 +485,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
-//set up tableView
+	//set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 
 	while ( (indexColumn = [indexColumnsEnumerator nextObject]) ) {
@@ -479,10 +500,10 @@ sets the connection (received from TableDocument) and makes things that have to 
 	}
 }
 
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 /*
 fetches the result as an array with a dictionary for each row in it
 */
+- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
 	NSMutableArray *tempResult = [NSMutableArray array];
 	NSMutableDictionary *tempRow;
@@ -536,7 +557,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	theRow = [tableFields objectAtIndex:[tableSourceView selectedRow]];
 
 	if ( isEditingNewRow ) {
-//ADD syntax
+		//ADD syntax
 		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@",
 						selectedTable, [theRow objectForKey:@"Field"], [theRow objectForKey:@"Type"]];
@@ -546,7 +567,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 						[theRow objectForKey:@"Length"]];
 		}
 	} else {
-//CHANGE syntax
+		//CHANGE syntax
 		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
 					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
@@ -557,7 +578,8 @@ returns YES if no row is beeing edited and nothing has to be written to db
 					[theRow objectForKey:@"Type"], [theRow objectForKey:@"Length"]];
 		}
 	}
-//field specification
+	
+	//field specification
 	if ( [[theRow objectForKey:@"unsigned"] intValue] == 1 ) {
 		[queryString appendString:@" UNSIGNED"];
 	}
@@ -585,11 +607,12 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	} else {
 		[queryString appendString:@" "];
 	}
-	if ( ![[theRow objectForKey:@"Extra"] isEqualToString:@""] &&
-				![[theRow objectForKey:@"Extra"] isEqualToString:@"None"] &&
-				[theRow objectForKey:@"Extra"] )
+	
+	if ( ![[theRow objectForKey:@"Extra"] isEqualToString:@""] && ![[theRow objectForKey:@"Extra"] isEqualToString:@"None"] && [theRow objectForKey:@"Extra"] ) {
 		[queryString appendString:[theRow objectForKey:@"Extra"]];
-//asks to add an index to query if auto_increment is set and field isn't indexed
+	}
+	
+	//asks to add an index to query if auto_increment is set and field isn't indexed
 	if ( [[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]
 				&& ([[theRow objectForKey:@"Key"] isEqualToString:@""] || ![theRow objectForKey:@"Key"]) ) {
 		[chooseKeyButton selectItemAtIndex:0];
@@ -600,7 +623,8 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		
 		[NSApp endSheet:keySheet];
 		[keySheet orderOut:nil];
-	if ( code ) {
+		
+		if ( code ) {
 			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
 				[queryString appendString:@" PRIMARY KEY"];
 			} else {
@@ -609,9 +633,10 @@ returns YES if no row is beeing edited and nothing has to be written to db
 			}
 		}
 	}
+	
 	[mySQLConnection queryString:queryString];
 
-//NSLog(queryString);
+	//NSLog(queryString);
 
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		isEditingRow = NO;
@@ -620,7 +645,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		return YES;
 	} else {
 		alertSheetOpened = YES;
-//problem: alert sheet doesn't respond to first click
+		//problem: alert sheet doesn't respond to first click
 		if ( isEditingNewRow ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
 					nil, @"addrow", [NSString stringWithFormat:NSLocalizedString(@"Couldn't add field %@.\nMySQL said: %@", @"message of panel when field cannot be added"),
@@ -635,18 +660,19 @@ returns YES if no row is beeing edited and nothing has to be written to db
 }
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-/*
-if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
-if contextInfo == removefield: removes row from mysql-db if user hits ok
-if contextInfo == removeindex: removes index from mysql-db if user hits ok
-*/
 {
+	/*
+	 if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
+	 if contextInfo == removefield: removes row from mysql-db if user hits ok
+	 if contextInfo == removeindex: removes index from mysql-db if user hits ok
+	 */
+	
 	[sheet orderOut:self];
 
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
 		alertSheetOpened = NO;
 		if ( returnCode == NSAlertDefaultReturn ) {
-	//problem: reentering edit mode for first cell doesn't function
+			//problem: reentering edit mode for first cell doesn't function
 			[tableSourceView editColumn:0 row:[tableSourceView selectedRow] withEvent:nil select:YES];
 		} else {
 			if ( !isEditingNewRow ) {
@@ -662,7 +688,7 @@ if contextInfo == removeindex: removes index from mysql-db if user hits ok
 		[tableSourceView reloadData];
 	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-//remove row
+			//remove row
 			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP `%@`",
 					selectedTable, [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
 			
@@ -677,7 +703,7 @@ if contextInfo == removeindex: removes index from mysql-db if user hits ok
 		}
 	} else if ( [contextInfo isEqualToString:@"removeindex"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-//remove index
+			//remove index
 			if ( [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
 				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP PRIMARY KEY", selectedTable]];
 			} else {
@@ -696,11 +722,12 @@ if contextInfo == removeindex: removes index from mysql-db if user hits ok
 }
 
 
-//getter methods
-- (NSString *)defaultValueForField:(NSString *)field
+#pragma mark Getter methods
+
 /*
 get the default value for a specified field
 */
+- (NSString *)defaultValueForField:(NSString *)field
 {
 	if ( ![defaultValues objectForKey:field] ) {
 		return [prefs objectForKey:@"nullValue"];	
@@ -711,38 +738,39 @@ get the default value for a specified field
 	}
 }
 
-- (NSArray *)fieldNames
 /*
- returns an array containing the field names of the selected table
- */
+returns an array containing the field names of the selected table
+*/
+- (NSArray *)fieldNames
 {
-  NSMutableArray *tempArray = [NSMutableArray array];
-  NSEnumerator *enumerator;
-  id field;
+	NSMutableArray *tempArray = [NSMutableArray array];
+	NSEnumerator *enumerator;
+	id field;
+	
+	//load table if not already done
+	if ( ![tablesListInstance structureLoaded] ) {
+		[self loadTable:(NSString *)[tablesListInstance table]];
+	}
+	
+	//get field names
+	enumerator = [tableFields objectEnumerator];
+	while ( (field = [enumerator nextObject]) ) {
+		[tempArray addObject:[field objectForKey:@"Field"]];
+	}
   
-  //load table if not already done
-  if ( ![tablesListInstance structureLoaded] ) {
-	[self loadTable:(NSString *)[tablesListInstance table]];
-  }
-  //get field names
-  enumerator = [tableFields objectEnumerator];
-  while ( (field = [enumerator nextObject]) ) {
-	[tempArray addObject:[field objectForKey:@"Field"]];
-  }
-  
-  return [NSArray arrayWithArray:tempArray];
+	return [NSArray arrayWithArray:tempArray];
 }
 
-- (NSDictionary *)enumFields
 /*
 returns a dictionary containing enum/set field names as key and possible values as array
 */
+- (NSDictionary *)enumFields
 {
 	return [NSDictionary dictionaryWithDictionary:enumFields];
 }
 
+#pragma mark TableView datasource methods
 
-//tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if ( aTableView == tableSourceView ) {
@@ -820,16 +848,13 @@ would result in a position change.
 	int originalRow;
 
 	// Ensure the drop is of the correct type
-	if (operation == NSTableViewDropAbove && row != -1 && [pboardTypes containsObject:@"SequelProPasteboard"])
-	{
+	if (operation == NSTableViewDropAbove && row != -1 && [pboardTypes containsObject:@"SequelProPasteboard"]) {
 	
 		// Ensure the drag originated within this table
-		if ([info draggingSource] == tableView)
-		{
+		if ([info draggingSource] == tableView) {
 			originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
 			
-			if (row != originalRow && row != (originalRow+1))
-			{
+			if (row != originalRow && row != (originalRow+1)) {
 				return NSDragOperationMove;
 			}
 		}
@@ -852,8 +877,7 @@ Having validated a drop, perform the field/column reordering to match.
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// Begin construction of the reordering query
-	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` MODIFY COLUMN `%@` %@",
-		selectedTable,
+	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` MODIFY COLUMN `%@` %@", selectedTable,
 		[[tableFields objectAtIndex:originalRow] objectForKey:@"Field"],
 		[[tableFields objectAtIndex:originalRow] objectForKey:@"Type"]];
 
@@ -866,12 +890,9 @@ Having validated a drop, perform the field/column reordering to match.
 	}
 
 	// Add the new location
-	if ( destinationRow == 0 )
-	{
+	if ( destinationRow == 0 ){
 		[queryString appendString:@" FIRST"];
-	}
-	else
-	{
+	} else {
 		[queryString appendString:[NSString stringWithFormat:@" AFTER `%@`",
 						[[tableFields objectAtIndex:destinationRow-1] objectForKey:@"Field"]]];
 	}
@@ -881,9 +902,7 @@ Having validated a drop, perform the field/column reordering to match.
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
-	}
-	else
-	{
+	} else {
 		[self loadTable:selectedTable];
 		if ( originalRow < destinationRow ) {
 			[tableSourceView selectRow:destinationRow-1 byExtendingSelection:NO];
@@ -897,7 +916,8 @@ Having validated a drop, perform the field/column reordering to match.
 	return YES;
 }
 
-//tableView delegate methods
+#pragma mark TtableView delegate methods
+
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {
 /*
@@ -918,10 +938,10 @@ Having validated a drop, perform the field/column reordering to match.
 	return [self addRowToDB];
 }
 
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 /*
 traps enter and esc and make/cancel editing without entering next row
 */
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 	int row, column;
 
@@ -953,10 +973,9 @@ traps enter and esc and make/cancel editing without entering next row
 			}
 		}
 		return TRUE;
-	 }
-	 else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
-					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )  //trap esc
-	 {
+		 
+	 } else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
+					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 		//abort editing
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
@@ -969,35 +988,25 @@ traps enter and esc and make/cancel editing without entering next row
 			[tableSourceView reloadData];
 		}
 		return TRUE;
-	 }
-	 else
-	 {
+	 } else {
 		 return FALSE;
 	 }
 }
 
 
-//slitView delegate methods
+#pragma mark SplitView delegate methods
+
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
-/*
-tells the splitView that it can collapse views
-*/
 {
 	return YES;
 }
 
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-/*
-defines max position of splitView
-*/
 {
 		return proposedMax - 150;
 }
 
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-/*
-defines min position of splitView
-*/
 {
 		return proposedMin + 150;
 }
