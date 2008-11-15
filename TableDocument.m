@@ -357,8 +357,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	// select new favorite
 	selectedFavorite = [favoriteName retain];
-	
+
 	[self didChangeValueForKey:@"favorites"];
+	[favoritesController setSelectionIndex:[favorites count]-1];
 }
 
 /**
