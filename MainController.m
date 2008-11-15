@@ -29,12 +29,12 @@
 
 @implementation MainController
 
-- (IBAction)openPreferences:(id)sender
 /*
 opens the preferences window
 */
+- (IBAction)openPreferences:(id)sender
 {
-//get favorites if they exist
+	//get favorites if they exist
 	[favorites release];
 	if ( [prefs objectForKey:@"favorites"] != nil ) {
 		favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"favorites"]];
@@ -91,10 +91,10 @@ opens the preferences window
 	[preferencesWindow makeKeyAndOrderFront:self];
 }
 
-- (IBAction)addFavorite:(id)sender
 /*
 adds a favorite
 */
+- (IBAction)addFavorite:(id)sender
 {
 	int code;
 
@@ -118,8 +118,11 @@ adds a favorite
 	[sshPasswordField setStringValue:@""];
 
 	[NSApp beginSheet:favoriteSheet
-			modalForWindow:preferencesWindow modalDelegate:self
-			didEndSelector:nil contextInfo:nil];
+	   modalForWindow:preferencesWindow
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+	
 	code = [NSApp runModalForWindow:favoriteSheet];
 	
 	[NSApp endSheet:favoriteSheet];
@@ -127,9 +130,10 @@ adds a favorite
 	
 	if ( code == 1 ) {
 		if ( ![[socketField stringValue] isEqualToString:@""] ) {
-		//set host to localhost if socket is used
+			//set host to localhost if socket is used
 			[hostField setStringValue:@"localhost"];
 		}
+		
 		// get ssh settings
 		NSString *sshHost, *sshUser, *sshPassword, *sshPort;
 		NSNumber *ssh;
@@ -162,20 +166,21 @@ adds a favorite
 			sshPort = @"";
 			ssh = [NSNumber numberWithInt:0];
 		}
-		NSDictionary *favorite = [NSDictionary
-				dictionaryWithObjects:[NSArray arrayWithObjects:[nameField stringValue], [hostField stringValue], [socketField stringValue], [userField stringValue], [portField stringValue], [databaseField stringValue], ssh, sshHost, sshUser, sshPort, nil]
-				forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"useSSH", @"sshHost", @"sshUser", @"sshPort", nil]];
+		
+		NSDictionary *favorite = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[nameField stringValue], [hostField stringValue], [socketField stringValue], [userField stringValue], [portField stringValue], [databaseField stringValue], ssh, sshHost, sshUser, sshPort, nil]
+															 forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"useSSH", @"sshHost", @"sshUser", @"sshPort", nil]];
 		[favorites addObject:favorite];
+		
 		if ( ![[passwordField stringValue] isEqualToString:@""] )
 			[keyChainInstance addPassword:[passwordField stringValue]
-				forName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
-				account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
-					[databaseField stringValue]]];
+								  forName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
+								  account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue], [databaseField stringValue]]];
+		
 		if ( ![sshPassword isEqualToString:@""] )
 			[keyChainInstance addPassword:sshPassword
-				forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
-				account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
-					[databaseField stringValue]]];
+								  forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
+								  account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],	[databaseField stringValue]]];
+		
 		[tableView reloadData];
 		[tableView selectRow:[tableView numberOfRows]-1 byExtendingSelection:NO];
 	}
@@ -183,10 +188,10 @@ adds a favorite
 	isNewFavorite = NO;
 }
 
-- (IBAction)removeFavorite:(id)sender
 /*
 removes a favorite
 */
+- (IBAction)removeFavorite:(id)sender
 {
 	if ( ![tableView numberOfSelectedRows] )
 		return;
@@ -195,18 +200,19 @@ removes a favorite
 	NSString *user = [[favorites objectAtIndex:[tableView selectedRow]] objectForKey:@"user"];
 	NSString *host = [[favorites objectAtIndex:[tableView selectedRow]] objectForKey:@"host"];
 	NSString *database = [[favorites objectAtIndex:[tableView selectedRow]] objectForKey:@"database"];
+	
 	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
-			account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
-			account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	[favorites removeObjectAtIndex:[tableView selectedRow]];
 	[tableView reloadData];
 }
 
-- (IBAction)copyFavorite:(id)sender
 /*
 copies a favorite
 */
+- (IBAction)copyFavorite:(id)sender
 {
 	if ( ![tableView numberOfSelectedRows] )
 		return;
@@ -221,10 +227,10 @@ copies a favorite
 	[tableView reloadData];
 }
 
-- (IBAction)chooseLimitRows:(id)sender
 /*
 enables or disables limitRowsField (depending on the state of limitRowsSwitch)
 */
+- (IBAction)chooseLimitRows:(id)sender
 {
 	if ( [limitRowsSwitch state] == NSOnState ) {
 		[limitRowsField setEnabled:YES];
@@ -234,24 +240,23 @@ enables or disables limitRowsField (depending on the state of limitRowsSwitch)
 	}
 }
 
-- (IBAction)closeFavoriteSheet:(id)sender
 /*
 close the favoriteSheet and save favorite if user hit save
 */
+- (IBAction)closeFavoriteSheet:(id)sender
 {
 	NSEnumerator *enumerator = [favorites objectEnumerator];
 	id favorite;
 	int count;
 
-//test if user has entered at least name and host/socket
+	//test if user has entered at least name and host/socket
 	if ( [sender tag] &&
-			([[nameField stringValue] isEqualToString:@""] ||
-					([[hostField stringValue] isEqualToString:@""] && [[socketField stringValue] isEqualToString:@""])) ) {
+			([[nameField stringValue] isEqualToString:@""] || ([[hostField stringValue] isEqualToString:@""] && [[socketField stringValue] isEqualToString:@""])) ) {
 		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Please enter at least name and host or socket!", @"message of panel when name/host/socket are missing"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
 		return;
 	}
 	
-//test if favorite name isn't used by another favorite
+	//test if favorite name isn't used by another favorite
 	count = 0;
 	if ( [sender tag] ) {
 		while ( (favorite = [enumerator nextObject]) ) {
@@ -279,10 +284,10 @@ close the favoriteSheet and save favorite if user hit save
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
-- (IBAction)toggleUseSSH:(id)sender
 /*
 enables/disables ssh tunneling
 */
+- (IBAction)toggleUseSSH:(id)sender
 {
 	if ( [sshCheckbox state] == NSOnState ) {
 		[sshUserField setEnabled:YES];
@@ -297,11 +302,12 @@ enables/disables ssh tunneling
 	}
 }
 
-//services menu methods
-- (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error
+#pragma mark Services menu methods
+
 /*
 passes the query to the last created document
 */
+- (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error
 {
 	NSString *pboardString;
 	NSArray *types;
@@ -313,13 +319,13 @@ passes the query to the last created document
 		return;
 	}
 
-//check if there exists a document
+	//check if there exists a document
 	if ( ![[[NSDocumentController sharedDocumentController] documents] count] ) {
 		*error = @"No Documents open!";
 		return;
 	}
 
-//pass query to last created document
+	//pass query to last created document
 //	[[[NSDocumentController sharedDocumentController] currentDocument] doPerformQueryService:pboardString];
 	[[[[NSDocumentController sharedDocumentController] documents] objectAtIndex:[[[NSDocumentController sharedDocumentController] documents] count]-1] doPerformQueryService:pboardString];
 
@@ -327,82 +333,43 @@ passes the query to the last created document
 }
 
 
-//menu methods
-- (IBAction)donate:(id)sender
+#pragma mark Sequel Pro menu methods
+
 /*
 opens donate link in default browser
 */
+- (IBAction)donate:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/Donations"]];
 }
 
-//menu methods
-- (IBAction)visitWebsite:(id)sender
 /*
-opens donate link in default browser
+opens website link in default browser
 */
+- (IBAction)visitWebsite:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro"]];
 }
 
-- (IBAction)visitHelpWebsite:(id)sender
 /*
-opens donate link in default browser
+opens help link in default browser
 */
+- (IBAction)visitHelpWebsite:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/FAQ"]];
 }
 
-- (IBAction)checkForUpdates:(id)sender
 /*
 checks for updates and opens download page in default browser
 */
+- (IBAction)checkForUpdates:(id)sender
 {
-  NSLog(@"[MainController checkForUpdates:] is not currently functional.");
-//	 CMMCPConnection *tempConnection = [[CMMCPConnection alloc] initToHost:@"com.google.code.sequel-pro"
-//											 withLogin:@"sequel-pro"
-//											 password:@""
-//											 usingPort:nil];
-//	 CMMCPResult *tempResult;
-//	 NSString *version;
-//	 int code;
-// 
-// //connect to db
-//	 if ( ![tempConnection isConnected] ) {
-//	 //no connection
-//		 NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-//		 return;
-//	 }
-//	 if ( ![tempConnection selectDB:@"usr_web8_1"] ) {
-//	 //db not found
-//		 NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-//		 return;
-//	 }
-// //get current version
-//	 tempResult = [tempConnection queryString:@"SELECT * FROM sequel-pro"];
-//	 if ( ![tempResult numOfRows] ) {
-//	 //error in query
-//		 NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Error while trying to get the current version number!\nBe sure that you are connected to the internet and try again later.", @"message of panel when check for current version number failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-//		 return;
-//	 }
-//	 version = [[tempResult fetchRowAsArray] objectAtIndex:0];
-// //check versions
-//	 if ( [version isEqualToString:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]] ) {
-//	 //no new version
-//		 NSRunInformationalAlertPanel(NSLocalizedString(@"No update available", @"title of panel when no update is available"), NSLocalizedString(@"There is no newer version available!", @"message of panel when no update is available"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-//	 } else {
-//	 //new version available
-//		 code = NSRunInformationalAlertPanel(NSLocalizedString(@"Update available", @"title of panel when update is available"), [NSString stringWithFormat:NSLocalizedString(@"There is a newer version available (version %@)!\nClick OK to open the download site.", @"message of panel when update is available"), version], NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil);
-//		 if ( code == NSAlertDefaultReturn ) {
-//			 [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/download.php"]];
-//		 }
-//	 }
-//	 [tempConnection disconnect];
-//	 [tempConnection release];
+	NSLog(@"[MainController checkForUpdates:] is not currently functional.");
 }
 
 
-//tableView datasource methods
+#pragma mark TableView datasource methods
+
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [favorites count];
@@ -416,7 +383,8 @@ checks for updates and opens download page in default browser
 }
 
 
-//tableView drag&drop datasource methods
+#pragma mark TableView drag & drop datasource methods
+
 - (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {
 	int originalRow;
@@ -479,26 +447,25 @@ checks for updates and opens download page in default browser
 	return YES;
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 /*
-opens sheet to edit favorite and saves favorite if user hit OK
-*/
+ opens sheet to edit favorite and saves favorite if user hit OK
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	int code;
 	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
 
-// set up fields
+	// set up fields
 	[nameField setStringValue:[favorite objectForKey:@"name"]];
 	[hostField setStringValue:[favorite objectForKey:@"host"]];
 	[socketField setStringValue:[favorite objectForKey:@"socket"]];
 	[userField setStringValue:[favorite objectForKey:@"user"]];
 	[portField setStringValue:[favorite objectForKey:@"port"]];
 	[databaseField setStringValue:[favorite objectForKey:@"database"]];
-	[passwordField setStringValue:[keyChainInstance
-		getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
-		account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
-					[databaseField stringValue]]]];
-// set up ssh fields
+	[passwordField setStringValue:[keyChainInstance	getPasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
+															   account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue], [databaseField stringValue]]]];
+	
+	// set up ssh fields
 	if ( [[favorite objectForKey:@"useSSH"] intValue] == 1 ) {
 		[sshCheckbox setState:NSOnState];
 		[sshUserField setEnabled:YES];
@@ -508,10 +475,8 @@ opens sheet to edit favorite and saves favorite if user hit OK
 		[sshHostField setStringValue:[favorite objectForKey:@"sshHost"]];
 		[sshUserField setStringValue:[favorite objectForKey:@"sshUser"]];
 		[sshPortField setStringValue:[favorite objectForKey:@"sshPort"]];
-		[sshPasswordField setStringValue:[keyChainInstance
-			getPasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
-			account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
-						[databaseField stringValue]]]];
+		[sshPasswordField setStringValue:[keyChainInstance getPasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
+																	  account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue], [databaseField stringValue]]]];
 	} else {
 		[sshCheckbox setState:NSOffState];
 		[sshUserField setEnabled:NO];
@@ -524,11 +489,13 @@ opens sheet to edit favorite and saves favorite if user hit OK
 		[sshPasswordField setStringValue:@""];
 	}
 
-
-// run sheet
+	// run sheet
 	[NSApp beginSheet:favoriteSheet
-			modalForWindow:preferencesWindow modalDelegate:self
-			didEndSelector:nil contextInfo:nil];
+	   modalForWindow:preferencesWindow
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+	
 	code = [NSApp runModalForWindow:favoriteSheet];
 
 	[NSApp endSheet:favoriteSheet];
@@ -536,10 +503,11 @@ opens sheet to edit favorite and saves favorite if user hit OK
 
 	if ( code == 1 ) {
 		if ( ![[socketField stringValue] isEqualToString:@""] ) {
-		//set host to localhost if socket is used
+			//set host to localhost if socket is used
 			[hostField setStringValue:@"localhost"];
 		}
-//get ssh settings
+		
+		//get ssh settings
 		NSString *sshHost, *sshUser, *sshPassword, *sshPort;
 		NSNumber *ssh;
 		if ( [sshCheckbox state] == NSOnState ) {
@@ -571,29 +539,30 @@ opens sheet to edit favorite and saves favorite if user hit OK
 			sshPort = @"";
 			ssh = [NSNumber numberWithInt:0];
 		}
-//replace password
+		
+		//replace password
 		[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]]
-				account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"],
-					[favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+										account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+		
 		if ( ![[passwordField stringValue] isEqualToString:@""] )
 			[keyChainInstance addPassword:[passwordField stringValue]
-				forName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
-				account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
-							[databaseField stringValue]]];
-//replace ssh password
+								  forName:[NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]]
+								  account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue], [databaseField stringValue]]];
+		
+		//replace ssh password
 		[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [favorite objectForKey:@"name"]]
-				account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"],
-					[favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+										account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+		
 		if ( ([sshCheckbox state] == NSOnState) && ![sshPassword isEqualToString:@""] ) {
 			[keyChainInstance addPassword:sshPassword
 				forName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", [nameField stringValue]]
 				account:[NSString stringWithFormat:@"%@@%@/%@", [userField stringValue], [hostField stringValue],
 							[databaseField stringValue]]];
 		}
-//replace favorite
-		favorite = [NSDictionary
-				dictionaryWithObjects:[NSArray arrayWithObjects:[nameField stringValue], [hostField stringValue], [socketField stringValue], [userField stringValue], [portField stringValue], [databaseField stringValue], ssh, sshHost, sshUser, sshPort, nil]
-				forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"useSSH", @"sshHost", @"sshUser", @"sshPort", nil]];
+		
+		//replace favorite
+		favorite = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[nameField stringValue], [hostField stringValue], [socketField stringValue], [userField stringValue], [portField stringValue], [databaseField stringValue], ssh, sshHost, sshUser, sshPort, nil]
+											   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"useSSH", @"sshHost", @"sshUser", @"sshPort", nil]];
 		[favorites replaceObjectAtIndex:rowIndex withObject:favorite];
 		[tableView reloadData];
 	}
@@ -602,11 +571,12 @@ opens sheet to edit favorite and saves favorite if user hit OK
 }
 
 
-//window delegate methods
-- (BOOL)windowShouldClose:(id)sender
+#pragma mark Window delegate methods
+
 /*
-saves the preferences
-*/
+ saves the preferences
+ */
+- (BOOL)windowShouldClose:(id)sender
 {
 	if ( sender == preferencesWindow ) {
 		if ( [reloadAfterAddingSwitch state] == NSOnState ) {
@@ -663,33 +633,31 @@ saves the preferences
 }
 
 
-//other methods
+#pragma mark Other methods
+
 - (void)awakeFromNib
-/*
-code that need to be executed when the nib file is loaded
-*/
 {
 	NSEnumerator *enumerator;
 	id favorite;
 	NSString *name, *host, *user, *database, *password;
-//	int code;
+	//int code;
 
-//register MainController as services provider
+	//register MainController as services provider
 	[NSApp setServicesProvider:self];
 
-//register MainController for AppleScript events
+	//register MainController for AppleScript events
 	[[ NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject: self ];
 
 	[GrowlApplicationBridge setGrowlDelegate:self];
 	
-  prefs = [[NSUserDefaults standardUserDefaults] retain];
-  isNewFavorite = NO;
-  [prefs registerDefaults:[NSDictionary dictionaryWithObjectsAndKeys:
-						   [NSNumber numberWithBool:YES], @"limitRows",
-						   [NSNumber numberWithInt:1000], @"limitRowsValue",
-						   nil]];
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+	isNewFavorite = NO;
+	[prefs registerDefaults:[NSDictionary dictionaryWithObjectsAndKeys:
+							 [NSNumber numberWithBool:YES], @"limitRows",
+							 [NSNumber numberWithInt:1000], @"limitRowsValue",
+							 nil]];
 
-//set standard preferences if no preferences are found
+	//set standard preferences if no preferences are found
 	if ( [prefs objectForKey:@"reloadAfterAdding"] == nil )
 	{
 		[prefs setObject:@"0.3" forKey:@"version"];
@@ -697,33 +665,36 @@ code that need to be executed when the nib file is loaded
 		[prefs setBool:YES forKey:@"reloadAfterEditing"];
 		[prefs setBool:NO forKey:@"reloadAfterRemoving"];
 		[prefs setObject:@"NULL" forKey:@"nullValue"];
-//		[prefs setBool:YES forKey:@"showError"];
-//		[prefs setBool:NO forKey:@"dontShowBlob"];
-//		[prefs setBool:NO forKey:@"limitRows"];
-//		[prefs setInteger:100 forKey:@"limitRowsValue"];
-//		[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"savePath"];
-//		[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"openPath"];
+		//[prefs setBool:YES forKey:@"showError"];
+		//[prefs setBool:NO forKey:@"dontShowBlob"];
+		//[prefs setBool:NO forKey:@"limitRows"];
+		//[prefs setInteger:100 forKey:@"limitRowsValue"];
+		//[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"savePath"];
+		//[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"openPath"];
 	}
 
-//new preferences and changes in v0.4
-	if ( [prefs objectForKey:@"showError"] == nil )
-	{
+	//new preferences and changes in v0.4
+	if ( [prefs objectForKey:@"showError"] == nil )	{
 		[prefs setObject:@"0.4" forKey:@"version"];
+		
 		//set standard values for new preferences
 		[prefs setBool:YES forKey:@"showError"];
 		[prefs setBool:NO forKey:@"dontShowBlob"];
-//		[prefs setBool:NO forKey:@"limitRows"];
-//		[prefs setInteger:100 forKey:@"limitRowsValue"];
+		//[prefs setBool:NO forKey:@"limitRows"];
+		//[prefs setInteger:100 forKey:@"limitRowsValue"];
 		[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"savePath"];
 		[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"openPath"];
+		
 		//remove old preferences
 		[prefs removeObjectForKey:@"allowDragAndDropReordering"];
+		
 		//rewrite passwords to keychain (with new format)
 		if ( [prefs objectForKey:@"favorites"] ) {
 			NSRunAlertPanel(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"With version 0.4 Sequel Pro has introduced a new format to save passwords in the Keychain.\nPlease allow Sequel Pro to decrypt all passwords of your favorites. Otherwise you have to reenter all passwords of your saved favorites in the Preferences.", @"message of panel when passwords have to be updated for v0.4"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
 			enumerator = [[prefs objectForKey:@"favorites"] objectEnumerator];
+
 			while ( (favorite = [enumerator nextObject]) ) {
-			//replace password
+				//replace password
 				name = [favorite objectForKey:@"name"];
 				host = [favorite objectForKey:@"host"];
 				user = [favorite objectForKey:@"user"];
@@ -738,13 +709,15 @@ code that need to be executed when the nib file is loaded
 			}
 		}
 	}
-//new preferences and changes in v0.5
-	if ( [[prefs objectForKey:@"version"] isEqualToString:@"0.4"] )
-	{
+	
+	//new preferences and changes in v0.5
+	if ( [[prefs objectForKey:@"version"] isEqualToString:@"0.4"] )	{
 		[prefs setObject:@"0.5" forKey:@"version"];
+		
 		//set standard values for new preferences
 		[prefs setObject:@"ISO Latin 1" forKey:@"encoding"];
 		[prefs setBool:NO forKey:@"useMonospacedFonts"];
+		
 		//add socket field to favorites
 		if ( [prefs objectForKey:@"favorites"] ) {
 			NSMutableArray *tempFavorites = [NSMutableArray array];
@@ -758,7 +731,8 @@ code that need to be executed when the nib file is loaded
 			[prefs setObject:tempFavorites forKey:@"favorites"];
 		}
 	}
-//new preferences and changes in v0.7
+	
+	//new preferences and changes in v0.7
 	if ( [[prefs objectForKey:@"version"] isEqualToString:@"0.5"] ||
 			[[prefs objectForKey:@"version"] isEqualToString:@"0.6beta"] ||
 			[[prefs objectForKey:@"version"] isEqualToString:@"0.7b2"] )
@@ -787,11 +761,13 @@ code that need to be executed when the nib file is loaded
 	NSString *givenQuery = [ args objectForKey:@"query"];
 	NSString *tunnelName = [ args objectForKey:@"tunnelName"];
 	NSString *fifo = [ args objectForKey:@"fifo"];
-NSLog(@"tunnel: %@ / query: %@ / fifo: %@",tunnelName,givenQuery,fifo);
+	
+	NSLog(@"tunnel: %@ / query: %@ / fifo: %@",tunnelName,givenQuery,fifo);
 	NSFileHandle *fh = [ NSFileHandle fileHandleForWritingAtPath: fifo ];
 	[ fh writeData: [ @"xy" dataUsingEncoding: NSASCIIStringEncoding]];
 	[ fh closeFile ];
-NSLog(@"password written");
+	
+	NSLog(@"password written");
 	return @"OK";
 
 /*
