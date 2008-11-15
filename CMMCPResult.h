@@ -30,4 +30,6 @@
 
 }
 
+- (id)fetchRowAsType:(MCPReturnType)aType;
+
 @end

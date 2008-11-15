@@ -27,11 +27,11 @@
 #import "CMMCPResult.h"
 
 @interface CMMCPConnection : MCPConnection {
-	id			delegate;
+	id	delegate;
 }
 
-- (CMMCPResult *) queryString:(NSString *) query;
+- (CMMCPResult *)queryString:(NSString *) query;
 - (void)setDelegate:(id)object;
-- (NSTimeZone *) timeZone;
+- (NSTimeZone *)timeZone;
 
 @end

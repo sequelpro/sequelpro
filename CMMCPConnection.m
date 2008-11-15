@@ -28,22 +28,23 @@
 @implementation CMMCPConnection
 
 /*
+Gets a proper NSStringEncoding according to the given MySQL charset.
+
+MySQL 4.0 offers this charsets:
+big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1 greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis swe7 tis620 ujis usa7 win1250 win1251ukr
+
+WARNING : incomplete implementation. Please, send your fixes.
+
 + (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding
-	Gets a proper NSStringEncoding according to the given MySQL charset.
-	 
-	 MySQL 4.0 offers this charsets:
-	 big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1 greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis swe7 tis620 ujis usa7 win1250 win1251ukr
-	 
-	 WARNING : incomplete implementation. Please, send your fixes.
 {
-// unicode
+	// unicode
 	if (!strncmp(mysqlEncoding, "utf8", 4)) {
 		return NSUTF8StringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "ucs2", 4)) {
 		return NSUnicodeStringEncoding;
 	}
-// west european
+	// west european
 	if (!strncmp(mysqlEncoding, "ascii", 5)) {
 		return NSASCIIStringEncoding;
 	}
@@ -53,14 +54,14 @@
 	if (!strncmp(mysqlEncoding, "macroman", 8)) {
 		return NSMacOSRomanStringEncoding;
 	}
-// central european
+	// central european
 	if (!strncmp(mysqlEncoding, "cp1250", 6)) {
 		return NSWindowsCP1250StringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "latin2", 6)) {
 		return NSISOLatin2StringEncoding;
 	}
-// south european and middle east
+	// south european and middle east
 	if (!strncmp(mysqlEncoding, "cp1256", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
 	}
@@ -73,15 +74,15 @@
 	if (!strncmp(mysqlEncoding, "latin5", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin5);
 	}
-// baltic
+	// baltic
 	if (!strncmp(mysqlEncoding, "cp1257", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsBalticRim);
 	}
-// cyrillic
+	// cyrillic
 	if (!strncmp(mysqlEncoding, "cp1251", 6)) {
 		return NSWindowsCP1251StringEncoding;
 	}
-// asian
+	// asian
 	if (!strncmp(mysqlEncoding, "big5", 4)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5);
 	}
@@ -92,120 +93,109 @@
 		return  NSShiftJISStringEncoding;
 	}
 	
-// default to iso latin 1, even if it is not exact (throw an exception?)
+	// default to iso latin 1, even if it is not exact (throw an exception?)
 	NSLog(@"warning: unknown encoding %s! falling back to latin1.", mysqlEncoding);
 	return NSISOLatin1StringEncoding;
 }
 */
 
-- (CMMCPResult *) queryString:(NSString *) query
-/*
-modified version of queryString to be used in sequel-pro
-*/
-{
-	CMMCPResult	 *theResult;
-	const char	*theCQuery = [self cStringFromString:query];
-	int		   theQueryCode;
 
-//[DIFF]: check connection
-	if ( ![self checkConnection] ) {
+/*
+ modified version of queryString to be used in sequel-pro
+ */
+- (CMMCPResult *)queryString:(NSString *) query
+{
+	CMMCPResult	*theResult;
+	const char	*theCQuery = [self cStringFromString:query];
+	int			theQueryCode;
+
+	// check connection
+	if (![self checkConnection]) {
 		NSLog(@"Connection was gone, but should be reestablished now!");
 	}
-//end [DIFF]
 
-//[DIFF]: inform the delegate about the query
-	if ( delegate && [delegate respondsToSelector:@selector(willQueryString:)] )
+	// inform the delegate about the query
+	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
 		[delegate willQueryString:query];
-//end [DIFF]
+	}
 
 	if (0 == (theQueryCode = mysql_query(mConnection, theCQuery))) {
 		if (mysql_field_count(mConnection) != 0) {
-//[DIFF]: use CMMCPResult instad of MCPResult
+			// use CMMCPResult instad of MCPResult
 			theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-//end [DIFF]
-		}
-		else {
+		} else {
 			return nil;
 		}
-	}
-	else {
-//	   NSLog (@"Problem in queryString error code is : %d, query is : %s -in ObjC : %@-\n", theQueryCode, theCQuery, query);
-//	   NSLog(@"Error message is : %@\n", [self getLastErrorMessage]);
+	} else {
+//		NSLog (@"Problem in queryString error code is : %d, query is : %s -in ObjC : %@-\n", theQueryCode, theCQuery, query);
+//		NSLog(@"Error message is : %@\n", [self getLastErrorMessage]);
 //		theResult = [theResult init]; // Old version...
-//	   theResult = nil;
-//[DIFF]: inform the delegate about errors
-		if ( delegate && [delegate respondsToSelector:@selector(queryGaveError:)] )
+//		theResult = nil;
+		
+		// inform the delegate about errors
+		if (delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
 			[delegate queryGaveError:[self getLastErrorMessage]];
-//end [DIFF]
+		}
+
 		return nil;
 	}
 	return [theResult autorelease];
 }
 
 - (void)setDelegate:(id)object
-/*
-sets the delegate
-*/
 {
 	delegate = object;
 }
 
-
-
-
-
-- (NSTimeZone *) timeZone
-/*" Getting the currently used time zone (in communication with the DB server). "*/
+/* Getting the currently used time zone (in communication with the DB server). */
 /* fixes mysql 4.1.14 problem, can be deleted as soon as fixed in the framework */
+- (NSTimeZone *)timeZone
 {
 	if ([self checkConnection]) {
-		MCPResult		*theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE '%time_zone'"];
-		NSArray			*theRow;
-// diff
+		MCPResult	*theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE '%time_zone'"];
+		NSArray		*theRow;
 		id			theTZName;
-// end diff
-		NSTimeZone		*theTZ;
+		NSTimeZone	*theTZ;
 		
 		[theSessionTZ dataSeek:1ULL];
 		theRow = [theSessionTZ fetchRowAsArray];
 		theTZName = [theRow objectAtIndex:1];
-// diff
+
 		if ( [theTZName isKindOfClass:[NSData class]] ) {
-		// MySQL 4.1.14 returns the mysql variables as nsdata
+			// MySQL 4.1.14 returns the mysql variables as NSData
 			theTZName = [self stringWithText:theTZName];
 		}
-// end diff
+
 		if ([theTZName isEqualToString:@"SYSTEM"]) {
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
-// diff
+
 			if ( [theTZName isKindOfClass:[NSData class]] ) {
-			// MySQL 4.1.14 returns the mysql variables as nsdata
+				// MySQL 4.1.14 returns the mysql variables as NSData
 				theTZName = [self stringWithText:theTZName];
 			}
-// end diff
 		}
+		
 		if (theTZName) { // Old versions of the server does not support there own time zone ?
 			theTZ = [NSTimeZone timeZoneWithName:theTZName];
-		}
-		else { // By default set the time zone to the local one..
+		} else {
+			// By default set the time zone to the local one..
 			// Try to get the name using the previously available variable:
-//			NSLog(@"Fecthing time-zone on 'old' DB server : variable name is : timezone");
 			theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE 'timezone'"];
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
-			if (theTZName) { // Finally we found one ...
-//				NSLog(@"Result is : %@", theTZName);
+			if (theTZName) {
+				// Finally we found one ...
 				theTZ = [NSTimeZone timeZoneWithName:theTZName];
-			}
-			else {
+			} else {
 				theTZ = [NSTimeZone defaultTimeZone];
-//			theTZ = [NSTimeZone systemTimeZone];
+				//theTZ = [NSTimeZone systemTimeZone];
 				NSLog(@"The time zone is not defined on the server, set it to the default one : %@", theTZ);
 			}
 		}
+		
 		if (theTZ != mTimeZone) {
 			[mTimeZone release];
 			mTimeZone = [theTZ retain];
@@ -213,9 +203,5 @@ sets the delegate
 	}
 	return mTimeZone;
 }
-
-
-
-
 
 @end
