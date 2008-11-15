@@ -239,6 +239,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (IBAction)cancelConnectSheet:(id)sender
 {
 	[NSApp endSheet:connectSheet];
+	[tableWindow close];
 }
 
 - (IBAction)closeSheet:(id)sender
@@ -1442,7 +1443,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (void)windowWillClose:(NSNotification *)aNotification
 {
-	[self closeConnection];
+	if ([mySQLConnection isConnected]) [self closeConnection];
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
