@@ -81,7 +81,6 @@
 		4DECC3E90EC2A534008D359E /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DECC3E80EC2A534008D359E /* KeyChain.m */; };
 		4DECC3F00EC2A54E008D359E /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DECC3EB0EC2A54E008D359E /* CMCopyTable.m */; };
 		4DECC3F10EC2A54E008D359E /* CMImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DECC3ED0EC2A54E008D359E /* CMImageView.m */; };
-		4DECC3F20EC2A54E008D359E /* CMTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DECC3EF0EC2A54E008D359E /* CMTextView.m */; };
 		4DECC3FA0EC2A573008D359E /* SSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DECC3F40EC2A573008D359E /* SSHTunnel.m */; };
 		4DECC3FB0EC2A573008D359E /* askForPass.sh in Resources */ = {isa = PBXBuildFile; fileRef = 4DECC3F50EC2A573008D359E /* askForPass.sh */; };
 		4DECC3FC0EC2A573008D359E /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 4DECC3F60EC2A573008D359E /* sequel-pro.scriptTerminology */; };
@@ -96,6 +95,7 @@
 		8D15AC2F0486D014006FF6A4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165FFE840EACC02AAC07 /* InfoPlist.strings */; };
 		8D15AC320486D014006FF6A4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A37F4B0FDCFA73011CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		B5BE825C0ED18C0B00831294 /* CMTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DECC3EF0EC2A54E008D359E /* CMTextView.m */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 /* End PBXBuildFile section */
 
@@ -610,7 +610,7 @@
 				4DECC3E90EC2A534008D359E /* KeyChain.m in Sources */,
 				4DECC3F00EC2A54E008D359E /* CMCopyTable.m in Sources */,
 				4DECC3F10EC2A54E008D359E /* CMImageView.m in Sources */,
-				4DECC3F20EC2A54E008D359E /* CMTextView.m in Sources */,
+				B5BE825C0ED18C0B00831294 /* CMTextView.m in Sources */,
 				4DECC3FA0EC2A573008D359E /* SSHTunnel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -708,6 +708,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IBC_FLATTEN_NIBS = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.4;
