@@ -383,6 +383,9 @@ opens alertsheet and asks for confirmation
 			[tableType retain];
 			
 //			[[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedTableStatusHasChanged" object:self];		
+
+			// Mark the content table for refresh
+			[tablesListInstance setContentRequiresReload];
 		} else {
 			[sender selectItemWithTitle:tableType];
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -642,6 +645,10 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		[self loadTable:selectedTable];
+
+		// Mark the content table for refresh
+		[tablesListInstance setContentRequiresReload];
+
 		return YES;
 	} else {
 		alertSheetOpened = YES;
@@ -694,6 +701,9 @@ returns YES if no row is beeing edited and nothing has to be written to db
 			
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self loadTable:selectedTable];
+
+				// Mark the content table for refresh
+				[tablesListInstance setContentRequiresReload];
 			} else {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
@@ -913,6 +923,9 @@ Having validated a drop, perform the field/column reordering to match.
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
+	// Mark the content table for refresh
+	[tablesListInstance setContentRequiresReload];
+	
 	return YES;
 }
 

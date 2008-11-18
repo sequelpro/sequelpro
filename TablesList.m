@@ -341,6 +341,16 @@ returns YES if table status has already been loaded
 	return statusLoaded;
 }
 
+#pragma mark Setter methods
+
+/*
+Mark the content table for refresh when it's next switched to
+*/
+- (void)setContentRequiresReload
+{
+	contentLoaded = NO;
+}
+
 #pragma mark Datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView

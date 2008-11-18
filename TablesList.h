@@ -73,6 +73,9 @@
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;
 
+// Setter methods
+- (void)setContentRequiresReload;
+
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 - (id)tableView:(NSTableView *)aTableView
