@@ -319,7 +319,13 @@
  reloads the table (performing a new mysql-query)
  */
 {
+	// Store the current viewport location
+	NSRect viewRect = [tableContentView visibleRect];
+
 	[self loadTable:selectedTable];
+	
+	// Restore the viewport
+	[tableContentView scrollRectToVisible:viewRect];
 }
 
 - (IBAction)reloadTableValues:(id)sender
