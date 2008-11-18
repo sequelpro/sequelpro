@@ -346,9 +346,9 @@ returns YES if table status has already been loaded
 /*
 Mark the content table for refresh when it's next switched to
 */
-- (void)setContentRequiresReload
+- (void)setContentRequiresReload:(BOOL)reload
 {
-	contentLoaded = NO;
+	contentLoaded = !reload;
 }
 
 #pragma mark Datasource methods

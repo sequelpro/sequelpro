@@ -74,7 +74,7 @@
 - (BOOL)statusLoaded;
 
 // Setter methods
-- (void)setContentRequiresReload;
+- (void)setContentRequiresReload:(BOOL)reload;
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
