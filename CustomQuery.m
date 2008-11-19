@@ -36,6 +36,12 @@ performs the mysql-query given by the user
 sets the tableView columns corresponding to the mysql-result
 */
 {	
+	// Fixes bug in key equivalents.
+	if ([[NSApp currentEvent] type] == NSKeyUp)
+	{
+		return;
+	}
+	
 	NSArray		*theColumns;
 	NSTableColumn	*theCol;
 	CMMCPResult	*theResult = nil;
