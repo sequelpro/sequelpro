@@ -47,8 +47,6 @@
 		4D700D4C0EC2B97C00C9F09E /* sheettotable.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D160EC2B97C00C9F09E /* sheettotable.tiff */; };
 		4D700D4D0EC2B97C00C9F09E /* showconsole.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D170EC2B97C00C9F09E /* showconsole.tiff */; };
 		4D700D4E0EC2B97C00C9F09E /* showvariables.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D180EC2B97C00C9F09E /* showvariables.tiff */; };
-		4D700D4F0EC2B97C00C9F09E /* sort-down.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D190EC2B97C00C9F09E /* sort-down.tiff */; };
-		4D700D500EC2B97C00C9F09E /* sort-up.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D1A0EC2B97C00C9F09E /* sort-up.tiff */; };
 		4D700D510EC2B97C00C9F09E /* spyglass.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D1B0EC2B97C00C9F09E /* spyglass.tiff */; };
 		4D700D520EC2B97C00C9F09E /* table-small.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D1C0EC2B97C00C9F09E /* table-small.tif */; };
 		4D700D530EC2B97C00C9F09E /* tableadd.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700D1D0EC2B97C00C9F09E /* tableadd.tiff */; };
@@ -162,8 +160,6 @@
 		4D700D160EC2B97C00C9F09E /* sheettotable.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = sheettotable.tiff; sourceTree = "<group>"; };
 		4D700D170EC2B97C00C9F09E /* showconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = showconsole.tiff; sourceTree = "<group>"; };
 		4D700D180EC2B97C00C9F09E /* showvariables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = showvariables.tiff; sourceTree = "<group>"; };
-		4D700D190EC2B97C00C9F09E /* sort-down.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "sort-down.tiff"; sourceTree = "<group>"; };
-		4D700D1A0EC2B97C00C9F09E /* sort-up.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "sort-up.tiff"; sourceTree = "<group>"; };
 		4D700D1B0EC2B97C00C9F09E /* spyglass.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = spyglass.tiff; sourceTree = "<group>"; };
 		4D700D1C0EC2B97C00C9F09E /* table-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-small.tif"; sourceTree = "<group>"; };
 		4D700D1D0EC2B97C00C9F09E /* tableadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = tableadd.tiff; sourceTree = "<group>"; };
@@ -354,8 +350,6 @@
 				4D700D160EC2B97C00C9F09E /* sheettotable.tiff */,
 				4D700D170EC2B97C00C9F09E /* showconsole.tiff */,
 				4D700D180EC2B97C00C9F09E /* showvariables.tiff */,
-				4D700D190EC2B97C00C9F09E /* sort-down.tiff */,
-				4D700D1A0EC2B97C00C9F09E /* sort-up.tiff */,
 				4D700D1B0EC2B97C00C9F09E /* spyglass.tiff */,
 				4D700D1C0EC2B97C00C9F09E /* table-small.tif */,
 				4D700D1D0EC2B97C00C9F09E /* tableadd.tiff */,
@@ -568,8 +562,6 @@
 				4D700D4C0EC2B97C00C9F09E /* sheettotable.tiff in Resources */,
 				4D700D4D0EC2B97C00C9F09E /* showconsole.tiff in Resources */,
 				4D700D4E0EC2B97C00C9F09E /* showvariables.tiff in Resources */,
-				4D700D4F0EC2B97C00C9F09E /* sort-down.tiff in Resources */,
-				4D700D500EC2B97C00C9F09E /* sort-up.tiff in Resources */,
 				4D700D510EC2B97C00C9F09E /* spyglass.tiff in Resources */,
 				4D700D520EC2B97C00C9F09E /* table-small.tif in Resources */,
 				4D700D530EC2B97C00C9F09E /* tableadd.tiff in Resources */,

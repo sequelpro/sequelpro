@@ -40,6 +40,8 @@
 	fullResult = [[NSMutableArray alloc] init];
 	filteredResult = [[NSMutableArray alloc] init];
 	oldRow = [[NSMutableDictionary alloc] init];
+	selectedTable = nil;
+	sortField = nil;
 	areShowingAllRows = false;
 	
 	return self;
@@ -49,54 +51,53 @@
 {
 }
 
-- (void)loadTable:(NSString *)aTable
 /*
- loads aTable, put it in an array, update the tableViewColumns and reload the tableView
+ Loads aTable, retrieving column information and updating the tableViewColumns before
+ reloading table data into the fullResults array and redrawing the table.
  */
+- (void)loadTable:(NSString *)aTable
 {
-	int i;
-	NSNumber *colWidth;
+	int			i;
+	NSNumber	*colWidth;
 	NSArray		*theColumns;
 	NSTableColumn	*theCol;
-	//	NSNumberFormatter	*numberFormatter;
-	NSString 		*query;
+	NSString	*query;
 	CMMCPResult	*queryResult;
-	
-	selectedTable = aTable;
+	BOOL		preserveCurrentView = [aTable isEqualToString:selectedTable];
+	NSString	*preservedFilterField = nil, *preservedFilterComparison, *preservedFilterValue;
+
+	// Clear the selection, and abort the reload if the user is still editing a row
 	[tableContentView deselectAll:self];
 	if ( isEditingRow )
 		return;
-	
-	//query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-	
-	[limitRowsField setStringValue:@"1"];
-	
-	//reset keys
-	if ( keys ) {
+
+	// Store the newly selected table name
+	selectedTable = aTable;
+
+	// Reset table key store for use in argumentForRow:
+	if ( keys )
 		keys = nil;
-	}
-	
+
+	// Restore the table content view to the top left
 	[tableContentView scrollRowToVisible:0];
 	[tableContentView scrollColumnToVisible:0];
-	
-	if ( [aTable isEqualToString:@""] || !aTable ) {
-		//no table selected
-		//free tableView
+
+	// If no table has been supplied, reset the view to a blank table and disabled elements
+	if ( [aTable isEqualToString:@""] || !aTable )
+	{
+
+		// Empty the table and stored data arrays
 		theColumns = [tableContentView tableColumns];
 		while ([theColumns count]) {
 			[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
 		}
-		//		theCol = [[NSTableColumn alloc] initWithIdentifier:@""];
-		//		[[theCol headerCell] setStringValue:@""];
-		//		[tableContentView addTableColumn:theCol];
-		//		[tableContentView sizeLastColumnToFit];
 		[fullResult removeAllObjects];
 		[filteredResult removeAllObjects];
 		[tableContentView reloadData];
-		//		[theCol release];
-		
-		//disable filter options
+		areShowingAllRows = YES;
+		[countText setStringValue:@""];
+
+		// Empty and disable filter options
 		[fieldField setEnabled:NO];
 		[fieldField removeAllItems];
 		[fieldField addItemWithTitle:NSLocalizedString(@"field", @"popup menuitem for field (showing only if disabled)")];
@@ -106,71 +107,133 @@
 		[argumentField setEnabled:NO];
 		[argumentField setStringValue:@""];
 		[filterButton setEnabled:NO];
-		areShowingAllRows = YES;
-		
-		//disable limit fields
-		if ( [prefs boolForKey:@"limitRows"] ) {
-			[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-										   [prefs integerForKey:@"limitRowsValue"]]];
-		} else {
-			[limitRowsField setStringValue:@""];
-			[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
-		}
+
+		// Empty and disable the limit field
+		[limitRowsField setStringValue:@""];
+		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 		[limitRowsField setEnabled:NO];
 		[limitRowsButton setEnabled:NO];
 		[limitRowsStepper setEnabled:NO];
-		
-		//disable buttons
+
+		// Disable table action buttons
 		[addButton setEnabled:NO];
 		[copyButton setEnabled:NO];
 		[removeButton setEnabled:NO];
-		
-		[countText setStringValue:@""];
-		
-		//query finished
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-		
+
 		return;
 	}
-	
-	//make a fast query to get fieldNames and fieldTypes (used in fieldListForQuery method)
+
+	// Post a notification that a query will be performed
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+
+
+	// Make a fast query to get fieldNames and fieldTypes for this table.  This is used to decide whether to preserve the
+	// current filter/sort settings, and also used when grabbing all the data as part of the fieldListForQuery method.
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@` LIMIT 0", selectedTable]];
-	fieldTypes = [[queryResult fetchTypesAsArray] retain];
-	fieldNames = [[queryResult fetchFieldNames] retain];
-	
-	//perform query and load result in array (each row as a dictionary)
-	//	queryResult = [mySQLConnection queryString:[@"SELECT * FROM " stringByAppendingString:selectedTable]];
-	query = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
-	if ( [prefs boolForKey:@"limitRows"] ) {
-		if ( [limitRowsField intValue] <= 0 ) {
-			[limitRowsField setStringValue:@"1"];
-		}
-		query = [query stringByAppendingString:
-				 [NSString stringWithFormat:@" LIMIT %d,%d",
-				  [limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
-	}
-	//	[queryResult release];
-	queryResult = [mySQLConnection queryString:query];
-	//	[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
-	[fullResult setArray:[self fetchResultAsArray:queryResult]];
-	[filteredResult setArray:fullResult];
-	//	fieldTypes = [[queryResult fetchTypesAsArray] retain];
-	//	fieldNames = [[queryResult fetchFieldNames] retain];
-	
-	//set count text
-	numRows = [self getNumberOfRows];
-	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
-	
-	//clear sorting
-	sortField = nil;
-	isDesc = NO;
-	
 	if ( queryResult == nil ) {
-		NSLog(@"Loading table %@ failed, query string was: %@", aTable, query);
+		NSLog(@"Loading table columns for %@ failed", aTable);
 		return;
 	}
+	fieldNames = [[queryResult fetchFieldNames] retain];
+	fieldTypes = [[queryResult fetchTypesAsArray] retain];
+
+	// Remove existing columns from the table
+	theColumns = [tableContentView tableColumns];
+	while ([theColumns count]) {
+		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
+	}
 	
-	//enable and initialize filter fields (with tags for position of menu item and field position)
+	// Add the new columns to the table
+	for ( i = 0 ; i < [fieldNames count] ; i++ ) {
+	
+		// Set up the column
+		theCol = [[NSTableColumn alloc] initWithIdentifier:[fieldNames objectAtIndex:i]];
+		[theCol setEditable:YES];
+		if ( [theCol respondsToSelector:@selector(setResizingMask:)] ) {
+			// Mac OS X 10.4+
+			[theCol setResizingMask:NSTableColumnUserResizingMask];
+		} else {
+			// Mac OS X pre-10.4
+			[theCol setResizable:YES];
+		}
+		[[theCol headerCell] setStringValue:[fieldNames objectAtIndex:i]];
+		
+		// Set up the data cell depending on the column type
+		NSComboBoxCell *dataCell;
+		if ( [[tableSourceInstance enumFields] objectForKey:[fieldNames objectAtIndex:i]] )
+		{
+			dataCell = [[[NSComboBoxCell alloc] initTextCell:@""] autorelease];
+			[dataCell setButtonBordered:NO];
+			[dataCell setBezeled:NO];
+			[dataCell setDrawsBackground:NO];
+			[dataCell setCompletes:YES];
+			[dataCell setControlSize:NSSmallControlSize];
+			[dataCell addItemWithObjectValue:@"NULL"];
+			[dataCell addItemsWithObjectValues:[[tableSourceInstance enumFields] objectForKey:[fieldNames objectAtIndex:i]]];
+		}
+		else
+		{
+			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
+		}
+		[dataCell setEditable:YES];
+		if ( [dataCell respondsToSelector:@selector(setLineBreakMode:)] ) {
+			// Mac OS X 10.4+
+			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+		}
+
+		// Set the data cell font according to the preferences
+		if ( [prefs boolForKey:@"useMonospacedFonts"] )
+		{
+			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
+		}
+		else
+		{
+			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		// Assign the data cell
+		[theCol setDataCell:dataCell];
+
+		// Set the width of this column to saved value if exists
+		colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance table]] objectForKey:[fieldNames objectAtIndex:i]];
+		if ( colWidth )
+		{
+			[theCol setWidth:[colWidth floatValue]];
+		}
+		
+		// Add the column to the table
+		[tableContentView addTableColumn:theCol];
+		[theCol release];
+	}
+
+	// If the table has been reloaded and the previously selected sort column is still present, reselect it. 
+	if (preserveCurrentView && [fieldNames containsObject:sortField])
+	{
+		theCol = [tableContentView tableColumnWithIdentifier:sortField];
+		[tableContentView setHighlightedTableColumn:theCol];
+		if ( isDesc ) {
+			[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:theCol];
+		} else {
+			[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:theCol];
+		}
+	}
+	
+	// Otherwise, clear sorting
+	else
+	{
+		sortField = nil;
+		isDesc = NO;
+	}
+
+	// Preserve the stored filter settings if appropriate
+	if (preserveCurrentView && [fieldField isEnabled])
+	{
+		preservedFilterField = [NSString stringWithString:[[fieldField selectedItem] title]];
+		preservedFilterComparison = [NSString stringWithString:[[compareField selectedItem] title]];
+		preservedFilterValue = [NSString stringWithString:[argumentField stringValue]];
+	}
+
+	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
 	[fieldField removeAllItems];
 	[fieldField addItemsWithTitles:fieldNames];
@@ -182,142 +245,96 @@
 	[argumentField setEnabled:YES];
 	[argumentField setStringValue:@""];
 	[filterButton setEnabled:YES];
-	areShowingAllRows = YES;
 	
-	//enable or disable limit fields
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	// Restore preserved filter settings if appropriate and valid
+	if (preserveCurrentView && preservedFilterField != nil && [fieldField itemWithTitle:preservedFilterField])
+	{
+		[fieldField selectItemWithTitle:preservedFilterField];
+		[self setCompareTypes:self];
+	}
+	if (preserveCurrentView && preservedFilterField != nil
+		&& [fieldField itemWithTitle:preservedFilterField]
+		&& [compareField itemWithTitle:preservedFilterComparison])
+	{
+		[compareField selectItemWithTitle:preservedFilterComparison];
+		[argumentField setStringValue:preservedFilterValue];
+		areShowingAllRows = NO;
+	}
+	else
+	{
+		areShowingAllRows = YES;
+	}
+
+	// Enable or disable the limit fields according to preference setting
+	if ( [prefs boolForKey:@"limitRows"] ) 
+	{
+		[limitRowsField setStringValue:@"1"];
 		[limitRowsField setEnabled:YES];
 		[limitRowsButton setEnabled:YES];
 		[limitRowsStepper setEnabled:YES];
 		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
 									   [prefs integerForKey:@"limitRowsValue"]]];
-	} else {
+	}
+	else
+	{
 		[limitRowsField setEnabled:NO];
 		[limitRowsButton setEnabled:NO];
 		[limitRowsStepper setEnabled:NO];
 		[limitRowsField setStringValue:@""];
 		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 	}
-	
-	//enable buttons
+
+	// Enable the table buttons
 	[addButton setEnabled:YES];
 	[copyButton setEnabled:YES];
 	[removeButton setEnabled:YES];
-	
-	//set columns
-	//remove all columns from table
-	theColumns = [tableContentView tableColumns];
-	i=0;
-	while ([theColumns count]) {
-		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
-		i++;
+
+
+	// Perform the data query and store the result as an array containing a dictionary per result row
+	query = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
+	if ( sortField )
+	{
+		query = [NSString stringWithFormat:@"%@ ORDER BY `%@`", query, sortField];
+		if ( isDesc )
+			query = [query stringByAppendingString:@" DESC"];
 	}
-	
-	//add columns, corresponding to the query result
-	theColumns = fieldNames;
-	for ( i = 0 ; i < [theColumns count] ; i++ ) {
-		theCol = [[NSTableColumn alloc] initWithIdentifier:[theColumns objectAtIndex:i]];
-		[theCol setEditable:YES];
-		if ( [theCol respondsToSelector:@selector(setResizingMask:)] ) {
-			// os 10.4
-			[theCol setResizingMask:NSTableColumnUserResizingMask];
-		} else {
-			// os pre-10.4
-			[theCol setResizable:YES];
+	if ( [prefs boolForKey:@"limitRows"] )
+	{
+		if ( [limitRowsField intValue] <= 0 )
+		{
+			[limitRowsField setStringValue:@"1"];
 		}
-		NSComboBoxCell *dataCell;
-		if ( [[tableSourceInstance enumFields] objectForKey:[theColumns objectAtIndex:i]] ) {
-			dataCell = [[[NSComboBoxCell alloc] initTextCell:@""] autorelease];
-			[dataCell setButtonBordered:NO];
-			[dataCell setBezeled:NO];
-			[dataCell setDrawsBackground:NO];
-			[dataCell setCompletes:YES];
-			[dataCell setControlSize:NSSmallControlSize];
-			[dataCell addItemWithObjectValue:@"NULL"];
-			[dataCell addItemsWithObjectValues:[[tableSourceInstance enumFields] objectForKey:[theColumns objectAtIndex:i]]];
-		} else {
-			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
-		}
-		[dataCell setEditable:YES];
-		//		[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-			//			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		} else {
-			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
-		if ( [dataCell respondsToSelector:@selector(setLineBreakMode:)] ) {
-			// os 10.4
-			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		}
-		[theCol setDataCell:dataCell];
-		//set date and number formatters
-		/*
-		 if ([[fieldTypes objectAtIndex:i] isEqualToString:@"timestamp"]) {
-		 [[theCol dataCell] setFormatter:[[NSDateFormatter alloc]
-		 initWithDateFormat:@"%Y-%m-%d %H:%M:%S" allowNaturalLanguage:YES]];
-		 }
-		 if ([[fieldTypes objectAtIndex:i] isEqualToString:@"datetime"]) {
-		 [[theCol dataCell] setFormatter:[[NSDateFormatter alloc] initWithDateFormat:@"%Y-%m-%d %H:%M:%S" allowNaturalLanguage:YES]];
-		 }
-		 if ([[fieldTypes objectAtIndex:i] isEqualToString:@"date"]) {
-		 [[theCol dataCell] setFormatter:[[NSDateFormatter alloc] initWithDateFormat:@"%Y-%m-%d" allowNaturalLanguage:YES]];
-		 }
-		 if ([[fieldTypes objectAtIndex:i] isEqualToString:@"time"]) {
-		 [[theCol dataCell] setFormatter:[[NSDateFormatter alloc] initWithDateFormat:@"%H:%M:%S" allowNaturalLanguage:YES]];
-		 }
-		 if ([[fieldTypes objectAtIndex:i] isEqualToString:@"year"]) {
-		 [[theCol dataCell] setFormatter:[[NSDateFormatter alloc] initWithDateFormat:@"%Y" allowNaturalLanguage:YES]];
-		 }
-		 if ([[fieldTypes objectAtIndex:i] isEqualToString:@"tiny"] || [[fieldTypes objectAtIndex:i] isEqualToString:@"short"]
-		 || [[fieldTypes objectAtIndex:i] isEqualToString:@"long"] || [[fieldTypes objectAtIndex:i] isEqualToString:@"int24"]
-		 || [[fieldTypes objectAtIndex:i] isEqualToString:@"longlong"] ) {
-		 numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-		 [numberFormatter setFormat:@"0"];
-		 [numberFormatter setAttributedStringForNil:[[NSAttributedString alloc] initWithString:[prefs stringForKey:@"nullValue"]]];
-		 [numberFormatter setAllowsFloats:NO];
-		 [[theCol dataCell] setFormatter:numberFormatter];
-		 }
-		 if ( [[fieldTypes objectAtIndex:i] isEqualToString:@"decimal"] || [[fieldTypes objectAtIndex:i] isEqualToString:@"float"]
-		 || [[fieldTypes objectAtIndex:i] isEqualToString:@"double"] ) {
-		 numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-		 //here we should allow any number of decimal values (after the comma)
-		 //problem with float-numbers like 2.13231e+08
-		 //double numbers doesn't have all decimal values
-		 //-> bugs in the framework?
-		 [numberFormatter setFormat:@"0.####################"];
-		 [numberFormatter setAttributedStringForNil:[[NSAttributedString alloc] initWithString:[prefs stringForKey:@"nullValue"]]];
-		 [[theCol dataCell] setFormatter:numberFormatter];
-		 }
-		 */
-		[[theCol headerCell] setStringValue:[theColumns objectAtIndex:i]];
-		// set width of column to saved value if exists
-		colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance table]] objectForKey:[theColumns objectAtIndex:i]];
-		if ( colWidth ) {
-			[theCol setWidth:[colWidth floatValue]];
-		}
-		[tableContentView addTableColumn:theCol];
-		[theCol release];
+		query = [query stringByAppendingString:
+					[NSString stringWithFormat:@" LIMIT %d,%d",
+						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
 	}
-	
-	//	[tableContentView sizeLastColumnToFit];
-	//tries to fix problem with last row (otherwise to small)
-	//sets last column to width of the first if smaller than 30
-	//problem not fixed for resizing window
-	//	if ( [[tableContentView tableColumnWithIdentifier:[theColumns objectAtIndex:[theColumns count]-1]] width] < 30 )
-	//		[[tableContentView tableColumnWithIdentifier:[theColumns objectAtIndex:[theColumns count]-1]]
-	//				setWidth:[[tableContentView tableColumnWithIdentifier:[theColumns objectAtIndex:0]] width]];
-	
+	queryResult = [mySQLConnection queryString:query];
+	if ( queryResult == nil ) {
+		NSLog(@"Loading table data for %@ failed, query string was: %@", aTable, query);
+		return;
+	}
+	[fullResult setArray:[self fetchResultAsArray:queryResult]];
+
+	// Apply any filtering and update the row count
+	if ( !areShowingAllRows ) {
+		[self filterTable:self];
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
+	} else {
+		[filteredResult setArray:fullResult];
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
+	}
+
+	// Reload the table data.
 	[tableContentView reloadData];
 	
-	//query finished
+	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
-- (IBAction)reloadTable:(id)sender
 /*
- reloads the table (performing a new mysql-query)
+ Reloads the current table data, performing a new SQL query.  Now attempts to preserve sort order, filters, and viewport.
  */
+- (IBAction)reloadTable:(id)sender
 {
 	// Store the current viewport location
 	NSRect viewRect = [tableContentView visibleRect];
@@ -1527,8 +1544,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
  */
 {
 	NSString *queryString;
-	NSImage *upSortImage;
-	NSImage *downSortImage;
 	CMMCPResult *queryResult;
 	
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
@@ -1538,12 +1553,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-	
-	upSortImage = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sort-up" ofType:@"tiff"]];
-	[upSortImage autorelease];
-	downSortImage = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sort-down" ofType:@"tiff"]];
-	[downSortImage autorelease];
-	
+		
 	//sets order descending if a header is clicked twice
 	if ( [[tableColumn identifier] isEqualTo:sortField] ) {
 		if ( isDesc ) {
@@ -1584,9 +1594,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	//sets highlight and indicatorImage
 	[tableContentView setHighlightedTableColumn:tableColumn];
 	if ( isDesc ) {
-		[tableContentView setIndicatorImage:downSortImage inTableColumn:tableColumn];
+		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
 	} else {
-		[tableContentView setIndicatorImage:upSortImage inTableColumn:tableColumn];
+		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
 	}
 	
 	//query finished
