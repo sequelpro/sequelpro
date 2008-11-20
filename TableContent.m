@@ -137,6 +137,10 @@
 	fieldNames = [[queryResult fetchFieldNames] retain];
 	fieldTypes = [[queryResult fetchTypesAsArray] retain];
 
+	// Retrieve the number of rows in the table and initially mark all as being visible.
+	numRows = [self getNumberOfRows];
+	areShowingAllRows = YES;
+
 	// Remove existing columns from the table
 	theColumns = [tableContentView tableColumns];
 	while ([theColumns count]) {
@@ -260,10 +264,6 @@
 		[argumentField setStringValue:preservedFilterValue];
 		areShowingAllRows = NO;
 	}
-	else
-	{
-		areShowingAllRows = YES;
-	}
 
 	// Enable or disable the limit fields according to preference setting
 	if ( [prefs boolForKey:@"limitRows"] ) 
@@ -274,6 +274,8 @@
 		[limitRowsStepper setEnabled:YES];
 		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
 									   [prefs integerForKey:@"limitRowsValue"]]];
+		if ([prefs integerForKey:@"limitRowsValue"] < numRows)
+			areShowingAllRows = NO;
 	}
 	else
 	{
