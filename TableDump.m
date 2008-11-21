@@ -44,7 +44,7 @@ get the tables in db
 
 	//get tables
 	[tables removeAllObjects];
-	queryResult = [mySQLConnection listTables];
+	queryResult = (CMMCPResult *)[mySQLConnection listTables];
 	
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		[queryResult dataSeek:i];
@@ -460,14 +460,14 @@ reads mysql-dumpfile
 		//show fieldMapping sheet
 		CMMCPResult *theResult;
 		int i;
-		theResult = [mySQLConnection listTables];
+		theResult = (CMMCPResult *) [mySQLConnection listTables];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 			[theResult dataSeek:i];
 			[fieldMappingPopup addItemWithTitle:[[theResult fetchRowAsArray] objectAtIndex:0]];
 		}
 		
 		if ([tableDocumentInstance table] != nil && ![(NSString *)[tableDocumentInstance table] isEqualToString:@""]) {
-			[fieldMappingPopup selectItemWithTitle:[tableDocumentInstance table]];
+			[fieldMappingPopup selectItemWithTitle:[(TableDocument *)tableDocumentInstance table]];
 		} else {
 			[fieldMappingPopup selectItemAtIndex:0];
 		}
@@ -1475,6 +1475,19 @@ sets the connection (received from TableDocument) and makes things that have to 
 	}
 }
 
+- (void)tableView:(NSTableView *)aTableView 
+  willDisplayCell:(id)aCell 
+   forTableColumn:(NSTableColumn *)aTableColumn 
+			  row:(int)rowIndex
+{
+	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
+		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+	}
+	else
+	{
+		[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+}
 - (id)tableView:(NSTableView *)aTableView
 			objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex

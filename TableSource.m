@@ -495,10 +495,18 @@ sets the connection (received from TableDocument) and makes things that have to 
 		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
 			[[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
+		else 
+		{
+			[[indexColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
 	}
 	while ( (fieldColumn = [fieldColumnsEnumerator nextObject]) ) {
 		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
 			[[fieldColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		}
+		else
+		{
+			[[fieldColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 	}
 }

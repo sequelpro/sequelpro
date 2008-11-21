@@ -180,6 +180,7 @@
 			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		}
 		[dataCell setEditable:YES];
+
 		if ( [dataCell respondsToSelector:@selector(setLineBreakMode:)] ) {
 			// Mac OS X 10.4+
 			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
@@ -906,6 +907,8 @@
 		[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	} else {
 		[editTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[limitRowsField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[argumentField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	[limitRowsStepper setEnabled:NO];

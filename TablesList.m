@@ -28,6 +28,8 @@
 #import "TableContent.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
+#import "CMMCPConnection.h"
+#import "CMMCPResult.h"
 
 @implementation TablesList
 
@@ -47,9 +49,10 @@ loads all table names in array tables and reload the tableView
 
 	[tablesListView deselectAll:self];
 	[tables removeAllObjects];
-	[tables addObject:@"TABLES"];
+	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 
-	theResult = [mySQLConnection listTables];
+	theResult = (CMMCPResult *)[mySQLConnection listTables];
+	
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		[theResult dataSeek:i];
 		[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
@@ -275,19 +278,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 - (void)setConnection:(CMMCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
-
-	//prefs = [[NSUserDefaults standardUserDefaults] retain];
-
-	//set smallSystemFonts
-	//[[[tablesListView tableColumnWithIdentifier:@"tables"] dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	//[copyTableNameField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	//if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-	
-	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
-		[[[tablesListView tableColumnWithIdentifier:@"tables"] dataCell]
-				setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	}
-
 	[self updateTables:self];
 }
 
@@ -652,6 +642,13 @@ loads structure or source if tab selected the first time
 	if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"tables"]) {
 		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
+		if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
+			[(ImageAndTextCell*)aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		}
+		else
+		{
+			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
 		
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];

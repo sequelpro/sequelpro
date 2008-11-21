@@ -24,9 +24,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 
+@class CMMCResult;
+@class CMMCPConnection;
 
 @interface TablesList : NSObject {
 
