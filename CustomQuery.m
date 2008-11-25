@@ -166,37 +166,16 @@ sets the tableView columns corresponding to the mysql-result
 	theColumns = [theResult fetchFieldNames];
 	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
-//		theCol = [[NSTableColumn alloc] initWithIdentifier:[theColumns objectAtIndex:i]];
-//		[theCol setEditable:NO];
-		if ( [theCol respondsToSelector:@selector(setResizingMask:)] ) {
-		// os 10.4
-			[theCol setResizingMask:NSTableColumnUserResizingMask];
-		} else {
-		// os pre-10.4
-			[theCol setResizable:YES];
-		}
+		[theCol setResizingMask:NSTableColumnUserResizingMask];
 		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		[dataCell setEditable:NO];
-		//		[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-		if ( [dataCell respondsToSelector:@selector(setLineBreakMode:)] ) {
-		// os 10.4
-			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		}
+		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[theCol setDataCell:dataCell];
-/*
-		if ([[theTypes objectAtIndex:i] isEqualToString:@"timestamp"]) {
-			[[theCol dataCell] setFormatter:[[NSDateFormatter alloc]
-									initWithDateFormat:@"%d/%m/%Y at %H:%M:%S" allowNaturalLanguage:YES]];
-		}
-		if ([[theTypes objectAtIndex:i] isEqualToString:@"datetime"]) {
-			[[theCol dataCell] setFormatter:[[NSDateFormatter alloc] initWithDateFormat:@"%d/%m/%Y at %H:%M:%S" allowNaturalLanguage:YES]];
-		}
-*/
 		[[theCol headerCell] setStringValue:[theColumns objectAtIndex:i]];
 
 		[customQueryView addTableColumn:theCol];
@@ -207,11 +186,6 @@ sets the tableView columns corresponding to the mysql-result
 	//tries to fix problem with last row (otherwise to small)
 	//sets last column to width of the first if smaller than 30
 	//problem not fixed for resizing window
-/*
-	if ( [[customQueryView tableColumnWithIdentifier:[theColumns objectAtIndex:[theColumns count]-1]] width] < 30 )
-		[[customQueryView tableColumnWithIdentifier:[theColumns objectAtIndex:[theColumns count]-1]]
-				setWidth:[[customQueryView tableColumnWithIdentifier:[theColumns objectAtIndex:0]] width]];
-*/
 	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
 		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
 				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
@@ -304,7 +278,7 @@ adds a query favorite
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[queryFavoritesView currentEditor]]; 
+		[cell endEditing:[queryFavoritesView currentEditor]]; 
 	}
 
 	[queryFavorites addObject:[NSString string]];
@@ -327,7 +301,7 @@ removes a query favorite
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[queryFavoritesView currentEditor]]; 
+		[cell endEditing:[queryFavoritesView currentEditor]]; 
 	}
 
 	if ( [queryFavoritesView numberOfSelectedRows] > 0 ) {
@@ -350,7 +324,7 @@ copies a query favorite
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[queryFavoritesView currentEditor]]; 
+		[cell endEditing:[queryFavoritesView currentEditor]]; 
 	}
 
 	if ( [queryFavoritesView numberOfSelectedRows] > 0 ) {
@@ -377,7 +351,7 @@ closes queryFavoritesSheet and saves favorites to preferences
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[queryFavoritesView currentEditor]]; 
+		[cell endEditing:[queryFavoritesView currentEditor]]; 
 	}
 
 	[NSApp stopModal];
@@ -454,7 +428,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 			[[column dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 	}
-//	[queryFavoritesView reloadData];
 	if ( [prefs objectForKey:@"queryHistory"] )
 	{
 		[queryHistoryButton addItemsWithTitles:[prefs objectForKey:@"queryHistory"]];
@@ -507,7 +480,6 @@ inserts the query in the textView and performs query
 			row:(int)rowIndex
 {
 	NSArray	*theRow;
-//	NSString		*theIdentifier = [aTableColumn identifier];
 	NSNumber *theIdentifier = [aTableColumn identifier];
 
 	if ( aTableView == customQueryView ) {
@@ -538,9 +510,6 @@ inserts the query in the textView and performs query
 		int i = 0;
 
 		if ( [anObject isEqualToString:@""] ) {
-//			NSRunAlertPanel(@"Error", @"Query can't be empty.", @"OK", nil, nil);
-			//remove row
-//			if ( [[queryFavorites objectAtIndex:rowIndex] isEqualToString:@""] ) {
 			[queryFavoritesView deselectAll:self];
 			[queryFavorites removeObjectAtIndex:rowIndex];
 			[queryFavoritesView reloadData];
