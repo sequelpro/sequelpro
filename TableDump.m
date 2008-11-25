@@ -796,120 +796,170 @@ returns a dump string for the selected tables
 	return [NSString stringWithString:dump];
 }
 
-- (NSString *)csvForArray:(NSArray *)array useFirstLine:(BOOL)firstLine terminatedBy:(NSString *)terminated
-	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
 /*
-takes an array and returns it as a csv string
-*/
+ Takes an array and returns it as a csv string
+ */
+- (NSString *)csvForArray:(NSArray *)array useFirstLine:(BOOL)firstLine terminatedBy:(NSString *)fieldSeparatorString
+	enclosedBy:(NSString *)enclosingString escapedBy:(NSString *)escapeString lineEnds:(NSString *)lineEndString silently:(BOOL)silently;
 {
-	NSMutableString *string = [NSMutableString string];
-	NSMutableString *rowValue = [NSMutableString string];
-	NSMutableArray *tempRow = [NSMutableArray array];
-	NSMutableString *tempTerminated, *tempLineEnds;
-	int i,j;
+	NSMutableString *csvCell = [NSMutableString string];
+	NSMutableString *enclosedCsvCell = [NSMutableString string];
+	NSMutableArray *csvRow = [NSMutableArray array];
+	NSMutableString *csvRowString = [NSMutableString string];
+	NSMutableArray *csvData = [NSMutableArray array];
+	NSString *nullString = [NSString stringWithString:[prefs objectForKey:@"nullValue"]];
+	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString;
+	BOOL quoteFieldSeparators = [enclosingString isEqualToString:@""];
+	NSScanner *csvNumericTester;
+	BOOL csvCellIsNumeric;
+	int i,j, progressBarWidth, lastProgressValue;
 
-//repare tabs and line ends
-	tempTerminated = [NSMutableString stringWithString:terminated];
-	[tempTerminated replaceOccurrencesOfString:@"\\t" withString:@"\t"
+	// Detect and restore special characters being used as terminating or line end strings
+	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:fieldSeparatorString];
+	[tempSeparatorString replaceOccurrencesOfString:@"\\t" withString:@"\t"
 					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempTerminated length])];
-	[tempTerminated replaceOccurrencesOfString:@"\\n" withString:@"\n"
+					range:NSMakeRange(0, [tempSeparatorString length])];
+	[tempSeparatorString replaceOccurrencesOfString:@"\\n" withString:@"\n"
 					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempTerminated length])];
-	[tempTerminated replaceOccurrencesOfString:@"\\r" withString:@"\r"
+					range:NSMakeRange(0, [tempSeparatorString length])];
+	[tempSeparatorString replaceOccurrencesOfString:@"\\r" withString:@"\r"
 					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempTerminated length])];
-	terminated = [NSString stringWithString:tempTerminated];
-	tempLineEnds = [NSMutableString stringWithString:lineEnds];
-	[tempLineEnds replaceOccurrencesOfString:@"\\t" withString:@"\t"
+					range:NSMakeRange(0, [tempSeparatorString length])];
+	fieldSeparatorString = [NSString stringWithString:tempSeparatorString];
+	NSMutableString *tempLineEndString = [NSMutableString stringWithString:lineEndString];
+	[tempLineEndString replaceOccurrencesOfString:@"\\t" withString:@"\t"
 					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempLineEnds length])];
-	[tempLineEnds replaceOccurrencesOfString:@"\\n" withString:@"\n"
+					range:NSMakeRange(0, [tempLineEndString length])];
+	[tempLineEndString replaceOccurrencesOfString:@"\\n" withString:@"\n"
 					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempLineEnds length])];
-	[tempLineEnds replaceOccurrencesOfString:@"\\r" withString:@"\r"
+					range:NSMakeRange(0, [tempLineEndString length])];
+	[tempLineEndString replaceOccurrencesOfString:@"\\r" withString:@"\r"
 					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempLineEnds length])];
-	lineEnds = [NSString stringWithString:tempLineEnds];
+					range:NSMakeRange(0, [tempLineEndString length])];
+	lineEndString = [NSString stringWithString:tempLineEndString];
 
 	if ( !silently ) {
-		//reset interface
+
+		// Reset progress interface
 		[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setDoubleValue:0];
 		[singleProgressBar displayIfNeeded];
-		//open progress sheet
+
+		// Updating the progress bar can take >20% of processing time - store details to only update when required
+		progressBarWidth = (int)[singleProgressBar bounds].size.width;
+		lastProgressValue = 0;
+		
+		// Open progress sheet
 		[NSApp beginSheet:singleProgressSheet
 				modalForWindow:tableWindow modalDelegate:self
 				didEndSelector:nil contextInfo:nil];
 	}
 
+	// Set up escaped versions of strings for substitution within the loop
+	escapedEscapeString = [NSString stringWithFormat:@"%@%@", escapeString, escapeString];
+	escapedFieldSeparatorString = [NSString stringWithFormat:@"%@%@", escapeString, fieldSeparatorString];
+	escapedEnclosingString = [NSString stringWithFormat:@"%@%@", escapeString, enclosingString];
+	escapedLineEndString = [NSString stringWithFormat:@"%@%@", escapeString, lineEndString];
+
+	// Walk through the array constructing the CSV string
 	for ( i = 0 ; i < [array count] ; i++ ) {
+	
+		// Update the progress bar if the update would be visible
 		if ( !silently ) {
-//			[singleProgressText setStringValue:[NSString stringWithFormat:@"Writing row %d of %d", i+1, [array count]]];
-//			[singleProgressText displayIfNeeded];
 			[singleProgressBar setDoubleValue:((i+1)*100/[array count])];
-			[singleProgressBar displayIfNeeded];
-		}
-		if ( (i > 0) || ((i == 0) && firstLine) ) {
-			[tempRow removeAllObjects];
-			for ( j = 0 ; j < [[array objectAtIndex:i] count] ; j++ ) {
-			//escape "enclosed by" character
-/*
-				[rowValue setString:@""];
-				scanner = [NSScanner scannerWithString:[[[array objectAtIndex:i] objectAtIndex:j] description]];
-				[scanner setCharactersToBeSkipped:nil];
-				while ( ![scanner isAtEnd] ) {
-					if ( [scanner scanUpToString:enclosed intoString:&tempString] ) {
-						[rowValue appendString:tempString];
-					}
-					if ( [scanner scanString:enclosed intoString:nil] ) {
-						[rowValue appendString:[NSString stringWithFormat:@"%@%@", escaped, enclosed]];					
-					}
-				}
-*/
-				[rowValue setString:[[[array objectAtIndex:i] objectAtIndex:j] description]];
-				if ( [rowValue isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
-					[tempRow addObject:@"NULL"];
-				} else {
-					[rowValue replaceOccurrencesOfString:escaped
-								withString:[NSString stringWithFormat:@"%@%@", escaped, escaped]
-								options:NSLiteralSearch
-								range:NSMakeRange(0,[rowValue length])];
-					if ( ![escaped isEqualToString:enclosed] ) {
-						[rowValue replaceOccurrencesOfString:enclosed
-									withString:[NSString stringWithFormat:@"%@%@", escaped, enclosed]
-									options:NSLiteralSearch
-									range:NSMakeRange(0,[rowValue length])];
-					}
-					[rowValue replaceOccurrencesOfString:lineEnds
-								withString:[NSString stringWithFormat:@"%@%@", escaped, lineEnds]
-								options:NSLiteralSearch
-								range:NSMakeRange(0,[rowValue length])];
-					if ( [enclosed isEqualToString:@""] ) {
-						[rowValue replaceOccurrencesOfString:terminated
-									withString:[NSString stringWithFormat:@"%@%@", escaped, terminated]
-									options:NSLiteralSearch
-									range:NSMakeRange(0,[rowValue length])];
-					}
-					[tempRow addObject:[NSString stringWithFormat:@"%@%@%@", enclosed, rowValue, enclosed]];
-				}
+			if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
+				lastProgressValue = (int)[singleProgressBar doubleValue];
+				[singleProgressBar displayIfNeeded];
 			}
-			[string appendString:[tempRow componentsJoinedByString:terminated]];
-			[string appendString:lineEnds];
+		}
+
+		if ( (i > 0) || ((i == 0) && firstLine) ) {
+			[csvRow setArray:[array objectAtIndex:i]];
+			for ( j = 0 ; j < [csvRow count] ; j++ ) {
+				[csvCell setString:[[csvRow objectAtIndex:j] description]];
+
+				// Set NULL values to an empty string
+				if ( [csvCell isEqualToString:nullString] ) {
+					[csvRow replaceObjectAtIndex:j withObject:@""];
+
+				// Add empty strings as a pair of enclosing characters only
+				} else if ( [csvCell length] == 0 ) {
+					[enclosedCsvCell setString:enclosingString];
+					[enclosedCsvCell appendString:enclosingString];
+
+				} else {
+					
+					// Test whether this cell contains a number
+					csvNumericTester = [NSScanner scannerWithString:csvCell];
+					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && [csvNumericTester isAtEnd];
+					if (csvCellIsNumeric && [csvCell length] > 20) {
+						NSLog(csvCell);
+						float testFloat;
+						NSScanner *test = [NSScanner scannerWithString:csvCell];
+						[test scanFloat:&testFloat];
+						NSLog(@"Gives value: %f, scanner at end: %i", testFloat, [test isAtEnd] == YES);
+					}
+					
+					// Escape any occurrences of the escaping character
+					[csvCell replaceOccurrencesOfString:escapeString
+									withString:escapedEscapeString
+									options:NSLiteralSearch
+									range:NSMakeRange(0,[csvCell length])];
+
+					// Escape any occurrences of the enclosure string
+					if ( ![escapeString isEqualToString:enclosingString] ) {
+						[csvCell replaceOccurrencesOfString:enclosingString
+									withString:escapedEnclosingString
+									options:NSLiteralSearch
+									range:NSMakeRange(0,[csvCell length])];
+					}
+
+					// If the string isn't quoted or otherwise enclosed, escape occurrences of the
+					// field separators and the line ending separator.
+					if ( quoteFieldSeparators || csvCellIsNumeric ) {
+						[csvCell replaceOccurrencesOfString:fieldSeparatorString
+									withString:escapedFieldSeparatorString
+									options:NSLiteralSearch
+									range:NSMakeRange(0,[csvCell length])];
+						[csvCell replaceOccurrencesOfString:lineEndString
+									withString:escapedLineEndString
+									options:NSLiteralSearch
+									range:NSMakeRange(0,[csvCell length])];
+					}
+
+					// Update the string in the row array using a mutable string which has each part
+					// appended to it; this is significantly faster than stringWithFormat.
+					if (csvCellIsNumeric) {
+						[enclosedCsvCell setString:csvCell];
+					} else {
+						[enclosedCsvCell setString:enclosingString];
+						[enclosedCsvCell appendString:csvCell];
+						[enclosedCsvCell appendString:enclosingString];
+					}
+					[csvRow replaceObjectAtIndex:j withObject:[NSString stringWithString:enclosedCsvCell]];
+				}
+				
+			}
+
+			// Construct the string for this row
+			[csvRowString setString:[csvRow componentsJoinedByString:fieldSeparatorString]];
+
+			// Add it to the CSV array
+			[csvData addObject:[NSString stringWithString:csvRowString]];
 		}
 	}
-/*
-	//remove last line end
-	[string deleteCharactersInRange:NSMakeRange(([string length]-[lineEnds length]),([lineEnds length]))];
-*/
+	
+	// Add a trailing line end symbol
+	[csvData addObject:lineEndString];
+
+	// Close the progress sheet if it's present
 	if ( !silently ) {
-		//close progress sheet
 		[NSApp endSheet:singleProgressSheet];
 		[singleProgressSheet orderOut:nil];
 	}
 
-	return [NSString stringWithString:string];
+	return [NSString stringWithString:[csvData componentsJoinedByString:lineEndString]];
 }
 
 - (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
