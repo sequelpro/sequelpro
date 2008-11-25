@@ -228,6 +228,7 @@ insert the choosen favorite query in the query textView or save query to favorit
 				return;
 		}
 		[queryFavorites addObject:[NSString stringWithString:[textView string]]];
+		[queryFavoritesView reloadData];
 		[prefs setObject:queryFavorites forKey:@"queryFavorites"];
 		[self setFavorites];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] == 2) {
@@ -531,6 +532,7 @@ inserts the query in the textView and performs query
 			i++;
 		}
 		[queryFavorites replaceObjectAtIndex:rowIndex withObject:anObject];
+		[queryFavoritesView reloadData];
 	}
 }
 
