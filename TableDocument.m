@@ -545,8 +545,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)toggleConsole:(id)sender
 {
-	NSDrawerState state = [consoleDrawer state];
-	if (NSDrawerOpeningState == state || NSDrawerOpenState == state) {
+	if ([self consoleIsOpened]) {
 		[consoleDrawer close];
 	} else {
 		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
@@ -582,6 +581,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:message];
 	end = [[consoleTextView string] length];
 	[consoleTextView setTextColor:[NSColor blackColor] range:NSMakeRange(begin,end-begin)];
+	
 	if ([self consoleIsOpened]) {
 		[consoleTextView displayIfNeeded];
 		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
@@ -600,6 +600,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:error];
 	end = [[consoleTextView string] length];
 	[consoleTextView setTextColor:[NSColor redColor] range:NSMakeRange(begin,end-begin)];
+	
 	if ([self consoleIsOpened]) {
 		[consoleTextView displayIfNeeded];
 		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
