@@ -8,6 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">352.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -728,7 +729,7 @@
 								<object class="NSMenuItem" id="924530602">
 									<reference key="NSMenu" ref="466354362"/>
 									<string key="NSTitle">Toggle Console</string>
-									<string key="NSKeyEquiv"/>
+									<string key="NSKeyEquiv">K</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
@@ -6575,7 +6576,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{323, 300}, {235, 183}}</string>
+					<string>{{436, 241}, {235, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -6697,7 +6698,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{373, 330}, {231, 153}}</string>
+					<string>{{486, 271}, {231, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{312, 683}, {231, 153}}</string>
