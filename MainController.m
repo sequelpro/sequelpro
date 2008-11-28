@@ -26,7 +26,6 @@
 #import "KeyChain.h"
 #import "TableDocument.h"
 
-
 @implementation MainController
 
 /*
@@ -647,8 +646,6 @@ checks for updates and opens download page in default browser
 
 	//register MainController for AppleScript events
 	[[ NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject: self ];
-
-	[GrowlApplicationBridge setGrowlDelegate:self];
 	
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	isNewFavorite = NO;

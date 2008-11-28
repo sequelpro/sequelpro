@@ -32,7 +32,7 @@
 #import "TableDump.h"
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
-#import <Growl/Growl.h>
+#import "SPGrowlController.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -207,16 +207,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
 							   [hostField stringValue], [databaseField stringValue]]];
 		
-		// Connected Growl Notification
-		[GrowlApplicationBridge notifyWithTitle:@"Connected"
-									description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
-							   notificationName:@"Connected"
-									   iconData:nil
-									   priority:0
-									   isSticky:NO
-								   clickContext:nil
-		 ];
-		
+		// Connected Growl notification		
+        [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
+                                                       description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
+                                                  notificationName:@"Connected"];
 		
 	} else if (code == 2) {
 		//can't connect to host
@@ -813,16 +807,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
 	[pb setString:tableSyntax forType:NSStringPboardType];
-	
-	// Table Syntax Copied Growl Notification
-	[GrowlApplicationBridge notifyWithTitle:@"Table Syntax Copied"
-								description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]]
-						   notificationName:@"Table Syntax Copied"
-								   iconData:nil
-								   priority:0
-								   isSticky:NO
-							   clickContext:nil
-	 ];
+    
+    // Table syntax copied Growl notification
+    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
+                                              notificationName:@"Table Syntax Copied"];
 }
 
 - (IBAction)checkTable:(id)sender
@@ -1015,16 +1004,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (void)closeConnection
 {
 	[mySQLConnection disconnect];
-	
-	// Disconnected Growl Notification
-	[GrowlApplicationBridge notifyWithTitle:@"Disconnected"
-								description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]]
-						   notificationName:@"Disconnected"
-								   iconData:nil
-								   priority:0
-								   isSticky:NO
-							   clickContext:nil
-	 ];
+    
+    // Disconnected Growl notification
+    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
+                                              notificationName:@"Disconnected"];
 }
 
 

@@ -1051,9 +1051,7 @@ traps enter and esc and make/cancel editing without entering next row
 }
 
 - (void)dealloc
-{
-//	NSLog(@"TableSource dealloc");
-	
+{	
 	[tableFields release];
 	[indexes release];
 	[oldRow release];

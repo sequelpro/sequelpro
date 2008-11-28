@@ -23,11 +23,9 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
-#import <Growl/Growl.h>
 
-
-@interface MainController : NSObject <GrowlApplicationBridgeDelegate> {
-
+@interface MainController : NSObject 
+{
 	IBOutlet id keyChainInstance;
 
 	IBOutlet id preferencesWindow;
