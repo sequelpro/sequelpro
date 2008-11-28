@@ -97,12 +97,6 @@
 //tableView delegate methods
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 
-//window delegate methods
-- (BOOL)windowShouldClose:(id)sender;
-
-//other methods
-- (void)awakeFromNib;
-
 //SSHTunnel methods
 - (id)authenticate:(NSScriptCommand *)command;
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command;
