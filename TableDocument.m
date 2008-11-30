@@ -1052,7 +1052,17 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  invoked before a query is performed
  */
 {
-	[queryProgressBar startAnimation:self];
+	// Only start the progress indicator is this document window is key. 
+	// Because we are starting the progress indicator based on the notification
+	// of a query being started, we have to prevent other windows from 
+	// starting theirs. The same is also true for the below hasPerformedQuery:
+	// method.
+	//
+	// This code should be removed. Updating user interface elements based on 
+	// notifications is bad practice as notifications are global to the application.
+	if ([tableWindow isKeyWindow]) {
+		[queryProgressBar startAnimation:self];
+	}
 }
 
 - (void)hasPerformedQuery:(NSNotification *)notification
@@ -1060,7 +1070,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  invoked after a query has been performed
  */
 {
-	[queryProgressBar stopAnimation:self];
+	if ([tableWindow isKeyWindow]) {
+		[queryProgressBar stopAnimation:self];
+	}
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification
