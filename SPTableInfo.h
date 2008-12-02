@@ -11,7 +11,7 @@
 
 @interface SPTableInfo : NSObject {
 	IBOutlet id infoTable;
-	
+	IBOutlet id tableList;
 	IBOutlet id tableListInstance;
 	IBOutlet id tableDocumentInstance;
 	

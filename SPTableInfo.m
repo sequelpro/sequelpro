@@ -24,10 +24,10 @@
 
 - (void)awakeFromNib
 {
-//	[[NSNotificationCenter defaultCenter] addObserver:self
-//											 selector:@selector(tableChanged:) 
-//												 name:NSTableViewSelectionDidChangeNotification 
-//											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(tableChanged:) 
+												 name:NSTableViewSelectionDidChangeNotification 
+											   object:tableList];
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
 	[infoTable reloadData];
 }
@@ -35,13 +35,9 @@
 
 - (void)dealloc
 {
-	//[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-	[tableListInstance release];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[info release];
-	[infoTable release];
-	[tableDocumentInstance release];
 		
 	[super dealloc];
 }
@@ -90,7 +86,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	NSString *query;
 	CMMCPResult *theResult;
 	NSDictionary *theRow;
-
+	
 	[info removeAllObjects];
 	[info addObject:@"TABLE INFORMATION"];
 		
