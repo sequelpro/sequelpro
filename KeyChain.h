@@ -25,13 +25,11 @@
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 
-
-@interface KeyChain : NSObject {
-
-}
+@interface KeyChain : NSObject
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account;
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account;
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account;
+- (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account;
 
 @end

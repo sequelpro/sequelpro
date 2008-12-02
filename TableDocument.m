@@ -265,6 +265,34 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
 }
 
+/**
+ * Remove the selected favourite. Instead of calling the remove: method of the Favorites NSArrayController
+ * directly in the XIB we do it here because we also need to remove the keychain password.
+ */
+- (IBAction)removeFavorite:(id)sender
+{
+	if (![self selectedFavorite]) {
+		return;
+	}
+	
+	NSString *name     = [self valueForKeyPath:@"selectedFavorite.name"];
+	NSString *user     = [self valueForKeyPath:@"selectedFavorite.user"];
+	NSString *host     = [self valueForKeyPath:@"selectedFavorite.host"];
+	NSString *database = [self valueForKeyPath:@"selectedFavorite.database"];
+	
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
+									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
+									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+	
+	// Remove from favorites array controller
+	[favoritesController remove:[self selectedFavorite]];
+
+}
+
+/**
+ * Return the favorites array.
+ */
 - (NSMutableArray *)favorites
 {
 	// if no favorites, load from user defaults

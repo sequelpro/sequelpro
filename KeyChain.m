@@ -28,24 +28,35 @@
 
 @implementation KeyChain
 
+/**
+ * Add the supplied password to the user's Keychain using the supplied name and account.
+ */
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account
 {
 	OSStatus status;
-	status = SecKeychainAddGenericPassword(
-											NULL,						// default keychain
-											[name cStringLength],		// length of service name
-											[name cString],				// service name
-											[account cStringLength],	// length of account name
-											[account cString],			// account name
-											[password cStringLength],	// length of password
-											[password cString],			// pointer to password data
-											NULL						// the item reference
-											);
 	
-    if ( status != noErr )
-		NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
+	// Check if password already exists before adding
+	if (![self passwordExistsForName:name account:account]) {
+		status = SecKeychainAddGenericPassword(
+											   NULL,						// default keychain
+											   [name cStringLength],		// length of service name
+											   [name cString],				// service name
+											   [account cStringLength],		// length of account name
+											   [account cString],			// account name
+											   [password cStringLength],	// length of password
+											   [password cString],			// pointer to password data
+											   NULL							// the item reference
+											   );
+		
+		if (status != noErr) {
+			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
+		}
+	}
 }
 
+/**
+ * Get a password from the user's Keychain for the supplied name and account.
+ */
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account
 {
 	OSStatus status;
@@ -55,7 +66,7 @@
 	SecKeychainItemRef itemRef = nil;
 	NSString *password = @"";
 	
-	status = SecKeychainFindGenericPassword (
+	status = SecKeychainFindGenericPassword(
 											NULL,						// default keychain
 											[name cStringLength],		// length of service name
 											[name cString],				// service name
@@ -66,43 +77,85 @@
 											&itemRef					// the item reference
 											);
 	
-	if ( status == noErr ) {
+	if (status == noErr) {
 		password = [NSString stringWithCString:passwordData length:passwordLength];
 		
-		//Free the data allocated by SecKeychainFindGenericPassword:
-		status = SecKeychainItemFreeContent (
-											NULL,           //No attribute data to release
-											passwordData    //Release data
-											 );
+		// Free the data allocated by SecKeychainFindGenericPassword:
+		status = SecKeychainItemFreeContent(
+											NULL,           // No attribute data to release
+											passwordData    // Release data
+											);
 	}
 
 	return password;
 }
 
+/**
+ * Delete a password from the user's Keychain for the supplied name and account.
+ */
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account
 {
 	OSStatus status;
 	SecKeychainItemRef itemRef = nil;
 
-	status = SecKeychainFindGenericPassword (
-											 NULL,						// default keychain
-											 [name cStringLength],		// length of service name
-											 [name cString],			// service name
-											 [account cStringLength],	// length of account name
-											 [account cString],			// account name
-											 nil,						// length of password
-											 nil,						// pointer to password data
-											 &itemRef					// the item reference
-											 );
+	// Check if password already exists before deleting
+	if ([self passwordExistsForName:name account:account]) {
+		status = SecKeychainFindGenericPassword(
+												NULL,						// default keychain
+												[name cStringLength],		// length of service name
+												[name cString],				// service name
+												[account cStringLength],	// length of account name
+												[account cString],			// account name
+												nil,						// length of password
+												nil,						// pointer to password data
+												&itemRef					// the item reference
+												);
+		
+		if (status == noErr) {
+			status = SecKeychainItemDelete(itemRef);
+			
+			if (status != noErr) {
+				NSLog(@"Error (%i) while trying to delete password for name: %@ account: %@", status, name, account);
+			}
+		}
+		
+		CFRelease(itemRef);
+	}
+}
 
-//	if ( status != noErr )
-		NSLog(@"Error (%i) while trying to find password for name: %@ account: %@", status, name, account);
+/**
+ * Checks the user's Keychain to see if a password for the supplied name and account exists.
+ */
+- (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account
+{
+	SecKeychainItemRef item;
+	SecKeychainSearchRef search;
+    int numberOfItemsFound = 0;
 	
-	status = SecKeychainItemDelete(itemRef);
-//	if ( status != noErr )
-		NSLog(@"Error (%i) while trying to delete password for name: %@ account: %@", status, name, account);
+	SecKeychainAttributeList list;
+	SecKeychainAttribute attributes[2];
 	
-	CFRelease(itemRef);
+	attributes[0].tag    = kSecAccountItemAttr;
+	attributes[0].data   = (void *)[account UTF8String];
+	attributes[0].length = [account length];
+	
+	attributes[1].tag    = kSecLabelItemAttr;
+    attributes[1].data   = (void *)[name UTF8String];
+    attributes[1].length = [name length];
+	
+    list.count = 2;
+    list.attr  = attributes;
+	
+    if (SecKeychainSearchCreateFromAttributes(NULL, kSecGenericPasswordItemClass, &list, &search) == noErr) {
+		while (SecKeychainSearchCopyNext(search, &item) == noErr) {
+			CFRelease(item);
+			numberOfItemsFound++;
+		}
+	}
+	
+    CFRelease(search);
+	
+	return (numberOfItemsFound > 0);
 }
 
 @end
