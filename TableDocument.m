@@ -32,7 +32,7 @@
 #import "TableDump.h"
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
-#import <Growl/Growl.h>
+#import "SPGrowlController.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -207,16 +207,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
 							   [hostField stringValue], [databaseField stringValue]]];
 		
-		// Connected Growl Notification
-		[GrowlApplicationBridge notifyWithTitle:@"Connected"
-									description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
-							   notificationName:@"Connected"
-									   iconData:nil
-									   priority:0
-									   isSticky:NO
-								   clickContext:nil
-		 ];
-		
+		// Connected Growl notification		
+        [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
+                                                       description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
+                                                  notificationName:@"Connected"];
 		
 	} else if (code == 2) {
 		//can't connect to host
@@ -271,6 +265,34 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
 }
 
+/**
+ * Remove the selected favourite. Instead of calling the remove: method of the Favorites NSArrayController
+ * directly in the XIB we do it here because we also need to remove the keychain password.
+ */
+- (IBAction)removeFavorite:(id)sender
+{
+	if (![self selectedFavorite]) {
+		return;
+	}
+	
+	NSString *name     = [self valueForKeyPath:@"selectedFavorite.name"];
+	NSString *user     = [self valueForKeyPath:@"selectedFavorite.user"];
+	NSString *host     = [self valueForKeyPath:@"selectedFavorite.host"];
+	NSString *database = [self valueForKeyPath:@"selectedFavorite.database"];
+	
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
+									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
+									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+	
+	// Remove from favorites array controller
+	[favoritesController remove:[self selectedFavorite]];
+
+}
+
+/**
+ * Return the favorites array.
+ */
 - (NSMutableArray *)favorites
 {
 	// if no favorites, load from user defaults
@@ -545,8 +567,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)toggleConsole:(id)sender
 {
-	NSDrawerState state = [consoleDrawer state];
-	if (NSDrawerOpeningState == state || NSDrawerOpenState == state) {
+	if ([self consoleIsOpened]) {
 		[consoleDrawer close];
 	} else {
 		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
@@ -582,6 +603,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:message];
 	end = [[consoleTextView string] length];
 	[consoleTextView setTextColor:[NSColor blackColor] range:NSMakeRange(begin,end-begin)];
+	
 	if ([self consoleIsOpened]) {
 		[consoleTextView displayIfNeeded];
 		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
@@ -600,6 +622,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:error];
 	end = [[consoleTextView string] length];
 	[consoleTextView setTextColor:[NSColor redColor] range:NSMakeRange(begin,end-begin)];
+	
 	if ([self consoleIsOpened]) {
 		[consoleTextView displayIfNeeded];
 		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
@@ -812,16 +835,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
 	[pb setString:tableSyntax forType:NSStringPboardType];
-	
-	// Table Syntax Copied Growl Notification
-	[GrowlApplicationBridge notifyWithTitle:@"Table Syntax Copied"
-								description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]]
-						   notificationName:@"Table Syntax Copied"
-								   iconData:nil
-								   priority:0
-								   isSticky:NO
-							   clickContext:nil
-	 ];
+    
+    // Table syntax copied Growl notification
+    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
+                                              notificationName:@"Table Syntax Copied"];
 }
 
 - (IBAction)checkTable:(id)sender
@@ -1014,16 +1032,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (void)closeConnection
 {
 	[mySQLConnection disconnect];
-	
-	// Disconnected Growl Notification
-	[GrowlApplicationBridge notifyWithTitle:@"Disconnected"
-								description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]]
-						   notificationName:@"Disconnected"
-								   iconData:nil
-								   priority:0
-								   isSticky:NO
-							   clickContext:nil
-	 ];
+    
+    // Disconnected Growl notification
+    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
+                                              notificationName:@"Disconnected"];
 }
 
 
@@ -1067,7 +1080,17 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  invoked before a query is performed
  */
 {
-	[queryProgressBar startAnimation:self];
+	// Only start the progress indicator is this document window is key. 
+	// Because we are starting the progress indicator based on the notification
+	// of a query being started, we have to prevent other windows from 
+	// starting theirs. The same is also true for the below hasPerformedQuery:
+	// method.
+	//
+	// This code should be removed. Updating user interface elements based on 
+	// notifications is bad practice as notifications are global to the application.
+	if ([tableWindow isKeyWindow]) {
+		[queryProgressBar startAnimation:self];
+	}
 }
 
 - (void)hasPerformedQuery:(NSNotification *)notification
@@ -1075,7 +1098,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  invoked after a query has been performed
  */
 {
-	[queryProgressBar stopAnimation:self];
+	if ([tableWindow isKeyWindow]) {
+		[queryProgressBar stopAnimation:self];
+	}
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification

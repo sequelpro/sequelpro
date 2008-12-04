@@ -99,6 +99,7 @@
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
+- (IBAction)removeFavorite:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;

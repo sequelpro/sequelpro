@@ -23,11 +23,9 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
-#import <Growl/Growl.h>
 
-
-@interface MainController : NSObject <GrowlApplicationBridgeDelegate> {
-
+@interface MainController : NSObject 
+{
 	IBOutlet id keyChainInstance;
 
 	IBOutlet id preferencesWindow;
@@ -80,28 +78,6 @@
 - (IBAction)visitWebsite:(id)sender;
 - (IBAction)visitHelpWebsite:(id)sender;
 - (IBAction)checkForUpdates:(id)sender;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-
-//tableView drag&drop datasource methods
-- (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
-- (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-	proposedDropOperation:(NSTableViewDropOperation)operation;
-- (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row
-	dropOperation:(NSTableViewDropOperation)operation;
-
-//tableView delegate methods
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
-
-//window delegate methods
-- (BOOL)windowShouldClose:(id)sender;
-
-//other methods
-- (void)awakeFromNib;
 
 //SSHTunnel methods
 - (id)authenticate:(NSScriptCommand *)command;

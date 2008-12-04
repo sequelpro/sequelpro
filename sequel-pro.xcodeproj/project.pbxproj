@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		173BFC220EDF7D01003B06C8 /* SPGrowlController.m in Sources */ = {isa = PBXBuildFile; fileRef = 173BFC210EDF7D01003B06C8 /* SPGrowlController.m */; };
 		1DDD582D0DA1D0D100B32029 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD582A0DA1D0D100B32029 /* MainMenu.xib */; };
 		4D700D280EC2B97C00C9F09E /* appicon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4D700CF20EC2B97C00C9F09E /* appicon.icns */; };
 		4D700D290EC2B97C00C9F09E /* clearconsole.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D700CF30EC2B97C00C9F09E /* clearconsole.tiff */; };
@@ -115,6 +116,8 @@
 /* Begin PBXFileReference section */
 		089C1660FE840EACC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		173BFC200EDF7D01003B06C8 /* SPGrowlController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGrowlController.h; sourceTree = "<group>"; };
+		173BFC210EDF7D01003B06C8 /* SPGrowlController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGrowlController.m; sourceTree = "<group>"; };
 		1DDD582B0DA1D0D100B32029 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		2A37F4B0FDCFA73011CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2A37F4BAFDCFA73011CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
@@ -382,6 +385,8 @@
 				4DECC3C30EC2A4AD008D359E /* CustomQuery.m */,
 				4DECC3C40EC2A4AD008D359E /* TableDump.h */,
 				4DECC3C50EC2A4AD008D359E /* TableDump.m */,
+				173BFC200EDF7D01003B06C8 /* SPGrowlController.h */,
+				173BFC210EDF7D01003B06C8 /* SPGrowlController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -604,6 +609,7 @@
 				4DECC3F10EC2A54E008D359E /* CMImageView.m in Sources */,
 				B5BE825C0ED18C0B00831294 /* CMTextView.m in Sources */,
 				4DECC3FA0EC2A573008D359E /* SSHTunnel.m in Sources */,
+				173BFC220EDF7D01003B06C8 /* SPGrowlController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

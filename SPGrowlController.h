@@ -1,9 +1,8 @@
 //
-//  KeyChain.h
+//  SPGrowlController.h
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed Dec 25 2002.
-//  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on Nov 28, 2008
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,16 +19,16 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
-#import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
+#import <Growl/Growl.h>
 
-@interface KeyChain : NSObject
+@interface SPGrowlController : NSObject <GrowlApplicationBridgeDelegate>
 
-- (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account;
-- (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account;
-- (void)deletePasswordForName:(NSString *)name account:(NSString *)account;
-- (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account;
+// Singleton controller
++ (SPGrowlController *)sharedGrowlController;
+
+// Post notification
+- (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name;
 
 @end
