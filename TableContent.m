@@ -1083,10 +1083,7 @@
 			} else if ( [rowObject isKindOfClass:[NSNumber class]] ) {
 				[rowValue setString:[rowObject stringValue]];
 			} else if ( [rowObject isKindOfClass:[NSData class]] ) {
-				//problem: if a blob field is edited, it becomes a string and is not more prepared as binary data
-				//		but probably blob fields are corrupted before, when they decoded in the tableView method
-				//				[rowValue setString:[NSString stringWithFormat:@"\"%@\"", [mySQLConnection prepareBinaryData:rowObject]]];
-				[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareBinaryData:rowObject]]];
+				[rowValue setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:rowObject]]];
 			} else {
 				//				[rowValue setString:[NSString stringWithFormat:@"\"%@\"", [mySQLConnection prepareString:[rowObject description]]]];
 				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
