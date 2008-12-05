@@ -36,7 +36,7 @@
 	IBOutlet id tableContentInstance;
 	IBOutlet id customQueryInstance;
 
-    IBOutlet id tableWindow;
+    IBOutlet id tableWindow;	
     IBOutlet id exportDumpView;
     IBOutlet id exportCSVView;
     IBOutlet id exportMultipleCSVView;

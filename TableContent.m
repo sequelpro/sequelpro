@@ -1538,7 +1538,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 }
 
-//tableView delegate methods
+#pragma mark -
+#pragma mark tableView delegate methods
+
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 /*
  sorts the tableView by the clicked column
@@ -1632,6 +1634,33 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	return [self addRowToDB];
 }
+
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+	// Check our notification object is our table content view
+	if ([aNotification object] != tableContentView)
+		return;
+	
+	if ( [tableContentView numberOfSelectedRows] > 0 ) {
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d rows selected", @"Text showing how many rows are selected"), [tableContentView numberOfSelectedRows], [tableContentView numberOfRows]]];
+	} else {
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows", @"Text showing how many rows are in the result"), [tableContentView numberOfRows]]];
+	}
+}
+
+- (void)tableViewSelectionIsChanging:(NSNotification *)aNotification
+{
+	// Check our notification object is our table content view
+	if ([aNotification object] != tableContentView)
+		return;
+	
+	if ( [tableContentView numberOfSelectedRows] > 0 ) {
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d rows selected", @"Text showing how many rows are selected"), [tableContentView numberOfSelectedRows], [tableContentView numberOfRows]]];
+	} else {
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows", @"Text showing how many rows are in the result"), [tableContentView numberOfRows]]];
+	}
+}
+
 
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
 /*
@@ -1814,6 +1843,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 	return NO;
 }
+
+#pragma mark -
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 /*

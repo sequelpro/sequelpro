@@ -585,43 +585,7 @@ loads a table in content or source view (if tab selected)
 	}	
 }
 
-#pragma mark TabView delegate methods
 
-/*
-loads structure or source if tab selected the first time
-*/
-- (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
-		
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
-			
-			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			structureLoaded = YES;
-		}
-		
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1) && !contentLoaded ) {
-			
-			if ( !structureLoaded ) {
-				[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-				structureLoaded = YES;
-			}
-			
-			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			contentLoaded = YES;
-		}
-		
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
-			[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			statusLoaded = YES;
-		}
-	}
-/*
-	if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-		[tableDumpInstance reloadTables:self];
-	}
-*/
-}
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
@@ -665,6 +629,46 @@ loads structure or source if tab selected the first time
 	}
 }
 
+#pragma mark -
+#pragma mark TabView delegate methods
+
+/*
+loads structure or source if tab selected the first time
+*/
+- (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+		
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
+			
+			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+			structureLoaded = YES;
+		}
+		
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1) && !contentLoaded ) {
+			
+			if ( !structureLoaded ) {
+				[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				structureLoaded = YES;
+			}
+			
+			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+			contentLoaded = YES;
+		}
+		
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
+			[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+			statusLoaded = YES;
+		}
+	}
+/*
+	if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+		[tableDumpInstance reloadTables:self];
+	}
+*/
+}
+
+#pragma mark -
 //last but not least
 - (id)init
 {
