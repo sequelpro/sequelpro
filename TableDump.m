@@ -547,7 +547,7 @@
 					
 					//perform query
                     [mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
-												  [tablesListInstance table],
+												  [fieldMappingPopup titleOfSelectedItem],
 												  fNames,
 												  fValues]];
 					
