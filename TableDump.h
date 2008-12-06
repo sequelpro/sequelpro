@@ -114,19 +114,25 @@
 - (IBAction)changeTable:(id)sender;
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (void)setupFieldMappingArray;
-
-//format methods
-- (NSString *)dumpForSelectedTables;
-- (NSString *)csvForArray:(NSArray *)array useFirstLine:(BOOL)firstLine terminatedBy:(NSString *)terminated
-	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
 - (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
-- (NSString *)xmlForArray:(NSArray *)array tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
-- (NSString *)stringForSelectedTablesWithType:(NSString *)type;
-- (NSString *)htmlEscapeString:(NSString *)string;
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
 	escaped:(NSString *)escaped terminated:(NSString *)terminated;
 - (NSArray *)splitQueries:(NSString *)query;
+
+// Export methods
+- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
+- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
+	toFileHandle:(NSFileHandle *)fileHandle
+	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
+	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
+	lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
+- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
+	toFileHandle:(NSFileHandle *)fileHandle
+	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
+- (NSString *)htmlEscapeString:(NSString *)string;
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
+- (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;

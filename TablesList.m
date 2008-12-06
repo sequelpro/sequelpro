@@ -52,9 +52,8 @@ loads all table names in array tables and reload the tableView
 	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 
 	theResult = (CMMCPResult *)[mySQLConnection listTables];
-	
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
 	}
 	

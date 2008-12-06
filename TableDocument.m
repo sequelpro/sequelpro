@@ -439,9 +439,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	
 	MCPResult *queryResult = [mySQLConnection listDBs];
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	int i;
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[queryResult dataSeek:i];
 		[chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 	}
 	if ( ![self database] ) {
@@ -1013,8 +1013,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 	//get variables
 	theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		[tempResult addObject:[theResult fetchRowAsDictionary]];
 	}
 	variables = [[NSArray arrayWithArray:tempResult] retain];

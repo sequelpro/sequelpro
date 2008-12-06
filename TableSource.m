@@ -522,8 +522,8 @@ fetches the result as an array with a dictionary for each row in it
 	id key;
 	int i;
 
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework

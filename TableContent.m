@@ -624,8 +624,8 @@
 	isEditingNewRow = YES;
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[queryResult dataSeek:i];
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 			[tempRow setObject:[prefs stringForKey:@"nullValue"] forKey:[row objectForKey:@"Field"]];
@@ -1013,8 +1013,8 @@
 	id key;
 	int i,j;
 	
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		tempRow = [theResult fetchRowAsDictionary];
 		enumerator = [tempRow keyEnumerator];
 		while ( key = [enumerator nextObject] ) {
@@ -1153,8 +1153,8 @@
 			} else {
 				//set insertId for fields with auto_increment
 				queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+				if ([queryResult numOfRows]) [queryResult dataSeek:0];
 				for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-					[queryResult dataSeek:i];
 					rowObject = [queryResult fetchRowAsDictionary];
 					if ( [[rowObject objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 						[[filteredResult objectAtIndex:rowIndex] setObject:[NSNumber numberWithLong:[mySQLConnection insertId]]
@@ -1225,8 +1225,8 @@
 	//get primary key if there is one
 	/*
 	 theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]];
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	 for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-	 [theResult dataSeek:i];
 	 theRow = [theResult fetchRowAsDictionary];
 	 if ( [[theRow objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
 	 [keys addObject:[theRow objectForKey:@"Column_name"]];
@@ -1237,8 +1237,8 @@
 		setLimit = NO;
 		keys = [[NSMutableArray alloc] init];
 		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+		if ([theResult numOfRows]) [theResult dataSeek:0];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-			[theResult dataSeek:i];
 			theRow = [theResult fetchRowAsDictionary];
 			if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
 				[keys addObject:[theRow objectForKey:@"Field"]];
