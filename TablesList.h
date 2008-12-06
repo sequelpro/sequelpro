@@ -69,6 +69,7 @@
 
 //getter methods
 - (NSString *)table;
+- (NSArray *)tables;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

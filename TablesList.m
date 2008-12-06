@@ -307,6 +307,11 @@ returns the currently selected table or nil if no table or mulitple tables are s
 	}
 }
 
+- (NSArray *)tables
+{
+	return tables;
+}
+
 /*
 returns YES if table source has already been loaded
 */

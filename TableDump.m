@@ -291,7 +291,7 @@
 {
 	NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
 	
-	[tableSourceInstance loadTable:[fieldMappingPopup titleOfSelectedItem]];
+	[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]]] byExtendingSelection:NO];
 	
 	//set up tableView
 	currentRow = 0;
@@ -466,7 +466,7 @@
 			[fieldMappingPopup selectItemAtIndex:0];
 		}
 		
-		[tableSourceInstance loadTable:[fieldMappingPopup titleOfSelectedItem]];
+		[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]]] byExtendingSelection:NO];
 		
         //set up tableView
        	currentRow = 0;
