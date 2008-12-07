@@ -81,7 +81,6 @@
 	NSMutableArray *favorites;
 	NSArray *variables;
 	NSString *selectedDatabase;
-	NSString *selectedFavorite;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
 

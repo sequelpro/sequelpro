@@ -260,9 +260,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[portField setStringValue:[self valueForKeyPath:@"selectedFavorite.port"]];
 	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
 	[passwordField setStringValue:[self selectedFavoritePassword]];
-	
-	[selectedFavorite release];
-	selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
 }
 
 /**
@@ -368,7 +365,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[self willChangeValueForKey:@"favorites"];
 	
 	// write favorites and password
-	NSDictionary *newFavorite = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	nil]
+	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	nil]
 															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", nil]];
 	[favorites addObject:newFavorite];
 	
@@ -378,9 +375,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 							  account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	}
 	
-	// select new favorite
-	selectedFavorite = [favoriteName retain];
-
 	[self didChangeValueForKey:@"favorites"];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
 }
@@ -1428,7 +1422,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	//	[tableWindow makeKeyAndOrderFront:self];
 	
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	selectedFavorite = [[NSString alloc] initWithString:NSLocalizedString(@"Custom", @"menu item for custom connection")];
 	
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
@@ -1593,6 +1586,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (IBAction)terminate:(id)sender
 {
 	[[NSApp orderedDocuments] makeObjectsPerformSelector:@selector(cancelConnectSheet:) withObject:nil];
+
+	// Save the favourites - commits any unsaved changes ie favourite renames
+	[prefs setObject:[self favorites] forKey:@"favorites"];
+
 	[NSApp terminate:sender];
 }
 
@@ -1603,7 +1600,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[favorites release];
 	[variables release];
 	[selectedDatabase release];
-	[selectedFavorite release];
 	[mySQLVersion release];
 	[prefs release];
 	
