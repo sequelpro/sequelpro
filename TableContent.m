@@ -1017,7 +1017,10 @@
 	for ( i = 0 ; i < [compareField numberOfItems] ; i++ ) {
 		[[compareField itemAtIndex:i] setTag:i];
 	}
-	
+
+	// Update the argumentField enabled state
+	[self toggleFilterField:self];
+
 	// set focus on argumentField
 	[argumentField selectText:self];
 }
