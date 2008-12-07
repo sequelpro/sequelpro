@@ -599,6 +599,15 @@
 	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
 }
 
+/**
+ * Enables or disables the filter input field based on the selected filter type.
+ */
+- (IBAction)toggleFilterField:(id)sender
+{
+	// If the user is filtering for NULLs then disabled the filter field, otherwise enable it.
+	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
+}
+
 
 //edit methods
 - (IBAction)addRow:(id)sender
