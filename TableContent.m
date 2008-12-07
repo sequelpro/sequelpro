@@ -420,7 +420,8 @@
 	NSString *queryString;
 	int i;
 	
-	if ([argument length] == 0) {
+	// If the filter field is empty or the selected filter is not looking for NULLs or 'not' NULLs, then don't allow filtering.
+	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"])) {
 		[argument release];
 		[self showAll:sender];
 		return;
@@ -430,6 +431,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
 	BOOL doQuote = YES;
+	BOOL ignoreArgument = NO;
 	
 	if ( ![compareType isEqualToString:@""] ) {
 		if ( [compareType isEqualToString:@"string"] ) {
@@ -453,6 +455,16 @@
 					compareOperator = @"IN";
 					doQuote = NO;
 					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+					break;
+				case 5:
+					compareOperator = @"IS NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+				case 6:
+					compareOperator = @"IS NOT NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
 					break;
 			}
 		} else if ( [compareType isEqualToString:@"number"] ) {
@@ -481,6 +493,16 @@
 					doQuote = NO;
 					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
 					break;
+				case 7:
+					compareOperator = @"IS NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+				case 8:
+					compareOperator = @"IS NOT NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
 			}
 		} else if ( [compareType isEqualToString:@"date"] ) {
 			//date comparision
@@ -503,12 +525,19 @@
 				case 5:
 					compareOperator = @">=";
 					break;
+				case 6:
+					compareOperator = @"IS NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+				case 7:
+					compareOperator = @"IS NOT NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
 			}
 		}
 		
-		//		queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ '%@'",
-		//							[self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-		//							compareOperator, argument];
 		if (doQuote) {
 			//escape special characters
 			for ( i = 0 ; i < [argument length] ; i++ ) {
@@ -524,7 +553,7 @@
 		} else {
 			queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ %@",
 						   [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-						   compareOperator, argument];
+						   compareOperator, (ignoreArgument) ? @"" : argument];
 		}
 		if ( sortField ) {
 			//			queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
@@ -544,7 +573,7 @@
 		NSLog(@"ERROR: unknown compare type %@", compareType);
 		queryString = @"";
 	}
-	
+		
 	theResult = [mySQLConnection queryString:queryString];
 	[filteredResult setArray:[self fetchResultAsArray:theResult]];
 	
@@ -921,28 +950,24 @@
 	}
 }
 
-- (IBAction)setCompareTypes:(id)sender
-/*
- sets the compare types for the filter and the appropriate formatter for the textField
+/**
+ * Sets the compare types for the filter and the appropriate formatter for the textField
  */
+- (IBAction)setCompareTypes:(id)sender
 {
 	NSArray *stringFields = [NSArray arrayWithObjects:@"varstring", @"string", @"tinyblob", @"blob", @"mediumblob", @"longblob", @"set", @"enum", nil];
-	NSArray *stringTypes = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
+	NSArray *stringTypes  = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
 	NSArray *numberFields = [NSArray arrayWithObjects:@"tiny", @"short", @"long", @"int24", @"longlong", @"decimal", @"float", @"double", nil];
-	NSArray *numberTypes = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", nil];
-	NSArray *dateFields = [NSArray arrayWithObjects:@"timestamp", @"date", @"time", @"datetime", @"year", nil];
-	NSArray *dateTypes = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"older than", @"popup menuitem for field OLDER THAN value"), NSLocalizedString(@"younger than", @"popup menuitem for field YOUNGER THAN value"), NSLocalizedString(@"older than or equal to", @"popup menuitem for field OLDER THAN OR EQUAL TO value"), NSLocalizedString(@"younger than or equal to", @"popup menuitem for field YOUNGER THAN OR EQUAL TO value"), nil];
-	NSString *fieldType = [NSString stringWithString:[fieldTypes objectAtIndex:[[fieldField selectedItem] tag]]];
-	//	NSNumberFormatter *numberFormatter;
+	NSArray *numberTypes  = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", nil];
+	NSArray *dateFields   = [NSArray arrayWithObjects:@"timestamp", @"date", @"time", @"datetime", @"year", nil];
+	NSArray *dateTypes    = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"older than", @"popup menuitem for field OLDER THAN value"), NSLocalizedString(@"younger than", @"popup menuitem for field YOUNGER THAN value"), NSLocalizedString(@"older than or equal to", @"popup menuitem for field OLDER THAN OR EQUAL TO value"), NSLocalizedString(@"younger than or equal to", @"popup menuitem for field YOUNGER THAN OR EQUAL TO value"), nil];
+	NSString *fieldType   = [NSString stringWithString:[fieldTypes objectAtIndex:[[fieldField selectedItem] tag]]];
+	
 	int i;
 	
-	//	numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	//	[numberFormatter setFormat:@"0.####################"];
-	
 	[compareField removeAllItems];
-	//	[argumentField setStringValue:@""];
 	
-	//why do we get "string" for enum fields? (error in framework?)
+	// Why do we get "string" for enum fields? (error in framework?)
 	if ( [stringFields containsObject:fieldType] ) {
 		[compareField addItemsWithTitles:stringTypes];
 		compareType = @"string";
@@ -975,6 +1000,10 @@
 	} else {
 		NSLog(@"ERROR: unknown type for comparision: %@", fieldType);
 	}
+	
+	// Add IS NULL and IS NOT NULL as they should always be available
+	[compareField addItemWithTitle:@"IS NULL"];
+	[compareField addItemWithTitle:@"IS NOT NULL"];
 	
 	for ( i = 0 ; i < [compareField numberOfItems] ; i++ ) {
 		[[compareField itemAtIndex:i] setTag:i];
