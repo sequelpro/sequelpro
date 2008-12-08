@@ -519,9 +519,9 @@
 		[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 		[buttonCell setBordered:NO];
 		[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-		[buttonCell addItemsWithTitles:[tableSourceInstance fieldNames]];
+		[buttonCell addItemsWithTitles:[importArray objectAtIndex:currentRow]];
 		
-		[[fieldMappingTableView tableColumnWithIdentifier:@"1"] setDataCell:buttonCell];
+		[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
 
 		// show fieldMapping sheet
 		[NSApp beginSheet:fieldMappingSheet
