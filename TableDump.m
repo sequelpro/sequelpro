@@ -1024,7 +1024,7 @@
 
 			// For NULL objects supplied from a queryResult, no data is added to the cell
 			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSNull class]]) {
-				[csvString appendString:fieldSeparatorString];
+				if (j < [csvRow count] - 1) [csvString appendString:fieldSeparatorString];
 				continue;
 			}
 
@@ -1091,7 +1091,7 @@
 					[csvString appendString:enclosingString];
 				}
 			}
-			[csvString appendString:fieldSeparatorString];
+			if (j < [csvRow count] - 1) [csvString appendString:fieldSeparatorString];
 		}
 
 		// Append the line ending to the string for this row
@@ -1408,6 +1408,7 @@
 	NSMutableString *infoString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
+	NSMutableString *csvLineEnd;
 
 	// Reset the interface
 	[errorsView setString:@""];
@@ -1423,10 +1424,22 @@
 			didEndSelector:nil contextInfo:nil];
 
 
-	// Add the dump header to the dump file, dependant on export type.
+	// Add a dump header to the dump file, dependant on export type.
 	if ( [type isEqualToString:@"csv"] ) {
-		[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@\n\n",
-							[tableDocumentInstance host], [tableDocumentInstance database], [NSDate date]]];
+		csvLineEnd = [NSMutableString stringWithString:[exportMultipleLinesTerminatedField stringValue]]; 
+		[csvLineEnd replaceOccurrencesOfString:@"\\t" withString:@"\t"
+									   options:NSLiteralSearch
+										 range:NSMakeRange(0, [csvLineEnd length])];
+		[csvLineEnd replaceOccurrencesOfString:@"\\n" withString:@"\n"
+									   options:NSLiteralSearch
+										 range:NSMakeRange(0, [csvLineEnd length])];
+		[csvLineEnd replaceOccurrencesOfString:@"\\r" withString:@"\r"
+									   options:NSLiteralSearch
+										 range:NSMakeRange(0, [csvLineEnd length])];
+		if ([selectedTables count] > 1) {
+			[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
+								[tableDocumentInstance host], [tableDocumentInstance database], [NSDate date], csvLineEnd, csvLineEnd]];
+		}
 	} else if ( [type isEqualToString:@"xml"] ) {
 		[infoString setString:@"<?xml version=\"1.0\"?>\n\n"];
 		[infoString appendString:@"<!--\n-\n"];
@@ -1455,9 +1468,9 @@
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
 
-		// For CSV exports, output the name of the table
-		if ( [type isEqualToString:@"csv"] ) {
-			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@\n\n", tableName] dataUsingEncoding:connectionEncoding]];
+		// For CSV exports of more than one table, output the name of the table
+		if ( [type isEqualToString:@"csv"] && [selectedTables count] > 1) {
+			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		}
 
 		// Retrieve all the content within this table
@@ -1487,16 +1500,20 @@
 					escapedBy:[exportMultipleFieldsEscapedField stringValue]
 					lineEnds:[exportMultipleLinesTerminatedField stringValue]
 					silently:YES];
+
+					// Add a spacer to the file
+					[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		} else if ( [type isEqualToString:@"xml"] ) {
 			[self writeXmlForArray:nil orQueryResult:queryResult
 					toFileHandle:fileHandle
 					tableName:tableName
 					withHeader:NO
 					silently:YES];
+
+					// Add a spacer to the file
+					[fileHandle writeData:[[NSString stringWithString:@"\n\n\n"] dataUsingEncoding:connectionEncoding]];
 		}
 		
-		// Add a spacer to the file
-		[fileHandle writeData:[[NSString stringWithString:@"\n\n\n"] dataUsingEncoding:connectionEncoding]];
 	}
 
 	// For XML output, close the database tag
