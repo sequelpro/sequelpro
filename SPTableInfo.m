@@ -117,17 +117,29 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Check for "Create_time" == NULL
 			if (![[theRow objectForKey:@"Create_time"] isNSNull]) {
 				// Setup our data formatter
-				NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-				[dateFormatter setDateStyle:NSDateFormatterShortStyle];
-				[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+				NSDateFormatter *createDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+				[createDateFormatter setDateStyle:NSDateFormatterShortStyle];
+				[createDateFormatter setTimeStyle:NSDateFormatterNoStyle];
 				
-				// Convert our string dates from the results to NSDates.
+				// Convert our string date from the result to an NSDate.
 				NSDate *create_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Create_time"]];
+				
+				// Add the creation date to the infoTable
+				[info addObject:[NSString stringWithFormat:@"created: %@", [createDateFormatter stringFromDate:create_date]]];
+			}
+
+			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
+			if (![[theRow objectForKey:@"Update_time"] isNSNull]) {
+				// Setup our data formatter
+				NSDateFormatter *updateDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+				[updateDateFormatter setDateStyle:NSDateFormatterShortStyle];
+				[updateDateFormatter setTimeStyle:NSDateFormatterNoStyle];
+				
+				// Convert our string date from the result to an NSDate.
 				NSDate *update_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Update_time"]];
 				
-				// Add the create date and update date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"created: %@", [dateFormatter stringFromDate:create_date]]];
-				[info addObject:[NSString stringWithFormat:@"updated: %@", [dateFormatter stringFromDate:update_date]]];
+				// Add the update date to the infoTable
+				[info addObject:[NSString stringWithFormat:@"updated: %@", [updateDateFormatter stringFromDate:update_date]]];
 			}
 			
 			[info addObject:[NSString stringWithFormat:@"rows: %@", [theRow objectForKey:@"Rows"]]];
