@@ -114,9 +114,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Process result
 			theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 			
-			// Add the table name to the infoTable
-			[info addObject:[NSString stringWithFormat:@"name: %@", [tableListInstance table]]];
-			
 			// Check for "Create_time" == NULL
 			if (![[theRow objectForKey:@"Create_time"] isNSNull]) {
 				// Setup our data formatter
@@ -135,6 +132,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			
 			[info addObject:[NSString stringWithFormat:@"rows: %@", [theRow objectForKey:@"Rows"]]];
 			[info addObject:[NSString stringWithFormat:@"size: %@", [self sizeFromBytes:[[theRow objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"encoding: %@", [[[theRow objectForKey:@"Collation"] componentsSeparatedByString:@"_"] objectAtIndex:0]]];
 			[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [theRow objectForKey:@"Auto_increment"]]];
 			
 			// Notify that we've finished performing the query
