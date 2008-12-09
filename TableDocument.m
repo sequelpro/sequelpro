@@ -784,14 +784,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		if ([encodingComponents count] > 0) {
 			NSString *tableEncoding = [encodingComponents objectAtIndex:0];
 			
-			[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[tableEncoding UTF8String]]];
-			
-			// Save the encoding
-			[_encoding autorelease];
-			_encoding = [tableEncoding retain];
-			
-			// update the selected menu item
-			[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:tableEncoding]];
+			[self setEncoding:tableEncoding];
 		}
 	}
 	else {
