@@ -327,9 +327,7 @@
 }
 
 - (IBAction)changeTable:(id)sender
-{
-	NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
-	
+{	
 	[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]]] byExtendingSelection:NO];
 	
 	//set up tableView
@@ -340,14 +338,7 @@
 	[rowUpButton setEnabled:([importArray count] > 1)];
 	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
 	
-	//set up tableView buttons
-	[buttonCell setControlSize:NSSmallControlSize];
-	[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
-	[buttonCell setBordered:NO];
-	[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-	[buttonCell addItemsWithTitles:[importArray objectAtIndex:currentRow]];
-	
-	[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+	[self updateFieldMappingButtonCell];
 	[fieldMappingTableView reloadData];
 }
 
@@ -518,10 +509,9 @@
 		[buttonCell setControlSize:NSSmallControlSize];
 		[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 		[buttonCell setBordered:NO];
-		[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-		[buttonCell addItemsWithTitles:[importArray objectAtIndex:currentRow]];
-		
 		[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+		[self updateFieldMappingButtonCell];
+		[fieldMappingTableView reloadData];
 		
 		// show fieldMapping sheet
 		[NSApp beginSheet:fieldMappingSheet
@@ -666,6 +656,22 @@
     [fieldMappingTableView reloadData];
 }
 
+/*
+ * Update the NSButtonCell items for use in the field mapping display
+ */
+- (void)updateFieldMappingButtonCell
+{
+	int i;
+	
+	[fieldMappingButtonOptions setArray:[importArray objectAtIndex:currentRow]];
+	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
+		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"nullValue"]]];
+		} else {
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [fieldMappingButtonOptions objectAtIndex:i]]];
+		}
+	}
+}
 
 - (IBAction)stepRow:(id)sender
 /*
@@ -677,6 +683,7 @@
 	} else {
 		currentRow++;
 	}
+	[self updateFieldMappingButtonCell];
 	
 	//-----------[self setupFieldMappingArray];
 	[fieldMappingTableView reloadData];
@@ -1022,8 +1029,9 @@
 		[csvString setString:@""];
 		for ( j = 0 ; j < [csvRow count] ; j++ ) {
 			
-			// For NULL objects supplied from a queryResult, no data is added to the cell
+			// For NULL objects supplied from a queryResult, add an unenclosed null string as per prefs
 			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSNull class]]) {
+				[csvString appendString:nullString];
 				if (j < [csvRow count] - 1) [csvString appendString:fieldSeparatorString];
 				continue;
 			}
@@ -1037,10 +1045,11 @@
 				[csvCell setString:[[csvRow objectAtIndex:j] description]];
 			}
 			
-			// For NULL values supplied via an array no cell needs to be written.
+			// For NULL values supplied via an array add the unenclosed null string as set in preferences
 			if ( [csvCell isEqualToString:nullString] ) {
-				
-				// Add empty strings as a pair of enclosing characters.
+				[csvString appendString:nullString];
+
+			// Add empty strings as a pair of enclosing characters.
 			} else if ( [csvCell length] == 0 ) {
 				[csvString appendString:enclosingString];
 				[csvString appendString:enclosingString];
@@ -1069,15 +1078,17 @@
 												  range:NSMakeRange(0,[csvCell length])];
 				}
 				
+				// Escape occurrences of the line end character
+				[csvCell replaceOccurrencesOfString:lineEndString
+									 withString:escapedLineEndString
+										options:NSLiteralSearch
+										  range:NSMakeRange(0,[csvCell length])];
+
 				// If the string isn't quoted or otherwise enclosed, escape occurrences of the
-				// field separators and the line ending separator.
+				// field separators
 				if ( quoteFieldSeparators || csvCellIsNumeric ) {
 					[csvCell replaceOccurrencesOfString:fieldSeparatorString
 											 withString:escapedFieldSeparatorString
-												options:NSLiteralSearch
-												  range:NSMakeRange(0,[csvCell length])];
-					[csvCell replaceOccurrencesOfString:lineEndString
-											 withString:escapedLineEndString
 												options:NSLiteralSearch
 												  range:NSMakeRange(0,[csvCell length])];
 				}
@@ -1127,7 +1138,7 @@
 	BOOL isEscaped, br;
 	int fieldCount = nil;
 	int x,i,j;
-	
+
 	//repare tabs and line ends
 	tempTerminated = [NSMutableString stringWithString:terminated];
 	[tempTerminated replaceOccurrencesOfString:@"\\t" withString:@"\t"
@@ -1185,7 +1196,10 @@
 			}
 		}
 		
-		//add line to array
+		// Skip blank lines
+		if (![tempString length]) continue;
+		
+		// Add the line to the array
 		[linesArray addObject:[NSString stringWithString:tempString]];
 	}
 	
@@ -1198,36 +1212,50 @@
 			fieldCount = [tempRowArray count];
 		} else {
 			while ( [tempRowArray count] < fieldCount ) {
-				[tempRowArray addObject:@"NULL"];
+				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"nullValue"]]];
 			}
 		}
 		for ( i = 0 ; i < [tempRowArray count] ; i++ ) {
-			//strip enclosed and escaped characters
-			mutableField = [NSMutableString stringWithString:[tempRowArray objectAtIndex:i]];
 			
-			//strip enclosed characters
-			if ( [mutableField length] >= (2*[enclosed length]) ) {
-				if ( [[mutableField substringToIndex:[enclosed length]] isEqualToString:enclosed] ) {
-					[mutableField deleteCharactersInRange:NSMakeRange(0,[enclosed length])];
-				}
-				if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
-					[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
-				}
-			}
-			//strip escaped characters
-			if ( ![enclosed isEqualToString:@""] ) {
-				[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, enclosed] withString:enclosed options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+			// Insert a NSNull object if the cell contains an unescaped null character or an unescaped string
+			// which matches the NULL string set in preferences.
+			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
+				[tempRowArray replaceObjectAtIndex:i withObject:[NSNull null]];
+				
 			} else {
-				[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, terminated] withString:terminated options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+				
+				//strip enclosed and escaped characters
+				mutableField = [NSMutableString stringWithString:[tempRowArray objectAtIndex:i]];
+				
+				//strip enclosed characters
+				if ( [mutableField length] >= (2*[enclosed length]) ) {
+					if ( [[mutableField substringToIndex:[enclosed length]] isEqualToString:enclosed] ) {
+						[mutableField deleteCharactersInRange:NSMakeRange(0,[enclosed length])];
+					}
+					if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
+						[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
+					}
+				}
+				if ( [mutableField length] >= [enclosed length] ) {
+					if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
+						[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
+					}
+				}
+				//strip escaped characters
+				if ( ![enclosed isEqualToString:@""] ) {
+					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, enclosed] withString:enclosed options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+				} else {
+					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, terminated] withString:terminated options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+				}
+				if ( ![lineEnds isEqualToString:@""] ) {
+					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, lineEnds] withString:lineEnds options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+				}
+				if ( ![escaped isEqualToString:@""] && ![escaped isEqualToString:enclosed] ) {
+					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, escaped] withString:escaped options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+				}
+				//add field to tempRowArray
+				[tempRowArray replaceObjectAtIndex:i withObject:[NSString stringWithString:mutableField]];
 			}
-			if ( ![lineEnds isEqualToString:@""] ) {
-				[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, lineEnds] withString:lineEnds options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-			}
-			if ( ![escaped isEqualToString:@""] && ![escaped isEqualToString:enclosed] ) {
-				[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, escaped] withString:escaped options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-			}
-			//add field to tempRowArray
-			[tempRowArray replaceObjectAtIndex:i withObject:[NSString stringWithString:mutableField]];
 		}
 		//add row to tempArray
 		[tempArray addObject:[NSArray arrayWithArray:tempRowArray]];
@@ -1805,8 +1833,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			if ([[[aTableColumn dataCell] class] isEqualTo:[NSPopUpButtonCell class]]) {
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:[importArray objectAtIndex:currentRow]];
-				//[(NSPopUpButtonCell *)[aTableColumn dataCell] selectItemAtIndex:[fieldMappingArray objectAtIndex:rowIndex]];
+				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
 			}
 			
 			return [fieldMappingArray objectAtIndex:rowIndex];
@@ -1841,6 +1868,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	self = [super init];
 	
 	tables = [[NSMutableArray alloc] init];
+	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
 	
 	return self;
 }
@@ -1851,6 +1879,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	[tables release];
 	[importArray release];
+	[fieldMappingButtonOptions release];
 	[fieldMappingArray release];
 	[savePath release];
 	[openPath release];

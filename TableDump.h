@@ -89,6 +89,7 @@
 	NSMutableArray *tables;
 	NSArray *importArray;
 	NSMutableArray *fieldMappingArray;
+	NSMutableArray *fieldMappingButtonOptions;
 	int currentRow;
 	NSString *savePath;
 	NSString *openPath;
@@ -114,6 +115,7 @@
 - (IBAction)changeTable:(id)sender;
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (void)setupFieldMappingArray;
+- (void)updateFieldMappingButtonCell;
 - (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
