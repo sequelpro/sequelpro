@@ -44,11 +44,11 @@
 	<key>CFBundleShortVersionString</key>
 	<string>0.9.3</string>
 	<key>CFBundleVersion</key>
-	<string>236</string>
+	<string>254</string>
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>0.9.3 (236)</string>
+	<string>0.9.3 (254)</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

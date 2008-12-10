@@ -78,6 +78,7 @@
 - (IBAction)reloadTableValues:(id)sender;
 - (IBAction)filterTable:(id)sender;
 - (IBAction)showAll:(id)sender;
+- (IBAction)toggleFilterField:(id)sender;
 
 //edit methods
 - (IBAction)addRow:(id)sender;
@@ -130,9 +131,5 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 //textView delegate methods
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

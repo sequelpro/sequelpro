@@ -81,7 +81,6 @@
 	NSMutableArray *favorites;
 	NSArray *variables;
 	NSString *selectedDatabase;
-	NSString *selectedFavorite;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
 
@@ -135,7 +134,8 @@
 
 //encoding methods
 - (void)setEncoding:(NSString *)encoding;
-- (void)detectEncoding;
+- (void)detectDatabaseEncoding;
+- (void)detectTableEncodingForTable:(NSString *)table;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;
@@ -214,9 +214,6 @@
 - (id)tableView:(NSTableView *)aTableView
 			objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex;
-
-//for freeing up memory
-- (void)dealloc;
 
 @end
 

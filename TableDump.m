@@ -110,55 +110,55 @@
 			[savePanel setAccessoryView:exportDumpView];
 			contextInfo = @"exportDump";
 			break;
-
-		// Export the full resultset for the currently selected table to a file in CSV format
+			
+			// Export the full resultset for the currently selected table to a file in CSV format
 		case 6:
 			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportTableContentAsCSV";
 			break;
-
-		// Export the full resultset for the currently selected table to a file in XML format
+			
+			// Export the full resultset for the currently selected table to a file in XML format
 		case 7:
 			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
 			contextInfo = @"exportTableContentAsXML";
 			break;
-
-		// Export the current "browse" view to a file in CSV format
+			
+			// Export the current "browse" view to a file in CSV format
 		case 8:
 			file = [NSString stringWithFormat:@"%@ view.csv", [tableDocumentInstance table]];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportBrowseViewAsCSV";
 			break;
-
-		// Export the current "browse" view to a file in XML format
+			
+			// Export the current "browse" view to a file in XML format
 		case 9:
 			file = [NSString stringWithFormat:@"%@ view.xml", [tableDocumentInstance table]];
 			contextInfo = @"exportBrowseViewAsXML";
 			break;
-
-		// Export the current custom query result set to a file in CSV format
+			
+			// Export the current custom query result set to a file in CSV format
 		case 10:
 			file = @"customresult.csv";
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportCustomResultAsCSV";
 			break;
-
-		// Export the current custom query result set to a file in XML format
+			
+			// Export the current custom query result set to a file in XML format
 		case 11:
 			file = @"customresult.xml";
 			contextInfo = @"exportCustomResultAsXML";
 			break;
-
-		// Export multiple tables to a file in CSV format
+			
+			// Export multiple tables to a file in CSV format
 		case 12:
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
 			[savePanel setAccessoryView:exportMultipleCSVView];
 			contextInfo = @"exportMultipleTablesAsCSV";
 			break;
-
-		// Export multiple tables to a file in XML format
+			
+			// Export multiple tables to a file in XML format
 		case 13:
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
@@ -173,8 +173,8 @@
 	
 	// Open the savePanel
 	[savePanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
-			file:file modalForWindow:tableWindow modalDelegate:self
-			didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+								 file:file modalForWindow:tableWindow modalDelegate:self
+					   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
 /*
@@ -189,10 +189,10 @@
 	
 	if ( returnCode != NSOKButton )
 		return;
-
+	
 	// Save path to preferences
 	[prefs setObject:[sheet directory] forKey:@"savePath"];
-
+	
 	// Error if the file already exists and is not writable, and get a fileHandle to it.
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:[sheet filename]] ) {
 		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:[sheet filename]]
@@ -204,21 +204,21 @@
 		
 		// Truncate the file to zero bytes
 		[fileHandle truncateFileAtOffset:0];
-
-	// Otherwise attempt to create a file
+		
+		// Otherwise attempt to create a file
 	} else {
 		if ( ![[NSFileManager defaultManager] createFileAtPath:[sheet filename] contents:[NSData data] attributes:nil] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			return;
 		}
-
+		
 		// Retrieve a filehandle for the file, attempting to delete it on failure.
 		fileHandle = [NSFileHandle fileHandleForWritingAtPath:[sheet filename]];
 		if ( !fileHandle ) {
 			[[NSFileManager defaultManager] removeFileAtPath:[sheet filename] handler:nil];
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-					NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			return;
 		}
 	}
@@ -226,62 +226,62 @@
 	// Export the tables selected in the MySQL export sheet to a file
 	if ( [contextInfo isEqualToString:@"exportDump"] ) {
 		success = [self dumpSelectedTablesAsSqlToFileHandle:fileHandle];
-	
-	// Export the full resultset for the currently selected table to a file in CSV format
+		
+		// Export the full resultset for the currently selected table to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportTableContentAsCSV"] ) {
 		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv"];
-
-	// Export the full resultset for the currently selected table to a file in XML format
+		
+		// Export the full resultset for the currently selected table to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportTableContentAsXML"] ) {
 		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml"];
-
-	// Export the current "browse" view to a file in CSV format
+		
+		// Export the current "browse" view to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportBrowseViewAsCSV"] ) {
 		success = [self writeCsvForArray:[tableContentInstance currentResult] orQueryResult:nil
 							toFileHandle:fileHandle
-							outputFieldNames:[exportFieldNamesSwitch state]
+						outputFieldNames:[exportFieldNamesSwitch state]
 							terminatedBy:[exportFieldsTerminatedField stringValue]
-							enclosedBy:[exportFieldsEnclosedField stringValue]
-							escapedBy:[exportFieldsEscapedField stringValue]
-							lineEnds:[exportLinesTerminatedField stringValue]
-							silently:NO];
-
-	// Export the current "browse" view to a file in XML format
+							  enclosedBy:[exportFieldsEnclosedField stringValue]
+							   escapedBy:[exportFieldsEscapedField stringValue]
+								lineEnds:[exportLinesTerminatedField stringValue]
+								silently:NO];
+		
+		// Export the current "browse" view to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportBrowseViewAsXML"] ) {
 		success = [self writeXmlForArray:[tableContentInstance currentResult] orQueryResult:nil
 							toFileHandle:fileHandle
-							tableName:[tableDocumentInstance table]
-							withHeader:YES
-							silently:NO];
-
-	// Export the current custom query result set to a file in CSV format
+							   tableName:[tableDocumentInstance table]
+							  withHeader:YES
+								silently:NO];
+		
+		// Export the current custom query result set to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportCustomResultAsCSV"] ) {
 		success = [self writeCsvForArray:[customQueryInstance currentResult] orQueryResult:nil
 							toFileHandle:fileHandle
-							outputFieldNames:[exportFieldNamesSwitch state]
+						outputFieldNames:[exportFieldNamesSwitch state]
 							terminatedBy:[exportFieldsTerminatedField stringValue]
-							enclosedBy:[exportFieldsEnclosedField stringValue]
-							escapedBy:[exportFieldsEscapedField stringValue]
-							lineEnds:[exportLinesTerminatedField stringValue]
-							silently:NO];
-
-	// Export the current custom query result set to a file in XML format
+							  enclosedBy:[exportFieldsEnclosedField stringValue]
+							   escapedBy:[exportFieldsEscapedField stringValue]
+								lineEnds:[exportLinesTerminatedField stringValue]
+								silently:NO];
+		
+		// Export the current custom query result set to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportCustomResultAsXML"] ) {
 		success = [self writeXmlForArray:[customQueryInstance currentResult] orQueryResult:nil
 							toFileHandle:fileHandle
-							tableName:@"custom"
-							withHeader:YES
-							silently:NO];
-
-	// Export multiple tables to a file in CSV format
+							   tableName:@"custom"
+							  withHeader:YES
+								silently:NO];
+		
+		// Export multiple tables to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsCSV"] ) {
 		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"csv"];
-
-	// Export multiple tables to a file in XML format
+		
+		// Export multiple tables to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsXML"] ) {
 		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"xml"];
-
-	// Unknown operation
+		
+		// Unknown operation
 	} else {
 		NSLog(@"Unknown export operation: %@", [contextInfo description]);
 		return;
@@ -289,10 +289,10 @@
 	
 	// Close the file handle
 	[fileHandle closeFile];
-
+	
 	if ( !success ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-			NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 	}
     
     // Export finished Growl notification
@@ -327,9 +327,7 @@
 }
 
 - (IBAction)changeTable:(id)sender
-{
-	NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
-	
+{	
 	[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]]] byExtendingSelection:NO];
 	
 	//set up tableView
@@ -340,14 +338,7 @@
 	[rowUpButton setEnabled:([importArray count] > 1)];
 	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
 	
-	//set up tableView buttons
-	[buttonCell setControlSize:NSSmallControlSize];
-	[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
-	[buttonCell setBordered:NO];
-	[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-	[buttonCell addItemsWithTitles:[importArray objectAtIndex:currentRow]];
-	
-	[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+	[self updateFieldMappingButtonCell];
 	[fieldMappingTableView reloadData];
 }
 
@@ -403,7 +394,7 @@
 		//import dump file
 		NSArray *queries;
 		int i;
-	
+		
 		//open progress sheet
 		[NSApp beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow
@@ -417,7 +408,7 @@
 		
 		//get array with an object for each mysql-query
 		queries = [self splitQueries:dumpFile];
-	
+		
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
@@ -452,9 +443,9 @@
 			[errorsSheet orderOut:nil];
 		}
 		
-	////////////////
-	// IMPORT CSV //
-	////////////////
+		////////////////
+		// IMPORT CSV //
+		////////////////
 		
 	} else if ( [fileType isEqualToString:@"CSV"] ) {
 		//import csv file
@@ -518,11 +509,10 @@
 		[buttonCell setControlSize:NSSmallControlSize];
 		[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 		[buttonCell setBordered:NO];
-		[buttonCell addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-		[buttonCell addItemsWithTitles:[tableSourceInstance fieldNames]];
+		[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+		[self updateFieldMappingButtonCell];
+		[fieldMappingTableView reloadData];
 		
-		[[fieldMappingTableView tableColumnWithIdentifier:@"1"] setDataCell:buttonCell];
-
 		// show fieldMapping sheet
 		[NSApp beginSheet:fieldMappingSheet
 		   modalForWindow:tableWindow
@@ -574,7 +564,7 @@
 						if ([[fieldMappingArray objectAtIndex:j] intValue] > 0) {
 							if ( [fValues length] )
 								[fValues appendString:@","];
-													
+							
 							if ([[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
 								[fValues appendString:@"NULL"];
 							} else {
@@ -637,15 +627,15 @@
 	
     if ( fieldMappingArray ) {
 		
-//        for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
-//			
-//			if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
-//                [fieldMappingArray replaceObjectAtIndex:i withObject:0];
-//				
-//            } else {
-//                [fieldMappingArray replaceObjectAtIndex:i withObject:[[importArray objectAtIndex:currentRow] objectAtIndex:0]];
-//            }
-//        }
+		//        for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
+		//			
+		//			if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
+		//                [fieldMappingArray replaceObjectAtIndex:i withObject:0];
+		//				
+		//            } else {
+		//                [fieldMappingArray replaceObjectAtIndex:i withObject:[[importArray objectAtIndex:currentRow] objectAtIndex:0]];
+		//            }
+		//        }
 		
     } else {
         fieldMappingArray = [NSMutableArray array];
@@ -656,7 +646,7 @@
 			} else {
 				value = 0;
 			}
-
+			
             [fieldMappingArray addObject:[NSNumber numberWithInt:value]];
         }
 		
@@ -666,6 +656,22 @@
     [fieldMappingTableView reloadData];
 }
 
+/*
+ * Update the NSButtonCell items for use in the field mapping display
+ */
+- (void)updateFieldMappingButtonCell
+{
+	int i;
+	
+	[fieldMappingButtonOptions setArray:[importArray objectAtIndex:currentRow]];
+	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
+		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"nullValue"]]];
+		} else {
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [fieldMappingButtonOptions objectAtIndex:i]]];
+		}
+	}
+}
 
 - (IBAction)stepRow:(id)sender
 /*
@@ -677,6 +683,7 @@
 	} else {
 		currentRow++;
 	}
+	[self updateFieldMappingButtonCell];
 	
 	//-----------[self setupFieldMappingArray];
 	[fieldMappingTableView reloadData];
@@ -722,23 +729,23 @@
 	
 	// Open the progress sheet
 	[NSApp beginSheet:singleProgressSheet
-		modalForWindow:tableWindow modalDelegate:self
-		didEndSelector:nil contextInfo:nil];
-
+	   modalForWindow:tableWindow modalDelegate:self
+	   didEndSelector:nil contextInfo:nil];
+	
 	// Copy over the selected table names into a table in preparation for iteration
 	for ( i = 0 ; i < [tables count] ; i++ ) {
 		if ( [[[tables objectAtIndex:i] objectAtIndex:0] boolValue] ) {
 			[selectedTables addObject:[NSString stringWithString:[[tables objectAtIndex:i] objectAtIndex:1]]];
 		}
 	}
-
+	
 	// Add the dump header to the dump file.
 	[headerString setString:@"# Sequel Pro dump\n"];
 	[headerString appendString:[NSString stringWithFormat:@"# Version %@\n",
-						[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+								[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
 	[headerString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
 	[headerString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
-						[tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
+								[tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
 	[headerString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
 	[headerString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
 	[headerString appendString:@"# ************************************************************\n\n"];
@@ -747,7 +754,7 @@
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
 		lastProgressValue = 0;
-
+		
 		// Update the progress text and reset the progress bar to indeterminate status while fetching data
 		tableName = [selectedTables objectAtIndex:i];
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [selectedTables count], tableName]];
@@ -755,17 +762,17 @@
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
-
+		
 		// Add the name of table
 		[fileHandle writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName]
-										dataUsingEncoding:connectionEncoding]];
-
-
+							   dataUsingEncoding:connectionEncoding]];
+		
+		
 		// Add a "drop table" command if specified in the export dialog
 		if ( [addDropTableSwitch state] == NSOnState )
 			[fileHandle writeData:[[NSString stringWithFormat:@"DROP TABLE IF EXISTS `%@`;\n\n", tableName]
-											dataUsingEncoding:connectionEncoding]];
-
+								   dataUsingEncoding:connectionEncoding]];
+		
 		// Add the create syntax for the table if specified in the export dialog
 		if ( [addCreateTableSwitch state] == NSOnState ) {
 			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", tableName]];
@@ -784,7 +791,7 @@
 				}
 			}
 		}
-
+		
 		// Add the table content if required
 		if ( [addTableContentSwitch state] == NSOnState ) {
 			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
@@ -799,56 +806,56 @@
 			[singleProgressBar setIndeterminate:NO];
 			[singleProgressBar setDoubleValue:0];
 			[singleProgressBar displayIfNeeded];
-
+			
 			if (rowCount) {
 				[queryResult dataSeek:0];
 				queryLength = 0;
-
+				
 				// Construct the start of the insertion command
 				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO `%@` (`%@`)\nVALUES\n\t(",
-					tableName, [fieldNames componentsJoinedByString:@"`,`"]] dataUsingEncoding:connectionEncoding]];
+										tableName, [fieldNames componentsJoinedByString:@"`,`"]] dataUsingEncoding:connectionEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				for ( j = 0 ; j < rowCount ; j++ ) {
 					theRow = [queryResult fetchRowAsArray];
 					[sqlString setString:@""];
-
+					
 					// Update the progress bar
 					[singleProgressBar setDoubleValue:((j+1)*100/rowCount)];
 					if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
 						lastProgressValue = (int)[singleProgressBar doubleValue];
 						[singleProgressBar displayIfNeeded];
 					}
-
+					
 					for ( t = 0 ; t < [theRow count] ; t++ ) {
-
+						
 						// Add NULL values directly to the output row
 						if ( [[theRow objectAtIndex:t] isMemberOfClass:[NSNull class]] ) {
 							[sqlString appendString:@"NULL"];
-						
-						// Add data types directly as hex data
+							
+							// Add data types directly as hex data
 						} else if ( [[theRow objectAtIndex:t] isKindOfClass:[NSData class]] ) {
 							[sqlString appendString:@"X'"];
 							[sqlString appendString:[mySQLConnection prepareBinaryData:[theRow objectAtIndex:t]]];
 							[sqlString appendString:@"'"];
-
+							
 						} else {
 							[cellValue setString:[[theRow objectAtIndex:t] description]];
 							
 							// Add empty strings as a pair of quotes
 							if ([cellValue length] == 0) {
 								[sqlString appendString:@"''"];
-
+								
 							} else {
-
+								
 								// Test whether this cell contains a number
 								sqlNumericTester = [NSScanner scannerWithString:cellValue];
 								
 								// If it does contain a number, add the number directly
 								if ([sqlNumericTester scanFloat:nil] && [sqlNumericTester isAtEnd]) {
 									[sqlString appendString:cellValue];
-								
-								// Otherwise add a quoted string with special characters escaped
+									
+									// Otherwise add a quoted string with special characters escaped
 								} else {
 									[sqlString appendString:@"'"];
 									[sqlString appendString:[mySQLConnection prepareString:cellValue]];
@@ -860,16 +867,16 @@
 						// Add the field separator if this isn't the last cell in the row
 						if (t != [theRow count] - 1) [sqlString appendString:@","];
 					}
-
+					
 					queryLength += [sqlString length];
 					
 					// Close this VALUES group and set up the next one if appropriate
 					if (j != rowCount - 1) {
-
+						
 						// Add a new INSERT starter command every ~250k of data.
 						if (queryLength > 250000) {
 							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO `%@` (`%@`)\nVALUES\n\t(",
-								tableName, [fieldNames componentsJoinedByString:@"`,`"]]];
+													 tableName, [fieldNames componentsJoinedByString:@"`,`"]]];
 							queryLength = 0;
 						} else {
 							[sqlString appendString:@"),\n\t("];
@@ -881,24 +888,24 @@
 					// Write this row to the file
 					[fileHandle writeData:[sqlString dataUsingEncoding:connectionEncoding]];
 				}
-
+				
 				// Complete the command
 				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
-
+				
 				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 					if ( [addErrorsSwitch state] == NSOnState ) {
 						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-														dataUsingEncoding:connectionEncoding]];
+											   dataUsingEncoding:connectionEncoding]];
 					}
 				}
 			}
 		}
-
+		
 		// Add an additional separator between tables
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:connectionEncoding]];
 	}
-
+	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
 	[singleProgressSheet orderOut:nil];
@@ -922,7 +929,7 @@
  Takes an array and writes it in CSV format to the supplied NSFileHandle
  */
 - (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle outputFieldNames:(BOOL)outputFieldNames terminatedBy:(NSString *)fieldSeparatorString
-	enclosedBy:(NSString *)enclosingString escapedBy:(NSString *)escapeString lineEnds:(NSString *)lineEndString silently:(BOOL)silently;
+			  enclosedBy:(NSString *)enclosingString escapedBy:(NSString *)escapeString lineEnds:(NSString *)lineEndString silently:(BOOL)silently;
 {
 	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]];
 	NSMutableString *csvCell = [NSMutableString string];
@@ -935,31 +942,31 @@
 	BOOL quoteFieldSeparators = [enclosingString isEqualToString:@""];
 	BOOL csvCellIsNumeric;
 	int i, j, startingRow, totalRows, progressBarWidth, lastProgressValue;
-
+	
 	if (queryResult != nil && [queryResult numOfRows]) [queryResult dataSeek:0];
-
+	
 	// Detect and restore special characters being used as terminating or line end strings
 	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:fieldSeparatorString];
 	[tempSeparatorString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempSeparatorString length])];
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempSeparatorString length])];
 	[tempSeparatorString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempSeparatorString length])];
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempSeparatorString length])];
 	[tempSeparatorString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempSeparatorString length])];
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempSeparatorString length])];
 	fieldSeparatorString = [NSString stringWithString:tempSeparatorString];
 	NSMutableString *tempLineEndString = [NSMutableString stringWithString:lineEndString];
 	[tempLineEndString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempLineEndString length])];
+										  options:NSLiteralSearch
+											range:NSMakeRange(0, [tempLineEndString length])];
 	[tempLineEndString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempLineEndString length])];
+										  options:NSLiteralSearch
+											range:NSMakeRange(0, [tempLineEndString length])];
 	[tempLineEndString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-					options:NSLiteralSearch
-					range:NSMakeRange(0, [tempLineEndString length])];
+										  options:NSLiteralSearch
+											range:NSMakeRange(0, [tempLineEndString length])];
 	lineEndString = [NSString stringWithString:tempLineEndString];
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
@@ -967,13 +974,13 @@
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
-
+	
 	if ( !silently ) {
-
+		
 		// Set the progress text
 		[singleProgressText setStringValue:NSLocalizedString(@"Exporting...", @"text showing that app is exporting to text file")];
 		[singleProgressText displayIfNeeded];
-
+		
 		
 		// Open progress sheet
 		[NSApp beginSheet:singleProgressSheet
@@ -986,7 +993,7 @@
 	escapedFieldSeparatorString = [NSString stringWithFormat:@"%@%@", escapeString, fieldSeparatorString];
 	escapedEnclosingString = [NSString stringWithFormat:@"%@%@", escapeString, enclosingString];
 	escapedLineEndString = [NSString stringWithFormat:@"%@%@", escapeString, lineEndString];
-
+	
 	// Determine the total number of rows and starting row depending on supplied data format
 	if (array == nil) {
 		startingRow = outputFieldNames ? -1 : 0;
@@ -998,17 +1005,17 @@
 	
 	// Walk through the supplied data constructing the CSV string
 	for ( i = startingRow ; i < totalRows ; i++ ) {
-	
+		
 		// Update the progress bar
 		[singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
 		if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
 			lastProgressValue = (int)[singleProgressBar doubleValue];
 			[singleProgressBar displayIfNeeded];
 		}
-
+		
 		// Retrieve the row from the supplied data
 		if (array == nil) {
-
+			
 			// Header row
 			if (i == -1) {
 				[csvRow setArray:[queryResult fetchFieldNames]];
@@ -1018,16 +1025,17 @@
 		} else {
 			[csvRow setArray:[array objectAtIndex:i]];		
 		}
-
+		
 		[csvString setString:@""];
 		for ( j = 0 ; j < [csvRow count] ; j++ ) {
-
-			// For NULL objects supplied from a queryResult, no data is added to the cell
+			
+			// For NULL objects supplied from a queryResult, add an unenclosed null string as per prefs
 			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSNull class]]) {
-				[csvString appendString:fieldSeparatorString];
+				[csvString appendString:nullString];
+				if (j < [csvRow count] - 1) [csvString appendString:fieldSeparatorString];
 				continue;
 			}
-
+			
 			// Retrieve the contents of this cell
 			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
 				dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:tableEncoding];
@@ -1036,15 +1044,16 @@
 			} else {
 				[csvCell setString:[[csvRow objectAtIndex:j] description]];
 			}
-
-			// For NULL values supplied via an array no cell needs to be written.
+			
+			// For NULL values supplied via an array add the unenclosed null string as set in preferences
 			if ( [csvCell isEqualToString:nullString] ) {
+				[csvString appendString:nullString];
 
 			// Add empty strings as a pair of enclosing characters.
 			} else if ( [csvCell length] == 0 ) {
 				[csvString appendString:enclosingString];
 				[csvString appendString:enclosingString];
-
+				
 			} else {
 				
 				// Test whether this cell contains a number
@@ -1057,31 +1066,33 @@
 				
 				// Escape any occurrences of the escaping character
 				[csvCell replaceOccurrencesOfString:escapeString
-								withString:escapedEscapeString
-								options:NSLiteralSearch
-								range:NSMakeRange(0,[csvCell length])];
-
+										 withString:escapedEscapeString
+											options:NSLiteralSearch
+											  range:NSMakeRange(0,[csvCell length])];
+				
 				// Escape any occurrences of the enclosure string
 				if ( ![escapeString isEqualToString:enclosingString] ) {
 					[csvCell replaceOccurrencesOfString:enclosingString
-								withString:escapedEnclosingString
-								options:NSLiteralSearch
-								range:NSMakeRange(0,[csvCell length])];
+											 withString:escapedEnclosingString
+												options:NSLiteralSearch
+												  range:NSMakeRange(0,[csvCell length])];
 				}
+				
+				// Escape occurrences of the line end character
+				[csvCell replaceOccurrencesOfString:lineEndString
+									 withString:escapedLineEndString
+										options:NSLiteralSearch
+										  range:NSMakeRange(0,[csvCell length])];
 
 				// If the string isn't quoted or otherwise enclosed, escape occurrences of the
-				// field separators and the line ending separator.
+				// field separators
 				if ( quoteFieldSeparators || csvCellIsNumeric ) {
 					[csvCell replaceOccurrencesOfString:fieldSeparatorString
-								withString:escapedFieldSeparatorString
-								options:NSLiteralSearch
-								range:NSMakeRange(0,[csvCell length])];
-					[csvCell replaceOccurrencesOfString:lineEndString
-								withString:escapedLineEndString
-								options:NSLiteralSearch
-								range:NSMakeRange(0,[csvCell length])];
+											 withString:escapedFieldSeparatorString
+												options:NSLiteralSearch
+												  range:NSMakeRange(0,[csvCell length])];
 				}
-
+				
 				// Write out the cell data by appending strings - this is significantly faster than stringWithFormat.
 				if (csvCellIsNumeric) {
 					[csvString appendString:csvCell];
@@ -1091,12 +1102,12 @@
 					[csvString appendString:enclosingString];
 				}
 			}
-			[csvString appendString:fieldSeparatorString];
+			if (j < [csvRow count] - 1) [csvString appendString:fieldSeparatorString];
 		}
-
+		
 		// Append the line ending to the string for this row
 		[csvString appendString:lineEndString];
-
+		
 		// Write it to the fileHandle
 		[fileHandle writeData:[csvString dataUsingEncoding:tableEncoding]];
 	}
@@ -1127,7 +1138,7 @@
 	BOOL isEscaped, br;
 	int fieldCount = nil;
 	int x,i,j;
-	
+
 	//repare tabs and line ends
 	tempTerminated = [NSMutableString stringWithString:terminated];
 	[tempTerminated replaceOccurrencesOfString:@"\\t" withString:@"\t"
@@ -1185,7 +1196,10 @@
 			}
 		}
 		
-		//add line to array
+		// Skip blank lines
+		if (![tempString length]) continue;
+		
+		// Add the line to the array
 		[linesArray addObject:[NSString stringWithString:tempString]];
 	}
 	
@@ -1198,13 +1212,14 @@
 			fieldCount = [tempRowArray count];
 		} else {
 			while ( [tempRowArray count] < fieldCount ) {
-				[tempRowArray addObject:@"NULL"];
+				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"nullValue"]]];
 			}
 		}
 		for ( i = 0 ; i < [tempRowArray count] ; i++ ) {
-			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"NULL"] || [[tempRowArray objectAtIndex:i] isEqualToString:@""] || [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
-				
-				//put nsnull object to array if field contains un-enclosed NULL string
+			
+			// Insert a NSNull object if the cell contains an unescaped null character or an unescaped string
+			// which matches the NULL string set in preferences.
+			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
 				[tempRowArray replaceObjectAtIndex:i withObject:[NSNull null]];
 				
 			} else {
@@ -1217,6 +1232,11 @@
 					if ( [[mutableField substringToIndex:[enclosed length]] isEqualToString:enclosed] ) {
 						[mutableField deleteCharactersInRange:NSMakeRange(0,[enclosed length])];
 					}
+					if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
+						[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
+					}
+				}
+				if ( [mutableField length] >= [enclosed length] ) {
 					if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
 						[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
 					}
@@ -1259,13 +1279,13 @@
 	int i,j, startingRow, totalRows, progressBarWidth, lastProgressValue;
 	
 	if (queryResult != nil && [queryResult numOfRows]) [queryResult dataSeek:0];
-
+	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
 	progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
-
+	
 	// Set up an array of encoded field names as opening and closing tags
 	if (array == nil) {
 		[xmlRow setArray:[queryResult fetchFieldNames]];	
@@ -1275,17 +1295,17 @@
 	for ( j = 0; j < [xmlRow count]; j++ ) {
 		[xmlTags addObject:[NSMutableArray array]];
 		[[xmlTags objectAtIndex:j] addObject:[NSString stringWithFormat:@"\t\t<%@>",
-											[self htmlEscapeString:[[xmlRow objectAtIndex:j] description]]]];
+											  [self htmlEscapeString:[[xmlRow objectAtIndex:j] description]]]];
 		[[xmlTags objectAtIndex:j] addObject:[NSString stringWithFormat:@"</%@>\n",
-											[self htmlEscapeString:[[xmlRow objectAtIndex:j] description]]]];
+											  [self htmlEscapeString:[[xmlRow objectAtIndex:j] description]]]];
 	}
 	
 	if ( !silently ) {
-
+		
 		// Set the progress text
 		[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 		[singleProgressText displayIfNeeded];
-
+		
 		// Open progress sheet
 		[NSApp beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow modalDelegate:self
@@ -1298,21 +1318,21 @@
 		[xmlString appendString:@"<!--\n-\n"];
 		[xmlString appendString:@"- Sequel Pro dump\n"];
 		[xmlString appendString:[NSString stringWithFormat:@"- Version %@\n",
-							  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+								 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
 		[xmlString appendString:@"- http://code.google.com/p/sequel-pro\n-\n"];
 		[xmlString appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n",
-							  [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
+								 [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
 		[xmlString appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
 		[xmlString appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
 		[xmlString appendString:@"-\n-->\n\n"];
 		[fileHandle writeData:[xmlString dataUsingEncoding:tableEncoding]];
 	}
-
+	
 	// Write an opening tag in the form of the table name
 	[fileHandle writeData:[[NSString stringWithFormat:@"\t<%@>\n",
-								[self htmlEscapeString:table]]
-							dataUsingEncoding:tableEncoding]];
-
+							[self htmlEscapeString:table]]
+						   dataUsingEncoding:tableEncoding]];
+	
 	// Determine the total number of rows and starting row depending on supplied data format
 	if (array == nil) {
 		startingRow = 0;
@@ -1321,28 +1341,28 @@
 		startingRow = 1;
 		totalRows = [array count];
 	}
-
+	
 	// Walk through the array, contructing the XML string.
 	for ( i = 1 ; i < totalRows ; i++ ) {
-	
+		
 		// Update the progress bar
 		[singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
 		if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
 			lastProgressValue = (int)[singleProgressBar doubleValue];
 			[singleProgressBar displayIfNeeded];
 		}
-
+		
 		// Retrieve the row from the supplied data
 		if (array == nil) {
 			[xmlRow setArray:[queryResult fetchRowAsArray]];
 		} else {
 			[xmlRow setArray:[array objectAtIndex:i]];		
 		}
-
+		
 		// Construct the row
 		[xmlString setString:@"\t<row>\n"];
 		for ( j = 0 ; j < [xmlRow count] ; j++ ) {
-
+			
 			// Retrieve the contents of this tag
 			if ([[xmlRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
 				dataConversionString = [[NSString alloc] initWithData:[xmlRow objectAtIndex:j] encoding:tableEncoding];
@@ -1351,7 +1371,7 @@
 			} else {
 				[xmlItem setString:[[xmlRow objectAtIndex:j] description]];
 			}
-
+			
 			// Add the opening and closing tag and the contents to the XML string
 			[xmlString appendString:[[xmlTags objectAtIndex:j] objectAtIndex:0]];
 			[xmlString appendString:[self htmlEscapeString:xmlItem]];
@@ -1362,12 +1382,12 @@
 		// Write the row to the filehandle
 		[fileHandle writeData:[xmlString dataUsingEncoding:tableEncoding]];
 	}
-
+	
 	// Write the closing tag for the table
 	[fileHandle writeData:[[NSString stringWithFormat:@"\t</%@>",
-								[self htmlEscapeString:table]]
-							dataUsingEncoding:tableEncoding]];
-
+							[self htmlEscapeString:table]]
+						   dataUsingEncoding:tableEncoding]];
+	
 	// Close the progress sheet if appropriate
 	if ( !silently ) {
 		[NSApp endSheet:singleProgressSheet];
@@ -1385,14 +1405,14 @@
 {
 	int i;
 	NSMutableArray *selectedTables = [NSMutableArray array];
-
+	
 	// Extract the table names of the selected tables
 	for ( i = 0 ; i < [tables count] ; i++ ) {
 		if ( [[[tables objectAtIndex:i] objectAtIndex:0] boolValue] ) {
 			[selectedTables addObject:[NSString stringWithString:[[tables objectAtIndex:i] objectAtIndex:1]]];
 		}
 	}
-
+	
 	return [self exportTables:selectedTables toFileHandle:fileHandle usingFormat:type];
 }
 
@@ -1408,7 +1428,8 @@
 	NSMutableString *infoString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-
+	NSMutableString *csvLineEnd;
+	
 	// Reset the interface
 	[errorsView setString:@""];
 	[errorsView displayIfNeeded];
@@ -1416,37 +1437,49 @@
 	[singleProgressText displayIfNeeded];
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
-
+	
 	// Open the progress sheet
 	[NSApp beginSheet:singleProgressSheet
-			modalForWindow:tableWindow modalDelegate:self
-			didEndSelector:nil contextInfo:nil];
-
-
-	// Add the dump header to the dump file, dependant on export type.
+	   modalForWindow:tableWindow modalDelegate:self
+	   didEndSelector:nil contextInfo:nil];
+	
+	
+	// Add a dump header to the dump file, dependant on export type.
 	if ( [type isEqualToString:@"csv"] ) {
-		[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@\n\n",
-							[tableDocumentInstance host], [tableDocumentInstance database], [NSDate date]]];
+		csvLineEnd = [NSMutableString stringWithString:[exportMultipleLinesTerminatedField stringValue]]; 
+		[csvLineEnd replaceOccurrencesOfString:@"\\t" withString:@"\t"
+									   options:NSLiteralSearch
+										 range:NSMakeRange(0, [csvLineEnd length])];
+		[csvLineEnd replaceOccurrencesOfString:@"\\n" withString:@"\n"
+									   options:NSLiteralSearch
+										 range:NSMakeRange(0, [csvLineEnd length])];
+		[csvLineEnd replaceOccurrencesOfString:@"\\r" withString:@"\r"
+									   options:NSLiteralSearch
+										 range:NSMakeRange(0, [csvLineEnd length])];
+		if ([selectedTables count] > 1) {
+			[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
+								   [tableDocumentInstance host], [tableDocumentInstance database], [NSDate date], csvLineEnd, csvLineEnd]];
+		}
 	} else if ( [type isEqualToString:@"xml"] ) {
 		[infoString setString:@"<?xml version=\"1.0\"?>\n\n"];
 		[infoString appendString:@"<!--\n-\n"];
 		[infoString appendString:@"- Sequel Pro dump\n"];
 		[infoString appendString:[NSString stringWithFormat:@"- Version %@\n",
-									[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+								  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
 		[infoString appendString:@"- http://code.google.com/p/sequel-pro\n-\n"];
 		[infoString appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n",
-									[tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
+								  [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
 		[infoString appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
 		[infoString appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
 		[infoString appendString:@"-\n-->\n\n\n"];
 		[infoString appendString:[NSString stringWithFormat:@"<%@>\n\n\n",
-									[self htmlEscapeString:[tableDocumentInstance database]]]];
+								  [self htmlEscapeString:[tableDocumentInstance database]]]];
 	}
 	[fileHandle writeData:[infoString dataUsingEncoding:connectionEncoding]];
-
+	
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
-	
+		
 		// Update the progress text and reset the progress bar to indeterminate status
 		tableName = [selectedTables objectAtIndex:i];
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [selectedTables count], tableName]];
@@ -1454,20 +1487,20 @@
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
-
-		// For CSV exports, output the name of the table
-		if ( [type isEqualToString:@"csv"] ) {
-			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@\n\n", tableName] dataUsingEncoding:connectionEncoding]];
+		
+		// For CSV exports of more than one table, output the name of the table
+		if ( [type isEqualToString:@"csv"] && [selectedTables count] > 1) {
+			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		}
-
+		
 		// Retrieve all the content within this table
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
-
+		
 		// Note any errors during retrieval
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 		}
-
+		
 		// Update the progress text and set the progress bar back to determinate
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Writing...", @"text showing that app is writing data for table export"), (i+1), [selectedTables count], tableName]];
 		[singleProgressText displayIfNeeded];
@@ -1476,36 +1509,40 @@
 		[singleProgressBar setIndeterminate:NO];
 		[singleProgressBar setDoubleValue:0];
 		[singleProgressBar displayIfNeeded];
-
+		
 		// Use the appropriate export method to write the data to file
 		if ( [type isEqualToString:@"csv"] ) {
 			[self writeCsvForArray:nil orQueryResult:queryResult
-					toFileHandle:fileHandle
-					outputFieldNames:[exportMultipleFieldNamesSwitch state]
-					terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
-					enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
-					escapedBy:[exportMultipleFieldsEscapedField stringValue]
-					lineEnds:[exportMultipleLinesTerminatedField stringValue]
-					silently:YES];
+					  toFileHandle:fileHandle
+				  outputFieldNames:[exportMultipleFieldNamesSwitch state]
+					  terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
+						enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
+						 escapedBy:[exportMultipleFieldsEscapedField stringValue]
+						  lineEnds:[exportMultipleLinesTerminatedField stringValue]
+						  silently:YES];
+			
+			// Add a spacer to the file
+			[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		} else if ( [type isEqualToString:@"xml"] ) {
 			[self writeXmlForArray:nil orQueryResult:queryResult
-					toFileHandle:fileHandle
-					tableName:tableName
-					withHeader:NO
-					silently:YES];
+					  toFileHandle:fileHandle
+						 tableName:tableName
+						withHeader:NO
+						  silently:YES];
+			
+			// Add a spacer to the file
+			[fileHandle writeData:[[NSString stringWithString:@"\n\n\n"] dataUsingEncoding:connectionEncoding]];
 		}
 		
-		// Add a spacer to the file
-		[fileHandle writeData:[[NSString stringWithString:@"\n\n\n"] dataUsingEncoding:connectionEncoding]];
 	}
-
+	
 	// For XML output, close the database tag
 	if ( [type isEqualToString:@"xml"] ) {
 		[fileHandle writeData:[[NSString stringWithFormat:@"</%@>",
 								[self htmlEscapeString:[tableDocumentInstance database]]]
-								dataUsingEncoding:connectionEncoding]];
+							   dataUsingEncoding:connectionEncoding]];
 	}
-
+	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
 	[singleProgressSheet orderOut:nil];
@@ -1656,13 +1693,13 @@
 				
 				// For the backtick character treat the string as ended
 				if ( ([queries characterAtIndex:i] == '`') && (stringType == '`') ) {
-
+					
 					inString = NO;
 					break;
-
-				// Otherwise, prepare to treat the string as ended after a stringType....
+					
+					// Otherwise, prepare to treat the string as ended after a stringType....
 				} else if ( [queries characterAtIndex:i] == stringType ) {
-
+					
 					// ...but only if the stringType isn't escaped with an *odd* number of escaping characters.
 					escaped = NO;
 					j = 1;
@@ -1796,10 +1833,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			if ([[[aTableColumn dataCell] class] isEqualTo:[NSPopUpButtonCell class]]) {
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:[importArray objectAtIndex:currentRow]];
-				//[(NSPopUpButtonCell *)[aTableColumn dataCell] selectItemAtIndex:[fieldMappingArray objectAtIndex:rowIndex]];
+				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
 			}
-						
+			
 			return [fieldMappingArray objectAtIndex:rowIndex];
 		} 
 	} else {
@@ -1832,6 +1868,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	self = [super init];
 	
 	tables = [[NSMutableArray alloc] init];
+	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
 	
 	return self;
 }
@@ -1842,6 +1879,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	[tables release];
 	[importArray release];
+	[fieldMappingButtonOptions release];
 	[fieldMappingArray release];
 	[savePath release];
 	[openPath release];

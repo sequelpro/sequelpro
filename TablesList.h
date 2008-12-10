@@ -92,8 +92,4 @@
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 
-//last but not least
-- (id)init;
-- (void)dealloc;
-
 @end
