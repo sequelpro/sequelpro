@@ -87,6 +87,7 @@
 		17E6420B0EF020CB001BC333 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E642080EF020CB001BC333 /* MainMenu.xib */; };
 		17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17E642390EF0216C001BC333 /* Credits.rtf */; };
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
+		17E642700EF02733001BC333 /* English.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 17E642500EF02733001BC333 /* English.lproj */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
@@ -217,6 +218,7 @@
 		17E642090EF020CB001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		17E6423A0EF0216C001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = Interfaces/English.lproj/Credits.rtf; sourceTree = SOURCE_ROOT; };
 		17E6423D0EF0218B001BC333 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = Interfaces/English.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		17E642500EF02733001BC333 /* English.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English.lproj; path = Interfaces/English.lproj; sourceTree = SOURCE_ROOT; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
@@ -280,6 +282,7 @@
 			isa = PBXGroup;
 			children = (
 				17E6418B0EF01FF7001BC333 /* Images */,
+				17E642500EF02733001BC333 /* English.lproj */,
 				17E641F60EF02088001BC333 /* Info.plist */,
 				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
 				17E642390EF0216C001BC333 /* Credits.rtf */,
@@ -592,6 +595,7 @@
 				17E6420B0EF020CB001BC333 /* MainMenu.xib in Resources */,
 				17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */,
 				17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */,
+				17E642700EF02733001BC333 /* English.lproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
