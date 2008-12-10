@@ -1825,9 +1825,11 @@
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
+	id returnObject = nil;
+	
 	if ( aTableView == fieldMappingTableView ) {
 		if ([[aTableColumn identifier] isEqualToString:@"field"]) {
-			return [[tableSourceInstance fieldNames] objectAtIndex:rowIndex];
+			returnObject = [[tableSourceInstance fieldNames] objectAtIndex:rowIndex];
 			
 		} else if ([[aTableColumn identifier] isEqualToString:@"value"]) {
 			if ([[[aTableColumn dataCell] class] isEqualTo:[NSPopUpButtonCell class]]) {
@@ -1836,15 +1838,17 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
 			}
 			
-			return [fieldMappingArray objectAtIndex:rowIndex];
+			returnObject = [fieldMappingArray objectAtIndex:rowIndex];
 		} 
 	} else {
 		if ( [[aTableColumn identifier] isEqualToString:@"switch"] ) {
-			return [[tables objectAtIndex:rowIndex] objectAtIndex:0];
+			returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:0];
 		} else {
-			return [[tables objectAtIndex:rowIndex] objectAtIndex:1];
+			returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:1];
 		}
 	}
+	
+	return returnObject;
 }
 
 - (void)tableView:(NSTableView *)aTableView
