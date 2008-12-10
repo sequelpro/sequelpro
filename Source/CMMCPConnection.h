@@ -26,6 +26,13 @@
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPResult.h"
 
+@interface NSObject (CMMCPConnectionDelegate)
+
+- (void)willQueryString:(NSString *)query;
+- (void)queryGaveError:(NSString *)error;
+
+@end
+
 @interface CMMCPConnection : MCPConnection {
 	id	delegate;
 }
