@@ -269,7 +269,11 @@
 	// Enable or disable the limit fields according to preference setting
 	if ( [prefs boolForKey:@"limitRows"] ) 
 	{
-		[limitRowsField setStringValue:@"1"];
+
+		// Attempt to preserve the limit value if it's still valid
+		if (!preserveCurrentView || [limitRowsField intValue] < 1 || [limitRowsField intValue] >= numRows) {	
+			[limitRowsField setStringValue:@"1"];
+		}
 		[limitRowsField setEnabled:YES];
 		[limitRowsButton setEnabled:YES];
 		[limitRowsStepper setEnabled:YES];
@@ -419,8 +423,15 @@
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
 	NSString *queryString;
 	int i;
+
+	// Update negative limits
+	if ( [limitRowsField intValue] <= 0 ) {
+		[limitRowsField setStringValue:@"1"];
+	}
 	
-	if ([argument length] == 0) {
+	// If the filter field is empty, the limit field is at 1, and the selected filter is not looking
+	// for NULLs or NOT NULLs, then don't allow filtering.
+	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"]) && (![prefs boolForKey:@"limitRows"] || [limitRowsField intValue] == 1)) {
 		[argument release];
 		[self showAll:sender];
 		return;
@@ -430,126 +441,162 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
 	BOOL doQuote = YES;
-	
-	if ( ![compareType isEqualToString:@""] ) {
-		if ( [compareType isEqualToString:@"string"] ) {
-			//string comparision
-			switch ( tag ) {
-				case 0:
-					compareOperator = @"LIKE";
-					break;
-				case 1:
-					compareOperator = @"NOT LIKE";
-					break;
-				case 2:
-					compareOperator = @"LIKE";
-					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-					break;
-				case 3:
-					compareOperator = @"NOT LIKE";
-					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-					break;
-				case 4:
-					compareOperator = @"IN";
-					doQuote = NO;
-					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-					break;
-			}
-		} else if ( [compareType isEqualToString:@"number"] ) {
-			//number comparision
-			switch ( tag ) {
-				case 0:
-					compareOperator = @"=";
-					break;
-				case 1:
-					compareOperator = @"!=";
-					break;
-				case 2:
-					compareOperator = @">";
-					break;
-				case 3:
-					compareOperator = @"<";
-					break;
-				case 4:
-					compareOperator = @">=";
-					break;
-				case 5:
-					compareOperator = @"<=";
-					break;
-				case 6:
-					compareOperator = @"IN";
-					doQuote = NO;
-					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-					break;
-			}
-		} else if ( [compareType isEqualToString:@"date"] ) {
-			//date comparision
-			switch ( tag ) {
-				case 0:
-					compareOperator = @"=";
-					break;
-				case 1:
-					compareOperator = @"!=";
-					break;
-				case 2:
-					compareOperator = @"<";
-					break;
-				case 3:
-					compareOperator = @">";
-					break;
-				case 4:
-					compareOperator = @"<=";
-					break;
-				case 5:
-					compareOperator = @">=";
-					break;
-			}
-		}
-		
-		//		queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ '%@'",
-		//							[self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-		//							compareOperator, argument];
-		if (doQuote) {
-			//escape special characters
-			for ( i = 0 ; i < [argument length] ; i++ ) {
-				if ( [argument characterAtIndex:i] == '\\' ) {
-					[argument insertString:@"\\" atIndex:i];
-					i++;
+	BOOL ignoreArgument = NO;
+
+	// Start building the query string
+	queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`",
+					[self fieldListForQuery], selectedTable];			
+
+	// Add filter if appropriate
+	if (([argument length] > 0) || [[[compareField selectedItem] title] hasSuffix:@"NULL"]) {
+		if ( ![compareType isEqualToString:@""] ) {
+			if ( [compareType isEqualToString:@"string"] ) {
+				//string comparision
+				switch ( tag ) {
+					case 0:
+						compareOperator = @"LIKE";
+						break;
+					case 1:
+						compareOperator = @"NOT LIKE";
+						break;
+					case 2:
+						compareOperator = @"LIKE";
+						[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
+						break;
+					case 3:
+						compareOperator = @"NOT LIKE";
+						[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
+						break;
+					case 4:
+						compareOperator = @"IN";
+						doQuote = NO;
+						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+						break;
+					case 5:
+						compareOperator = @"IS NULL";
+						doQuote = NO;
+						ignoreArgument = YES;
+						break;
+					case 6:
+						compareOperator = @"IS NOT NULL";
+						doQuote = NO;
+						ignoreArgument = YES;
+						break;
 				}
+			} else if ( [compareType isEqualToString:@"number"] ) {
+				//number comparision
+				switch ( tag ) {
+					case 0:
+						compareOperator = @"=";
+						break;
+					case 1:
+						compareOperator = @"!=";
+						break;
+					case 2:
+						compareOperator = @">";
+						break;
+					case 3:
+						compareOperator = @"<";
+						break;
+					case 4:
+						compareOperator = @">=";
+						break;
+					case 5:
+						compareOperator = @"<=";
+						break;
+					case 6:
+						compareOperator = @"IN";
+						doQuote = NO;
+						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+						break;
+					case 7:
+						compareOperator = @"IS NULL";
+						doQuote = NO;
+						ignoreArgument = YES;
+						break;
+					case 8:
+						compareOperator = @"IS NOT NULL";
+						doQuote = NO;
+						ignoreArgument = YES;
+						break;
+				}
+			} else if ( [compareType isEqualToString:@"date"] ) {
+				//date comparision
+				switch ( tag ) {
+					case 0:
+						compareOperator = @"=";
+						break;
+					case 1:
+						compareOperator = @"!=";
+						break;
+					case 2:
+						compareOperator = @"<";
+						break;
+					case 3:
+						compareOperator = @">";
+						break;
+					case 4:
+						compareOperator = @"<=";
+						break;
+					case 5:
+						compareOperator = @">=";
+						break;
+					case 6:
+						compareOperator = @"IS NULL";
+						doQuote = NO;
+						ignoreArgument = YES;
+						break;
+					case 7:
+						compareOperator = @"IS NOT NULL";
+						doQuote = NO;
+						ignoreArgument = YES;
+						break;
+				}
+			} else {
+				doQuote = NO;
+				ignoreArgument = YES;
+				NSLog(@"ERROR: unknown compare type %@", compareType);
 			}
-			[argument setString:[mySQLConnection prepareString:argument]];
-			queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ \"%@\"",
-						   [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-						   compareOperator, argument];			
-		} else {
-			queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` WHERE `%@` %@ %@",
-						   [self fieldListForQuery], selectedTable, [fieldField titleOfSelectedItem],
-						   compareOperator, argument];
-		}
-		if ( sortField ) {
-			//			queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
-			queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
-			if ( isDesc )
-				queryString = [queryString stringByAppendingString:@" DESC"];
-		}
-		if ( [prefs boolForKey:@"limitRows"] ) {
-			if ( [limitRowsField intValue] <= 0 ) {
-				[limitRowsField setStringValue:@"1"];
+			
+			if (doQuote) {
+				//escape special characters
+				for ( i = 0 ; i < [argument length] ; i++ ) {
+					if ( [argument characterAtIndex:i] == '\\' ) {
+						[argument insertString:@"\\" atIndex:i];
+						i++;
+					}
+				}
+				[argument setString:[mySQLConnection prepareString:argument]];
+				queryString = [NSString stringWithFormat:@"%@ WHERE `%@` %@ \"%@\"",
+								queryString, [fieldField titleOfSelectedItem], compareOperator, argument];			
+			} else {
+				queryString = [NSString stringWithFormat:@"%@ WHERE `%@` %@ %@",
+								queryString, [fieldField titleOfSelectedItem],
+								compareOperator, (ignoreArgument) ? @"" : argument];
 			}
-			queryString = [queryString stringByAppendingString:
-						   [NSString stringWithFormat:@" LIMIT %d,%d",
-							[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
 		}
-	} else {
-		NSLog(@"ERROR: unknown compare type %@", compareType);
-		queryString = @"";
 	}
-	
+
+	// Add sorting details if appropriate
+	if ( sortField ) {
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
+		if ( isDesc )
+			queryString = [queryString stringByAppendingString:@" DESC"];
+	}
+
+	// LIMIT if appropriate
+	if ( [prefs boolForKey:@"limitRows"] ) {
+		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", queryString,
+						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]];
+	}
+
 	theResult = [mySQLConnection queryString:queryString];
 	[filteredResult setArray:[self fetchResultAsArray:theResult]];
 	
 	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
 	
+	// Reset the table view
+	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
 	[tableContentView reloadData];
 	areShowingAllRows = NO;
 	
@@ -568,6 +615,15 @@
 	areShowingAllRows = YES;
 	
 	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
+}
+
+/**
+ * Enables or disables the filter input field based on the selected filter type.
+ */
+- (IBAction)toggleFilterField:(id)sender
+{
+	// If the user is filtering for NULLs then disabled the filter field, otherwise enable it.
+	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
 }
 
 
@@ -624,8 +680,8 @@
 	isEditingNewRow = YES;
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[queryResult dataSeek:i];
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 			[tempRow setObject:[prefs stringForKey:@"nullValue"] forKey:[row objectForKey:@"Field"]];
@@ -921,28 +977,24 @@
 	}
 }
 
-- (IBAction)setCompareTypes:(id)sender
-/*
- sets the compare types for the filter and the appropriate formatter for the textField
+/**
+ * Sets the compare types for the filter and the appropriate formatter for the textField
  */
+- (IBAction)setCompareTypes:(id)sender
 {
 	NSArray *stringFields = [NSArray arrayWithObjects:@"varstring", @"string", @"tinyblob", @"blob", @"mediumblob", @"longblob", @"set", @"enum", nil];
-	NSArray *stringTypes = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
+	NSArray *stringTypes  = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
 	NSArray *numberFields = [NSArray arrayWithObjects:@"tiny", @"short", @"long", @"int24", @"longlong", @"decimal", @"float", @"double", nil];
-	NSArray *numberTypes = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", nil];
-	NSArray *dateFields = [NSArray arrayWithObjects:@"timestamp", @"date", @"time", @"datetime", @"year", nil];
-	NSArray *dateTypes = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"older than", @"popup menuitem for field OLDER THAN value"), NSLocalizedString(@"younger than", @"popup menuitem for field YOUNGER THAN value"), NSLocalizedString(@"older than or equal to", @"popup menuitem for field OLDER THAN OR EQUAL TO value"), NSLocalizedString(@"younger than or equal to", @"popup menuitem for field YOUNGER THAN OR EQUAL TO value"), nil];
-	NSString *fieldType = [NSString stringWithString:[fieldTypes objectAtIndex:[[fieldField selectedItem] tag]]];
-	//	NSNumberFormatter *numberFormatter;
+	NSArray *numberTypes  = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", nil];
+	NSArray *dateFields   = [NSArray arrayWithObjects:@"timestamp", @"date", @"time", @"datetime", @"year", nil];
+	NSArray *dateTypes    = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"older than", @"popup menuitem for field OLDER THAN value"), NSLocalizedString(@"younger than", @"popup menuitem for field YOUNGER THAN value"), NSLocalizedString(@"older than or equal to", @"popup menuitem for field OLDER THAN OR EQUAL TO value"), NSLocalizedString(@"younger than or equal to", @"popup menuitem for field YOUNGER THAN OR EQUAL TO value"), nil];
+	NSString *fieldType   = [NSString stringWithString:[fieldTypes objectAtIndex:[[fieldField selectedItem] tag]]];
+	
 	int i;
 	
-	//	numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	//	[numberFormatter setFormat:@"0.####################"];
-	
 	[compareField removeAllItems];
-	//	[argumentField setStringValue:@""];
 	
-	//why do we get "string" for enum fields? (error in framework?)
+	// Why do we get "string" for enum fields? (error in framework?)
 	if ( [stringFields containsObject:fieldType] ) {
 		[compareField addItemsWithTitles:stringTypes];
 		compareType = @"string";
@@ -976,10 +1028,17 @@
 		NSLog(@"ERROR: unknown type for comparision: %@", fieldType);
 	}
 	
+	// Add IS NULL and IS NOT NULL as they should always be available
+	[compareField addItemWithTitle:@"IS NULL"];
+	[compareField addItemWithTitle:@"IS NOT NULL"];
+	
 	for ( i = 0 ; i < [compareField numberOfItems] ; i++ ) {
 		[[compareField itemAtIndex:i] setTag:i];
 	}
-	
+
+	// Update the argumentField enabled state
+	[self toggleFilterField:self];
+
 	// set focus on argumentField
 	[argumentField selectText:self];
 }
@@ -1013,8 +1072,8 @@
 	id key;
 	int i,j;
 	
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		tempRow = [theResult fetchRowAsDictionary];
 		enumerator = [tempRow keyEnumerator];
 		while ( key = [enumerator nextObject] ) {
@@ -1153,8 +1212,8 @@
 			} else {
 				//set insertId for fields with auto_increment
 				queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+				if ([queryResult numOfRows]) [queryResult dataSeek:0];
 				for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-					[queryResult dataSeek:i];
 					rowObject = [queryResult fetchRowAsDictionary];
 					if ( [[rowObject objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 						[[filteredResult objectAtIndex:rowIndex] setObject:[NSNumber numberWithLong:[mySQLConnection insertId]]
@@ -1225,8 +1284,8 @@
 	//get primary key if there is one
 	/*
 	 theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]];
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	 for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-	 [theResult dataSeek:i];
 	 theRow = [theResult fetchRowAsDictionary];
 	 if ( [[theRow objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
 	 [keys addObject:[theRow objectForKey:@"Column_name"]];
@@ -1237,8 +1296,8 @@
 		setLimit = NO;
 		keys = [[NSMutableArray alloc] init];
 		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+		if ([theResult numOfRows]) [theResult dataSeek:0];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-			[theResult dataSeek:i];
 			theRow = [theResult fetchRowAsDictionary];
 			if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
 				[keys addObject:[theRow objectForKey:@"Field"]];

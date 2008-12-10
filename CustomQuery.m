@@ -85,8 +85,8 @@ sets the tableView columns corresponding to the mysql-result
 	if ( nil != theResult )
 	{
 		int r = [theResult numOfRows];
+		if (r) [theResult dataSeek:0];
 		for ( i = 0 ; i < r ; i++ ) {
-			[theResult dataSeek:i];
 			[tempResult addObject:[theResult fetchRowAsArray]];
 		}
 		queryResult = [[NSArray arrayWithArray:tempResult] retain];

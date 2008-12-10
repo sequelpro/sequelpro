@@ -52,9 +52,8 @@ loads all table names in array tables and reload the tableView
 	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 
 	theResult = (CMMCPResult *)[mySQLConnection listTables];
-	
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
 	}
 	
@@ -307,6 +306,11 @@ returns the currently selected table or nil if no table or mulitple tables are s
 	}
 }
 
+- (NSArray *)tables
+{
+	return tables;
+}
+
 /*
 returns YES if table source has already been loaded
 */
@@ -539,12 +543,12 @@ traps enter and esc and edit/cancel without entering next row
 	}
 }
 
-/*
-loads a table in content or source view (if tab selected)
-*/
+/**
+ * Loads a table in content or source view (if tab selected)
+ */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	 if ( [tablesListView numberOfSelectedRows] == 1 ) {
+	if ( [tablesListView numberOfSelectedRows] == 1 ) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
@@ -571,6 +575,10 @@ loads a table in content or source view (if tab selected)
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
 									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
 		 
+		// Update connection characater set encoding based on the table's encoding if required
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
+			[tableDocumentInstance detectTableEncodingForTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+		}
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -584,8 +592,6 @@ loads a table in content or source view (if tab selected)
 									[tableDocumentInstance host], [tableDocumentInstance database]]];
 	}	
 }
-
-
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
