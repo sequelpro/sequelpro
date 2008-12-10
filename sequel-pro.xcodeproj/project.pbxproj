@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* MainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* MainController.m */; };
@@ -84,7 +85,6 @@
 		17E641FC0EF02088001BC333 /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */; };
 		17E641FD0EF02088001BC333 /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */; };
 		17E6420A0EF020CB001BC333 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E642060EF020CB001BC333 /* DBView.xib */; };
-		17E6420B0EF020CB001BC333 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E642080EF020CB001BC333 /* MainMenu.xib */; };
 		17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17E642390EF0216C001BC333 /* Credits.rtf */; };
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
 		17E642700EF02733001BC333 /* English.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 17E642500EF02733001BC333 /* English.lproj */; };
@@ -115,6 +115,7 @@
 
 /* Begin PBXFileReference section */
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
@@ -215,7 +216,6 @@
 		17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
 		17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
 		17E642070EF020CB001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
-		17E642090EF020CB001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		17E6423A0EF0216C001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = Interfaces/English.lproj/Credits.rtf; sourceTree = SOURCE_ROOT; };
 		17E6423D0EF0218B001BC333 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = Interfaces/English.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
 		17E642500EF02733001BC333 /* English.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = English.lproj; path = Interfaces/English.lproj; sourceTree = SOURCE_ROOT; };
@@ -457,7 +457,7 @@
 			isa = PBXGroup;
 			children = (
 				17E642060EF020CB001BC333 /* DBView.xib */,
-				17E642080EF020CB001BC333 /* MainMenu.xib */,
+				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -587,15 +587,15 @@
 				17E641F10EF02036001BC333 /* toolbar-switch-to-sql.png in Resources */,
 				17E641F20EF02036001BC333 /* toolbar-switch-to-structure.png in Resources */,
 				17E641F30EF02036001BC333 /* toolbar-switch-to-table-info.png in Resources */,
+				17E6420A0EF020CB001BC333 /* DBView.xib in Resources */,
 				17E641F90EF02088001BC333 /* askForPass.sh in Resources */,
 				17E641FA0EF02088001BC333 /* Growl Registration Ticket.growlRegDict in Resources */,
 				17E641FC0EF02088001BC333 /* sequel-pro.scriptSuite in Resources */,
 				17E641FD0EF02088001BC333 /* sequel-pro.scriptTerminology in Resources */,
-				17E6420A0EF020CB001BC333 /* DBView.xib in Resources */,
-				17E6420B0EF020CB001BC333 /* MainMenu.xib in Resources */,
 				17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */,
 				17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */,
 				17E642700EF02733001BC333 /* English.lproj in Resources */,
+				1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -632,20 +632,20 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		1761FD460EF03A6F00331368 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1761FD470EF03A6F00331368 /* English */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
 		17E642060EF020CB001BC333 /* DBView.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				17E642070EF020CB001BC333 /* English */,
 			);
 			name = DBView.xib;
-			sourceTree = "<group>";
-		};
-		17E642080EF020CB001BC333 /* MainMenu.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				17E642090EF020CB001BC333 /* English */,
-			);
-			name = MainMenu.xib;
 			sourceTree = "<group>";
 		};
 		17E642390EF0216C001BC333 /* Credits.rtf */ = {
