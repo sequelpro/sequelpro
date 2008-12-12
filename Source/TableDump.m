@@ -848,14 +848,15 @@
 								
 							} else {
 								
-								// Test whether this cell contains a number
+								// Until we have access to field types, test whether this cell contains a
+								// number via use of an NSScanner and a check of the first couple of
+								// characters.  If it is a number, add the number directly.
 								sqlNumericTester = [NSScanner scannerWithString:cellValue];
-								
-								// If it does contain a number, add the number directly
-								if ([sqlNumericTester scanFloat:nil] && [sqlNumericTester isAtEnd]) {
+								if ([sqlNumericTester scanFloat:nil] && [sqlNumericTester isAtEnd] && 
+									([cellValue characterAtIndex:0] != '0' || [cellValue characterAtIndex:1] == '.')) {
 									[sqlString appendString:cellValue];
 									
-									// Otherwise add a quoted string with special characters escaped
+								// Otherwise add a quoted string with special characters escaped
 								} else {
 									[sqlString appendString:@"'"];
 									[sqlString appendString:[mySQLConnection prepareString:cellValue]];
@@ -1056,12 +1057,14 @@
 				
 			} else {
 				
-				// Test whether this cell contains a number
+				// Until we have access to field types, test whether this cell contains a number via use of an
+				// NSScanner and a check of the first couple of characters.
 				if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
 					csvCellIsNumeric = FALSE;
 				} else {
 					csvNumericTester = [NSScanner scannerWithString:csvCell];
-					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && [csvNumericTester isAtEnd];
+					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && [csvNumericTester isAtEnd] && 
+										([csvCell characterAtIndex:0] != '0' || [csvCell characterAtIndex:1] == '.');
 				}
 				
 				// Escape any occurrences of the escaping character
