@@ -797,6 +797,7 @@ checks for updates and opens download page in default browser
 /* what exactly is this for? */
 {
 	[ NSApp terminate: self ];
+	return nil;
 }
 
 @end

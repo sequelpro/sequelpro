@@ -110,6 +110,8 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	}
 	
 	tempDefaultValues = [NSMutableDictionary dictionary];
+	NSLog(@"tableFields: %@",tableFields);
+	
 	for ( i = 0 ; i < [tableFields count] ; i++ ) {
 		[tempDefaultValues setObject:[[tableFields objectAtIndex:i] objectForKey:@"Default"] forKey:[[tableFields objectAtIndex:i] objectForKey:@"Field"]];
 	}
@@ -519,6 +521,7 @@ fetches the result as an array with a dictionary for each row in it
 	NSMutableArray *tempResult = [NSMutableArray array];
 	NSMutableDictionary *tempRow;
 	NSEnumerator *enumerator;
+	NSArray *keys;
 	id key;
 	int i;
 
@@ -527,8 +530,8 @@ fetches the result as an array with a dictionary for each row in it
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
-		enumerator = [tempRow keyEnumerator];
-		while ( (key = [enumerator nextObject]) ) {
+		keys = [tempRow allKeys];
+		for (key in keys) {
 			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] )
 				[tempRow setObject:[prefs objectForKey:@"nullValue"] forKey:key];
 		}
