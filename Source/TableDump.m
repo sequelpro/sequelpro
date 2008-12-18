@@ -361,16 +361,10 @@
 	[prefs setObject:[sheet directory] forKey:@"openPath"];
 	
 	//load file into string
-	if ( [NSString respondsToSelector:@selector(stringWithContentsOfFile:encoding:error:)] ) {
-		// mac os 10.4 or later
-		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]
-											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
-												error:errorStr];
-	} else {
-		// mac os pre 10.4
-		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]];
-	}
-	
+	dumpFile = [NSString stringWithContentsOfFile:[sheet filename]
+										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
+											error:errorStr];
+
 	if ( !dumpFile ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
 						  NSLocalizedString(@"OK", @"OK button"),
