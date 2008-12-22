@@ -1192,6 +1192,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return [self supportsEncoding];
 	}
 	
+	if ([menuItem action] == @selector(removeDatabase:)) {
+		return ([self database] != nil);
+	}
+	
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:) ||
