@@ -938,7 +938,7 @@ Having validated a drop, perform the field/column reordering to match.
 	return YES;
 }
 
-#pragma mark TtableView delegate methods
+#pragma mark TableView delegate methods
 
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {

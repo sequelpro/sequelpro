@@ -28,54 +28,35 @@
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
 {
 
+	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!"];
+	NSArray *textViewWords = [[self string] componentsSeparatedByCharactersInSet:separators];
 	NSString *partialString = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
-	unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
-	unsigned int i;
-	NSRange partialRange = NSMakeRange(0, partialLength);
+	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
+	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
+	//NSRange partialRange = NSMakeRange(0, partialLength);
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-	NSArray *keywords = [self keywords];
-
-	// Get the document
-//	id tableDocument = [[[self window] windowController] document];
-	id tableDocument = [[self window] delegate];
-
-//NSLog(@"doc: %@", [[[self window] windowController] document]);
-
-	// Get an array of table names for the current database
-	id tableNames = [[tableDocument valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
-
-	// Add matching table names to compl
-	for (i = 0; i < [tableNames count]; i ++)
+	NSArray *possibleCompletions = [[tableNames arrayByAddingObjectsFromArray:[self keywords]]
+									arrayByAddingObjectsFromArray:textViewWords];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
+	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+	unsigned i, insindex;
+	
+	insindex = 0;
+	for (i = 0; i < [matchingCompletions count]; i ++)
 	{
-		if ([[tableNames objectAtIndex:i] length] > partialLength)
+		if ([partialString isEqualToString:[[matchingCompletions objectAtIndex:i] substringToIndex:partialLength]])
 		{
-			NSRange range = [[tableNames objectAtIndex:i] rangeOfString:partialString
-																options:options
-																  range:partialRange];
-			if (range.location != NSNotFound)
-			{
-				[compl addObject:[tableNames objectAtIndex:i]];
-			}
+			// Matches case --> Insert at beginning of completion list
+			[compl insertObject:[matchingCompletions objectAtIndex:i] atIndex:insindex++];
 		}
-		
-	}
-
-	// Add matching keywords to compl
-	for (i = 0; i < [keywords count]; i ++)
-	{
-		if ([[keywords objectAtIndex:i] length] > partialLength)
+		else
 		{
-			NSRange range = [[keywords objectAtIndex:i] rangeOfString:partialString
-															  options:options
-																range:partialRange];
-			if (range.location != NSNotFound)
-			{
-				[compl addObject:[keywords objectAtIndex:i]];
-			}
+			// Not matching case --> Insert at end of completion list
+			[compl addObject:[matchingCompletions objectAtIndex:i]];	
 		}
 	}
-
+	
 	return [compl autorelease];
 }
 
@@ -85,7 +66,14 @@
 	return [NSArray arrayWithObjects:
 	@"ADD",
 	@"ALL",
-	@"ALTER",
+	@"ALTER TABLE",
+	@"ALTER VIEW",
+	@"ALTER SCHEMA",
+	@"ALTER SCHEMA",
+	@"ALTER FUNCTION",
+	@"ALTER COLUMN",
+	@"ALTER DATABASE",
+	@"ALTER PROCEDURE",
 	@"ANALYZE",
 	@"AND",
 	@"ASC",
@@ -111,7 +99,15 @@
 	@"CONSTRAINT",
 	@"CONTINUE",
 	@"CONVERT",
-	@"CREATE",
+	@"CREATE VIEW",
+	@"CREATE INDEX",
+	@"CREATE FUNCTION",
+	@"CREATE DATABASE",
+	@"CREATE PROCEDURE",
+	@"CREATE SCHEMA",
+	@"CREATE TRIGGER",
+	@"CREATE TABLE",
+	@"CREATE USER",
 	@"CROSS",
 	@"CURRENT_DATE",
 	@"CURRENT_TIME",
@@ -137,7 +133,18 @@
 	@"DISTINCTROW",
 	@"DIV",
 	@"DOUBLE",
-	@"DROP",
+	@"DROP TABLE",
+	@"DROP TRIGGER",
+	@"DROP VIEW",
+	@"DROP SCHEMA",
+	@"DROP USER",
+	@"DROP PROCEDURE",
+	@"DROP FUNCTION",
+	@"DROP FOREIGN KEY",
+	@"DROP INDEX",
+	@"DROP PREPARE",
+	@"DROP PRIMARY KEY",
+	@"DROP DATABASE",
 	@"DUAL",
 	@"EACH",
 	@"ELSE",
@@ -153,7 +160,7 @@
 	@"FLOAT",
 	@"FOR",
 	@"FORCE",
-	@"FOREIGN",
+	@"FOREIGN KEY",
 	@"FOUND",
 	@"FROM",
 	@"FULLTEXT",
@@ -240,7 +247,45 @@
 	@"SENSITIVE",
 	@"SEPARATOR",
 	@"SET",
-	@"SHOW",
+	@"SHOW PROCEDURE STATUS",
+	@"SHOW PROCESSLIST",
+	@"SHOW SCHEMAS",
+	@"SHOW SLAVE HOSTS",
+	@"SHOW PRIVILEGES",
+	@"SHOW OPEN TABLES",
+	@"SHOW MASTER STATUS",
+	@"SHOW SLAVE STATUS",
+	@"SHOW PLUGIN",
+	@"SHOW STORAGE ENGINES",
+	@"SHOW VARIABLES",
+	@"SHOW WARNINGS",
+	@"SHOW TRIGGERS",
+	@"SHOW TABLES",
+	@"SHOW MASTER LOGS",
+	@"SHOW TABLE STATUS",
+	@"SHOW TABLE TYPES",
+	@"SHOW STATUS",
+	@"SHOW INNODB STATUS",
+	@"SHOW CREATE DATABASE",
+	@"SHOW CREATE FUNCTION",
+	@"SHOW CREATE PROCEDURE",
+	@"SHOW CREATE SCHEMA",
+	@"SHOW COLUMNS",
+	@"SHOW COLLATION",
+	@"SHOW BINARY LOGS",
+	@"SHOW BINLOG EVENTS",
+	@"SHOW CHARACTER SET",
+	@"SHOW CREATE TABLE",
+	@"SHOW CREATE VIEW",
+	@"SHOW FUNCTION STATUS",
+	@"SHOW GRANTS",
+	@"SHOW INDEX",
+	@"SHOW FIELDS",
+	@"SHOW ERRORS",
+	@"SHOW DATABASES",
+	@"SHOW ENGINE",
+	@"SHOW ENGINES",
+	@"SHOW KEYS",
 	@"SMALLINT",
 	@"SONAME",
 	@"SPATIAL",
