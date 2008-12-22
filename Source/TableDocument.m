@@ -1168,32 +1168,21 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if ([menuItem action] == @selector(import:)) {
+	if ([menuItem action] == @selector(import:) ||
+		[menuItem action] == @selector(export:) ||
+		[menuItem action] == @selector(exportMultipleTables:) ||
+		[menuItem action] == @selector(removeDatabase:))
+	{
 		return ([self database] != nil);
 	}
 	
-	if ([menuItem action] == @selector(importCSV:)) {
+	if ([menuItem action] == @selector(exportTable:))
+	{
 		return ([self database] != nil && [self table] != nil);
-	}
-	
-	if ([menuItem action] == @selector(export:)) {
-		return ([self database] != nil);
-	}
-	
-	if ([menuItem action] == @selector(exportTable:)) {
-		return ([self database] != nil && [self table] != nil);
-	}
-	
-	if ([menuItem action] == @selector(exportMultipleTables:)) {
-		return ([self database] != nil);
 	}
 	
 	if ([menuItem action] == @selector(chooseEncoding:)) {
 		return [self supportsEncoding];
-	}
-	
-	if ([menuItem action] == @selector(removeDatabase:)) {
-		return ([self database] != nil);
 	}
 	
 	// table menu items
@@ -1208,6 +1197,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	{
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
+	
 	return [super validateMenuItem:menuItem];
 }
 
