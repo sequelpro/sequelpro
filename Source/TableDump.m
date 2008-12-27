@@ -361,16 +361,10 @@
 	[prefs setObject:[sheet directory] forKey:@"openPath"];
 	
 	//load file into string
-	if ( [NSString respondsToSelector:@selector(stringWithContentsOfFile:encoding:error:)] ) {
-		// mac os 10.4 or later
-		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]
-											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
-												error:errorStr];
-	} else {
-		// mac os pre 10.4
-		dumpFile = [NSString stringWithContentsOfFile:[sheet filename]];
-	}
-	
+	dumpFile = [NSString stringWithContentsOfFile:[sheet filename]
+										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
+											error:errorStr];
+
 	if ( !dumpFile ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
 						  NSLocalizedString(@"OK", @"OK button"),
@@ -850,10 +844,12 @@
 								
 								// Until we have access to field types, test whether this cell contains a
 								// number via use of an NSScanner and a check of the first couple of
-								// characters.  If it is a number, add the number directly.
+								// characters (0[^.] is not a number).  If it is a number, add the number directly.
 								sqlNumericTester = [NSScanner scannerWithString:cellValue];
 								if ([sqlNumericTester scanFloat:nil] && [sqlNumericTester isAtEnd] && 
-									([cellValue characterAtIndex:0] != '0' || [cellValue characterAtIndex:1] == '.')) {
+									([cellValue characterAtIndex:0] != '0'
+									|| [cellValue length] == 1
+									|| ([cellValue length] > 1 && [cellValue characterAtIndex:1] == '.'))) {
 									[sqlString appendString:cellValue];
 									
 								// Otherwise add a quoted string with special characters escaped

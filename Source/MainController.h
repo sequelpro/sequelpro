@@ -24,6 +24,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class SPPreferenceController;
+
 @interface MainController : NSObject 
 {
 	IBOutlet id keyChainInstance;
@@ -59,6 +61,8 @@
 	NSUserDefaults *prefs;
 	
 	BOOL isNewFavorite;
+	
+	SPPreferenceController *prefsController;
 }
 
 //IBAction methods

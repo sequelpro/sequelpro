@@ -775,7 +775,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)detectTableEncodingForTable:(NSString *)table;
 {
-	NSString *tableCollation = [[[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS WHERE NAME = '%@'", table]] fetchRowAsDictionary] objectForKey:@"Collation"];
+	NSString *tableCollation = [[[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", table]] fetchRowAsDictionary] objectForKey:@"Collation"];
 
 	if (tableCollation != nil) {
 		// Split up the collation string so we can get the encoding
@@ -1008,7 +1008,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		//flushed privileges without errors
-		NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Succesfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
@@ -1168,24 +1168,17 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if ([menuItem action] == @selector(import:)) {
+	if ([menuItem action] == @selector(import:) ||
+		[menuItem action] == @selector(export:) ||
+		[menuItem action] == @selector(exportMultipleTables:) ||
+		[menuItem action] == @selector(removeDatabase:))
+	{
 		return ([self database] != nil);
 	}
 	
-	if ([menuItem action] == @selector(importCSV:)) {
+	if ([menuItem action] == @selector(exportTable:))
+	{
 		return ([self database] != nil && [self table] != nil);
-	}
-	
-	if ([menuItem action] == @selector(export:)) {
-		return ([self database] != nil);
-	}
-	
-	if ([menuItem action] == @selector(exportTable:)) {
-		return ([self database] != nil && [self table] != nil);
-	}
-	
-	if ([menuItem action] == @selector(exportMultipleTables:)) {
-		return ([self database] != nil);
 	}
 	
 	if ([menuItem action] == @selector(chooseEncoding:)) {
@@ -1204,6 +1197,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	{
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
+	
 	return [super validateMenuItem:menuItem];
 }
 

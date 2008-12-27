@@ -518,7 +518,7 @@ fetches the result as an array with a dictionary for each row in it
 {
 	NSMutableArray *tempResult = [NSMutableArray array];
 	NSMutableDictionary *tempRow;
-	NSEnumerator *enumerator;
+	NSArray *keys;
 	id key;
 	int i;
 
@@ -527,8 +527,9 @@ fetches the result as an array with a dictionary for each row in it
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
-		enumerator = [tempRow keyEnumerator];
-		while ( (key = [enumerator nextObject]) ) {
+		keys = [tempRow allKeys];
+		for (int i = 0; i < [keys count] ; i++) {
+			key = [keys objectAtIndex:i];
 			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] )
 				[tempRow setObject:[prefs objectForKey:@"nullValue"] forKey:key];
 		}
@@ -937,7 +938,7 @@ Having validated a drop, perform the field/column reordering to match.
 	return YES;
 }
 
-#pragma mark TtableView delegate methods
+#pragma mark TableView delegate methods
 
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {

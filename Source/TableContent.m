@@ -149,17 +149,11 @@
 	
 	// Add the new columns to the table
 	for ( i = 0 ; i < [fieldNames count] ; i++ ) {
-	
+		
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[fieldNames objectAtIndex:i]];
 		[theCol setEditable:YES];
-		if ( [theCol respondsToSelector:@selector(setResizingMask:)] ) {
-			// Mac OS X 10.4+
-			[theCol setResizingMask:NSTableColumnUserResizingMask];
-		} else {
-			// Mac OS X pre-10.4
-			[theCol setResizable:YES];
-		}
+		
 		[[theCol headerCell] setStringValue:[fieldNames objectAtIndex:i]];
 		
 		// Set up the data cell depending on the column type
@@ -180,12 +174,9 @@
 			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		}
 		[dataCell setEditable:YES];
-
-		if ( [dataCell respondsToSelector:@selector(setLineBreakMode:)] ) {
-			// Mac OS X 10.4+
-			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		}
-
+		
+		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+		
 		// Set the data cell font according to the preferences
 		if ( [prefs boolForKey:@"useMonospacedFonts"] )
 		{
@@ -198,7 +189,7 @@
 		
 		// Assign the data cell
 		[theCol setDataCell:dataCell];
-
+		
 		// Set the width of this column to saved value if exists
 		colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance table]] objectForKey:[fieldNames objectAtIndex:i]];
 		if ( colWidth )
@@ -773,13 +764,7 @@
 		} else {
 			data = [editData description];
 		}
-		if ( [editData respondsToSelector:@selector(writeToFile:atomically:encoding:error:)] ) {
-			// mac os 10.4 or later
-			[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[(NSString *)[tableDocumentInstance encoding] UTF8String]] error:NULL];
-		} else {
-			// mac os pre 10.4
-			[editData writeToFile:fileName atomically:YES];
-		}
+		[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[(NSString *)[tableDocumentInstance encoding] UTF8String]] error:NULL];
 	}
 }
 

@@ -9,6 +9,16 @@
 /* Begin PBXBuildFile section */
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
 		1761FD9E0EF0488900331368 /* build-version.pl in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD9D0EF0488900331368 /* build-version.pl */; };
+		1761FE080EF04C3900331368 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1761FE070EF04C3900331368 /* SPPreferenceController.m */; };
+		1761FE140EF04CD500331368 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FE130EF04CD500331368 /* Preferences.xib */; };
+		1761FE230EF0504B00331368 /* database.png in Resources */ = {isa = PBXBuildFile; fileRef = 1761FE1E0EF0504B00331368 /* database.png */; };
+		1761FE240EF0504B00331368 /* favorites.png in Resources */ = {isa = PBXBuildFile; fileRef = 1761FE1F0EF0504B00331368 /* favorites.png */; };
+		1761FE250EF0504B00331368 /* network.png in Resources */ = {isa = PBXBuildFile; fileRef = 1761FE200EF0504B00331368 /* network.png */; };
+		1761FE260EF0504B00331368 /* security.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1761FE210EF0504B00331368 /* security.tiff */; };
+		1761FE270EF0504B00331368 /* tables-new.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1761FE220EF0504B00331368 /* tables-new.tiff */; };
+		1761FE7A0EF0557300331368 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1761FE790EF0557300331368 /* SPWindowAdditions.m */; };
+		1761FF280EF0652200331368 /* notifications.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1761FF270EF0652200331368 /* notifications.tiff */; };
+		1761FF3E0EF066BB00331368 /* PreferenceDefaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1761FF3D0EF066BB00331368 /* PreferenceDefaults.plist */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* MainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* MainController.m */; };
@@ -118,6 +128,18 @@
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
+		1761FE060EF04C3900331368 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
+		1761FE070EF04C3900331368 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
+		1761FE110EF04CCE00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
+		1761FE1E0EF0504B00331368 /* database.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = database.png; sourceTree = "<group>"; };
+		1761FE1F0EF0504B00331368 /* favorites.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = favorites.png; sourceTree = "<group>"; };
+		1761FE200EF0504B00331368 /* network.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = network.png; sourceTree = "<group>"; };
+		1761FE210EF0504B00331368 /* security.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = security.tiff; sourceTree = "<group>"; };
+		1761FE220EF0504B00331368 /* tables-new.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "tables-new.tiff"; sourceTree = "<group>"; };
+		1761FE780EF0557300331368 /* SPWindowAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowAdditions.h; sourceTree = "<group>"; };
+		1761FE790EF0557300331368 /* SPWindowAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowAdditions.m; sourceTree = "<group>"; };
+		1761FF270EF0652200331368 /* notifications.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = notifications.tiff; sourceTree = "<group>"; };
+		1761FF3D0EF066BB00331368 /* PreferenceDefaults.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = PreferenceDefaults.plist; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
@@ -275,6 +297,15 @@
 			path = Scripts;
 			sourceTree = "<group>";
 		};
+		1761FE770EF0554900331368 /* Category Additions */ = {
+			isa = PBXGroup;
+			children = (
+				1761FE780EF0557300331368 /* SPWindowAdditions.h */,
+				1761FE790EF0557300331368 /* SPWindowAdditions.m */,
+			);
+			name = "Category Additions";
+			sourceTree = "<group>";
+		};
 		17E641420EF01E8A001BC333 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -297,6 +328,7 @@
 				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
 				17E642390EF0216C001BC333 /* Credits.rtf */,
 				17E641F40EF02088001BC333 /* askForPass.sh */,
+				1761FF3D0EF066BB00331368 /* PreferenceDefaults.plist */,
 				17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */,
 				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
@@ -311,8 +343,6 @@
 				17E641490EF01EF6001BC333 /* CustomQuery.m */,
 				17E6414A0EF01EF6001BC333 /* MainController.h */,
 				17E6414B0EF01EF6001BC333 /* MainController.m */,
-				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
-				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
 				17E6414E0EF01EF6001BC333 /* TableContent.h */,
 				17E6414F0EF01EF6001BC333 /* TableContent.m */,
 				17E641500EF01EF6001BC333 /* TableDocument.h */,
@@ -321,6 +351,10 @@
 				17E641530EF01EF6001BC333 /* TableDump.m */,
 				17E641540EF01EF6001BC333 /* TableSource.h */,
 				17E641550EF01EF6001BC333 /* TableSource.m */,
+				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
+				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
+				1761FE060EF04C3900331368 /* SPPreferenceController.h */,
+				1761FE070EF04C3900331368 /* SPPreferenceController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -356,6 +390,7 @@
 				17E641700EF01F52001BC333 /* MCPKit */,
 				17E641710EF01F5C001BC333 /* GUI */,
 				17E641720EF01F6B001BC333 /* SSHTunnel */,
+				1761FE770EF0554900331368 /* Category Additions */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -408,6 +443,12 @@
 			isa = PBXGroup;
 			children = (
 				17E6418C0EF02036001BC333 /* appicon.icns */,
+				1761FF270EF0652200331368 /* notifications.tiff */,
+				1761FE1E0EF0504B00331368 /* database.png */,
+				1761FE1F0EF0504B00331368 /* favorites.png */,
+				1761FE200EF0504B00331368 /* network.png */,
+				1761FE210EF0504B00331368 /* security.tiff */,
+				1761FE220EF0504B00331368 /* tables-new.tiff */,
 				17E6418D0EF02036001BC333 /* clearconsole.tiff */,
 				17E6418E0EF02036001BC333 /* CodeAssistantProtocol.tiff */,
 				17E6418F0EF02036001BC333 /* columnadd.tiff */,
@@ -468,6 +509,7 @@
 			children = (
 				17E642060EF020CB001BC333 /* DBView.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
+				1761FE130EF04CD500331368 /* Preferences.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -609,6 +651,14 @@
 				17E642700EF02733001BC333 /* English.lproj in Resources */,
 				1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */,
 				1761FD9E0EF0488900331368 /* build-version.pl in Resources */,
+				1761FE140EF04CD500331368 /* Preferences.xib in Resources */,
+				1761FE230EF0504B00331368 /* database.png in Resources */,
+				1761FE240EF0504B00331368 /* favorites.png in Resources */,
+				1761FE250EF0504B00331368 /* network.png in Resources */,
+				1761FE260EF0504B00331368 /* security.tiff in Resources */,
+				1761FE270EF0504B00331368 /* tables-new.tiff in Resources */,
+				1761FF280EF0652200331368 /* notifications.tiff in Resources */,
+				1761FF3E0EF066BB00331368 /* PreferenceDefaults.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -655,6 +705,8 @@
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
 				17E641840EF01FA8001BC333 /* CMTextView.m in Sources */,
 				17E641890EF01FB4001BC333 /* SSHTunnel.m in Sources */,
+				1761FE080EF04C3900331368 /* SPPreferenceController.m in Sources */,
+				1761FE7A0EF0557300331368 /* SPWindowAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -667,6 +719,14 @@
 				1761FD470EF03A6F00331368 /* English */,
 			);
 			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		1761FE130EF04CD500331368 /* Preferences.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1761FE110EF04CCE00331368 /* English */,
+			);
+			name = Preferences.xib;
 			sourceTree = "<group>";
 		};
 		17E642060EF020CB001BC333 /* DBView.xib */ = {

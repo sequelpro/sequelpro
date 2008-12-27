@@ -25,6 +25,7 @@
 #import "MainController.h"
 #import "KeyChain.h"
 #import "TableDocument.h"
+#import "SPPreferenceController.h"
 
 @implementation MainController
 
@@ -88,6 +89,7 @@ opens the preferences window
 	[encodingPopUpButton selectItemWithTitle:[prefs stringForKey:@"encoding"]];
 
 	[preferencesWindow makeKeyAndOrderFront:self];
+	[prefsController showWindow:self];
 }
 
 /*
@@ -639,7 +641,8 @@ checks for updates and opens download page in default browser
 	NSEnumerator *enumerator;
 	id favorite;
 	NSString *name, *host, *user, *database, *password;
-	//int code;
+	
+	prefsController = [[SPPreferenceController alloc] init];
 
 	//register MainController as services provider
 	[NSApp setServicesProvider:self];

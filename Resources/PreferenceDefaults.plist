@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>limitRows</key>
+	<true/>
+	<key>limitRowsValue</key>
+	<integer>1000</integer>
+	<key>reloadAfterAdding</key>
+	<true/>
+	<key>reloadAfterEditing</key>
+	<true/>
+	<key>reloadAfterRemoving</key>
+	<false/>
+	<key>nullValue</key>
+	<string>NULL</string>
+	<key>showError</key>
+	<true/>
+	<key>dontShowBlob</key>
+	<false/>
+	<key>encoding</key>
+	<string>Autodetect</string>
+	<key>useMonospacedFonts</key>
+	<false/>
+	<key>fetchRowCount</key>
+	<true/>
+	<key>growlNotifications</key>
+	<true/>
+	<key>notifyConnectDisconnect</key>
+	<true/>
+	<key>notifyImportExport</key>
+	<true/>
+	<key>notifyQueryCompletion</key>
+	<true/>
+</dict>
+</plist>
