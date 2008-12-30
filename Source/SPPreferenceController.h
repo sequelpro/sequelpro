@@ -33,6 +33,8 @@
 	
 	IBOutlet NSTableView *favoritesTableView;
 	
+	IBOutlet NSArrayController *favoritesController;
+	
 	NSToolbar *toolbar;
 	
 	NSToolbarItem *generalItem;
@@ -40,7 +42,7 @@
 	NSToolbarItem *tablesItem;
 	NSToolbarItem *favoritesItem;
 	NSToolbarItem *advancedItem;
-	
+
 	NSMutableArray *favorites;
 	NSUserDefaults *prefs;
 }
@@ -51,5 +53,8 @@
 - (IBAction)displayFavoritePreferences:(id)sender;
 - (IBAction)displayNotificationPreferences:(id)sender;
 - (IBAction)displayAdvancedPreferences:(id)sender;
+
+// Favorites accessor
+- (NSMutableArray *)favorites;
 
 @end

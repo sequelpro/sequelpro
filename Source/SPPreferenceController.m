@@ -22,6 +22,7 @@
 
 #import "SPPreferenceController.h"
 #import "SPWindowAdditions.h"
+#import "SPFavoriteTextFieldCell.h"
 
 #define PREFERENCE_TOOLBAR_GENERAL       @"Preference Toolbar General"
 #define PREFERENCE_TOOLBAR_TABLES        @"Preference Toolbar Tables"
@@ -60,6 +61,13 @@
 	if (favorites == nil) {
 		favorites = [NSMutableArray array];
 	}
+	
+	SPFavoriteTextFieldCell *tableCell = [[[SPFavoriteTextFieldCell alloc] init] autorelease];
+	
+	[tableCell setImage:[NSImage imageNamed:@"database"]];
+	
+	// Replace column's NSTextFieldCell with custom SWProfileTextFieldCell
+	[[[favoritesTableView tableColumns] objectAtIndex:0] setDataCell:tableCell];
 	
 	[favoritesTableView reloadData];
 }
@@ -107,6 +115,14 @@
 	[self _resizeWindowForContentView:advancedView];
 }
 
+// -------------------------------------------------------------------------------
+// favorites
+// -------------------------------------------------------------------------------
+- (NSMutableArray *)favorites
+{
+	return favorites;
+}
+
 #pragma mark -
 #pragma mark TableView datasource methods
 
@@ -124,6 +140,28 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	return [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+}
+
+#pragma mark -
+#pragma mark TableView delegate methods
+	
+// -------------------------------------------------------------------------------
+// tableView:willDisplayCell:forTableColumn:row:
+// -------------------------------------------------------------------------------
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)index
+{
+	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
+		[cell setFavoriteName:[[favorites objectAtIndex:index] objectForKey:@"name"]];
+		[cell setFavoriteHost:[[favorites objectAtIndex:index] objectForKey:@"host"]];
+	}
+}
+
+// -------------------------------------------------------------------------------
+// tableViewSelectionDidChange:
+// -------------------------------------------------------------------------------
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+	[favoritesController setSelectedObjects:[NSArray arrayWithObject:[favorites objectAtIndex:[[favoritesTableView selectedRowIndexes] lastIndex]]]];
 }
 
 #pragma mark -

@@ -29,72 +29,26 @@
 
 @implementation MainController
 
-/*
-opens the preferences window
-*/
+/**
+ * Called even before init so we can register our preference defaults.
+ */
++ (void)initialize
+{
+	// Register application defaults
+	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
+}
+
+/**
+ * Opens the preferences window
+ */
 - (IBAction)openPreferences:(id)sender
 {
-	//get favorites if they exist
-	[favorites release];
-	if ( [prefs objectForKey:@"favorites"] != nil ) {
-		favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"favorites"]];
-	} else {
-		favorites = [[NSMutableArray array] retain];
-	}
-	[tableView reloadData];
-
-	if ( [prefs boolForKey:@"reloadAfterAdding"] ) {
-		[reloadAfterAddingSwitch setState:NSOnState];
-	} else {
-		[reloadAfterAddingSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"reloadAfterEditing"] ) {
-		[reloadAfterEditingSwitch setState:NSOnState];
-	} else {
-		[reloadAfterEditingSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"reloadAfterRemoving"] ) {
-		[reloadAfterRemovingSwitch setState:NSOnState];
-	} else {
-		[reloadAfterRemovingSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"showError"] ) {
-		[showErrorSwitch setState:NSOnState];
-	} else {
-		[showErrorSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"dontShowBlob"] ) {
-		[dontShowBlobSwitch setState:NSOnState];
-	} else {
-		[dontShowBlobSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"limitRows"] ) {
-		[limitRowsSwitch setState:NSOnState];
-	} else {
-		[limitRowsSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[useMonospacedFontsSwitch setState:NSOnState];
-	} else {
-		[useMonospacedFontsSwitch setState:NSOffState];
-	}
-	if ( [prefs boolForKey:@"fetchRowCount"] ) {
-		[fetchRowCountSwitch setState:NSOnState];
-	} else {
-		[fetchRowCountSwitch setState:NSOffState];
-	}
-	[nullValueField setStringValue:[prefs stringForKey:@"nullValue"]];
-	[limitRowsField setStringValue:[prefs stringForKey:@"limitRowsValue"]];
-	[self chooseLimitRows:self];
-	[encodingPopUpButton selectItemWithTitle:[prefs stringForKey:@"encoding"]];
-
-	[preferencesWindow makeKeyAndOrderFront:self];
 	[prefsController showWindow:self];
 }
 
-/*
-adds a favorite
-*/
+/**
+ * Adds a favorite
+ */
 - (IBAction)addFavorite:(id)sender
 {
 	int code;
@@ -333,56 +287,31 @@ passes the query to the last created document
 	return;
 }
 
-
 #pragma mark Sequel Pro menu methods
 
-/*
-opens donate link in default browser
-*/
+/**
+ * Opens donate link in default browser
+ */
 - (IBAction)donate:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/Donations"]];
 }
 
-/*
-opens website link in default browser
-*/
+/**
+ * Opens website link in default browser
+ */
 - (IBAction)visitWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro"]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/"]];
 }
 
-/*
-opens help link in default browser
-*/
+/**
+ * Opens help link in default browser
+ */
 - (IBAction)visitHelpWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/FAQ"]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/frequently-asked-questions.html"]];
 }
-
-/*
-checks for updates and opens download page in default browser
-*/
-- (IBAction)checkForUpdates:(id)sender
-{
-	NSLog(@"[MainController checkForUpdates:] is not currently functional.");
-}
-
-
-#pragma mark TableView datasource methods
-
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
-{
-	return [favorites count];
-}
-
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
-{
-	return [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-}
-
 
 #pragma mark TableView drag & drop datasource methods
 
@@ -571,69 +500,6 @@ checks for updates and opens download page in default browser
 	return NO;
 }
 
-
-#pragma mark Window delegate methods
-
-/*
- saves the preferences
- */
-- (BOOL)windowShouldClose:(id)sender
-{
-	if ( sender == preferencesWindow ) {
-		if ( [reloadAfterAddingSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"reloadAfterAdding"];
-		} else {
-			[prefs setBool:NO forKey:@"reloadAfterAdding"];
-		}
-		if ( [reloadAfterEditingSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"reloadAfterEditing"];
-		} else {
-			[prefs setBool:NO forKey:@"reloadAfterEditing"];
-		}
-		if ( [reloadAfterRemovingSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"reloadAfterRemoving"];
-		} else {
-			[prefs setBool:NO forKey:@"reloadAfterRemoving"];
-		}
-		if ( [showErrorSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"showError"];
-		} else {
-			[prefs setBool:NO forKey:@"showError"];
-		}
-		if ( [dontShowBlobSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"dontShowBlob"];
-		} else {
-			[prefs setBool:NO forKey:@"dontShowBlob"];
-		}
-		if ( [limitRowsSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"limitRows"];
-		} else {
-			[prefs setBool:NO forKey:@"limitRows"];
-		}
-		if ( [useMonospacedFontsSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"useMonospacedFonts"];
-		} else {
-			[prefs setBool:NO forKey:@"useMonospacedFonts"];
-		}
-		if ( [fetchRowCountSwitch state] == NSOnState ) {
-			[prefs setBool:YES forKey:@"fetchRowCount"];
-		} else {
-			[prefs setBool:NO forKey:@"fetchRowCount"];
-		}
-		[prefs setObject:[nullValueField stringValue] forKey:@"nullValue"];
-		if ( [limitRowsField intValue] > 0 ) {
-			[prefs setInteger:[limitRowsField intValue] forKey:@"limitRowsValue"];
-		} else {
-			[prefs setInteger:1 forKey:@"limitRowsValue"];	
-		}
-		[prefs setObject:[encodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
-	
-		[prefs setObject:favorites forKey:@"favorites"];
-	}
-	return YES;
-}
-
-
 #pragma mark Other methods
 
 - (void)awakeFromNib
@@ -796,10 +662,12 @@ checks for updates and opens download page in default browser
 */
 }
 
+/**
+ * What exactly is this for? 
+ */
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command
-/* what exactly is this for? */
 {
-	[ NSApp terminate: self ];
+	[NSApp terminate:self];
 }
 
 @end

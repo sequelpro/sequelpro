@@ -19,6 +19,7 @@
 		1761FE7A0EF0557300331368 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1761FE790EF0557300331368 /* SPWindowAdditions.m */; };
 		1761FF280EF0652200331368 /* notifications.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1761FF270EF0652200331368 /* notifications.tiff */; };
 		1761FF3E0EF066BB00331368 /* PreferenceDefaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1761FF3D0EF066BB00331368 /* PreferenceDefaults.plist */; };
+		17B1769A0F090EED00BE7715 /* SPFavoriteTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B176990F090EED00BE7715 /* SPFavoriteTextFieldCell.m */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* MainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* MainController.m */; };
@@ -140,6 +141,8 @@
 		1761FE790EF0557300331368 /* SPWindowAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowAdditions.m; sourceTree = "<group>"; };
 		1761FF270EF0652200331368 /* notifications.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = notifications.tiff; sourceTree = "<group>"; };
 		1761FF3D0EF066BB00331368 /* PreferenceDefaults.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = PreferenceDefaults.plist; sourceTree = "<group>"; };
+		17B176980F090EED00BE7715 /* SPFavoriteTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteTextFieldCell.h; sourceTree = "<group>"; };
+		17B176990F090EED00BE7715 /* SPFavoriteTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoriteTextFieldCell.m; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
@@ -377,6 +380,8 @@
 			children = (
 				17E641680EF01F37001BC333 /* ImageAndTextCell.h */,
 				17E641690EF01F37001BC333 /* ImageAndTextCell.m */,
+				17B176980F090EED00BE7715 /* SPFavoriteTextFieldCell.h */,
+				17B176990F090EED00BE7715 /* SPFavoriteTextFieldCell.m */,
 				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
 				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
 			);
@@ -707,6 +712,7 @@
 				17E641890EF01FB4001BC333 /* SSHTunnel.m in Sources */,
 				1761FE080EF04C3900331368 /* SPPreferenceController.m in Sources */,
 				1761FE7A0EF0557300331368 /* SPWindowAdditions.m in Sources */,
+				17B1769A0F090EED00BE7715 /* SPFavoriteTextFieldCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

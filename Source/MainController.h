@@ -81,7 +81,6 @@
 - (IBAction)donate:(id)sender;
 - (IBAction)visitWebsite:(id)sender;
 - (IBAction)visitHelpWebsite:(id)sender;
-- (IBAction)checkForUpdates:(id)sender;
 
 //SSHTunnel methods
 - (id)authenticate:(NSScriptCommand *)command;

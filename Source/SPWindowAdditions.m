@@ -65,7 +65,9 @@
     }
 	
 	frame.origin.y += frame.size.height - newHeight;
+	
 	frame.size.height = newHeight;
+	frame.size.width  = viewSize.width; 
 	
 	[self setFrame:frame display:YES animate:YES];
 	
