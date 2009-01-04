@@ -94,6 +94,7 @@
 	NSString *savePath;
 	NSString *openPath;
 	NSUserDefaults *prefs;
+	BOOL progressCancelled;
 }
 
 //IBAction methods
@@ -101,15 +102,13 @@
 - (IBAction)selectTables:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
-//- (IBAction)chooseDumpType:(id)sender;
-
+- (IBAction)cancelProgressBar:(id)sender;
 //export methods
 //- (IBAction)saveDump:(id)sender;
 - (void)exportFile:(int)tag;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
 //import methods
-//- (IBAction)openDump:(id)sender;
 - (void)importFile;
 - (IBAction)changeFormat:(id)sender;
 - (IBAction)changeTable:(id)sender;
@@ -138,16 +137,6 @@
 
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
 
 //last but not least
 - (id)init;

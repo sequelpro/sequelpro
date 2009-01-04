@@ -294,7 +294,10 @@
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 	}
-    
+    if (progressCancelled)
+	{
+		progressCancelled = NO;
+	}
     // Export finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@",@"description for finished exporting growl notification"), [[sheet filename] lastPathComponent]] 
@@ -342,29 +345,18 @@
 	[fieldMappingTableView reloadData];
 }
 
-- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-/*
- reads mysql-dumpfile
- */
+- (void)importBackgroundProcess:(NSString*)filename
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *dumpFile;
 	NSError **errorStr; 
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
-	
-	[sheet orderOut:self];
-	
-	if ( returnCode != NSOKButton )
-		return;
-	
-	//save path to preferences
-	[prefs setObject:[sheet directory] forKey:@"openPath"];
-	
 	//load file into string
-	dumpFile = [NSString stringWithContentsOfFile:[sheet filename]
+	dumpFile = [NSString stringWithContentsOfFile:filename
 										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
 											error:errorStr];
-
+	
 	if ( !dumpFile ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
 						  NSLocalizedString(@"OK", @"OK button"),
@@ -442,6 +434,7 @@
 		////////////////
 		
 	} else if ( [fileType isEqualToString:@"CSV"] ) {
+		//NSLog(@"CSV Import...");
 		//import csv file
 		int code;
 		NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
@@ -474,7 +467,12 @@
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
 		
-		
+		if (progressCancelled) {
+			progressCancelled = NO;
+			//NSLog(@"Progress Cancelled... cleaning up");
+			[pool release];
+			return;
+		}
 		CMMCPResult *theResult;
 		int i;
 		theResult = (CMMCPResult *) [mySQLConnection listTables];
@@ -608,8 +606,25 @@
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [[sheet filename] lastPathComponent]] 
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
                                               notificationName:@"Import Finished"];
+	[pool release];
+}
+- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+/*
+ reads mysql-dumpfile
+ */
+{	
+	[sheet orderOut:self];
+	
+	if ( returnCode != NSOKButton )
+		return;
+	
+	//save path to preferences
+	[prefs setObject:[sheet directory] forKey:@"openPath"];
+	
+	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:[sheet filename]];
+	
 }
 
 - (void)setupFieldMappingArray
@@ -1120,12 +1135,16 @@
 	return TRUE;
 }
 
+
 - (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
 			  enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds
 /*
  loads a csv string into an array
  */
 {
+
+	//NSLog(@"In arrayForCSV...");
+	
 	NSMutableString *tempTerminated, *tempLineEnds;
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempRowArray = [NSMutableArray array];
@@ -1166,7 +1185,7 @@
 	scanner = [NSScanner scannerWithString:csv];
 	[scanner setCharactersToBeSkipped:nil];
 	
-	while ( ![scanner isAtEnd] ) {
+	while ( ![scanner isAtEnd] && !progressCancelled) {
 		[tempString setString:@""];
 		br = NO;
 		
@@ -1197,12 +1216,11 @@
 		
 		// Skip blank lines
 		if (![tempString length]) continue;
-		
 		// Add the line to the array
 		[linesArray addObject:[NSString stringWithString:tempString]];
 	}
 	
-	for ( x = 0 ; x < [linesArray count] ; x++ ) {
+	for ( x = 0 ; x < [linesArray count] && !progressCancelled; x++ ) {
 		
 		//separate fields
 		[tempRowArray removeAllObjects];
@@ -1258,6 +1276,7 @@
 		}
 		//add row to tempArray
 		[tempArray addObject:[NSArray arrayWithArray:tempRowArray]];
+		//NSLog(@"tempArray count: %d", [tempArray count]);
 	}
 	
 	return [NSArray arrayWithArray:tempArray];
@@ -1477,7 +1496,7 @@
 	[fileHandle writeData:[infoString dataUsingEncoding:connectionEncoding]];
 	
 	// Loop through the selected tables
-	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
+	for ( i = 0 ; i < [selectedTables count] && !progressCancelled; i++ ) {
 		
 		// Update the progress text and reset the progress bar to indeterminate status
 		tableName = [selectedTables objectAtIndex:i];
@@ -1891,5 +1910,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[super dealloc];
 }
 
+- (IBAction)cancelProgressBar:(id)sender
+{
+	progressCancelled = YES;	
+}
 
 @end
