@@ -58,7 +58,7 @@
     IBOutlet id exportMultipleLinesTerminatedField;
 	
 	IBOutlet id importCSVView;
-	IBOutlet id importFormatPopup;
+	IBOutlet NSPopUpButton *importFormatPopup;
 	IBOutlet id importCSVBox;
     IBOutlet id importFieldNamesSwitch;
     IBOutlet id importFieldsTerminatedField;

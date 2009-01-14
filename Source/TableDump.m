@@ -312,8 +312,13 @@
  invoked when user clicks on an import menuItem
  */
 {
+	// prepare open panel and accessory view
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 	[openPanel setAccessoryView:importCSVView];
+	if ([prefs valueForKey:@"importFormatPopupValue"]) {
+		[importFormatPopup selectItemWithTitle:[prefs valueForKey:@"importFormatPopupValue"]];
+		[self changeFormat:self];
+	}
 	
 	// Show openPanel
 	[openPanel beginSheetForDirectory:[prefs objectForKey:@"openPath"]
@@ -610,21 +615,20 @@
                                               notificationName:@"Import Finished"];
 	[pool release];
 }
+
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-/*
- reads mysql-dumpfile
- */
-{	
-	[sheet orderOut:self];
-	
-	if ( returnCode != NSOKButton )
-		return;
-	
-	//save path to preferences
+{
+	// save values to preferences
 	[prefs setObject:[sheet directory] forKey:@"openPath"];
+	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
 	
+	// close sheet, and check if user canceled
+	[sheet orderOut:self];
+	if (returnCode != NSOKButton)
+		return;
+		
+	// begin import process
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:[sheet filename]];
-	
 }
 
 - (void)setupFieldMappingArray
