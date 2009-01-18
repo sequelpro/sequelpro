@@ -178,8 +178,6 @@
 		17E641810EF01FA8001BC333 /* CMTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMTextView.m; sourceTree = "<group>"; };
 		17E641850EF01FB4001BC333 /* SSHTunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHTunnel.h; sourceTree = "<group>"; };
 		17E641860EF01FB4001BC333 /* SSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHTunnel.m; sourceTree = "<group>"; };
-		17E641870EF01FB4001BC333 /* SSHTunnel_old.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHTunnel_old.h; sourceTree = "<group>"; };
-		17E641880EF01FB4001BC333 /* SSHTunnel_old.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHTunnel_old.m; sourceTree = "<group>"; };
 		17E6418C0EF02036001BC333 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = appicon.icns; sourceTree = "<group>"; };
 		17E6418D0EF02036001BC333 /* clearconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = clearconsole.tiff; sourceTree = "<group>"; };
 		17E6418F0EF02036001BC333 /* columnadd.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = columnadd.tiff; sourceTree = "<group>"; };
@@ -454,8 +452,6 @@
 			children = (
 				17E641850EF01FB4001BC333 /* SSHTunnel.h */,
 				17E641860EF01FB4001BC333 /* SSHTunnel.m */,
-				17E641870EF01FB4001BC333 /* SSHTunnel_old.h */,
-				17E641880EF01FB4001BC333 /* SSHTunnel_old.m */,
 			);
 			name = SSHTunnel;
 			sourceTree = "<group>";
