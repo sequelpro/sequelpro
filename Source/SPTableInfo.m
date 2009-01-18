@@ -73,7 +73,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			  row:(int)rowIndex
 {
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"CodeAssistantProtocol"]];
+		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
