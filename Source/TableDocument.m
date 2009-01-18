@@ -84,6 +84,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
+- (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
+{
+	
+	NSPrintInfo *printInfo = [self printInfo];
+	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
+	return printOp;
+}
+
 
 - (CMMCPConnection *)sharedConnection
 {
