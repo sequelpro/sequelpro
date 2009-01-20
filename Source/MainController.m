@@ -793,10 +793,11 @@ checks for updates and opens download page in default browser
 */
 }
 
+// Method used for Applescript hooks to quit the application
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command
-/* what exactly is this for? */
 {
 	[ NSApp terminate: self ];
+	return nil;
 }
 
 @end
