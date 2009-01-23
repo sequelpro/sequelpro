@@ -87,6 +87,8 @@
 		17E6420A0EF020CB001BC333 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E642060EF020CB001BC333 /* DBView.xib */; };
 		17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17E642390EF0216C001BC333 /* Credits.rtf */; };
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
+		4DAE70430F2A605B00464432 /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4DAE70410F2A605B00464432 /* UserManagerView.xib */; };
+		4DAE70460F2A607800464432 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DAE70450F2A607800464432 /* SPUserManager.m */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
@@ -239,6 +241,9 @@
 		17E6423D0EF0218B001BC333 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = Interfaces/English.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		4DAE70420F2A605B00464432 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
+		4DAE70440F2A607800464432 /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
+		4DAE70450F2A607800464432 /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
@@ -361,6 +366,8 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				4DAE70440F2A607800464432 /* SPUserManager.h */,
+				4DAE70450F2A607800464432 /* SPUserManager.m */,
 				17E641480EF01EF6001BC333 /* CustomQuery.h */,
 				17E641490EF01EF6001BC333 /* CustomQuery.m */,
 				17E6414A0EF01EF6001BC333 /* MainController.h */,
@@ -518,6 +525,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				4DAE70410F2A605B00464432 /* UserManagerView.xib */,
 				17E642060EF020CB001BC333 /* DBView.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 			);
@@ -660,6 +668,7 @@
 				1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */,
 				1761FD9E0EF0488900331368 /* build-version.pl in Resources */,
 				B5E2C5FA0F2353B5007446E0 /* TablePropertyIcon.png in Resources */,
+				4DAE70430F2A605B00464432 /* UserManagerView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -706,6 +715,7 @@
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
 				17E641840EF01FA8001BC333 /* CMTextView.m in Sources */,
 				17E641890EF01FB4001BC333 /* SSHTunnel.m in Sources */,
+				4DAE70460F2A607800464432 /* SPUserManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -742,6 +752,14 @@
 				17E6423D0EF0218B001BC333 /* English */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		4DAE70410F2A605B00464432 /* UserManagerView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4DAE70420F2A605B00464432 /* English */,
+			);
+			name = UserManagerView.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
