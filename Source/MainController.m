@@ -339,7 +339,7 @@ opens donate link in default browser
 */
 - (IBAction)donate:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/Donations"]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/donate.html"]];
 }
 
 /*
@@ -347,7 +347,7 @@ opens website link in default browser
 */
 - (IBAction)visitWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro"]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/"]];
 }
 
 /*
@@ -355,7 +355,7 @@ opens help link in default browser
 */
 - (IBAction)visitHelpWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://code.google.com/p/sequel-pro/wiki/FAQ"]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/frequently-asked-questions.html"]];
 }
 
 /*
