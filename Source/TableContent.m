@@ -520,16 +520,16 @@
 						compareOperator = @"!=";
 						break;
 					case 2:
-						compareOperator = @"<";
-						break;
-					case 3:
 						compareOperator = @">";
 						break;
+					case 3:
+						compareOperator = @"<";
+						break;
 					case 4:
-						compareOperator = @"<=";
+						compareOperator = @">=";
 						break;
 					case 5:
-						compareOperator = @">=";
+						compareOperator = @"<=";
 						break;
 					case 6:
 						compareOperator = @"IS NULL";
