@@ -428,22 +428,21 @@
 		return;
 	}
 	
-	//query started
+	// Query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
 	BOOL doQuote = YES;
 	BOOL ignoreArgument = NO;
 
 	// Start building the query string
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`",
-					[self fieldListForQuery], selectedTable];			
+	queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];			
 
 	// Add filter if appropriate
 	if (([argument length] > 0) || [[[compareField selectedItem] title] hasSuffix:@"NULL"]) {
-		if ( ![compareType isEqualToString:@""] ) {
-			if ( [compareType isEqualToString:@"string"] ) {
-				//string comparision
-				switch ( tag ) {
+		if (![compareType isEqualToString:@""]) {
+			if ([compareType isEqualToString:@"string"]) {
+				// String comparision
+				switch (tag) {
 					case 0:
 						compareOperator = @"LIKE";
 						break;
@@ -461,7 +460,7 @@
 					case 4:
 						compareOperator = @"IN";
 						doQuote = NO;
-						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+						[argument setString:[[@"('" stringByAppendingString:argument] stringByAppendingString:@"')"]];
 						break;
 					case 5:
 						compareOperator = @"IS NULL";
