@@ -1,8 +1,8 @@
 //
-//  SPTableInfo.h
+//  SPStringAdditions.h
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,14 +22,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPTableInfo : NSObject 
-{
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDocumentInstance;
-	
-	NSMutableArray *info;
-}
+@interface NSString (SPStringAdditions)
+
++ (NSString *)stringForByteSize:(int)byteSize;
 
 @end

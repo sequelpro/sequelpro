@@ -2,23 +2,41 @@
 //  SPTableInfo.m
 //  sequel-pro
 //
-//  Created by Ben Perry on 6/05/08.
-//  Copyright 2008 Ben Perry. All rights reserved.
+//  Created by Ben Perry on Jun 6, 2008
 //
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableInfo.h"
 #import "ImageAndTextCell.h"
-#import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "TableDocument.h"
+#import "SPStringAdditions.h"
+
+#import <MCPKit_bundled/MCPKit_bundled.h>
 
 @implementation SPTableInfo
 
 - (id)init
 {
-	self = [super init];
-	info = [[NSMutableArray alloc] init];
+	if ((self = [super init])) {
+		info = [[NSMutableArray alloc] init];
+	}
+	
 	return self;
 }
 
@@ -28,10 +46,10 @@
 											 selector:@selector(tableChanged:) 
 												 name:NSTableViewSelectionDidChangeNotification 
 											   object:tableList];
+	
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
 	[infoTable reloadData];
 }
-
 
 - (void)dealloc
 {
@@ -141,9 +159,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"updated: %@", [updateDateFormatter stringFromDate:update_date]]];
 			}
-			
+						
 			[info addObject:[NSString stringWithFormat:@"rows: %@", [theRow objectForKey:@"Rows"]]];
-			[info addObject:[NSString stringWithFormat:@"size: %@", [self sizeFromBytes:[[theRow objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[theRow objectForKey:@"Data_length"] intValue]]]];
 			[info addObject:[NSString stringWithFormat:@"encoding: %@", [[[theRow objectForKey:@"Collation"] componentsSeparatedByString:@"_"] objectAtIndex:0]]];
 			[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [theRow objectForKey:@"Auto_increment"]]];
 			
@@ -153,38 +171,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 	
 	[infoTable reloadData];
-}
-
-- (NSString *)sizeFromBytes:(int)theSize
-{
-	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	float floatSize = theSize;
-	
-	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-	
-	if (theSize < 1023) {
-		[numberFormatter setFormat:@"#,##0 B"];
-		return [numberFormatter stringFromNumber:[NSNumber numberWithInt:theSize]];
-	}
-	
-	floatSize = floatSize / 1024;
-	
-	if (floatSize < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 KB"];
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:floatSize]];
-	}
-	
-	floatSize = floatSize / 1024;
-	
-	if (floatSize < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 MB"];
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:floatSize]];
-	}
-	
-	floatSize = floatSize / 1024;
-	
-	[numberFormatter setFormat:@"#,##0.0 GB"];
-	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:floatSize]];
 }
 
 @end
