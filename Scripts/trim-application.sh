@@ -3,6 +3,8 @@
 ## Author:      Stuart Connolly (stuconnolly.com)
 ##              Copyright (c) 2009 Stuart Connolly. All rights reserved.
 ##
+##              Largely based on 'trim-app' by Ankur Kothari ( http://lipidity.com/downloads/trim-app/ )
+##
 ## Paramters:   -p -- The path to the application that is to be trimmed 
 ##              -d -- Remove unnecessary files (i.e. .DS_Store files, etc) (optional).
 ##              -n -- Trim nib files (i.e. remove .info.nib, classes.nib, data.dependency and designable.nib) (optional).
