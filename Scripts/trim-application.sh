@@ -1,9 +1,7 @@
 #! /bin/ksh
 
-## $Id: trim-application.sh 118 2008-06-21 13:57:41Z stuart $
-##
-## Author:      Stuart Connolly <stuart@stuconnolly.com>
-##              Copyright (c) 2008 Stuart Connolly. All rights reserved.
+## Author:      Stuart Connolly (stuconnolly.com)
+##              Copyright (c) 2009 Stuart Connolly. All rights reserved.
 ##
 ## Paramters:   -p -- The path to the application that is to be trimmed 
 ##              -d -- Remove unnecessary files (i.e. .DS_Store files, etc) (optional).
