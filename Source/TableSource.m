@@ -580,7 +580,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		}
 	} else {
 		//CHANGE syntax
-		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
+		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
 					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
 					[theRow objectForKey:@"Type"]];
