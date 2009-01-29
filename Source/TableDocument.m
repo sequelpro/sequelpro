@@ -434,23 +434,27 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return;
 	
 	[chooseDatabaseButton removeAllItems];
+	
 	[chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
+	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Refresh Databases", @"menu item to refresh databases") action:@selector(setDatabases:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	
-	
 	MCPResult *queryResult = [mySQLConnection listDBs];
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	
+	if ([queryResult numOfRows]) {
+		[queryResult dataSeek:0];
+	}
+	
 	int i;
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+	
+	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+	{
 		[chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 	}
-	if ( ![self database] ) {
-		[chooseDatabaseButton selectItemAtIndex:0];
-	} else {
-		[chooseDatabaseButton selectItemWithTitle:[self database]];
-	}
+	
+	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
 
 /**
