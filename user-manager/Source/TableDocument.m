@@ -33,6 +33,7 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPUserManager.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -1619,6 +1620,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[NSApp terminate:sender];
 }
 
+- (IBAction)openUserManager:(id)sender
+{
+	if (userManagerInstance == nil) 
+	{
+		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
+	}
+}
 - (void)dealloc
 {
 	[chooseDatabaseButton release];

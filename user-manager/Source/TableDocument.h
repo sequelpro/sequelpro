@@ -42,6 +42,7 @@
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableStatusInstance;
+	IBOutlet id userManagerInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;
@@ -91,6 +92,8 @@
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
 }
+
+- (IBAction)openUserManager:(id)sender;
 
 //start sheet
 - (IBAction)connectToDB:(id)sender;
