@@ -16,6 +16,7 @@
 	[super init];
 	
 	children = [[NSMutableArray alloc] init];
+	[self setLeaf:NO];
 	
 	return self;
 }

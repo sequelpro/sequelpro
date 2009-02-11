@@ -16,6 +16,7 @@
 	IBOutlet NSOutlineView* outlineView;
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
+	IBOutlet NSWindow *window;
 	
 	NSMutableArray *users;
 	
@@ -24,5 +25,5 @@
 - (id)initWithConnection:(CMMCPConnection *)connection;
 - (void)setConnection:(CMMCPConnection *)connection;
 - (CMMCPConnection *)connection;
-
+- (void)show;
 @end

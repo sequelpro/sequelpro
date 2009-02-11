@@ -88,8 +88,10 @@
 		17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17E642390EF0216C001BC333 /* Credits.rtf */; };
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
 		4D45CF610F2C20AF0081327F /* SPUserItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D45CF600F2C20AF0081327F /* SPUserItem.m */; };
+		4D8B903E0F42042A001B3F9A /* network-16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4D8B903D0F42042A001B3F9A /* network-16.tiff */; };
 		4DAE70430F2A605B00464432 /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4DAE70410F2A605B00464432 /* UserManagerView.xib */; };
 		4DAE70460F2A607800464432 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DAE70450F2A607800464432 /* SPUserManager.m */; };
+		4DE585900F4287760031FBD0 /* NSUser.png in Resources */ = {isa = PBXBuildFile; fileRef = 4DE5858F0F4287760031FBD0 /* NSUser.png */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
@@ -244,9 +246,11 @@
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		4D45CF5F0F2C20AF0081327F /* SPUserItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserItem.h; sourceTree = "<group>"; };
 		4D45CF600F2C20AF0081327F /* SPUserItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserItem.m; sourceTree = "<group>"; };
+		4D8B903D0F42042A001B3F9A /* network-16.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "network-16.tiff"; sourceTree = "<group>"; };
 		4DAE70420F2A605B00464432 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DAE70440F2A607800464432 /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
 		4DAE70450F2A607800464432 /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
+		4DE5858F0F4287760031FBD0 /* NSUser.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = NSUser.png; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
@@ -471,6 +475,8 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				4DE5858F0F4287760031FBD0 /* NSUser.png */,
+				4D8B903D0F42042A001B3F9A /* network-16.tiff */,
 				17E6418C0EF02036001BC333 /* appicon.icns */,
 				B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */,
 				17E6418D0EF02036001BC333 /* clearconsole.tiff */,
@@ -674,6 +680,8 @@
 				1761FD9E0EF0488900331368 /* build-version.pl in Resources */,
 				B5E2C5FA0F2353B5007446E0 /* TablePropertyIcon.png in Resources */,
 				4DAE70430F2A605B00464432 /* UserManagerView.xib in Resources */,
+				4D8B903E0F42042A001B3F9A /* network-16.tiff in Resources */,
+				4DE585900F4287760031FBD0 /* NSUser.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

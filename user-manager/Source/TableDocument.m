@@ -1626,6 +1626,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	{
 		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
 	}
+	else 
+	{
+		[userManagerInstance show];
+	}
 }
 - (void)dealloc
 {

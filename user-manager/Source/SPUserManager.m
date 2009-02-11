@@ -10,6 +10,9 @@
 #import "CMMCPConnection.h"
 #import "SPUserItem.h"
 #import "CMMCPResult.h"
+#import "ImageAndTextCell.h"
+
+#define COLUMNIDNAME @"NameColumn"
 
 @interface SPUserManager (PrivateMethods)
 - (void)_initializeTree:(NSArray *)items;
@@ -40,6 +43,12 @@
 - (void)awakeFromNib
 {
 	NSLog(@"Just loaded UserManagerView!");
+	
+	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
+	ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
+	[imageAndTextCell setEditable:NO];
+	[tableColumn setDataCell:imageAndTextCell];
+	
 	// Initializing could take a while so run in a separate thread
 	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
 	
@@ -99,6 +108,15 @@
 			SPUserItem *userItem = [[[SPUserItem alloc] init] autorelease];
 			[userItem setUsername:username];
 			[userItem setItemTitle:username];
+			[userItem setLeaf:FALSE];
+			
+			SPUserItem *childItem = [[[SPUserItem alloc] init] autorelease];
+			[childItem setUsername: username];
+			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
+			[childItem setItemTitle:[childItem host]];
+			[childItem setLeaf:TRUE];
+			[userItem addChild:childItem];
+			
 			
 			[treeController insertObject:userItem atArrangedObjectIndexPath:[NSIndexPath indexPathWithIndex:i]];			
 		}
@@ -116,6 +134,11 @@
 	return mySqlConnection;
 }
 
+- (void)show
+{
+	[window makeKeyAndOrderFront:nil];
+}
+
 - (void)dealloc
 {
 	[users release];
@@ -124,4 +147,17 @@
 	[super dealloc];
 }
 
+- (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	if ([cell isKindOfClass:[ImageAndTextCell class]])
+	{
+		if ([(SPUserItem *)item isLeaf])
+		{
+			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"network-16"]];
+			
+		} else {
+			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"NSUser.png"]];
+		}
+	}
+}
 @end
