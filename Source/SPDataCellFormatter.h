@@ -1,8 +1,9 @@
 //
-//  SPTableInfo.h
+//  SPDataCell.h
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Rowan Beentje on 11/02/2009.
+//  Copyright 2009 Arboreal. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,15 +23,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPTableInfo : NSObject 
-{
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
-	
-	NSMutableArray *info;
+
+@interface SPDataCellFormatter : NSFormatter {
+
 }
 
 @end

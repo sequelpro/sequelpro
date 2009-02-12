@@ -33,6 +33,8 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPSQLParser.h"
+#import "SPTableData.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -190,9 +192,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		// set encoding
 		NSString *encodingName = [prefs objectForKey:@"encoding"];
 		if ( [encodingName isEqualToString:@"Autodetect"] ) {
-			[self detectDatabaseEncoding];
+			[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
 		} else {
-			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
+			[self setConnectionEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName] reloadingViews:NO];
 		}
 		//get mysql version
 		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
@@ -210,6 +212,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[customQueryInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
+		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
 						   [hostField stringValue], [databaseField stringValue]]];
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
@@ -640,7 +643,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 /**
  * Set the encoding for the database connection
  */
-- (void)setEncoding:(NSString *)mysqlEncoding
+- (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews
 {
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
@@ -650,22 +653,29 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
 	} else {
-		[self detectDatabaseEncoding];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
+			return;
+		}
 	}
 		
 	// update the selected menu item
 	[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
 	
-	// reload stuff
-	[tableSourceInstance reloadTable:self];
-	[tableContentInstance reloadTable:self];
-	[tableStatusInstance reloadTable:self];
+	// Reload stuff as appropriate
+	[tableDataInstance resetAllData];
+	if (reloadViews) {
+		if ([tablesListInstance structureLoaded]) [tableSourceInstance reloadTable:self];
+		if ([tablesListInstance contentLoaded]) [tableContentInstance reloadTable:self];
+		if ([tablesListInstance statusLoaded]) [tableStatusInstance reloadTable:self];
+	}
 }
 
 /**
  * returns the current mysql encoding for this object
  */
-- (NSString *)encoding
+- (NSString *)connectionEncoding
 {
 	return _encoding;
 }
@@ -753,9 +763,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * Autodetect the connection encoding and select the relevant encoding menu item in Database -> Database Encoding
+ * Detect and return the database connection encoding.
+ * TODO: See http://code.google.com/p/sequel-pro/issues/detail?id=134 - some question over why this [historically] uses _connection not _database...
  */
-- (void)detectDatabaseEncoding
+- (NSString *)databaseEncoding
 {
 	// MySQL > 4.0
 	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
@@ -772,36 +783,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		mysqlEncoding = @"latin1";
 	}
 	
-	[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];
-	
-	// save the encoding
-	[_encoding autorelease];
-	_encoding = [mysqlEncoding retain];
-	
-	// update the selected menu item
-	[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
-}
-
-/**
- * Detects and sets the character set encoding of the supplied table name.
- */
-- (void)detectTableEncodingForTable:(NSString *)table;
-{
-	NSString *tableCollation = [[[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", table]] fetchRowAsDictionary] objectForKey:@"Collation"];
-
-	if (tableCollation != nil) {
-		// Split up the collation string so we can get the encoding
-		NSArray *encodingComponents = [tableCollation componentsSeparatedByString:@"_"];
-		
-		if ([encodingComponents count] > 0) {
-			NSString *tableEncoding = [encodingComponents objectAtIndex:0];
-			
-			[self setEncoding:tableEncoding];
-		}
-	}
-	else {
-		NSLog(@"Error: unable to determine table collation and thus character encoding for table '%@'", table);
-	}
+	return mysqlEncoding;
 }
 
 /**
@@ -809,7 +791,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (IBAction)chooseEncoding:(id)sender
 {
-	[self setEncoding:[self mysqlEncodingFromDisplayEncoding:[(NSMenuItem *)sender title]]];
+	[self setConnectionEncoding:[self mysqlEncodingFromDisplayEncoding:[(NSMenuItem *)sender title]] reloadingViews:YES];
 }
 
 /**
@@ -993,6 +975,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Checksum '%@' table", [self table]], [NSString stringWithFormat:@"Checksum: %@", [theRow objectForKey:@"Checksum"]], @"OK", nil, nil);
 }
 
+
 #pragma mark Other Methods
 /**
  * returns the host
@@ -1084,7 +1067,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  returns the currently selected table (passing the request to TablesList)
  */
 {
-	return (NSString *)[tablesListInstance table];
+	return [tablesListInstance tableName];
 }
 
 - (NSString *)mySQLVersion

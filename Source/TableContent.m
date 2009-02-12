@@ -26,9 +26,9 @@
 #import "TableContent.h"
 #import "TableDocument.h"
 #import "TablesList.h"
-#import "TableSource.h"
 #import "CMImageView.h"
-
+#import "SPDataCellFormatter.h"
+#import "SPTableData.h"
 
 @implementation TableContent
 
@@ -59,7 +59,8 @@
 {
 	int			i;
 	NSNumber	*colWidth;
-	NSArray		*theColumns;
+	NSArray		*theColumns, *columnNames;
+	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
 	NSString	*query;
 	CMMCPResult	*queryResult;
@@ -82,15 +83,17 @@
 	[tableContentView scrollRowToVisible:0];
 	[tableContentView scrollColumnToVisible:0];
 
+	// Remove existing columns from the table
+	theColumns = [tableContentView tableColumns];
+	while ([theColumns count]) {
+		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
+	}
+
 	// If no table has been supplied, reset the view to a blank table and disabled elements
 	if ( [aTable isEqualToString:@""] || !aTable )
 	{
 
-		// Empty the table and stored data arrays
-		theColumns = [tableContentView tableColumns];
-		while ([theColumns count]) {
-			[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
-		}
+		// Empty the stored data arrays
 		[fullResult removeAllObjects];
 		[filteredResult removeAllObjects];
 		[tableContentView reloadData];
@@ -126,40 +129,27 @@
 	// Post a notification that a query will be performed
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
-
-	// Make a fast query to get fieldNames and fieldTypes for this table.  This is used to decide whether to preserve the
-	// current filter/sort settings, and also used when grabbing all the data as part of the fieldListForQuery method.
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@` LIMIT 0", selectedTable]];
-	if ( queryResult == nil ) {
-		NSLog(@"Loading table columns for %@ failed", aTable);
-		return;
-	}
-	fieldNames = [[queryResult fetchFieldNames] retain];
-	fieldTypes = [[queryResult fetchTypesAsArray] retain];
+	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
+	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
+	theColumns = [tableDataInstance columns];
+	columnNames = [tableDataInstance columnNames];
 
 	// Retrieve the number of rows in the table and initially mark all as being visible.
 	numRows = [self getNumberOfRows];
 	areShowingAllRows = YES;
-
-	// Remove existing columns from the table
-	theColumns = [tableContentView tableColumns];
-	while ([theColumns count]) {
-		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
-	}
 	
 	// Add the new columns to the table
-	for ( i = 0 ; i < [fieldNames count] ; i++ ) {
-		
+	for ( i = 0 ; i < [theColumns count] ; i++ ) {
+		columnDefinition = [theColumns objectAtIndex:i];
+
 		// Set up the column
-		theCol = [[NSTableColumn alloc] initWithIdentifier:[fieldNames objectAtIndex:i]];
+		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"name"]];
+		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
 		[theCol setEditable:YES];
-		
-		[[theCol headerCell] setStringValue:[fieldNames objectAtIndex:i]];
 		
 		// Set up the data cell depending on the column type
 		NSComboBoxCell *dataCell;
-		if ( [[tableSourceInstance enumFields] objectForKey:[fieldNames objectAtIndex:i]] )
-		{
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"]) {
 			dataCell = [[[NSComboBoxCell alloc] initTextCell:@""] autorelease];
 			[dataCell setButtonBordered:NO];
 			[dataCell setBezeled:NO];
@@ -167,33 +157,29 @@
 			[dataCell setCompletes:YES];
 			[dataCell setControlSize:NSSmallControlSize];
 			[dataCell addItemWithObjectValue:@"NULL"];
-			[dataCell addItemsWithObjectValues:[[tableSourceInstance enumFields] objectForKey:[fieldNames objectAtIndex:i]]];
-		}
-		else
-		{
+			[dataCell addItemsWithObjectValues:[columnDefinition objectForKey:@"values"]];
+		} else {
 			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		}
 		[dataCell setEditable:YES];
-		
+
+		// Set the line break mode and an NSFormatter subclass which truncates long strings for display
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		
+		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+
 		// Set the data cell font according to the preferences
-		if ( [prefs boolForKey:@"useMonospacedFonts"] )
-		{
+		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		}
-		else
-		{
+		} else {
 			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-		
+
 		// Assign the data cell
 		[theCol setDataCell:dataCell];
 		
 		// Set the width of this column to saved value if exists
-		colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance table]] objectForKey:[fieldNames objectAtIndex:i]];
-		if ( colWidth )
-		{
+		colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]];
+		if ( colWidth ) {
 			[theCol setWidth:[colWidth floatValue]];
 		}
 		
@@ -203,8 +189,7 @@
 	}
 
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it. 
-	if (preserveCurrentView && [fieldNames containsObject:sortField])
-	{
+	if (preserveCurrentView && [columnNames containsObject:sortField]) {
 		theCol = [tableContentView tableColumnWithIdentifier:sortField];
 		[tableContentView setHighlightedTableColumn:theCol];
 		if ( isDesc ) {
@@ -212,18 +197,15 @@
 		} else {
 			[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:theCol];
 		}
-	}
 	
 	// Otherwise, clear sorting
-	else
-	{
+	} else {
 		sortField = nil;
 		isDesc = NO;
 	}
 
 	// Preserve the stored filter settings if appropriate
-	if (preserveCurrentView && [fieldField isEnabled])
-	{
+	if (preserveCurrentView && [fieldField isEnabled]) {
 		preservedFilterField = [NSString stringWithString:[[fieldField selectedItem] title]];
 		preservedFilterComparison = [NSString stringWithString:[[compareField selectedItem] title]];
 		preservedFilterValue = [NSString stringWithString:[argumentField stringValue]];
@@ -232,7 +214,7 @@
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
 	[fieldField removeAllItems];
-	[fieldField addItemsWithTitles:fieldNames];
+	[fieldField addItemsWithTitles:columnNames];
 	for ( i = 0 ; i < [fieldField numberOfItems] ; i++ ) {
 		[[fieldField itemAtIndex:i] setTag:i];
 	}
@@ -243,23 +225,20 @@
 	[filterButton setEnabled:YES];
 	
 	// Restore preserved filter settings if appropriate and valid
-	if (preserveCurrentView && preservedFilterField != nil && [fieldField itemWithTitle:preservedFilterField])
-	{
+	if (preserveCurrentView && preservedFilterField != nil && [fieldField itemWithTitle:preservedFilterField]) {
 		[fieldField selectItemWithTitle:preservedFilterField];
 		[self setCompareTypes:self];
 	}
 	if (preserveCurrentView && preservedFilterField != nil
 		&& [fieldField itemWithTitle:preservedFilterField]
-		&& [compareField itemWithTitle:preservedFilterComparison])
-	{
+		&& [compareField itemWithTitle:preservedFilterComparison]) {
 		[compareField selectItemWithTitle:preservedFilterComparison];
 		[argumentField setStringValue:preservedFilterValue];
 		areShowingAllRows = NO;
 	}
 
 	// Enable or disable the limit fields according to preference setting
-	if ( [prefs boolForKey:@"limitRows"] ) 
-	{
+	if ( [prefs boolForKey:@"limitRows"] ) {
 
 		// Attempt to preserve the limit value if it's still valid
 		if (!preserveCurrentView || [limitRowsField intValue] < 1 || [limitRowsField intValue] >= numRows) {	
@@ -272,9 +251,7 @@
 									   [prefs integerForKey:@"limitRowsValue"]]];
 		if ([prefs integerForKey:@"limitRowsValue"] < numRows)
 			areShowingAllRows = NO;
-	}
-	else
-	{
+	} else {
 		[limitRowsField setEnabled:NO];
 		[limitRowsButton setEnabled:NO];
 		[limitRowsStepper setEnabled:NO];
@@ -287,19 +264,15 @@
 	[copyButton setEnabled:YES];
 	[removeButton setEnabled:YES];
 
-
 	// Perform the data query and store the result as an array containing a dictionary per result row
 	query = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
-	if ( sortField )
-	{
+	if ( sortField ) {
 		query = [NSString stringWithFormat:@"%@ ORDER BY `%@`", query, sortField];
 		if ( isDesc )
 			query = [query stringByAppendingString:@" DESC"];
 	}
-	if ( [prefs boolForKey:@"limitRows"] )
-	{
-		if ( [limitRowsField intValue] <= 0 )
-		{
+	if ( [prefs boolForKey:@"limitRows"] ) {
+		if ( [limitRowsField intValue] <= 0 ) {
 			[limitRowsField setStringValue:@"1"];
 		}
 		query = [query stringByAppendingString:
@@ -329,13 +302,17 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
+
 /*
- Reloads the current table data, performing a new SQL query.  Now attempts to preserve sort order, filters, and viewport.
+ * Reloads the current table data, performing a new SQL query.  Now attempts to preserve sort order, filters, and viewport.
  */
 - (IBAction)reloadTable:(id)sender
 {
 	// Store the current viewport location
 	NSRect viewRect = [tableContentView visibleRect];
+
+	// Clear the table data column cache
+	[tableDataInstance resetColumnData];
 
 	[self loadTable:selectedTable];
 	
@@ -343,10 +320,11 @@
 	[tableContentView scrollRectToVisible:viewRect];
 }
 
-- (IBAction)reloadTableValues:(id)sender
+
 /*
- reload the table values without reconfiguring the tableView (with filter and limit if set)
+ * Reload the table values without reconfiguring the tableView (with filter and limit if set)
  */
+- (IBAction)reloadTableValues:(id)sender
 {
 	NSString *queryString;
 	CMMCPResult *queryResult;
@@ -403,8 +381,9 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
-/**
- * filter the table with arguments given by the user
+
+/*
+ * Filter the table with arguments given by the user
  */
 - (IBAction)filterTable:(id)sender
 {
@@ -617,25 +596,32 @@
 }
 
 
-//edit methods
-- (IBAction)addRow:(id)sender
+#pragma mark Edit methods
+
 /*
- adds an empty row to the table-array and goes into edit mode
+ * Adds an empty row to the table-array and goes into edit mode
  */
+- (IBAction)addRow:(id)sender
 {
-	NSMutableDictionary *newRow = [NSMutableDictionary dictionary];
+	NSArray *columns;
+	NSMutableDictionary *column, *newRow = [NSMutableDictionary dictionary];
 	int i;
-	
+
 	if ( ![self selectionShouldChangeInTableView:nil] )
 		return;
-	
-	for ( i = 0 ; i < [fieldNames count] ; i++ ) {
-		//		[newRow setObject:[prefs stringForKey:@"nullValue"] forKey:[fieldNames objectAtIndex:i]];
-		[newRow setObject:[tableSourceInstance defaultValueForField:[fieldNames objectAtIndex:i]]
-				   forKey:[fieldNames objectAtIndex:i]];
+
+	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
+	for ( i = 0 ; i < [columns count] ; i++ ) {
+		column = [columns objectAtIndex:i];
+		if ([column objectForKey:@"default"] == nil) {
+			[newRow setObject:[prefs stringForKey:@"nullValue"] forKey:[column objectForKey:@"name"]];
+		} else {
+			[newRow setObject:[column objectForKey:@"default"] forKey:[column objectForKey:@"name"]];
+		}
 	}
 	[filteredResult addObject:newRow];
-	
+	[columns release];
+
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	[tableContentView reloadData];
@@ -905,7 +891,7 @@
 	
 	//load table if not already done
 	if ( ![tablesListInstance contentLoaded] ) {
-		[self loadTable:(NSString *)[tablesListInstance table]];
+		[self loadTable:[tablesListInstance tableName]];
 	}
 	
 	tableColumns = [tableContentView tableColumns];
@@ -966,28 +952,16 @@
  */
 - (IBAction)setCompareTypes:(id)sender
 {
-	NSArray *stringFields = [NSArray arrayWithObjects:@"varstring", @"string", @"tinyblob", @"blob", @"mediumblob", @"longblob", @"set", @"enum", nil];
 	NSArray *stringTypes  = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
-	NSArray *numberFields = [NSArray arrayWithObjects:@"tiny", @"short", @"long", @"int24", @"longlong", @"decimal", @"float", @"double", nil];
 	NSArray *numberTypes  = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", nil];
-	NSArray *dateFields   = [NSArray arrayWithObjects:@"timestamp", @"date", @"time", @"datetime", @"year", nil];
 	NSArray *dateTypes    = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"older than", @"popup menuitem for field OLDER THAN value"), NSLocalizedString(@"younger than", @"popup menuitem for field YOUNGER THAN value"), NSLocalizedString(@"older than or equal to", @"popup menuitem for field OLDER THAN OR EQUAL TO value"), NSLocalizedString(@"younger than or equal to", @"popup menuitem for field YOUNGER THAN OR EQUAL TO value"), nil];
-	NSString *fieldType   = [NSString stringWithString:[fieldTypes objectAtIndex:[[fieldField selectedItem] tag]]];
+	NSString *fieldTypeGrouping   = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
 	
 	int i;
 	
 	[compareField removeAllItems];
 	
-	// Why do we get "string" for enum fields? (error in framework?)
-	if ( [stringFields containsObject:fieldType] ) {
-		[compareField addItemsWithTitles:stringTypes];
-		compareType = @"string";
-		//		[argumentField setFormatter:nil];
-	} else if ( [numberFields containsObject:fieldType] ) {
-		[compareField addItemsWithTitles:numberTypes];
-		compareType = @"number";
-		//		[argumentField setFormatter:numberFormatter];
-	} else if ( [dateFields containsObject:fieldType] ) {
+	if ( [fieldTypeGrouping isEqualToString:@"date"] ) {
 		[compareField addItemsWithTitles:dateTypes];
 		compareType = @"date";
 		/*
@@ -1008,8 +982,22 @@
 		 [argumentField setFormatter:[[NSDateFormatter alloc] initWithDateFormat:@"%Y" allowNaturalLanguage:YES]];
 		 }
 		 */
-	} else {
-		NSLog(@"ERROR: unknown type for comparision: %@", fieldType);
+
+	// TODO: A bug in the framework previously meant enum fields had to be treated as string fields for the purposes
+	// of comparison - this can now be split out to support additional comparison fucntionality if desired.
+	} else if ([fieldTypeGrouping isEqualToString:@"string"] || [fieldTypeGrouping isEqualToString:@"binary"]
+			|| [fieldTypeGrouping isEqualToString:@"textdata"] || [fieldTypeGrouping isEqualToString:@"blobdata"]
+			|| [fieldTypeGrouping isEqualToString:@"enum"]) {
+		[compareField addItemsWithTitles:stringTypes];
+		compareType = @"string";
+		//		[argumentField setFormatter:nil];
+	} else if ([fieldTypeGrouping isEqualToString:@"bit"] || [fieldTypeGrouping isEqualToString:@"integer"]
+				|| [fieldTypeGrouping isEqualToString:@"float"]) {
+		[compareField addItemsWithTitles:numberTypes];
+		compareType = @"number";
+		//		[argumentField setFormatter:numberFormatter];
+	} else  {
+		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"type"], fieldTypeGrouping);
 	}
 	
 	// Add IS NULL and IS NOT NULL as they should always be available
@@ -1044,57 +1032,69 @@
 	[limitRowsStepper setIntValue:0];
 }
 
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 /*
- fetches the result as an array with a dictionary for each row in it
+ * Fetches the result as an array with a dictionary for each row in it
  */
+- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
-	NSMutableArray *tempResult = [NSMutableArray array];
+	NSArray *columns;
+	NSString *columnTypeGrouping;
+	NSMutableArray *columnsBlobStatus, *tempResult = [NSMutableArray array];
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	NSEnumerator *enumerator;
 	id key;
-	int i,j;
-	
+	int i, j;
+	BOOL columnIsBlobOrText;
+
+	columns = [tableDataInstance columns];
+	columnsBlobStatus = [[NSMutableArray alloc] init];
+	for ( i = 0 ; i < [columns count]; i++ ) {
+		columnTypeGrouping = [[columns objectAtIndex:i] objectForKey:@"typegrouping"];
+		columnIsBlobOrText = ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]);
+		[columnsBlobStatus addObject:[NSNumber numberWithBool:columnIsBlobOrText]];
+	}
+
 	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		tempRow = [theResult fetchRowAsDictionary];
 		enumerator = [tempRow keyEnumerator];
+
 		while ( key = [enumerator nextObject] ) {
 			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] ) {
 				[modifiedRow setObject:[prefs stringForKey:@"nullValue"] forKey:key];
-				/*
-				 //NSData objects now decoded in tableView:objectValueForTableColumn:row
-				 //object in result remains a NSData object
-				 } else if ( [[tempRow objectForKey:key] isKindOfClass:[NSData class]] ) {
-				 [modifiedRow setObject:[[NSString alloc] initWithData:[tempRow objectForKey:key] encoding:[mySQLConnection encoding]]
-				 forKey:key];
-				 */
 			} else {
 				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
 			}
-			//add values for hidden blob and text fields
-			if ( [prefs boolForKey:@"dontShowBlob"] ) {
-				for ( j = 0 ; j < [fieldTypes count] ; j++ ) {
-					if ( [self isBlobOrText:[fieldTypes objectAtIndex:j]] ) {
-						[modifiedRow setObject:NSLocalizedString(@"- blob or text -", @"value shown for hidden blob and text fields") forKey:[fieldNames objectAtIndex:j]];
-					}
+		}
+
+		// Add values for hidden blob and text fields if appropriate
+		if ( [prefs boolForKey:@"dontShowBlob"] ) {
+			for ( j = 0 ; j < [columns count] ; j++ ) {
+				if ( [[columnsBlobStatus objectAtIndex:j] boolValue] ) {
+					[modifiedRow setObject:NSLocalizedString(@"- blob or text -", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
 				}
 			}
 		}
+
 		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
 	}
+
+	[columnsBlobStatus release];
+
 	return tempResult;
 }
 
-- (BOOL)addRowToDB
+
 /*
- tries to write row to mysql-db
- returns YES if row written to db, otherwies NO
- returns YES if no row is beeing edited and nothing has to be written to db
+ * Tries to write a new row to the database.
+ * Returns YES if row is written to database, otherwise NO; also returns YES if no row
+ * is being edited and nothing has to be written to the database.
  */
+- (BOOL)addRowToDB
 {
 	int rowIndex = [tableContentView selectedRow];
+	NSArray *theColumns, *columnNames;
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	NSMutableString *queryString;
 	NSString *query;
@@ -1108,27 +1108,34 @@
 		[fieldValues release];
 		return YES;
 	}
+
+	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
+	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
+	theColumns = [tableDataInstance columns];
+	columnNames = [tableDataInstance columnNames];
 	
-	//get field values
-	for ( i=0 ; i < [fieldNames count] ; i++) {
-		rowObject = [[filteredResult objectAtIndex:rowIndex] objectForKey:[fieldNames objectAtIndex:i]];
-		//convert the object to a string (here we can add special treatment for date-, number- and data-fields)
-		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"nullValue"]] ||
-			([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
+	// Get the field values
+	for ( i = 0 ; i < [columnNames count] ; i++ ) {
+		rowObject = [[filteredResult objectAtIndex:rowIndex] objectForKey:[columnNames objectAtIndex:i]];
+
+		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
+		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"nullValue"]]
+				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
+
 			//NULL when user entered the nullValue string defined in the prefs or when a number field isn't set
 			//	problem: when a number isn't set, sequel-pro enters 0
 			//	-> second if argument isn't necessary!
 			[rowValue setString:@"NULL"];
 		} else {
+
+			// I don't believe any of these class matches are ever met at present.
 			if ( [rowObject isKindOfClass:[NSCalendarDate class]] ) {
-				//				[rowValue setString:[NSString stringWithFormat:@"\"%@\"", [mySQLConnection prepareString:[rowObject description]]]];
 				[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
 			} else if ( [rowObject isKindOfClass:[NSNumber class]] ) {
 				[rowValue setString:[rowObject stringValue]];
 			} else if ( [rowObject isKindOfClass:[NSData class]] ) {
 				[rowValue setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:rowObject]]];
 			} else {
-				//				[rowValue setString:[NSString stringWithFormat:@"\"%@\"", [mySQLConnection prepareString:[rowObject description]]]];
 				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
 				} else {
@@ -1136,44 +1143,31 @@
 				}
 			}
 		}
-		//escape special characters -> now escaped by framework
-		/*
-		 for ( j = 0 ; j < [rowValue length] ; j++ ) {
-		 if ( [rowValue characterAtIndex:j] == '\\' ) {
-		 [rowValue insertString:@"\\" atIndex:j];
-		 j++;
-		 } else if ( [rowValue characterAtIndex:j] == '"' ) {
-		 [rowValue insertString:@"\\" atIndex:j];
-		 j++;
-		 }
-		 }
-		 */
 		[fieldValues addObject:[NSString stringWithString:rowValue]];
 	}
 	
+	// Use INSERT syntax when creating new rows
 	if ( isEditingNewRow ) {
-		//INSERT syntax
 		queryString = [NSString stringWithFormat:@"INSERT INTO `%@` (`%@`) VALUES (%@)",
-					   selectedTable, [fieldNames componentsJoinedByString:@"`,`"], [fieldValues componentsJoinedByString:@","]];
+					   selectedTable, [columnNames componentsJoinedByString:@"`,`"], [fieldValues componentsJoinedByString:@","]];
+
+	// Use UPDATE syntax otherwise
 	} else {
-		//UPDATE syntax
 		queryString = [NSMutableString stringWithFormat:@"UPDATE `%@` SET ", selectedTable];
-		for ( i = 0 ; i < [fieldNames count] ; i++ ) {
+		for ( i = 0 ; i < [columnNames count] ; i++ ) {
 			if ( i > 0 ) {
 				[queryString appendString:@", "];
 			}
 			[queryString appendString:[NSString stringWithFormat:@"`%@`=%@",
-									   [fieldNames objectAtIndex:i], [fieldValues objectAtIndex:i]]];
+									   [columnNames objectAtIndex:i], [fieldValues objectAtIndex:i]]];
 		}
-		[fieldValues release];
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
 	}
 	[mySQLConnection queryString:queryString];
+	[fieldValues release];
 	
-	//NSLog( @"%@", queryString );
-	
+	// If no rows have been changed, show error if appropriate.	
 	if ( ![mySQLConnection affectedRows] ) {
-		//no rows changed
 		if ( [prefs boolForKey:@"showError"] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
@@ -1185,39 +1179,39 @@
 		isEditingNewRow = NO;
 		[tableDocumentInstance showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
 		return YES;
+
+	// On success...
 	} else if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		//added new row with success
 		isEditingRow = NO;
+
+		// New row created successfully
 		if ( isEditingNewRow ) {
 			if ( [prefs boolForKey:@"reloadAfterAdding"] ) {
 				[self reloadTableValues:self];
-				//				if ( sortField )
 				[tableContentView deselectAll:self];
 			} else {
-				//set insertId for fields with auto_increment
-				queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
-				if ([queryResult numOfRows]) [queryResult dataSeek:0];
-				for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-					rowObject = [queryResult fetchRowAsDictionary];
-					if ( [[rowObject objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
+
+				// Set the insertId for fields with auto_increment
+				for ( i = 0; i < [theColumns count] ; i++ ) {
+					if ([[theColumns objectAtIndex:i] objectForKey:@"autoincrement"]) {
 						[[filteredResult objectAtIndex:rowIndex] setObject:[NSNumber numberWithLong:[mySQLConnection insertId]]
-																	forKey:[rowObject objectForKey:@"Field"]];
+																	forKey:[columnNames objectAtIndex:i]];
 					}
 				}
 				[fullResult addObject:[filteredResult objectAtIndex:rowIndex]];
 			}
 			isEditingNewRow = NO;
+
+		// Existing row edited successfully
 		} else {
-			//updated row with success
 			if ( [prefs boolForKey:@"reloadAfterEditing"] ) {
 				[self reloadTableValues:self];
-				//				if ( sortField )
 				[tableContentView deselectAll:self];
+
+			// TODO: this probably needs looking at... it's reloading it all itself?
 			} else {
-				//				query = [@"SELECT * FROM " stringByAppendingString:selectedTable];
 				query = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
 				if ( sortField ) {
-					//					query = [query stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
 					query = [NSString stringWithFormat:@"%@ ORDER BY `%@`", query, sortField];
 					if ( isDesc )
 						query = [query stringByAppendingString:@" DESC"];
@@ -1231,51 +1225,43 @@
 							  [limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
 				}
 				queryResult = [mySQLConnection queryString:query];
-				//				[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
 				[fullResult setArray:[self fetchResultAsArray:queryResult]];
 			}
 		}
 		return YES;
+
+	// Report errors which have occurred
 	} else {
-		//error in mysql-query
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write row.\nMySQL said: %@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
 }
 
-- (NSString *)argumentForRow:(int)row
 /*
- returns the WHERE argument to identify a row
- if row is -2, it uses the oldRow
- if there is one, it uses the primary key, otherwise uses all fields as argument and sets LIMIT to 1
+ * Returns the WHERE argument to identify a row.
+ * If "row" is -2, it uses the oldRow.
+ * Uses the primary key if available, otherwise uses all fields as argument and sets LIMIT to 1
  */
+- (NSString *)argumentForRow:(int)row
 {
 	CMMCPResult *theResult;
 	NSDictionary *theRow;
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
 	NSMutableString *argument = [NSMutableString string];
+	NSString *columnType;
+	NSArray *columnNames;
 	int i,j;
-	NSEnumerator *enumerator;
-	id type;
-	BOOL blob = NO;
-	NSArray *numberFields = [NSArray arrayWithObjects:@"tiny", @"short", @"long", @"int24", @"longlong", @"decimal", @"float", @"double", nil];
 	
 	if ( row == -1 )
 		return @"";
 	
-	//get primary key if there is one
-	/*
-	 theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	 for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-	 theRow = [theResult fetchRowAsDictionary];
-	 if ( [[theRow objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
-	 [keys addObject:[theRow objectForKey:@"Column_name"]];
-	 }
-	 }
-	 */
+	// Retrieve the field names for this table from the data cache.  This is used when requesting all data as part
+	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
+	columnNames = [tableDataInstance columnNames];
+
+	// Get the primary key if there is one
 	if ( !keys ) {
 		setLimit = NO;
 		keys = [[NSMutableArray alloc] init];
@@ -1289,18 +1275,14 @@
 		}
 	}
 	
+	// If there is no primary key, all the fields are used in the argument.
 	if ( ![keys count] ) {
-		//if there is no primary key, take all fields as argument
-		//here we have a problem when dontShowBlob == YES (we don't have the right values to use in the WHERE statement)
-		[keys setArray:fieldNames];
+		[keys setArray:columnNames];
 		setLimit = YES;
-		enumerator = [fieldTypes objectEnumerator];
-		while ( (type = [enumerator nextObject]) ) {
-			if ( [self isBlobOrText:type] ) {
-				blob = YES;
-			}
-		}
-		if ( [prefs boolForKey:@"dontShowBlob"] && blob ) {
+
+		// When the option to not show blob or text options is set, we have a problem - we don't have
+		// the right values to use in the WHERE statement.  Throw an error if this is the case.
+		if ( [prefs boolForKey:@"dontShowBlob"] && [self tableContainsBlobOrTextColumns] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"You can't hide blob and text fields when working with tables without index.", @"message of panel when trying to edit tables without index and with hidden blob/text fields"));
 			[keys removeAllObjects];
@@ -1308,26 +1290,34 @@
 			return @"";
 		}
 	}
+
+	// Walk through the keys list constructing the argument list
 	for ( i = 0 ; i < [keys count] ; i++ ) {
 		if ( i )
 			[argument appendString:@" AND "];
+
+		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			//use selected row
 			tempValue = [[filteredResult objectAtIndex:row] objectForKey:[keys objectAtIndex:i]];
+
+		// Otherwise use the oldRow
 		} else {
-			//use oldRow
 			tempValue = [oldRow objectForKey:[keys objectAtIndex:i]];
 		}
+
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
-			[value setString:[[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]]];
+			NSString *tmpString = [[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]];
+			[value setString:[NSString stringWithString:tmpString]];
+			[tmpString release];
 		} else {
 			[value setString:[tempValue description]];
 		}
-		
+
 		if ( [value isEqualToString:[prefs stringForKey:@"nullValue"]] ) {
-			[value setString:@"NULL"];
+			[argument appendString:[NSString stringWithFormat:@"`%@` IS NULL", [keys objectAtIndex:i]]];
 		} else {
-			//escape special characters (in WHERE statement!)
+
+			// Escape special characters (in WHERE statement!)
 			for ( j = 0 ; j < [value length] ; j++ ) {
 				if ( [value characterAtIndex:j] == '\\' ) {
 					[value insertString:@"\\" atIndex:j];
@@ -1342,13 +1332,10 @@
 					j++;
 				}
 			}
-			//			[value setString:[NSString stringWithFormat:@"\"%@\"", value]];
 			[value setString:[NSString stringWithFormat:@"'%@'", value]];
-		}
-		if ( [value isEqualToString:@"NULL"] ) {
-			[argument appendString:[NSString stringWithFormat:@"`%@` IS NULL", [keys objectAtIndex:i]]];
-		} else {
-			if ( [numberFields containsObject:[fieldTypes objectAtIndex:[fieldNames indexOfObject:[keys objectAtIndex:i]]]] ) {
+
+			columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
+			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"] ) {
 				[argument appendString:[NSString stringWithFormat:@"`%@` = %@", [keys objectAtIndex:i], value]];
 			} else {
 				[argument appendString:[NSString stringWithFormat:@"`%@` LIKE %@", [keys objectAtIndex:i], value]];
@@ -1360,37 +1347,50 @@
 	return argument;
 }
 
-- (BOOL)isBlobOrText:(NSString *)fieldType
+
 /*
- returns YES if fieldType is some kind of blob or text. afaik the type of this fields is always blob, but better we test it...
- it would be nice to know if it is blob or text, but mysql doesn't want to tell it...
+ * Returns YES if the table contains any columns which are of any of the blob or text types,
+ * NO otherwise.
  */
+- (BOOL)tableContainsBlobOrTextColumns
 {
-	if ( [fieldType isEqualToString:@"tinyblob"] || [fieldType isEqualToString:@"blob"] ||
-		[fieldType isEqualToString:@"mediumblob"] || [fieldType isEqualToString:@"longblob"] ) {
-		return YES;
-	} else {
-		return NO;
+	int i;
+	NSArray *tableColumns = [tableDataInstance tableColumns];
+	NSString *columnTypeGrouping;
+
+	for ( i = 0 ; i < [tableColumns count]; i++ ) {
+		columnTypeGrouping = [[tableColumns objectAtIndex:i] objectForKey:@"typegrouping"];
+		if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
+			return YES;
+		}
 	}
+
+	return NO;
 }
 
-- (NSString *)fieldListForQuery
 /*
- returns * if dontShowBlob == NO
- returns a comma-separated list of all fields which aren't of type blob or text if dontShowBlob == YES
+ * Returns a string controlling which fields to retrieve for a query.  Returns * (all fields) if the preferences
+ * option dontShowBlob isn't set; otherwise, returns a comma-separated list of all non-blob/text fields.
  */
+- (NSString *)fieldListForQuery
 {
 	int i;
 	NSMutableArray *fields = [NSMutableArray array];
+	NSArray *columns = [tableDataInstance columns];
+	NSArray *columnNames = [tableDataInstance columnNames];
+	NSString *columnTypeGrouping;
 	
 	if ( [prefs boolForKey:@"dontShowBlob"] ) {
-		for ( i = 0 ; i < [fieldTypes count] ; i++ ) {
-			if ( ![self isBlobOrText:[fieldTypes objectAtIndex:i]] ) {
-				[fields addObject:[fieldNames objectAtIndex:i]];
+		for ( i = 0 ; i < [columnNames count] ; i++ ) {
+			columnTypeGrouping = [[columns objectAtIndex:i] objectForKey:@"typegrouping"];
+			if (![columnTypeGrouping isEqualToString:@"textdata"] && ![columnTypeGrouping isEqualToString:@"blobdata"]) {
+				[fields addObject:[columnNames objectAtIndex:i]];
 			}
 		}
+
+		// Always select at least one field - the first if there are no non-blob fields.
 		if ( [fields count] == 0 ) {
-			return [NSString stringWithFormat:@"`%@`", [fieldNames objectAtIndex:0]];
+			return [NSString stringWithFormat:@"`%@`", [columnNames objectAtIndex:0]];
 		} else {
 			return [NSString stringWithFormat:@"`%@`", [fields componentsJoinedByString:@"`,`"]];
 		}
@@ -1543,24 +1543,21 @@
 	return [filteredResult count];
 }
 
-- (id)tableView:(NSTableView *)aTableView
+- (id)tableView:(CMCopyTable *)aTableView
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
 	id theRow, theValue;
-	
+
 	theRow = [filteredResult objectAtIndex:rowIndex];
 	theValue = [theRow objectForKey:[aTableColumn identifier]];
-	
+
+	// Convert data objects to their string representation in the current encoding.
 	if ( [theValue isKindOfClass:[NSData class]] ) {
-		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
-		//show only first 50 characters to speed up interface (but return everything when this method is used to return the current result)
-		//		if ( ([theValue length] > 100) && aTableView ) {
+		NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
+		theValue = [NSString stringWithString:dataRepresentation];
+		[dataRepresentation release];
 	}
-	
-//	if ( ([(NSString *)theValue length] > 100) && aTableView ) {
-//		theValue = [NSString stringWithFormat:@"%@(...)", [theValue substringToIndex:100]];
-//	}
 	
 	return theValue;
 }
@@ -1716,7 +1713,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	NSMutableDictionary *tableColumnWidths;
 	NSString *database = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
-	NSString *table = (NSString *)[tablesListInstance table];
+	NSString *table = [tablesListInstance tableName];
 	
 	// get tableColumnWidths object
 	if ( [prefs objectForKey:@"tableColumnWidths"] != nil ) {
@@ -1741,35 +1738,26 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 /*
- opens sheet if multipleLineEditingButton is clicked or field is a hidden blob or text field
+ * Confirm whether to allow editing of a row.  Returns YES by default, unless the multipleLineEditingButton is in
+ * the ON state, or for blob or text fields - in those cases opens a sheet for editing instead and returns NO.
  */
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
+	int code;
+	NSString *columnTypeGrouping, *query;
 	NSEnumerator *enumerator;
-	id type;
-	BOOL blob = NO;
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
-	id key;
-	int code;
-	NSString *query;
+	id key, theValue;
 	CMMCPResult *tempResult;
-	id theValue;
-	BOOL columnIsBlob = NO;
-	//	int i;
-	//	NSArray *columns = [aTableView tableColumns];
+	BOOL columnIsBlobOrText = NO;
 	
+	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
 	if ( [prefs boolForKey:@"dontShowBlob"] && !isEditingRow ) {
-		//get all row values if dontShowBlob == YES and table contains blob or text field and isEditingRow = NO
-		enumerator = [fieldTypes objectEnumerator];
-		while ( (type = [enumerator nextObject]) ) {
-			if ( [self isBlobOrText:type] ) {
-				blob = YES;
-			}
-		}
-		
-		if ( blob ) {
+
+		// If the table does contain blob or text fields, load the values ready for editing.
+		if ( [self tableContainsBlobOrTextColumns] ) {
 			query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@",
 					 selectedTable, [self argumentForRow:[tableContentView selectedRow]]];
 			tempResult = [mySQLConnection queryString:query];
@@ -1787,28 +1775,19 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 					[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
 				}
 			}
-			[filteredResult replaceObjectAtIndex:rowIndex
-									  withObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
+			[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
 			[tableContentView reloadData];
 		}
 	}
 	
-	/*
-	 // find the column we're trying to edit
-	 for ( i = 0; i < [columns count]; i++ ) {
-	 if ( [columns objectAtIndex:i] == aTableColumn ) {
-	 // this flag will let us determine if we should "force" multi-line edit.
-	 columnIsBlob = [self isBlobOrText:[fieldTypes objectAtIndex:i]];
-	 break;
-	 }
-	 }
-	 */
-	//is the column a blob field -> if YES force sheet editing
-	if ( [self isBlobOrText:[fieldTypes objectAtIndex:[fieldNames indexOfObject:[aTableColumn identifier]]]] ) {
-		columnIsBlob = YES;
+	// If the selected column is a blob/text type, force sheet editing.
+	columnTypeGrouping = [[tableDataInstance columnWithName:[aTableColumn identifier]] objectForKey:@"typegrouping"];
+	if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
+		columnIsBlobOrText = YES;
 	}
-	
-	if ( [multipleLineEditingButton state] == NSOnState || columnIsBlob ) {
+
+	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
+	if ( [multipleLineEditingButton state] == NSOnState || columnIsBlobOrText ) {
 		theValue = [[filteredResult objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 		NSImage *image = nil;
 		editData = [theValue retain];
@@ -1816,40 +1795,31 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		if ( [theValue isKindOfClass:[NSData class]] ) {
 			image = [[NSImage alloc] initWithData:theValue];
 			[hexTextView setString:[self dataToHex:theValue]];
-			/*
-			 // update displayed font to monospace
-			 NSFont *font = [NSFont fontWithName:@"Courier" size:12.0f];
-			 NSRange hexRange = { 0, [[hexTextView string] length] - 1 };
-			 [hexTextView setFont:font range:hexRange];
-			 */
 			theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 		} else {
 			[hexTextView setString:@""];
 			theValue = [theValue description];
 		}
-		
+
 		[editImage setImage:image];
 		[editTextView setString:theValue];
 		[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
-		//different sheets for date (with up/down arrows), number and text
-		[NSApp beginSheet:editSheet
-		   modalForWindow:tableWindow modalDelegate:self
-		   didEndSelector:nil contextInfo:nil];
+
+		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 		code = [NSApp runModalForWindow:editSheet];
-		
+
 		[NSApp endSheet:editSheet];
 		[editSheet orderOut:nil];
-		
+
 		if ( code ) {
 			if ( !isEditingRow ) {
 				[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
 				isEditingRow = YES;
 			}
 			
-			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy]
-														forKey:[aTableColumn identifier]];
+			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy] forKey:[aTableColumn identifier]];
 			
-			// clean up
+			// Clean up
 			[editImage setImage:nil];
 			[editTextView setString:@""];
 			[hexTextView setString:@""];
@@ -1889,57 +1859,56 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 #pragma mark -
 
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 /*
- traps enter and esc an make/cancel editing without entering next row
+ * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
+ * only within the current row.
  */
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
+	NSString *fieldType;
 	int row, column, i;
 	
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
-	
+
+	// Trap enter and tab keys
 	if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ||
-		[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) //trap enter and tab
+		[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
 	{
-		//save current line
 		[[control window] makeFirstResponder:control];
+
+		// Save the current line if it's the last field in the table
 		if ( column == ( [tableContentView numberOfColumns] - 1 ) ) {
 			[self addRowToDB];
-			/*
-			 if ( [self addRowToDB] &&
-			 ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) &&
-			 !(sortField && ([prefs boolForKey:@"reloadAfterAdding"] || [prefs boolForKey:@"reloadAfterEditing"])) ) {
-			 //get in edit-mode of next row if user hit tab (and result isn't sorted and reloaded)
-			 if ( row < ([tableContentView numberOfRows] - 1) ) {
-			 [tableContentView selectRow:row+1 byExtendingSelection:NO];
-			 [tableContentView editColumn:0 row:row+1 withEvent:nil select:YES];
-			 } else {
-			 [tableContentView selectRow:0 byExtendingSelection:NO];
-			 [tableContentView editColumn:0 row:0 withEvent:nil select:YES];	   
-			 }
-			 }
-			 */
 		} else {
-			//check if next column is a blob column
+
+			// Check if next column is a blob column, and skip to the next non-blob column
 			i = 1;
-			while ( [self isBlobOrText:[fieldTypes objectAtIndex:[fieldNames indexOfObject:[[[tableContentView tableColumns] objectAtIndex:column+i] identifier]]]] ) {
+			while (
+				(fieldType = [[tableDataInstance columnWithName:[[[tableContentView tableColumns] objectAtIndex:column+i] identifier]] objectForKey:@"typegrouping"])
+				&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
+			) {
 				i++;
+
+				// If there are no columns after the latest blob or text column, save the current line.
 				if ( (column+i) >= [tableContentView numberOfColumns] ) {
-					//there is no other column after the blob column
 					[self addRowToDB];
 					return TRUE;
 				}
 			}
-			//edit the column after the blob column
+
+			// Edit the column after the blob column
 			[tableContentView editColumn:column+i row:row withEvent:nil select:YES];
 		}
 		return TRUE;
 	}
+	
+	// Trap the escape key
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
-			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )  //trap esc
+			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
 	{
-		//abort editing
+
+		// Abort editing
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
 			isEditingRow = NO;
@@ -1990,8 +1959,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[filteredResult release];
 	[keys release];
 	[oldRow release];
-	[fieldNames release];
-	[fieldTypes release];
 	[compareType release];
 	[sortField release];
 	[prefs release];

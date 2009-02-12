@@ -31,8 +31,6 @@
 
 @interface CustomQuery : NSObject {
 
-	IBOutlet id tableDumpInstance;
-
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;
