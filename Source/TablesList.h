@@ -69,6 +69,7 @@
 
 //getter methods
 - (NSString *)table;
+- (NSArray *)tables;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;
@@ -90,9 +91,5 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

@@ -2,23 +2,41 @@
 //  SPTableInfo.m
 //  sequel-pro
 //
-//  Created by Ben Perry on 6/05/08.
-//  Copyright 2008 Ben Perry. All rights reserved.
+//  Created by Ben Perry on Jun 6, 2008
 //
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableInfo.h"
 #import "ImageAndTextCell.h"
-#import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "TableDocument.h"
+#import "SPStringAdditions.h"
+
+#import <MCPKit_bundled/MCPKit_bundled.h>
 
 @implementation SPTableInfo
 
 - (id)init
 {
-	self = [super init];
-	info = [[NSMutableArray alloc] init];
+	if ((self = [super init])) {
+		info = [[NSMutableArray alloc] init];
+	}
+	
 	return self;
 }
 
@@ -28,10 +46,10 @@
 											 selector:@selector(tableChanged:) 
 												 name:NSTableViewSelectionDidChangeNotification 
 											   object:tableList];
+	
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
 	[infoTable reloadData];
 }
-
 
 - (void)dealloc
 {
@@ -73,7 +91,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			  row:(int)rowIndex
 {
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"CodeAssistantProtocol"]];
+		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
@@ -114,27 +132,37 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Process result
 			theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 			
-			// Add the table name to the infoTable
-			[info addObject:[NSString stringWithFormat:@"name: %@", [tableListInstance table]]];
-			
 			// Check for "Create_time" == NULL
 			if (![[theRow objectForKey:@"Create_time"] isNSNull]) {
 				// Setup our data formatter
-				NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-				[dateFormatter setDateStyle:NSDateFormatterShortStyle];
-				[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+				NSDateFormatter *createDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+				[createDateFormatter setDateStyle:NSDateFormatterShortStyle];
+				[createDateFormatter setTimeStyle:NSDateFormatterNoStyle];
 				
-				// Convert our string dates from the results to NSDates.
+				// Convert our string date from the result to an NSDate.
 				NSDate *create_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Create_time"]];
+				
+				// Add the creation date to the infoTable
+				[info addObject:[NSString stringWithFormat:@"created: %@", [createDateFormatter stringFromDate:create_date]]];
+			}
+
+			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
+			if (![[theRow objectForKey:@"Update_time"] isNSNull]) {
+				// Setup our data formatter
+				NSDateFormatter *updateDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+				[updateDateFormatter setDateStyle:NSDateFormatterShortStyle];
+				[updateDateFormatter setTimeStyle:NSDateFormatterNoStyle];
+				
+				// Convert our string date from the result to an NSDate.
 				NSDate *update_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Update_time"]];
 				
-				// Add the create date and update date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"created: %@", [dateFormatter stringFromDate:create_date]]];
-				[info addObject:[NSString stringWithFormat:@"updated: %@", [dateFormatter stringFromDate:update_date]]];
+				// Add the update date to the infoTable
+				[info addObject:[NSString stringWithFormat:@"updated: %@", [updateDateFormatter stringFromDate:update_date]]];
 			}
-			
+						
 			[info addObject:[NSString stringWithFormat:@"rows: %@", [theRow objectForKey:@"Rows"]]];
-			[info addObject:[NSString stringWithFormat:@"size: %@", [self sizeFromBytes:[[theRow objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[theRow objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"encoding: %@", [[[theRow objectForKey:@"Collation"] componentsSeparatedByString:@"_"] objectAtIndex:0]]];
 			[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [theRow objectForKey:@"Auto_increment"]]];
 			
 			// Notify that we've finished performing the query
@@ -143,38 +171,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 	
 	[infoTable reloadData];
-}
-
-- (NSString *)sizeFromBytes:(int)theSize
-{
-	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	float floatSize = theSize;
-	
-	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-	
-	if (theSize < 1023) {
-		[numberFormatter setFormat:@"#,##0 B"];
-		return [numberFormatter stringFromNumber:[NSNumber numberWithInt:theSize]];
-	}
-	
-	floatSize = floatSize / 1024;
-	
-	if (floatSize < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 KB"];
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:floatSize]];
-	}
-	
-	floatSize = floatSize / 1024;
-	
-	if (floatSize < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 MB"];
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:floatSize]];
-	}
-	
-	floatSize = floatSize / 1024;
-	
-	[numberFormatter setFormat:@"#,##0.0 GB"];
-	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:floatSize]];
 }
 
 @end

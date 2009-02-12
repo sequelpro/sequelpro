@@ -518,17 +518,18 @@ fetches the result as an array with a dictionary for each row in it
 {
 	NSMutableArray *tempResult = [NSMutableArray array];
 	NSMutableDictionary *tempRow;
-	NSEnumerator *enumerator;
+	NSArray *keys;
 	id key;
 	int i;
 
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
-		enumerator = [tempRow keyEnumerator];
-		while ( (key = [enumerator nextObject]) ) {
+		keys = [tempRow allKeys];
+		for (int i = 0; i < [keys count] ; i++) {
+			key = [keys objectAtIndex:i];
 			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] )
 				[tempRow setObject:[prefs objectForKey:@"nullValue"] forKey:key];
 		}
@@ -579,7 +580,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		}
 	} else {
 		//CHANGE syntax
-		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
+		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
 					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
 					[theRow objectForKey:@"Type"]];
@@ -937,7 +938,7 @@ Having validated a drop, perform the field/column reordering to match.
 	return YES;
 }
 
-#pragma mark TtableView delegate methods
+#pragma mark TableView delegate methods
 
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {

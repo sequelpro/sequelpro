@@ -37,6 +37,8 @@
 	IBOutlet id customQueryInstance;
 
     IBOutlet id tableWindow;
+	IBOutlet id tableListView;
+	
     IBOutlet id exportDumpView;
     IBOutlet id exportCSVView;
     IBOutlet id exportMultipleCSVView;
@@ -56,7 +58,7 @@
     IBOutlet id exportMultipleLinesTerminatedField;
 	
 	IBOutlet id importCSVView;
-	IBOutlet id importFormatPopup;
+	IBOutlet NSPopUpButton *importFormatPopup;
 	IBOutlet id importCSVBox;
     IBOutlet id importFieldNamesSwitch;
     IBOutlet id importFieldsTerminatedField;
@@ -87,10 +89,12 @@
 	NSMutableArray *tables;
 	NSArray *importArray;
 	NSMutableArray *fieldMappingArray;
+	NSMutableArray *fieldMappingButtonOptions;
 	int currentRow;
 	NSString *savePath;
 	NSString *openPath;
 	NSUserDefaults *prefs;
+	BOOL progressCancelled;
 }
 
 //IBAction methods
@@ -98,20 +102,19 @@
 - (IBAction)selectTables:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
-//- (IBAction)chooseDumpType:(id)sender;
-
+- (IBAction)cancelProgressBar:(id)sender;
 //export methods
 //- (IBAction)saveDump:(id)sender;
 - (void)exportFile:(int)tag;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
 //import methods
-//- (IBAction)openDump:(id)sender;
 - (void)importFile;
 - (IBAction)changeFormat:(id)sender;
 - (IBAction)changeTable:(id)sender;
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (void)setupFieldMappingArray;
+- (void)updateFieldMappingButtonCell;
 - (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
@@ -120,29 +123,20 @@
 
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
-- (BOOL)writeCsvForArray:(NSArray *)array toFileHandle:(NSFileHandle *)fileHandle
-		useFirstLine:(BOOL)firstLine terminatedBy:(NSString *)terminated
-		enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
-		lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
-- (BOOL)writeXmlForArray:(NSArray *)array toFileHandle:(NSFileHandle *)fileHandle
-		tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
-- (NSString *)stringForSelectedTablesWithType:(NSString *)type;
+- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
+	toFileHandle:(NSFileHandle *)fileHandle
+	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
+	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
+	lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
+- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
+	toFileHandle:(NSFileHandle *)fileHandle
+	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
 - (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 - (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
 
 //last but not least
 - (id)init;

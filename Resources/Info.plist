@@ -27,6 +27,10 @@
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleHelpBookFolder</key>
+	<string>english_help</string>
+	<key>CFBundleHelpBookName</key>
+	<string>Sequel Pro Help</string>
 	<key>CFBundleIconFile</key>
 	<string>appicon.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -37,18 +41,18 @@
 	<string>${PRODUCT_NAME}</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.9.3</string>
 	<key>CFBundleVersion</key>
-	<string>154</string>
+	<string></string>
+	<key>NSAppleScriptEnabled</key>
+	<string>YES</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>0.9.3 (238)</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
-	<key>CFBundleHelpBookFolder</key>
-	<string>english_help</string>
-	<key>CFBundleHelpBookName</key>
-	<string>Sequel Pro Help</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>SUFeedURL</key>
-	<string>http://sequelpro.com/appcast/app-releases.xml</string>
 	<key>NSServices</key>
 	<array>
 		<dict>
@@ -72,11 +76,7 @@
 			</array>
 		</dict>
 	</array>
-	<key>NSAppleScriptEnabled</key>
-	<string>YES</string>
-	<key>CFBundleShortVersionString</key>
-	<string>0.9.2</string>
-	<key>NSHumanReadableCopyright</key>
-	<string>0.9.2 (154)</string>
+	<key>SUFeedURL</key>
+	<string>http://sequelpro.com/appcast/app-releases.xml</string>
 </dict>
 </plist>

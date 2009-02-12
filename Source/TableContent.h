@@ -78,6 +78,7 @@
 - (IBAction)reloadTableValues:(id)sender;
 - (IBAction)filterTable:(id)sender;
 - (IBAction)showAll:(id)sender;
+- (IBAction)toggleFilterField:(id)sender;
 
 //edit methods
 - (IBAction)addRow:(id)sender;
@@ -121,6 +122,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
+- (void)tableViewSelectionIsChanging:(NSNotification *)aNotification;
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification;
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
@@ -128,9 +131,5 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 //textView delegate methods
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

@@ -84,6 +84,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
+- (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
+{
+	
+	NSPrintInfo *printInfo = [self printInfo];
+	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
+	return printOp;
+}
+
 
 - (CMMCPConnection *)sharedConnection
 {
@@ -182,7 +190,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		// set encoding
 		NSString *encodingName = [prefs objectForKey:@"encoding"];
 		if ( [encodingName isEqualToString:@"Autodetect"] ) {
-			[self detectEncoding];
+			[self detectDatabaseEncoding];
 		} else {
 			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
 		}
@@ -260,9 +268,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[portField setStringValue:[self valueForKeyPath:@"selectedFavorite.port"]];
 	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
 	[passwordField setStringValue:[self selectedFavoritePassword]];
-	
-	[selectedFavorite release];
-	selectedFavorite = [[favoritesButton titleOfSelectedItem] retain];
 }
 
 /**
@@ -368,7 +373,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[self willChangeValueForKey:@"favorites"];
 	
 	// write favorites and password
-	NSDictionary *newFavorite = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	nil]
+	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	nil]
 															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", nil]];
 	[favorites addObject:newFavorite];
 	
@@ -378,9 +383,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 							  account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	}
 	
-	// select new favorite
-	selectedFavorite = [favoriteName retain];
-
 	[self didChangeValueForKey:@"favorites"];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
 }
@@ -432,23 +434,27 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return;
 	
 	[chooseDatabaseButton removeAllItems];
+	
 	[chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
+	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Refresh Databases", @"menu item to refresh databases") action:@selector(setDatabases:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	
-	
 	MCPResult *queryResult = [mySQLConnection listDBs];
+	
+	if ([queryResult numOfRows]) {
+		[queryResult dataSeek:0];
+	}
+	
 	int i;
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[queryResult dataSeek:i];
+	
+	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+	{
 		[chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 	}
-	if ( ![self database] ) {
-		[chooseDatabaseButton selectItemAtIndex:0];
-	} else {
-		[chooseDatabaseButton selectItemWithTitle:[self database]];
-	}
+	
+	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
 
 /**
@@ -638,14 +644,15 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 {
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
+	
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
 	} else {
-		[self detectEncoding];
+		[self detectDatabaseEncoding];
 	}
-	
+		
 	// update the selected menu item
 	[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
 	
@@ -748,9 +755,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 /**
  * Autodetect the connection encoding and select the relevant encoding menu item in Database -> Database Encoding
  */
-- (void)detectEncoding
+- (void)detectDatabaseEncoding
 {
-	// mysql > 4.0
+	// MySQL > 4.0
 	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	_supportsEncoding = (mysqlEncoding != nil);
 	
@@ -761,9 +768,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
 	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1
-		NSLog(@"error: no character encoding found, mysql version is %@", [self mySQLVersion]);
+		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
+	
 	[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];
 	
 	// save the encoding
@@ -775,7 +783,29 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * when sent by an NSMenuItem, will set the encoding based on the title of the menu item
+ * Detects and sets the character set encoding of the supplied table name.
+ */
+- (void)detectTableEncodingForTable:(NSString *)table;
+{
+	NSString *tableCollation = [[[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", table]] fetchRowAsDictionary] objectForKey:@"Collation"];
+
+	if (tableCollation != nil) {
+		// Split up the collation string so we can get the encoding
+		NSArray *encodingComponents = [tableCollation componentsSeparatedByString:@"_"];
+		
+		if ([encodingComponents count] > 0) {
+			NSString *tableEncoding = [encodingComponents objectAtIndex:0];
+			
+			[self setEncoding:tableEncoding];
+		}
+	}
+	else {
+		NSLog(@"Error: unable to determine table collation and thus character encoding for table '%@'", table);
+	}
+}
+
+/**
+ * When sent by an NSMenuItem, will set the encoding based on the title of the menu item
  */
 - (IBAction)chooseEncoding:(id)sender
 {
@@ -990,7 +1020,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		//flushed privileges without errors
-		NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Succesfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
@@ -1013,8 +1043,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 	//get variables
 	theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
+	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[theResult dataSeek:i];
 		[tempResult addObject:[theResult fetchRowAsDictionary]];
 	}
 	variables = [[NSArray arrayWithArray:tempResult] retain];
@@ -1150,24 +1180,17 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if ([menuItem action] == @selector(import:)) {
+	if ([menuItem action] == @selector(import:) ||
+		[menuItem action] == @selector(export:) ||
+		[menuItem action] == @selector(exportMultipleTables:) ||
+		[menuItem action] == @selector(removeDatabase:))
+	{
 		return ([self database] != nil);
 	}
 	
-	if ([menuItem action] == @selector(importCSV:)) {
+	if ([menuItem action] == @selector(exportTable:))
+	{
 		return ([self database] != nil && [self table] != nil);
-	}
-	
-	if ([menuItem action] == @selector(export:)) {
-		return ([self database] != nil);
-	}
-	
-	if ([menuItem action] == @selector(exportTable:)) {
-		return ([self database] != nil && [self table] != nil);
-	}
-	
-	if ([menuItem action] == @selector(exportMultipleTables:)) {
-		return ([self database] != nil);
 	}
 	
 	if ([menuItem action] == @selector(chooseEncoding:)) {
@@ -1186,6 +1209,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	{
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
+	
 	return [super validateMenuItem:menuItem];
 }
 
@@ -1428,7 +1452,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	//	[tableWindow makeKeyAndOrderFront:self];
 	
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	selectedFavorite = [[NSString alloc] initWithString:NSLocalizedString(@"Custom", @"menu item for custom connection")];
 	
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
@@ -1593,6 +1616,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (IBAction)terminate:(id)sender
 {
 	[[NSApp orderedDocuments] makeObjectsPerformSelector:@selector(cancelConnectSheet:) withObject:nil];
+
+	// Save the favourites - commits any unsaved changes ie favourite renames
+	[prefs setObject:[self favorites] forKey:@"favorites"];
+
 	[NSApp terminate:sender];
 }
 
@@ -1603,7 +1630,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[favorites release];
 	[variables release];
 	[selectedDatabase release];
-	[selectedFavorite release];
 	[mySQLVersion release];
 	[prefs release];
 	

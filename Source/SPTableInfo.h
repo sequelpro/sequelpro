@@ -1,9 +1,8 @@
 //
-//  CMMCPConnection.h
+//  SPTableInfo.h
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed Sept 21 2005.
-//  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Created by Ben Perry on Jun 6, 2008
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,18 +19,17 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMMCPResult.h"
 
-@interface CMMCPConnection : MCPConnection {
-	id	delegate;
+@interface SPTableInfo : NSObject 
+{
+	IBOutlet id infoTable;
+	IBOutlet id tableList;
+	IBOutlet id tableListInstance;
+	IBOutlet id tableDocumentInstance;
+	
+	NSMutableArray *info;
 }
-
-- (CMMCPResult *)queryString:(NSString *) query;
-- (void)setDelegate:(id)object;
-- (NSTimeZone *)timeZone;
 
 @end
