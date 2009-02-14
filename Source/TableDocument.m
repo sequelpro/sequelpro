@@ -1162,7 +1162,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  passes the request to the tableDump object
  */
 {
-	[tableDumpInstance exportFile:[sender tag]];
+	if ([sender tag] == -1) {
+		[tableDumpInstance export];
+	} else {
+		[tableDumpInstance exportFile:[sender tag]];
+	}
 }
 
 - (IBAction)exportTable:(id)sender
