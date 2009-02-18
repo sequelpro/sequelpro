@@ -512,8 +512,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[NSApp endSheet:databaseSheet];
 	[databaseSheet orderOut:nil];
 	
-	if (!code)
+	if (!code) {
+		(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 		return;
+	}
 	
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
