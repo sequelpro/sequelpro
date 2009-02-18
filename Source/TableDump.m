@@ -29,6 +29,8 @@
 #import "TableContent.h"
 #import "CustomQuery.h"
 #import "SPGrowlController.h"
+#import "SPSQLParser.h"
+#import "SPTableData.h"
 
 @implementation TableDump
 
@@ -244,13 +246,14 @@
 							  enclosedBy:[exportFieldsEnclosedField stringValue]
 							   escapedBy:[exportFieldsEscapedField stringValue]
 								lineEnds:[exportLinesTerminatedField stringValue]
+					  withNumericColumns:nil
 								silently:NO];
 		
 		// Export the current "browse" view to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportBrowseViewAsXML"] ) {
 		success = [self writeXmlForArray:[tableContentInstance currentResult] orQueryResult:nil
 							toFileHandle:fileHandle
-							   tableName:[tableDocumentInstance table]
+							   tableName:(NSString *)[tableDocumentInstance table]
 							  withHeader:YES
 								silently:NO];
 		
@@ -263,6 +266,7 @@
 							  enclosedBy:[exportFieldsEnclosedField stringValue]
 							   escapedBy:[exportFieldsEscapedField stringValue]
 								lineEnds:[exportLinesTerminatedField stringValue]
+					  withNumericColumns:nil
 								silently:NO];
 		
 		// Export the current custom query result set to a file in XML format
@@ -353,13 +357,13 @@
 - (void)importBackgroundProcess:(NSString*)filename
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSString *dumpFile;
+	SPSQLParser *dumpFile;
 	NSError **errorStr; 
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
 	//load file into string
-	dumpFile = [NSString stringWithContentsOfFile:filename
-										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]]
+	dumpFile = [SPSQLParser stringWithContentsOfFile:filename
+										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] cString]]
 											error:errorStr];
 	
 	if ( !dumpFile ) {
@@ -398,7 +402,7 @@
 		[singleProgressBar startAnimation:self];
 		
 		//get array with an object for each mysql-query
-		queries = [self splitQueries:dumpFile];
+		queries = [dumpFile splitStringByCharacter:';'];
 		
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
@@ -717,9 +721,9 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, progressBarWidth, lastProgressValue, queryLength;
+	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength;
 	CMMCPResult *queryResult;
-	NSString *tableName;
+	NSString *tableName, *tableColumnTypeGrouping;
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
@@ -727,8 +731,9 @@
 	NSMutableString *cellValue = [NSMutableString string];
 	NSMutableString *sqlString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
+	NSDictionary *tableDetails;
+	NSMutableArray *tableColumnNumericStatus;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	NSScanner *sqlNumericTester;
 	id createTableSyntax;
 	
 	// Reset the interface
@@ -811,6 +816,20 @@
 			fieldNames = [queryResult fetchFieldNames];
 			rowCount = [queryResult numOfRows];
 			
+			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+			tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationFromCreateTableSyntaxForTable:tableName]];
+			colCount = [[tableDetails objectForKey:@"columns"] count];
+			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
+			for ( j = 0; j < colCount ; j++ ) {
+				tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
+				if ([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"]
+					|| [tableColumnTypeGrouping isEqualToString:@"float"]) {
+					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
+				} else {
+					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:NO]];
+				}
+			}
+			
 			// Update the progress text and set the progress bar back to determinate
 			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Dumping...", @"text showing that app is writing data for table dump"), (i+1), [selectedTables count], tableName]];
 			[singleProgressText displayIfNeeded];
@@ -840,7 +859,7 @@
 						[singleProgressBar displayIfNeeded];
 					}
 					
-					for ( t = 0 ; t < [theRow count] ; t++ ) {
+					for ( t = 0 ; t < colCount ; t++ ) {
 						
 						// Add NULL values directly to the output row
 						if ( [[theRow objectAtIndex:t] isMemberOfClass:[NSNull class]] ) {
@@ -861,14 +880,8 @@
 								
 							} else {
 								
-								// Until we have access to field types, test whether this cell contains a
-								// number via use of an NSScanner and a check of the first couple of
-								// characters (0[^.] is not a number).  If it is a number, add the number directly.
-								sqlNumericTester = [NSScanner scannerWithString:cellValue];
-								if ([sqlNumericTester scanFloat:nil] && [sqlNumericTester isAtEnd] && 
-									([cellValue characterAtIndex:0] != '0'
-									|| [cellValue length] == 1
-									|| ([cellValue length] > 1 && [cellValue characterAtIndex:1] == '.'))) {
+								// If this is a numeric column type, add the number directly.
+								if ( [[tableColumnNumericStatus objectAtIndex:t] boolValue] ) {
 									[sqlString appendString:cellValue];
 									
 								// Otherwise add a quoted string with special characters escaped
@@ -944,10 +957,16 @@
 /*
  Takes an array and writes it in CSV format to the supplied NSFileHandle
  */
-- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle outputFieldNames:(BOOL)outputFieldNames terminatedBy:(NSString *)fieldSeparatorString
-			  enclosedBy:(NSString *)enclosingString escapedBy:(NSString *)escapeString lineEnds:(NSString *)lineEndString silently:(BOOL)silently;
+- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle
+		outputFieldNames:(BOOL)outputFieldNames
+		terminatedBy:(NSString *)fieldSeparatorString
+		enclosedBy:(NSString *)enclosingString
+		escapedBy:(NSString *)escapeString
+		lineEnds:(NSString *)lineEndString
+		withNumericColumns:(NSArray *)tableColumnNumericStatus
+		silently:(BOOL)silently;
 {
-	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]];
+	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] cString]];
 	NSMutableString *csvCell = [NSMutableString string];
 	NSMutableArray *csvRow = [NSMutableArray array];
 	NSMutableString *csvString = [NSMutableString string];
@@ -1072,14 +1091,21 @@
 				
 			} else {
 				
-				// Until we have access to field types, test whether this cell contains a number via use of an
-				// NSScanner and a check of the first couple of characters.
+				// Test whether this cell contains a number
 				if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
 					csvCellIsNumeric = FALSE;
+
+				// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
+				} else if (tableColumnNumericStatus != nil) {
+					csvCellIsNumeric = [[tableColumnNumericStatus objectAtIndex:j] boolValue];
+
+				// Or fall back to testing numeric content via an NSScanner.
 				} else {
 					csvNumericTester = [NSScanner scannerWithString:csvCell];
-					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && [csvNumericTester isAtEnd] && 
-										([csvCell characterAtIndex:0] != '0' || [csvCell characterAtIndex:1] == '.');
+					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && [csvNumericTester isAtEnd]
+										&& ([csvCell characterAtIndex:0] != '0'
+											|| [csvCell length] == 1
+											|| ([csvCell length] > 1 && [csvCell characterAtIndex:1] == '.'));
 				}
 				
 				// Escape any occurrences of the escaping character
@@ -1292,7 +1318,7 @@
  */
 - (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently
 {
-	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance encoding] cString]];
+	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] cString]];
 	NSMutableArray *xmlTags = [NSMutableArray array];
 	NSMutableArray *xmlRow = [NSMutableArray array];
 	NSMutableString *xmlString = [NSMutableString string];
@@ -1444,13 +1470,15 @@
  */
 - (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type
 {
-	int i;
+	int i, j;
 	CMMCPResult *queryResult;
-	NSString *tableName;
+	NSString *tableName, *tableColumnTypeGrouping;
 	NSMutableString *infoString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	NSMutableString *csvLineEnd;
+	NSDictionary *tableDetails;
+	NSMutableArray *tableColumnNumericStatus;
 	
 	// Reset the interface
 	[errorsView setString:@""];
@@ -1514,7 +1542,20 @@
 		if ( [type isEqualToString:@"csv"] && [selectedTables count] > 1) {
 			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		}
-		
+NSDate *startDate = [NSDate date];		
+		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+		tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationFromCreateTableSyntaxForTable:tableName]];
+		tableColumnNumericStatus = [NSMutableArray array];
+		for ( j = 0; j < [[tableDetails objectForKey:@"columns"] count] ; j++ ) {
+			tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
+			if ([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"]
+				|| [tableColumnTypeGrouping isEqualToString:@"float"]) {
+				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
+			} else {
+				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:NO]];
+			}
+		}
+
 		// Retrieve all the content within this table
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
 		
@@ -1541,8 +1582,9 @@
 						enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
 						 escapedBy:[exportMultipleFieldsEscapedField stringValue]
 						  lineEnds:[exportMultipleLinesTerminatedField stringValue]
+				withNumericColumns:tableColumnNumericStatus
 						  silently:YES];
-			
+			NSLog(@"CSV export took %f s", [[NSDate date] timeIntervalSinceDate:startDate]);
 			// Add a spacer to the file
 			[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		} else if ( [type isEqualToString:@"xml"] ) {
@@ -1691,87 +1733,6 @@
 	[tempArray addObject:[string substringWithRange:NSMakeRange(start,([string length]-start))]];
 	
 	return [NSArray arrayWithArray:tempArray];
-}
-
-- (NSArray *)splitQueries:(NSString *)query
-/*
- splits the queries by ;'s which aren't inside any ", ' or ` characters
- */
-{
-	NSMutableString *queries = [NSMutableString stringWithString:query];
-	NSMutableArray *queryArray = [NSMutableArray array];
-	char stringType = nil;
-	BOOL inString = NO;
-	BOOL escaped;
-	unsigned lineStart = 0;
-	unsigned i, j, x, currentLineLength;
-	
-	//parse string
-	for ( i = 0 ; i < [queries length] ; i++ ) {
-		if ( inString ) {
-			//we are in a string
-			//look for end of string
-			for ( ; i < [queries length] ; i++ ) {
-				
-				// For the backtick character treat the string as ended
-				if ( ([queries characterAtIndex:i] == '`') && (stringType == '`') ) {
-					
-					inString = NO;
-					break;
-					
-					// Otherwise, prepare to treat the string as ended after a stringType....
-				} else if ( [queries characterAtIndex:i] == stringType ) {
-					
-					// ...but only if the stringType isn't escaped with an *odd* number of escaping characters.
-					escaped = NO;
-					j = 1;
-					currentLineLength = i - lineStart;
-					while ( ((currentLineLength-j) > 0) && ([queries characterAtIndex:i-j] == '\\') ) {
-						escaped = !escaped;
-						j++;
-					}
-					
-					// If an odd number have been found, it really is the end of the string.
-					if ( !escaped ) {
-						inString = NO;
-						break;
-					}
-				}
-			}
-		} else if ( ([queries characterAtIndex:i] == '#') || 
-				   ((i+2<[queries length]) &&
-					([queries characterAtIndex:i] == '-') &&
-					([queries characterAtIndex:i+1] == '-') &&
-					([queries characterAtIndex:i+2] == ' ')) ) {
-			//it's a comment -> delete it
-			x = i;
-			while ( (x<[queries length]) && ([queries characterAtIndex:x] != '\r') && ([queries characterAtIndex:x] != '\n') ) {
-				x++;
-			}
-			[queries deleteCharactersInRange:NSMakeRange(i,x-i)];
-		} else if ( [queries characterAtIndex:i] == ';' ) {
-			//we are at the end of a query
-			[queryArray addObject:[queries substringWithRange:NSMakeRange(lineStart, (i-lineStart))]];
-			while ( ((i+1)<[queries length]) && (([queries characterAtIndex:i+1]=='\n') || ([queries characterAtIndex:i+1]=='\r') || ([queries characterAtIndex:i+1]==' ')) ) {
-				i++;
-			}
-			lineStart = i + 1;
-		} else if ( ([queries characterAtIndex:i] == '\'') ||
-				   ([queries characterAtIndex:i] == '"') ||
-				   ([queries characterAtIndex:i] == '`') ) {
-			//we are entering a string
-			inString = YES;
-			stringType = [queries characterAtIndex:i];
-		}
-	}
-	
-	//add rest of string to array (if last line has not ended with a ";")
-	if ( lineStart < [queries length] ) {
-		[queryArray addObject:[queries substringWithRange:NSMakeRange(lineStart, ([queries length]-lineStart))]];
-	}
-	
-	//return array
-	return [NSArray arrayWithArray:queryArray];
 }
 
 

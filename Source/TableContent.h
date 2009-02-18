@@ -35,7 +35,7 @@
 	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
-	IBOutlet id tableSourceInstance;
+	IBOutlet id tableDataInstance;
 	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
@@ -63,7 +63,6 @@
 	NSString *selectedTable;
 	NSMutableArray *fullResult, *filteredResult, *keys;
 	NSMutableDictionary *oldRow;
-	NSArray *fieldNames, *fieldTypes;
 	NSString *compareType, *sortField;
 	BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
@@ -103,7 +102,7 @@
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(int)row;
-- (BOOL)isBlobOrText:(NSString *)fieldType;
+- (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (int)getNumberOfRows;
@@ -111,7 +110,7 @@
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
+- (id)tableView:(CMCopyTable *)aTableView
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView

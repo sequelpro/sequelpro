@@ -34,6 +34,7 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
+	IBOutlet id tableDataInstance;
 	IBOutlet id customQueryInstance;
 
     IBOutlet id tableWindow;
@@ -119,7 +120,6 @@
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
 	escaped:(NSString *)escaped terminated:(NSString *)terminated;
-- (NSArray *)splitQueries:(NSString *)query;
 
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
@@ -127,7 +127,7 @@
 	toFileHandle:(NSFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
-	lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
+	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus silently:(BOOL)silently;
 - (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
 	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;

@@ -41,6 +41,7 @@
 	IBOutlet id tableContentInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
+	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
 
 	IBOutlet id tableWindow;
@@ -133,9 +134,9 @@
 - (void)showErrorInConsole:(NSString *)error;
 
 //encoding methods
-- (void)setEncoding:(NSString *)encoding;
-- (void)detectDatabaseEncoding;
-- (void)detectTableEncodingForTable:(NSString *)table;
+- (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
+- (NSString *)databaseEncoding;
+- (NSString *)connectionEncoding;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;

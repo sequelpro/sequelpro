@@ -35,6 +35,7 @@
 	IBOutlet id tableContentInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
+	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
 
 	IBOutlet id tableWindow;
@@ -68,7 +69,7 @@
 - (void)doPerformQueryService:(NSString *)query;
 
 //getter methods
-- (NSString *)table;
+- (NSString *)tableName;
 - (NSArray *)tables;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;

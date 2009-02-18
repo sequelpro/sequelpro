@@ -31,6 +31,7 @@
 @interface TableSource : NSObject {
 
 	IBOutlet id tablesListInstance;
+	IBOutlet id tableDataInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;

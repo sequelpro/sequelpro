@@ -26,6 +26,7 @@
 #import "TableDocument.h"
 #import "TableSource.h"
 #import "TableContent.h"
+#import "SPTableData.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
 #import "CMMCPConnection.h"
@@ -295,7 +296,7 @@ selects customQuery tab and passes query to customQueryInstance
 /*
 returns the currently selected table or nil if no table or mulitple tables are selected
 */
-- (NSString *)table
+- (NSString *)tableName
 {
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
 		return [tables objectAtIndex:[tablesListView selectedRow]];
@@ -395,9 +396,8 @@ Mark the content table for refresh when it's next switched to
 					contentLoaded = NO;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-					[tableSourceInstance loadTable:anObject];
 					[tableContentInstance loadTable:anObject];
-					structureLoaded = YES;
+					structureLoaded = NO;
 					contentLoaded = YES;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
@@ -451,9 +451,8 @@ Mark the content table for refresh when it's next switched to
 					contentLoaded = NO;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-					[tableSourceInstance loadTable:anObject];
 					[tableContentInstance loadTable:anObject];
-					structureLoaded = YES;
+					structureLoaded = NO;
 					contentLoaded = YES;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
@@ -549,15 +548,27 @@ traps enter and esc and edit/cancel without entering next row
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+		
+		// Reset the table information caches
+		[tableDataInstance resetAllData];
+
+		// If encoding is set to Autodetect, update the connection character set encoding
+		// based on the newly selected table's encoding - but only if it differs from the current encoding.
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
+			if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+				[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
+				[tableDataInstance resetAllData];
+			}
+		}
+
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
 			contentLoaded = NO;   
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			structureLoaded = YES;
+			structureLoaded = NO;
 			contentLoaded = YES;
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
@@ -574,11 +585,6 @@ traps enter and esc and edit/cancel without entering next row
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
 									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
-		 
-		// Update connection characater set encoding based on the table's encoding if required
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
-			[tableDocumentInstance detectTableEncodingForTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-		}
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -646,18 +652,11 @@ loads structure or source if tab selected the first time
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
-			
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1) && !contentLoaded ) {
-			
-			if ( !structureLoaded ) {
-				[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-				structureLoaded = YES;
-			}
-			
 			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			contentLoaded = YES;
 		}
@@ -683,6 +682,7 @@ loads structure or source if tab selected the first time
 	tables = [[NSMutableArray alloc] init];
 	structureLoaded = NO;
 	contentLoaded = NO;
+	statusLoaded = NO;
 	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 	return self;
 }

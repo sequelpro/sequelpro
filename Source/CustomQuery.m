@@ -23,7 +23,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CustomQuery.h"
-#import "TableDump.h"
+#import "SPSQLParser.h"
 #import "SPGrowlController.h"
 
 @implementation CustomQuery
@@ -45,23 +45,26 @@ sets the tableView columns corresponding to the mysql-result
 	NSTableColumn	*theCol;
 	CMMCPResult	*theResult = nil;
 	NSArray		*queries;
-//	NSArray		*theTypes;
 	NSMutableArray	*menuItems = [NSMutableArray array];
 	NSMutableArray	*tempResult = [NSMutableArray array];
 	NSMutableString	*errors = [NSMutableString string];
+	SPSQLParser *queryParser;
 	int i;
 
-	//query started
+	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
-	//split queries by ;'s
-	queries = [tableDumpInstance splitQueries:[textView string]];
+	// Retrieve the custom query string and split it into separate SQL queries
+	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
+	queries = [queryParser splitStringByCharacter:';'];
+	[queryParser release];
 
-//perform queries
+	// Perform the queries in series
 	for ( i = 0 ; i < [queries count] ; i++ ) {
 		theResult = [mySQLConnection queryString:[queries objectAtIndex:i]];
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		//query gave error
+
+			// If the query errored, append error to the error log for display at the end
 			if ( [queries count] > 1 ) {
 				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
 										i+1,
@@ -70,7 +73,6 @@ sets the tableView columns corresponding to the mysql-result
 				[errors setString:[mySQLConnection getLastErrorMessage]];
 			}
 		}
-//	theTypes = [queryResult fetchTypesAsArray];
 	}
 	
 	//perform empty query if no query is given

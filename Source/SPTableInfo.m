@@ -25,6 +25,8 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "TableDocument.h"
+#import "TablesList.h"
+#import "SPTableData.h"
 #import "SPStringAdditions.h"
 
 #import <MCPKit_bundled/MCPKit_bundled.h>
@@ -101,72 +103,64 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 - (void)tableChanged:(NSNotification *)notification
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
+	NSDictionary *tableStatus;
 	
 	[info removeAllObjects];
 	[info addObject:@"TABLE INFORMATION"];
 		
-	if ([tableListInstance table])
+	if ([tableListInstance tableName])
 	{
-		if ([(NSString *)[tableListInstance table] isEqualToString:@""]) {
+		if ([[tableListInstance tableName] isEqualToString:@""]) {
 			[info addObject:@"multiple tables"];
-			
-		} else {
-			// Notify that we are about to perform a query
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
-			// Create the query and get results
-			query = [NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", [tableListInstance table]];
-			
-			// This line triggers a bug when opening a new window. but only after having closed a window
-			theResult = [[tableDocumentInstance sharedConnection] queryString:query];
+		} else {
+
+			// Retrieve the table status information via the data cache
+			tableStatus = [tableDataInstance statusValues];
 
 			// Check for errors
-			if (![[[tableDocumentInstance sharedConnection] getLastErrorMessage] isEqualToString:@""]) {
+			if (![tableStatus count]) {
 				[info addObject:@"error occurred"];
 				return;
 			}
-			
-			// Process result
-			theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-			
+
 			// Check for "Create_time" == NULL
-			if (![[theRow objectForKey:@"Create_time"] isNSNull]) {
-				// Setup our data formatter
+			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
+
+				// Set up our data formatter
 				NSDateFormatter *createDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
 				[createDateFormatter setDateStyle:NSDateFormatterShortStyle];
 				[createDateFormatter setTimeStyle:NSDateFormatterNoStyle];
-				
+
 				// Convert our string date from the result to an NSDate.
-				NSDate *create_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Create_time"]];
-				
+				NSDate *create_date = [NSDate dateWithNaturalLanguageString:[tableStatus objectForKey:@"Create_time"]];
+
 				// Add the creation date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"created: %@", [createDateFormatter stringFromDate:create_date]]];
 			}
 
 			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
-			if (![[theRow objectForKey:@"Update_time"] isNSNull]) {
+			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
+
 				// Setup our data formatter
 				NSDateFormatter *updateDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
 				[updateDateFormatter setDateStyle:NSDateFormatterShortStyle];
 				[updateDateFormatter setTimeStyle:NSDateFormatterNoStyle];
-				
+
 				// Convert our string date from the result to an NSDate.
-				NSDate *update_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Update_time"]];
-				
+				NSDate *update_date = [NSDate dateWithNaturalLanguageString:[tableStatus objectForKey:@"Update_time"]];
+
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"updated: %@", [updateDateFormatter stringFromDate:update_date]]];
 			}
 						
-			[info addObject:[NSString stringWithFormat:@"rows: %@", [theRow objectForKey:@"Rows"]]];
-			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[theRow objectForKey:@"Data_length"] intValue]]]];
-			[info addObject:[NSString stringWithFormat:@"encoding: %@", [[[theRow objectForKey:@"Collation"] componentsSeparatedByString:@"_"] objectAtIndex:0]]];
-			[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [theRow objectForKey:@"Auto_increment"]]];
+			[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
+			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
 			
-			// Notify that we've finished performing the query
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [tableStatus objectForKey:@"Auto_increment"]]];
+			}
 		}
 	}
 	
