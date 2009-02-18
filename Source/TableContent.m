@@ -1355,7 +1355,7 @@
 - (BOOL)tableContainsBlobOrTextColumns
 {
 	int i;
-	NSArray *tableColumns = [tableDataInstance tableColumns];
+	NSArray *tableColumns = [tableDataInstance columns];
 	NSString *columnTypeGrouping;
 
 	for ( i = 0 ; i < [tableColumns count]; i++ ) {
