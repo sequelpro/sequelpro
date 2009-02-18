@@ -158,6 +158,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 														 password:[passwordField stringValue]
 														usingPort:[portField intValue]];
 		}
+		[mySQLConnection setParentWindow:tableWindow];
+
 		if ( ![mySQLConnection isConnected] )
 			code = 2;
 		if ( !code && ![[databaseField stringValue] isEqualToString:@""] ) {
