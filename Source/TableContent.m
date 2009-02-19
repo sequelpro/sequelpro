@@ -798,7 +798,7 @@
 	unsigned totalLength = [data length];
 	int bytesPerLine = 16;
 	NSMutableString *retVal = [NSMutableString string];
-	unsigned char *nodisplay = "\t\n\r\f";
+	char *nodisplay = "\t\n\r\f";
 	
 	// get the length of the longest location
 	int longest = [(NSString *)[NSString stringWithFormat:@"%X", totalLength - ( totalLength % bytesPerLine )] length];
@@ -853,7 +853,7 @@
 		}
 		
 		// remove extra ghost characters
-		[chars appendString:[NSString stringWithCString:buffer]];
+		[chars appendString:[NSString stringWithCString:(char *)buffer]];
 		if ( [chars length] > bytesPerLine ) {
 			[chars deleteCharactersInRange:NSMakeRange( bytesPerLine, [chars length] - bytesPerLine )];
 		}
@@ -1555,7 +1555,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	// Convert data objects to their string representation in the current encoding.
 	if ( [theValue isKindOfClass:[NSData class]] ) {
 		NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
-		theValue = [NSString stringWithString:dataRepresentation];
+		if (dataRepresentation == nil) theValue = @"- cannot be displayed -";
+		else theValue = [NSString stringWithString:dataRepresentation];
 		[dataRepresentation release];
 	}
 	
