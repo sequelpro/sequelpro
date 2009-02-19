@@ -636,117 +636,74 @@ checks for updates and opens download page in default browser
 
 - (void)awakeFromNib
 {
-	NSEnumerator *enumerator;
-	id favorite;
-	NSString *name, *host, *user, *database, *password;
-	//int code;
+	int currentVersionNumber;
 
-	//register MainController as services provider
+	// Register MainController as services provider
 	[NSApp setServicesProvider:self];
 
-	//register MainController for AppleScript events
-	[[ NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject: self ];
-	
+	// Register MainController for AppleScript events
+	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
+
+	// Get the current bundle version number (the SVN build number) for per-version upgrades
+	currentVersionNumber = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] intValue];
+
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	isNewFavorite = NO;
 	[prefs registerDefaults:[NSDictionary dictionaryWithObjectsAndKeys:
-							 [NSNumber numberWithBool:YES], @"limitRows",
-							 [NSNumber numberWithInt:1000], @"limitRowsValue",
-							 nil]];
+							[NSNumber numberWithBool:YES], @"reloadAfterAdding",
+							[NSNumber numberWithBool:YES], @"reloadAfterEditing",
+							[NSNumber numberWithBool:NO], @"reloadAfterRemoving",
+							[NSString stringWithString:@"NULL"], @"nullValue",
+							[NSNumber numberWithBool:YES], @"showError",
+							[NSNumber numberWithBool:NO], @"dontShowBlob",
+							[NSString stringWithString:NSHomeDirectory()], @"savePath",
+							[NSString stringWithString:NSHomeDirectory()], @"openPath",
+							[NSString stringWithString:@"Autodetect"], @"encoding",
+							[NSNumber numberWithBool:NO], @"useMonospacedFonts",
+							[NSNumber numberWithBool:YES], @"fetchRowCount",
+							[NSNumber numberWithBool:YES], @"limitRows",
+							[NSNumber numberWithInt:1000], @"limitRowsValue",
+							nil]];
 
-	//set standard preferences if no preferences are found
-	if ( [prefs objectForKey:@"reloadAfterAdding"] == nil )
-	{
-		[prefs setObject:@"0.3" forKey:@"version"];
-		[prefs setBool:YES forKey:@"reloadAfterAdding"];
-		[prefs setBool:YES forKey:@"reloadAfterEditing"];
-		[prefs setBool:NO forKey:@"reloadAfterRemoving"];
-		[prefs setObject:@"NULL" forKey:@"nullValue"];
-		//[prefs setBool:YES forKey:@"showError"];
-		//[prefs setBool:NO forKey:@"dontShowBlob"];
-		//[prefs setBool:NO forKey:@"limitRows"];
-		//[prefs setInteger:100 forKey:@"limitRowsValue"];
-		//[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"savePath"];
-		//[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"openPath"];
-	}
+	// If no version number is present in prefs, and column widths have been saved, walk through
+	// them and remove any table widths set to 15 or less (fix for mangled columns caused by Issue #140)
+	if ([prefs objectForKey:@"lastUsedVersion"] == nil && [prefs objectForKey:@"tableColumnWidths"] != nil) {
+		NSEnumerator *databaseEnumerator, *tableEnumerator, *columnEnumerator;
+		NSString *databaseKey, *tableKey, *columnKey;
+		NSMutableDictionary *newDatabase, *newTable;
+		float columnWidth;
+		NSMutableDictionary *newTableColumnWidths = [[NSMutableDictionary alloc] init];
 
-	//new preferences and changes in v0.4
-	if ( [prefs objectForKey:@"showError"] == nil )	{
-		[prefs setObject:@"0.4" forKey:@"version"];
-		
-		//set standard values for new preferences
-		[prefs setBool:YES forKey:@"showError"];
-		[prefs setBool:NO forKey:@"dontShowBlob"];
-		//[prefs setBool:NO forKey:@"limitRows"];
-		//[prefs setInteger:100 forKey:@"limitRowsValue"];
-		[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"savePath"];
-		[prefs setObject:[NSString stringWithString:NSHomeDirectory()] forKey:@"openPath"];
-		
-		//remove old preferences
-		[prefs removeObjectForKey:@"allowDragAndDropReordering"];
-		
-		//rewrite passwords to keychain (with new format)
-		if ( [prefs objectForKey:@"favorites"] ) {
-			NSRunAlertPanel(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"With version 0.4 Sequel Pro has introduced a new format to save passwords in the Keychain.\nPlease allow Sequel Pro to decrypt all passwords of your favorites. Otherwise you have to reenter all passwords of your saved favorites in the Preferences.", @"message of panel when passwords have to be updated for v0.4"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-			enumerator = [[prefs objectForKey:@"favorites"] objectEnumerator];
-
-			while ( (favorite = [enumerator nextObject]) ) {
-				//replace password
-				name = [favorite objectForKey:@"name"];
-				host = [favorite objectForKey:@"host"];
-				user = [favorite objectForKey:@"user"];
-				database = [favorite objectForKey:@"database"];
-				password = [keyChainInstance getPasswordForName:[NSString stringWithFormat:@"%@/%@", host, database]
-								account:user];
-				[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"%@/%@", host, database] account:user];
-				if ( ![password isEqualToString:@""] )
-					[keyChainInstance addPassword:password
-						forName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
-						account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+		databaseEnumerator = [[prefs objectForKey:@"tableColumnWidths"] keyEnumerator];
+		while (databaseKey = [databaseEnumerator nextObject]) {
+			newDatabase = [[NSMutableDictionary alloc] init];
+			tableEnumerator = [[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] keyEnumerator];
+			while (tableKey = [tableEnumerator nextObject]) {
+				newTable = [[NSMutableDictionary alloc] init];
+				columnEnumerator = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] objectForKey:tableKey] keyEnumerator];
+				while (columnKey = [columnEnumerator nextObject]) {
+					columnWidth = [[[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] floatValue];
+					if (columnWidth >= 15) {
+						[newTable setObject:[NSNumber numberWithFloat:columnWidth] forKey:[NSString stringWithString:columnKey]];
+					}
+				}
+				if ([newTable count]) {
+					[newDatabase setObject:[NSDictionary dictionaryWithDictionary:newTable] forKey:[NSString stringWithString:tableKey]];
+				}
+				[newTable release];
 			}
+			if ([newDatabase count]) {
+				[newTableColumnWidths setObject:[NSDictionary dictionaryWithDictionary:newDatabase] forKey:[NSString stringWithString:databaseKey]];
+			}
+			[newDatabase release];
 		}
+		[prefs setObject:[NSDictionary dictionaryWithDictionary:newTableColumnWidths] forKey:@"tableColumnWidths"];
+		[newTableColumnWidths release];
 	}
 	
-	//new preferences and changes in v0.5
-	if ( [[prefs objectForKey:@"version"] isEqualToString:@"0.4"] )	{
-		[prefs setObject:@"0.5" forKey:@"version"];
-		
-		//set standard values for new preferences
-		[prefs setObject:@"ISO Latin 1" forKey:@"encoding"];
-		[prefs setBool:NO forKey:@"useMonospacedFonts"];
-		
-		//add socket field to favorites
-		if ( [prefs objectForKey:@"favorites"] ) {
-			NSMutableArray *tempFavorites = [NSMutableArray array];
-			NSMutableDictionary *tempFavorite;
-			enumerator = [[prefs objectForKey:@"favorites"] objectEnumerator];
-			while ( (favorite = [enumerator nextObject]) ) {
-				tempFavorite = [NSMutableDictionary dictionaryWithDictionary:favorite];
-				[tempFavorite setObject:@"" forKey:@"socket"];
-				[tempFavorites addObject:[NSDictionary dictionaryWithDictionary:tempFavorite]];
-			}
-			[prefs setObject:tempFavorites forKey:@"favorites"];
-		}
-	}
-	
-	//new preferences and changes in v0.7
-	if ( [[prefs objectForKey:@"version"] isEqualToString:@"0.5"] ||
-			[[prefs objectForKey:@"version"] isEqualToString:@"0.6beta"] ||
-			[[prefs objectForKey:@"version"] isEqualToString:@"0.7b2"] )
-	{
-		[prefs setObject:@"0.7b3" forKey:@"version"];
-		[prefs setObject:@"Autodetect" forKey:@"encoding"];
-		[prefs setBool:YES forKey:@"fetchRowCount"];
-	}
+	// Write the current bundle version to the prefs
+	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"lastUsedVersion"];
 
-//set up interface
-/*
-	enumerator = [tableColumns objectEnumerator];
-	while ( (column = [enumerator nextObject]) )
-	{
-		[[column dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
-*/
 	[tableView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPreferencesPasteboard", nil]];
 	[tableView reloadData];
 }

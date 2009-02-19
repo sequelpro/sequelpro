@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="27"/>
+			<integer value="676"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2565,7 +2565,7 @@
 																									<reference key="NSGridColor" ref="864903678"/>
 																									<double key="NSRowHeight">1.600000e+01</double>
 																									<int key="NSTvFlags">1522532352</int>
-																									<int key="NSColumnAutoresizingStyle">2</int>
+																									<int key="NSColumnAutoresizingStyle">0</int>
 																									<int key="NSDraggingSourceMaskForLocal">15</int>
 																									<int key="NSDraggingSourceMaskForNonLocal">0</int>
 																									<bool key="NSAllowsTypeSelect">YES</bool>
