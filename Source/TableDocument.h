@@ -203,6 +203,9 @@
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 
+// Connection sheet delegate methods
+- (void) controlTextDidChange:(NSNotification *)aNotification;
+
 //splitView delegate methods
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;

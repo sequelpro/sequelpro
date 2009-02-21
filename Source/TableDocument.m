@@ -1515,6 +1515,22 @@ invoked when query gave an error
 	[self showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
 }
 
+#pragma mark Connection sheet delegate methods
+
+/**
+ * When a favorite is selected, and the connection details are edited, deselect the favorite;
+ * this is clearer and also prevents a failed connection from being repopulated with the
+ * favorite's details instead of the last used details.
+ * This method allows the password to be changed without altering the selection.
+ */
+- (void) controlTextDidChange:(NSNotification *)aNotification
+{
+	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == databaseField
+		|| [aNotification object] == socketField || [aNotification object] == portField) {
+		[favoritesController setSelectionIndexes:[NSIndexSet indexSet]];
+	}
+}
+
 #pragma mark SplitView delegate methods
 
 /**

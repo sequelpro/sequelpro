@@ -8,6 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="2268"/>
 			<integer value="670"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -3161,7 +3162,7 @@
 																															<string>WebURLsWithTitlesPboardType</string>
 																														</object>
 																													</object>
-																													<string key="NSFrameSize">{626, 41}</string>
+																													<string key="NSFrameSize">{626, 14}</string>
 																													<reference key="NSSuperview" ref="1072692119"/>
 																													<object class="NSTextContainer" key="NSTextContainer" id="326170846">
 																														<object class="NSLayoutManager" key="NSLayoutManager">
@@ -4052,7 +4053,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{256, 191}</string>
 				<object class="NSView" key="NSWindowView" id="586457094">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4631,6 +4632,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{519, 335}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{256, 213}</string>
@@ -4789,7 +4791,7 @@
 										<object class="NSTextView" id="798764405">
 											<reference key="NSNextResponder" ref="593223452"/>
 											<int key="NSvFlags">2322</int>
-											<string key="NSFrameSize">{588, 72}</string>
+											<string key="NSFrameSize">{588, 0}</string>
 											<reference key="NSSuperview" ref="593223452"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="623412409">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -11910,6 +11912,54 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<int key="connectionID">4713</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="252686319"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">4714</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="744530295"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">4715</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="387080032"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">4716</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="452595742"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">4717</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="591248388"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">4718</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="591248388"/>
+						<reference key="destination" ref="632312830"/>
+					</object>
+					<int key="connectionID">4719</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -19022,8 +19072,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{547, 388}, {519, 335}}</string>
-					<string>{{547, 388}, {519, 335}}</string>
+					<string>{{481, 388}, {519, 335}}</string>
+					<string>{{481, 388}, {519, 335}}</string>
 					<reference ref="9"/>
 					<string>{{136, 447}, {519, 335}}</string>
 					<reference ref="8"/>
@@ -19895,7 +19945,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4713</int>
+			<int key="maxID">4719</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
