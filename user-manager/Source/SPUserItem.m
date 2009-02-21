@@ -7,15 +7,25 @@
 //
 
 #import "SPUserItem.h"
+@interface SPUserItem (PrivateMethods)
+- (void)_initializeGlobalPrivileges;
+@end
 
 
 @implementation SPUserItem
 
++ (void)initialize
+{
+	[self setKeys:[NSArray arrayWithObject:@"username"] triggerChangeNotificationsForDependentKey:@"itemTitle"];
+}
+
 - (id)init
 {
+	NSLog(@"SPUserItem init");
 	[super init];
 	
 	children = [[NSMutableArray alloc] init];
+	[self _initializeGlobalPrivileges];
 	[self setLeaf:NO];
 	
 	return self;
@@ -23,21 +33,31 @@
 
 - (void)dealloc
 {
+	[globalPrivileges release];
+	globalPrivileges = nil;
 	[children release];
 	children = nil;
 	[username release];
 	[password release];
 	[host release];
-	[itemTitle release];
 	[super dealloc];
 }
 
-- (void)setItemTitle:(NSString *)title
+- (void)_initializeGlobalPrivileges
 {
-	[itemTitle release];
-	itemTitle = [title retain];
+	globalPrivileges = [[NSMutableDictionary alloc] init];
+	[globalPrivileges setValue:FALSE forKey:@"Select_priv"];
+	[globalPrivileges setValue:FALSE forKey:@"Insert_priv"];
+	
 }
-
+- (NSString *)itemTitle
+{
+	if ([self isLeaf]){
+		return [self host];
+	} else {
+		return [self username];
+	}
+}
 - (void)setHost:(NSString *)newHost
 {
 	[host release];
@@ -61,6 +81,11 @@
 {
 	[username release];
 	username = [newUsername retain];
+	for (int i = 0; i < [children count]; i++)
+	{
+		SPUserItem *child = [children objectAtIndex:i];
+		[child setUsername:username];
+	}
 }
 
 - (NSString *)username
@@ -77,6 +102,17 @@
 - (NSString *)password
 {
 	return password;
+}
+
+- (void)setGlobalPrivileges:(NSMutableDictionary *)newGlobalPrivileges
+{
+	[globalPrivileges release];
+	globalPrivileges = [newGlobalPrivileges retain];
+}
+
+- (NSMutableDictionary *)globalPrivileges
+{
+	return globalPrivileges;
 }
 
 - (int)numberOfChildren

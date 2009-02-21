@@ -15,7 +15,7 @@
 	NSString *username;
 	NSString *password;
 	NSString *host;
-	NSMutableDictionary *privileges;
+	NSMutableDictionary *globalPrivileges;
 	NSString *itemTitle;
 	BOOL leaf;
 	
@@ -28,7 +28,6 @@
 - (SPUserItem *)childAtIndex:(int)index;
 
 // Properties
-- (void)setItemTitle:(NSString *)newTitle;
 - (NSString *)itemTitle;
 - (void)setHost:(NSString *)neHost;
 - (NSString *)host;
@@ -36,6 +35,9 @@
 - (NSString *)username;
 - (void)setPassword:(NSString *)newPassword;
 - (NSString *)password;
+- (void)setGlobalPrivileges:(NSMutableDictionary *)newGlobalPrivileges;
+- (NSMutableDictionary *)globalPrivileges;
+
 - (NSMutableArray *)children;
 - (void)setChildren:(NSMutableArray *)theChildren;
 - (void)addChild:(SPUserItem *)item;

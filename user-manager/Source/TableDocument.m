@@ -1207,7 +1207,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
 	
+	if ([menuItem action] == @selector(openUserManager:))
+	{
+		return (mySQLConnection != nil);
+	}
+		
 	return [super validateMenuItem:menuItem];
+	
 }
 
 - (IBAction)viewStructure:(id)sender
@@ -1622,14 +1628,15 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 - (IBAction)openUserManager:(id)sender
 {
-	if (userManagerInstance == nil) 
-	{
-		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
-	}
-	else 
-	{
-		[userManagerInstance show];
-	}
+	//if (userManagerInstance == nil) 
+//	{
+//		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
+//	}
+//	else 
+//	{
+//		[userManagerInstance show];
+//	}
+	[[SPUserManager alloc] initWithConnection:mySQLConnection];
 }
 - (void)dealloc
 {
