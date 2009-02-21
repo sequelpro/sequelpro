@@ -19,6 +19,7 @@
 - (void)_initializeUsers;
 - (void)_initializeDatabaseList;
 - (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
+- (void)_initializeSchemaPrivilegesWithKey:(NSString *)key;
 @end
 
 @implementation SPUserManager
@@ -161,10 +162,16 @@
 		NSString *key = [itemKeys objectAtIndex:index];
 		if ([key hasSuffix:@"_priv"])
 		{
+			[self _initializeSchemaPrivilegesWithKey:key];
 			[globalPrivs setValue:[item valueForKey:key] forKey:key];
 		}
 	}
 	[childItem setGlobalPrivileges:globalPrivs];
+}
+
+- (void)_initializeSchemaPrivilegesWithKey:(NSString *)key
+{
+	[availablePrivsController addObject:[NSDictionary dictionaryWithObject:key forKey:@"name"]];
 }
 
 - (void)setConnection:(CMMCPConnection *)connection

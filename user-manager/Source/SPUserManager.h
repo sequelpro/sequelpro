@@ -17,6 +17,8 @@
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
 	IBOutlet NSArrayController *databaseList;
+	IBOutlet NSArrayController *availablePrivsController;
+	IBOutlet NSArrayController *selectedPrivsController;
 	IBOutlet NSWindow *window;
 	
 	NSMutableArray *users;
