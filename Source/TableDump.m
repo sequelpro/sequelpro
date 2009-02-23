@@ -817,7 +817,7 @@
 			rowCount = [queryResult numOfRows];
 			
 			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-			tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationFromCreateTableSyntaxForTable:tableName]];
+			tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
 			colCount = [[tableDetails objectForKey:@"columns"] count];
 			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
 			for ( j = 0; j < colCount ; j++ ) {
@@ -1544,7 +1544,7 @@
 		}
 NSDate *startDate = [NSDate date];		
 		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationFromCreateTableSyntaxForTable:tableName]];
+		tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
 		tableColumnNumericStatus = [NSMutableArray array];
 		for ( j = 0; j < [[tableDetails objectForKey:@"columns"] count] ; j++ ) {
 			tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];

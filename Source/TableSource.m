@@ -165,7 +165,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	}
 	
 	// Determine the table type
-	if ( ![tableType isKindOfClass:[NSNull class]] ) {
+	if ( ![tableType isKindOfClass:[NSNull class]] && [tablesListInstance tableType] != SP_TABLETYPE_VIEW) {
 		[tableTypeButton selectItemWithTitle:tableType];
 		[tableTypeButton setEnabled:YES];
 	} else {
@@ -173,12 +173,13 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		[tableTypeButton setEnabled:NO];
 	}
 	
-	//enable buttons
-	[addFieldButton setEnabled:YES];
-	[copyFieldButton setEnabled:YES];
-	[removeFieldButton setEnabled:YES];
-	[addIndexButton setEnabled:YES];
-	[removeIndexButton setEnabled:YES];
+	// If a view is selected, disable the buttons; otherwise enable.
+	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
+	[addFieldButton setEnabled:editingEnabled];
+	[copyFieldButton setEnabled:editingEnabled];
+	[removeFieldButton setEnabled:editingEnabled];
+	[addIndexButton setEnabled:editingEnabled];
+	[removeIndexButton setEnabled:editingEnabled];
 	
 	//add columns to indexedColumnsField
 	[indexedColumnsField removeAllItems];
@@ -1035,6 +1036,14 @@ traps enter and esc and make/cancel editing without entering next row
 	 }
 }
 
+
+/*
+ * Modify cell display by disabling table cells when a view is selected, meaning structure/index
+ * is uneditable.
+ */
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
+}
 
 #pragma mark SplitView delegate methods
 

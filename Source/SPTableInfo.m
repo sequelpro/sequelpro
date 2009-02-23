@@ -104,8 +104,17 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (void)tableChanged:(NSNotification *)notification
 {
 	NSDictionary *tableStatus;
-	
+
 	[info removeAllObjects];
+
+	// For views, no information can be displayed.
+	if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		[info addObject:@"VIEW INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+
 	[info addObject:@"TABLE INFORMATION"];
 		
 	if ([tableListInstance tableName])

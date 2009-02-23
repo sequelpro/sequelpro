@@ -47,8 +47,11 @@
 - (void) resetAllData;
 - (void) resetStatusData;
 - (void) resetColumnData;
-- (BOOL) updateInformationFromCreateTableForCurrentTable;
-- (NSDictionary *) informationFromCreateTableSyntaxForTable:(NSString *)tableName;
+- (BOOL) updateInformationForCurrentTable;
+- (NSDictionary *) informationForTable:(NSString *)tableName;
+- (BOOL) updateInformationForCurrentView;
+- (NSDictionary *) informationForView:(NSString *)viewName;
 - (BOOL) updateStatusInformationForCurrentTable;
+- (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts;
 
 @end

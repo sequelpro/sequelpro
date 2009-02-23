@@ -43,25 +43,53 @@ loads all table names in array tables and reload the tableView
 - (IBAction)updateTables:(id)sender
 {
 	CMMCPResult *theResult;
+	NSArray *resultRow;
 	int i;
-
-	//query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	BOOL containsViews = NO;
 
 	[tablesListView deselectAll:self];
 	[tables removeAllObjects];
-	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
+	[tableTypes removeAllObjects];
+	[tableTypes addObject:[NSNumber numberWithInt:-1]];
 
-	theResult = (CMMCPResult *)[mySQLConnection listTables];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
+	if ([tableDocumentInstance database]) {
+
+		// Notify listeners that a query has started
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+
+		// Select the table list for the current database.  On MySQL versions after 5 this will include
+		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
+		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
+		if ([theResult numOfRows]) [theResult dataSeek:0];
+		if ([theResult numOfFields] == 1) {
+			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+				[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
+				[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+			}		
+		} else {
+			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+				resultRow = [theResult fetchRowAsArray];
+				[tables addObject:[resultRow objectAtIndex:0]];
+				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_VIEW]];
+					containsViews = YES;
+				} else {
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+				}
+			}		
+		}
 	}
-	
-	[tablesListView reloadData];
-	
-	//query finished
+
+	if (containsViews) {
+		[tables insertObject:NSLocalizedString(@"TABLES & VIEWS",@"header for table & views list") atIndex:0];
+	} else {
+		[tables insertObject:NSLocalizedString(@"TABLES",@"header for table list") atIndex:0];
+	}
+
+	// Notify listeners that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
+	[tablesListView reloadData];	
 }
 
 /*
@@ -307,9 +335,28 @@ returns the currently selected table or nil if no table or mulitple tables are s
 	}
 }
 
+/*
+ * Returns the currently selected table type, or -1 if no table or multiple tables are selected
+ */
+- (int) tableType
+{
+	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+		return [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	} else if ([tablesListView numberOfSelectedRows] > 1) {
+		return -1;
+	} else {
+		return -1;
+	}
+}
+
 - (NSArray *)tables
 {
 	return tables;
+}
+
+- (NSArray *)tableTypes
+{
+	return tableTypes;
 }
 
 /*
@@ -616,7 +663,11 @@ traps enter and esc and edit/cancel without entering next row
 			  row:(int)rowIndex
 {
 	if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"tables"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
+		if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_VIEW) {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
+		} else {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
+		}
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 		if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
 			[(ImageAndTextCell*)aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
@@ -680,6 +731,7 @@ loads structure or source if tab selected the first time
 	self = [super init];
 	
 	tables = [[NSMutableArray alloc] init];
+	tableTypes = [[NSMutableArray alloc] init];
 	structureLoaded = NO;
 	contentLoaded = NO;
 	statusLoaded = NO;
@@ -692,6 +744,7 @@ loads structure or source if tab selected the first time
 //	NSLog(@"TableList dealloc");
 	
 	[tables release];
+	[tableTypes release];
 	
 	[super dealloc];
 }
