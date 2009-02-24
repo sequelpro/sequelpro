@@ -1530,10 +1530,10 @@
 
 - (int)fetchNumberOfRows
 /*
- fetches the number of rows in the selected table using a "SELECT COUNT(*)" query and return it
+ fetches the number of rows in the selected table using a "SELECT COUNT(1)" query and return it
  */
 {
-	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM `%@`", selectedTable]] fetchRowAsArray] objectAtIndex:0] intValue];
+	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM `%@`", selectedTable]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
 
 
