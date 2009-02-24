@@ -104,6 +104,7 @@ adds a new table to the tables-array (no changes in mysql-db)
 	[tableWindow endEditingFor:nil];
 
 	[tables addObject:@""];
+	[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
 	[tablesListView reloadData];
 	[tablesListView selectRow:[tables count]-1 byExtendingSelection:NO];
 	[tablesListView editColumn:0 row:[tables count]-1 withEvent:nil select:YES];
@@ -222,6 +223,7 @@ copies a table, if desired with content
             }
 			
             [tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
+			[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
             [tablesListView reloadData];
             [tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
             [tablesListView scrollRowToVisible:[tablesListView selectedRow]];
@@ -276,6 +278,7 @@ removes selected table(s) from mysql-db and tableView
 		if ( [[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 			//dropped table with success
 			[tables removeObjectAtIndex:currentIndex];
+			[tableTypes removeObjectAtIndex:currentIndex];
 		} else {
 			//couldn't drop table
 			error = TRUE;
@@ -425,10 +428,11 @@ Mark the content table for refresh when it's next switched to
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 				@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 			[tables removeObjectAtIndex:rowIndex];
+			[tableTypes removeObjectAtIndex:rowIndex];
 			[tablesListView reloadData];
 		} else {
 			if ( [tableDocumentInstance supportsEncoding] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance encoding]]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance connectionEncoding]]];
 			} else {
 				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int)", anObject]];
 			}
@@ -469,6 +473,7 @@ Mark the content table for refresh when it's next switched to
 					@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
 						[NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
 							anObject, [mySQLConnection getLastErrorMessage]]);
+				[tableTypes removeObjectAtIndex:rowIndex];
 				[tables removeObjectAtIndex:rowIndex];
 				[tablesListView reloadData];
 			}
@@ -549,6 +554,7 @@ traps enter and esc and edit/cancel without entering next row
 		
 		if ( [[tables objectAtIndex:[tablesListView selectedRow]] isEqualToString:@""] ) {
 			//user added new table and then pressed escape
+			[tableTypes removeObjectAtIndex:[tablesListView selectedRow]];
 			[tables removeObjectAtIndex:[tablesListView selectedRow]];
 			[tablesListView reloadData];
 		}
@@ -594,7 +600,7 @@ traps enter and esc and edit/cancel without entering next row
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+	if ( [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] ) {
 		
 		// Reset the table information caches
 		[tableDataInstance resetAllData];
