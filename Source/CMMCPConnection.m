@@ -66,6 +66,8 @@ static void forcePingTimeout(int signalNumber);
 	connectionHost = nil;
 	connectionPort = 0;
 	connectionSocket = nil;
+	keepAliveTimer = nil;
+	lastKeepAliveSuccess = nil;
 	[NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self];
 }
 
@@ -92,6 +94,7 @@ static void forcePingTimeout(int signalNumber);
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 	}
 
+	[self startKeepAliveTimerResettingState:YES];
 	return [super connectWithLogin:login password:pass host:host port:port socket:socket];
 }
 
@@ -112,6 +115,8 @@ static void forcePingTimeout(int signalNumber);
 	connectionPort = 0;
 	if (connectionSocket) [connectionSocket release];
 	connectionSocket = nil;
+	
+	[self stopKeepAliveTimer];
 }
 
 
@@ -296,6 +301,8 @@ WARNING : incomplete implementation. Please, send your fixes.
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
 
+	[self stopKeepAliveTimer];
+
 	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
 	// has been requested - in which case return nil
 	if (![self checkConnection]) return nil;
@@ -322,12 +329,13 @@ WARNING : incomplete implementation. Please, send your fixes.
 
 		return nil;
 	}
+
+	[self startKeepAliveTimerResettingState:YES];
+
 	return [theResult autorelease];
 }
 
-static void sigalarm(int segnum) {
-	NSLog(@"BOOOOYAAAAA");
-}
+
 /*
  * Checks whether the connection to the server is still active.  If not, prompts for what approach to take,
  * offering to retry, reconnect or disconnect the connection.
@@ -446,7 +454,7 @@ static void sigalarm(int segnum) {
 - (BOOL) pingConnection
 {
 	struct sigaction timeoutAction;
-	NSDate *startDate = [NSDate date];
+	NSDate *startDate = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
 	BOOL pingSuccess = FALSE;
 	
 	// Construct the SIGALRM to fire after the connection timeout if it isn't cleared, calling the forcePingTimeout function.
@@ -473,7 +481,7 @@ static void sigalarm(int segnum) {
 		// If the ping failed within a second, try another one; this is because a terminated-but-then
 		// restored connection is at times restored or functional after a ping, but the ping still returns
 		// an error.  This additional check ensures the returned status is correct with minimal other effect.
-		if (!pingSuccess && ([[NSDate date] timeIntervalSinceDate:startDate] < 1)) {
+		if (!pingSuccess && ([startDate timeIntervalSinceNow] > -1)) {
 			pingSuccess = (BOOL)(! mysql_ping(mConnection));
 		}
 	}
@@ -485,6 +493,7 @@ static void sigalarm(int segnum) {
 	timeoutAction.sa_flags = 0;
 	sigaction(SIGALRM, &timeoutAction, NULL);
 	
+	[startDate release];
 	
 	return pingSuccess;
 }
@@ -498,4 +507,68 @@ static void forcePingTimeout(int signalNumber)
 	longjmp(pingTimeoutJumpLocation, 1);
 }
 
+/*
+ * Restarts a keepalive to fire in the future.
+ */
+- (void) startKeepAliveTimerResettingState:(BOOL)resetState
+{
+	if (keepAliveTimer) [self stopKeepAliveTimer];
+	if (!mConnected) return;
+
+	if (resetState && lastKeepAliveSuccess) {
+		[lastKeepAliveSuccess release];
+		lastKeepAliveSuccess = nil;
+	}
+	
+	keepAliveTimer = [NSTimer
+						scheduledTimerWithTimeInterval:[[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue]
+						target:self
+						selector:@selector(keepAlive:)
+						userInfo:nil
+						repeats:NO];
+	[keepAliveTimer retain];
+}
+
+/*
+ * Stops a keepalive if one is set for the future.
+ */
+- (void) stopKeepAliveTimer
+{
+	if (!keepAliveTimer) return;
+	[keepAliveTimer invalidate];
+	[keepAliveTimer release];
+	keepAliveTimer = nil;
+}
+
+/*
+ * Keeps a connection alive by running a ping.
+ */
+- (void) keepAlive:(NSTimer *)theTimer
+{
+	if (!mConnected) return;
+
+	// If there a successful keepalive record exists, and it was more than 5*keepaliveinterval ago,
+	// abort.  This prevents endless spawning of threads in a state where the connection has been
+	// cut but mysql doesn't pick up on the fact - see comment for pingConnection above.  The same
+	// forced-timeout approach cannot be used here on a background thread.
+	// When the connection is disconnected in code, these 5 "hanging" threads are automatically cleaned.
+	if (lastKeepAliveSuccess && [lastKeepAliveSuccess timeIntervalSinceNow] < -5 * [[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue]) return;
+
+	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
+	[self startKeepAliveTimerResettingState:NO];
+}
+
+/*
+ * A threaded keepalive to avoid blocking the interface
+ */
+- (void) threadedKeepAlive
+{
+	if (!mConnected) return;
+	mysql_ping(mConnection);
+	if (lastKeepAliveSuccess) {
+		[lastKeepAliveSuccess release];
+		lastKeepAliveSuccess = nil;
+	}
+	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+}
 @end

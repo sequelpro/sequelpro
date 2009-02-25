@@ -663,11 +663,13 @@ checks for updates and opens download page in default browser
 							[NSNumber numberWithBool:YES], @"fetchRowCount",
 							[NSNumber numberWithBool:YES], @"limitRows",
 							[NSNumber numberWithInt:1000], @"limitRowsValue",
+							[NSNumber numberWithInt:60], @"keepAliveInterval",
+							[NSNumber numberWithInt:0], @"lastUsedVersion",
 							nil]];
 
-	// If no version number is present in prefs, and column widths have been saved, walk through
-	// them and remove any table widths set to 15 or less (fix for mangled columns caused by Issue #140)
-	if ([prefs objectForKey:@"lastUsedVersion"] == nil && [prefs objectForKey:@"tableColumnWidths"] != nil) {
+	// For versions prior to r336, where column widths have been saved, walk through them and remove
+	// any table widths set to 15 or less (fix for mangled columns caused by Issue #140)
+	if ([[prefs objectForKey:@"lastUsedVersion"] intValue] < 336 && [prefs objectForKey:@"tableColumnWidths"] != nil) {
 		NSEnumerator *databaseEnumerator, *tableEnumerator, *columnEnumerator;
 		NSString *databaseKey, *tableKey, *columnKey;
 		NSMutableDictionary *newDatabase, *newTable;
@@ -700,7 +702,7 @@ checks for updates and opens download page in default browser
 		[prefs setObject:[NSDictionary dictionaryWithDictionary:newTableColumnWidths] forKey:@"tableColumnWidths"];
 		[newTableColumnWidths release];
 	}
-	
+
 	// Write the current bundle version to the prefs
 	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"lastUsedVersion"];
 

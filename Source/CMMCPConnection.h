@@ -49,6 +49,9 @@
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
+	
+	NSTimer *keepAliveTimer;
+	NSDate *lastKeepAliveSuccess;
 }
 
 - (id) init;
@@ -65,5 +68,9 @@
 - (void) setDelegate:(id)object;
 - (NSTimeZone *) timeZone;
 - (BOOL) pingConnection;
+- (void) startKeepAliveTimerResettingState:(BOOL)resetState;
+- (void) stopKeepAliveTimer;
+- (void) keepAlive:(NSTimer *)theTimer;
+- (void) threadedKeepAlive;
 
 @end
