@@ -26,6 +26,8 @@
 
 @implementation SPDataCellFormatter
 
+@synthesize textLimit;
+
 - (NSString *)stringForObjectValue:(id)anObject
 {
 
@@ -52,6 +54,22 @@
 - (NSAttributedString *)attributedStringForObjectValue:(id)anObject withDefaultAttributes:(NSDictionary *)attributes
 {
 	return [[[NSAttributedString alloc] initWithString:[self stringForObjectValue:anObject] attributes:attributes] autorelease];
+}
+
+
+
+- (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error
+{
+	// No limit set 
+	if (textLimit == 0)
+		return YES;
+	
+	if ([partialString length] > textLimit) {
+		NSBeep();
+		newString = [NSString stringWithCharacters:partialString length:textLimit];
+	}
+	
+	return ([partialString length] <= textLimit);
 }
 
 @end

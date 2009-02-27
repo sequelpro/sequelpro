@@ -25,7 +25,9 @@
 
 
 @interface SPDataCellFormatter : NSFormatter {
-
+	NSUInteger textLimit;
 }
+
+@property NSUInteger textLimit;
 
 @end

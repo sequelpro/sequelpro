@@ -30,6 +30,7 @@
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 
+
 @implementation TableContent
 
 - (id)init
@@ -167,6 +168,11 @@
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 
+		// Set field length limit if field is a varchar to match varchar length
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
+			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"length"] intValue]];
+		}
+		
 		// Set the data cell font according to the preferences
 		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
@@ -1859,6 +1865,15 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 }
 
 #pragma mark -
+
+- (void)controlTextDidChange:(NSNotification *)aNotification
+{
+	NSString *fieldType;
+	int row, column, i;
+	
+	row = [tableContentView editedRow];
+	column = [tableContentView editedColumn];
+}
 
 /*
  * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
