@@ -1866,15 +1866,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 #pragma mark -
 
-- (void)controlTextDidChange:(NSNotification *)aNotification
-{
-	NSString *fieldType;
-	int row, column, i;
-	
-	row = [tableContentView editedRow];
-	column = [tableContentView editedColumn];
-}
-
 /*
  * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.

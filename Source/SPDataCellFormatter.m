@@ -26,7 +26,19 @@
 
 @implementation SPDataCellFormatter
 
-@synthesize textLimit;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+	@synthesize textLimit;
+#else
+	-(int)textLimit
+	{
+		return textLimit;
+	}
+
+	-(void)setTextLimit:(int)limit
+	{
+		textLimit = limit;
+	}
+#endif
 
 - (NSString *)stringForObjectValue:(id)anObject
 {
