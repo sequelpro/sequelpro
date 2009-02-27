@@ -438,6 +438,9 @@
 			[errorsSheet orderOut:nil];
 		}
 		
+		//update tables list
+		[tablesListInstance updateTables:self];
+		
 		////////////////
 		// IMPORT CSV //
 		////////////////
@@ -496,102 +499,108 @@
 			[fieldMappingPopup selectItemAtIndex:0];
 		}
 		
-		[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]]] byExtendingSelection:NO];
+		int indexOfFirstTable = [[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]];
 		
-		//set up tableView
-   		currentRow = 0;
-		fieldMappingArray = nil;
-		[self setupFieldMappingArray];
-		[rowDownButton setEnabled:NO];
-		[rowUpButton setEnabled:([importArray count] > 1)];
-		[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
-		
-		//set up tableView buttons
-		[buttonCell setControlSize:NSSmallControlSize];
-		[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
-		[buttonCell setBordered:NO];
-		[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
-		[self updateFieldMappingButtonCell];
-		[fieldMappingTableView reloadData];
-		
-		// show fieldMapping sheet
-		[NSApp beginSheet:fieldMappingSheet
-		   modalForWindow:tableWindow
-			modalDelegate:self
-		   didEndSelector:nil
-			  contextInfo:nil];
-		
-		code = [NSApp runModalForWindow:fieldMappingSheet];
-		
-		[NSApp endSheet:fieldMappingSheet];
-		[fieldMappingSheet orderOut:nil];
-		
-		if ( code ) {
-			//import array into db
-			NSMutableString *fNames = [NSMutableString string];
-			//NSMutableArray *fValuesIndexes = [NSMutableArray array];
-			NSMutableString *fValues = [NSMutableString string];
-			int i,j;
+		if( indexOfFirstTable == NSNotFound ){
+			[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR] %@\n", @"error text when trying to import csv data, but we have no tables in the db"), @"Can't import CSV data into a database without any tables!"]];				
+		} else {
+			[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:indexOfFirstTable] byExtendingSelection:NO];
 			
-			//open progress sheet
-			[NSApp beginSheet:singleProgressSheet
+			//set up tableView
+			currentRow = 0;
+			fieldMappingArray = nil;
+			[self setupFieldMappingArray];
+			[rowDownButton setEnabled:NO];
+			[rowUpButton setEnabled:([importArray count] > 1)];
+			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+			
+			//set up tableView buttons
+			[buttonCell setControlSize:NSSmallControlSize];
+			[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
+			[buttonCell setBordered:NO];
+			[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+			[self updateFieldMappingButtonCell];
+			[fieldMappingTableView reloadData];
+			
+			// show fieldMapping sheet
+			[NSApp beginSheet:fieldMappingSheet
 			   modalForWindow:tableWindow
 				modalDelegate:self
 			   didEndSelector:nil
 				  contextInfo:nil];
 			
-			// get fields to be imported
-			for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
-				if ([[fieldMappingArray objectAtIndex:i] intValue] > 0) {
-					if ( [fNames length] )
-                        [fNames appendString:@","];
-					
-					[fNames appendString:[NSString stringWithFormat:@"`%@`", [[tableSourceInstance fieldNames] objectAtIndex:i]]];
-				}
-			}
+			code = [NSApp runModalForWindow:fieldMappingSheet];
 			
-			//import array
-			for ( i = 0 ; i < [importArray count] ; i++ ) {
-				//show progress bar
-				[singleProgressBar setDoubleValue:((i+1)*100/[importArray count])];
-				[singleProgressBar displayIfNeeded];
+			[NSApp endSheet:fieldMappingSheet];
+			[fieldMappingSheet orderOut:nil];
+			
+			if ( code ) {
+				//import array into db
+				NSMutableString *fNames = [NSMutableString string];
+				//NSMutableArray *fValuesIndexes = [NSMutableArray array];
+				NSMutableString *fValues = [NSMutableString string];
+				int i,j;
 				
-                if ( !([importFieldNamesSwitch state] && (i == 0)) ) {
-					//put values in string
-					[fValues setString:@""];
-					
-                    for ( j = 0 ; j < [fieldMappingArray count] ; j++ ) {
+				//open progress sheet
+				[NSApp beginSheet:singleProgressSheet
+				   modalForWindow:tableWindow
+					modalDelegate:self
+				   didEndSelector:nil
+					  contextInfo:nil];
+				
+				// get fields to be imported
+				for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
+					if ([[fieldMappingArray objectAtIndex:i] intValue] > 0) {
+						if ( [fNames length] )
+							[fNames appendString:@","];
 						
-						if ([[fieldMappingArray objectAtIndex:j] intValue] > 0) {
-							if ( [fValues length] )
-								[fValues appendString:@","];
+						[fNames appendString:[NSString stringWithFormat:@"`%@`", [[tableSourceInstance fieldNames] objectAtIndex:i]]];
+					}
+				}
+				
+				//import array
+				for ( i = 0 ; i < [importArray count] ; i++ ) {
+					//show progress bar
+					[singleProgressBar setDoubleValue:((i+1)*100/[importArray count])];
+					[singleProgressBar displayIfNeeded];
+					
+					if ( !([importFieldNamesSwitch state] && (i == 0)) ) {
+						//put values in string
+						[fValues setString:@""];
+						
+						for ( j = 0 ; j < [fieldMappingArray count] ; j++ ) {
 							
-							if ([[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
-								[fValues appendString:@"NULL"];
-							} else {
-								[fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)]]]];
+							if ([[fieldMappingArray objectAtIndex:j] intValue] > 0) {
+								if ( [fValues length] )
+									[fValues appendString:@","];
+								
+								if ([[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
+									[fValues appendString:@"NULL"];
+								} else {
+									[fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)]]]];
+								}
 							}
 						}
-					}
-					
-					//perform query
-					[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
-												  [fieldMappingPopup titleOfSelectedItem],
-												  fNames,
-												  fValues]];
-					
-					if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-						[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];				
+						
+						//perform query
+						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
+													  [fieldMappingPopup titleOfSelectedItem],
+													  fNames,
+													  fValues]];
+						
+						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+							[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];				
+						}
 					}
 				}
+				
+				//close progress sheet
+				[NSApp endSheet:singleProgressSheet];
+				[singleProgressSheet orderOut:nil];
 			}
 			
-			//close progress sheet
-			[NSApp endSheet:singleProgressSheet];
-			[singleProgressSheet orderOut:nil];
+			[tableContentInstance reloadTableValues:self];
 		}
-		
-		[tableContentInstance reloadTableValues:self];
 		
 		//display errors
 		if ( [errors length] ) {
