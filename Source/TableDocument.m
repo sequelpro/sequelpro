@@ -33,6 +33,7 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPExportController.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -209,6 +210,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[tableContentInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
+		[spExportControllerInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
 						   [hostField stringValue], [databaseField stringValue]]];
@@ -512,8 +514,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[NSApp endSheet:databaseSheet];
 	[databaseSheet orderOut:nil];
 	
-	if (!code)
+	if (!code) {
+		(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 		return;
+	}
 	
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
@@ -1163,7 +1167,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 {
 	if ([sender tag] == -1) {
-		[tableDumpInstance export];
+		//[tableDumpInstance export];
+		
+		[spExportControllerInstance export];
 	} else {
 		[tableDumpInstance exportFile:[sender tag]];
 	}

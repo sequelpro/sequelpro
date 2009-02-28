@@ -101,7 +101,7 @@
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
-	
+	[sheet orderOut:self];
 }
 
 - (void)exportFile:(int)tag
@@ -1848,9 +1848,7 @@
 {
 	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
 		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	}
-	else
-	{
+	} else {
 		[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 }
@@ -1895,6 +1893,20 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		
 	} else {
 		[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
+	}
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	if (aTableView == exportTableList) {
+		return NO;
+	}
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldTrackCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	if (aTableView == exportTableList) {
+		return YES;
 	}
 }
 
