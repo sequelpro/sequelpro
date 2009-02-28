@@ -40,6 +40,8 @@
 	}
 #endif
 
+
+
 - (NSString *)stringForObjectValue:(id)anObject
 {
 
@@ -72,16 +74,25 @@
 
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error
 {
-	// No limit set 
+	// No limit set
 	if (textLimit == 0)
 		return YES;
 	
-	if ([partialString length] > textLimit) {
+	// A single character over the length of the string - likely typed.  Prevent the change.
+	if ([partialString length] == textLimit + 1) {
 		NSBeep();
-		newString = [NSString stringWithCharacters:partialString length:textLimit];
+		return NO;
 	}
 	
-	return ([partialString length] <= textLimit);
+	// If the string is considerably longer than the limit, likely pasted.  Accept but truncate.
+	if ([partialString length] > textLimit) {
+		NSBeep();
+		*newString = [NSString stringWithString:[partialString substringToIndex:textLimit]];
+		return NO;
+	}
+	
+	// Length inside limit.
+	return YES;
 }
 
 @end

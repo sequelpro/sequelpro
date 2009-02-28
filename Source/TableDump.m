@@ -374,7 +374,7 @@
 	NSString *fileType = [[importFormatPopup selectedItem] title];
 	//load file into string
 	dumpFile = [SPSQLParser stringWithContentsOfFile:filename
-										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] cString]]
+										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 											error:errorStr];
 	
 	if ( !dumpFile ) {
@@ -986,7 +986,7 @@
 		withNumericColumns:(NSArray *)tableColumnNumericStatus
 		silently:(BOOL)silently;
 {
-	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] cString]];
+	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	NSMutableString *csvCell = [NSMutableString string];
 	NSMutableArray *csvRow = [NSMutableArray array];
 	NSMutableString *csvString = [NSMutableString string];
@@ -1204,7 +1204,7 @@
 	NSMutableString *tempString = [NSMutableString string];
 	NSMutableArray *linesArray = [NSMutableArray array];
 	BOOL isEscaped, br;
-	int fieldCount = nil;
+	int fieldCount = 0;
 	int x,i,j;
 
 	//repare tabs and line ends
@@ -1338,7 +1338,7 @@
  */
 - (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently
 {
-	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] cString]];
+	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	NSMutableArray *xmlTags = [NSMutableArray array];
 	NSMutableArray *xmlRow = [NSMutableArray array];
 	NSMutableString *xmlString = [NSMutableString string];
@@ -1681,19 +1681,19 @@
 	BOOL isEscaped = NO;
 	BOOL br = NO;
 	unsigned i, j, start;
-	char enc = nil;
-	char esc = nil;
-	char ter = nil;
+	char *enc = nil;
+	char *esc = nil;
+	char *ter = nil;
 	
 	//we take only first character by now (too complicated otherwise)
 	if ( [enclosed length] ) {
-		enc = [enclosed characterAtIndex:0];
+		*enc = [enclosed characterAtIndex:0];
 	}
 	if ( [escaped length] ) {
-		esc = [escaped characterAtIndex:0];
+		*esc = [escaped characterAtIndex:0];
 	}
 	if ( [terminated length] ) {
-		ter = [terminated characterAtIndex:0];
+		*ter = [terminated characterAtIndex:0];
 	}
 	
 	start = 0;
@@ -1706,12 +1706,12 @@
 				if ( i >= [string length] ) {
 					//end of string -> no second enclose character found
 					br = YES;
-				} else if ( [string characterAtIndex:i] == enc ) {
+				} else if ( [string characterAtIndex:i] == *enc ) {
 					//second enclose-character found
 					//enclose-character escaped?
 					isEscaped = NO;
 					j = 1;
-					while ( (i-j>0) && ([string characterAtIndex:(i-j)] == esc) ) {
+					while ( (i-j>0) && ([string characterAtIndex:(i-j)] == *esc) ) {
 						isEscaped = !isEscaped;
 						j++;
 					}
@@ -1723,13 +1723,13 @@
 				if ( !br )
 					i++;
 			}
-		} else if ( [string characterAtIndex:i] == ter ) {
+		} else if ( [string characterAtIndex:i] == *ter ) {
 			//terminated-character found
 			if ( [enclosed isEqualToString:@""] ) {
 				//check if terminated character is escaped
 				isEscaped = NO;
 				j = 1;
-				while ( (i-j>0) && ([string characterAtIndex:(i-j)] == esc) ) {
+				while ( (i-j>0) && ([string characterAtIndex:(i-j)] == *esc) ) {
 					isEscaped = !isEscaped;
 					j++;
 				}
@@ -1743,7 +1743,7 @@
 				[tempArray addObject:[string substringWithRange:NSMakeRange(start,(i-start))]];
 				start = i + 1;
 			}
-		} else if ( [string characterAtIndex:i] == enc ) {
+		} else if ( [string characterAtIndex:i] == *enc ) {
 			//enclosed-character found
 			inString = YES;
 		}

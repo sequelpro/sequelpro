@@ -459,11 +459,12 @@
 /*
  * Retrieve the status of a table as a dictionary and add it to the local cache for reuse.
  */
-- (BOOL) updateStatusInformationForCurrentTable
+- (BOOL)updateStatusInformationForCurrentTable
 {
 
-	// Catch unselected tables and return nil
-	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName]) return nil;
+	// Catch unselected tables and return false
+	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName])
+		return FALSE;
 
 	// When views are selected, populate the table with a default dictionary - all values, including comment, return no
 	// meaningful information for views so we may as well skip the query.

@@ -134,8 +134,8 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 			
 			for ( i = 0 ; i < [possibleValues count] ; i++ ) {
 				[possibleValue setString:[possibleValues objectAtIndex:i]];
-				[possibleValue replaceOccurrencesOfString:@"''" withString:@"'" options:nil range:NSMakeRange(0,[possibleValue length])];
-				[possibleValue replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:nil range:NSMakeRange(0,[possibleValue length])];
+				[possibleValue replaceOccurrencesOfString:@"''" withString:@"'" options:NSLiteralSearch range:NSMakeRange(0,[possibleValue length])];
+				[possibleValue replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:NSLiteralSearch range:NSMakeRange(0,[possibleValue length])];
 				[possibleValues replaceObjectAtIndex:i withObject:[NSString stringWithString:possibleValue]];
 			}
 			
