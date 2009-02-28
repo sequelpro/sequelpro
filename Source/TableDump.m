@@ -102,6 +102,8 @@
 	NSString *file;
 	NSString *contextInfo;
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
+	[savePanel setAllowsOtherFileTypes:YES];
+	[savePanel setExtensionHidden:NO];
 	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%d.%m.%Y" timeZone:nil locale:nil];
 	
 	switch ( tag ) {
@@ -109,53 +111,61 @@
 			// export dump
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@_dump %@.sql", [tableDocumentInstance database], currentDate];
+			[savePanel setRequiredFileType:@"sql"];
 			[savePanel setAccessoryView:exportDumpView];
 			contextInfo = @"exportDump";
 			break;
 			
 			// Export the full resultset for the currently selected table to a file in CSV format
 		case 6:
-			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
+			file = [NSString stringWithString:(NSString *)[tableDocumentInstance table]];
+			[savePanel setRequiredFileType:@"csv"];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportTableContentAsCSV";
 			break;
 			
 			// Export the full resultset for the currently selected table to a file in XML format
 		case 7:
-			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
+			file = [NSString stringWithString:(NSString *)[tableDocumentInstance table]];
+			[savePanel setRequiredFileType:@"xml"];
 			contextInfo = @"exportTableContentAsXML";
 			break;
 			
 			// Export the current "browse" view to a file in CSV format
 		case 8:
-			file = [NSString stringWithFormat:@"%@ view.csv", [tableDocumentInstance table]];
+			file = [NSString stringWithFormat:@"%@ view", [tableDocumentInstance table]];
+			[savePanel setRequiredFileType:@"csv"];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportBrowseViewAsCSV";
 			break;
 			
 			// Export the current "browse" view to a file in XML format
 		case 9:
-			file = [NSString stringWithFormat:@"%@ view.xml", [tableDocumentInstance table]];
+			file = [NSString stringWithFormat:@"%@ view", [tableDocumentInstance table]];
+			[savePanel setRequiredFileType:@"xml"];
 			contextInfo = @"exportBrowseViewAsXML";
 			break;
 			
 			// Export the current custom query result set to a file in CSV format
 		case 10:
-			file = @"customresult.csv";
+			file = @"customresult";
+			[savePanel setRequiredFileType:@"csv"];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportCustomResultAsCSV";
 			break;
 			
 			// Export the current custom query result set to a file in XML format
 		case 11:
-			file = @"customresult.xml";
+			file = @"customresult";
+			[savePanel setRequiredFileType:@"xml"];
 			contextInfo = @"exportCustomResultAsXML";
 			break;
 			
 			// Export multiple tables to a file in CSV format
 		case 12:
 			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
+			file = [NSString stringWithString:[tableDocumentInstance database]];
+			[savePanel setRequiredFileType:@"csv"];
 			[savePanel setAccessoryView:exportMultipleCSVView];
 			contextInfo = @"exportMultipleTablesAsCSV";
 			break;
@@ -163,7 +173,8 @@
 			// Export multiple tables to a file in XML format
 		case 13:
 			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
+			file = [NSString stringWithString:[tableDocumentInstance database]];
+			[savePanel setRequiredFileType:@"xml"];
 			[savePanel setAccessoryView:exportMultipleXMLView];
 			contextInfo = @"exportMultipleTablesAsXML";
 			break;
@@ -1551,7 +1562,7 @@
 		if ( [type isEqualToString:@"csv"] && [selectedTables count] > 1) {
 			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		}
-NSDate *startDate = [NSDate date];		
+
 		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
 		tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
 		tableColumnNumericStatus = [NSMutableArray array];
@@ -1593,7 +1604,7 @@ NSDate *startDate = [NSDate date];
 						  lineEnds:[exportMultipleLinesTerminatedField stringValue]
 				withNumericColumns:tableColumnNumericStatus
 						  silently:YES];
-			NSLog(@"CSV export took %f s", [[NSDate date] timeIntervalSinceDate:startDate]);
+
 			// Add a spacer to the file
 			[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		} else if ( [type isEqualToString:@"xml"] ) {
