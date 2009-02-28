@@ -33,6 +33,7 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPQueryConsole.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 
@@ -503,15 +504,18 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 {
 	int code = 0;
 	
-	if (![tablesListInstance selectionShouldChangeInTableView:nil])
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) {
 		return;
+	}
 	
 	[databaseNameField setStringValue:@""];
+	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:nil
 		  contextInfo:nil];
+	
 	code = [NSApp runModalForWindow:databaseSheet];
 	
 	[NSApp endSheet:databaseSheet];
@@ -522,12 +526,23 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return;
 	}
 	
+	// This check is not necessary anymore as the add database button is now only enabled if the name field
+	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
-	[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]]];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]];
+	
+	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
+	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET `%@`", createStatement, [self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]]];
+	}
+	
+	// Create the database
+	[mySQLConnection queryString:createStatement];
+	
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		//error while creating db
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
@@ -572,74 +587,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]]);
 }
 
-#pragma mark console methods
+#pragma mark Console methods
 
-//console methods
 /**
- * shows or hides the console
+ * Shows or hides the console
  */
 - (void)toggleConsole:(id)sender
 {
-	if ([self consoleIsOpened]) {
-		[consoleDrawer close];
-	} else {
-		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-		[consoleDrawer openOnEdge:NSMinYEdge];
-	}
-}
-
-/**
- * clears the console
- */
-- (void)clearConsole:(id)sender
-{
-	[consoleTextView setString:@""];
-}
-
-/**
- * returns YES if the console is visible
- */
-- (BOOL)consoleIsOpened
-{
-	return ([consoleDrawer state] == NSDrawerOpeningState || [consoleDrawer state] == NSDrawerOpenState);
-}
-
-/**
- * shows a message in the console
- */
-- (void)showMessageInConsole:(NSString *)message
-{
-	int begin, end;
-	
-	[consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
-	begin = [[consoleTextView string] length];
-	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:message];
-	end = [[consoleTextView string] length];
-	[consoleTextView setTextColor:[NSColor blackColor] range:NSMakeRange(begin,end-begin)];
-	
-	if ([self consoleIsOpened]) {
-		[consoleTextView displayIfNeeded];
-		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-	}
-}
-
-/**
- * shows an error in the console (red)
- */
-- (void)showErrorInConsole:(NSString *)error
-{
-	int begin, end;
-	
-	[consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
-	begin = [[consoleTextView string] length];
-	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:error];
-	end = [[consoleTextView string] length];
-	[consoleTextView setTextColor:[NSColor redColor] range:NSMakeRange(begin,end-begin)];
-	
-	if ([self consoleIsOpened]) {
-		[consoleTextView displayIfNeeded];
-		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-	}
+	[[queryConsoleInstance window] setIsVisible:![[queryConsoleInstance window] isVisible]];
 }
 
 #pragma mark Encoding Methods
@@ -1279,13 +1234,15 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
 		//set up tooltip and image
 		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
-		if ( [self consoleIsOpened] ) {
+		
+		if ([[queryConsoleInstance window] isVisible]) {
 			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
 			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"toolbar item for showconsole")];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		}
+		
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(toggleConsole:)];
@@ -1298,7 +1255,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 		//set up the target action
-		[toolbarItem setTarget:self];
+		[toolbarItem setTarget:queryConsoleInstance];
 		[toolbarItem setAction:@selector(clearConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
@@ -1401,8 +1358,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
-	if ( [[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"] ) {
-		if ( [self consoleIsOpened] ) {
+	if ([[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"]) {
+		if ([[queryConsoleInstance window] isVisible]) {
 			[toolbarItem setLabel:@"Hide Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
@@ -1414,12 +1371,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	return YES;
 }
 
+// NSDocument methods
 
-//NSDocument methods
-- (NSString *)windowNibName
-/*
- returns the name of the nib file
+/**
+ * Returns the name of the nib file
  */
+- (NSString *)windowNibName
 {
 	return @"DBView";
 }
@@ -1450,20 +1407,19 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	//set up interface
 	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[consoleTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		[[queryConsoleInstance consoleTextView] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 	} else {
-		[consoleTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[queryConsoleInstance consoleTextView] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 	}
-	[consoleDrawer setContentSize:NSMakeSize(110,110)];
 	
 	//set up toolbar
 	[self setupToolbar];
@@ -1490,29 +1446,28 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	} else {
 		return YES;
 	}
-	
 }
 
+#pragma mark SMySQL delegate methods
 
-//SMySQL delegate methods
+/**
+ * Invoked when framework will perform a query
+ */
 - (void)willQueryString:(NSString *)query
-/*
-invoked when framework will perform a query
-*/
 {
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	
-	[self showMessageInConsole:[NSString stringWithFormat:@"/* MySQL %@ */ %@;\n", currentTime, query]];
+	[queryConsoleInstance showMessageInConsole:[NSString stringWithFormat:@"/* MySQL %@ */ %@;\n", currentTime, query]];
 }
 
+/**
+ * Invoked when query gave an error
+ */
 - (void)queryGaveError:(NSString *)error
-/*
-invoked when query gave an error
-*/
 {
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	
-	[self showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
+	[queryConsoleInstance showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
 }
 
 #pragma mark Connection sheet delegate methods
@@ -1528,6 +1483,9 @@ invoked when query gave an error
 	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == databaseField
 		|| [aNotification object] == socketField || [aNotification object] == portField) {
 		[favoritesController setSelectionIndexes:[NSIndexSet indexSet]];
+	}
+	else if ([aNotification object] == databaseNameField) {
+		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
 	}
 }
 

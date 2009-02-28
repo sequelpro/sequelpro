@@ -23,19 +23,18 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMCopyTable.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 
-
-@interface TableContent : NSObject {
-	
+@interface TableContent : NSObject 
+{	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
+	IBOutlet id queryConsoleInstance;
 	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
@@ -68,7 +67,6 @@
 	NSUserDefaults *prefs;
 	int numRows;
 	bool areShowingAllRows;
-	
 }
 
 //table methods

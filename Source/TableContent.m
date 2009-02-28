@@ -29,7 +29,7 @@
 #import "CMImageView.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
-
+#import "SPQueryConsole.h"
 
 @implementation TableContent
 
@@ -1183,7 +1183,7 @@
 		[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 		isEditingRow = NO;
 		isEditingNewRow = NO;
-		[tableDocumentInstance showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
+		[queryConsoleInstance showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
 		return YES;
 
 	// On success...

@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="81"/>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3741,14 +3741,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">toggleConsole:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="924530602"/>
-					</object>
-					<int key="connectionID">792</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">clearConsole:</string>
 						<reference key="source" ref="63651044"/>
 						<reference key="destination" ref="551338335"/>
@@ -3842,6 +3834,14 @@
 						<reference key="destination" ref="615940863"/>
 					</object>
 					<int key="connectionID">830</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toggleConsole:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="924530602"/>
+					</object>
+					<int key="connectionID">832</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -6631,7 +6631,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{328, 707}, {511, 20}}</string>
+					<string>{{51, 384}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -6722,7 +6722,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{436, 241}, {235, 183}}</string>
+					<string>{{243, 201}, {235, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -6844,7 +6844,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{486, 271}, {231, 153}}</string>
+					<string>{{570, 554}, {231, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -6962,7 +6962,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{454, 310}, {268, 173}}</string>
+					<string>{{651, 534}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7033,7 +7033,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">830</int>
+			<int key="maxID">832</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -7265,6 +7265,40 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">SPQueryConsole</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>clearConsole:</string>
+							<string>showConsole:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>consolePanel</string>
+							<string>consoleTextView</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSPanel</string>
+							<string>NSTextView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPQueryConsole.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">TableDocument</string>
 					<string key="superclassName">NSDocument</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -7279,7 +7313,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>chooseDatabase:</string>
 							<string>chooseEncoding:</string>
 							<string>chooseFavorite:</string>
-							<string>clearConsole:</string>
 							<string>closeDatabaseSheet:</string>
 							<string>closeSheet:</string>
 							<string>connect:</string>
@@ -7299,7 +7332,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>setDatabases:</string>
 							<string>showCreateTableSyntax:</string>
 							<string>showVariables:</string>
-							<string>toggleConsole:</string>
 							<string>viewContent:</string>
 							<string>viewQuery:</string>
 							<string>viewStatus:</string>
@@ -7307,8 +7339,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -7351,8 +7381,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>connectProgressBar</string>
 							<string>connectProgressStatusText</string>
 							<string>connectSheet</string>
-							<string>consoleDrawer</string>
-							<string>consoleTextView</string>
 							<string>createTableSyntaxWindow</string>
 							<string>customQueryInstance</string>
 							<string>databaseField</string>
@@ -7365,6 +7393,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>keyChainInstance</string>
 							<string>passwordField</string>
 							<string>portField</string>
+							<string>queryConsoleInstance</string>
 							<string>queryProgressBar</string>
 							<string>sidebarGrabber</string>
 							<string>socketField</string>
@@ -7388,8 +7417,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>NSWindow</string>
 							<string>id</string>
 							<string>id</string>
@@ -7398,6 +7425,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSArrayController</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

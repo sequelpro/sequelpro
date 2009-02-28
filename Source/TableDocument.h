@@ -31,10 +31,9 @@
 /**
  * The TableDocument class controls the primary database view window.
  */
-
 @interface TableDocument : NSDocument
 {
-  //IBOutlets
+	// IBOutlets
 	IBOutlet id keyChainInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
@@ -43,12 +42,12 @@
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
+	IBOutlet id queryConsoleInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;
 	IBOutlet id databaseSheet;
 	IBOutlet id variablesSheet;
-	IBOutlet id consoleDrawer;
 
 	IBOutlet id queryProgressBar;
 	IBOutlet id favoritesButton;
@@ -64,8 +63,9 @@
 	IBOutlet id connectProgressBar;
 	IBOutlet id connectProgressStatusText;
 	IBOutlet id databaseNameField;
+	IBOutlet id databaseEncodingButton;
+	IBOutlet id addDatabaseButton;
 	IBOutlet id chooseDatabaseButton;
-	IBOutlet id consoleTextView;
 	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
 	
@@ -125,13 +125,6 @@
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)closeDatabaseSheet:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
-
-//console methods
-- (void)toggleConsole:(id)sender;
-- (void)clearConsole:(id)sender;
-- (BOOL)consoleIsOpened;
-- (void)showMessageInConsole:(NSString *)message;
-- (void)showErrorInConsole:(NSString *)error;
 
 //encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
