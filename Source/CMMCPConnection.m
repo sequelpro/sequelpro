@@ -287,6 +287,23 @@ WARNING : incomplete implementation. Please, send your fixes.
 
 
 /*
+ * Modified version of selectDB to be used in Sequel Pro.
+ * Checks the connection exists, and handles keepalive, otherwise calling the parent implementation.
+ */
+- (BOOL) selectDB:(NSString *) dbName
+{
+	if (!mConnected) return NO;
+	[self stopKeepAliveTimer];
+	if (![self checkConnection]) return NO;
+	if ([super selectDB:dbName]) {
+		[self startKeepAliveTimerResettingState:YES];
+		return YES;
+	}
+	return NO;
+}
+
+
+/*
  * Modified version of queryString to be used in Sequel Pro.
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either the query has been executed and the result can
@@ -333,6 +350,20 @@ WARNING : incomplete implementation. Please, send your fixes.
 	[self startKeepAliveTimerResettingState:YES];
 
 	return [theResult autorelease];
+}
+
+
+/*
+ * Modified version of selectDB to be used in Sequel Pro.
+ * Checks the connection exists, and handles keepalive, otherwise calling the parent implementation.
+ */
+- (MCPResult *) listDBsLike:(NSString *) dbsName
+{
+	if (!mConnected) return NO;
+	[self stopKeepAliveTimer];
+	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
+	[self startKeepAliveTimerResettingState:YES];
+	return [super listDBsLike:dbsName];
 }
 
 

@@ -63,7 +63,9 @@
 - (BOOL) reconnect;
 - (IBAction) closeSheet:(id)sender;
 - (void) setParentWindow:(NSWindow *)theWindow;
+- (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
+- (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
 - (void) setDelegate:(id)object;
 - (NSTimeZone *) timeZone;
