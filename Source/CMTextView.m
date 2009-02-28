@@ -22,6 +22,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMTextView.h"
+#import "SPStringAdditions.h"
 
 @implementation CMTextView
 

@@ -26,4 +26,8 @@
 
 + (NSString *)stringForByteSize:(int)byteSize;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
+	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
+#endif
+
 @end
