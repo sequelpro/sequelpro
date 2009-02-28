@@ -25,6 +25,8 @@
 #define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
 #define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"log"
 
+#define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
+
 @interface SPQueryConsole (PrivateAPI)
 
 - (void)_appendMessageToConsole:(NSString *)message withColor:(NSColor *)color;
@@ -32,6 +34,16 @@
 @end
 
 @implementation SPQueryConsole
+
+// -------------------------------------------------------------------------------
+// awakeFromNib
+//
+// Set the window's auto save name.
+// -------------------------------------------------------------------------------
+- (void)awakeFromNib
+{
+	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
+}
 
 // -------------------------------------------------------------------------------
 // clearConsole:
