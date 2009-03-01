@@ -31,6 +31,12 @@
 
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
+@interface SPTableInfo (PrivateAPI)
+
+- (NSString *)_getUserDefinedDateStringFromMySQLDate:(NSString *)mysqlDate;
+
+@end
+
 @implementation SPTableInfo
 
 - (id)init
@@ -49,7 +55,7 @@
 												 name:NSTableViewSelectionDidChangeNotification 
 											   object:tableList];
 	
-	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
+	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 	[infoTable reloadData];
 }
 
@@ -58,47 +64,8 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[info release];
-		
+	
 	[super dealloc];
-}
-
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
-{
-	return [info count];
-}
-
-- (id)tableView:(NSTableView *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
-{
-	return [info objectAtIndex:rowIndex];
-}
-
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
-{
-	// row 1 and 6 should be editable - ie be able to rename the table and change the auto_increment value.
-	return NO;//(rowIndex == 1 || rowIndex == 6 );
-}
-
-
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
-{
-	// This makes the top row (TABLE INFORMATION) have the diff styling
-	return (row == 0);	
-}
-
-- (void)tableView:(NSTableView *)aTableView 
-  willDisplayCell:(id)aCell 
-   forTableColumn:(NSTableColumn *)aTableColumn 
-			  row:(int)rowIndex
-{
-	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
-		[(ImageAndTextCell*)aCell setIndentationLevel:1];
-	} else {
-		[(ImageAndTextCell*)aCell setImage:nil];
-		[(ImageAndTextCell*)aCell setIndentationLevel:0];
-	}
 }
 
 - (void)tableChanged:(NSNotification *)notification
@@ -117,12 +84,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 	[info addObject:@"TABLE INFORMATION"];
 		
-	if ([tableListInstance tableName])
-	{
+	if ([tableListInstance tableName]) {
 		if ([[tableListInstance tableName] isEqualToString:@""]) {
 			[info addObject:@"multiple tables"];
 
-		} else {
+		} 
+		else {
 
 			// Retrieve the table status information via the data cache
 			tableStatus = [tableDataInstance statusValues];
@@ -136,31 +103,15 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Check for "Create_time" == NULL
 			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
 
-				// Set up our data formatter
-				NSDateFormatter *createDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-				[createDateFormatter setDateStyle:NSDateFormatterShortStyle];
-				[createDateFormatter setTimeStyle:NSDateFormatterNoStyle];
-
-				// Convert our string date from the result to an NSDate.
-				NSDate *create_date = [NSDate dateWithNaturalLanguageString:[tableStatus objectForKey:@"Create_time"]];
-
 				// Add the creation date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"created: %@", [createDateFormatter stringFromDate:create_date]]];
+				[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
 			}
 
 			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
 			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
-
-				// Setup our data formatter
-				NSDateFormatter *updateDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-				[updateDateFormatter setDateStyle:NSDateFormatterShortStyle];
-				[updateDateFormatter setTimeStyle:NSDateFormatterNoStyle];
-
-				// Convert our string date from the result to an NSDate.
-				NSDate *update_date = [NSDate dateWithNaturalLanguageString:[tableStatus objectForKey:@"Update_time"]];
-
+				
 				// Add the update date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"updated: %@", [updateDateFormatter stringFromDate:update_date]]];
+				[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
 			}
 						
 			[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
@@ -174,6 +125,62 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 	
 	[infoTable reloadData];
+}
+
+#pragma mark -
+#pragma mark TableView datasource methods
+
+- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+{
+	return [info count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+{
+	return [info objectAtIndex:rowIndex];
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
+{
+	// row 1 and 6 should be editable - ie be able to rename the table and change the auto_increment value.
+	return NO;//(rowIndex == 1 || rowIndex == 6 );
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
+{
+	// This makes the top row (TABLE INFORMATION) have the diff styling
+	return (row == 0);	
+}
+
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+{
+	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
+		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
+		[(ImageAndTextCell*)aCell setIndentationLevel:1];
+	} else {
+		[(ImageAndTextCell*)aCell setImage:nil];
+		[(ImageAndTextCell*)aCell setIndentationLevel:0];
+	}
+}
+
+@end
+
+@implementation SPTableInfo (PrivateAPI)
+
+- (NSString *)_getUserDefinedDateStringFromMySQLDate:(NSString *)mysqlDate
+{
+	// Setup our data formatter
+	NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+	
+	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+	
+	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+	
+	// Convert our string date from the result to an NSDate.
+	NSDate *updateDate = [NSDate dateWithNaturalLanguageString:mysqlDate];
+	
+	return [dateFormatter stringFromDate:updateDate];
 }
 
 @end

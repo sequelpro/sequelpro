@@ -17,15 +17,41 @@
 
 - (NSString*)formatValueWithKey:(NSString *)aKey inDictionary:(NSDictionary*)statusDict withLabel:(NSString*)label
 {
-	NSString* value = [statusDict objectForKey:aKey];
-	if([value isKindOfClass:[NSNull class]]) {
+	NSString *value = [statusDict objectForKey:aKey];
+	
+	if ([value isKindOfClass:[NSNull class]]) {
 		value = @"--";
-	} else {
-
+	} 
+	else {
 		// Format size strings
-		if ([aKey isEqualToString:@"Data_length"] || [aKey isEqualToString:@"Max_data_length"]
-			|| [aKey isEqualToString:@"Index_length"] || [aKey isEqualToString:@"Data_free"]) {
+		if ([aKey isEqualToString:@"Data_length"]     || 
+			[aKey isEqualToString:@"Max_data_length"] || 
+			[aKey isEqualToString:@"Index_length"]    || 
+			[aKey isEqualToString:@"Data_free"]) {
+			
 			value = [NSString stringForByteSize:[value intValue]];
+		}
+		// Format date strings to the user's long date format
+		else if ([aKey isEqualToString:@"Create_time"] ||
+				 [aKey isEqualToString:@"Update_time"]) {
+								
+			// Create date formatter
+			NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+			
+			// Set the date format returned by MySQL
+			[dateFormatter setDateFormat:@"%Y-%m-%d %H:%M:%S"];
+			
+			// Get the date instance
+			NSDate *date = [dateFormatter dateFromString:value];
+			
+			// This behaviour should be set after the above date string is parsed to a date object so we can
+			// use the below style methods.
+			[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+						
+			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
+			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+						
+			value = [dateFormatter stringFromDate:date];
 		}
 	}
 	
