@@ -369,15 +369,16 @@
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	SPSQLParser *dumpFile;
-	NSError **errorStr; 
+	NSError *errorStr = nil;
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
+	
 	//load file into string
 	dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
-											error:errorStr];
+											error:&errorStr];
 	
-	if ( !dumpFile ) {
+	if (!dumpFile) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
@@ -408,6 +409,7 @@
 		   didEndSelector:nil
 			  contextInfo:nil];
 		
+		[singleProgressSheet makeKeyWindow];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
@@ -469,12 +471,13 @@
 		   didEndSelector:nil 
 			  contextInfo:nil];
 		
+		[singleProgressSheet makeKeyWindow];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
 		
 		//put file in array
-		if ( importArray )
+		if (importArray)
 			[importArray release];
 		
 		importArray = [[self arrayForCSV:dumpFile
@@ -492,7 +495,6 @@
 		
 		if (progressCancelled) {
 			progressCancelled = NO;
-			//NSLog(@"Progress Cancelled... cleaning up");
 			[pool release];
 			return;
 		}
@@ -558,6 +560,8 @@
 					modalDelegate:self
 				   didEndSelector:nil
 					  contextInfo:nil];
+				
+				[singleProgressSheet makeKeyWindow];
 				
 				// get fields to be imported
 				for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
@@ -655,29 +659,17 @@
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:[sheet filename]];
 }
 
-- (void)setupFieldMappingArray
 /*
- sets up the fieldMapping array to be shown in the tableView
+ * Sets up the fieldMapping array to be shown in the tableView
  */
+- (void)setupFieldMappingArray
 {
 	int i, value;
 	
-    if ( fieldMappingArray ) {
-		
-		//        for ( i = 0 ; i < [fieldMappingArray count] ; i++ ) {
-		//			
-		//			if ( [[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]] ) {
-		//                [fieldMappingArray replaceObjectAtIndex:i withObject:0];
-		//				
-		//            } else {
-		//                [fieldMappingArray replaceObjectAtIndex:i withObject:[[importArray objectAtIndex:currentRow] objectAtIndex:0]];
-		//            }
-		//        }
-		
-    } else {
+    if (!fieldMappingArray) {
         fieldMappingArray = [NSMutableArray array];
 		
-		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
+		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {			
 			if (i < [[importArray objectAtIndex:currentRow] count] && ![[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]]) {
 				value = i + 1;
 			} else {
@@ -686,8 +678,6 @@
 			
             [fieldMappingArray addObject:[NSNumber numberWithInt:value]];
         }
-		
-        [fieldMappingArray retain];
     }
 	
     [fieldMappingTableView reloadData];
@@ -1669,31 +1659,31 @@
 	return [NSString stringWithString:mutableString];
 }
 
+/*
+ * Split a string by the terminated-character if this is not escaped
+ * if enclosed-character is given, ignores characters inside enclosed-characters
+ */
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
 					escaped:(NSString *)escaped terminated:(NSString *)terminated
-/*
- split a string by the terminated-character if this is not escaped
- if enclosed-character is given, ignores characters inside enclosed-characters
- */
 {
 	NSMutableArray *tempArray = [NSMutableArray array];
 	BOOL inString = NO;
 	BOOL isEscaped = NO;
 	BOOL br = NO;
 	unsigned i, j, start;
-	char *enc = nil;
-	char *esc = nil;
-	char *ter = nil;
+	unichar enc;
+	unichar esc;
+	unichar ter;
 	
 	//we take only first character by now (too complicated otherwise)
 	if ( [enclosed length] ) {
-		*enc = [enclosed characterAtIndex:0];
+		enc = [enclosed characterAtIndex:0];
 	}
 	if ( [escaped length] ) {
-		*esc = [escaped characterAtIndex:0];
+		esc = [escaped characterAtIndex:0];
 	}
 	if ( [terminated length] ) {
-		*ter = [terminated characterAtIndex:0];
+		ter = [terminated characterAtIndex:0];
 	}
 	
 	start = 0;
@@ -1706,12 +1696,12 @@
 				if ( i >= [string length] ) {
 					//end of string -> no second enclose character found
 					br = YES;
-				} else if ( [string characterAtIndex:i] == *enc ) {
+				} else if ( [string characterAtIndex:i] == enc ) {
 					//second enclose-character found
 					//enclose-character escaped?
 					isEscaped = NO;
 					j = 1;
-					while ( (i-j>0) && ([string characterAtIndex:(i-j)] == *esc) ) {
+					while ( (i-j>0) && ([string characterAtIndex:(i-j)] == esc) ) {
 						isEscaped = !isEscaped;
 						j++;
 					}
@@ -1723,13 +1713,13 @@
 				if ( !br )
 					i++;
 			}
-		} else if ( [string characterAtIndex:i] == *ter ) {
+		} else if ( [string characterAtIndex:i] == ter ) {
 			//terminated-character found
 			if ( [enclosed isEqualToString:@""] ) {
 				//check if terminated character is escaped
 				isEscaped = NO;
 				j = 1;
-				while ( (i-j>0) && ([string characterAtIndex:(i-j)] == *esc) ) {
+				while ( (i-j>0) && ([string characterAtIndex:(i-j)] == esc) ) {
 					isEscaped = !isEscaped;
 					j++;
 				}
@@ -1743,7 +1733,7 @@
 				[tempArray addObject:[string substringWithRange:NSMakeRange(start,(i-start))]];
 				start = i + 1;
 			}
-		} else if ( [string characterAtIndex:i] == *enc ) {
+		} else if ( [string characterAtIndex:i] == enc ) {
 			//enclosed-character found
 			inString = YES;
 		}
@@ -1754,7 +1744,6 @@
 	
 	return [NSArray arrayWithArray:tempArray];
 }
-
 
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection
