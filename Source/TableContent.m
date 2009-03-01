@@ -48,13 +48,9 @@
 	return self;
 }
 
-- (void)awakeFromNib
-{
-}
-
 /*
- Loads aTable, retrieving column information and updating the tableViewColumns before
- reloading table data into the fullResults array and redrawing the table.
+ * Loads aTable, retrieving column information and updating the tableViewColumns before
+ * reloading table data into the fullResults array and redrawing the table.
  */
 - (void)loadTable:(NSString *)aTable
 {
@@ -277,6 +273,7 @@
 		if ( isDesc )
 			query = [query stringByAppendingString:@" DESC"];
 	}
+	
 	if ( [prefs boolForKey:@"limitRows"] ) {
 		if ( [limitRowsField intValue] <= 0 ) {
 			[limitRowsField setStringValue:@"1"];
@@ -285,20 +282,22 @@
 					[NSString stringWithFormat:@" LIMIT %d,%d",
 						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
 	}
+	
 	queryResult = [mySQLConnection queryString:query];
 	if ( queryResult == nil ) {
 		NSLog(@"Loading table data for %@ failed, query string was: %@", aTable, query);
 		return;
 	}
+	
 	[fullResult setArray:[self fetchResultAsArray:queryResult]];
 
 	// Apply any filtering and update the row count
-	if ( !areShowingAllRows ) {
+	if (!areShowingAllRows) {
 		[self filterTable:self];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
 	} else {
 		[filteredResult setArray:fullResult];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
+		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), [fullResult count]]];
 	}
 
 	// Reload the table data.
@@ -307,7 +306,6 @@
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
-
 
 /*
  * Reloads the current table data, performing a new SQL query.  Now attempts to preserve sort order, filters, and viewport.
@@ -1520,28 +1518,28 @@
 	}
 }
 
-- (int)getNumberOfRows
 /*
- returns the number of rows in the selected table
- queries the number from mysql if enabled in prefs and result is limited, otherwise just return the fullResult count
+ * Returns the number of rows in the selected table
+ * Queries the number from MySQL if enabled in prefs and result is limited, otherwise just return the fullResult count.
  */
+- (int)getNumberOfRows
 {
-	if ( [prefs boolForKey:@"limitRows"] && [prefs boolForKey:@"fetchRowCount"] ) {
+	if ([prefs boolForKey:@"limitRows"] && [prefs boolForKey:@"fetchRowCount"]) {
 		numRows = [self fetchNumberOfRows];
 	} else {
 		numRows = [fullResult count];
 	}
+	
 	return numRows;
 }
 
-- (int)fetchNumberOfRows
 /*
- fetches the number of rows in the selected table using a "SELECT COUNT(1)" query and return it
+ * Fetches the number of rows in the selected table using a "SELECT COUNT(1)" query and return it
  */
+- (int)fetchNumberOfRows
 {
 	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM `%@`", selectedTable]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
-
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
