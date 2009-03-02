@@ -723,8 +723,20 @@ traps enter key and
 	return NO;
 }
 
+/*
+ * Updates various interface elements based on the current table view selection.
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{	
+	if ([notification object] == queryFavoritesView) {
+		
+		// Enable/disable buttons
+		[removeQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
+		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
+	}
+}
 
-//last but not least
+// Last but not least
 - (id)init;
 {
 	self = [super init];
@@ -740,5 +752,4 @@ traps enter key and
 	[super dealloc];
 }
 	
-
 @end
