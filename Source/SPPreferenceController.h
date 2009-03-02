@@ -22,6 +22,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class KeyChain;
+
 @interface SPPreferenceController : NSWindowController
 {
 	IBOutlet NSView *generalView;
@@ -35,6 +37,8 @@
 	
 	IBOutlet NSArrayController *favoritesController;
 	
+	KeyChain *keychain;
+	
 	NSToolbar *toolbar;
 	
 	NSToolbarItem *generalItem;
@@ -47,7 +51,12 @@
 	NSUserDefaults *prefs;
 }
 
-// Toolbar item IB action methods
+// IBAction methods
+- (IBAction)addFavorite:(id)sender;
+- (IBAction)removeFavorite:(id)sender;
+- (IBAction)duplicateFavorite:(id)sender;
+
+// Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;
 - (IBAction)displayTablePreferences:(id)sender;
 - (IBAction)displayFavoritePreferences:(id)sender;

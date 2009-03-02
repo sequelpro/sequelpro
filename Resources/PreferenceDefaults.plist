@@ -26,11 +26,5 @@
 	<true/>
 	<key>growlNotifications</key>
 	<true/>
-	<key>notifyConnectDisconnect</key>
-	<true/>
-	<key>notifyImportExport</key>
-	<true/>
-	<key>notifyQueryCompletion</key>
-	<true/>
 </dict>
 </plist>

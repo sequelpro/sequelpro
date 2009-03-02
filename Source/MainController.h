@@ -28,62 +28,25 @@
 
 @interface MainController : NSObject 
 {
-	IBOutlet id keyChainInstance;
-
-	IBOutlet id preferencesWindow;
-	IBOutlet id favoriteSheet;
-	IBOutlet id reloadAfterAddingSwitch;
-	IBOutlet id reloadAfterEditingSwitch;
-	IBOutlet id reloadAfterRemovingSwitch;
-	IBOutlet id showErrorSwitch;
-	IBOutlet id dontShowBlobSwitch;
-	IBOutlet id useMonospacedFontsSwitch;
-	IBOutlet id fetchRowCountSwitch;
-	IBOutlet id limitRowsSwitch;
-	IBOutlet id limitRowsField;
-	IBOutlet id nullValueField;
-	IBOutlet id tableView;
-	IBOutlet id nameField;
-	IBOutlet id hostField;
-	IBOutlet id socketField;
-	IBOutlet id userField;
-	IBOutlet id passwordField;
-	IBOutlet id portField;
-	IBOutlet id databaseField;
-	IBOutlet id sshCheckbox;
-	IBOutlet id sshUserField;
-	IBOutlet id sshPasswordField;
-	IBOutlet id sshHostField;
-	IBOutlet id sshPortField;
-	IBOutlet id encodingPopUpButton;
-
-	NSMutableArray *favorites;
-	NSUserDefaults *prefs;
-	
 	BOOL isNewFavorite;
+	
+	NSMutableArray *favorites;
 	
 	SPPreferenceController *prefsController;
 }
 
-//IBAction methods
+// IBAction methods
 - (IBAction)openPreferences:(id)sender;
-- (IBAction)addFavorite:(id)sender;
-- (IBAction)removeFavorite:(id)sender;
-- (IBAction)copyFavorite:(id)sender;
-- (IBAction)chooseLimitRows:(id)sender;
-- (IBAction)closeFavoriteSheet:(id)sender;
-- (IBAction)toggleUseSSH:(id)sender;
 
-//services menu methods
+// Services menu methods
 - (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error;
 
-//menu methods
+// Menu methods
 - (IBAction)donate:(id)sender;
 - (IBAction)visitWebsite:(id)sender;
 - (IBAction)visitHelpWebsite:(id)sender;
 
-//SSHTunnel methods
-- (id)authenticate:(NSScriptCommand *)command;
+// Other
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command;
 
 @end

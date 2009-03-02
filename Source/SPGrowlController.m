@@ -22,6 +22,8 @@
 
 #import "SPGrowlController.h"
 
+#define GROWL_NOTIFICATIONS_KEY @"growlNotifications"
+
 static SPGrowlController *sharedGrowlController = nil;
 
 @implementation SPGrowlController
@@ -65,6 +67,8 @@ static SPGrowlController *sharedGrowlController = nil;
 {
     if (self = [super init]) {
         [GrowlApplicationBridge setGrowlDelegate:self];
+		
+		prefs = [NSUserDefaults standardUserDefaults];
     }
     
     return self;
@@ -92,14 +96,16 @@ static SPGrowlController *sharedGrowlController = nil;
 // -------------------------------------------------------------------------------
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name
 {
-    // Post notification
-    [GrowlApplicationBridge notifyWithTitle:title
-                                description:description
-                           notificationName:name
-                                   iconData:nil
-                                   priority:0
-                                   isSticky:NO
-                               clickContext:nil];
+	// Post notification if preferences allow
+	if ([prefs boolForKey:GROWL_NOTIFICATIONS_KEY]) {
+		[GrowlApplicationBridge notifyWithTitle:title
+									description:description
+							   notificationName:name
+									   iconData:nil
+									   priority:0
+									   isSticky:NO
+								   clickContext:nil];
+	}
 }
      
 // -------------------------------------------------------------------------------
@@ -110,14 +116,16 @@ static SPGrowlController *sharedGrowlController = nil;
 // -------------------------------------------------------------------------------
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
 {
-    // Post notification
-    [GrowlApplicationBridge notifyWithTitle:title
-                                description:description
-                           notificationName:name
-                                   iconData:data
-                                   priority:priority
-                                   isSticky:sticky
-                               clickContext:clickContext];
+	// Post notification if preferences allow
+	if ([prefs boolForKey:GROWL_NOTIFICATIONS_KEY]) {
+		[GrowlApplicationBridge notifyWithTitle:title
+									description:description
+							   notificationName:name
+									   iconData:data
+									   priority:priority
+									   isSticky:sticky
+								   clickContext:clickContext];
+	}
 }
 
 @end

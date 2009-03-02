@@ -24,6 +24,9 @@
 #import <Growl/Growl.h>
 
 @interface SPGrowlController : NSObject <GrowlApplicationBridgeDelegate>
+{
+	NSUserDefaults *prefs;
+}
 
 // Singleton controller
 + (SPGrowlController *)sharedGrowlController;

@@ -33,6 +33,7 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPFavoriteTextFieldCell.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -67,6 +68,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	// hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
+	
+	SPFavoriteTextFieldCell *tableCell = [[[SPFavoriteTextFieldCell alloc] init] autorelease];
+	
+	[tableCell setImage:[NSImage imageNamed:@"database"]];
+	
+	// Replace column's NSTextFieldCell with custom SWProfileTextFieldCell
+	[[[connectFavoritesTableView tableColumns] objectAtIndex:0] setDataCell:tableCell];
+	[connectFavoritesTableView reloadData];
 }
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -285,6 +294,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	// Remove from favorites array controller
 	[favoritesController remove:[self selectedFavorite]];
 
+	[connectFavoritesTableView reloadData];
 }
 
 /**
@@ -341,7 +351,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * add actual connection to favorites
+ * Add actual connection to favorites
  */
 - (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password
@@ -376,7 +386,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 	
 	[self didChangeValueForKey:@"favorites"];
+	
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
+	[connectFavoritesTableView reloadData];
 }
 
 /**
@@ -414,8 +426,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 }
 
-
-#pragma mark database methods
+#pragma mark -
+#pragma mark Database methods
 
 /**
  * sets up the database select toolbar item
@@ -553,7 +565,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]]);
 }
 
-#pragma mark console methods
+#pragma mark -
+#pragma mark Console methods
 
 //console methods
 /**
@@ -623,6 +636,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 }
 
+#pragma mark -
 #pragma mark Encoding Methods
 
 /**
@@ -808,7 +822,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	return _supportsEncoding;
 }
 
-
+#pragma mark -
 #pragma mark Table Methods
 
 - (IBAction)showCreateTableSyntax:(id)sender
@@ -981,7 +995,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Checksum '%@' table", [self table]], [NSString stringWithFormat:@"Checksum: %@", [theRow objectForKey:@"Checksum"]], @"OK", nil, nil);
 }
 
+#pragma mark -
 #pragma mark Other Methods
+
 /**
  * returns the host
  */
@@ -1225,7 +1241,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStatusToolbarItemIdentifier"];
 }
 
-
+#pragma mark -
 #pragma mark Toolbar Methods
 
 /**
@@ -1516,6 +1532,7 @@ invoked when query gave an error
 	[self showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
 }
 
+#pragma mark -
 #pragma mark SplitView delegate methods
 
 /**
@@ -1579,27 +1596,73 @@ invoked when query gave an error
 	[chooseDatabaseToolbarItem setMaxSize:NSMakeSize(leftPaneWidth, 32)];
 }
 
+#pragma mark -
+#pragma mark TableView delegate methods
 
-//tableView datasource methods
+// -------------------------------------------------------------------------------
+// tableView:willDisplayCell:forTableColumn:row:
+// -------------------------------------------------------------------------------
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(int)index
+{
+	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
+		[cell setFavoriteName:[[favorites objectAtIndex:index] objectForKey:@"name"]];
+		[cell setFavoriteHost:[[favorites objectAtIndex:index] objectForKey:@"host"]];
+	}
+}
+
+// -------------------------------------------------------------------------------
+// tableViewSelectionDidChange:
+// -------------------------------------------------------------------------------
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+	if ([[connectFavoritesTableView selectedRowIndexes] count] > 0) {
+		[favoritesController setSelectedObjects:[NSArray arrayWithObject:[favorites objectAtIndex:[[connectFavoritesTableView selectedRowIndexes] lastIndex]]]];
+	}
+}
+
+#pragma mark -
+#pragma mark TableView datasource methods
+
+// -------------------------------------------------------------------------------
+// numberOfRowsInTableView:
+// -------------------------------------------------------------------------------
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [variables count];
-}
-
-- (id)tableView:(NSTableView *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
-{
-	id theValue;
+	int count;
 	
-	theValue = [[variables objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-	
-	if ( [theValue isKindOfClass:[NSData class]] ) {
-		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
+	if (aTableView == connectFavoritesTableView) {
+		count = [favorites count];
+	}
+	else if (aTableView == dbTablesTableView) {
+		count = [variables count];
 	}
 	
-	return theValue;
+	return count;
 }
+
+// -------------------------------------------------------------------------------
+// tableView:objectValueForTableColumn:row:
+// -------------------------------------------------------------------------------
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+{
+	id value;
+	
+	if (aTableView == connectFavoritesTableView) {
+		value = [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	}
+	else if (aTableView == dbTablesTableView) {
+		
+		value = [[variables objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+		
+		if ([value isKindOfClass:[NSData class]]) {
+			value = [[NSString alloc] initWithData:value encoding:[mySQLConnection encoding]];
+		}
+	}
+	
+	return value;
+}
+
+#pragma mark -
 
 - (IBAction)terminate:(id)sender
 {

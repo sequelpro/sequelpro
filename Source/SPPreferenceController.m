@@ -23,6 +23,9 @@
 #import "SPPreferenceController.h"
 #import "SPWindowAdditions.h"
 #import "SPFavoriteTextFieldCell.h"
+#import "KeyChain.h"
+
+#define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
 #define PREFERENCE_TOOLBAR_GENERAL       @"Preference Toolbar General"
 #define PREFERENCE_TOOLBAR_TABLES        @"Preference Toolbar Tables"
@@ -54,7 +57,8 @@
 {	
 	[self _setupToolbar];
 	
-	prefs = [NSUserDefaults standardUserDefaults];
+	prefs    = [NSUserDefaults standardUserDefaults];
+	keychain = [[KeyChain alloc] init];
 	
 	favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"favorites"]];
 	
@@ -69,11 +73,72 @@
 	// Replace column's NSTextFieldCell with custom SWProfileTextFieldCell
 	[[[favoritesTableView tableColumns] objectAtIndex:0] setDataCell:tableCell];
 	
+	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:FAVORITES_PB_DRAG_TYPE]];
+	
+	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 	[favoritesTableView reloadData];
 }
 
 #pragma mark -
-#pragma mark Toolbar item IB action methods
+#pragma mark IBAction methods
+
+// -------------------------------------------------------------------------------
+// addFavorite:
+// -------------------------------------------------------------------------------
+- (IBAction)addFavorite:(id)sender
+{
+	// Create default favorite
+	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", @"", @"", @"", @"", nil]
+																		  forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", nil]];
+	
+	[favorites addObject:favorite];
+	[favoritesController addObject:favorite];
+	
+	[favoritesTableView reloadData];
+}
+
+// -------------------------------------------------------------------------------
+// removeFavorite:
+// -------------------------------------------------------------------------------
+- (IBAction)removeFavorite:(id)sender
+{
+	if ([favoritesTableView numberOfSelectedRows] == 1) {
+		
+		// Get selected favorite's details
+		NSString *name     = [[favorites objectAtIndex:[favoritesTableView selectedRow]] objectForKey:@"name"];
+		NSString *user     = [[favorites objectAtIndex:[favoritesTableView selectedRow]] objectForKey:@"user"];
+		NSString *host     = [[favorites objectAtIndex:[favoritesTableView selectedRow]] objectForKey:@"host"];
+		NSString *database = [[favorites objectAtIndex:[favoritesTableView selectedRow]] objectForKey:@"database"];
+		
+		// Remove passwords from the Keychain
+		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
+								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
+								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+		
+		[favorites removeObjectAtIndex:[favoritesTableView selectedRow]];
+		[favoritesTableView reloadData];
+	}
+}
+
+// -------------------------------------------------------------------------------
+// duplicateFavorite:
+// -------------------------------------------------------------------------------
+- (IBAction)duplicateFavorite:(id)sender
+{
+	if ([favoritesTableView numberOfSelectedRows] == 1) {
+		
+		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[favorites objectAtIndex:[favoritesTableView selectedRow]]];
+		
+		[favorites addObject:favorite];
+		[favoritesController addObject:favorite];
+		
+		[favoritesTableView reloadData];
+	}
+}
+
+#pragma mark -
+#pragma mark Toolbar item IBAction methods
 
 // -------------------------------------------------------------------------------
 // displayGeneralPreferences:
@@ -142,13 +207,86 @@
 	return [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
 
+#pragma mark TableView drag & drop datasource methods
+
+// -------------------------------------------------------------------------------
+// tableView:writeRows:toPasteboard:
+// -------------------------------------------------------------------------------
+- (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
+{
+	int originalRow;
+	NSArray *pboardTypes;
+	
+	if ([rows count] == 1) {
+		pboardTypes = [NSArray arrayWithObject:FAVORITES_PB_DRAG_TYPE];
+		originalRow = [[rows objectAtIndex:0] intValue];
+		
+		[pboard declareTypes:pboardTypes owner:nil];
+		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:FAVORITES_PB_DRAG_TYPE];
+		
+		return YES;
+	} 
+	else {		
+		return NO;
+	}
+}
+
+// -------------------------------------------------------------------------------
+// tableView:validateDrop:proposedRow:proposedDropOperation:
+// -------------------------------------------------------------------------------
+- (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)operation
+{	
+	int originalRow;
+	NSArray *pboardTypes = [[info draggingPasteboard] types];
+	
+	if (([pboardTypes count] > 1) && (row != -1)) {
+		if (([pboardTypes containsObject:FAVORITES_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
+			originalRow = [[[info draggingPasteboard] stringForType:FAVORITES_PB_DRAG_TYPE] intValue];
+						
+			if ((row != originalRow) && (row != (originalRow + 1))) {
+				return NSDragOperationMove;
+			}
+		}
+	}
+	
+	return NSDragOperationNone;
+}
+
+// -------------------------------------------------------------------------------
+// tableView:acceptDrop:row:dropOperation:
+// -------------------------------------------------------------------------------
+- (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation
+{	
+	int originalRow;
+	int destinationRow;
+	NSMutableDictionary *draggedRow;
+	
+	originalRow = [[[info draggingPasteboard] stringForType:FAVORITES_PB_DRAG_TYPE] intValue];
+	destinationRow = row;
+	
+	if (destinationRow > originalRow) {
+		destinationRow--;
+	}
+	
+	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[favorites objectAtIndex:originalRow]];
+	
+	[favorites removeObjectAtIndex:originalRow];
+	[favorites insertObject:draggedRow atIndex:destinationRow];
+	
+	[favoritesTableView reloadData];
+	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
+	
+	return YES;
+}
+
+
 #pragma mark -
 #pragma mark TableView delegate methods
 	
 // -------------------------------------------------------------------------------
 // tableView:willDisplayCell:forTableColumn:row:
 // -------------------------------------------------------------------------------
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)index
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(int)index
 {
 	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
 		[cell setFavoriteName:[[favorites objectAtIndex:index] objectForKey:@"name"]];
@@ -160,8 +298,10 @@
 // tableViewSelectionDidChange:
 // -------------------------------------------------------------------------------
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
-{
-	[favoritesController setSelectedObjects:[NSArray arrayWithObject:[favorites objectAtIndex:[[favoritesTableView selectedRowIndexes] lastIndex]]]];
+{	
+	if ([[favoritesTableView selectedRowIndexes] count] > 0) {
+		[favoritesController setSelectedObjects:[NSArray arrayWithObject:[favorites objectAtIndex:[[favoritesTableView selectedRowIndexes] lastIndex]]]];
+	}
 }
 
 #pragma mark -
@@ -215,6 +355,16 @@
 	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_ADVANCED, nil];
 }
 
+// -------------------------------------------------------------------------------
+// dealloc
+// -------------------------------------------------------------------------------
+- (void)dealloc
+{
+	[keychain release], keychain = nil;
+	
+	[super dealloc];
+}
+
 @end
 
 @implementation SPPreferenceController (PrivateAPI)
@@ -232,7 +382,7 @@
 	generalItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
     
 	[generalItem setLabel:NSLocalizedString(@"General", @"")];
-    [generalItem setImage:[NSImage imageNamed:NSImageNamePreferencesGeneral]];
+    [generalItem setImage:[NSImage imageNamed:@"GeneralPreferences"]];
     [generalItem setTarget:self];
     [generalItem setAction:@selector(displayGeneralPreferences:)];
 	
@@ -264,7 +414,7 @@
 	advancedItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_ADVANCED];
 	
 	[advancedItem setLabel:NSLocalizedString(@"Advanced", @"")];
-    [advancedItem setImage:[NSImage imageNamed:NSImageNameAdvanced]];
+    [advancedItem setImage:[NSImage imageNamed:@"AdvancedPreferences"]];
     [advancedItem setTarget:self];
     [advancedItem setAction:@selector(displayAdvancedPreferences:)];
     

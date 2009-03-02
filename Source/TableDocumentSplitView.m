@@ -27,13 +27,13 @@
 
 - (float)dividerThickness
 {
-  return 1;
+	return 1;
 }
 
 - (void)drawDividerInRect:(NSRect)rect
 {
-  [[NSColor controlShadowColor] set];
-  NSRectFill(rect);
+	[[NSColor controlShadowColor] set];
+	NSRectFill(rect);
 }
 
 @end
