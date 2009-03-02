@@ -328,6 +328,8 @@ WARNING : incomplete implementation. Please, send your fixes.
 	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
 		[delegate willQueryString:query];
 	}
+	
+	NSDate *startQueryDate = [NSDate date];
 
 	if (0 == (theQueryCode = mysql_query(mConnection, theCQuery))) {
 		if (mysql_field_count(mConnection) != 0) {
@@ -346,6 +348,13 @@ WARNING : incomplete implementation. Please, send your fixes.
 
 		return nil;
 	}
+	
+	//Log how long the query took
+	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
+		NSString *timedQuery = [NSString stringWithFormat:@"%@ /* %.2f */",  query, [[NSDate date] timeIntervalSinceDate:startQueryDate]];
+		[delegate willQueryString:timedQuery];
+	}
+	
 
 	[self startKeepAliveTimerResettingState:YES];
 

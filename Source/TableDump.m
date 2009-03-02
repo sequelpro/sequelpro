@@ -372,19 +372,21 @@
 	NSError *errorStr = nil;
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
-	
+
 	//load file into string
 	dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 											error:&errorStr];
-	
-	if (!dumpFile) {
+
+	if (errorStr) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
 						  nil, nil, nil,
-						  NSLocalizedString(@"Couldn't open file. Be sure that the path is correct and that you have the necessary privileges.", @"Message of panel when file cannot be opened"));
+						  [errorStr localizedDescription]
+						  );
+		[pool release];
 		return;
 	}
 	
@@ -492,6 +494,18 @@
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
+		
+		if([importArray count] == 0){
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
+							  NSLocalizedString(@"OK", @"OK button"),
+							  nil, nil,
+							  tableWindow, self,
+							  nil, nil, nil,
+							  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
+							  );
+			[pool release];
+			return;
+		}		
 		
 		if (progressCancelled) {
 			progressCancelled = NO;
