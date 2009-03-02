@@ -1,8 +1,8 @@
 //
-//  SPTableInfo.h
+//  SPQueryConsole.h
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Stuart Connolly (stuconnolly.com) on Jan 30, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,15 +22,17 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPTableInfo : NSObject 
+@interface SPQueryConsole : NSWindowController 
 {
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
-	
-	NSMutableArray *info;
+	IBOutlet NSTextView *consoleTextView;
 }
+
+- (IBAction)clearConsole:(id)sender;
+- (IBAction)saveConsoleAs:(id)sender;
+
+- (void)showMessageInConsole:(NSString *)message;
+- (void)showErrorInConsole:(NSString *)error;
+
+- (NSTextView *)consoleTextView;
 
 @end

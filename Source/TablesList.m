@@ -26,6 +26,7 @@
 #import "TableDocument.h"
 #import "TableSource.h"
 #import "TableContent.h"
+#import "SPTableData.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
 #import "CMMCPConnection.h"
@@ -42,25 +43,53 @@ loads all table names in array tables and reload the tableView
 - (IBAction)updateTables:(id)sender
 {
 	CMMCPResult *theResult;
+	NSArray *resultRow;
 	int i;
-
-	//query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	BOOL containsViews = NO;
 
 	[tablesListView deselectAll:self];
 	[tables removeAllObjects];
-	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
+	[tableTypes removeAllObjects];
+	[tableTypes addObject:[NSNumber numberWithInt:-1]];
 
-	theResult = (CMMCPResult *)[mySQLConnection listTables];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
+	if ([tableDocumentInstance database]) {
+
+		// Notify listeners that a query has started
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+
+		// Select the table list for the current database.  On MySQL versions after 5 this will include
+		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
+		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
+		if ([theResult numOfRows]) [theResult dataSeek:0];
+		if ([theResult numOfFields] == 1) {
+			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+				[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
+				[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+			}		
+		} else {
+			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+				resultRow = [theResult fetchRowAsArray];
+				[tables addObject:[resultRow objectAtIndex:0]];
+				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_VIEW]];
+					containsViews = YES;
+				} else {
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+				}
+			}		
+		}
 	}
-	
-	[tablesListView reloadData];
-	
-	//query finished
+
+	if (containsViews) {
+		[tables insertObject:NSLocalizedString(@"TABLES & VIEWS",@"header for table & views list") atIndex:0];
+	} else {
+		[tables insertObject:NSLocalizedString(@"TABLES",@"header for table list") atIndex:0];
+	}
+
+	// Notify listeners that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
+	[tablesListView reloadData];	
 }
 
 /*
@@ -75,6 +104,7 @@ adds a new table to the tables-array (no changes in mysql-db)
 	[tableWindow endEditingFor:nil];
 
 	[tables addObject:@""];
+	[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
 	[tablesListView reloadData];
 	[tablesListView selectRow:[tables count]-1 byExtendingSelection:NO];
 	[tablesListView editColumn:0 row:[tables count]-1 withEvent:nil select:YES];
@@ -193,6 +223,7 @@ copies a table, if desired with content
             }
 			
             [tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
+			[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
             [tablesListView reloadData];
             [tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
             [tablesListView scrollRowToVisible:[tablesListView selectedRow]];
@@ -247,6 +278,7 @@ removes selected table(s) from mysql-db and tableView
 		if ( [[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 			//dropped table with success
 			[tables removeObjectAtIndex:currentIndex];
+			[tableTypes removeObjectAtIndex:currentIndex];
 		} else {
 			//couldn't drop table
 			error = TRUE;
@@ -295,7 +327,7 @@ selects customQuery tab and passes query to customQueryInstance
 /*
 returns the currently selected table or nil if no table or mulitple tables are selected
 */
-- (NSString *)table
+- (NSString *)tableName
 {
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
 		return [tables objectAtIndex:[tablesListView selectedRow]];
@@ -306,9 +338,28 @@ returns the currently selected table or nil if no table or mulitple tables are s
 	}
 }
 
+/*
+ * Returns the currently selected table type, or -1 if no table or multiple tables are selected
+ */
+- (int) tableType
+{
+	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+		return [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	} else if ([tablesListView numberOfSelectedRows] > 1) {
+		return -1;
+	} else {
+		return -1;
+	}
+}
+
 - (NSArray *)tables
 {
 	return tables;
+}
+
+- (NSArray *)tableTypes
+{
+	return tableTypes;
 }
 
 /*
@@ -377,10 +428,11 @@ Mark the content table for refresh when it's next switched to
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 				@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 			[tables removeObjectAtIndex:rowIndex];
+			[tableTypes removeObjectAtIndex:rowIndex];
 			[tablesListView reloadData];
 		} else {
 			if ( [tableDocumentInstance supportsEncoding] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance encoding]]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance connectionEncoding]]];
 			} else {
 				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int)", anObject]];
 			}
@@ -395,9 +447,8 @@ Mark the content table for refresh when it's next switched to
 					contentLoaded = NO;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-					[tableSourceInstance loadTable:anObject];
 					[tableContentInstance loadTable:anObject];
-					structureLoaded = YES;
+					structureLoaded = NO;
 					contentLoaded = YES;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
@@ -422,6 +473,7 @@ Mark the content table for refresh when it's next switched to
 					@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
 						[NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
 							anObject, [mySQLConnection getLastErrorMessage]]);
+				[tableTypes removeObjectAtIndex:rowIndex];
 				[tables removeObjectAtIndex:rowIndex];
 				[tablesListView reloadData];
 			}
@@ -451,9 +503,8 @@ Mark the content table for refresh when it's next switched to
 					contentLoaded = NO;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-					[tableSourceInstance loadTable:anObject];
 					[tableContentInstance loadTable:anObject];
-					structureLoaded = YES;
+					structureLoaded = NO;
 					contentLoaded = YES;
 					statusLoaded = NO;
 				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
@@ -503,6 +554,7 @@ traps enter and esc and edit/cancel without entering next row
 		
 		if ( [[tables objectAtIndex:[tablesListView selectedRow]] isEqualToString:@""] ) {
 			//user added new table and then pressed escape
+			[tableTypes removeObjectAtIndex:[tablesListView selectedRow]];
 			[tables removeObjectAtIndex:[tablesListView selectedRow]];
 			[tablesListView reloadData];
 		}
@@ -548,16 +600,28 @@ traps enter and esc and edit/cancel without entering next row
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+	if ( [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] ) {
+		
+		// Reset the table information caches
+		[tableDataInstance resetAllData];
+
+		// If encoding is set to Autodetect, update the connection character set encoding
+		// based on the newly selected table's encoding - but only if it differs from the current encoding.
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
+			if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+				[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
+				[tableDataInstance resetAllData];
+			}
+		}
+
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
 			contentLoaded = NO;   
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			structureLoaded = YES;
+			structureLoaded = NO;
 			contentLoaded = YES;
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
@@ -574,11 +638,6 @@ traps enter and esc and edit/cancel without entering next row
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
 									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
-		 
-		// Update connection characater set encoding based on the table's encoding if required
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
-			[tableDocumentInstance detectTableEncodingForTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-		}
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -610,7 +669,11 @@ traps enter and esc and edit/cancel without entering next row
 			  row:(int)rowIndex
 {
 	if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"tables"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
+		if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_VIEW) {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
+		} else {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
+		}
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 		if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
 			[(ImageAndTextCell*)aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
@@ -646,18 +709,11 @@ loads structure or source if tab selected the first time
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
-			
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1) && !contentLoaded ) {
-			
-			if ( !structureLoaded ) {
-				[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-				structureLoaded = YES;
-			}
-			
 			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			contentLoaded = YES;
 		}
@@ -681,8 +737,10 @@ loads structure or source if tab selected the first time
 	self = [super init];
 	
 	tables = [[NSMutableArray alloc] init];
+	tableTypes = [[NSMutableArray alloc] init];
 	structureLoaded = NO;
 	contentLoaded = NO;
+	statusLoaded = NO;
 	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 	return self;
 }
@@ -692,6 +750,7 @@ loads structure or source if tab selected the first time
 //	NSLog(@"TableList dealloc");
 	
 	[tables release];
+	[tableTypes release];
 	
 	[super dealloc];
 }

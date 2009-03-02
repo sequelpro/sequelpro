@@ -34,6 +34,9 @@
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPFavoriteTextFieldCell.h"
+#import "SPQueryConsole.h"
+#import "SPSQLParser.h"
+#import "SPTableData.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -91,6 +94,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 	
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
+- (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
+{
+	
+	NSPrintInfo *printInfo = [self printInfo];
+	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
+	return printOp;
 }
 
 
@@ -157,6 +168,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 														 password:[passwordField stringValue]
 														usingPort:[portField intValue]];
 		}
+		[mySQLConnection setParentWindow:tableWindow];
+
 		if ( ![mySQLConnection isConnected] )
 			code = 2;
 		if ( !code && ![[databaseField stringValue] isEqualToString:@""] ) {
@@ -191,9 +204,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		// set encoding
 		NSString *encodingName = [prefs objectForKey:@"encoding"];
 		if ( [encodingName isEqualToString:@"Autodetect"] ) {
-			[self detectDatabaseEncoding];
+			[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
 		} else {
-			[self setEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName]];
+			[self setConnectionEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName] reloadingViews:NO];
 		}
 		//get mysql version
 		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
@@ -211,6 +224,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[customQueryInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
+		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
 						   [hostField stringValue], [databaseField stringValue]]];
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
@@ -438,23 +452,27 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return;
 	
 	[chooseDatabaseButton removeAllItems];
+	
 	[chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
+	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Refresh Databases", @"menu item to refresh databases") action:@selector(setDatabases:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	
-	
 	MCPResult *queryResult = [mySQLConnection listDBs];
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	
+	if ([queryResult numOfRows]) {
+		[queryResult dataSeek:0];
+	}
+	
 	int i;
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+	
+	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+	{
 		[chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 	}
-	if ( ![self database] ) {
-		[chooseDatabaseButton selectItemAtIndex:0];
-	} else {
-		[chooseDatabaseButton selectItemWithTitle:[self database]];
-	}
+	
+	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
 
 /**
@@ -477,8 +495,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
-		[self setDatabases:self];
+		if ( [mySQLConnection isConnected] ) {
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
+			[self setDatabases:self];
+		}
 		return;
 	}
 	
@@ -498,29 +518,45 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 {
 	int code = 0;
 	
-	if (![tablesListInstance selectionShouldChangeInTableView:nil])
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) {
 		return;
+	}
 	
 	[databaseNameField setStringValue:@""];
+	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:nil
 		  contextInfo:nil];
+	
 	code = [NSApp runModalForWindow:databaseSheet];
 	
 	[NSApp endSheet:databaseSheet];
 	[databaseSheet orderOut:nil];
 	
-	if (!code)
+	if (!code) {
+		(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 		return;
+	}
 	
+	// This check is not necessary anymore as the add database button is now only enabled if the name field
+	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
-	[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]]];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]];
+	
+	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
+	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET `%@`", createStatement, [self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]]];
+	}
+	
+	// Create the database
+	[mySQLConnection queryString:createStatement];
+	
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		//error while creating db
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
@@ -568,72 +604,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 #pragma mark -
 #pragma mark Console methods
 
-//console methods
 /**
- * shows or hides the console
+ * Shows or hides the console
  */
 - (void)toggleConsole:(id)sender
 {
-	if ([self consoleIsOpened]) {
-		[consoleDrawer close];
-	} else {
-		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-		[consoleDrawer openOnEdge:NSMinYEdge];
-	}
-}
-
-/**
- * clears the console
- */
-- (void)clearConsole:(id)sender
-{
-	[consoleTextView setString:@""];
-}
-
-/**
- * returns YES if the console is visible
- */
-- (BOOL)consoleIsOpened
-{
-	return ([consoleDrawer state] == NSDrawerOpeningState || [consoleDrawer state] == NSDrawerOpenState);
-}
-
-/**
- * shows a message in the console
- */
-- (void)showMessageInConsole:(NSString *)message
-{
-	int begin, end;
-	
-	[consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
-	begin = [[consoleTextView string] length];
-	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:message];
-	end = [[consoleTextView string] length];
-	[consoleTextView setTextColor:[NSColor blackColor] range:NSMakeRange(begin,end-begin)];
-	
-	if ([self consoleIsOpened]) {
-		[consoleTextView displayIfNeeded];
-		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-	}
-}
-
-/**
- * shows an error in the console (red)
- */
-- (void)showErrorInConsole:(NSString *)error
-{
-	int begin, end;
-	
-	[consoleTextView setSelectedRange:NSMakeRange([[consoleTextView string] length],0)];
-	begin = [[consoleTextView string] length];
-	[consoleTextView replaceCharactersInRange:NSMakeRange(begin,0) withString:error];
-	end = [[consoleTextView string] length];
-	[consoleTextView setTextColor:[NSColor redColor] range:NSMakeRange(begin,end-begin)];
-	
-	if ([self consoleIsOpened]) {
-		[consoleTextView displayIfNeeded];
-		[consoleTextView scrollRangeToVisible:[consoleTextView selectedRange]];
-	}
+	[[queryConsoleInstance window] setIsVisible:![[queryConsoleInstance window] isVisible]];
 }
 
 #pragma mark -
@@ -642,7 +618,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 /**
  * Set the encoding for the database connection
  */
-- (void)setEncoding:(NSString *)mysqlEncoding
+- (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews
 {
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
@@ -652,22 +628,29 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
 	} else {
-		[self detectDatabaseEncoding];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
+			return;
+		}
 	}
 		
 	// update the selected menu item
 	[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
 	
-	// reload stuff
-	[tableSourceInstance reloadTable:self];
-	[tableContentInstance reloadTable:self];
-	[tableStatusInstance reloadTable:self];
+	// Reload stuff as appropriate
+	[tableDataInstance resetAllData];
+	if (reloadViews) {
+		if ([tablesListInstance structureLoaded]) [tableSourceInstance reloadTable:self];
+		if ([tablesListInstance contentLoaded]) [tableContentInstance reloadTable:self];
+		if ([tablesListInstance statusLoaded]) [tableStatusInstance reloadTable:self];
+	}
 }
 
 /**
  * returns the current mysql encoding for this object
  */
-- (NSString *)encoding
+- (NSString *)connectionEncoding
 {
 	return _encoding;
 }
@@ -755,9 +738,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * Autodetect the connection encoding and select the relevant encoding menu item in Database -> Database Encoding
+ * Detect and return the database connection encoding.
+ * TODO: See http://code.google.com/p/sequel-pro/issues/detail?id=134 - some question over why this [historically] uses _connection not _database...
  */
-- (void)detectDatabaseEncoding
+- (NSString *)databaseEncoding
 {
 	// MySQL > 4.0
 	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
@@ -774,36 +758,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		mysqlEncoding = @"latin1";
 	}
 	
-	[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding cString]]];
-	
-	// save the encoding
-	[_encoding autorelease];
-	_encoding = [mysqlEncoding retain];
-	
-	// update the selected menu item
-	[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
-}
-
-/**
- * Detects and sets the character set encoding of the supplied table name.
- */
-- (void)detectTableEncodingForTable:(NSString *)table;
-{
-	NSString *tableCollation = [[[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", table]] fetchRowAsDictionary] objectForKey:@"Collation"];
-
-	if (tableCollation != nil) {
-		// Split up the collation string so we can get the encoding
-		NSArray *encodingComponents = [tableCollation componentsSeparatedByString:@"_"];
-		
-		if ([encodingComponents count] > 0) {
-			NSString *tableEncoding = [encodingComponents objectAtIndex:0];
-			
-			[self setEncoding:tableEncoding];
-		}
-	}
-	else {
-		NSLog(@"Error: unable to determine table collation and thus character encoding for table '%@'", table);
-	}
+	return mysqlEncoding;
 }
 
 /**
@@ -811,7 +766,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (IBAction)chooseEncoding:(id)sender
 {
-	[self setEncoding:[self mysqlEncodingFromDisplayEncoding:[(NSMenuItem *)sender title]]];
+	[self setConnectionEncoding:[self mysqlEncodingFromDisplayEncoding:[(NSMenuItem *)sender title]] reloadingViews:YES];
 }
 
 /**
@@ -1088,7 +1043,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  returns the currently selected table (passing the request to TablesList)
  */
 {
-	return (NSString *)[tablesListInstance table];
+	return [tablesListInstance tableName];
 }
 
 - (NSString *)mySQLVersion
@@ -1296,13 +1251,15 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
 		//set up tooltip and image
 		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
-		if ( [self consoleIsOpened] ) {
+		
+		if ([[queryConsoleInstance window] isVisible]) {
 			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
 			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"toolbar item for showconsole")];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		}
+		
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(toggleConsole:)];
@@ -1315,7 +1272,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 		//set up the target action
-		[toolbarItem setTarget:self];
+		[toolbarItem setTarget:queryConsoleInstance];
 		[toolbarItem setAction:@selector(clearConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
@@ -1418,8 +1375,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
-	if ( [[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"] ) {
-		if ( [self consoleIsOpened] ) {
+	if ([[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"]) {
+		if ([[queryConsoleInstance window] isVisible]) {
 			[toolbarItem setLabel:@"Hide Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
@@ -1431,12 +1388,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	return YES;
 }
 
+// NSDocument methods
 
-//NSDocument methods
-- (NSString *)windowNibName
-/*
- returns the name of the nib file
+/**
+ * Returns the name of the nib file
  */
+- (NSString *)windowNibName
 {
 	return @"DBView";
 }
@@ -1467,20 +1424,19 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	//set up interface
 	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[consoleTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		[[queryConsoleInstance consoleTextView] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 	} else {
-		[consoleTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[queryConsoleInstance consoleTextView] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 	}
-	[consoleDrawer setContentSize:NSMakeSize(110,110)];
 	
 	//set up toolbar
 	[self setupToolbar];
@@ -1507,32 +1463,50 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	} else {
 		return YES;
 	}
-	
 }
 
+#pragma mark SMySQL delegate methods
 
-//SMySQL delegate methods
+/**
+ * Invoked when framework will perform a query
+ */
 - (void)willQueryString:(NSString *)query
-/*
-invoked when framework will perform a query
-*/
 {
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	
-	[self showMessageInConsole:[NSString stringWithFormat:@"/* MySQL %@ */ %@;\n", currentTime, query]];
+	[queryConsoleInstance showMessageInConsole:[NSString stringWithFormat:@"/* MySQL %@ */ %@;\n", currentTime, query]];
 }
 
+/**
+ * Invoked when query gave an error
+ */
 - (void)queryGaveError:(NSString *)error
-/*
-invoked when query gave an error
-*/
 {
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	
-	[self showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
+	[queryConsoleInstance showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
 }
 
 #pragma mark -
+#pragma mark Connection sheet delegate methods
+
+/**
+ * When a favorite is selected, and the connection details are edited, deselect the favorite;
+ * this is clearer and also prevents a failed connection from being repopulated with the
+ * favorite's details instead of the last used details.
+ * This method allows the password to be changed without altering the selection.
+ */
+- (void) controlTextDidChange:(NSNotification *)aNotification
+{
+	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == databaseField
+		|| [aNotification object] == socketField || [aNotification object] == portField) {
+		[favoritesController setSelectionIndexes:[NSIndexSet indexSet]];
+	}
+	else if ([aNotification object] == databaseNameField) {
+		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
+	}
+}
+
 #pragma mark SplitView delegate methods
 
 /**

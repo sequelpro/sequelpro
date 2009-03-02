@@ -1,8 +1,9 @@
 //
-//  SPTableInfo.h
+//  SPDataCell.h
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Rowan Beentje on 11/02/2009.
+//  Copyright 2009 Arboreal. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,15 +23,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPTableInfo : NSObject 
-{
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
-	
-	NSMutableArray *info;
+
+@interface SPDataCellFormatter : NSFormatter {
+	int textLimit;
 }
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+	@property int textLimit;
+#else
+	-(int)textLimit;
+	-(void)setTextLimit:(int)limit;
+#endif
 
 @end

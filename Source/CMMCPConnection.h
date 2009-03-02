@@ -26,6 +26,11 @@
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPResult.h"
 
+// Set the connection timeout to enforce for all connections - used for the initial connection
+// timeout and ping timeouts, but not for long queries/reads/writes.
+// Probably worth moving this to a preference at some point.
+#define SP_CONNECTION_TIMEOUT 10
+
 @interface NSObject (CMMCPConnectionDelegate)
 
 - (void)willQueryString:(NSString *)query;
@@ -34,11 +39,40 @@
 @end
 
 @interface CMMCPConnection : MCPConnection {
+	IBOutlet NSWindow *connectionErrorDialog;
+	NSWindow *parentWindow;
 	id	delegate;
+
+	BOOL nibLoaded;
+	NSString *connectionLogin;
+	NSString *connectionPassword;
+	NSString *connectionHost;
+	int connectionPort;
+	NSString *connectionSocket;
+	
+	NSTimer *keepAliveTimer;
+	NSDate *lastKeepAliveSuccess;
 }
 
-- (CMMCPResult *)queryString:(NSString *) query;
-- (void)setDelegate:(id)object;
-- (NSTimeZone *)timeZone;
+- (id) init;
+- (id) initToHost:(NSString *) host withLogin:(NSString *) login password:(NSString *) pass usingPort:(int) port;
+- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login password:(NSString *) pass;
+- (void) initSPExtensions;
+- (BOOL) connectWithLogin:(NSString *) login password:(NSString *) pass host:(NSString *) host port:(int) port socket:(NSString *) socket;
+- (void) disconnect;
+- (BOOL) reconnect;
+- (IBAction) closeSheet:(id)sender;
+- (void) setParentWindow:(NSWindow *)theWindow;
+- (BOOL) selectDB:(NSString *) dbName;
+- (CMMCPResult *) queryString:(NSString *) query;
+- (MCPResult *) listDBsLike:(NSString *) dbsName;
+- (BOOL) checkConnection;
+- (void) setDelegate:(id)object;
+- (NSTimeZone *) timeZone;
+- (BOOL) pingConnection;
+- (void) startKeepAliveTimerResettingState:(BOOL)resetState;
+- (void) stopKeepAliveTimer;
+- (void) keepAlive:(NSTimer *)theTimer;
+- (void) threadedKeepAlive;
 
 @end

@@ -31,6 +31,7 @@
 @interface TableSource : NSObject {
 
 	IBOutlet id tablesListInstance;
+	IBOutlet id tableDataInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
@@ -113,6 +114,7 @@
 //tableView delegate methods
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 
 //slitView delegate methods
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;

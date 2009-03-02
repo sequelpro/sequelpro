@@ -24,6 +24,7 @@
 
 #import "TableSource.h"
 #import "TablesList.h"
+#import "SPTableData.h"
 
 
 @implementation TableSource
@@ -41,19 +42,16 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	NSEnumerator *extrasEnumerator;
 	id extra;
 	int i;
-  
+
 	selectedTable = aTable;
 	[tableSourceView deselectAll:self];
-	
+
 	if ( isEditingRow )
 		return;
-  
+
 	// empty variables
 	[enumFields removeAllObjects];
-  
-	//query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-  
+
 	if ( [aTable isEqualToString:@""] || !aTable ) {
 		[tableFields removeAllObjects];
 		[indexes removeAllObjects];
@@ -70,14 +68,14 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		[tableTypeButton setEnabled:NO];
 		tableType = nil;
 
-		//query finished
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-
 		[scanner release];
 
 		return;
 	}
 	
+	//query started
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+  
 	//perform queries and load results in array (each row as a dictionary)
 	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
 	
@@ -91,17 +89,10 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
-	
-	CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", selectedTable]];
+
+	// Retrieve the table type via the table data's status cache (which automatically maps Type to Engine)
 	[tableType release];
-	
-	NSDictionary *tempRow = [tableStatusResult fetchRowAsDictionary];
-	if ( [tempRow objectForKey:@"Type"]) {
-		tableType = [tempRow objectForKey:@"Type"];
-	} else {
-		tableType = [tempRow objectForKey:@"Engine"];
-	}
-	[tableType retain];
+	tableType = [[NSString stringWithString:[tableDataInstance statusValueForKey:@"Engine"]] retain];
 	
 	//get table default values
 	if ( defaultValues ) {
@@ -143,8 +134,8 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 			
 			for ( i = 0 ; i < [possibleValues count] ; i++ ) {
 				[possibleValue setString:[possibleValues objectAtIndex:i]];
-				[possibleValue replaceOccurrencesOfString:@"''" withString:@"'" options:nil range:NSMakeRange(0,[possibleValue length])];
-				[possibleValue replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:nil range:NSMakeRange(0,[possibleValue length])];
+				[possibleValue replaceOccurrencesOfString:@"''" withString:@"'" options:NSLiteralSearch range:NSMakeRange(0,[possibleValue length])];
+				[possibleValue replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:NSLiteralSearch range:NSMakeRange(0,[possibleValue length])];
 				[possibleValues replaceObjectAtIndex:i withObject:[NSString stringWithString:possibleValue]];
 			}
 			
@@ -174,7 +165,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	}
 	
 	// Determine the table type
-	if ( ![tableType isKindOfClass:[NSNull class]] ) {
+	if ( ![tableType isKindOfClass:[NSNull class]] && [tablesListInstance tableType] != SP_TABLETYPE_VIEW) {
 		[tableTypeButton selectItemWithTitle:tableType];
 		[tableTypeButton setEnabled:YES];
 	} else {
@@ -182,12 +173,13 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		[tableTypeButton setEnabled:NO];
 	}
 	
-	//enable buttons
-	[addFieldButton setEnabled:YES];
-	[copyFieldButton setEnabled:YES];
-	[removeFieldButton setEnabled:YES];
-	[addIndexButton setEnabled:YES];
-	[removeIndexButton setEnabled:YES];
+	// If a view is selected, disable the buttons; otherwise enable.
+	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
+	[addFieldButton setEnabled:editingEnabled];
+	[copyFieldButton setEnabled:editingEnabled];
+	[removeFieldButton setEnabled:editingEnabled];
+	[addIndexButton setEnabled:editingEnabled];
+	[removeIndexButton setEnabled:editingEnabled];
 	
 	//add columns to indexedColumnsField
 	[indexedColumnsField removeAllItems];
@@ -384,8 +376,9 @@ opens alertsheet and asks for confirmation
 			
 //			[[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedTableStatusHasChanged" object:self];		
 
-			// Mark the content table for refresh
+			// Mark the content table for refresh and update column caches
 			[tablesListInstance setContentRequiresReload:YES];
+			[tableDataInstance resetColumnData];
 		} else {
 			[sender selectItemWithTitle:tableType];
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -580,7 +573,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		}
 	} else {
 		//CHANGE syntax
-		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
+		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
 					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
 					[theRow objectForKey:@"Type"]];
@@ -655,8 +648,9 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		isEditingNewRow = NO;
 		[self loadTable:selectedTable];
 
-		// Mark the content table for refresh
+		// Mark the content table and column caches for refresh
 		[tablesListInstance setContentRequiresReload:YES];
+		[tableDataInstance resetColumnData];
 
 		return YES;
 	} else {
@@ -711,8 +705,9 @@ returns YES if no row is beeing edited and nothing has to be written to db
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self loadTable:selectedTable];
 
-				// Mark the content table for refresh
+				// Mark the content table and column cache for refresh
 				[tablesListInstance setContentRequiresReload:YES];
+				[tableDataInstance resetColumnData];
 			} else {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
@@ -768,7 +763,7 @@ returns an array containing the field names of the selected table
 	
 	//load table if not already done
 	if ( ![tablesListInstance structureLoaded] ) {
-		[self loadTable:(NSString *)[tablesListInstance table]];
+		[self loadTable:[tablesListInstance tableName]];
 	}
 	
 	//get field names
@@ -883,37 +878,61 @@ would result in a position change.
 }
 
 /*
-Having validated a drop, perform the field/column reordering to match.
-*/
-- (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)destinationRow dropOperation:(NSTableViewDropOperation)operation
+ * Having validated a drop, perform the field/column reordering to match.
+ */
+- (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)destinationRowIndex dropOperation:(NSTableViewDropOperation)operation
 {
-	int originalRow;
+	int originalRowIndex;
 	NSMutableString *queryString;
+	NSDictionary *originalRow;
 
-	// Extract the original row position from the pasteboard.
-	originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+	// Extract the original row position from the pasteboard and retrieve the details
+	originalRowIndex = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+	originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// Begin construction of the reordering query
 	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` MODIFY COLUMN `%@` %@", selectedTable,
-		[[tableFields objectAtIndex:originalRow] objectForKey:@"Field"],
-		[[tableFields objectAtIndex:originalRow] objectForKey:@"Type"]];
+		[originalRow objectForKey:@"Field"],
+		[originalRow objectForKey:@"Type"]];
 
 	// Add the length parameter if necessary
-	if ( [[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] &&
-		![[[tableFields objectAtIndex:originalRow] objectForKey:@"Length"] isEqualToString:@""])
-	{
-		[queryString appendString:[NSString stringWithFormat:@"(%@)",
-			[[tableFields objectAtIndex:originalRow] objectForKey:@"Length"]]];
+	if ( [originalRow objectForKey:@"Length"] && ![[originalRow objectForKey:@"Length"] isEqualToString:@""]) {
+		[queryString appendString:[NSString stringWithFormat:@"(%@)", [originalRow objectForKey:@"Length"]]];
+	}
+
+	// Add unsigned, zerofill, binary, not null if necessary
+	if ([[originalRow objectForKey:@"unsigned"] isEqualToString:@"1"]) {
+		[queryString appendString:@" UNSIGNED"];
+	}
+	if ([[originalRow objectForKey:@"zerofill"] isEqualToString:@"1"]) {
+		[queryString appendString:@" ZEROFILL"];
+	}
+	if ([[originalRow objectForKey:@"binary"] isEqualToString:@"1"]) {
+		[queryString appendString:@" BINARY"];
+	}
+	if ([[originalRow objectForKey:@"Null"] isEqualToString:@"NO"] ) {
+		[queryString appendString:@" NOT NULL"];
+	}
+
+	// Add the default value
+	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"nullValue"]]) {
+		if ([[originalRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
+			[queryString appendString:@" DEFAULT NULL"];
+		}
+	} else if ( [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
+			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+	} else {
+		[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"Default"]]]];
 	}
 
 	// Add the new location
-	if ( destinationRow == 0 ){
+	if ( destinationRowIndex == 0 ){
 		[queryString appendString:@" FIRST"];
 	} else {
 		[queryString appendString:[NSString stringWithFormat:@" AFTER `%@`",
-						[[tableFields objectAtIndex:destinationRow-1] objectForKey:@"Field"]]];
+						[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"]]];
 	}
 
 	// Run the query; report any errors, or reload the table on success
@@ -923,18 +942,20 @@ Having validated a drop, perform the field/column reordering to match.
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
 	} else {
 		[self loadTable:selectedTable];
-		if ( originalRow < destinationRow ) {
-			[tableSourceView selectRow:destinationRow-1 byExtendingSelection:NO];
+		if ( originalRowIndex < destinationRowIndex ) {
+			[tableSourceView selectRow:destinationRowIndex-1 byExtendingSelection:NO];
 		} else {
-			[tableSourceView selectRow:destinationRow byExtendingSelection:NO];
+			[tableSourceView selectRow:destinationRowIndex byExtendingSelection:NO];
 		}
 	}
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
-	// Mark the content table for refresh
+	// Mark the content table and column caches for refresh
 	[tablesListInstance setContentRequiresReload:YES];
+	[tableDataInstance resetColumnData];
 	
+	[originalRow release];
 	return YES;
 }
 
@@ -1015,6 +1036,14 @@ traps enter and esc and make/cancel editing without entering next row
 	 }
 }
 
+
+/*
+ * Modify cell display by disabling table cells when a view is selected, meaning structure/index
+ * is uneditable.
+ */
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
+}
 
 #pragma mark SplitView delegate methods
 
