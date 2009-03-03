@@ -1098,6 +1098,8 @@
 			// Retrieve the contents of this cell
 			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
 				dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:tableEncoding];
+				if (dataConversionString == nil)
+					dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:NSASCIIStringEncoding];
 				[csvCell setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
 			} else {
@@ -1438,6 +1440,8 @@
 			// Retrieve the contents of this tag
 			if ([[xmlRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
 				dataConversionString = [[NSString alloc] initWithData:[xmlRow objectAtIndex:j] encoding:tableEncoding];
+				if (dataConversionString == nil)
+					dataConversionString = [[NSString alloc] initWithData:[xmlRow objectAtIndex:j] encoding:NSASCIIStringEncoding];
 				[xmlItem setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
 			} else {

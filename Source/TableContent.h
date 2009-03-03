@@ -65,7 +65,7 @@
 	NSString *compareType, *sortField;
 	BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
-	int numRows;
+	int numRows, currentlyEditingRow;
 	bool areShowingAllRows;
 }
 
@@ -105,6 +105,7 @@
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (int)getNumberOfRows;
 - (int)fetchNumberOfRows;
+- (BOOL)saveRowOnDeselect;
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
@@ -118,7 +119,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 - (void)tableViewSelectionIsChanging:(NSNotification *)aNotification;
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification;

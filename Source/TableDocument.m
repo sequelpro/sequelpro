@@ -1159,6 +1159,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (IBAction)viewStructure:(id)sender
 {
+	// Cancel the selection if currently editing a content row and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& ![tableContentInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
+		return;
+	}
+
 	[tableTabView selectTabViewItemAtIndex:0];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
 }
@@ -1171,12 +1178,26 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (IBAction)viewQuery:(id)sender
 {
+	// Cancel the selection if currently editing a content row and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& ![tableContentInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
+		return;
+	}
+
 	[tableTabView selectTabViewItemAtIndex:2];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToRunQueryToolbarItemIdentifier"];
 }
 
 - (IBAction)viewStatus:(id)sender
 {
+	// Cancel the selection if currently editing a content row and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& ![tableContentInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
+		return;
+	}
+
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStatusToolbarItemIdentifier"];
 }
@@ -1432,7 +1453,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (void)windowWillClose:(NSNotification *)aNotification
 {
 	if ([mySQLConnection isConnected]) [self closeConnection];
-	
+	if ([[queryConsoleInstance window] isVisible]) [self toggleConsole:self];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -1571,6 +1592,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	if ( [theValue isKindOfClass:[NSData class]] ) {
 		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
+		if (theValue == nil) {
+			[[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
+		}
 	}
 	
 	return theValue;

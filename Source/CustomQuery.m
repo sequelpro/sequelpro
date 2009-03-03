@@ -480,6 +480,10 @@ inserts the query in the textView and performs query
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isKindOfClass:[NSData class]] ) {
 			NSString *tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
 												  encoding:[mySQLConnection encoding]];
+			if (tmp == nil) {
+				tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
+											encoding:NSASCIIStringEncoding];
+			}
 			return [tmp autorelease];
 		}
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] )
@@ -636,6 +640,10 @@ opens sheet with value when double clicking on a field
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isKindOfClass:[NSData class]] ) {
 			theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
 								encoding:[mySQLConnection encoding]];
+			if (theValue == nil) {
+				theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
+												 encoding:NSASCIIStringEncoding];
+			}
 			[theValue autorelease];
 		} else if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] ) {
 			theValue = [prefs objectForKey:@"nullValue"];

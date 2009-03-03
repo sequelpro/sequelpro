@@ -44,6 +44,7 @@
 	selectedTable = nil;
 	sortField = nil;
 	areShowingAllRows = false;
+	currentlyEditingRow = -1;
 	
 	return self;
 }
@@ -312,6 +313,10 @@
  */
 - (IBAction)reloadTable:(id)sender
 {
+
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
 	// Store the current viewport location
 	NSRect viewRect = [tableContentView visibleRect];
 
@@ -397,6 +402,12 @@
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
 	NSString *queryString;
 	int i;
+
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) {
+		[argument release];
+		return;
+	}
 
 	// Update negative limits
 	if ( [limitRowsField intValue] <= 0 ) {
@@ -583,6 +594,10 @@
  */
 - (IBAction)showAll:(id)sender
 {
+
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
 	[filteredResult setArray:fullResult];
 	[tableContentView reloadData];
 	areShowingAllRows = YES;
@@ -611,8 +626,8 @@
 	NSMutableDictionary *column, *newRow = [NSMutableDictionary dictionary];
 	int i;
 
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 
 	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
 	for ( i = 0 ; i < [columns count] ; i++ ) {
@@ -626,10 +641,11 @@
 	[filteredResult addObject:newRow];
 	[columns release];
 
-	isEditingRow = YES;
-	isEditingNewRow = YES;
 	[tableContentView reloadData];
 	[tableContentView selectRow:[tableContentView numberOfRows]-1 byExtendingSelection:NO];
+	isEditingRow = YES;
+	isEditingNewRow = YES;
+	currentlyEditingRow = [tableContentView selectedRow];
 	if ( [multipleLineEditingButton state] == NSOffState )
 		[tableContentView editColumn:0 row:[tableContentView numberOfRows]-1 withEvent:nil select:YES];
 }
@@ -644,8 +660,9 @@
 	NSDictionary *row;
 	int i;
 	
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
 	if ( [tableContentView numberOfSelectedRows] < 1 )
 		return;
 	if ( [tableContentView numberOfSelectedRows] > 1 ) {
@@ -656,8 +673,6 @@
 	//copy row
 	tempRow = [NSMutableDictionary dictionaryWithDictionary:[filteredResult objectAtIndex:[tableContentView selectedRow]]];
 	[filteredResult insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
-	isEditingRow = YES;
-	isEditingNewRow = YES;
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
@@ -670,6 +685,9 @@
 	//select row and go in edit mode
 	[tableContentView reloadData];
 	[tableContentView selectRow:[tableContentView selectedRow]+1 byExtendingSelection:NO];
+	isEditingRow = YES;
+	isEditingNewRow = YES;
+	currentlyEditingRow = [tableContentView selectedRow];
 	if ( [multipleLineEditingButton state] == NSOffState )
 		[tableContentView editColumn:0 row:[tableContentView selectedRow] withEvent:nil select:YES];
 }
@@ -679,8 +697,9 @@
  asks user if he really wants to delete the selected rows
  */
 {
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
 	if ( ![tableContentView numberOfSelectedRows] )
 		return;
 	/*
@@ -1097,7 +1116,6 @@
  */
 - (BOOL)addRowToDB
 {
-	int rowIndex = [tableContentView selectedRow];
 	NSArray *theColumns, *columnNames;
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	NSMutableString *queryString;
@@ -1108,10 +1126,14 @@
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	int i;
 	
-	if ( !isEditingRow || rowIndex == -1) {
+	if ( !isEditingRow || currentlyEditingRow == -1) {
 		[fieldValues release];
 		return YES;
 	}
+
+
+	// If editing, compare the new row to the old row and if they're the same do nothing.
+	if ( !isEditingNewRow && [oldRow isEqualToDictionary:[filteredResult objectAtIndex:currentlyEditingRow]] ) return YES;
 
 	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
@@ -1120,7 +1142,7 @@
 	
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
-		rowObject = [[filteredResult objectAtIndex:rowIndex] objectForKey:[columnNames objectAtIndex:i]];
+		rowObject = [[filteredResult objectAtIndex:currentlyEditingRow] objectForKey:[columnNames objectAtIndex:i]];
 
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"nullValue"]]
@@ -1142,6 +1164,8 @@
 			} else {
 				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
+				} else if ([[[theColumns objectAtIndex:i] objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
 				} else {
 					[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
 				}
@@ -1178,9 +1202,10 @@
 		} else {
 			NSBeep();
 		}
-		[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+		[filteredResult replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 		isEditingRow = NO;
 		isEditingNewRow = NO;
+		currentlyEditingRow = -1;
 		[queryConsoleInstance showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
 		return YES;
 
@@ -1193,16 +1218,17 @@
 			if ( [prefs boolForKey:@"reloadAfterAdding"] ) {
 				[self reloadTableValues:self];
 				[tableContentView deselectAll:self];
+				[tableWindow endEditingFor:nil];
 			} else {
 
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [theColumns count] ; i++ ) {
 					if ([[theColumns objectAtIndex:i] objectForKey:@"autoincrement"]) {
-						[[filteredResult objectAtIndex:rowIndex] setObject:[NSNumber numberWithLong:[mySQLConnection insertId]]
+						[[filteredResult objectAtIndex:currentlyEditingRow] setObject:[NSNumber numberWithLong:[mySQLConnection insertId]]
 																	forKey:[columnNames objectAtIndex:i]];
 					}
 				}
-				[fullResult addObject:[filteredResult objectAtIndex:rowIndex]];
+				[fullResult addObject:[filteredResult objectAtIndex:currentlyEditingRow]];
 			}
 			isEditingNewRow = NO;
 
@@ -1211,6 +1237,7 @@
 			if ( [prefs boolForKey:@"reloadAfterEditing"] ) {
 				[self reloadTableValues:self];
 				[tableContentView deselectAll:self];
+				[tableWindow endEditingFor:nil];
 
 			// TODO: this probably needs looking at... it's reloading it all itself?
 			} else {
@@ -1232,6 +1259,7 @@
 				[fullResult setArray:[self fetchResultAsArray:queryResult]];
 			}
 		}
+		currentlyEditingRow = -1;
 		return YES;
 
 	// Report errors which have occurred
@@ -1240,6 +1268,27 @@
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write row.\nMySQL said: %@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
+}
+
+
+/*
+ * A method to be called whenever the table selection changes; checks whether the current
+ * row is being edited, and if so attempts to save it.  Returns YES if no save was necessary
+ * or the save was successful, and NO if a save was necessary and failed - in which case further
+ * editing is required.  In that case this method will reselect the row in question for reediting.
+ */
+- (BOOL)saveRowOnDeselect
+{
+
+	// If no rows are currently being edited, return success at once.
+	if (!isEditingRow) return YES;
+
+	// Attempt to save the row, and return YES if the save succeeded.
+	if ([self addRowToDB]) return YES;
+
+	// Saving failed - reselect the old row and return failure.
+	[tableContentView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	return NO;
 }
 
 /*
@@ -1311,6 +1360,8 @@
 
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
 			NSString *tmpString = [[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]];
+			if (tmpString == nil)
+				tmpString = [[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding];
 			[value setString:[NSString stringWithString:tmpString]];
 			[tmpString release];
 		} else {
@@ -1339,7 +1390,7 @@
 			[value setString:[NSString stringWithFormat:@"'%@'", value]];
 
 			columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
-			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"] ) {
+			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
 				[argument appendString:[NSString stringWithFormat:@"`%@` = %@", [keys objectAtIndex:i], value]];
 			} else {
 				[argument appendString:[NSString stringWithFormat:@"`%@` LIKE %@", [keys objectAtIndex:i], value]];
@@ -1433,6 +1484,7 @@
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
+			currentlyEditingRow = -1;
 		}
 		[tableContentView reloadData];
 	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {
@@ -1556,12 +1608,14 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	theRow = [filteredResult objectAtIndex:rowIndex];
 	theValue = [theRow objectForKey:[aTableColumn identifier]];
 
-	// Convert data objects to their string representation in the current encoding.
+	// Convert data objects to their string representation in the current encoding, falling back to ascii
 	if ( [theValue isKindOfClass:[NSData class]] ) {
 		NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
+		if (dataRepresentation == nil)
+			dataRepresentation = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		if (dataRepresentation == nil) theValue = @"- cannot be displayed -";
 		else theValue = [NSString stringWithString:dataRepresentation];
-		[dataRepresentation release];
+		if (dataRepresentation) [dataRepresentation release];
 	}
 	
 	return theValue;
@@ -1575,6 +1629,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	if ( !isEditingRow ) {
 		[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
 		isEditingRow = YES;
+		currentlyEditingRow = rowIndex;
 	}
 	if ( anObject ) {
 		[[filteredResult objectAtIndex:rowIndex] setObject:anObject forKey:[aTableColumn identifier]];
@@ -1597,9 +1652,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
 		return;
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
 	
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 		
@@ -1660,32 +1716,16 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 }
 
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
-{
-	/*
-	 int row = [tableContentView editedRow];
-	 int column = [tableContentView editedColumn];
-	 NSTableColumn *tableColumn;
-	 NSCell *cell;
-	 
-	 if ( row != -1 ) {
-	 tableColumn = [[tableContentView tableColumns] objectAtIndex:column]; 
-	 cell = [tableColumn dataCellForRow:row]; 
-	 [cell endEditing:[tableContentView currentEditor]]; 
-	 }
-	 */
-	//end editing (otherwise problems when user hits reload button)
-	[tableWindow endEditingFor:nil];
-	
-	return [self addRowToDB];
-}
-
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
 	// Check our notification object is our table content view
 	if ([aNotification object] != tableContentView)
 		return;
+
+	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
+	if ( isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect] ) return;
 	
+	// Update the row selection count
 	if ( [tableContentView numberOfSelectedRows] > 0 ) {
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d rows selected", @"Text showing how many rows are selected"), [tableContentView numberOfSelectedRows], [tableContentView numberOfRows]]];
 	} else {
@@ -1750,7 +1790,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	int code;
-	NSString *columnTypeGrouping, *query;
+	NSString *columnTypeGrouping, *query, *stringValue = nil;
 	NSEnumerator *enumerator;
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
@@ -1800,15 +1840,20 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		if ( [theValue isKindOfClass:[NSData class]] ) {
 			image = [[NSImage alloc] initWithData:theValue];
 			[hexTextView setString:[self dataToHex:theValue]];
-			theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
+			stringValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
+			if (stringValue == nil)
+				stringValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		} else {
 			[hexTextView setString:@""];
-			theValue = [theValue description];
+			stringValue = [[NSString alloc] initWithString:[theValue description]];
 		}
 
 		[editImage setImage:image];
-		[editTextView setString:theValue];
-		[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+		if (stringValue) {
+			[editTextView setString:stringValue];
+			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+			[stringValue release];
+		}
 
 		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 		code = [NSApp runModalForWindow:editSheet];
@@ -1820,6 +1865,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			if ( !isEditingRow ) {
 				[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
 				isEditingRow = YES;
+				currentlyEditingRow = rowIndex;
 			}
 			
 			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy] forKey:[aTableColumn identifier]];
@@ -1924,6 +1970,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			[filteredResult removeObjectAtIndex:row];
 			[tableContentView reloadData];
 		}
+		currentlyEditingRow = -1;
 		return TRUE;
 	}
 	else
