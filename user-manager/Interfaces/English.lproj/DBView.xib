@@ -8,8 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="970"/>
-			<integer value="676"/>
+			<integer value="23"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1144,7 +1143,7 @@
 																	<object class="NSTabViewItem" id="831053945">
 																		<string key="NSIdentifier">source</string>
 																		<object class="NSView" key="NSView" id="461236772">
-																			<nil key="NSNextResponder"/>
+																			<reference key="NSNextResponder" ref="714795046"/>
 																			<int key="NSvFlags">256</int>
 																			<object class="NSMutableArray" key="NSSubviews">
 																				<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2490,6 +2489,7 @@
 																				</object>
 																			</object>
 																			<string key="NSFrame">{{10, 7}, {638, 544}}</string>
+																			<reference key="NSSuperview" ref="714795046"/>
 																		</object>
 																		<string key="NSLabel">Structure</string>
 																		<reference key="NSColor" ref="62854682"/>
@@ -2498,7 +2498,7 @@
 																	<object class="NSTabViewItem" id="624106058">
 																		<string key="NSIdentifier">content</string>
 																		<object class="NSView" key="NSView" id="1013108064">
-																			<reference key="NSNextResponder" ref="714795046"/>
+																			<nil key="NSNextResponder"/>
 																			<int key="NSvFlags">256</int>
 																			<object class="NSMutableArray" key="NSSubviews">
 																				<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3104,7 +3104,6 @@
 																				</object>
 																			</object>
 																			<string key="NSFrame">{{10, 7}, {638, 544}}</string>
-																			<reference key="NSSuperview" ref="714795046"/>
 																		</object>
 																		<string key="NSLabel">Content</string>
 																		<reference key="NSColor" ref="62854682"/>
@@ -3969,14 +3968,14 @@
 																		<reference key="NSTabView" ref="714795046"/>
 																	</object>
 																</object>
-																<reference key="NSSelectedTabViewItem" ref="624106058"/>
+																<reference key="NSSelectedTabViewItem" ref="831053945"/>
 																<reference key="NSFont" ref="26"/>
 																<int key="NSTvFlags">134217731</int>
 																<bool key="NSAllowTruncatedLabels">YES</bool>
 																<bool key="NSDrawsBackground">YES</bool>
 																<object class="NSMutableArray" key="NSSubviews">
 																	<bool key="EncodedWithXMLCoder">YES</bool>
-																	<reference ref="1013108064"/>
+																	<reference ref="461236772"/>
 																</object>
 															</object>
 														</object>
@@ -6882,7 +6881,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{213, 50}</string>
 				<object class="NSView" key="NSWindowView" id="537060735">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6937,7 +6936,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 					</object>
 					<string key="NSFrameSize">{375, 72}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{213, 72}</string>
@@ -19807,7 +19805,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4701</int>
+			<int key="maxID">4703</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -20150,6 +20148,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>flushPrivileges:</string>
 							<string>flushTable:</string>
 							<string>import:</string>
+							<string>openUserManager:</string>
 							<string>optimizeTable:</string>
 							<string>removeDatabase:</string>
 							<string>removeFavorite:</string>
@@ -20165,6 +20164,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -20236,6 +20236,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
 							<string>userField</string>
+							<string>userManagerInstance</string>
 							<string>variablesSheet</string>
 							<string>variablesTableView</string>
 						</object>
@@ -20270,6 +20271,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSTabView</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -20434,7 +20436,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>NSPopUpButton</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

@@ -19,7 +19,7 @@
 - (void)_initializeUsers;
 - (void)_initializeDatabaseList;
 - (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
-- (void)_initializeSchemaPrivilegesWithKey:(NSString *)key;
+- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
 @end
 
 @implementation SPUserManager
@@ -47,6 +47,12 @@
 {
 	NSLog(@"Just loaded UserManagerView!");
 	
+	// Set up the sorting for the NSArrayControllers
+	NSSortDescriptor *sd = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+	[selectedPrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
+	[availablePrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
+	[sd release];
+	
 	[tabView selectTabViewItemAtIndex:0];
 	
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
@@ -65,7 +71,6 @@
 
 - (void)_initializeDatabaseList
 {
-	NSLog(@"listDbs");
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	MCPResult *result = [[self connection] listDBs];
 	
@@ -77,7 +82,6 @@
 	{
 		[databaseList addObject:[result fetchRowAsDictionary]];
 	}
-	NSLog(@"dbList: %@", dbList);
 	[pool release];
 }
 
@@ -105,15 +109,13 @@
 	[usersResultArray addObjectsFromArray:resultAsArray];
 
 	[self performSelectorOnMainThread:@selector(_initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
-	
+	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
 	[result release];
 	[pool release];
 }
 
 - (void)_initializeTree:(NSArray *)items
 {
-	NSLog(@"Initalize Tree");
-	NSLog(@"Items: %@", items);
 	for(int i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] valueForKey:@"User"];
@@ -162,16 +164,26 @@
 		NSString *key = [itemKeys objectAtIndex:index];
 		if ([key hasSuffix:@"_priv"])
 		{
-			[self _initializeSchemaPrivilegesWithKey:key];
 			[globalPrivs setValue:[item valueForKey:key] forKey:key];
 		}
 	}
 	[childItem setGlobalPrivileges:globalPrivs];
 }
 
-- (void)_initializeSchemaPrivilegesWithKey:(NSString *)key
+- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items
 {
-	[availablePrivsController addObject:[NSDictionary dictionaryWithObject:key forKey:@"name"]];
+	NSDictionary *firstItem = [items objectAtIndex:0];
+	NSArray *keys = [firstItem allKeys];
+	for(int index = 0; index < [keys count]; index++)
+	{
+		NSString *key = [keys objectAtIndex:index];
+		if ([key hasSuffix:@"_priv"])
+		{
+			NSString *newKey = [key substringToIndex:[key rangeOfString:@"_priv"].location];
+			[availablePrivsController addObject:[NSDictionary dictionaryWithObject:newKey forKey:@"name"]];			
+		}
+
+	}
 }
 
 - (void)setConnection:(CMMCPConnection *)connection
@@ -193,6 +205,7 @@
 
 - (void)dealloc
 {
+	NSLog(@"SPUserManager dealloc.");
 	[dbList release];
 	dbList = nil;
 	[availablePrivs release];
@@ -207,11 +220,14 @@
 	[super dealloc];
 }
 
+// OutlineView Delegate Methods
 - (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
 	{
-		if ([(SPUserItem *)item isLeaf])
+		NSLog(@"item: %@", item);
+		NSLog(@"Item isLeaf: %d", [item isLeaf]);
+		if ([(SPUserItem *)item host] != nil)
 		{
 			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"network-16"]];
 			
@@ -219,5 +235,32 @@
 			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"NSUser.png"]];
 		}
 	}
+}
+
+// TableView Delegate Methods
+
+
+// General Action Methods
+- (IBAction)doCancel:(id)sender
+{
+	[window close];
+}
+
+- (IBAction)doApply:(id)sender
+{
+	
+}
+
+// Schema Privileges Actions
+- (IBAction)addToSelected:(id)sender
+{
+	[selectedPrivsController addObjects:[availablePrivsController selectedObjects]];
+	[availablePrivsController removeObjects:[availablePrivsController selectedObjects]];
+}
+
+- (IBAction)addToAvailable:(id)sender
+{
+	[availablePrivsController addObjects:[selectedPrivsController selectedObjects]];
+	[selectedPrivsController removeObjects:[selectedPrivsController selectedObjects]];
 }
 @end

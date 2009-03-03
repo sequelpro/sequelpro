@@ -8,7 +8,6 @@
 
 #import "SPUserItem.h"
 @interface SPUserItem (PrivateMethods)
-- (void)_initializeGlobalPrivileges;
 @end
 
 
@@ -21,11 +20,9 @@
 
 - (id)init
 {
-	NSLog(@"SPUserItem init");
 	[super init];
 	
 	children = [[NSMutableArray alloc] init];
-	[self _initializeGlobalPrivileges];
 	[self setLeaf:NO];
 	
 	return self;
@@ -43,13 +40,7 @@
 	[super dealloc];
 }
 
-- (void)_initializeGlobalPrivileges
-{
-	globalPrivileges = [[NSMutableDictionary alloc] init];
-	[globalPrivileges setValue:FALSE forKey:@"Select_priv"];
-	[globalPrivileges setValue:FALSE forKey:@"Insert_priv"];
-	
-}
+
 - (NSString *)itemTitle
 {
 	if ([self isLeaf]){
@@ -149,6 +140,6 @@
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"%@\nHosts: %@",[self username], [self children]];
+	return [NSString stringWithFormat:@"%@\nHosts: %@, %@", [self username], [self children], [self isLeaf]];
 }
 @end

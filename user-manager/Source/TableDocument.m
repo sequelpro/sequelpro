@@ -1628,18 +1628,21 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 - (IBAction)openUserManager:(id)sender
 {
-	//if (userManagerInstance == nil) 
-//	{
-//		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
-//	}
-//	else 
-//	{
-//		[userManagerInstance show];
-//	}
-	[[SPUserManager alloc] initWithConnection:mySQLConnection];
+	if (userManagerInstance == nil) 
+	{
+		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
+	}
+	else 
+	{
+		[userManagerInstance show];	
+	}
 }
 - (void)dealloc
 {
+	if (userManagerInstance != nil)
+	{
+		[userManagerInstance release];
+	}
 	[chooseDatabaseButton release];
 	[mySQLConnection release];
 	[favorites release];
