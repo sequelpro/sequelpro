@@ -62,6 +62,7 @@
 - (void) disconnect;
 - (BOOL) reconnect;
 - (IBAction) closeSheet:(id)sender;
++ (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding;
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;

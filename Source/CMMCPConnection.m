@@ -214,23 +214,26 @@ static void forcePingTimeout(int signalNumber);
 }
 
 /*
-Gets a proper NSStringEncoding according to the given MySQL charset.
-
-MySQL 4.0 offers this charsets:
-big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1 greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis swe7 tis620 ujis usa7 win1250 win1251ukr
-
-WARNING : incomplete implementation. Please, send your fixes.
-
+ * Gets a proper NSStringEncoding according to the given MySQL charset.
+ *
+ * MySQL 4.0 offers this charsets:
+ * big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1
+ * greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis
+ * swe7 tis620 ujis usa7 win1250 win1251ukr
+ *
+ * WARNING : incomplete implementation. Please, send your fixes.
+ */
 + (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding
 {
-	// unicode
+	// Unicode encodings:
 	if (!strncmp(mysqlEncoding, "utf8", 4)) {
 		return NSUTF8StringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "ucs2", 4)) {
 		return NSUnicodeStringEncoding;
 	}
-	// west european
+
+	// Roman alphabet encodings:
 	if (!strncmp(mysqlEncoding, "ascii", 5)) {
 		return NSASCIIStringEncoding;
 	}
@@ -240,50 +243,76 @@ WARNING : incomplete implementation. Please, send your fixes.
 	if (!strncmp(mysqlEncoding, "macroman", 8)) {
 		return NSMacOSRomanStringEncoding;
 	}
-	// central european
-	if (!strncmp(mysqlEncoding, "cp1250", 6)) {
-		return NSWindowsCP1250StringEncoding;
-	}
+
+	// Roman alphabet with central/east european additions:
 	if (!strncmp(mysqlEncoding, "latin2", 6)) {
 		return NSISOLatin2StringEncoding;
 	}
-	// south european and middle east
-	if (!strncmp(mysqlEncoding, "cp1256", 6)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
+	if (!strncmp(mysqlEncoding, "cp1250", 6)) {
+		return NSWindowsCP1250StringEncoding;
 	}
-	if (!strncmp(mysqlEncoding, "greek", 5)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinGreek);
+	if (!strncmp(mysqlEncoding, "win1250", 7)) {
+		return NSWindowsCP1250StringEncoding;
 	}
-	if (!strncmp(mysqlEncoding, "hebrew", 6)) {
-		CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinHebrew);
-	}
-	if (!strncmp(mysqlEncoding, "latin5", 6)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin5);
-	}
-	// baltic
 	if (!strncmp(mysqlEncoding, "cp1257", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsBalticRim);
 	}
-	// cyrillic
+
+	// Additions for Turkish:
+	if (!strncmp(mysqlEncoding, "latin5", 6)) {
+		return NSWindowsCP1254StringEncoding;
+	}
+
+	// Greek:
+	if (!strncmp(mysqlEncoding, "greek", 5)) {
+		return NSWindowsCP1253StringEncoding;
+	}
+
+	// Cyrillic:	
+	if (!strncmp(mysqlEncoding, "win1251ukr", 6)) {
+		return NSWindowsCP1251StringEncoding;
+	}
 	if (!strncmp(mysqlEncoding, "cp1251", 6)) {
 		return NSWindowsCP1251StringEncoding;
 	}
-	// asian
-	if (!strncmp(mysqlEncoding, "big5", 4)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5);
+	if (!strncmp(mysqlEncoding, "koi8_ru", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingKOI8_R);
 	}
+	if (!strncmp(mysqlEncoding, "koi8_ukr", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingKOI8_R);
+	}
+	 
+	// Arabic:
+	if (!strncmp(mysqlEncoding, "cp1256", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
+	}
+
+	// Hebrew:
+	if (!strncmp(mysqlEncoding, "hebrew", 6)) {
+		CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinHebrew);
+	}
+
+	// Asian:
 	if (!strncmp(mysqlEncoding, "ujis", 4)) {
 		return NSJapaneseEUCStringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "sjis", 4)) {
 		return  NSShiftJISStringEncoding;
 	}
-
-	// default to iso latin 1, even if it is not exact (throw an exception?)
-	NSLog(@"warning: unknown encoding %s! falling back to latin1.", mysqlEncoding);
+	if (!strncmp(mysqlEncoding, "big5", 4)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5);
+	}
+	if (!strncmp(mysqlEncoding, "euc_kr", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
+	}
+	if (!strncmp(mysqlEncoding, "euckr", 5)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
+	}
+	
+	// Default to iso latin 1, even if it is not exact (throw an exception?)    
+	NSLog(@"WARNING : unknown name for MySQL encoding '%s'!\n\t\tFalling back to iso-latin1.", mysqlEncoding);
 	return NSISOLatin1StringEncoding;
 }
-*/
 
 
 /*

@@ -606,10 +606,20 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews
 {
+	BOOL uselatin1results = NO;
+
+	// Special-case UTF-8 over latin 1 to allow viewing/editing of mangled data.
+	if ([mysqlEncoding isEqualToString:@"utf8-"]) {
+		uselatin1results = YES;
+		mysqlEncoding = @"utf8";
+	}
+	
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
 	
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if (uselatin1results)
+			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
 		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
@@ -622,8 +632,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 		
 	// update the selected menu item
-	[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
-	
+	if (uselatin1results) {
+		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
+	} else {
+		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
+	}
+
 	// Reload stuff as appropriate
 	[tableDataInstance resetAllData];
 	if (reloadViews) {
@@ -669,6 +683,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
 									@"UCS-2 Unicode (ucs2)", @"ucs2",
 									@"UTF-8 Unicode (utf8)", @"utf8",
+									@"UTF-8 Unicode via Latin 1", @"utf8-",
 									@"US ASCII (ascii)", @"ascii",
 									@"ISO Latin 1 (latin1)", @"latin1",
 									@"Mac Roman (macroman)", @"macroman",
@@ -683,6 +698,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 									@"Big5 Traditional Chinese (big5)", @"big5",
 									@"Shift-JIS Japanese (sjis)", @"sjis",
 									@"EUC-JP Japanese (ujis)", @"ujis",
+									@"EUC-KR Korean (euckr)", @"euckr",
 									nil];
 	NSString *encodingName = [translationMap valueForKey:mysqlEncoding];
 	
@@ -700,6 +716,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
 									@"ucs2", @"UCS-2 Unicode (ucs2)",
 									@"utf8", @"UTF-8 Unicode (utf8)",
+									@"utf8-", @"UTF-8 Unicode via Latin 1",
 									@"ascii", @"US ASCII (ascii)",
 									@"latin1", @"ISO Latin 1 (latin1)",
 									@"macroman", @"Mac Roman (macroman)",
@@ -714,6 +731,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 									@"big5", @"Big5 Traditional Chinese (big5)",
 									@"sjis", @"Shift-JIS Japanese (sjis)",
 									@"ujis", @"EUC-JP Japanese (ujis)",
+									@"euckr", @"EUC-KR Korean (euckr)",
 									nil];
 	NSString *mysqlEncoding = [translationMap valueForKey:encodingName];
 	
