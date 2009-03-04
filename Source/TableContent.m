@@ -1132,8 +1132,12 @@
 	}
 
 
-	// If editing, compare the new row to the old row and if they're the same do nothing.
-	if ( !isEditingNewRow && [oldRow isEqualToDictionary:[filteredResult objectAtIndex:currentlyEditingRow]] ) return YES;
+	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
+	if (!isEditingNewRow && [oldRow isEqualToDictionary:[filteredResult objectAtIndex:currentlyEditingRow]]) {
+		isEditingRow = NO;
+		currentlyEditingRow = -1;
+		return YES;
+	}
 
 	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
