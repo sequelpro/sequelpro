@@ -330,6 +330,7 @@
 	// prepare open panel and accessory view
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 	[openPanel setAccessoryView:importCSVView];
+	[openPanel setDelegate:self];
 	if ([prefs valueForKey:@"importFormatPopupValue"]) {
 		[importFormatPopup selectItemWithTitle:[prefs valueForKey:@"importFormatPopupValue"]];
 		[self changeFormat:self];
@@ -1873,6 +1874,29 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
 	}
 }
+
+
+#pragma mark -
+#pragma mark Import/export delegate notifications
+
+// Called when the selection within an open/save panel changes
+- (void)panelSelectionDidChange:(id)sender
+{
+	NSArray *selectedFilenames = [sender filenames];
+	NSString *pathExtension;
+
+	// If a single file is selected and the extension is recognised, change the format dropdown automatically
+	if ( [selectedFilenames count] != 1 ) return;
+	pathExtension = [[[selectedFilenames objectAtIndex:0] pathExtension] uppercaseString];
+	if ([pathExtension isEqualToString:@"SQL"]) {
+		[importFormatPopup selectItemWithTitle:@"SQL"];
+		[self changeFormat:self];
+	} else if ([pathExtension isEqualToString:@"CSV"]) {
+		[importFormatPopup selectItemWithTitle:@"CSV"];
+		[self changeFormat:self];
+	}
+}
+
 
 #pragma mark -
 #pragma mark other

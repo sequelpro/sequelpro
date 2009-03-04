@@ -138,6 +138,9 @@
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
 
+// Import/export delegate notifications
+- (void)panelSelectionDidChange:(id)sender;
+
 //last but not least
 - (id)init;
 - (void)dealloc;
