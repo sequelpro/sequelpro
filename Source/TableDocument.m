@@ -1537,7 +1537,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
-	return YES;
+	return NO;
 }
 
 /**
@@ -1553,7 +1553,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
 {
-	return proposedMin + 160;
+	return proposedMin + 140;
 }
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
