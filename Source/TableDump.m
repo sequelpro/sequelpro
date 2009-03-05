@@ -1067,7 +1067,7 @@
 	for ( i = startingRow ; i < totalRows ; i++ ) {
 		
 		// Update the progress bar
-		[singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
+		if (totalRows) [singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
 		if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
 			lastProgressValue = (int)[singleProgressBar doubleValue];
 			[singleProgressBar displayIfNeeded];
@@ -1421,7 +1421,7 @@
 	for ( i = 1 ; i < totalRows ; i++ ) {
 		
 		// Update the progress bar
-		[singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
+		if (totalRows) [singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
 		if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
 			lastProgressValue = (int)[singleProgressBar doubleValue];
 			[singleProgressBar displayIfNeeded];
