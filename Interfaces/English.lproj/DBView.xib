@@ -5491,6 +5491,16 @@
 											<string key="NSAction">_popUpItemAction:</string>
 											<reference key="NSTarget" ref="1000126742"/>
 										</object>
+										<object class="NSMenuItem" id="96525804">
+											<reference key="NSMenu" ref="38191244"/>
+											<string key="NSTitle">EUC-KR Korean (euckr)</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="685805499"/>
+											<reference key="NSMixedImage" ref="400866889"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<reference key="NSTarget" ref="1000126742"/>
+										</object>
 									</object>
 								</object>
 								<int key="NSPreferredEdge">3</int>
@@ -17492,6 +17502,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<reference ref="100280668"/>
 							<reference ref="936262700"/>
 							<reference ref="410007925"/>
+							<reference ref="96525804"/>
 						</object>
 						<reference key="parent" ref="1000126742"/>
 					</object>
@@ -17670,6 +17681,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<int key="objectID">4791</int>
 						<reference key="object" ref="789014580"/>
 						<reference key="parent" ref="776693903"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4795</int>
+						<reference key="object" ref="96525804"/>
+						<reference key="parent" ref="38191244"/>
 					</object>
 				</object>
 			</object>
@@ -18736,6 +18752,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>4787.IBPluginDependency</string>
 					<string>4790.IBPluginDependency</string>
 					<string>4791.IBPluginDependency</string>
+					<string>4795.IBPluginDependency</string>
 					<string>495.IBAttributePlaceholdersKey</string>
 					<string>495.IBPluginDependency</string>
 					<string>495.ImportedFromIB2</string>
@@ -20240,7 +20257,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{646, 3}, {228, 362}}</string>
+					<string>{{577, 117}, {228, 379}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{67, 289}, {228, 362}}</string>
@@ -20300,6 +20317,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
@@ -20346,8 +20364,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{525, 295}, {292, 112}}</string>
-					<string>{{525, 295}, {292, 112}}</string>
+					<string>{{456, 426}, {292, 112}}</string>
+					<string>{{456, 426}, {292, 112}}</string>
 					<reference ref="9"/>
 					<reference ref="5"/>
 					<reference ref="9"/>
@@ -20437,8 +20455,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{617, 624}, {418, 200}}</string>
-					<string>{{617, 624}, {418, 200}}</string>
+					<string>{{582, 624}, {418, 200}}</string>
+					<string>{{582, 624}, {418, 200}}</string>
 					<reference ref="9"/>
 					<reference ref="8"/>
 					<reference ref="9"/>
@@ -20685,7 +20703,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4794</int>
+			<int key="maxID">4795</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -21262,12 +21280,14 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>changeFormat:</string>
 							<string>changeTable:</string>
 							<string>closeSheet:</string>
+							<string>panelSelectionDidChange:</string>
 							<string>reloadTables:</string>
 							<string>selectTables:</string>
 							<string>stepRow:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
