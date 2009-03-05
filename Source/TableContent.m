@@ -746,52 +746,91 @@
 		
 		// load new data/images
 		editData = [[NSData alloc] initWithContentsOfFile:fileName];
-		NSImage *image = [[[NSImage alloc] initByReferencingFile:fileName] autorelease];
-		NSString *contents = [[NSString stringWithContentsOfFile:fileName] autorelease];
+		NSImage *image = [[NSImage alloc] initWithData:editData];
+		NSString *contents = [NSString stringWithContentsOfFile:fileName];
 		
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
 		[editTextView setString:contents];
 		[hexTextView setString:[self dataToHex:editData]];
+
+		// If the image cell now contains a valid image, select the image tab
+		if (image) {
+			[editSheetTabView selectTabViewItemAtIndex:1];
+
+		// Otherwise deselect the image tab if it's selected but now not showing anything
+		} else {
+			if ([editSheetTabView indexOfTabViewItem:[editSheetTabView selectedTabViewItem]] == 1)
+				[editSheetTabView selectTabViewItemAtIndex:0];
+		}
+		
+		[image release];
 	}
 }
 
-- (IBAction)saveEditSheet:(id)sender
 /*
- saves a file containing the content of the editSheet
+ * Saves a file containing the content of the editSheet
  */
+- (IBAction)saveEditSheet:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	if ( [panel runModal] == NSOKButton ) {
 		NSString *fileName = [panel filename];
-		NSString *data;
 		
+		// Write binary field types directly to the file
 		if ( [editData isKindOfClass:[NSData class]] ) {
-			data = editData;
+			[editData writeToFile:fileName atomically:YES];
+		
+		// Write other field types' representations to the file via the current encoding
 		} else {
-			data = [editData description];
+			[[editData description] writeToFile:fileName
+									 atomically:YES
+									   encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+										  error:NULL];
 		}
-		[editData writeToFile:fileName atomically:YES encoding:[CMMCPConnection encodingForMySQLEncoding:[(NSString *)[tableDocumentInstance encoding] UTF8String]] error:NULL];
 	}
 }
 
-- (IBAction)dropImage:(id)sender
 /*
- invoked when user drag&drops image on imageView
+ * Invoked when the imageView in the connection sheet has the contents deleted
+ * or a file dragged and dropped onto it.
  */
+- (void)processUpdatedImageData:(NSData *)data
 {
-	// load new data/images
-	if (nil != editData)
-	{
-		[editData release];
+	if (nil != editData) [editData release];
+
+	// If the image was not processed, set a blank string as the contents of the edit and hex views.
+	if ( data == nil ) {
+		editData = [[NSData alloc] init];
+		[editTextView setString:@""];
+		[hexTextView setString:@""];
+		return;
 	}
-	editData = [[[NSData alloc] initWithContentsOfFile:[sender draggedFilePath]] retain];
-	NSString *contents = [NSString stringWithContentsOfFile:[sender draggedFilePath]];
-	
-	// set the string contents and hex representation
+
+	// Process the provided image
+	editData = [[NSData alloc] initWithData:data];
+	NSString *contents = [[NSString alloc] initWithData:data encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+
+	// Set the string contents and hex representation
 	[editTextView setString:contents];
 	[hexTextView setString:[self dataToHex:editData]];
+	
+	[contents release];
+}
+
+- (IBAction)dropImage:(id)sender
+{
+
+	// If the image was deleted, set a blank string as the contents of the edit and hex views.
+	// The actual dropped image processing is handled by processUpdatedImageData:.
+	if ( [editImage image] == nil ) {
+		if (nil != editData) [editData release];
+		editData = [[NSData alloc] init];
+		[editTextView setString:@""];
+		[hexTextView setString:@""];
+		return;
+	}
 }
 
 - (void)textDidChange:(NSNotification *)notification
@@ -1842,7 +1881,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		editData = [theValue retain];
 		
 		if ( [theValue isKindOfClass:[NSData class]] ) {
-			image = [[NSImage alloc] initWithData:theValue];
+			image = [[[NSImage alloc] initWithData:theValue] autorelease];
 			[hexTextView setString:[self dataToHex:theValue]];
 			stringValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 			if (stringValue == nil)
@@ -1852,11 +1891,24 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			stringValue = [[NSString alloc] initWithString:[theValue description]];
 		}
 
-		[editImage setImage:image];
+		if (image) {
+			[editImage setImage:image];
+		} else {
+			[editImage setImage:nil];		
+		}
 		if (stringValue) {
 			[editTextView setString:stringValue];
 			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
 			[stringValue release];
+		}
+		
+		// If the cell contains a valid image, select the image tab
+		if (image) {
+			[editSheetTabView selectTabViewItemAtIndex:1];
+
+		// Otherwise default to text tab
+		} else {
+			[editSheetTabView selectTabViewItemAtIndex:0];
 		}
 
 		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];

@@ -27,22 +27,82 @@
 
 @implementation CMImageView
 
-- (NSString *)draggedFilePath
+
 /*
-returns the path of the dragged file
-*/
+ * On a drag and drop, read in dragged files and convert dragged images before passing
+ * them to the delegate for further processing
+ */
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
-	return [NSString stringWithString:draggedFilePath];
-}
+	id delegateForUse = nil;
 
-- (void)concludeDragOperation:(id <NSDraggingInfo>)sender
-{
-	if ( draggedFilePath )
-		[draggedFilePath release];
+	// If the delegate or the delegate's content instance doesn't implement processUpdatedImageData:,
+	// return the super's implementation
+	if (delegate) {
+		if ([delegate respondsToSelector:@selector(processUpdatedImageData:)]) {
+			delegateForUse = delegate;
+		} else if ( [delegate valueForKey:@"tableContentInstance"]
+					&& [[delegate valueForKey:@"tableContentInstance"] respondsToSelector:@selector(processUpdatedImageData:)] ) {
+			delegateForUse = [delegate valueForKey:@"tableContentInstance"];
+		}
+	}
+	if (!delegateForUse) {
+		return [super performDragOperation:sender];
+	}
 
-	draggedFilePath = [[NSString stringWithString:[[[sender draggingPasteboard] propertyListForType:@"NSFilenamesPboardType"] objectAtIndex:0]] retain];
+	// If a filename is available, attempt to read it and pass it to the delegate
+	if ([[[sender draggingPasteboard] propertyListForType:@"NSFilenamesPboardType"] count]) {
+		[delegateForUse processUpdatedImageData:[NSData dataWithContentsOfFile:[[[sender draggingPasteboard] propertyListForType:@"NSFilenamesPboardType"] objectAtIndex:0]]];
+		return [super performDragOperation:sender];
+	}
 
-	[super concludeDragOperation:sender];
+	// Otherwise, see if a dragged image is available via file contents or TIFF and pass to delegate
+	if ([[sender draggingPasteboard] dataForType:@"NSFileContentsPboardType"]) {
+		[delegateForUse processUpdatedImageData:[[sender draggingPasteboard] dataForType:@"NSFileContentsPboardType"]];
+		return [super performDragOperation:sender];
+	}
+
+	// For dragged image representations (in TIFF format), convert to PNG data for compatibility
+	if ([[sender draggingPasteboard] dataForType:@"NSTIFFPboardType"]) {
+		NSData *pngData = nil;
+		NSBitmapImageRep *draggedImage = [[NSBitmapImageRep alloc] initWithData:[[sender draggingPasteboard] dataForType:@"NSTIFFPboardType"]];
+		if (draggedImage) {
+			pngData = [draggedImage representationUsingType:NSPNGFileType properties:nil];
+			[draggedImage release];
+		}
+		if (pngData) {
+			[delegateForUse processUpdatedImageData:pngData];
+			return [super performDragOperation:sender];
+		}
+	}
+	
+	// For dragged image representations (in PICT format), convert to PNG data for compatibility
+	if ([[sender draggingPasteboard] dataForType:@"NSPICTPboardType"]) {
+		NSData *pngData = nil;
+		NSPICTImageRep *draggedImage = [[NSPICTImageRep alloc] initWithData:[[sender draggingPasteboard] dataForType:@"NSPICTPboardType"]];
+		if (draggedImage) {
+			NSImage *convertImage = [[NSImage alloc] initWithSize:[draggedImage size]];
+			[convertImage lockFocus];
+			[draggedImage drawInRect:[draggedImage boundingBox]];
+			NSBitmapImageRep *bitmapImageRep = [[NSBitmapImageRep alloc] initWithFocusedViewRect:[draggedImage boundingBox]];
+			if (bitmapImageRep) {
+				pngData = [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
+				[bitmapImageRep release];
+			}
+			[convertImage unlockFocus];
+			[convertImage release];
+			[draggedImage release];
+		}
+		if (pngData) {
+			[delegateForUse processUpdatedImageData:pngData];
+			return [super performDragOperation:sender];
+		}
+	}
+
+	// The image was not processed - return failure and clear image representation.
+	[delegateForUse processUpdatedImageData:nil];
+	[self setImage:nil];
+	return NO;
 }
 
 @end

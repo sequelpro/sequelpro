@@ -88,6 +88,7 @@
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 

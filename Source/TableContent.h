@@ -39,6 +39,7 @@
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
 	IBOutlet id editSheet;
+	IBOutlet id editSheetTabView;
 	IBOutlet id editImage;
 	IBOutlet id editTextView;
 	IBOutlet id hexTextView;
@@ -86,6 +87,7 @@
 - (IBAction)closeEditSheet:(id)sender;
 - (IBAction)openEditSheet:(id)sender;
 - (IBAction)saveEditSheet:(id)sender;
+- (void)processUpdatedImageData:(NSData *)data;
 - (IBAction)dropImage:(id)sender;
 - (void)textDidChange:(NSNotification *)notification;
 - (NSString *)dataToHex:(NSData *)data;
