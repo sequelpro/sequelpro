@@ -1190,12 +1190,26 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (IBAction)viewContent:(id)sender
 {
+	// Cancel the selection if currently editing structure/a field and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& ![tableSourceInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
+		return;
+	}
+
 	[tableTabView selectTabViewItemAtIndex:1];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
 }
 
 - (IBAction)viewQuery:(id)sender
 {
+	// Cancel the selection if currently editing structure/a field and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& ![tableSourceInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
+		return;
+	}
+
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {
@@ -1209,6 +1223,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (IBAction)viewStatus:(id)sender
 {
+	// Cancel the selection if currently editing structure/a field and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& ![tableSourceInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
+		return;
+	}
+
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {

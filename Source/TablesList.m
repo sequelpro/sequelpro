@@ -97,7 +97,7 @@ adds a new table to the tables-array (no changes in mysql-db)
 */
 - (IBAction)addTable:(id)sender
 {
-	if ( ![tableSourceInstance selectionShouldChangeInTableView:nil] ||
+	if ( ![tableSourceInstance saveRowOnDeselect] ||
 			![tableContentInstance saveRowOnDeselect] ||
 			![tableDocumentInstance database] )
 		return;
@@ -151,7 +151,7 @@ copies a table, if desired with content
 
 	if ( [tablesListView numberOfSelectedRows] != 1 )
 		return;
-	if ( ![tableSourceInstance selectionShouldChangeInTableView:nil] || ![tableContentInstance saveRowOnDeselect] )
+	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] )
 		return;
 	[tableWindow endEditingFor:nil];
 
@@ -587,8 +587,7 @@ traps enter and esc and edit/cancel without entering next row
 
 	//we have to be sure that TableSource and TableContent have finished editing
 //	if ( ![tableSourceInstance addRowToDB] || ![tableContentInstance addRowToDB] ) {
-	if ( ![tableSourceInstance selectionShouldChangeInTableView:nil] ||
-						![tableContentInstance saveRowOnDeselect] ) {
+	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
 		return NO;
 	} else {
 		return YES;

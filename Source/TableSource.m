@@ -43,6 +43,9 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	id extra;
 	int i;
 
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
 	selectedTable = aTable;
 	[tableSourceView deselectAll:self];
 
@@ -224,21 +227,18 @@ adds an empty row to the tableSource-array and goes into edit mode
 */
 - (IBAction)addField:(id)sender
 {
-/*
-	if ( ![self addRowToDB] )
-		return;
-*/
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 
 	[tableFields addObject:[NSMutableDictionary
 		dictionaryWithObjects:[NSArray arrayWithObjects:@"",@"int",@"",@"0",@"0",@"0",@"YES",@"",[prefs stringForKey:@"nullValue"],@"None",nil]
 		forKeys:[NSArray arrayWithObjects:@"Field",@"Type",@"Length",@"unsigned",@"zerofill",@"binary",@"Null",@"Key",@"Default",@"Extra",nil]]];
 
-	isEditingRow = YES;
-	isEditingNewRow = YES;
 	[tableSourceView reloadData];
 	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
+	isEditingRow = YES;
+	isEditingNewRow = YES;
+	currentlyEditingRow = [tableSourceView selectedRow];
 	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
 }
 
@@ -251,8 +251,9 @@ copies a field and goes in edit mode for the new field
 
 	if ( ![tableSourceView numberOfSelectedRows] )
 		return;
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 	
 	//add copy of selected row and go in edit mode
 	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:[tableSourceView selectedRow]]];
@@ -260,10 +261,11 @@ copies a field and goes in edit mode for the new field
 	[tempRow setObject:@"" forKey:@"Key"];
 	[tempRow setObject:@"None" forKey:@"Extra"];
 	[tableFields addObject:tempRow];
-	isEditingRow = YES;
-	isEditingNewRow = YES;
 	[tableSourceView reloadData];
 	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
+	isEditingRow = YES;
+	isEditingNewRow = YES;
+	currentlyEditingRow = [tableSourceView selectedRow];
 	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
 }
 
@@ -277,6 +279,9 @@ adds the index to the mysql-db and stops modal session with code 1 when success,
 	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
 	NSEnumerator *enumerator;
 	NSString *string;
+
+	// Check whether a save of the current fields row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 
 	if ( [[indexedColumnsField stringValue] isEqualToString:@""] ) {
 		[NSApp stopModalWithCode:-1];
@@ -327,8 +332,9 @@ opens alertsheet and asks for confirmation
 {
 	if ( ![tableSourceView numberOfSelectedRows] )
 		return;
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 
 	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
 			nil, @"removefield", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the field %@?", @"message of panel asking for confirmation for deleting field"),
@@ -342,8 +348,9 @@ opens alertsheet and asks for confirmation
 {
 	if ( ![indexView numberOfSelectedRows] )
 		return;
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+
+	// Check whether a save of the current fields row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 
 	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
 			nil, @"removeindex", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the index %@?", @"message of panel asking for confirmation for deleting index"),
@@ -352,6 +359,12 @@ opens alertsheet and asks for confirmation
 
 - (IBAction)typeChanged:(id)sender
 {
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) {
+		[sender selectItemWithTitle:tableType];	
+		return;
+	}
+
 	NSString* selectedItem = [sender titleOfSelectedItem];
 	if([selectedItem isEqualToString:@"--"] || [tableType isEqualToString:selectedItem]) {
 		[sender selectItemWithTitle:tableType];	
@@ -397,8 +410,8 @@ opens the indexSheet
 {
 	int code = 0;
 
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return;
+	// Check whether a save of the current field row is required.
+	if ( ![self saveRowOnDeselect] ) return;
 
 	[indexTypeField selectItemAtIndex:0];
 	[indexNameField setEnabled:NO];
@@ -543,6 +556,27 @@ fetches the result as an array with a dictionary for each row in it
 	return tempResult;
 }
 
+
+/*
+ * A method to be called whenever the selection changes or the table would be reloaded
+ * or altered; checks whether the current row is being edited, and if so attempts to save
+ * it.  Returns YES if no save was necessary or the save was successful, and NO if a save
+ * was necessary but failed - also reselecting the row for re-editing.
+ */
+- (BOOL)saveRowOnDeselect
+{
+	// If no rows are currently being edited, return success at once.
+	if (!isEditingRow) return YES;
+
+	// Attempt to save the row, and return YES if the save succeeded.
+	if ([self addRowToDB]) return YES;
+
+	// Saving failed - reselect the old row and return failure.
+	[tableSourceView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	return NO;
+}
+
+
 - (BOOL)addRowToDB;
 /*
 tries to write row to mysql-db
@@ -554,12 +588,12 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	NSMutableString *queryString;
 	int code;
 
-	if ( !isEditingRow || ![tableSourceView numberOfSelectedRows] )
+	if ( !isEditingRow || currentlyEditingRow == -1 )
 		return YES;
 	if ( alertSheetOpened )
 		return NO;
 
-	theRow = [tableFields objectAtIndex:[tableSourceView selectedRow]];
+	theRow = [tableFields objectAtIndex:currentlyEditingRow];
 
 	if ( isEditingNewRow ) {
 		//ADD syntax
@@ -646,6 +680,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		isEditingRow = NO;
 		isEditingNewRow = NO;
+		currentlyEditingRow = -1;
 		[self loadTable:selectedTable];
 
 		// Mark the content table and column caches for refresh
@@ -694,6 +729,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
+			currentlyEditingRow = -1;
 		}
 		[tableSourceView reloadData];
 	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
@@ -818,6 +854,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	if ( !isEditingRow ) {
 		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
 		isEditingRow = YES;
+		currentlyEditingRow = rowIndex;
 	}
 	if ( anObject ) {
 		[[tableFields objectAtIndex:rowIndex] setObject:anObject forKey:[aTableColumn identifier]];
@@ -834,8 +871,8 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 	int originalRow;
 	NSArray *pboardTypes;
 
-	if ( ![self selectionShouldChangeInTableView:nil] )
-		return NO;
+	// Check whether a save of the current field row is required.
+	if ( ![self saveRowOnDeselect] ) return NO;
 
 	if ( ([rows count] == 1)  && (tableView == tableSourceView) ) {
 		pboardTypes=[NSArray arrayWithObjects:@"SequelProPasteboard", nil];
@@ -961,24 +998,15 @@ would result in a position change.
 
 #pragma mark TableView delegate methods
 
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-/*
-	int row = [tableSourceView editedRow];
-	int column = [tableSourceView editedColumn];
-	NSTableColumn *tableColumn;
-	NSCell *cell;
 
-	if ( row != -1 ) {
-		tableColumn = [[tableSourceView tableColumns] objectAtIndex:column]; 
-		cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[tableSourceView currentEditor]]; 
-	}
-*/
-//end editing (otherwise problems when user hits reload button)
-	[tableWindow endEditingFor:nil];
+	// Check our notification object is our table fields view
+	if ([aNotification object] != tableSourceView)
+		return;
 
-	return [self addRowToDB];
+	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
+	if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect] ) return;
 }
 
 /*
@@ -1030,6 +1058,7 @@ traps enter and esc and make/cancel editing without entering next row
 			[tableFields removeObjectAtIndex:row];
 			[tableSourceView reloadData];
 		}
+		currentlyEditingRow = -1;
 		return TRUE;
 	 } else {
 		 return FALSE;
@@ -1076,6 +1105,8 @@ traps enter and esc and make/cancel editing without entering next row
 	indexes = [[NSMutableArray alloc] init];
 	oldRow = [[NSMutableDictionary alloc] init];
 	enumFields = [[NSMutableDictionary alloc] init];
+
+	currentlyEditingRow = -1;
 
 	return self;
 }

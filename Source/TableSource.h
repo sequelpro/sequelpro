@@ -60,6 +60,7 @@
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
 	BOOL isEditingRow, isEditingNewRow, alertSheetOpened;
+	int currentlyEditingRow;
 	NSUserDefaults *prefs;
 }
 
@@ -112,7 +113,7 @@
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
 
 //tableView delegate methods
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 
