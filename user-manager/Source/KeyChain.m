@@ -39,12 +39,12 @@
 	if (![self passwordExistsForName:name account:account]) {
 		status = SecKeychainAddGenericPassword(
 											   NULL,						// default keychain
-											   [name cStringLength],		// length of service name
-											   [name cString],				// service name
-											   [account cStringLength],		// length of account name
-											   [account cString],			// account name
-											   [password cStringLength],	// length of password
-											   [password cString],			// pointer to password data
+											   strlen([name UTF8String]),		// length of service name
+											   [name UTF8String],				// service name
+											   strlen([account UTF8String]),		// length of account name
+											   [account UTF8String],			// account name
+											   strlen([password UTF8String]),	// length of password
+											   [password UTF8String],			// pointer to password data
 											   NULL							// the item reference
 											   );
 		
@@ -61,17 +61,17 @@
 {
 	OSStatus status;
 	
-	void *passwordData = nil;
-	UInt32 passwordLength = nil;
-	SecKeychainItemRef itemRef = nil;
+	void *passwordData;
+	UInt32 passwordLength;
+	SecKeychainItemRef itemRef;
 	NSString *password = @"";
 	
 	status = SecKeychainFindGenericPassword(
 											NULL,						// default keychain
-											[name cStringLength],		// length of service name
-											[name cString],				// service name
-											[account cStringLength],	// length of account name
-											[account cString],			// account name
+											strlen([name UTF8String]),		// length of service name
+											[name UTF8String],				// service name
+											strlen([account UTF8String]),	// length of account name
+											[account UTF8String],			// account name
 											&passwordLength,			// length of password
 											&passwordData,				// pointer to password data
 											&itemRef					// the item reference
@@ -102,10 +102,10 @@
 	if ([self passwordExistsForName:name account:account]) {
 		status = SecKeychainFindGenericPassword(
 												NULL,						// default keychain
-												[name cStringLength],		// length of service name
-												[name cString],				// service name
-												[account cStringLength],	// length of account name
-												[account cString],			// account name
+												strlen([name UTF8String]),		// length of service name
+												[name UTF8String],				// service name
+												strlen([account UTF8String]),	// length of account name
+												[account UTF8String],			// account name
 												nil,						// length of password
 												nil,						// pointer to password data
 												&itemRef					// the item reference

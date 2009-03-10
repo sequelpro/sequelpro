@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 
 ## Author:      Stuart Connolly (stuconnolly.com)
-##              Copyright (c) 2008 Stuart Connolly. All rights reserved.
+##              Copyright (c) 2009 Stuart Connolly. All rights reserved.
 ##
 ## Paramters:   <none> 
 ##

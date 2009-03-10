@@ -25,6 +25,12 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
+enum sp_table_types
+{
+	SP_TABLETYPE_TABLE = 0,
+	SP_TABLETYPE_VIEW = 1
+};
+
 @class CMMCResult;
 @class CMMCPConnection;
 
@@ -35,6 +41,7 @@
 	IBOutlet id tableContentInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
+	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
 
 	IBOutlet id tableWindow;
@@ -46,6 +53,7 @@
 
 	CMMCPConnection *mySQLConnection;
 	NSMutableArray *tables;
+	NSMutableArray *tableTypes;
 //	NSUserDefaults *prefs;
 	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
 }
@@ -68,8 +76,10 @@
 - (void)doPerformQueryService:(NSString *)query;
 
 //getter methods
-- (NSString *)table;
+- (NSString *)tableName;
+- (int)tableType;
 - (NSArray *)tables;
+- (NSArray *)tableTypes;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

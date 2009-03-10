@@ -2,7 +2,7 @@
 //  CMTextView.m
 //  sequel-pro
 //
-//  Created by Carsten Blüm.
+//  Created by Carsten Bl√ºm.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMTextView.h"
+#import "SPStringAdditions.h"
 
 @implementation CMTextView
 
@@ -33,11 +34,22 @@
 	NSString *partialString = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
 	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
+	
 	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
 	//NSRange partialRange = NSMakeRange(0, partialLength);
+	
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-	NSArray *possibleCompletions = [[tableNames arrayByAddingObjectsFromArray:[self keywords]]
-									arrayByAddingObjectsFromArray:textViewWords];
+	
+	NSMutableArray *possibleCompletions = [NSMutableArray arrayWithArray:textViewWords];
+	[possibleCompletions addObjectsFromArray:[self keywords]];
+	[possibleCompletions addObjectsFromArray:tableNames];
+	
+	// Add column names to completions list for currently selected table
+	if ([[[self window] delegate] table] != nil) {
+		id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
+		[possibleCompletions addObjectsFromArray:columnNames];
+	}
+
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
 	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
 	unsigned i, insindex;

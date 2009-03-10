@@ -23,7 +23,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CustomQuery.h"
-#import "TableDump.h"
+#import "SPSQLParser.h"
 #import "SPGrowlController.h"
 
 @implementation CustomQuery
@@ -45,23 +45,26 @@ sets the tableView columns corresponding to the mysql-result
 	NSTableColumn	*theCol;
 	CMMCPResult	*theResult = nil;
 	NSArray		*queries;
-//	NSArray		*theTypes;
 	NSMutableArray	*menuItems = [NSMutableArray array];
 	NSMutableArray	*tempResult = [NSMutableArray array];
 	NSMutableString	*errors = [NSMutableString string];
+	SPSQLParser *queryParser;
 	int i;
 
-	//query started
+	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
-	//split queries by ;'s
-	queries = [tableDumpInstance splitQueries:[textView string]];
+	// Retrieve the custom query string and split it into separate SQL queries
+	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
+	queries = [queryParser splitStringByCharacter:';'];
+	[queryParser release];
 
-//perform queries
+	// Perform the queries in series
 	for ( i = 0 ; i < [queries count] ; i++ ) {
 		theResult = [mySQLConnection queryString:[queries objectAtIndex:i]];
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		//query gave error
+
+			// If the query errored, append error to the error log for display at the end
 			if ( [queries count] > 1 ) {
 				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
 										i+1,
@@ -70,7 +73,6 @@ sets the tableView columns corresponding to the mysql-result
 				[errors setString:[mySQLConnection getLastErrorMessage]];
 			}
 		}
-//	theTypes = [queryResult fetchTypesAsArray];
 	}
 	
 	//perform empty query if no query is given
@@ -478,6 +480,10 @@ inserts the query in the textView and performs query
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isKindOfClass:[NSData class]] ) {
 			NSString *tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
 												  encoding:[mySQLConnection encoding]];
+			if (tmp == nil) {
+				tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
+											encoding:NSASCIIStringEncoding];
+			}
 			return [tmp autorelease];
 		}
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] )
@@ -634,6 +640,10 @@ opens sheet with value when double clicking on a field
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isKindOfClass:[NSData class]] ) {
 			theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
 								encoding:[mySQLConnection encoding]];
+			if (theValue == nil) {
+				theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
+												 encoding:NSASCIIStringEncoding];
+			}
 			[theValue autorelease];
 		} else if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] ) {
 			theValue = [prefs objectForKey:@"nullValue"];
@@ -721,8 +731,20 @@ traps enter key and
 	return NO;
 }
 
+/*
+ * Updates various interface elements based on the current table view selection.
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{	
+	if ([notification object] == queryFavoritesView) {
+		
+		// Enable/disable buttons
+		[removeQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
+		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
+	}
+}
 
-//last but not least
+// Last but not least
 - (id)init;
 {
 	self = [super init];
@@ -738,5 +760,4 @@ traps enter key and
 	[super dealloc];
 }
 	
-
 @end

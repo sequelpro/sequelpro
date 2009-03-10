@@ -225,9 +225,7 @@
 {
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
 	{
-		NSLog(@"item: %@", item);
-		NSLog(@"Item isLeaf: %d", [item isLeaf]);
-		if ([(SPUserItem *)item host] != nil)
+		if ([(SPUserItem *)[item  representedObject] host] != nil)
 		{
 			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"network-16"]];
 			

@@ -31,6 +31,7 @@
 @interface TableSource : NSObject {
 
 	IBOutlet id tablesListInstance;
+	IBOutlet id tableDataInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
@@ -59,6 +60,7 @@
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
 	BOOL isEditingRow, isEditingNewRow, alertSheetOpened;
+	int currentlyEditingRow;
 	NSUserDefaults *prefs;
 }
 
@@ -86,6 +88,7 @@
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
@@ -111,8 +114,9 @@
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
 
 //tableView delegate methods
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 
 //slitView delegate methods
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;

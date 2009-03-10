@@ -23,23 +23,23 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMCopyTable.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 
-
-@interface TableContent : NSObject {
-	
+@interface TableContent : NSObject 
+{	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
-	IBOutlet id tableSourceInstance;
+	IBOutlet id tableDataInstance;
+	IBOutlet id queryConsoleInstance;
 	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
 	IBOutlet id editSheet;
+	IBOutlet id editSheetTabView;
 	IBOutlet id editImage;
 	IBOutlet id editTextView;
 	IBOutlet id hexTextView;
@@ -63,13 +63,11 @@
 	NSString *selectedTable;
 	NSMutableArray *fullResult, *filteredResult, *keys;
 	NSMutableDictionary *oldRow;
-	NSArray *fieldNames, *fieldTypes;
 	NSString *compareType, *sortField;
 	BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
-	int numRows;
+	int numRows, currentlyEditingRow;
 	bool areShowingAllRows;
-	
 }
 
 //table methods
@@ -89,6 +87,7 @@
 - (IBAction)closeEditSheet:(id)sender;
 - (IBAction)openEditSheet:(id)sender;
 - (IBAction)saveEditSheet:(id)sender;
+- (void)processUpdatedImageData:(NSData *)data;
 - (IBAction)dropImage:(id)sender;
 - (void)textDidChange:(NSNotification *)notification;
 - (NSString *)dataToHex:(NSData *)data;
@@ -103,15 +102,16 @@
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(int)row;
-- (BOOL)isBlobOrText:(NSString *)fieldType;
+- (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (int)getNumberOfRows;
 - (int)fetchNumberOfRows;
+- (BOOL)saveRowOnDeselect;
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
+- (id)tableView:(CMCopyTable *)aTableView
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex;
 - (void)tableView:(NSTableView *)aTableView
@@ -121,7 +121,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 - (void)tableViewSelectionIsChanging:(NSNotification *)aNotification;
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification;
