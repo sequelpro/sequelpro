@@ -42,13 +42,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.9.3</string>
+	<string>0.9.4</string>
 	<key>CFBundleVersion</key>
 	<string></string>
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>0.9.3 (238)</string>
+	<string>0.9.4 (387)</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

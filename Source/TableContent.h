@@ -64,7 +64,7 @@
 	NSMutableArray *fullResult, *filteredResult, *keys;
 	NSMutableDictionary *oldRow;
 	NSString *compareType, *sortField;
-	BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
 	int numRows, currentlyEditingRow;
 	bool areShowingAllRows;

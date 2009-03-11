@@ -1323,14 +1323,22 @@
 - (BOOL)saveRowOnDeselect
 {
 
-	// If no rows are currently being edited, return success at once.
-	if (!isEditingRow) return YES;
+	// If no rows are currently being edited, or a save is in progress, return success at once.
+	if (!isEditingRow || isSavingRow) return YES;
+	isSavingRow = YES;
+
+	// Save any edits which have been made but not saved to the table yet.
+	[tableWindow endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
-	if ([self addRowToDB]) return YES;
+	if ([self addRowToDB]) {
+		isSavingRow = NO;
+		return YES;
+	}
 
 	// Saving failed - reselect the old row and return failure.
 	[tableContentView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	isSavingRow = NO;
 	return NO;
 }
 
@@ -1669,6 +1677,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
    forTableColumn:(NSTableColumn *)aTableColumn
 			  row:(int)rowIndex
 {
+
+	// Catch editing events in the row and if the row isn't currently being edited,
+	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
 		[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
 		isEditingRow = YES;
