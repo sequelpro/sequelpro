@@ -139,8 +139,6 @@ copies a table, if desired with content
 - (IBAction)copyTable:(id)sender
 {
 	CMMCPResult *queryResult;
-	NSScanner *scanner = [NSScanner alloc];
-	NSString *scanString;
 //	NSArray *fieldNames;
 //	NSArray *theRow;
 //	NSMutableString *rowValue = [NSMutableString string];
@@ -151,8 +149,9 @@ copies a table, if desired with content
 
 	if ( [tablesListView numberOfSelectedRows] != 1 )
 		return;
-	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] )
+	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
 		return;
+	}
 	[tableWindow endEditingFor:nil];
 
 	//open copyTableSheet
@@ -187,10 +186,14 @@ copies a table, if desired with content
 
     } else {
 		//insert new table name in create syntax and create new table
+		NSScanner *scanner = [NSScanner alloc];
+		NSString *scanString;
+
         [scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
         [scanner scanUpToString:@"(" intoString:nil];
         [scanner scanUpToString:@"" intoString:&scanString];
         [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` %@", [copyTableNameField stringValue], scanString]];
+		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table

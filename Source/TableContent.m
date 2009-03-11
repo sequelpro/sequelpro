@@ -1156,7 +1156,6 @@
 - (BOOL)addRowToDB
 {
 	NSArray *theColumns, *columnNames;
-	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	NSMutableString *queryString;
 	NSString *query;
 	CMMCPResult *queryResult;
@@ -1166,7 +1165,6 @@
 	int i;
 	
 	if ( !isEditingRow || currentlyEditingRow == -1) {
-		[fieldValues release];
 		return YES;
 	}
 
@@ -1183,6 +1181,7 @@
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
 	
+	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
 		rowObject = [[filteredResult objectAtIndex:currentlyEditingRow] objectForKey:[columnNames objectAtIndex:i]];
@@ -1824,13 +1823,19 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	if  ( [tableColumnWidths objectForKey:database] == nil ) {
 		[tableColumnWidths setObject:[NSMutableDictionary dictionary] forKey:database];
 	} else {
-		[tableColumnWidths setObject:[[tableColumnWidths objectForKey:database] mutableCopy] forKey:database];
+		//[NSMutableArray arrayWithArray:array]; vs [array mutableCopy]; 
+		//[tableColumnWidths setObject:[[tableColumnWidths objectForKey:database] mutableCopy] forKey:database];
+		[tableColumnWidths setObject:[NSMutableArray arrayWithArray:[tableColumnWidths objectForKey:database]] forKey:database];
+
 	}
 	// get table object
 	if  ( [[tableColumnWidths objectForKey:database] objectForKey:table] == nil ) {
 		[[tableColumnWidths objectForKey:database] setObject:[NSMutableDictionary dictionary] forKey:table];
 	} else {
-		[[tableColumnWidths objectForKey:database] setObject:[[[tableColumnWidths objectForKey:database] objectForKey:table] mutableCopy] forKey:table];
+		//[NSMutableArray arrayWithArray:array]; vs [array mutableCopy]; 
+		//[[tableColumnWidths objectForKey:database] setObject:[[[tableColumnWidths objectForKey:database] objectForKey:table] mutableCopy] forKey:table];
+		[[tableColumnWidths objectForKey:database] setObject:[NSMutableArray arrayWithArray:[[tableColumnWidths objectForKey:database] objectForKey:table]] forKey:table];
+
 	}
 	// save column size
 	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier]];
