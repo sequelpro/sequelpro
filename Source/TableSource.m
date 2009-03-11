@@ -565,14 +565,22 @@ fetches the result as an array with a dictionary for each row in it
  */
 - (BOOL)saveRowOnDeselect
 {
-	// If no rows are currently being edited, return success at once.
-	if (!isEditingRow) return YES;
+	// If no rows are currently being edited, or a save is already in progress, return success at once.
+	if (!isEditingRow || isSavingRow) return YES;
+	isSavingRow = YES;
+
+	// Save any edits which have been made but not saved to the table yet.
+	[tableWindow endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
-	if ([self addRowToDB]) return YES;
+	if ([self addRowToDB]) {
+		isSavingRow = NO;
+		return YES;
+	}
 
 	// Saving failed - reselect the old row and return failure.
 	[tableSourceView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	isSavingRow = NO;
 	return NO;
 }
 
