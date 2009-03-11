@@ -554,6 +554,7 @@
 		}
 		[detailParser release];
 	}
+	[fieldParser release];
 
 	// Also capture a general column type "group" to allow behavioural switches
 	detailString = [[NSString alloc] initWithString:[fieldDetails objectForKey:@"type"]];
@@ -583,6 +584,7 @@
 	} else {
 		[fieldDetails setObject:@"blobdata" forKey:@"typegrouping"];
 	}
+	[detailString release];
 
 	// Set up some column defaults for all columns
 	[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"null"];
