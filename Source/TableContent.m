@@ -1266,8 +1266,8 @@
 
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [theColumns count] ; i++ ) {
-					if ([[theColumns objectAtIndex:i] objectForKey:@"autoincrement"]) {
-						[[filteredResult objectAtIndex:currentlyEditingRow] setObject:[NSNumber numberWithLong:[mySQLConnection insertId]]
+					if ([[[theColumns objectAtIndex:i] objectForKey:@"autoincrement"] intValue]) {
+						[[filteredResult objectAtIndex:currentlyEditingRow] setObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]
 																	forKey:[columnNames objectAtIndex:i]];
 					}
 				}
