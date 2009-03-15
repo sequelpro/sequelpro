@@ -691,7 +691,7 @@ traps enter and esc and edit/cancel without entering next row
 - (float)tableView:(NSTableView *)tableView heightOfRow:(int)row
 {
 	if (row == 0) {
-		return 25;
+		return 18;
 	} else {
 		return 17;
 	}

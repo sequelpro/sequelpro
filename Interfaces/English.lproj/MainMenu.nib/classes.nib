@@ -1,0 +1,213 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {copy = id; }; 
+            CLASS = CMCopyTable; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSTableView; 
+        }, 
+        {
+            ACTIONS = {
+                addDatabase = id; 
+                analyzeTable = id; 
+                checkTable = id; 
+                checksumTable = id; 
+                chooseEncoding = id; 
+                clearConsole = id; 
+                copyCreateTableSyntax = id; 
+                copyTable = id; 
+                export = id; 
+                exportMultipleTables = id; 
+                exportTable = id; 
+                flushPrivileges = id; 
+                flushTable = id; 
+                import = id; 
+                importCSV = id; 
+                optimizeTable = id; 
+                removeDatabase = id; 
+                repairTable = id; 
+                setDatabases = id; 
+                showCreateTableSyntax = id; 
+                showVariables = id; 
+                toggleConsole = id; 
+                viewContent = id; 
+                viewQuery = id; 
+                viewStatus = id; 
+                viewStructure = id; 
+            }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = KeyChain; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                addFavorite = id; 
+                checkForUpdates = id; 
+                chooseLimitRows = id; 
+                closeFavoriteSheet = id; 
+                closePreferences = id; 
+                copyFavorite = id; 
+                donate = id; 
+                openPreferences = id; 
+                removeFavorite = id; 
+                toggleUseSSH = id; 
+                visitHelpWebsite = id; 
+                visitWebsite = id; 
+            }; 
+            CLASS = MainController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                databaseField = id; 
+                dontShowBlobSwitch = id; 
+                encodingPopUpButton = id; 
+                favoriteSheet = id; 
+                fetchRowCountSwitch = id; 
+                hostField = id; 
+                keyChainInstance = id; 
+                limitRowsField = id; 
+                limitRowsSwitch = id; 
+                nameField = id; 
+                nullValueField = id; 
+                passwordField = id; 
+                portField = id; 
+                preferencesWindow = id; 
+                reloadAfterAddingSwitch = id; 
+                reloadAfterEditingSwitch = id; 
+                reloadAfterRemovingSwitch = id; 
+                showErrorSwitch = id; 
+                socketField = id; 
+                sshCheckbox = id; 
+                sshHostField = id; 
+                sshPasswordField = id; 
+                sshPortField = id; 
+                sshUserField = id; 
+                tableView = id; 
+                useMonospacedFontsSwitch = id; 
+                userField = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = NSMenu; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSObject; LANGUAGE = ObjC; }, 
+        {
+            ACTIONS = {clearConsole = id; saveConsoleAs = id; }; 
+            CLASS = SPQueryConsole; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {consoleView = SPQueryConsoleView; }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = SPQueryConsoleView; LANGUAGE = ObjC; SUPERCLASS = NSView; }, 
+        {
+            ACTIONS = {checkForUpdates = id; }; 
+            CLASS = SUUpdater; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {delegate = id; }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {
+                addDatabase = id; 
+                analyzeTable = id; 
+                cancelConnectSheet = id; 
+                checkTable = id; 
+                checksumTable = id; 
+                chooseDatabase = id; 
+                chooseEncoding = id; 
+                chooseFavorite = id; 
+                closeDatabaseSheet = id; 
+                closeSheet = id; 
+                connect = id; 
+                connectSheetAddToFavorites = id; 
+                connectToDB = id; 
+                copyCreateTableSyntax = id; 
+                export = id; 
+                exportMultipleTables = id; 
+                exportTable = id; 
+                flushPrivileges = id; 
+                flushTable = id; 
+                import = id; 
+                optimizeTable = id; 
+                removeDatabase = id; 
+                removeFavorite = id; 
+                repairTable = id; 
+                setDatabases = id; 
+                showCreateTableSyntax = id; 
+                showVariables = id; 
+                viewContent = id; 
+                viewQuery = id; 
+                viewStatus = id; 
+                viewStructure = id; 
+            }; 
+            CLASS = TableDocument; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                addDatabaseButton = id; 
+                chooseDatabaseButton = id; 
+                connectFavoritesTableView = NSTableView; 
+                connectProgressBar = id; 
+                connectProgressStatusText = id; 
+                connectSheet = id; 
+                createTableSyntaxWindow = NSWindow; 
+                customQueryInstance = id; 
+                databaseEncodingButton = id; 
+                databaseField = id; 
+                databaseNameField = id; 
+                databaseSheet = id; 
+                dbTablesTableView = NSTableView; 
+                favoritesButton = id; 
+                favoritesController = NSArrayController; 
+                hostField = id; 
+                keyChainInstance = id; 
+                passwordField = id; 
+                portField = id; 
+                queryConsoleInstance = id; 
+                queryProgressBar = id; 
+                sidebarGrabber = id; 
+                socketField = id; 
+                syntaxView = id; 
+                syntaxViewContent = id; 
+                tableContentInstance = id; 
+                tableDataInstance = id; 
+                tableDumpInstance = id; 
+                tableSourceInstance = id; 
+                tableStatusInstance = id; 
+                tableTabView = NSTabView; 
+                tableWindow = id; 
+                tablesListInstance = id; 
+                userField = id; 
+                variablesSheet = id; 
+                variablesTableView = id; 
+            }; 
+            SUPERCLASS = NSDocument; 
+        }, 
+        {
+            ACTIONS = {
+                addTable = id; 
+                closeCopyTableSheet = id; 
+                copyTable = id; 
+                removeTable = id; 
+                updateTables = id; 
+            }; 
+            CLASS = TablesList; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                copyTableContentSwitch = id; 
+                copyTableNameField = id; 
+                copyTableSheet = id; 
+                customQueryInstance = id; 
+                tabView = id; 
+                tableContentInstance = id; 
+                tableDataInstance = id; 
+                tableDocumentInstance = id; 
+                tableDumpInstance = id; 
+                tableSourceInstance = id; 
+                tableStatusInstance = id; 
+                tableWindow = id; 
+                tablesListView = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

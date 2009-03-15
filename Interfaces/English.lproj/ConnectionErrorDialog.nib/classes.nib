@@ -1,0 +1,11 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {closeSheet = id; }; 
+            CLASS = NSObject; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {connectionErrorDialog = NSWindow; }; 
+        }
+    ); 
+    IBVersion = 1; 
+}
