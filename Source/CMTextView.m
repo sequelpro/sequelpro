@@ -24,6 +24,17 @@
 #import "CMTextView.h"
 #import "SPStringAdditions.h"
 
+/*
+all the extern variables and prototypes required for flex (syntax highlighting)
+*/
+#import "tokens.h"
+extern int yylex();
+extern int yyuoffset, yyuleng;
+typedef struct yy_buffer_state *YY_BUFFER_STATE;
+void yy_switch_to_buffer(YY_BUFFER_STATE);
+YY_BUFFER_STATE yy_scan_string (const char *);
+
+
 @implementation CMTextView
 
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
@@ -349,5 +360,76 @@
 	@"ZEROFILL",
 	nil];
 }
+
+/*******************
+SYNTAX HIGHLIGHTING!
+*******************/
+- (void)awakeFromNib
+/*
+sets self as delegate for the textView's textStorage to enable syntax highlighting
+*/
+{
+    [[self textStorage] setDelegate:self];
+}
+
+- (void)textStorageDidProcessEditing:(NSNotification *)notification
+/*
+performs syntax highlighting
+this method recolors the entire text on every keypress. for a single sql query,
+that should be no problem, but it could be a nuisance when editing large sql queries
+*/
+{
+    NSTextStorage *textStore = [notification object];
+    
+    //make sure that the notification is from the correct textStorage object
+    if (textStore==[self textStorage])
+    {
+    
+        NSColor *reservedColor = [NSColor blueColor];
+        NSColor *quoteColor    = [NSColor grayColor];
+        NSColor *commentColor  = [NSColor redColor ];
+        
+        NSString *string = [textStore string];
+        unsigned int length = [string length];
+        int token;
+        NSRange textRange, tokenRange;
+        
+        textRange = NSMakeRange(0, length);
+        
+        //first remove the old colors
+        [textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
+
+        //initialise flex
+        yyuoffset = 0; yyuleng = 0;
+        yy_switch_to_buffer(yy_scan_string([[textStore string] UTF8String]));
+
+        //now loop through all the tokens
+        while (token=yylex()){
+            tokenRange = NSMakeRange(yyuoffset, yyuleng);  //convert the result from flex to an NSRange
+            tokenRange = NSIntersectionRange(tokenRange, textRange); // make sure that tokenRange is valid (and therefore within textRange)
+                                                                     // otherwise a bug in the lex code could cause the the TextView to crash
+            
+            switch (token) {
+            case SPT_SINGLE_QUOTED_TEXT:
+            case SPT_DOUBLE_QUOTED_TEXT:
+                [textStore addAttribute: NSForegroundColorAttributeName
+                                  value: quoteColor
+                                  range: tokenRange ];
+                break;
+            case SPT_RESERVED_WORD:
+                [textStore addAttribute: NSForegroundColorAttributeName
+                                  value: reservedColor
+                                  range: tokenRange ];
+                break;
+            case SPT_COMMENT:
+                [textStore addAttribute: NSForegroundColorAttributeName
+                                  value: commentColor
+                                  range: tokenRange ];
+                break;
+        }}
+        
+    }
+}
+
 
 @end
