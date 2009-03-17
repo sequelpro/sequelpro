@@ -12,4 +12,6 @@
 #define SPT_BACKTICK_QUOTED_TEXT 3
 #define SPT_RESERVED_WORD        4
 #define SPT_COMMENT              5
-#define SPT_OTHER                6
+#define SPT_WHITESPACE           6
+#define SPT_WORD                 7
+#define SPT_OTHER                8

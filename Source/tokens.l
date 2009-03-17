@@ -1,31 +1,52 @@
 %{
+
+/*
+ * tokens.l - created by Jakob on 3/15/09 for Sequel Pro
+ *
+ * This is the lex file used for syntax coloring.
+ * To add new keywords, just add a line where the other
+ * keywords are and replace spaces with {s}
+ *
+ * If you're new to lex and interested what the code below does, I found
+ * "The Lex And Yacc Page" at http://dinosaur.compilertools.net/ to be
+ * very helpful. Keep in mind that Xcode actually uses flex, the GNU
+ * version of lex. There's a very thorough Texinfo manual for flex
+ * available. (type 'info flex' in the Terminal)
+ */
+ 
 #import "tokens.h"
 int utf8strlen(const char *s);
+int yyuoffset, yyuleng;
 
 #define YY_NO_UNPUT
 
-int yyuoffset, yyuleng;
-  
+//keep track of the current utf-8 character (not byte) offset and token length
 #define YY_USER_ACTION { yyuoffset += yyuleng; yyuleng = utf8strlen(yytext); }
 %}
 %option noyywrap
 %option case-insensitive
 s		[ \t\n]+
 word	[a-z_0-9]
-nonword	[^a-z_0-9#]
+nonword	[^a-z_0-9#\n\t]
 %x comment
 %%
-\"([^"\\]|\\(.|\n))*\"?				{ return SPT_DOUBLE_QUOTED_TEXT;   } /* double quoted strings */
-'([^'\\]|\\(.|\n))*'?				{ return SPT_SINGLE_QUOTED_TEXT;   } /* single quoted strings */
-`[^`]*`?						{ return SPT_BACKTICK_QUOTED_TEXT; } /* identifier quoting    */
-"/*"							{ BEGIN(comment); return SPT_COMMENT; }
-<comment>[^*]* 				    { return SPT_COMMENT; }
-<comment>"*"+                   { return SPT_COMMENT; }
-<comment>"*"+"/" 				{ BEGIN(INITIAL); return SPT_COMMENT; }
-							 
-#[^\n]*\n?				        |									 
---[ \t][^\n]*\n?						{ return SPT_COMMENT;  }		     /* -- Comments           */
-{s}								{ return SPT_OTHER;    } 								 /* ignore spaces         */
+\"([^"\\]|\\(.|\n))*\"?			{ return SPT_DOUBLE_QUOTED_TEXT;   }      /* double quoted strings          */
+'([^'\\]|\\(.|\n))*'?			{ return SPT_SINGLE_QUOTED_TEXT;   }      /* single quoted strings          */
+`[^`]*`?						{ return SPT_BACKTICK_QUOTED_TEXT; }      /* identifier quoting             */
+
+"/*"							{ BEGIN(comment); return SPT_COMMENT; }   /* beginning of a c style comment */
+<comment>[^*]* 				    { return SPT_COMMENT; }                   /* anything except * in a c cmnt  */
+<comment>"*"+                   { return SPT_COMMENT; }                   /* a range of *                   */
+<comment>"*"+"/" 				{ BEGIN(INITIAL); return SPT_COMMENT; }   /* a range of * with trailing /   
+                                                                             Thanks to John Dickinson for publishing 
+                                                                             this method of parsing C comments on
+                                                                             http://www.stillhq.com/pdfdb/000561/data.pdf
+                                                                                                            */
+                                                                                                            
+#[^\n]*\n?				        |									      /* # Comments                     */
+--[ \t][^\n]*\n?				{ return SPT_COMMENT;  }		          /* -- Comments                    */
+
+{s}								{ return SPT_WHITESPACE;    }		      /* ignore spaces                  */
 ADD                         	|
 ALL                         	|
 ALTER{s}TABLE               	|
@@ -296,12 +317,12 @@ WITH                        	|
 WRITE                       	|
 XOR                         	|
 YEAR_MONTH                  	|
-ZEROFILL            			{ return SPT_RESERVED_WORD;        } /* all the mysql reserved words  */
-{word}+							{ return SPT_OTHER;                } /* return any word  */
-{nonword}						{ return SPT_OTHER;                } /* return anything else  */
+ZEROFILL            			{ return SPT_RESERVED_WORD;        }   /* all the mysql reserved words  */
+{word}+							{ return SPT_WORD;                 }   /* return any word               */
+{nonword}						{ return SPT_OTHER;                }   /* return anything else          */
                     			
 <<EOF>>   						{
-                                    BEGIN(INITIAL);
+                                    BEGIN(INITIAL);   /* make sure we return to initial state when finished! */
             						yy_delete_buffer(YY_CURRENT_BUFFER);
             						return 0;
           						}
@@ -309,9 +330,12 @@ ZEROFILL            			{ return SPT_RESERVED_WORD;        } /* all the mysql res
 
 int utf8strlen(const char *s)
 /*
-This simple function calculates the length of an UTF8 string in characters (not bytes)
-It's not especially fast, but it's easy to comprehend
-*/
+ This simple function calculates the string length of an UTF-8 string
+ It's fast enough and easy to comprehend
+ 
+ Adapted from Kragen Javier Sitaker's my_strlen_utf8_c function as
+ found on http://canonical.org/~kragen/strlen-utf8.html
+ */
 {
     int j=0;
 	while (*s)
