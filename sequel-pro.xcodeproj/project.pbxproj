@@ -110,6 +110,7 @@
 		B58A324A0F6509D60003C243 /* button_info_pane_show.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32430F6509D60003C243 /* button_info_pane_show.tiff */; };
 		B5E2C5FA0F2353B5007446E0 /* TablePropertyIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
+		B5FE36ED0F71E3A90021BC10 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -281,6 +282,7 @@
 		B58A32430F6509D60003C243 /* button_info_pane_show.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_info_pane_show.tiff; sourceTree = "<group>"; };
 		B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TablePropertyIcon.png; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		B5FE36EC0F71E3A90021BC10 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ConnectionView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -596,6 +598,7 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
+				B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -734,6 +737,7 @@
 				B58A32480F6509D60003C243 /* button_duplicate.tif in Resources */,
 				B58A32490F6509D60003C243 /* button_info_pane_hide.tiff in Resources */,
 				B58A324A0F6509D60003C243 /* button_info_pane_show.tiff in Resources */,
+				B5FE36ED0F71E3A90021BC10 /* ConnectionView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -832,6 +836,14 @@
 			);
 			name = ConnectionErrorDialog.xib;
 			path = ..;
+			sourceTree = "<group>";
+		};
+		B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B5FE36EC0F71E3A90021BC10 /* English */,
+			);
+			name = ConnectionView.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
