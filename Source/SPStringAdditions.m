@@ -66,6 +66,51 @@
 	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
 }
 
+
+// -------------------------------------------------------------------------------
+// stringForTimeInterval:
+//
+// Returns a human readable version string of the supplied time interval.
+// -------------------------------------------------------------------------------
++ (NSString *)stringForTimeInterval:(float)timeInterval
+{
+	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
+	
+	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+
+	if (timeInterval < 1) {
+		timeInterval = (timeInterval * 1000);
+		[numberFormatter setFormat:@"#,##0 ms"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	}
+	
+	if (timeInterval < 100) {
+		[numberFormatter setFormat:@"#,##0.0 s"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	}
+
+	if (timeInterval < 300) {
+		[numberFormatter setFormat:@"#,##0 s"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	}
+
+	if (timeInterval < 3600) {
+		timeInterval = (timeInterval / 60);
+		[numberFormatter setFormat:@"#,##0 min"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	}
+
+	timeInterval = (timeInterval / 3600);
+	[numberFormatter setFormat:@"#,##0 hours"];
+
+	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+}
+
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	// -------------------------------------------------------------------------------
 	// componentsSeparatedByCharactersInSet:

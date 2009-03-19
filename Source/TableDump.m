@@ -428,6 +428,11 @@
 		for ( i = 0 ; i < [queries count] ; i++ ) {
 			[singleProgressBar setDoubleValue:((i+1)*100/[queries count])];
 			[singleProgressBar displayIfNeeded];
+			
+			// Skip blank or whitespace-only queries to avoid errors
+			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
+				continue;
+
 			[mySQLConnection queryString:[queries objectAtIndex:i]];
 			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {

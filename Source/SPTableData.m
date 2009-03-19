@@ -508,12 +508,18 @@
 	NSMutableDictionary *fieldDetails = [[NSMutableDictionary alloc] init];
 	NSMutableArray *detailParts;
 	NSString *detailString;
-	int i, partsArrayLength;
+	int i, definitionPartsIndex = 0, partsArrayLength;
 
 	if (![definitionParts count]) return [NSDictionary dictionary];
 
+	// Skip blank items within the definition parts
+	while (definitionPartsIndex < [definitionParts count]
+			&& ![[[definitionParts objectAtIndex:definitionPartsIndex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length])
+		definitionPartsIndex++;
+
 	// The first item is always the data type.
-	[fieldParser setString:[definitionParts objectAtIndex:0]];
+	[fieldParser setString:[definitionParts objectAtIndex:definitionPartsIndex]];
+	definitionPartsIndex++;
 
 	// If no field length definition is present, store only the type
 	if ([fieldParser firstOccurrenceOfCharacter:'(' ignoringQuotedStrings:YES] == NSNotFound) {
@@ -595,8 +601,8 @@
 
 	// Walk through the remaining column definition parts storing recognised details
 	partsArrayLength = [definitionParts count];
-	for (i = 1; i < partsArrayLength; i++) {
-		detailString = [[NSString alloc] initWithString:[[definitionParts objectAtIndex:i] uppercaseString]];
+	for ( ; definitionPartsIndex < partsArrayLength; definitionPartsIndex++) {
+		detailString = [[NSString alloc] initWithString:[[definitionParts objectAtIndex:definitionPartsIndex] uppercaseString]];
 
 		// Whether numeric fields are unsigned
 		if ([detailString isEqualToString:@"UNSIGNED"]) {
@@ -611,30 +617,30 @@
 			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"binary"];
 
 		// Whether text types have a different encoding to the table
-		} else if ([detailString isEqualToString:@"CHARSET"] && (i + 1 < partsArrayLength)) {
-			if (![[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
-				[fieldDetails setValue:[definitionParts objectAtIndex:i+1] forKey:@"encoding"];
+		} else if ([detailString isEqualToString:@"CHARSET"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			if (![[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+1] forKey:@"encoding"];
 			}
-			i++;
-		} else if ([detailString isEqualToString:@"CHARACTER"] && (i + 2 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"SET"]) {
-			if (![[[definitionParts objectAtIndex:i+2] uppercaseString] isEqualToString:@"DEFAULT"]) {;
-				[fieldDetails setValue:[definitionParts objectAtIndex:i+2] forKey:@"encoding"];
+			definitionPartsIndex++;
+		} else if ([detailString isEqualToString:@"CHARACTER"] && (definitionPartsIndex + 2 < partsArrayLength)
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"SET"]) {
+			if (![[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"DEFAULT"]) {;
+				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+2] forKey:@"encoding"];
 			}
-			i = i + 2;
+			definitionPartsIndex += 2;
 
 		// Whether text types have a different collation to the table
-		} else if ([detailString isEqualToString:@"COLLATE"] && (i + 1 < partsArrayLength)) {
-			if (![[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
-				[fieldDetails setValue:[definitionParts objectAtIndex:i+1] forKey:@"collation"];
+		} else if ([detailString isEqualToString:@"COLLATE"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			if (![[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+1] forKey:@"collation"];
 			}
-			i++;
+			definitionPartsIndex++;
 
 		// Whether fields are NOT NULL
-		} else if ([detailString isEqualToString:@"NOT"] && (i + 1 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"NULL"]) {
+		} else if ([detailString isEqualToString:@"NOT"] && (definitionPartsIndex + 1 < partsArrayLength)
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"NULL"]) {
 			[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"null"];
-			i++;
+			definitionPartsIndex++;
 
 		// Whether fields are NULL
 		} else if ([detailString isEqualToString:@"NULL"]) {
@@ -645,11 +651,11 @@
 			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"autoincrement"];
 
 		// Field defaults
-		} else if ([detailString isEqualToString:@"DEFAULT"] && (i + 1 < partsArrayLength)) {
-			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:i+1]];
+		} else if ([detailString isEqualToString:@"DEFAULT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
 			[fieldDetails setValue:[detailParser unquotedString] forKey:@"default"];
 			[detailParser release];
-			i++;
+			definitionPartsIndex++;
 		}
 
 		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COMMENT 'foo' | COLUMN_FORMAT bar | STORAGE q | REFERENCES...

@@ -49,6 +49,7 @@
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
+	float lastQueryExecutionTime;
 	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
@@ -66,6 +67,7 @@
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
+- (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
 - (void) setDelegate:(id)object;

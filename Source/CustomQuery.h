@@ -43,6 +43,8 @@
 	IBOutlet id queryFavoritesView;
 	IBOutlet id removeQueryFavoriteButton;
 	IBOutlet id copyQueryFavoriteButton;
+	IBOutlet id runSelectionButton;
+	IBOutlet id runAllButton;
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
@@ -52,7 +54,8 @@
 }
 
 // IBAction methods
-- (IBAction)performQuery:(id)sender;
+- (IBAction)runAllQueries:(id)sender;
+- (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
@@ -62,6 +65,10 @@
 - (IBAction)removeQueryFavorite:(id)sender;
 - (IBAction)copyQueryFavorite:(id)sender;
 - (IBAction)closeQueryFavoritesSheet:(id)sender;
+
+// Query actions
+- (void)performQueries:(NSArray *)queries;
+- (NSString *)queryAtPosition:(long)position;
 
 // Accessors
 - (NSArray *)currentResult;

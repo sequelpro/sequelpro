@@ -68,6 +68,7 @@ static void forcePingTimeout(int signalNumber);
 	connectionSocket = nil;
 	keepAliveTimer = nil;
 	lastKeepAliveSuccess = nil;
+	lastQueryExecutionTime = 0;
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
@@ -345,6 +346,7 @@ static void forcePingTimeout(int signalNumber);
 	CMMCPResult	*theResult;
 	const char	*theCQuery = [self cStringFromString:query];
 	int			theQueryCode;
+	NSDate		*queryStartDate;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
@@ -360,10 +362,16 @@ static void forcePingTimeout(int signalNumber);
 		[delegate willQueryString:query];
 	}
 	
-	if (0 == (theQueryCode = mysql_query(mConnection, theCQuery))) {
+	// Run the query, storing run time (note this will include some network and overhead)
+	queryStartDate = [NSDate date];
+	theQueryCode = mysql_query(mConnection, theCQuery);
+	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+	
+	// Retrieve the result or error appropriately.
+	if (0 == theQueryCode) {
 		if (mysql_field_count(mConnection) != 0) {
 
-			// Use CMMCPResult instad of MCPResult
+			// Use CMMCPResult instead of MCPResult
 			theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
 		} else {
 			return nil;
@@ -381,6 +389,16 @@ static void forcePingTimeout(int signalNumber);
 	[self startKeepAliveTimerResettingState:YES];
 
 	return [theResult autorelease];
+}
+
+
+/*
+ * Return the time taken to execute the last query.  This should be close to the time it took
+ * the server to run the query, but will include network lag and some client library overhead.
+ */
+- (float) lastQueryExecutionTime
+{
+	return lastQueryExecutionTime;
 }
 
 
