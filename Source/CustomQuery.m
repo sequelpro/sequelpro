@@ -346,18 +346,34 @@ sets the tableView columns corresponding to the mysql-result
 	
 	// Set up the status string
 	if ( totalQueriesRun > 1 ) {
-		[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i total row(s) affected, by %i queries taking %@", @"text showing how many rows have been affected by multiple queries"),
-											totalAffectedRows,
-											totalQueriesRun,
-											[NSString stringForTimeInterval:executionTime]
-										]];
+        if (totalAffectedRows==1) {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %i queries taking %@", @"text showing one row has been affected by multiple queries"),
+                                              totalQueriesRun,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+            
+        } else {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected in total, by %i queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+                                              totalAffectedRows,
+                                              totalQueriesRun,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+            
+        }
 	} else {
-		[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i row(s) affected, taking %@", @"text showing how many rows have been affected by a single query"),
-											totalAffectedRows,
-											[NSString stringForTimeInterval:executionTime]
-										]];
+        if (totalAffectedRows==1) {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+        } else {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+                                              totalAffectedRows,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+            
+        }
 	}
-
+    
 	if ( !theResult || ![theResult numOfRows] ) {
 //no rows in result
 	//free tableView
