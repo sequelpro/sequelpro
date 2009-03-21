@@ -70,7 +70,12 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:DEFAULT_CONSOLE_LOG_FILENAME modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil 
+							 file:DEFAULT_CONSOLE_LOG_FILENAME 
+				   modalForWindow:[self window] 
+					modalDelegate:self 
+				   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
+					  contextInfo:NULL];
 }
 
 // -------------------------------------------------------------------------------
