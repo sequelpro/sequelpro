@@ -2,7 +2,7 @@
 //  CMTextView.m
 //  sequel-pro
 //
-//  Created by Carsten Blüm.
+//  Created by Carsten Bl√ºm.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,18 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMTextView.h"
+#import "SPStringAdditions.h"
+
+/*
+all the extern variables and prototypes required for flex (used for syntax highlighting)
+*/
+#import "tokens.h"
+extern int yylex();
+extern int yyuoffset, yyuleng;
+typedef struct yy_buffer_state *YY_BUFFER_STATE;
+void yy_switch_to_buffer(YY_BUFFER_STATE);
+YY_BUFFER_STATE yy_scan_string (const char *);
+
 
 @implementation CMTextView
 
@@ -33,11 +45,22 @@
 	NSString *partialString = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
 	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
+	
 	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
 	//NSRange partialRange = NSMakeRange(0, partialLength);
+	
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-	NSArray *possibleCompletions = [[tableNames arrayByAddingObjectsFromArray:[self keywords]]
-									arrayByAddingObjectsFromArray:textViewWords];
+	
+	NSMutableArray *possibleCompletions = [NSMutableArray arrayWithArray:textViewWords];
+	[possibleCompletions addObjectsFromArray:[self keywords]];
+	[possibleCompletions addObjectsFromArray:tableNames];
+	
+	// Add column names to completions list for currently selected table
+	if ([[[self window] delegate] table] != nil) {
+		id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
+		[possibleCompletions addObjectsFromArray:columnNames];
+	}
+
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
 	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
 	unsigned i, insindex;
@@ -61,7 +84,10 @@
 }
 
 
-
+/*
+List of keywords for autocompletion. If you add a keyword here,
+it should also be added to the flex file tokens.l
+*/
 -(NSArray *)keywords {
 	return [NSArray arrayWithObjects:
 	@"ADD",
@@ -337,5 +363,91 @@
 	@"ZEROFILL",
 	nil];
 }
+
+/*******************
+SYNTAX HIGHLIGHTING!
+*******************/
+- (void)awakeFromNib
+/*
+sets self as delegate for the textView's textStorage to enable syntax highlighting
+*/
+{
+    [[self textStorage] setDelegate:self];
+}
+
+- (void)textStorageDidProcessEditing:(NSNotification *)notification
+/*
+ performs syntax highlighting
+ This method recolors the entire text on every keypress. For performance reasons, this function does
+ nothing if the text is more than a few KB.
+ 
+ The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
+ 
+ Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
+ */
+{
+    NSTextStorage *textStore = [notification object];
+    
+    //make sure that the notification is from the correct textStorage object
+    if (textStore!=[self textStorage]) return;
+    
+    
+    NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
+    NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
+    NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
+    
+    NSColor *tokenColor;
+    
+    int token;
+    NSRange textRange, tokenRange;
+    
+    textRange = NSMakeRange(0, [textStore length]);
+    
+    //don't color texts longer than about 20KB. would be too slow
+    if (textRange.length > 20000) return; 
+    
+    //first remove the old colors
+    [textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
+    
+    
+    //initialise flex
+    yyuoffset = 0; yyuleng = 0;
+    yy_switch_to_buffer(yy_scan_string([[textStore string] UTF8String]));
+    
+    //now loop through all the tokens
+    while (token=yylex()){
+        switch (token) {
+            case SPT_SINGLE_QUOTED_TEXT:
+            case SPT_DOUBLE_QUOTED_TEXT:
+                tokenColor = quoteColor;
+                break;
+            case SPT_RESERVED_WORD:
+                tokenColor = keywordColor;
+                break;
+            case SPT_COMMENT:
+                tokenColor = commentColor;
+                break;
+            default:
+                tokenColor = nil;
+        }
+        
+        if (!tokenColor) continue;
+        
+        tokenRange = NSMakeRange(yyuoffset, yyuleng);
+        
+        // make sure that tokenRange is valid (and therefore within textRange)
+        // otherwise a bug in the lex code could cause the the TextView to crash
+        tokenRange = NSIntersectionRange(tokenRange, textRange); 
+        if (!tokenRange.length) continue;
+        
+        [textStore addAttribute: NSForegroundColorAttributeName
+                          value: tokenColor
+                          range: tokenRange ];
+        
+    }
+    
+}
+
+
 
 @end

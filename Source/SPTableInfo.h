@@ -27,6 +27,7 @@
 	IBOutlet id infoTable;
 	IBOutlet id tableList;
 	IBOutlet id tableListInstance;
+	IBOutlet id tableDataInstance;
 	IBOutlet id tableDocumentInstance;
 	
 	NSMutableArray *info;

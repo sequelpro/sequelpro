@@ -28,10 +28,7 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 
-
 @interface CustomQuery : NSObject {
-
-	IBOutlet id tableDumpInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
@@ -44,62 +41,41 @@
 	IBOutlet id valueTextField;
 	IBOutlet id queryFavoritesSheet;
 	IBOutlet id queryFavoritesView;
+	IBOutlet id removeQueryFavoriteButton;
+	IBOutlet id copyQueryFavoriteButton;
+	IBOutlet id runSelectionButton;
+	IBOutlet id runAllButton;
 
-	CMMCPConnection *mySQLConnection;
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
+	
+	CMMCPConnection *mySQLConnection;
 }
 
-//IBAction methods
-- (IBAction)performQuery:(id)sender;
+// IBAction methods
+- (IBAction)runAllQueries:(id)sender;
+- (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 
-//queryFavoritesSheet methods
+// queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;
 - (IBAction)removeQueryFavorite:(id)sender;
 - (IBAction)copyQueryFavorite:(id)sender;
 - (IBAction)closeQueryFavoritesSheet:(id)sender;
 
-//getter methods
+// Query actions
+- (void)performQueries:(NSArray *)queries;
+- (NSString *)queryAtPosition:(long)position;
+
+// Accessors
 - (NSArray *)currentResult;
 
-//additional methods
+// Other
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-
-//tableView drag&drop datasource methods
-- (BOOL)tableView:(NSTableView *)aTableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
-- (NSDragOperation)tableView:(NSTableView*)aTableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-	proposedDropOperation:(NSTableViewDropOperation)operation;
-- (BOOL)tableView:(NSTableView*)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
-
-//tableView delegate methods
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
-
-//splitView delegate methods
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
-
-//textView delegate methods
-- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

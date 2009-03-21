@@ -34,6 +34,7 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
+	IBOutlet id tableDataInstance;
 	IBOutlet id customQueryInstance;
 
     IBOutlet id tableWindow;
@@ -56,12 +57,6 @@
     IBOutlet id exportMultipleFieldsEnclosedField;
     IBOutlet id exportMultipleFieldsEscapedField;
     IBOutlet id exportMultipleLinesTerminatedField;
-	
-	// New Export Window
-	IBOutlet id exportWindow;
-	IBOutlet id exportTabBar;
-	IBOutlet id exportToolbar;
-	IBOutlet id	exportTableList;
 	
 	IBOutlet id importCSVView;
 	IBOutlet NSPopUpButton *importFormatPopup;
@@ -109,9 +104,8 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
-
 //export methods
-- (void)export;
+//- (IBAction)saveDump:(id)sender;
 - (void)exportFile:(int)tag;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
@@ -126,7 +120,6 @@
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
 - (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
 	escaped:(NSString *)escaped terminated:(NSString *)terminated;
-- (NSArray *)splitQueries:(NSString *)query;
 
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
@@ -134,7 +127,7 @@
 	toFileHandle:(NSFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
-	lineEnds:(NSString *)lineEnds silently:(BOOL)silently;
+	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus silently:(BOOL)silently;
 - (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
 	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
@@ -142,12 +135,11 @@
 - (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 - (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 
-// New Export methods
-- (IBAction)switchTab:(id)sender;
-- (IBAction)switchInput:(id)sender;
-
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
+
+// Import/export delegate notifications
+- (void)panelSelectionDidChange:(id)sender;
 
 //last but not least
 - (id)init;

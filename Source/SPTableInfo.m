@@ -25,9 +25,17 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "TableDocument.h"
+#import "TablesList.h"
+#import "SPTableData.h"
 #import "SPStringAdditions.h"
 
 #import <MCPKit_bundled/MCPKit_bundled.h>
+
+@interface SPTableInfo (PrivateAPI)
+
+- (NSString *)_getUserDefinedDateStringFromMySQLDate:(NSString *)mysqlDate;
+
+@end
 
 @implementation SPTableInfo
 
@@ -47,7 +55,7 @@
 												 name:NSTableViewSelectionDidChangeNotification 
 											   object:tableList];
 	
-	[info addObject:NSLocalizedString(@"TABLE INFORMATION",@"header for table info pane")];
+	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 	[infoTable reloadData];
 }
 
@@ -56,18 +64,78 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[info release];
-		
+	
 	[super dealloc];
 }
+
+- (void)tableChanged:(NSNotification *)notification
+{
+	NSDictionary *tableStatus;
+
+	[info removeAllObjects];
+
+	// For views, no information can be displayed.
+	if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		[info addObject:@"VIEW INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+
+	[info addObject:@"TABLE INFORMATION"];
+		
+	if ([tableListInstance tableName]) {
+		if ([[tableListInstance tableName] isEqualToString:@""]) {
+			[info addObject:@"multiple tables"];
+
+		} 
+		else {
+
+			// Retrieve the table status information via the data cache
+			tableStatus = [tableDataInstance statusValues];
+
+			// Check for errors
+			if (![tableStatus count]) {
+				[info addObject:@"error occurred"];
+				return;
+			}
+
+			// Check for "Create_time" == NULL
+			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
+
+				// Add the creation date to the infoTable
+				[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
+			}
+
+			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
+			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
+				
+				// Add the update date to the infoTable
+				[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
+			}
+						
+			[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
+			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
+			
+			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [tableStatus objectForKey:@"Auto_increment"]]];
+			}
+		}
+	}
+	
+	[infoTable reloadData];
+}
+
+#pragma mark -
+#pragma mark TableView datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [info count];
 }
 
-- (id)tableView:(NSTableView *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	return [info objectAtIndex:rowIndex];
 }
@@ -78,17 +146,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return NO;//(rowIndex == 1 || rowIndex == 6 );
 }
 
-
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
 {
 	// This makes the top row (TABLE INFORMATION) have the diff styling
 	return (row == 0);	
 }
 
-- (void)tableView:(NSTableView *)aTableView 
-  willDisplayCell:(id)aCell 
-   forTableColumn:(NSTableColumn *)aTableColumn 
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
 		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
@@ -99,78 +163,24 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 }
 
-- (void)tableChanged:(NSNotification *)notification
+@end
+
+@implementation SPTableInfo (PrivateAPI)
+
+- (NSString *)_getUserDefinedDateStringFromMySQLDate:(NSString *)mysqlDate
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
+	// Setup our data formatter
+	NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
 	
-	[info removeAllObjects];
-	[info addObject:@"TABLE INFORMATION"];
-		
-	if ([tableListInstance table])
-	{
-		if ([(NSString *)[tableListInstance table] isEqualToString:@""]) {
-			[info addObject:@"multiple tables"];
-			
-		} else {
-			// Notify that we are about to perform a query
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-
-			// Create the query and get results
-			query = [NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", [tableListInstance table]];
-			
-			// This line triggers a bug when opening a new window. but only after having closed a window
-			theResult = [[tableDocumentInstance sharedConnection] queryString:query];
-
-			// Check for errors
-			if (![[[tableDocumentInstance sharedConnection] getLastErrorMessage] isEqualToString:@""]) {
-				[info addObject:@"error occurred"];
-				return;
-			}
-			
-			// Process result
-			theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-			
-			// Check for "Create_time" == NULL
-			if (![[theRow objectForKey:@"Create_time"] isNSNull]) {
-				// Setup our data formatter
-				NSDateFormatter *createDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-				[createDateFormatter setDateStyle:NSDateFormatterShortStyle];
-				[createDateFormatter setTimeStyle:NSDateFormatterNoStyle];
-				
-				// Convert our string date from the result to an NSDate.
-				NSDate *create_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Create_time"]];
-				
-				// Add the creation date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"created: %@", [createDateFormatter stringFromDate:create_date]]];
-			}
-
-			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
-			if (![[theRow objectForKey:@"Update_time"] isNSNull]) {
-				// Setup our data formatter
-				NSDateFormatter *updateDateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-				[updateDateFormatter setDateStyle:NSDateFormatterShortStyle];
-				[updateDateFormatter setTimeStyle:NSDateFormatterNoStyle];
-				
-				// Convert our string date from the result to an NSDate.
-				NSDate *update_date = [NSDate dateWithNaturalLanguageString:[theRow objectForKey:@"Update_time"]];
-				
-				// Add the update date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"updated: %@", [updateDateFormatter stringFromDate:update_date]]];
-			}
-						
-			[info addObject:[NSString stringWithFormat:@"rows: %@", [theRow objectForKey:@"Rows"]]];
-			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[theRow objectForKey:@"Data_length"] intValue]]]];
-			[info addObject:[NSString stringWithFormat:@"encoding: %@", [[[theRow objectForKey:@"Collation"] componentsSeparatedByString:@"_"] objectAtIndex:0]]];
-			[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [theRow objectForKey:@"Auto_increment"]]];
-			
-			// Notify that we've finished performing the query
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-		}
-	}
+	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
 	
-	[infoTable reloadData];
+	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+	
+	// Convert our string date from the result to an NSDate.
+	NSDate *updateDate = [NSDate dateWithNaturalLanguageString:mysqlDate];
+	
+	return [dateFormatter stringFromDate:updateDate];
 }
 
 @end

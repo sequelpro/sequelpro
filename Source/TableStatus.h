@@ -29,6 +29,8 @@
 
 @interface TableStatus : NSObject
 {
+	IBOutlet id tableDataInstance;
+
 	IBOutlet id commentsBox;
 	IBOutlet id rowsNumber;
 	IBOutlet id rowsFormat;

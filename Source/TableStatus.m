@@ -1,4 +1,6 @@
 #import "TableStatus.h"
+#import "SPTableData.h"
+#import "SPStringAdditions.h"
 
 @implementation TableStatus
 
@@ -13,15 +15,47 @@
 	[mySQLConnection retain];
 }
 
-- (NSString*)getSQLColumnValue:(NSString *)withName usingFields:(NSDictionary*)fields withLabel:(NSString*)label
+- (NSString*)formatValueWithKey:(NSString *)aKey inDictionary:(NSDictionary*)statusDict withLabel:(NSString*)label
 {
-	NSString* value = [fields objectForKey:withName];
-	if([value isKindOfClass:[NSNull class]])
-	{
-	value = @"--";
+	NSString *value = [statusDict objectForKey:aKey];
+	
+	if ([value isKindOfClass:[NSNull class]]) {
+		value = @"--";
+	} 
+	else {
+		// Format size strings
+		if ([aKey isEqualToString:@"Data_length"]     || 
+			[aKey isEqualToString:@"Max_data_length"] || 
+			[aKey isEqualToString:@"Index_length"]    || 
+			[aKey isEqualToString:@"Data_free"]) {
+			
+			value = [NSString stringForByteSize:[value intValue]];
+		}
+		// Format date strings to the user's long date format
+		else if ([aKey isEqualToString:@"Create_time"] ||
+				 [aKey isEqualToString:@"Update_time"]) {
+								
+			// Create date formatter
+			NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+			
+			// Set the date format returned by MySQL
+			[dateFormatter setDateFormat:@"%Y-%m-%d %H:%M:%S"];
+			
+			// Get the date instance
+			NSDate *date = [dateFormatter dateFromString:value];
+			
+			// This behaviour should be set after the above date string is parsed to a date object so we can
+			// use the below style methods.
+			[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+						
+			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
+			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+						
+			value = [dateFormatter stringFromDate:date];
+		}
 	}
 	
-	NSString* labelVal = [NSString stringWithFormat:@"%@: %@",label,value];
+	NSString* labelVal = [NSString stringWithFormat:@"%@: %@", label, value];
 	
 	return labelVal;
 }
@@ -31,76 +65,61 @@
 	// Store the table name away for future use...
 	selectedTable = aTable;
 	
-	// Notify any listeners that a query is about to begin...
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-	
-	// no table selected
+	// No table selected
 	if([aTable isEqualToString:@""] || !aTable) {
 		[tableName setStringValue:@"Name: --"];
 		[tableType setStringValue:@"Type: --"];
 		[tableCreatedAt setStringValue:@"Created At: --"];
 		[tableUpdatedAt setStringValue:@"Updated At: --"];
-		
+
 		// Assign the row values...
 		[rowsNumber setStringValue:@"Number Of: --"];
 		[rowsFormat setStringValue:@"Format: --"];	
 		[rowsAvgLength setStringValue:@"Avg. Length: --"];
 		[rowsAutoIncrement setStringValue:@"Auto Increment: --"];
-		
+
 		// Assign the size values...
 		[sizeData setStringValue:@"Data: --"]; 
 		[sizeMaxData setStringValue:@"Max Data: --"];	
 		[sizeIndex setStringValue:@"Index: --"]; 
 		[sizeFree setStringValue:@"Free: --"];
-		
+
 		// Finally, set the value of the comments box
 		[commentsBox setStringValue:@"--"];
-		
-		// Tell everyone we've finished with our query...
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
 		return;
 	}
-	
-	// Run the query to retrieve the status of the selected table.  We'll then use this information to populate
-	// the associated view's controls.	
-	tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", selectedTable]];
-	
-	statusFields = [tableStatusResult fetchRowAsDictionary];
-	
+
+	// Retrieve the table status information via the table data cache
+	statusFields = [tableDataInstance statusValues];
+
 	// Assign the table values...
 	[tableName setStringValue:[NSString stringWithFormat:@"Name: %@",selectedTable]];
-	if ( [statusFields objectForKey:@"Type"] ) {
-		[tableType setStringValue:[self getSQLColumnValue:@"Type" usingFields:statusFields withLabel:@"Type"]];
-	} else {
-		// mysql > 4.1
-		[tableType setStringValue:[self getSQLColumnValue:@"Engine" usingFields:statusFields withLabel:@"Type"]];
-	}
-	[tableCreatedAt setStringValue:[self getSQLColumnValue:@"Create_time" usingFields:statusFields withLabel:@"Created At"]];
-	[tableUpdatedAt setStringValue:[self getSQLColumnValue:@"Update_time" usingFields:statusFields withLabel:@"Updated At"]];
-	
+	[tableType setStringValue:[self formatValueWithKey:@"Engine" inDictionary:statusFields withLabel:@"Type"]];
+	[tableCreatedAt setStringValue:[self formatValueWithKey:@"Create_time" inDictionary:statusFields withLabel:@"Created At"]];
+	[tableUpdatedAt setStringValue:[self formatValueWithKey:@"Update_time" inDictionary:statusFields withLabel:@"Updated At"]];
+
 	// Assign the row values...
-	[rowsNumber setStringValue:[self getSQLColumnValue:@"Rows" usingFields:statusFields withLabel:@"Number Of"]];
-	[rowsFormat setStringValue:[self getSQLColumnValue:@"Row_format" usingFields:statusFields withLabel:@"Format"]];	
-	[rowsAvgLength setStringValue:[self getSQLColumnValue:@"Avg_row_length" usingFields:statusFields withLabel:@"Avg. Length"]];
-	[rowsAutoIncrement setStringValue:[self getSQLColumnValue:@"Auto_increment" usingFields:statusFields withLabel:@"Auto Increment"]];
+	[rowsNumber setStringValue:[self formatValueWithKey:@"Rows" inDictionary:statusFields withLabel:@"Approx. Number"]];
+	[rowsFormat setStringValue:[self formatValueWithKey:@"Row_format" inDictionary:statusFields withLabel:@"Format"]];	
+	[rowsAvgLength setStringValue:[self formatValueWithKey:@"Avg_row_length" inDictionary:statusFields withLabel:@"Avg. Length"]];
+	[rowsAutoIncrement setStringValue:[self formatValueWithKey:@"Auto_increment" inDictionary:statusFields withLabel:@"Auto Increment"]];
 
 	// Assign the size values...
-	[sizeData setStringValue:[self getSQLColumnValue:@"Data_length" usingFields:statusFields withLabel:@"Data"]]; 
-	[sizeMaxData setStringValue:[self getSQLColumnValue:@"Max_data_length" usingFields:statusFields withLabel:@"Max Data"]];	
-	[sizeIndex setStringValue:[self getSQLColumnValue:@"Index_length" usingFields:statusFields withLabel:@"Index"]]; 
-	[sizeFree setStringValue:[self getSQLColumnValue:@"Data_free" usingFields:statusFields withLabel:@"Free"]];	 
-	
+	[sizeData setStringValue:[self formatValueWithKey:@"Data_length" inDictionary:statusFields withLabel:@"Data"]]; 
+	[sizeMaxData setStringValue:[self formatValueWithKey:@"Max_data_length" inDictionary:statusFields withLabel:@"Max Data"]];	
+	[sizeIndex setStringValue:[self formatValueWithKey:@"Index_length" inDictionary:statusFields withLabel:@"Index"]]; 
+	[sizeFree setStringValue:[self formatValueWithKey:@"Data_free" inDictionary:statusFields withLabel:@"Free"]];	 
+
 	// Finally, assign the comments...
 	[commentsBox setStringValue:[statusFields objectForKey:@"Comment"]];
-	
-	// Tell everyone we've finished with our query...
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];	
-	
+
 	return;
 }
 
 - (IBAction)reloadTable:(id)sender
 {
+	[tableDataInstance resetStatusData];
 	[self loadTable:selectedTable];
 }
 

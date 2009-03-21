@@ -25,6 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
+#define FIELD_TYPE_BIT 16
 
 @interface CMMCPResult : MCPResult {
 

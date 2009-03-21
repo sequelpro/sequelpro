@@ -1,8 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPQueryConsole.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on Jan 30, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,13 +22,17 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface NSString (SPStringAdditions)
+@interface SPQueryConsole : NSWindowController 
+{
+	IBOutlet NSTextView *consoleTextView;
+}
 
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
+- (IBAction)clearConsole:(id)sender;
+- (IBAction)saveConsoleAs:(id)sender;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
+- (void)showMessageInConsole:(NSString *)message;
+- (void)showErrorInConsole:(NSString *)error;
+
+- (NSTextView *)consoleTextView;
 
 @end
