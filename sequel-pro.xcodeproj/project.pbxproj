@@ -484,6 +484,7 @@
 				17E642060EF020CB001BC333 /* DBView.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
+				B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -505,7 +506,6 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
-				B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -720,6 +720,7 @@
 				B5FE36EC0F71E3A90021BC10 /* English */,
 			);
 			name = ConnectionView.xib;
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
