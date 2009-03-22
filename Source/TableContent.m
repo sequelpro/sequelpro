@@ -283,7 +283,7 @@
 					[NSString stringWithFormat:@" LIMIT %d,%d",
 						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
 	}
-	
+
 	queryResult = [mySQLConnection queryString:query];
 	if ( queryResult == nil ) {
 		NSLog(@"Loading table data for %@ failed, query string was: %@", aTable, query);
@@ -657,7 +657,7 @@
 {
 	NSMutableDictionary *tempRow;
 	CMMCPResult *queryResult;
-	NSDictionary *row;
+	NSDictionary *row, *dbDataRow;
 	int i;
 	
 	// Check whether a save of the current row is required.
@@ -673,6 +673,15 @@
 	//copy row
 	tempRow = [NSMutableDictionary dictionaryWithDictionary:[filteredResult objectAtIndex:[tableContentView selectedRow]]];
 	[filteredResult insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
+	
+	//if we don't show blobs, read data for this duplicate column from db
+	if ( [prefs boolForKey:@"dontShowBlob"] && [[self argumentForRow:[tableContentView selectedRow]] length]>0) {
+		//if we have indexes, use argumentForRow
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", selectedTable, [self argumentForRow:[tableContentView selectedRow]]]];
+		dbDataRow = [queryResult fetchRowAsDictionary];
+	}
+	
+	
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
@@ -680,6 +689,8 @@
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 			[tempRow setObject:[prefs stringForKey:@"nullValue"] forKey:[row objectForKey:@"Field"]];
+		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"dontShowBlob"] && dbDataRow) {
+			[tempRow setObject:[dbDataRow objectForKey:[row objectForKey:@"Field"]] forKey:[row objectForKey:@"Field"]];
 		}
 	}
 	//select row and go in edit mode
@@ -1100,23 +1111,15 @@
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
 	NSArray *columns;
-	NSString *columnTypeGrouping;
-	NSMutableArray *columnsBlobStatus, *tempResult = [NSMutableArray array];
+	NSMutableArray *tempResult = [NSMutableArray array];
+
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	NSEnumerator *enumerator;
 	id key;
 	int i, j;
-	BOOL columnIsBlobOrText;
-
+	
 	columns = [tableDataInstance columns];
-	columnsBlobStatus = [[NSMutableArray alloc] init];
-	for ( i = 0 ; i < [columns count]; i++ ) {
-		columnTypeGrouping = [[columns objectAtIndex:i] objectForKey:@"typegrouping"];
-		columnIsBlobOrText = ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]);
-		[columnsBlobStatus addObject:[NSNumber numberWithBool:columnIsBlobOrText]];
-	}
-
 	if ([theResult numOfRows]) [theResult dataSeek:0];
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		tempRow = [theResult fetchRowAsDictionary];
@@ -1133,7 +1136,7 @@
 		// Add values for hidden blob and text fields if appropriate
 		if ( [prefs boolForKey:@"dontShowBlob"] ) {
 			for ( j = 0 ; j < [columns count] ; j++ ) {
-				if ( [[columnsBlobStatus objectAtIndex:j] boolValue] ) {
+				if ( [tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:j] objectForKey:@"name"] ] ) {
 					[modifiedRow setObject:NSLocalizedString(@"- blob or text -", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
 				}
 			}
@@ -1141,8 +1144,6 @@
 
 		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
 	}
-
-	[columnsBlobStatus release];
 
 	return tempResult;
 }
@@ -1381,8 +1382,8 @@
 	// If there is no primary key, all the fields are used in the argument.
 	if ( ![keys count] ) {
 		[keys setArray:columnNames];
-		setLimit = YES;
-
+		setLimit = YES;		
+		
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
 		if ( [prefs boolForKey:@"dontShowBlob"] && [self tableContainsBlobOrTextColumns] ) {
@@ -1461,11 +1462,9 @@
 {
 	int i;
 	NSArray *tableColumns = [tableDataInstance columns];
-	NSString *columnTypeGrouping;
 
 	for ( i = 0 ; i < [tableColumns count]; i++ ) {
-		columnTypeGrouping = [[tableColumns objectAtIndex:i] objectForKey:@"typegrouping"];
-		if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
+		if ( [tableDataInstance columnIsBlobOrText:[[tableColumns objectAtIndex:i] objectForKey:@"name"]] ) {
 			return YES;
 		}
 	}
@@ -1483,12 +1482,10 @@
 	NSMutableArray *fields = [NSMutableArray array];
 	NSArray *columns = [tableDataInstance columns];
 	NSArray *columnNames = [tableDataInstance columnNames];
-	NSString *columnTypeGrouping;
 	
 	if ( [prefs boolForKey:@"dontShowBlob"] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
-			columnTypeGrouping = [[columns objectAtIndex:i] objectForKey:@"typegrouping"];
-			if (![columnTypeGrouping isEqualToString:@"textdata"] && ![columnTypeGrouping isEqualToString:@"blobdata"]) {
+			if (![tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:i] objectForKey:@"name"]] ) {
 				[fields addObject:[columnNames objectAtIndex:i]];
 			}
 		}
@@ -1514,7 +1511,7 @@
 	NSNumber *index;
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempResult = [NSMutableArray array];
-	NSString *queryString;
+	NSString *queryString, *wherePart;
 	CMMCPResult *queryResult;
 	int i, errors;
 	
@@ -1558,18 +1555,24 @@
 			errors = 0;
 			
 			while ( (index = [enumerator nextObject]) ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM `%@` WHERE %@",
-											  selectedTable, [self argumentForRow:[index intValue]]]];
-				if ( ![mySQLConnection affectedRows] ) {
-					//no rows deleted
-					errors++;
-				} else if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-					//rows deleted with success
-					[tempArray addObject:index];
+				wherePart = [NSString stringWithString:[self argumentForRow:[index intValue]]];
+				//argumentForRow might return empty query, in which case we shouldn't execute the partial query
+				if([wherePart length] > 0) {
+					[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM `%@` WHERE %@", selectedTable, wherePart]];
+					if ( ![mySQLConnection affectedRows] ) {
+						//no rows deleted
+						errors++;
+					} else if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+						//rows deleted with success
+						[tempArray addObject:index];
+					} else {
+						//error in mysql-query
+						errors++;
+					}
 				} else {
-					//error in mysql-query
 					errors++;
 				}
+
 			}
 			
 			if ( errors ) {
@@ -1603,6 +1606,7 @@
 									   [NSString stringWithFormat:@" LIMIT %d,%d",
 										[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
 					}
+					
 					queryResult = [mySQLConnection queryString:queryString];
 					//						[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
 					[fullResult setArray:[self fetchResultAsArray:queryResult]];
@@ -1849,21 +1853,23 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	int code;
-	NSString *columnTypeGrouping, *query, *stringValue = nil;
+	NSString *query, *stringValue = nil, *wherePart = nil;
+
 	NSEnumerator *enumerator;
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	id key, theValue;
 	CMMCPResult *tempResult;
-	BOOL columnIsBlobOrText = NO;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
 	if ( [prefs boolForKey:@"dontShowBlob"] && !isEditingRow ) {
 
 		// If the table does contain blob or text fields, load the values ready for editing.
 		if ( [self tableContainsBlobOrTextColumns] ) {
-			query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@",
-					 selectedTable, [self argumentForRow:[tableContentView selectedRow]]];
+			wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
+			if([wherePart length]== 0)
+				return NO;
+			query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", selectedTable, wherePart];
 			tempResult = [mySQLConnection queryString:query];
 			if ( ![tempResult numOfRows] ) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -1884,14 +1890,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 	}
 	
-	// If the selected column is a blob/text type, force sheet editing.
-	columnTypeGrouping = [[tableDataInstance columnWithName:[aTableColumn identifier]] objectForKey:@"typegrouping"];
-	if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
-		columnIsBlobOrText = YES;
-	}
-
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-	if ( [multipleLineEditingButton state] == NSOnState || columnIsBlobOrText ) {
+	if ( [multipleLineEditingButton state] == NSOnState || [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]] ) {
 		theValue = [[filteredResult objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 		NSImage *image = nil;
 		editData = [theValue retain];
@@ -2075,9 +2075,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 //last but not least
 
 - (void)dealloc
-{
-	//	NSLog(@"TableContent dealloc");
-	
+{	
 	[editData release];
 	[fullResult release];
 	[filteredResult release];

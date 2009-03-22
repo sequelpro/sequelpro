@@ -42,6 +42,7 @@
 - (NSDictionary *) columnWithName:(NSString *)colName;
 - (NSArray *) columnNames;
 - (NSDictionary *) columnAtIndex:(int)index;
+- (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
 - (NSDictionary *) statusValues;
 - (void) resetAllData;

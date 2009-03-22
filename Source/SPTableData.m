@@ -130,6 +130,24 @@
 	return [columns objectAtIndex:index];
 }
 
+/* 
+ * Checks if this column is type text or blob.
+ * Used to determine if we have to show a popup when we edit a value from this column.
+ */
+
+- (BOOL) columnIsBlobOrText:(NSString *)colName
+{
+	if ([columns count] == 0) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} else {
+			[self updateInformationForCurrentTable];
+		}
+	}
+	
+	return (BOOL) ([[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"textdata" ] || [[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
+}
+
 
 /*
  * Retrieve the table status value for a supplied key, using or refreshing the cache as appropriate.
