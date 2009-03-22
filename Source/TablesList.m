@@ -266,7 +266,7 @@ closes copyTableSheet and stops modal session
 /*
 removes selected table(s) from mysql-db and tableView
 */
-- (void)removeTable;
+- (void)removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 	NSString *errorText;
@@ -731,6 +731,19 @@ loads structure or source if tab selected the first time
 	}
 */
 }
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// popup button below table list
+	if ([menuItem action] == @selector(copyTable:) ||
+		[menuItem action] == @selector(removeTable:))
+	{
+		return [tablesListView numberOfSelectedRows] > 0;
+	}
+	
+	return [super validateMenuItem:menuItem];
+}
+		
 
 #pragma mark -
 //last but not least

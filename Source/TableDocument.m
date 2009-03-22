@@ -1141,7 +1141,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  * Menu validation
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{
+{	
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
