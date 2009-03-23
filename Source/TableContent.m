@@ -675,7 +675,11 @@
 	[filteredResult insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
 	
 	//if we don't show blobs, read data for this duplicate column from db
-	if ( [prefs boolForKey:@"dontShowBlob"] && [[self argumentForRow:[tableContentView selectedRow]] length]>0) {
+	if ([prefs boolForKey:@"dontShowBlob"]) {
+		// Abort if there are no indices on this table - argumentForRow will display an error.
+		if (![[self argumentForRow:[tableContentView selectedRow]] length]){
+			return;
+		}
 		//if we have indexes, use argumentForRow
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", selectedTable, [self argumentForRow:[tableContentView selectedRow]]]];
 		dbDataRow = [queryResult fetchRowAsDictionary];
@@ -690,9 +694,16 @@
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 			[tempRow setObject:[prefs stringForKey:@"nullValue"] forKey:[row objectForKey:@"Field"]];
 		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"dontShowBlob"] && dbDataRow) {
-			[tempRow setObject:[dbDataRow objectForKey:[row objectForKey:@"Field"]] forKey:[row objectForKey:@"Field"]];
+			NSString *nullValue = nil;
+			//if what we read from DB is NULL (NSNull), we replace it with the string NULL
+			if([[dbDataRow objectForKey:[row objectForKey:@"Field"]] isKindOfClass:[NSNull class]])
+				nullValue = @"NULL";
+			else
+				nullValue = [dbDataRow objectForKey:[row objectForKey:@"Field"]];
+			[tempRow setObject:nullValue forKey:[row objectForKey:@"Field"]];
 		}
 	}
+	
 	//select row and go in edit mode
 	[tableContentView reloadData];
 	[tableContentView selectRow:[tableContentView selectedRow]+1 byExtendingSelection:NO];
@@ -1186,7 +1197,6 @@
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
 		rowObject = [[filteredResult objectAtIndex:currentlyEditingRow] objectForKey:[columnNames objectAtIndex:i]];
-
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"nullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -1867,7 +1877,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		// If the table does contain blob or text fields, load the values ready for editing.
 		if ( [self tableContainsBlobOrTextColumns] ) {
 			wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
-			if([wherePart length]== 0)
+			if([wherePart length]==0)
 				return NO;
 			query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", selectedTable, wherePart];
 			tempResult = [mySQLConnection queryString:query];
