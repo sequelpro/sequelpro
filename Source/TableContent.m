@@ -694,13 +694,13 @@
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 			[tempRow setObject:[prefs stringForKey:@"nullValue"] forKey:[row objectForKey:@"Field"]];
 		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"dontShowBlob"] && dbDataRow) {
-			NSString *nullValue = nil;
+			NSString *valueString = nil;
 			//if what we read from DB is NULL (NSNull), we replace it with the string NULL
 			if([[dbDataRow objectForKey:[row objectForKey:@"Field"]] isKindOfClass:[NSNull class]])
-				nullValue = @"NULL";
+				valueString = [prefs objectForKey:@"nullValue"];
 			else
-				nullValue = [dbDataRow objectForKey:[row objectForKey:@"Field"]];
-			[tempRow setObject:nullValue forKey:[row objectForKey:@"Field"]];
+				valueString = [dbDataRow objectForKey:[row objectForKey:@"Field"]];
+			[tempRow setObject:valueString forKey:[row objectForKey:@"Field"]];
 		}
 	}
 	
