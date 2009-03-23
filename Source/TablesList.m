@@ -46,6 +46,13 @@ loads all table names in array tables and reload the tableView
 	NSArray *resultRow;
 	int i;
 	BOOL containsViews = NO;
+	NSString *selectedTable = nil;
+	NSInteger selectedRowIndex;
+	
+	selectedRowIndex = [tablesListView selectedRow];	
+	if(selectedRowIndex > 0 && [tables count]){
+		selectedTable = [NSString stringWithString:[tables objectAtIndex:selectedRowIndex]];
+	}
 
 	[tablesListView deselectAll:self];
 	[tables removeAllObjects];
@@ -89,7 +96,12 @@ loads all table names in array tables and reload the tableView
 	// Notify listeners that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
-	[tablesListView reloadData];	
+	[tablesListView reloadData];
+	
+	//if the previous selected table still exists, select it
+	if( selectedTable != nil && [tables indexOfObject:selectedTable] < [tables count]) {
+		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tables indexOfObject:selectedTable]] byExtendingSelection:NO];
+	}
 }
 
 /*
