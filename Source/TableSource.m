@@ -25,6 +25,8 @@
 #import "TableSource.h"
 #import "TablesList.h"
 #import "SPTableData.h"
+#import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 
 @implementation TableSource
@@ -80,7 +82,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
   
 	//perform queries and load results in array (each row as a dictionary)
-	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
+	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
 	
 	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
 	//	tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
@@ -88,7 +90,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
 	[tableSourceResult release];
 
-	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]] retain];
+	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
@@ -293,7 +295,7 @@ adds the index to the mysql-db and stops modal session with code 1 when success,
 			{
 				indexName = @"";
 			} else {
-				indexName = [NSString stringWithFormat:@"`%@`", [indexNameField stringValue]];
+				indexName = [[indexNameField stringValue] backtickQuotedString];
 			}
 		}
 		indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
@@ -306,14 +308,14 @@ adds the index to the mysql-db and stops modal session with code 1 when success,
 			}
 		}
 		
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` ADD %@ %@ (`%@`)",
-				selectedTable, [indexTypeField titleOfSelectedItem], indexName,
-				[tempIndexedColumns componentsJoinedByString:@"`,`"]]];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
+				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
+				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 
 /*
-NSLog([NSString stringWithFormat:@"ALTER TABLE `%@` ADD %@ %@ (`%@`)",
-				selectedTable, [indexTypeField titleOfSelectedItem], indexName,
-				[[[indexedColumnsField stringValue] componentsSeparatedByString:@","] componentsJoinedByString:@"`,`"]]);
+NSLog([NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
+				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
+				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]);
 */
 
 		if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -372,7 +374,7 @@ opens alertsheet and asks for confirmation
 		// alert any listeners that we are about to perform a query.
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 		
-		NSString *query = [NSString stringWithFormat:@"ALTER TABLE `%@` TYPE = %@",selectedTable,selectedItem];
+		NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ TYPE = %@",[selectedTable backtickQuotedString],selectedItem];
 		[mySQLConnection queryString:query];
 		
 		// The query is now complete.
@@ -606,22 +608,22 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	if ( isEditingNewRow ) {
 		//ADD syntax
 		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@",
-						selectedTable, [theRow objectForKey:@"Field"], [theRow objectForKey:@"Type"]];
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
+						[selectedTable backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString], [theRow objectForKey:@"Type"]];
 		} else {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@(%@)",
-						selectedTable, [theRow objectForKey:@"Field"], [theRow objectForKey:@"Type"],
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@(%@)",
+						[selectedTable backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString], [theRow objectForKey:@"Type"],
 						[theRow objectForKey:@"Length"]];
 		}
 	} else {
 		//CHANGE syntax
 		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
-					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
+					[selectedTable backtickQuotedString], [[oldRow objectForKey:@"Field"] backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString],
 					[theRow objectForKey:@"Type"]];
 		} else {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@(%@)",
-					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@(%@)",
+					[selectedTable backtickQuotedString], [[oldRow objectForKey:@"Field"] backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString],
 					[theRow objectForKey:@"Type"], [theRow objectForKey:@"Length"]];
 		}
 	}
@@ -675,8 +677,8 @@ returns YES if no row is beeing edited and nothing has to be written to db
 			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
 				[queryString appendString:@" PRIMARY KEY"];
 			} else {
-				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (`%@`)",
-						[chooseKeyButton titleOfSelectedItem], [theRow objectForKey:@"Field"]]];
+				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)",
+						[chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
 	}
@@ -743,8 +745,8 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//remove row
-			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP `%@`",
-					selectedTable, [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
+					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 			
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self loadTable:selectedTable];
@@ -763,10 +765,10 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//remove index
 			if ( [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP PRIMARY KEY", selectedTable]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [selectedTable backtickQuotedString]]];
 			} else {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP INDEX `%@`",
-						selectedTable, [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"]]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
+						[selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
 			}
 		
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -938,8 +940,8 @@ would result in a position change.
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// Begin construction of the reordering query
-	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` MODIFY COLUMN `%@` %@", selectedTable,
-		[originalRow objectForKey:@"Field"],
+	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
+		[[originalRow objectForKey:@"Field"] backtickQuotedString],
 		[originalRow objectForKey:@"Type"]];
 
 	// Add the length parameter if necessary
@@ -976,8 +978,8 @@ would result in a position change.
 	if ( destinationRowIndex == 0 ){
 		[queryString appendString:@" FIRST"];
 	} else {
-		[queryString appendString:[NSString stringWithFormat:@" AFTER `%@`",
-						[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"]]];
+		[queryString appendString:[NSString stringWithFormat:@" AFTER %@",
+						[[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"] backtickQuotedString]]];
 	}
 
 	// Run the query; report any errors, or reload the table on success

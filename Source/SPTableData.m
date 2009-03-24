@@ -28,6 +28,7 @@
 #import "SPSQLParser.h"
 #import "TableDocument.h"
 #import "TablesList.h"
+#import "SPStringAdditions.h"
 
 
 @implementation SPTableData
@@ -259,7 +260,9 @@
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", tableName]];
+	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+																					   [tableName backtickQuotedString]
+																					]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -302,9 +305,25 @@
 
 		// If the first character is a backtick, this is a field definition.
 		if ([fieldsParser characterAtIndex:0] =='`') {
-
-			// Capture the area between the two backticks as the name
-			[tableColumn setObject:[fieldsParser trimAndReturnStringFromCharacter:'`' toCharacter:'`' trimmingInclusively:YES returningInclusively:NO ignoringQuotedStrings:NO] forKey:@"name"];
+        
+            // Capture the area between the two backticks as the name
+            NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: '`' 
+                                                                     toCharacter: '`' 
+                                                             trimmingInclusively: YES 
+                                                            returningInclusively: NO 
+                                                           ignoringQuotedStrings: NO];
+            //if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
+			while ([fieldsParser characterAtIndex:0] =='`') {
+                fieldName = [fieldName stringByAppendingFormat: @"`%@",
+                                                                [fieldsParser trimAndReturnStringFromCharacter: '`' 
+                                                                                                   toCharacter: '`' 
+                                                                                           trimmingInclusively: YES 
+                                                                                          returningInclusively: NO 
+                                                                                         ignoringQuotedStrings: NO]
+                                                                 ];
+            }
+            
+            [tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
@@ -416,7 +435,7 @@
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
 	// Retrieve the SHOW COLUMNS syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", viewName]];
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {

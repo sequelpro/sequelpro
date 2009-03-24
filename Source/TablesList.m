@@ -31,6 +31,7 @@
 #import "ImageAndTextCell.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "SPStringAdditions.h"
 
 @implementation TablesList
 
@@ -188,8 +189,9 @@ copies a table, if desired with content
 	}
 
 	//get table structure
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`",
-					[tables objectAtIndex:[tablesListView selectedRow]]]];
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@",
+					[[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
+					]];
 	
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
@@ -204,7 +206,7 @@ copies a table, if desired with content
         [scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
         [scanner scanUpToString:@"(" intoString:nil];
         [scanner scanUpToString:@"" intoString:&scanString];
-        [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` %@", [copyTableNameField stringValue], scanString]];
+        [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -216,9 +218,9 @@ copies a table, if desired with content
             if ( [copyTableContentSwitch state] == NSOnState ) {
 				//copy table content
                 [mySQLConnection queryString:[NSString stringWithFormat:
-											  @"INSERT INTO `%@` SELECT * FROM `%@`",
-											  [copyTableNameField stringValue],
-											  [tables objectAtIndex:[tablesListView selectedRow]]
+											  @"INSERT INTO %@ SELECT * FROM %@",
+											  [[copyTableNameField stringValue] backtickQuotedString],
+											  [[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 				 ]];
 				
                 if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -288,7 +290,9 @@ removes selected table(s) from mysql-db and tableView
 	unsigned currentIndex = [indexes lastIndex];
 	while (currentIndex != NSNotFound)
 	{
-		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP TABLE `%@`", [tables objectAtIndex:currentIndex]]];
+		[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
+																  [[tables objectAtIndex:currentIndex] backtickQuotedString]
+																]];
 		
 		if ( [[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 			//dropped table with success
@@ -447,9 +451,9 @@ Mark the content table for refresh when it's next switched to
 			[tablesListView reloadData];
 		} else {
 			if ( [tableDocumentInstance supportsEncoding] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int) DEFAULT CHARACTER SET %@", anObject, [tableDocumentInstance connectionEncoding]]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ (id int) DEFAULT CHARACTER SET %@", [anObject backtickQuotedString], [tableDocumentInstance connectionEncoding]]];
 			} else {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE `%@` (id int)", anObject]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ (id int)", [anObject backtickQuotedString]]];
 			}
 			
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -506,7 +510,7 @@ Mark the content table for refresh when it's next switched to
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 				@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 		} else {
-			[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE `%@` TO `%@`", [tables objectAtIndex:rowIndex], anObject]];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[tables objectAtIndex:rowIndex] backtickQuotedString], [anObject backtickQuotedString]]];
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 //				NSLog(@"renamed table with success");
 				//renamed with success

@@ -36,6 +36,7 @@
 #import "SPQueryConsole.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
+#import "SPStringAdditions.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -412,7 +413,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		if (returnCode != NSAlertDefaultReturn)
 			return;
 		
-		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE `%@`", [self database]]];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			// error while deleting db
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), [mySQLConnection getLastErrorMessage]]);
@@ -535,11 +536,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return;
 	}
 	
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE `%@`", [databaseNameField stringValue]];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
 	
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
 	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET `%@`", createStatement, [self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]]];
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]] backtickQuotedString]];
 	}
 	
 	// Create the database
@@ -787,7 +788,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
-	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
+	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -808,7 +809,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
 	// Create the query and get results
-	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", [self table]];
+	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -840,7 +841,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *theRow;
 	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"CHECK TABLE `%@`", [self table]];
+	query = [NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -861,7 +862,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *theRow;
 	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"ANALYZE TABLE `%@`", [self table]];
+	query = [NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -882,7 +883,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *theRow;
 	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"OPTIMIZE TABLE `%@`", [self table]];
+	query = [NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -902,7 +903,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *theRow;
 	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"REPAIR TABLE `%@`", [self table]];
+	query = [NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -921,7 +922,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	CMMCPResult *theResult;
 	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"FLUSH TABLE `%@`", [self table]];
+	query = [NSString stringWithFormat:@"FLUSH TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors
@@ -941,7 +942,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSDictionary *theRow;
 	
 	//Create the query and get results
-	query = [NSString stringWithFormat:@"CHECKSUM TABLE `%@`", [self table]];
+	query = [NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors

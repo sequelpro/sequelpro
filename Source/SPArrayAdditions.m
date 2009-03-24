@@ -1,8 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPArrayAdditions.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Jakob Egger on March 24, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,17 +20,24 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import "SPArrayAdditions.h"
+#import "SPStringAdditions.h"
 
-@interface NSString (SPStringAdditions)
+@implementation NSArray (SPArrayAdditions)
 
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
-
-- (NSString *)backtickQuotedString;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
+- (NSString *)componentsJoinedAndBacktickQuoted;
+/*
+ * This method quotes all elements with backticks and then joins them with
+ * commas. Use it for field lists as in "SELECT (...) FROM somewhere"
+ */
+{
+    NSString *result = [NSString string];
+    for (NSString *component in self)
+    {
+        if ([result length]) result = [result stringByAppendingString: @","];
+        result = [result stringByAppendingString: [component backtickQuotedString] ];
+    }
+    return result;
+}
 
 @end

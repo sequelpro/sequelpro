@@ -111,6 +111,18 @@
 }
 
 
+// -------------------------------------------------------------------------------
+// backtickQuotedString
+//
+// Returns the string quoted with backticks as required for MySQL identifiers
+// eg.:  tablename    =>   `tablename`
+//       my`table     =>   `my``table`
+// -------------------------------------------------------------------------------
+- (NSString *)backtickQuotedString
+{
+	return [NSString stringWithFormat:	@"`%@`", [self stringByReplacingOccurrencesOfString: @"`" withString: @"``"] ];
+}
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	// -------------------------------------------------------------------------------
 	// componentsSeparatedByCharactersInSet:

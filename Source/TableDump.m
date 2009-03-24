@@ -31,6 +31,8 @@
 #import "SPGrowlController.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
+#import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 @implementation TableDump
 
@@ -589,7 +591,7 @@
 						if ( [fNames length] )
 							[fNames appendString:@","];
 						
-						[fNames appendString:[NSString stringWithFormat:@"`%@`", [[tableSourceInstance fieldNames] objectAtIndex:i]]];
+						[fNames appendString:[[[tableSourceInstance fieldNames] objectAtIndex:i] backtickQuotedString]];
 					}
 				}
 				
@@ -618,8 +620,8 @@
 						}
 						
 						//perform query
-						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
-													  [fieldMappingPopup titleOfSelectedItem],
+						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
+													  [[fieldMappingPopup titleOfSelectedItem] backtickQuotedString],
 													  fNames,
 													  fValues]];
 						
@@ -818,12 +820,12 @@
 		
 		// Add a "drop table" command if specified in the export dialog
 		if ( [addDropTableSwitch state] == NSOnState )
-			[fileHandle writeData:[[NSString stringWithFormat:@"DROP TABLE IF EXISTS `%@`;\n\n", tableName]
+			[fileHandle writeData:[[NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;\n\n", [tableName backtickQuotedString]]
 								   dataUsingEncoding:connectionEncoding]];
 		
 		// Add the create syntax for the table if specified in the export dialog
 		if ( [addCreateTableSwitch state] == NSOnState ) {
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", tableName]];
+			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
 			if ( [queryResult numOfRows] ) {
 				createTableSyntax = [[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"];
 				if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
@@ -842,7 +844,7 @@
 		
 		// Add the table content if required
 		if ( [addTableContentSwitch state] == NSOnState ) {
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
+			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
 			fieldNames = [queryResult fetchFieldNames];
 			rowCount = [queryResult numOfRows];
 			
@@ -874,8 +876,8 @@
 				queryLength = 0;
 				
 				// Construct the start of the insertion command
-				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO `%@` (`%@`)\nVALUES\n\t(",
-										tableName, [fieldNames componentsJoinedByString:@"`,`"]] dataUsingEncoding:connectionEncoding]];
+				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(",
+										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:connectionEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				for ( j = 0 ; j < rowCount ; j++ ) {
@@ -934,8 +936,8 @@
 						
 						// Add a new INSERT starter command every ~250k of data.
 						if (queryLength > 250000) {
-							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO `%@` (`%@`)\nVALUES\n\t(",
-													 tableName, [fieldNames componentsJoinedByString:@"`,`"]]];
+							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(",
+													 [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
 							queryLength = 0;
 						} else {
 							[sqlString appendString:@"),\n\t("];
@@ -1591,7 +1593,7 @@
 		}
 
 		// Retrieve all the content within this table
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
 		
 		// Note any errors during retrieval
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {

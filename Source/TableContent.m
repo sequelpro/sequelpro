@@ -30,6 +30,8 @@
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 #import "SPQueryConsole.h"
+#import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 @implementation TableContent
 
@@ -268,9 +270,9 @@
 	[removeButton setEnabled:YES];
 
 	// Perform the data query and store the result as an array containing a dictionary per result row
-	query = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
+	query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 	if ( sortField ) {
-		query = [NSString stringWithFormat:@"%@ ORDER BY `%@`", query, sortField];
+		query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [sortField backtickQuotedString]];
 		if ( isDesc )
 			query = [query stringByAppendingString:@" DESC"];
 	}
@@ -357,10 +359,10 @@
 	}
 	
 	//	queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
+	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 	if ( sortField ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
-		//		queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [sortField backtickQuotedString]];
+		//		queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
 	}
@@ -429,7 +431,7 @@
 	BOOL ignoreArgument = NO;
 
 	// Start building the query string
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];			
+	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];			
 
 	// Add filter if appropriate
 	if (([argument length] > 0) || [[[compareField selectedItem] title] hasSuffix:@"NULL"]) {
@@ -551,11 +553,11 @@
 					}
 				}
 				[argument setString:[mySQLConnection prepareString:argument]];
-				queryString = [NSString stringWithFormat:@"%@ WHERE `%@` %@ \"%@\"",
-								queryString, [fieldField titleOfSelectedItem], compareOperator, argument];			
+				queryString = [NSString stringWithFormat:@"%@ WHERE %@ %@ \"%@\"",
+								queryString, [[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, argument];			
 			} else {
-				queryString = [NSString stringWithFormat:@"%@ WHERE `%@` %@ %@",
-								queryString, [fieldField titleOfSelectedItem],
+				queryString = [NSString stringWithFormat:@"%@ WHERE %@ %@ %@",
+								queryString, [[fieldField titleOfSelectedItem] backtickQuotedString],
 								compareOperator, (ignoreArgument) ? @"" : argument];
 			}
 		}
@@ -563,7 +565,7 @@
 
 	// Add sorting details if appropriate
 	if ( sortField ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [sortField backtickQuotedString]];
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
 	}
@@ -681,13 +683,13 @@
 			return;
 		}
 		//if we have indexes, use argumentForRow
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", selectedTable, [self argumentForRow:[tableContentView selectedRow]]]];
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
 		dbDataRow = [queryResult fetchRowAsDictionary];
 	}
 	
 	
 	//set autoincrement fields to NULL
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		row = [queryResult fetchRowAsDictionary];
@@ -1229,18 +1231,18 @@
 	
 	// Use INSERT syntax when creating new rows
 	if ( isEditingNewRow ) {
-		queryString = [NSString stringWithFormat:@"INSERT INTO `%@` (`%@`) VALUES (%@)",
-					   selectedTable, [columnNames componentsJoinedByString:@"`,`"], [fieldValues componentsJoinedByString:@","]];
+		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
+					   [selectedTable backtickQuotedString], [columnNames componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
 
 	// Use UPDATE syntax otherwise
 	} else {
-		queryString = [NSMutableString stringWithFormat:@"UPDATE `%@` SET ", selectedTable];
+		queryString = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [selectedTable backtickQuotedString]];
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
 			if ( i > 0 ) {
 				[queryString appendString:@", "];
 			}
-			[queryString appendString:[NSString stringWithFormat:@"`%@`=%@",
-									   [columnNames objectAtIndex:i], [fieldValues objectAtIndex:i]]];
+			[queryString appendString:[NSString stringWithFormat:@"%@=%@",
+									   [[columnNames objectAtIndex:i] backtickQuotedString], [fieldValues objectAtIndex:i]]];
 		}
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
 	}
@@ -1294,9 +1296,9 @@
 
 			// TODO: this probably needs looking at... it's reloading it all itself?
 			} else {
-				query = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
+				query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 				if ( sortField ) {
-					query = [NSString stringWithFormat:@"%@ ORDER BY `%@`", query, sortField];
+					query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [sortField backtickQuotedString]];
 					if ( isDesc )
 						query = [query stringByAppendingString:@" DESC"];
 				}
@@ -1379,7 +1381,7 @@
 	if ( !keys ) {
 		setLimit = NO;
 		keys = [[NSMutableArray alloc] init];
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]];
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 			theRow = [theResult fetchRowAsDictionary];
@@ -1430,7 +1432,7 @@
 		}
 
 		if ( [value isEqualToString:[prefs stringForKey:@"nullValue"]] ) {
-			[argument appendString:[NSString stringWithFormat:@"`%@` IS NULL", [keys objectAtIndex:i]]];
+			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [[keys objectAtIndex:i] backtickQuotedString]]];
 		} else {
 
 			// Escape special characters (in WHERE statement!)
@@ -1452,9 +1454,9 @@
 
 			columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
 			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
-				[argument appendString:[NSString stringWithFormat:@"`%@` = %@", [keys objectAtIndex:i], value]];
+				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [[keys objectAtIndex:i] backtickQuotedString], value]];
 			} else {
-				[argument appendString:[NSString stringWithFormat:@"`%@` LIKE %@", [keys objectAtIndex:i], value]];
+				[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [[keys objectAtIndex:i] backtickQuotedString], value]];
 			}
 		}
 	}
@@ -1502,9 +1504,9 @@
 
 		// Always select at least one field - the first if there are no non-blob fields.
 		if ( [fields count] == 0 ) {
-			return [NSString stringWithFormat:@"`%@`", [columnNames objectAtIndex:0]];
+			return [[columnNames objectAtIndex:0] backtickQuotedString];
 		} else {
-			return [NSString stringWithFormat:@"`%@`", [fields componentsJoinedByString:@"`,`"]];
+			return [fields componentsJoinedAndBacktickQuoted];
 		}
 	} else {
 		return @"*";
@@ -1551,7 +1553,7 @@
 			 areShowingAllRows &&
 			 ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"limitRowsValue"]) ) {
 			 */
-			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM `%@`", selectedTable]];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self reloadTable:self];
 			} else {
@@ -1568,7 +1570,7 @@
 				wherePart = [NSString stringWithString:[self argumentForRow:[index intValue]]];
 				//argumentForRow might return empty query, in which case we shouldn't execute the partial query
 				if([wherePart length] > 0) {
-					[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM `%@` WHERE %@", selectedTable, wherePart]];
+					[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
 					if ( ![mySQLConnection affectedRows] ) {
 						//no rows deleted
 						errors++;
@@ -1601,10 +1603,10 @@
 				numRows = [self getNumberOfRows];
 				if ( !areShowingAllRows ) {
 					//					queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
-					queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@`", [self fieldListForQuery], selectedTable];
+					queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 					if ( sortField ) {
-						//						queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY `%@`", sortField]];
-						queryString = [NSString stringWithFormat:@"%@ ORDER BY `%@`", queryString, sortField];
+						//						queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
+						queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [sortField backtickQuotedString]];
 						if ( isDesc )
 							queryString = [queryString stringByAppendingString:@" DESC"];
 					}
@@ -1654,7 +1656,7 @@
  */
 - (int)fetchNumberOfRows
 {
-	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM `%@`", selectedTable]] fetchRowAsArray] objectAtIndex:0] intValue];
+	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
 
 //tableView datasource methods
@@ -1740,8 +1742,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	sortField = [tableColumn identifier];
 	
 	//make queryString and perform query
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM `%@` ORDER BY `%@`", [self fieldListForQuery],
-				   selectedTable, sortField];
+	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@ ORDER BY %@", [self fieldListForQuery],
+				   [selectedTable backtickQuotedString], [sortField backtickQuotedString]];
 	if ( isDesc )
 		queryString = [queryString stringByAppendingString:@" DESC"];
 	if ( [prefs boolForKey:@"limitRows"] ) {
@@ -1879,7 +1881,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
 			if([wherePart length]==0)
 				return NO;
-			query = [NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", selectedTable, wherePart];
+			query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart];
 			tempResult = [mySQLConnection queryString:query];
 			if ( ![tempResult numOfRows] ) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
