@@ -275,6 +275,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[portField setStringValue:[self valueForKeyPath:@"selectedFavorite.port"]];
 	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
 	[passwordField setStringValue:[self selectedFavoritePassword]];
+	
+	[prefs setInteger:[favoritesController selectionIndex] forKey:@"lastFavoriteIndex"];
 }
 
 /**
@@ -1488,6 +1490,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[self setupToolbar];
 	//	[self connectToDB:nil];
 	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
+	
+	if([prefs boolForKey:@"selectLastFavoriteUsed"] == YES){
+		[favoritesController setSelectionIndexes:[NSIndexSet indexSetWithIndex:[prefs integerForKey:@"lastFavoriteIndex"]]];
+	}
 }
 
 - (void)windowWillClose:(NSNotification *)aNotification
