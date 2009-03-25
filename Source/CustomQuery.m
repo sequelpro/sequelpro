@@ -278,6 +278,17 @@ sets the tableView columns corresponding to the mysql-result
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
+	// Reset the current table view as necessary to avoid redraw and reload issues.
+	// Restore the view position to the top left to be within the results for all datasets.
+	[customQueryView scrollRowToVisible:0];
+	[customQueryView scrollColumnToVisible:0];
+
+	// Remove all the columns
+	theColumns = [customQueryView tableColumns];
+	while ([theColumns count]) {
+		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
+	}
+
 	// Perform the supplied queries in series
 	for ( i = 0 ; i < [queries count] ; i++ ) {
 	
@@ -373,25 +384,16 @@ sets the tableView columns corresponding to the mysql-result
             
         }
 	}
-    
-	if ( !theResult || ![theResult numOfRows] ) {
-//no rows in result
-	//free tableView
-		theColumns = [customQueryView tableColumns];
-		while ([theColumns count]) {
-			[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
-		}
-//		theCol = [[NSTableColumn alloc] initWithIdentifier:@""];
-//		[[theCol headerCell] setStringValue:@""];
-//		[customQueryView addTableColumn:theCol];
-//		[customQueryView sizeLastColumnToFit];
-		[customQueryView reloadData];
-//		[theCol release];
 
-		//query finished
+
+	// If no results were returned, redraw the empty table and post notifications before returning.
+	if ( !theResult || ![theResult numOfRows] ) {
+		[customQueryView reloadData];
+
+		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
-		// Query finished Growl notification        
+		// Perform the Growl notification for query completion
         [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
                                                   notificationName:@"Query Finished"];
@@ -399,16 +401,8 @@ sets the tableView columns corresponding to the mysql-result
 		return;
 	}
 
-//set columns
-//remove all columns
-	theColumns = [customQueryView tableColumns];
-//	i=0;
-	while ([theColumns count]) {
-		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
-//		i++;
-	}
 
-//add columns, corresponding to the query result
+	// Otherwise add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
 	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
