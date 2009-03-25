@@ -205,7 +205,10 @@
 	
 	// Otherwise, clear sorting
 	} else {
-		sortField = nil;
+		if (sortField) {
+			[sortField release];
+			sortField = nil;
+		}
 		isDesc = NO;
 	}
 
@@ -1739,7 +1742,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		isDesc = NO;
 		[tableContentView setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortField]];
 	}
-	sortField = [tableColumn identifier];
+	if (sortField) [sortField release];
+	sortField = [[NSString alloc] initWithString:[tableColumn identifier]];
 	
 	//make queryString and perform query
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@ ORDER BY %@", [self fieldListForQuery],
@@ -2094,7 +2098,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[keys release];
 	[oldRow release];
 	[compareType release];
-	[sortField release];
+	if (sortField) [sortField release];
 	[prefs release];
 	
 	[super dealloc];
