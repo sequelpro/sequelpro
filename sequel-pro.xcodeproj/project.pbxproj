@@ -54,7 +54,7 @@
 		17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17E642390EF0216C001BC333 /* Credits.rtf */; };
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
 		344819020F793DB500624B14 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 344819010F793DB500624B14 /* SPArrayAdditions.m */; };
-		34ED5F750F6E7420007E51BD /* tokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 34ED5F740F6E7420007E51BD /* tokens.l */; };
+		34ED5F750F6E7420007E51BD /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 34ED5F740F6E7420007E51BD /* SPEditorTokens.l */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
@@ -198,8 +198,8 @@
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		344819000F793DB500624B14 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
 		344819010F793DB500624B14 /* SPArrayAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPArrayAdditions.m; sourceTree = "<group>"; };
-		34ED5F730F6E7420007E51BD /* tokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tokens.h; sourceTree = "<group>"; };
-		34ED5F740F6E7420007E51BD /* tokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = tokens.l; sourceTree = "<group>"; };
+		34ED5F730F6E7420007E51BD /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
+		34ED5F740F6E7420007E51BD /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
@@ -535,8 +535,8 @@
 		58FEF15E0F23D60A00518E8E /* Parsing */ = {
 			isa = PBXGroup;
 			children = (
-				34ED5F730F6E7420007E51BD /* tokens.h */,
-				34ED5F740F6E7420007E51BD /* tokens.l */,
+				34ED5F730F6E7420007E51BD /* SPEditorTokens.h */,
+				34ED5F740F6E7420007E51BD /* SPEditorTokens.l */,
 				58FEF16B0F23D66600518E8E /* SPSQLParser.h */,
 				58FEF16C0F23D66600518E8E /* SPSQLParser.m */,
 			);
@@ -681,7 +681,7 @@
 				58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */,
 				58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */,
 				170088CE0F5870E200DD6B51 /* SPQueryConsole.m in Sources */,
-				34ED5F750F6E7420007E51BD /* tokens.l in Sources */,
+				34ED5F750F6E7420007E51BD /* SPEditorTokens.l in Sources */,
 				344819020F793DB500624B14 /* SPArrayAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
