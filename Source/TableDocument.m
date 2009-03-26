@@ -1328,8 +1328,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setAction:@selector(clearConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
-		[toolbarItem setLabel:NSLocalizedString(@"Table", @"toolbar item label for switching to the Table Structure tab")];
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Structure", @"toolbar item label for switching to the Table Structure tab")];
+		[toolbarItem setLabel:NSLocalizedString(@"Structure", @"toolbar item label for switching to the Table Structure tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Edit Table Structure", @"toolbar item label for switching to the Table Structure tab")];
 		//set up tooltip and image
 		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Structure tab", @"tooltip for toolbar item for switching to the Table Structure tab")];
 		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-structure"]];
@@ -1338,8 +1338,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setAction:@selector(viewStructure:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) {
-		[toolbarItem setLabel:NSLocalizedString(@"Browse", @"toolbar item label for switching to the Table Content tab")];
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Content", @"toolbar item label for switching to the Table Content tab")];
+		[toolbarItem setLabel:NSLocalizedString(@"Content", @"toolbar item label for switching to the Table Content tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Browse & Edit Table Content", @"toolbar item label for switching to the Table Content tab")];
 		//set up tooltip and image
 		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Content tab", @"tooltip for toolbar item for switching to the Table Content tab")];
 		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-browse"]];
@@ -1348,8 +1348,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setAction:@selector(viewContent:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) {
-		[toolbarItem setLabel:NSLocalizedString(@"SQL", @"toolbar item label for switching to the Run Query tab")];
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Run Query", @"toolbar item label for switching to the Run Query tab")];
+		[toolbarItem setLabel:NSLocalizedString(@"Query", @"toolbar item label for switching to the Run Query tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Run Custom Query", @"toolbar item label for switching to the Run Query tab")];
 		//set up tooltip and image
 		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Run Query tab", @"tooltip for toolbar item for switching to the Run Query tab")];
 		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
@@ -1403,7 +1403,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 {
 	return [NSArray arrayWithObjects:
 			@"DatabaseSelectToolbarItemIdentifier",
-			NSToolbarFlexibleSpaceItemIdentifier,
+			NSToolbarSeparatorItemIdentifier,
 			@"SwitchToTableStructureToolbarItemIdentifier",
 			@"SwitchToTableContentToolbarItemIdentifier",
 			@"SwitchToRunQueryToolbarItemIdentifier",
