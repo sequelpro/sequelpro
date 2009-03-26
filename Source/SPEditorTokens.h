@@ -1,5 +1,5 @@
 /*
- *  tokens.h
+ *  SPEditorTokens.h
  *  sequel-pro
  *
  *  Created by Jakob on 3/15/09.

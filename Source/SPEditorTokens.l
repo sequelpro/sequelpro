@@ -1,7 +1,7 @@
 %{
 
 /*
- * tokens.l - created by Jakob on 3/15/09 for Sequel Pro
+ * SPEditorTokens.l - created by Jakob on 3/15/09 for Sequel Pro
  *
  * This is the lex file used for syntax coloring.
  * To add new keywords, just add a line where the other
@@ -14,7 +14,7 @@
  * available. (type 'info flex' in the Terminal)
  */
  
-#import "tokens.h"
+#import "SPEditorTokens.h"
 int utf8strlen(const char *s);
 int yyuoffset, yyuleng;
 

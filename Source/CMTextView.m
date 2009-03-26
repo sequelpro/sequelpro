@@ -27,7 +27,7 @@
 /*
 all the extern variables and prototypes required for flex (used for syntax highlighting)
 */
-#import "tokens.h"
+#import "SPEditorTokens.h"
 extern int yylex();
 extern int yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
@@ -86,7 +86,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 /*
 List of keywords for autocompletion. If you add a keyword here,
-it should also be added to the flex file tokens.l
+it should also be added to the flex file SPEditorTokens.l
 */
 -(NSArray *)keywords {
 	return [NSArray arrayWithObjects:

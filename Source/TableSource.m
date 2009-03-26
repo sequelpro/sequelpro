@@ -1118,7 +1118,7 @@ traps enter and esc and make/cancel editing without entering next row
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
     
     //make sure that the message is from the right table view
-    if (tableView!=tableSourceView) return NO;
+    if (tableView!=tableSourceView) return;
 
 	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
 }
