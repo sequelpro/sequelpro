@@ -1499,6 +1499,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (void)windowWillClose:(NSNotification *)aNotification
 {
+	//reset print settings, so we're not prompted about saving them
+	[self setPrintInfo:[NSPrintInfo sharedPrintInfo]];
+	
 	if ([mySQLConnection isConnected]) [self closeConnection];
 	if ([[queryConsoleInstance window] isVisible]) [self toggleConsole:self];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
