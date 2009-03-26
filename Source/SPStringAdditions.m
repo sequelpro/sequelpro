@@ -128,7 +128,7 @@
     [workingCopy replaceOccurrencesOfString: @"`"  
                                   withString: @"``" 
                                      options: NSLiteralSearch 
-                                       range: NSMakeRange(0, [quotedString length]) ];
+                                       range: NSMakeRange(0, [workingCopy length]) ];
                                        
     // Add the quotes around the string
 	NSString *quotedString = [NSString stringWithFormat:	@"`%@`", workingCopy];
