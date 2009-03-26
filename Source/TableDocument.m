@@ -37,6 +37,9 @@
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
+#import "SPQueryConsole.h"
+#import "CMMCPConnection.h"
+#import "CMMCPResult.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
@@ -51,7 +54,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	_encoding = [@"utf8" retain];
 	chooseDatabaseButton = nil;
 	chooseDatabaseToolbarItem = nil;
-	
+		
 	return self;
 }
 
@@ -600,7 +603,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)toggleConsole:(id)sender
 {
-	[[queryConsoleInstance window] setIsVisible:![[queryConsoleInstance window] isVisible]];
+	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:![[[SPQueryConsole sharedQueryConsole] window] isVisible]];
 }
 
 #pragma mark Encoding Methods
@@ -1301,7 +1304,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		//set up tooltip and image
 		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
 		
-		if ([[queryConsoleInstance window] isVisible]) {
+		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
 			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
@@ -1321,7 +1324,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 		//set up the target action
-		[toolbarItem setTarget:queryConsoleInstance];
+		[toolbarItem setTarget:[SPQueryConsole sharedQueryConsole]];
 		[toolbarItem setAction:@selector(clearConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
@@ -1425,7 +1428,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
 	if ([[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"]) {
-		if ([[queryConsoleInstance window] isVisible]) {
+		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
 			[toolbarItem setLabel:@"Hide Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
@@ -1447,19 +1450,17 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	return @"DBView";
 }
 
-- (void)windowControllerDidLoadNib:(NSWindowController *) aController
-/*
- code that need to be executed once the windowController has loaded the document's window
- sets upt the interface (small fonts)
+/**
+ * Code that need to be executed once the windowController has loaded the document's window
+ * sets upt the interface (small fonts).
  */
+- (void)windowControllerDidLoadNib:(NSWindowController *) aController
 {
 	[aController setShouldCascadeWindows:YES];
 	[super windowControllerDidLoadNib:aController];
 	
 	NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
 	NSTableColumn *theCol;
-	
-	//	[tableWindow makeKeyAndOrderFront:self];
 	
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	
@@ -1473,14 +1474,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	
 	//set up interface
 	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[[queryConsoleInstance consoleTextView] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		[[SPQueryConsole sharedQueryConsole] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 	} else {
-		[[queryConsoleInstance consoleTextView] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[SPQueryConsole sharedQueryConsole] setConsoleFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -1503,10 +1504,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[self setPrintInfo:[NSPrintInfo sharedPrintInfo]];
 	
 	if ([mySQLConnection isConnected]) [self closeConnection];
-	if ([[queryConsoleInstance window] isVisible]) [self toggleConsole:self];
+	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
-
 
 //NSWindow delegate methods
 - (BOOL)windowShouldClose:(id)sender
@@ -1527,22 +1527,19 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  * Invoked when framework will perform a query
  */
 - (void)willQueryString:(NSString *)query
-{
-	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
-	
-	[queryConsoleInstance showMessageInConsole:[NSString stringWithFormat:@"/* MySQL %@ */ %@;\n", currentTime, query]];
+{		
+	[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
 }
 
 /**
  * Invoked when query gave an error
  */
 - (void)queryGaveError:(NSString *)error
-{
-	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
-	
-	[queryConsoleInstance showErrorInConsole:[NSString stringWithFormat:@"/* ERROR %@ */ %@;\n", currentTime, error]];
+{	
+	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
 }
 
+#pragma mark -
 #pragma mark Connection sheet delegate methods
 
 /**

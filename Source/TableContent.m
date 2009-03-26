@@ -27,6 +27,9 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "CMImageView.h"
+#import "CMCopyTable.h"
+#import "CMMCPConnection.h"
+#import "CMMCPResult.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 #import "SPQueryConsole.h"
@@ -47,7 +50,7 @@
 	sortField = nil;
 	areShowingAllRows = false;
 	currentlyEditingRow = -1;
-	
+		
 	return self;
 }
 
@@ -1264,7 +1267,7 @@
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
-		[queryConsoleInstance showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
+		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
 		return YES;
 
 	// On success...

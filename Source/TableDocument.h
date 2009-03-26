@@ -25,8 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+
+@class CMMCPConnection, CMMCPResult;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -42,7 +42,6 @@
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
-	IBOutlet id queryConsoleInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;

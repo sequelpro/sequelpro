@@ -25,16 +25,14 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMCopyTable.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+
+@class CMMCPConnection, CMMCPResult, CMCopyTable;
 
 @interface TableContent : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id queryConsoleInstance;
 	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
