@@ -92,10 +92,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 {
 	
 	NSPrintInfo *printInfo = [self printInfo];
+	[printInfo setHorizontalPagination:NSAutoPagination];
+	[printInfo setVerticalPagination:NSAutoPagination];
 	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
 	return printOp;
 }
-
 
 - (CMMCPConnection *)sharedConnection
 {
