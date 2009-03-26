@@ -120,7 +120,22 @@
 // -------------------------------------------------------------------------------
 - (NSString *)backtickQuotedString
 {
-	return [NSString stringWithFormat:	@"`%@`", [self stringByReplacingOccurrencesOfString: @"`" withString: @"``"] ];
+    // mutableCopy automatically retains the returned string, so don't forget to release it later...
+    NSMutableString *workingCopy = [self mutableCopy];
+    
+    // First double all backticks in the string to escape them
+    // I don't want to use "stringByReplacingOccurrencesOfString:withString:" because it's only available in 10.5
+    [workingCopy replaceOccurrencesOfString: @"`"  
+                                  withString: @"``" 
+                                     options: NSLiteralSearch 
+                                       range: NSMakeRange(0, [quotedString length]) ];
+                                       
+    // Add the quotes around the string
+	NSString *quotedString = [NSString stringWithFormat:	@"`%@`", workingCopy];
+    
+    [workingCopy release];
+    
+    return quotedString;
 }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
