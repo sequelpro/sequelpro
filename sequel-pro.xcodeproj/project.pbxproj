@@ -63,6 +63,7 @@
 		4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
+		5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */ = {isa = PBXBuildFile; fileRef = 5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
 		58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
@@ -204,6 +205,8 @@
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		58186D200F4CB38900851FE9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ConnectionErrorDialog.xib; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
+		588593F30F7AEC9500ED0E67 /* package-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "package-application.sh"; sourceTree = "<group>"; };
+		5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "sparkle-public-key.pem"; sourceTree = "<group>"; };
 		58C56EF30F438E120035701E /* SPDataCellFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataCellFormatter.h; sourceTree = "<group>"; };
 		58C56EF40F438E120035701E /* SPDataCellFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataCellFormatter.m; sourceTree = "<group>"; };
 		58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_edit_mode_selected.tiff; sourceTree = "<group>"; };
@@ -307,6 +310,7 @@
 			children = (
 				1761FD9D0EF0488900331368 /* build-version.pl */,
 				178934980F30CDA10097539A /* trim-application.sh */,
+				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -336,6 +340,7 @@
 				17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */,
 				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
+				5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -623,6 +628,7 @@
 				B5A601970F74C1CE00EE5FBA /* button_refresh.tiff in Resources */,
 				B5A601E30F74DE7F00EE5FBA /* button_edit_mode.tiff in Resources */,
 				58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */,
+				5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -641,7 +647,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Add build/bundle version\n${SRCROOT}/Scripts/build-version.pl\n\n# Trim application if release build\nif [ \"$CONFIGURATION\" == 'Release' ]\nthen\n\t\"${SRCROOT}/Scripts/trim-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\" -a\nfi";
+			shellScript = "# Add build/bundle version\n${SRCROOT}/Scripts/build-version.pl\n\n# Trim application if release or dist build\nif test \"$CONFIGURATION\" == 'Release' || test \"$CONFIGURATION\" == 'Distribution'\nthen\n\t\"${SRCROOT}/Scripts/trim-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\" -a\nfi\n\n# Perform distribution tasks on a dist build\nif [ \"$CONFIGURATION\" == 'Distribution' ]\nthen\n\t\"${SRCROOT}/Scripts/package-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -736,6 +742,38 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		588593F00F7AEB6900ED0E67 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IBC_NOTICES = NO;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Distribution;
+		};
+		588593F10F7AEB6900ED0E67 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SRCROOT)/Frameworks\"",
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "Sequel Pro";
+			};
+			name = Distribution;
+		};
 		C05733C808A9546B00998B17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -814,6 +852,7 @@
 			buildConfigurations = (
 				C05733C808A9546B00998B17 /* Debug */,
 				C05733C908A9546B00998B17 /* Release */,
+				588593F10F7AEB6900ED0E67 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -823,6 +862,7 @@
 			buildConfigurations = (
 				C05733CC08A9546B00998B17 /* Debug */,
 				C05733CD08A9546B00998B17 /* Release */,
+				588593F00F7AEB6900ED0E67 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
