@@ -267,10 +267,10 @@
 		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 	}
 
-	// Enable the table buttons
+	// set the state of the table buttons
 	[addButton setEnabled:YES];
-	[copyButton setEnabled:YES];
-	[removeButton setEnabled:YES];
+	[copyButton setEnabled:NO];
+	[removeButton setEnabled:NO];
 
 	// Perform the data query and store the result as an array containing a dictionary per result row
 	query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
@@ -1153,7 +1153,7 @@
 		if ( [prefs boolForKey:@"dontShowBlob"] ) {
 			for ( j = 0 ; j < [columns count] ; j++ ) {
 				if ( [tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:j] objectForKey:@"name"] ] ) {
-					[modifiedRow setObject:NSLocalizedString(@"- blob or text -", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
+					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
 				}
 			}
 		}
@@ -1673,10 +1673,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
 	id theRow, theValue;
-
+    
 	theRow = [filteredResult objectAtIndex:rowIndex];
 	theValue = [theRow objectForKey:[aTableColumn identifier]];
-
+    
 	// Convert data objects to their string representation in the current encoding, falling back to ascii
 	if ( [theValue isKindOfClass:[NSData class]] ) {
 		NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
@@ -1686,8 +1686,59 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		else theValue = [NSString stringWithString:dataRepresentation];
 		if (dataRepresentation) [dataRepresentation release];
 	}
-	
-	return theValue;
+    return theValue;
+}
+
+- (void)tableView: (CMCopyTable *)aTableView
+  willDisplayCell: (id)cell
+   forTableColumn: (NSTableColumn*)aTableColumn
+              row: (int)row
+/*
+ *  This function changes the text color of 
+ *  text/blob fields which are not yet loaded to gray
+ */
+{
+    // Check if loading of text/blob fields is disabled
+    // If not, all text fields are loaded and we don't have to make them gray
+    if ([prefs boolForKey:@"dontShowBlob"])
+    {
+        // Make sure that the cell actually responds to setTextColor:
+        // In the future, we might use different cells for the table view
+        // that don't support this selector
+        if ([cell respondsToSelector:@selector(setTextColor:)])
+        {
+            NSArray    *columns             = [tableDataInstance columns];
+            NSArray    *columnNames         = [tableDataInstance columnNames];
+            NSString   *columnTypeGrouping;
+            NSUInteger  indexOfColumn;
+            
+            // We have to find the index of the current column
+            // Make sure we find it, otherwise return (We might decide in the future
+            // to add a column to the TableView that doesn't correspond to a column
+            // of the Mysql table...)
+            indexOfColumn = [columnNames indexOfObject:[aTableColumn identifier]];
+            if (indexOfColumn ==  NSNotFound) return;
+            
+            // Test if the current column is a text or a blob field
+            columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
+            if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
+                
+                // now check if the field has been loaded already or not
+                if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
+                {
+                    // change the text color of the cell to gray
+                    [cell setTextColor: [NSColor grayColor]];
+                }
+                else
+                {
+                    // Change the text color back to black
+                    // This is necessary because NSTableView reuses
+                    // the NSCell to draw further rows in the column
+                    [cell setTextColor: [NSColor blackColor]];
+                }
+            }
+        }
+    }
 }
 
 - (void)tableView:(NSTableView *)aTableView
@@ -1799,9 +1850,14 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	if ( isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect] ) return;
 	
 	// Update the row selection count
+    // and update the status of the delete/duplicate buttons
 	if ( [tableContentView numberOfSelectedRows] > 0 ) {
+        [copyButton setEnabled:YES];
+        [removeButton setEnabled:YES];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d rows selected", @"Text showing how many rows are selected"), [tableContentView numberOfSelectedRows], [tableContentView numberOfRows]]];
 	} else {
+        [copyButton setEnabled:NO];
+        [removeButton setEnabled:NO];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows", @"Text showing how many rows are in the result"), [tableContentView numberOfRows]]];
 	}
 }

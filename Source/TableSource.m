@@ -50,6 +50,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 
 	selectedTable = aTable;
 	[tableSourceView deselectAll:self];
+	[indexView deselectAll:self];
 
 	if ( isEditingRow )
 		return;
@@ -181,10 +182,12 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	// If a view is selected, disable the buttons; otherwise enable.
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
 	[addFieldButton setEnabled:editingEnabled];
-	[copyFieldButton setEnabled:editingEnabled];
-	[removeFieldButton setEnabled:editingEnabled];
 	[addIndexButton setEnabled:editingEnabled];
-	[removeIndexButton setEnabled:editingEnabled];
+    
+    //the following three buttons will only be enabled if a row field/index is selected!
+	[copyFieldButton setEnabled:NO];
+	[removeFieldButton setEnabled:NO];
+	[removeIndexButton setEnabled:NO];
 	
 	//add columns to indexedColumnsField
 	[indexedColumnsField removeAllItems];
@@ -861,6 +864,9 @@ returns a dictionary containing enum/set field names as key and possible values 
 			forTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
+    //make sure that the drag operation is for the right table view
+    if (aTableView!=tableSourceView) return;
+
 	if ( !isEditingRow ) {
 		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
 		isEditingRow = YES;
@@ -878,6 +884,10 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 */
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {
+    //make sure that the drag operation is started from the right table view
+    if (tableView!=tableSourceView) return NO;
+    
+    
 	int originalRow;
 	NSArray *pboardTypes;
 
@@ -905,6 +915,9 @@ would result in a position change.
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
 	proposedDropOperation:(NSTableViewDropOperation)operation
 {
+    //make sure that the drag operation is for the right table view
+    if (tableView!=tableSourceView) return NO;
+
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	int originalRow;
 
@@ -929,6 +942,9 @@ would result in a position change.
  */
 - (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)destinationRowIndex dropOperation:(NSTableViewDropOperation)operation
 {
+    //make sure that the drag operation is for the right table view
+    if (tableView!=tableSourceView) return NO;
+
 	int originalRowIndex;
 	NSMutableString *queryString;
 	NSDictionary *originalRow;
@@ -1010,13 +1026,32 @@ would result in a position change.
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-
-	// Check our notification object is our table fields view
-	if ([aNotification object] != tableSourceView)
-		return;
-
-	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
-	if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect] ) return;
+    //check for which table view the selection changed
+    if ([aNotification object] == tableSourceView) {
+        // If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
+        if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow ) {
+            [self saveRowOnDeselect];
+        }
+        
+        // check if there is currently a field selected
+        // and change button state accordingly
+        if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+            [removeFieldButton setEnabled:YES];
+            [copyFieldButton setEnabled:YES];
+        } else {
+            [removeFieldButton setEnabled:NO];
+            [copyFieldButton setEnabled:NO];
+        }
+    }
+    else if ([aNotification object] == indexView) {
+        // check if there is currently an index selected
+        // and change button state accordingly
+        if ([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+            [removeIndexButton setEnabled:YES];
+        } else {
+            [removeIndexButton setEnabled:NO];
+        }
+    }
 }
 
 /*
@@ -1080,7 +1115,11 @@ traps enter and esc and make/cancel editing without entering next row
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
  * is uneditable.
  */
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+    
+    //make sure that the message is from the right table view
+    if (tableView!=tableSourceView) return NO;
+
 	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
 }
 
