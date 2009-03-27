@@ -462,7 +462,7 @@
 					case 4:
 						compareOperator = @"IN";
 						doQuote = NO;
-						[argument setString:[[@"('" stringByAppendingString:argument] stringByAppendingString:@"')"]];
+						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
 						break;
 					case 5:
 						compareOperator = @"IS NULL";
