@@ -1902,18 +1902,14 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	if  ( [tableColumnWidths objectForKey:database] == nil ) {
 		[tableColumnWidths setObject:[NSMutableDictionary dictionary] forKey:database];
 	} else {
-		//[NSMutableArray arrayWithArray:array]; vs [array mutableCopy]; 
-		//[tableColumnWidths setObject:[[tableColumnWidths objectForKey:database] mutableCopy] forKey:database];
-		[tableColumnWidths setObject:[NSMutableArray arrayWithArray:[tableColumnWidths objectForKey:database]] forKey:database];
+		[tableColumnWidths setObject:[NSMutableDictionary dictionaryWithDictionary:[tableColumnWidths objectForKey:database]] forKey:database];
 
 	}
 	// get table object
 	if  ( [[tableColumnWidths objectForKey:database] objectForKey:table] == nil ) {
 		[[tableColumnWidths objectForKey:database] setObject:[NSMutableDictionary dictionary] forKey:table];
 	} else {
-		//[NSMutableArray arrayWithArray:array]; vs [array mutableCopy]; 
-		//[[tableColumnWidths objectForKey:database] setObject:[[[tableColumnWidths objectForKey:database] objectForKey:table] mutableCopy] forKey:table];
-		[[tableColumnWidths objectForKey:database] setObject:[NSMutableArray arrayWithArray:[[tableColumnWidths objectForKey:database] objectForKey:table]] forKey:table];
+		[[tableColumnWidths objectForKey:database] setObject:[NSMutableDictionary dictionaryWithDictionary:[[tableColumnWidths objectForKey:database] objectForKey:table]] forKey:table];
 
 	}
 	// save column size
