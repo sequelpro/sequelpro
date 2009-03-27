@@ -132,7 +132,8 @@
 	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
+
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
 - (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 
 //additional methods

@@ -244,11 +244,11 @@
 		
 		// Export the full resultset for the currently selected table to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportTableContentAsCSV"] ) {
-		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv"];
+		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv" usingMulti:NO];
 		
 		// Export the full resultset for the currently selected table to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportTableContentAsXML"] ) {
-		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml"];
+		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml" usingMulti:NO];
 		
 		// Export the current "browse" view to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportBrowseViewAsCSV"] ) {
@@ -1497,14 +1497,14 @@
 		}
 	}
 	
-	return [self exportTables:selectedTables toFileHandle:fileHandle usingFormat:type];
+	return [self exportTables:selectedTables toFileHandle:fileHandle usingFormat:type usingMulti:YES];
 }
 
 /*
  Walks through the selected tables and exports them to a file handle.  The export type must be
  "csv" for CSV format, and "xml" for XML format.
  */
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
 {
 	int i, j;
 	CMMCPResult *queryResult;
@@ -1611,15 +1611,27 @@
 		
 		// Use the appropriate export method to write the data to file
 		if ( [type isEqualToString:@"csv"] ) {
-			[self writeCsvForArray:nil orQueryResult:queryResult
-					  toFileHandle:fileHandle
-				  outputFieldNames:[exportMultipleFieldNamesSwitch state]
-					  terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
-						enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
-						 escapedBy:[exportMultipleFieldsEscapedField stringValue]
-						  lineEnds:[exportMultipleLinesTerminatedField stringValue]
-				withNumericColumns:tableColumnNumericStatus
-						  silently:YES];
+			if (multi) {
+				[self writeCsvForArray:nil orQueryResult:queryResult
+						  toFileHandle:fileHandle
+					  outputFieldNames:[exportMultipleFieldNamesSwitch state]
+						  terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
+							enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
+							 escapedBy:[exportMultipleFieldsEscapedField stringValue]
+							  lineEnds:[exportMultipleLinesTerminatedField stringValue]
+					withNumericColumns:tableColumnNumericStatus
+							  silently:YES];
+			} else {
+				[self writeCsvForArray:nil orQueryResult:queryResult
+						  toFileHandle:fileHandle
+					  outputFieldNames:[exportFieldNamesSwitch state]
+						  terminatedBy:[exportFieldsTerminatedField stringValue]
+							enclosedBy:[exportFieldsEnclosedField stringValue]
+							 escapedBy:[exportFieldsEscapedField stringValue]
+							  lineEnds:[exportLinesTerminatedField stringValue]
+					withNumericColumns:tableColumnNumericStatus
+							  silently:YES];
+			}
 
 			// Add a spacer to the file
 			[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
