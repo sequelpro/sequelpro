@@ -266,7 +266,7 @@
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		if (![mySQLConnection isConnected]) {
+		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
 		return nil;
@@ -439,7 +439,7 @@
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		if (![mySQLConnection isConnected]) {
+		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving view information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
 		return nil;
@@ -519,9 +519,11 @@
 	// Run the status query and retrieve as a dictionary.
 	CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", [tableListInstance tableName]]];
 
-	// Check for any errors
+	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table status:\n\n%@", [mySQLConnection getLastErrorMessage]],  @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table status:\n\n%@", [mySQLConnection getLastErrorMessage]],  @"OK", nil, nil);
+		}
 		return FALSE;
 	}
 

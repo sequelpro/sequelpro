@@ -668,6 +668,7 @@ checks for updates and opens download page in default browser
 							[NSNumber numberWithBool:YES], @"fetchRowCount",
 							[NSNumber numberWithBool:YES], @"limitRows",
 							[NSNumber numberWithInt:1000], @"limitRowsValue",
+							[NSNumber numberWithInt:10], @"connectionTimeout",
 							[NSNumber numberWithInt:60], @"keepAliveInterval",
 							[NSNumber numberWithInt:0], @"lastUsedVersion",
 							nil]];

@@ -239,12 +239,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		//can't connect to host
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
-						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@.\nBe sure that the address is correct and that you have the necessary privileges.\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"connectionTimeout"] intValue], [mySQLConnection getLastErrorMessage]]);
 	} else if (code == 3) {
 		//can't connect to db
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
-						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that the database exists and that you have the necessary privileges.\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]);
 	} else if (code == 4) {
 		//no host is given
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
@@ -801,9 +801,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
 		return;
 	}
 	
@@ -822,9 +824,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
 		return;
 	}
 	
@@ -854,9 +858,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	query = [NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while checking table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while checking table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
 		return;
 	}
 	
@@ -875,9 +881,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	query = [NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while analyzing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while analyzing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
 		return;
 	}
 	
@@ -896,9 +904,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	query = [NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while optimizing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while optimizing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
+		return;
 	}
 	
 	// Process result
@@ -916,9 +927,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	query = [NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while repairing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while repairing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
+		return;
 	}
 	
 	// Process result
@@ -935,9 +949,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	query = [NSString stringWithFormat:@"FLUSH TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while flushing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while flushing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
 		return;
 	}
 	
@@ -955,9 +971,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	query = [NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]];
 	theResult = [mySQLConnection queryString:query];
 	
-	// Check for errors
+	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while performming checksum on table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while performming checksum on table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
+		return;
 	}
 	
 	// Process result
