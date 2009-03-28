@@ -139,6 +139,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (IBAction)connect:(id)sender
 {
 	int code;
+
+	// Save the favourites - commits any unsaved changes ie favourite renames
+	[prefs setObject:[self favorites] forKey:@"favorites"];
+	[prefs synchronize];
 	
 	[connectProgressBar startAnimation:self];
 	[connectProgressStatusText setHidden:NO];
@@ -1650,10 +1654,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (IBAction)terminate:(id)sender
 {
 	[[NSApp orderedDocuments] makeObjectsPerformSelector:@selector(cancelConnectSheet:) withObject:nil];
-
-	// Save the favourites - commits any unsaved changes ie favourite renames
-	[prefs setObject:[self favorites] forKey:@"favorites"];
-
 	[NSApp terminate:sender];
 }
 

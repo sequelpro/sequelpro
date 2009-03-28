@@ -33,6 +33,10 @@ opens the preferences window
 */
 - (IBAction)openPreferences:(id)sender
 {
+
+	// Synchronize the prefs to disk to pick up any changes made to favourites in connection sheets
+	[prefs synchronize];
+
 	//get favorites if they exist
 	[favorites release];
 	if ( [prefs objectForKey:@"favorites"] != nil ) {
@@ -627,6 +631,7 @@ checks for updates and opens download page in default browser
 		[prefs setObject:[encodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
 	
 		[prefs setObject:favorites forKey:@"favorites"];
+		[prefs synchronize];
 	}
 	return YES;
 }
