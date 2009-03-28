@@ -753,7 +753,7 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength;
+	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength, tableType;
 	CMMCPResult *queryResult;
 	NSString *tableName, *tableColumnTypeGrouping;
 	NSArray *fieldNames;
@@ -766,7 +766,7 @@
 	NSDictionary *tableDetails;
 	NSMutableArray *tableColumnNumericStatus;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	id createTableSyntax;
+	id createTableSyntax = nil;
 	
 	// Reset the interface
 	[errorsView setString:@""];
@@ -823,27 +823,38 @@
 			[fileHandle writeData:[[NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;\n\n", [tableName backtickQuotedString]]
 								   dataUsingEncoding:connectionEncoding]];
 		
+
+		// Determine whether this table is a table or a view via the create table command, and keep the create table syntax
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		if ( [queryResult numOfRows] ) {
+			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+			if ([tableDetails objectForKey:@"Create View"]) {
+				createTableSyntax = [[[tableDetails objectForKey:@"Create View"] copy] autorelease];
+				tableType = SP_TABLETYPE_VIEW;
+			} else {
+				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
+				tableType = SP_TABLETYPE_TABLE;
+			}
+			[tableDetails release];
+		}
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+			if ( [addErrorsSwitch state] == NSOnState ) {
+				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:connectionEncoding]];
+			}
+		}
+
 		// Add the create syntax for the table if specified in the export dialog
-		if ( [addCreateTableSwitch state] == NSOnState ) {
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
-			if ( [queryResult numOfRows] ) {
-				createTableSyntax = [[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"];
-				if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
-					createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:connectionEncoding] autorelease];
-				}
-				[fileHandle writeData:[createTableSyntax dataUsingEncoding:connectionEncoding]];
-				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
+		if ( [addCreateTableSwitch state] == NSOnState && createTableSyntax) {
+			if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
+				createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:connectionEncoding] autorelease];
 			}
-			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-				if ( [addErrorsSwitch state] == NSOnState ) {
-					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:connectionEncoding]];
-				}
-			}
+			[fileHandle writeData:[createTableSyntax dataUsingEncoding:connectionEncoding]];
+			[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
 		}
 		
 		// Add the table content if required
-		if ( [addTableContentSwitch state] == NSOnState ) {
+		if ( [addTableContentSwitch state] == NSOnState && tableType == SP_TABLETYPE_TABLE ) {
 			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
 			fieldNames = [queryResult fetchFieldNames];
 			rowCount = [queryResult numOfRows];

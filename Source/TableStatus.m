@@ -64,11 +64,21 @@
 {
 	// Store the table name away for future use...
 	selectedTable = aTable;
+
+	// Retrieve the table status information via the table data cache
+	statusFields = [tableDataInstance statusValues];
 	
-	// No table selected
-	if([aTable isEqualToString:@""] || !aTable) {
-		[tableName setStringValue:@"Name: --"];
-		[tableType setStringValue:@"Type: --"];
+	// No table selected or view selected
+	if([aTable isEqualToString:@""] || !aTable || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+	
+		if ([[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+			[tableName setStringValue:[NSString stringWithFormat:@"Name: %@", selectedTable]];
+			[tableType setStringValue:@"Type: View"];
+		} else {
+			[tableName setStringValue:@"Name: --"];
+			[tableType setStringValue:@"Type: --"];
+		}
+
 		[tableCreatedAt setStringValue:@"Created At: --"];
 		[tableUpdatedAt setStringValue:@"Updated At: --"];
 
@@ -89,9 +99,6 @@
 
 		return;
 	}
-
-	// Retrieve the table status information via the table data cache
-	statusFields = [tableDataInstance statusValues];
 
 	// Assign the table values...
 	[tableName setStringValue:[NSString stringWithFormat:@"Name: %@",selectedTable]];
