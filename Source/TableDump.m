@@ -759,7 +759,7 @@
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
-	NSMutableString *headerString = [NSMutableString string];
+	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
 	NSMutableString *sqlString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
@@ -790,16 +790,25 @@
 	}
 	
 	// Add the dump header to the dump file.
-	[headerString setString:@"# Sequel Pro dump\n"];
-	[headerString appendString:[NSString stringWithFormat:@"# Version %@\n",
-								[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[headerString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
-	[headerString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
-								[tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-	[headerString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
-	[headerString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
-	[headerString appendString:@"# ************************************************************\n\n"];
-	[fileHandle writeData:[headerString dataUsingEncoding:connectionEncoding]];
+	[metaString setString:@"# Sequel Pro dump\n"];
+	[metaString appendString:[NSString stringWithFormat:@"# Version %@\n",
+							 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+	[metaString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
+	[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
+							 [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
+	[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
+	[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
+	[metaString appendString:@"# ************************************************************\n\n"];
+
+	// Add commands to store and disable unique checks, foreign key checks, mode and notes where supported.
+	// Include trailing semicolons to ensure they're run individually.  Use mysql-version based comments.
+	if ( [addDropTableSwitch state] == NSOnState )
+		[metaString appendString:@"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n"];
+	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
+	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
+	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
+
+	[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
 	
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
@@ -886,6 +895,12 @@
 				[queryResult dataSeek:0];
 				queryLength = 0;
 				
+				// Lock the table for writing and disable keys if supported
+				[metaString setString:@""];
+				[metaString appendString:[NSString stringWithFormat:@"LOCK TABLES %@ WRITE;\n", [tableName backtickQuotedString]]];
+				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n", [tableName backtickQuotedString]]];
+				[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
+
 				// Construct the start of the insertion command
 				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(",
 										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:connectionEncoding]];
@@ -963,6 +978,12 @@
 				
 				// Complete the command
 				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
+
+				// Unlock the table and re-enable keys if supported
+				[metaString setString:@""];
+				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\n", [tableName backtickQuotedString]]];
+				[metaString appendString:@"UNLOCK TABLES;\n"];
+				[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
 				
 				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
@@ -977,6 +998,15 @@
 		// Add an additional separator between tables
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:connectionEncoding]];
 	}
+	
+	// Restore unique checks, foreign key checks, and other settings saved at the start
+	[metaString setString:@"\n\n\n"];
+	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
+	[metaString appendString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n"];
+	[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
+	if ( [addDropTableSwitch state] == NSOnState )
+		[metaString appendString:@"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n"];
+	[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
