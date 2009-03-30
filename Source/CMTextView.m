@@ -37,6 +37,49 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 @implementation CMTextView
 
+
+/*
+ * Handle special commands - see NSResponder.h for a sample list.
+ * This subclass currently handles insertNewline: in order to preserve indentation
+ * when adding newlines.
+ */
+- (void) doCommandBySelector:(SEL)aSelector
+{
+
+	// Handle newlines, adding any indentation found on the current line to the new line.
+    if (aSelector == @selector(insertNewline:)) {
+		NSString *textViewString = [[self textStorage] string];
+		NSString *currentLine, *indentString = nil;
+		NSScanner *whitespaceScanner;
+		NSUInteger lineStart, lineEnd;
+
+		// Extract the current line based on the text caret or selection start position
+		[textViewString getLineStart:&lineStart end:NULL contentsEnd:&lineEnd forRange:NSMakeRange([self selectedRange].location, 0)];
+		currentLine = [[NSString alloc] initWithString:[textViewString substringWithRange:NSMakeRange(lineStart, lineEnd - lineStart)]];
+
+		// Scan all indentation characters on the line into a string
+		whitespaceScanner = [[NSScanner alloc] initWithString:currentLine];
+		[whitespaceScanner setCharactersToBeSkipped:nil];
+		[whitespaceScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&indentString];
+		[whitespaceScanner release];
+		[currentLine release];
+
+		// Always add the newline, whether or not we want to indent the next line
+		[self insertNewline:self];
+
+		// Replicate the indentation on the previous line if one was found.
+		if (indentString) [self insertText:indentString];
+
+		// Return to avoid the original implementation, preventing double linebreaks
+		return;
+	}
+	[super doCommandBySelector:aSelector];
+}
+
+
+/*
+ * Handle autocompletion, returning a list of suggested completions for the supplied character range.
+ */
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
 {
 
