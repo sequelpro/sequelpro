@@ -610,6 +610,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:![[[SPQueryConsole sharedQueryConsole] window] isVisible]];
 }
 
+/**
+ * Clears the console by removing all of its messages
+ */
+- (void)clearConsole:(id)sender
+{
+	[[SPQueryConsole sharedQueryConsole] clearConsole:sender];
+}
+
 #pragma mark Encoding Methods
 
 /**

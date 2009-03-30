@@ -306,14 +306,12 @@ static SPQueryConsole *sharedQueryConsole = nil;
  * Menu item validation for console table view contextual menu.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{
-	BOOL validate = NO;
-	
+{	
 	if ([menuItem action] == @selector(copy:)) {
-		validate = ([consoleTableView numberOfSelectedRows] > 0);
+		return ([consoleTableView numberOfSelectedRows] > 0);
 	}
 		
-	return validate;
+	return [[self window] validateMenuItem:menuItem];
 }
 
 /**
