@@ -676,14 +676,9 @@ traps enter and esc and edit/cancel without entering next row
 		} else {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
 		}
+		
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
-		if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
-			[(ImageAndTextCell*)aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		}
-		else
-		{
-			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
+		[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];

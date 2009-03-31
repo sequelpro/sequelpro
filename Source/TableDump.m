@@ -88,11 +88,23 @@
  ends the modal session
  */
 {
+	[NSApp endSheet:exportWindow];
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
 #pragma mark -
 #pragma mark export methods
+
+- (void)export
+{
+	[self reloadTables:self];
+	[NSApp beginSheet:exportWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+}
+
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet orderOut:self];
+}
 
 - (void)exportFile:(int)tag
 /*
@@ -689,7 +701,7 @@
     if (!fieldMappingArray) {
         fieldMappingArray = [NSMutableArray array];
 		
-		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {			
+		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
 			if (i < [[importArray objectAtIndex:currentRow] count] && ![[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]]) {
 				value = i + 1;
 			} else {
@@ -1905,6 +1917,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 #pragma mark -
 #pragma mark other
+
+- (void)awakeFromNib
+{
+	[self switchTab:[[exportToolbar items] objectAtIndex:0]];
+	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+}
+	
 //last but not least
 - (id)init;
 {
@@ -1926,7 +1945,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[fieldMappingArray release];
 	[savePath release];
 	[openPath release];
-	[prefs release];   
+	[prefs release];
 	
 	[super dealloc];
 }
@@ -1934,6 +1953,41 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (IBAction)cancelProgressBar:(id)sender
 {
 	progressCancelled = YES;	
+}
+
+- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
+{
+	NSArray *array = [toolbar items];
+	NSMutableArray *items = [NSMutableArray arrayWithCapacity:6];
+	
+	for (NSToolbarItem *item in array)
+	{
+		[items addObject:[item itemIdentifier]];
+	}
+	
+    return items;
+}
+
+#pragma mark New Export methods
+
+- (IBAction)switchTab:(id)sender
+{
+	if ([sender isKindOfClass:[NSToolbarItem class]]) {
+		[exportTabBar selectTabViewItemWithIdentifier:[[sender label] lowercaseString]];
+	}
+}
+
+- (IBAction)switchInput:(id)sender
+{
+	if ([sender isKindOfClass:[NSMatrix class]]) {
+		[exportTableList setEnabled:([[sender selectedCell] tag] == 3)];
+	}
+}
+
+
+- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem
+{
+	return YES;
 }
 
 @end

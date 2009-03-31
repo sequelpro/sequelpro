@@ -66,6 +66,18 @@
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
+		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
+		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
+		B57747DC0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */; };
+		B577483F0F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B57748370F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff */; };
+		B57748400F7A8B57003B34F9 /* toolbar-preferences-general.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */; };
+		B57748410F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B57748390F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff */; };
+		B57748420F7A8B57003B34F9 /* database.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483A0F7A8B57003B34F9 /* database.png */; };
+		B57748430F7A8B57003B34F9 /* toolbar-preferences-favorites.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */; };
+		B57748440F7A8B57003B34F9 /* toolbar-preferences-network.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483C0F7A8B57003B34F9 /* toolbar-preferences-network.png */; };
+		B57748450F7A8B57003B34F9 /* toolbar-preferences-security.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B577483D0F7A8B57003B34F9 /* toolbar-preferences-security.tiff */; };
+		B57748460F7A8B57003B34F9 /* toolbar-preferences-tables.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */; };
 		B58A32440F6509D60003C243 /* button_action.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A323D0F6509D60003C243 /* button_action.tiff */; };
 		B58A32450F6509D60003C243 /* button_add.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A323E0F6509D60003C243 /* button_add.tiff */; };
 		B58A32460F6509D60003C243 /* button_bar_handle.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A323F0F6509D60003C243 /* button_bar_handle.tiff */; };
@@ -78,7 +90,17 @@
 		B5A601970F74C1CE00EE5FBA /* button_refresh.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */; };
 		B5A601E30F74DE7F00EE5FBA /* button_edit_mode.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601E20F74DE7F00EE5FBA /* button_edit_mode.tiff */; };
 		B5E2C5FA0F2353B5007446E0 /* TablePropertyIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */; };
+		B5E92F190F75B2D100012500 /* ExportDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F170F75B2D100012500 /* ExportDialog.xib */; };
+		B5E92F1C0F75B2E800012500 /* SPExportController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E92F1B0F75B2E800012500 /* SPExportController.m */; };
+		B5E92F3B0F75B32100012500 /* Toolbar-Export-CSV.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F350F75B32100012500 /* Toolbar-Export-CSV.tiff */; };
+		B5E92F3C0F75B32100012500 /* Toolbar-Export-HTML.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F360F75B32100012500 /* Toolbar-Export-HTML.tiff */; };
+		B5E92F3D0F75B32100012500 /* Toolbar-Export-PDF.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F370F75B32100012500 /* Toolbar-Export-PDF.tiff */; };
+		B5E92F3E0F75B32100012500 /* Toolbar-Export-SQL.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F380F75B32100012500 /* Toolbar-Export-SQL.tiff */; };
+		B5E92F3F0F75B32100012500 /* Toolbar-Export-XLS.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F390F75B32100012500 /* Toolbar-Export-XLS.tiff */; };
+		B5E92F400F75B32100012500 /* Toolbar-Export-XML.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* Toolbar-Export-XML.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
+		B5F4F74F0F7BC6910059AE84 /* DataMigrationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F74E0F7BC6910059AE84 /* DataMigrationDialog.xib */; };
+		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
 		B5FE36ED0F71E3A90021BC10 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */; };
 /* End PBXBuildFile section */
 
@@ -207,6 +229,21 @@
 		58FEF57C0F3B4E9700518E8E /* SPTableData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableData.h; sourceTree = "<group>"; };
 		58FEF57D0F3B4E9700518E8E /* SPTableData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableData.m; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
+		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
+		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
+		B57747D70F7A8990003B34F9 /* SPWindowAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowAdditions.h; sourceTree = "<group>"; };
+		B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowAdditions.m; sourceTree = "<group>"; };
+		B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteTextFieldCell.h; sourceTree = "<group>"; };
+		B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoriteTextFieldCell.m; sourceTree = "<group>"; };
+		B57748370F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-advanced.tiff"; sourceTree = "<group>"; };
+		B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-general.tiff"; sourceTree = "<group>"; };
+		B57748390F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-notifications.tiff"; sourceTree = "<group>"; };
+		B577483A0F7A8B57003B34F9 /* database.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = database.png; sourceTree = "<group>"; };
+		B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-preferences-favorites.png"; sourceTree = "<group>"; };
+		B577483C0F7A8B57003B34F9 /* toolbar-preferences-network.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-preferences-network.png"; sourceTree = "<group>"; };
+		B577483D0F7A8B57003B34F9 /* toolbar-preferences-security.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-security.tiff"; sourceTree = "<group>"; };
+		B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-tables.tiff"; sourceTree = "<group>"; };
 		B58A323D0F6509D60003C243 /* button_action.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_action.tiff; sourceTree = "<group>"; };
 		B58A323E0F6509D60003C243 /* button_add.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_add.tiff; sourceTree = "<group>"; };
 		B58A323F0F6509D60003C243 /* button_bar_handle.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_bar_handle.tiff; sourceTree = "<group>"; };
@@ -219,7 +256,18 @@
 		B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_refresh.tiff; sourceTree = "<group>"; };
 		B5A601E20F74DE7F00EE5FBA /* button_edit_mode.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_edit_mode.tiff; sourceTree = "<group>"; };
 		B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TablePropertyIcon.png; sourceTree = "<group>"; };
+		B5E92F180F75B2D100012500 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ExportDialog.xib; sourceTree = "<group>"; };
+		B5E92F1A0F75B2E800012500 /* SPExportController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportController.h; sourceTree = "<group>"; };
+		B5E92F1B0F75B2E800012500 /* SPExportController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportController.m; sourceTree = "<group>"; };
+		B5E92F350F75B32100012500 /* Toolbar-Export-CSV.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "Toolbar-Export-CSV.tiff"; sourceTree = "<group>"; };
+		B5E92F360F75B32100012500 /* Toolbar-Export-HTML.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "Toolbar-Export-HTML.tiff"; sourceTree = "<group>"; };
+		B5E92F370F75B32100012500 /* Toolbar-Export-PDF.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "Toolbar-Export-PDF.tiff"; sourceTree = "<group>"; };
+		B5E92F380F75B32100012500 /* Toolbar-Export-SQL.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "Toolbar-Export-SQL.tiff"; sourceTree = "<group>"; };
+		B5E92F390F75B32100012500 /* Toolbar-Export-XLS.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "Toolbar-Export-XLS.tiff"; sourceTree = "<group>"; };
+		B5E92F3A0F75B32100012500 /* Toolbar-Export-XML.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "Toolbar-Export-XML.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		B5F4F7310F7BC6790059AE84 /* DataMigrationDialog.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = DataMigrationDialog.xib; path = English.lproj/DataMigrationDialog.xib; sourceTree = "<group>"; };
+		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
 		B5FE36EC0F71E3A90021BC10 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ConnectionView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -338,12 +386,8 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				17E641480EF01EF6001BC333 /* CustomQuery.h */,
-				17E641490EF01EF6001BC333 /* CustomQuery.m */,
 				17E6414A0EF01EF6001BC333 /* MainController.h */,
 				17E6414B0EF01EF6001BC333 /* MainController.m */,
-				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
-				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
 				17E6414E0EF01EF6001BC333 /* TableContent.h */,
 				17E6414F0EF01EF6001BC333 /* TableContent.m */,
 				17E641500EF01EF6001BC333 /* TableDocument.h */,
@@ -352,10 +396,18 @@
 				17E641530EF01EF6001BC333 /* TableDump.m */,
 				17E641540EF01EF6001BC333 /* TableSource.h */,
 				17E641550EF01EF6001BC333 /* TableSource.m */,
+				17E641480EF01EF6001BC333 /* CustomQuery.h */,
+				17E641490EF01EF6001BC333 /* CustomQuery.m */,
+				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
+				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
+				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
+				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
 				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
 				58FEF57D0F3B4E9700518E8E /* SPTableData.m */,
 				170088CC0F5870E200DD6B51 /* SPQueryConsole.h */,
 				170088CD0F5870E200DD6B51 /* SPQueryConsole.m */,
+				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
+				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -378,6 +430,8 @@
 			children = (
 				17E641680EF01F37001BC333 /* ImageAndTextCell.h */,
 				17E641690EF01F37001BC333 /* ImageAndTextCell.m */,
+				B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */,
+				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
 				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
 				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
 			);
@@ -387,13 +441,12 @@
 		17E6416E0EF01F3B001BC333 /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				1789343A0F30C1DD0097539A /* SPStringAdditions.h */,
-				1789343B0F30C1DD0097539A /* SPStringAdditions.m */,
 				17E6416F0EF01F4C001BC333 /* Keychain */,
 				17E641700EF01F52001BC333 /* MCPKit */,
 				58FEF15E0F23D60A00518E8E /* Parsing */,
 				17E641710EF01F5C001BC333 /* GUI */,
 				17E641720EF01F6B001BC333 /* SSHTunnel */,
+				B57747D60F7A8990003B34F9 /* Category Additions */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -445,6 +498,20 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				B57748370F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff */,
+				B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */,
+				B57748390F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff */,
+				B577483A0F7A8B57003B34F9 /* database.png */,
+				B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */,
+				B577483C0F7A8B57003B34F9 /* toolbar-preferences-network.png */,
+				B577483D0F7A8B57003B34F9 /* toolbar-preferences-security.tiff */,
+				B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */,
+				B5E92F350F75B32100012500 /* Toolbar-Export-CSV.tiff */,
+				B5E92F360F75B32100012500 /* Toolbar-Export-HTML.tiff */,
+				B5E92F370F75B32100012500 /* Toolbar-Export-PDF.tiff */,
+				B5E92F380F75B32100012500 /* Toolbar-Export-SQL.tiff */,
+				B5E92F390F75B32100012500 /* Toolbar-Export-XLS.tiff */,
+				B5E92F3A0F75B32100012500 /* Toolbar-Export-XML.tiff */,
 				17E6418C0EF02036001BC333 /* appicon.icns */,
 				B58A323D0F6509D60003C243 /* button_action.tiff */,
 				B58A323E0F6509D60003C243 /* button_add.tiff */,
@@ -473,6 +540,7 @@
 				17E641BC0EF02036001BC333 /* toolbar-switch-to-browse.png */,
 				17E641BD0EF02036001BC333 /* toolbar-switch-to-sql.png */,
 				17E641BE0EF02036001BC333 /* toolbar-switch-to-structure.png */,
+				B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */,
 				17E641BF0EF02036001BC333 /* toolbar-switch-to-table-info.png */,
 			);
 			path = Images;
@@ -481,8 +549,12 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
-				17E642060EF020CB001BC333 /* DBView.xib */,
+				B5F4F74E0F7BC6910059AE84 /* DataMigrationDialog.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
+				17E642060EF020CB001BC333 /* DBView.xib */,
+				B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */,
+				B57747D00F7A891A003B34F9 /* Preferences.xib */,
+				B5E92F170F75B2D100012500 /* ExportDialog.xib */,
 				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
 			);
 			path = Interfaces;
@@ -505,7 +577,6 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
-				B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -528,6 +599,17 @@
 				58FEF16C0F23D66600518E8E /* SPSQLParser.m */,
 			);
 			name = Parsing;
+			sourceTree = "<group>";
+		};
+		B57747D60F7A8990003B34F9 /* Category Additions */ = {
+			isa = PBXGroup;
+			children = (
+				1789343A0F30C1DD0097539A /* SPStringAdditions.h */,
+				1789343B0F30C1DD0097539A /* SPStringAdditions.m */,
+				B57747D70F7A8990003B34F9 /* SPWindowAdditions.h */,
+				B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */,
+			);
+			name = "Category Additions";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -614,6 +696,24 @@
 				B5A601870F749C1600EE5FBA /* dimple.tiff in Resources */,
 				B5A601970F74C1CE00EE5FBA /* button_refresh.tiff in Resources */,
 				B5A601E30F74DE7F00EE5FBA /* button_edit_mode.tiff in Resources */,
+				B5E92F190F75B2D100012500 /* ExportDialog.xib in Resources */,
+				B5E92F3B0F75B32100012500 /* Toolbar-Export-CSV.tiff in Resources */,
+				B5E92F3C0F75B32100012500 /* Toolbar-Export-HTML.tiff in Resources */,
+				B5E92F3D0F75B32100012500 /* Toolbar-Export-PDF.tiff in Resources */,
+				B5E92F3E0F75B32100012500 /* Toolbar-Export-SQL.tiff in Resources */,
+				B5E92F3F0F75B32100012500 /* Toolbar-Export-XLS.tiff in Resources */,
+				B5E92F400F75B32100012500 /* Toolbar-Export-XML.tiff in Resources */,
+				B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */,
+				B577483F0F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff in Resources */,
+				B57748400F7A8B57003B34F9 /* toolbar-preferences-general.tiff in Resources */,
+				B57748410F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff in Resources */,
+				B57748420F7A8B57003B34F9 /* database.png in Resources */,
+				B57748430F7A8B57003B34F9 /* toolbar-preferences-favorites.png in Resources */,
+				B57748440F7A8B57003B34F9 /* toolbar-preferences-network.png in Resources */,
+				B57748450F7A8B57003B34F9 /* toolbar-preferences-security.tiff in Resources */,
+				B57748460F7A8B57003B34F9 /* toolbar-preferences-tables.tiff in Resources */,
+				B5F4F74F0F7BC6910059AE84 /* DataMigrationDialog.xib in Resources */,
+				B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -667,6 +767,10 @@
 				58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */,
 				170088CE0F5870E200DD6B51 /* SPQueryConsole.m in Sources */,
 				34ED5F750F6E7420007E51BD /* tokens.l in Sources */,
+				B5E92F1C0F75B2E800012500 /* SPExportController.m in Sources */,
+				B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */,
+				B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */,
+				B57747DC0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -714,12 +818,37 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
+		B57747D00F7A891A003B34F9 /* Preferences.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B57747D10F7A891A003B34F9 /* English */,
+			);
+			name = Preferences.xib;
+			sourceTree = "<group>";
+		};
+		B5E92F170F75B2D100012500 /* ExportDialog.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B5E92F180F75B2D100012500 /* English */,
+			);
+			name = ExportDialog.xib;
+			sourceTree = "<group>";
+		};
+		B5F4F74E0F7BC6910059AE84 /* DataMigrationDialog.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B5F4F7310F7BC6790059AE84 /* DataMigrationDialog.xib */,
+			);
+			name = DataMigrationDialog.xib;
+			sourceTree = "<group>";
+		};
 		B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				B5FE36EC0F71E3A90021BC10 /* English */,
 			);
 			name = ConnectionView.xib;
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

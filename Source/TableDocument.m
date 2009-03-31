@@ -33,6 +33,7 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPExportController.h"
 #import "SPQueryConsole.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
@@ -89,10 +90,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
 {
-	
 	NSPrintInfo *printInfo = [self printInfo];
 	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
 	return printOp;
+
 }
 
 
@@ -214,6 +215,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[tableContentInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
+		[spExportControllerInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
 		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
@@ -1124,7 +1126,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  passes the request to the tableDump object
  */
 {
-	[tableDumpInstance exportFile:[sender tag]];
+	if ([sender tag] == -1) {
+		//[tableDumpInstance export];
+		
+		[spExportControllerInstance export];
+	} else {
+		[tableDumpInstance exportFile:[sender tag]];
+	}
 }
 
 - (IBAction)exportTable:(id)sender
