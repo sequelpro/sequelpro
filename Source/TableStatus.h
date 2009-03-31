@@ -49,7 +49,7 @@
 	CMMCPResult *tableStatusResult;
 	
 	NSString *selectedTable;
-	NSDictionary* statusFields;
+	NSDictionary *statusFields;
 }
 
 // Table methods
@@ -58,8 +58,5 @@
 
 // Additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
-- (void)awakeFromNib;
 
-// Initialization
-- (id)init;
 @end

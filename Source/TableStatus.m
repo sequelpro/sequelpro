@@ -4,11 +4,6 @@
 
 @implementation TableStatus
 
-- (void)awakeFromNib
-{
-	// TODO: implement awake code.
-}
-
 - (void)setConnection:(CMMCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
@@ -34,28 +29,20 @@
 		// Format date strings to the user's long date format
 		else if ([aKey isEqualToString:@"Create_time"] ||
 				 [aKey isEqualToString:@"Update_time"]) {
-								
+			
 			// Create date formatter
 			NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
 			
-			// Set the date format returned by MySQL
-			[dateFormatter setDateFormat:@"%Y-%m-%d %H:%M:%S"];
-			
-			// Get the date instance
-			NSDate *date = [dateFormatter dateFromString:value];
-			
-			// This behaviour should be set after the above date string is parsed to a date object so we can
-			// use the below style methods.
 			[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
-						
+			
 			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
 			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
-						
-			value = [dateFormatter stringFromDate:date];
+			
+			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
 		}
 	}
 	
-	NSString* labelVal = [NSString stringWithFormat:@"%@: %@", label, value];
+	NSString *labelVal = [NSString stringWithFormat:@"%@: %@", label, value];
 	
 	return labelVal;
 }
@@ -136,4 +123,5 @@
 	
 	return self;
 }
+
 @end
