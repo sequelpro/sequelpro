@@ -46,8 +46,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) doCommandBySelector:(SEL)aSelector
 {
 
-	// Handle newlines, adding any indentation found on the current line to the new line.
-    if (aSelector == @selector(insertNewline:)) {
+	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key.
+    if (aSelector == @selector(insertNewline:) && [[NSApp currentEvent] keyCode] != 0x4C) {
 		NSString *textViewString = [[self textStorage] string];
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
