@@ -1,5 +1,5 @@
 //
-//  SPFavoriteTextFieldCell.m
+//  SPFavouriteTextFieldCell.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Dec 29, 2008
@@ -20,20 +20,20 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPFavoriteTextFieldCell.h"
+#import "SPFavouriteTextFieldCell.h"
 
 #define FAVORITE_NAME_FONT_SIZE 12.0
 
-@interface SPFavoriteTextFieldCell (PrivateAPI)
+@interface SPFavouriteTextFieldCell (PrivateAPI)
 
 - (NSAttributedString *)constructSubStringAttributedString;
-- (NSAttributedString *)attributedStringForFavoriteName;
+- (NSAttributedString *)attributedStringForFavouriteName;
 - (NSDictionary *)mainStringAttributedStringAttributes;
 - (NSDictionary *)subStringAttributedStringAttributes;
 
 @end
 
-@implementation SPFavoriteTextFieldCell
+@implementation SPFavouriteTextFieldCell
 
 // -------------------------------------------------------------------------------
 // init
@@ -53,58 +53,58 @@
 // -------------------------------------------------------------------------------
 - (id)copyWithZone:(NSZone *)zone 
 {
-    SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
+    SPFavouriteTextFieldCell *cell = (SPFavouriteTextFieldCell *)[super copyWithZone:zone];
 	
-	cell->favoriteName = nil;
+	cell->favouriteName = nil;
 	
-    cell->favoriteName = [favoriteName retain];
+    cell->favouriteName = [favouriteName retain];
     
 	return cell;
 }
 
 // -------------------------------------------------------------------------------
-// favoriteName
+// favouriteName
 //
-// Get the cell's favorite name.
+// Get the cell's favourite name.
 // -------------------------------------------------------------------------------
-- (NSString *)favoriteName
+- (NSString *)favouriteName
 {
-	return favoriteName;
+	return favouriteName;
 }
 
 // -------------------------------------------------------------------------------
-// setFavoriteName:
+// setFavouriteName:
 //
-// Set the cell's favorite name to the supplied name.
+// Set the cell's favourite name to the supplied name.
 // -------------------------------------------------------------------------------
-- (void)setFavoriteName:(NSString *)name
+- (void)setFavouriteName:(NSString *)name
 {
-	if (favoriteName != name) {
-		[favoriteName release];
-		favoriteName = [name retain];
+	if (favouriteName != name) {
+		[favouriteName release];
+		favouriteName = [name retain];
 	}
 }
 
 // -------------------------------------------------------------------------------
-// favoriteHost
+// favouriteHost
 //
-// Get the cell's favorite host.
+// Get the cell's favourite host.
 // -------------------------------------------------------------------------------
-- (NSString *)favoriteHost
+- (NSString *)favouriteHost
 {
-	return favoriteHost;
+	return favouriteHost;
 }
 
 // -------------------------------------------------------------------------------
-// setFavoriteHost:
+// setFavouriteHost:
 //
-// Set the cell's favorite host to the supplied name.
+// Set the cell's favourite host to the supplied name.
 // -------------------------------------------------------------------------------
-- (void)setFavoriteHost:(NSString *)host
+- (void)setFavouriteHost:(NSString *)host
 {
-	if (favoriteHost != host) {
-		[favoriteHost release];
-		favoriteHost = [host retain];
+	if (favouriteHost != host) {
+		[favouriteHost release];
+		favouriteHost = [host retain];
 	}
 }
 
@@ -118,7 +118,7 @@
 	(([self isHighlighted]) && (![[self highlightColorWithFrame:cellFrame inView:controlView] isEqualTo:[NSColor secondarySelectedControlColor]])) ? [self invertFontColors] : [self restoreFontColors];
 	
 	// Construct and get the sub text attributed string
-	NSAttributedString *mainString = [[self attributedStringForFavoriteName] autorelease];
+	NSAttributedString *mainString = [[self attributedStringForFavouriteName] autorelease];
 	NSAttributedString *subString = [[self constructSubStringAttributedString] autorelease];
 	
 	NSRect subFrame = NSMakeRect(0.0, 0.0, [subString size].width, [subString size].height);
@@ -187,14 +187,14 @@
 // -------------------------------------------------------------------------------
 - (void)dealloc 
 {	
-    [favoriteName release], favoriteName = nil;
+    [favouriteName release], favouriteName = nil;
 	
     [super dealloc];
 }
 
 @end
 
-@implementation SPFavoriteTextFieldCell (PrivateAPI)
+@implementation SPFavouriteTextFieldCell (PrivateAPI)
 
 // -------------------------------------------------------------------------------
 // constructSubStringAttributedString
@@ -203,17 +203,17 @@
 // -------------------------------------------------------------------------------
 - (NSAttributedString *)constructSubStringAttributedString
 {
-	return [[NSAttributedString alloc] initWithString:favoriteHost attributes:[self subStringAttributedStringAttributes]];
+	return [[NSAttributedString alloc] initWithString:favouriteHost attributes:[self subStringAttributedStringAttributes]];
 }
 
 // -------------------------------------------------------------------------------
-// attributedStringForFavoriteName
+// attributedStringForFavouriteName
 //
-// Constructs the attributed string for the cell's favorite name.
+// Constructs the attributed string for the cell's favourite name.
 // -------------------------------------------------------------------------------
-- (NSAttributedString *)attributedStringForFavoriteName
+- (NSAttributedString *)attributedStringForFavouriteName
 {	
-	return [[NSAttributedString alloc] initWithString:favoriteName attributes:[self mainStringAttributedStringAttributes]];
+	return [[NSAttributedString alloc] initWithString:favouriteName attributes:[self mainStringAttributedStringAttributes]];
 }
 
 // -------------------------------------------------------------------------------

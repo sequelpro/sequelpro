@@ -32,14 +32,15 @@
 	IBOutlet NSView *generalView;
 	IBOutlet NSView *notificationsView;
 	IBOutlet NSView *tablesView;
-	IBOutlet NSView *favoritesView;
+	IBOutlet NSView *favouritesView;
+	IBOutlet NSView *autoUpdateView;
 	IBOutlet NSView *advancedView;
 	IBOutlet NSView *blankView;
 	
-	IBOutlet NSPopUpButton *defaultFavoritePopup;
+	IBOutlet NSPopUpButton *defaultFavouritePopup;
 	
-	IBOutlet NSTableView *favoritesTableView;
-	IBOutlet NSArrayController *favoritesController;
+	IBOutlet NSTableView *favouritesTableView;
+	IBOutlet NSArrayController *favouritesController;
 	
 	KeyChain *keychain;
 	
@@ -48,27 +49,25 @@
 	NSToolbarItem *generalItem;
 	NSToolbarItem *notificationsItem;
 	NSToolbarItem *tablesItem;
-	NSToolbarItem *favoritesItem;
+	NSToolbarItem *favouritesItem;
+	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *advancedItem;
 
-	NSMutableArray *favorites;
 	NSUserDefaults *prefs;
 }
 
 // IBAction methods
-- (IBAction)addFavorite:(id)sender;
-- (IBAction)removeFavorite:(id)sender;
-- (IBAction)duplicateFavorite:(id)sender;
+- (IBAction)addFavourite:(id)sender;
+- (IBAction)removeFavourite:(id)sender;
+- (IBAction)duplicateFavourite:(id)sender;
 - (IBAction)updateDefaultFavourite:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;
 - (IBAction)displayTablePreferences:(id)sender;
-- (IBAction)displayFavoritePreferences:(id)sender;
+- (IBAction)displayFavouritePreferences:(id)sender;
 - (IBAction)displayNotificationPreferences:(id)sender;
+- (IBAction)displayAutoUpdatePreferences:(id)sender;
 - (IBAction)displayAdvancedPreferences:(id)sender;
-
-// Favorites accessor
-- (NSMutableArray *)favorites;
 
 @end
