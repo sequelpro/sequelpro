@@ -671,6 +671,8 @@ checks for updates and opens download page in default browser
 							[NSNumber numberWithInt:10], @"connectionTimeout",
 							[NSNumber numberWithInt:60], @"keepAliveInterval",
 							[NSNumber numberWithInt:0], @"lastUsedVersion",
+							[NSNumber numberWithBool:YES], @"CustomQueryAutopair",
+							[NSNumber numberWithBool:YES], @"CustomQueryAutoindent",
 							nil]];
 
 	// For versions prior to r336, where column widths have been saved, walk through them and remove

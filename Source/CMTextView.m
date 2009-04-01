@@ -25,8 +25,8 @@
 #import "SPStringAdditions.h"
 
 /*
-all the extern variables and prototypes required for flex (used for syntax highlighting)
-*/
+ * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
+ */
 #import "SPEditorTokens.h"
 extern int yylex();
 extern int yyuoffset, yyuleng;
@@ -34,8 +34,213 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
 
+#define kAPlinked @"Linked" // attribute for a via auto-pair inserted char
+#define kAPval    @"linked"
+#define kWQquoted @"Quoted" // set via lex to indicate a quoted string
+#define kWQval    @"quoted"
+
 
 @implementation CMTextView
+
+/*
+ * Checks if the char after the current caret position/selection matches a supplied attribute
+ */
+- (BOOL) isNextCharMarkedBy:(id)attribute
+{
+	unsigned int caretPosition = [self selectedRange].location;
+
+	// Perform bounds checking
+	if (caretPosition >= [[self string] length]) return NO;
+	
+	// Perform the check
+	if ([[self textStorage] attribute:attribute atIndex:caretPosition effectiveRange:nil])
+		return YES;
+
+	return NO;
+}
+
+
+/*
+ * Checks if the caret is wrapped by auto-paired characters.
+ * e.g. [| := caret]: "|" 
+ */
+- (BOOL) areAdjacentCharsLinked
+{
+	unsigned int caretPosition = [self selectedRange].location;
+	unichar leftChar, matchingChar;
+
+	// Perform bounds checking
+	if ([self selectedRange].length) return NO;
+	if (caretPosition < 1) return NO;
+	if (caretPosition >= [[self string] length]) return NO;
+
+	// Check the character to the left of the cursor and set the pairing character if appropriate
+	leftChar = [[self string] characterAtIndex:caretPosition - 1];
+	if (leftChar == '(')
+		matchingChar = ')';
+	else if (leftChar == '"' || leftChar == '`' || leftChar == '\'')
+		matchingChar = leftChar;
+	else
+		return NO;
+
+	// Check that the pairing character exists after the caret, and is tagged with the link attribute
+	if (matchingChar == [[self string] characterAtIndex:caretPosition]
+		&& [[self textStorage] attribute:kAPlinked atIndex:caretPosition effectiveRange:nil]) {
+		return YES;
+	}
+
+	return NO;
+}
+
+
+/*
+ * If the textview has a selection, wrap it with the supplied prefix and suffix strings;
+ * return whether or not any wrap was performed.
+ */
+- (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix
+{
+
+	// Only proceed if a selection is active
+	if ([self selectedRange].length == 0)
+		return NO;
+
+	// Replace the current selection with the selected string wrapped in prefix and suffix
+	[self insertText:
+		[NSString stringWithFormat:@"%@%@%@", 
+			prefix,
+			[[self string] substringWithRange:[self selectedRange]],
+			suffix
+		]
+	];
+	return YES;
+}
+
+
+
+/*
+ * Handle some keyDown events in order to provide autopairing functionality (if enabled).
+ */
+- (void) keyDown:(NSEvent *)theEvent
+{
+	NSString *characters = [theEvent characters];
+
+	// Only process for character autopairing if autopairing is enabled and a single character is being added.
+	if (autopairEnabled && characters && [characters length] == 1) {
+		unichar insertedCharacter = [characters characterAtIndex:0];
+		NSString *matchingCharacter = nil;
+		BOOL processAutopair = NO, skipTypedLinkedCharacter = NO;
+		NSRange currentRange;
+
+		// Check if user pressed ⌥ to allow composing of accented characters.
+		// e.g. for US keyboard "⌥u a" to insert ä
+		if ([theEvent modifierFlags] & NSAlternateKeyMask) {
+			[super keyDown: theEvent];
+			return;
+		}
+
+		// If the caret is inside a text string, without any selection, skip autopairing.
+		// There is one exception to this - if the caret is before a linked pair character,
+		// processing continues in order to check whether the next character should be jumped
+		// over; e.g. [| := caret]: "foo|" and press " => only caret will be moved "foo"|
+		if(![self isNextCharMarkedBy:kAPlinked] && [self isNextCharMarkedBy:kWQquoted] && ![self selectedRange].length) {
+			[super keyDown:theEvent];
+			return;
+		}
+
+		// Check whether the submitted character should trigger autopair processing.
+		switch (insertedCharacter)
+		{
+			case '(':
+				matchingCharacter = @")";
+				processAutopair = YES;
+				break;
+			case '"':
+				matchingCharacter = @"\"";
+				processAutopair = YES;
+				skipTypedLinkedCharacter = YES;
+				break;
+			case '`':
+				matchingCharacter = @"`";
+				processAutopair = YES;
+				skipTypedLinkedCharacter = YES;
+				break;
+			case '\'':
+				matchingCharacter = @"'";
+				processAutopair = YES;
+				skipTypedLinkedCharacter = YES;
+				break;
+			case ')':
+				skipTypedLinkedCharacter = YES;
+				break;
+		}
+
+		// Check to see whether the next character should be compared to the typed character;
+		// if it matches the typed character, and is marked with the is-linked-pair attribute,
+		// select the next character and replace it with the typed character.  This allows
+		// a normally quoted string to be typed in full, with the autopair appearing as a hint and
+		// then being automatically replaced when the user types it.
+		if (skipTypedLinkedCharacter) {
+			currentRange = [self selectedRange];
+			if (currentRange.location != NSNotFound && currentRange.length == 0) {
+				if ([self isNextCharMarkedBy:kAPlinked]) {
+					if ([[[self textStorage] string] characterAtIndex:currentRange.location] == insertedCharacter) {
+						currentRange.length = 1;
+						[self setSelectedRange:currentRange];
+						processAutopair = NO;
+					}
+				}
+			}
+		}
+
+		// If an appropriate character has been typed, and a matching character has been set,
+		// some form of autopairing is required.
+		if (processAutopair && matchingCharacter) {
+
+			// Check to see whether several characters are selected, and if so, wrap them with
+			// the auto-paired characters.  This returns false if the selection has zero length.
+			if ([self wrapSelectionWithPrefix:characters suffix:matchingCharacter])
+				return;
+			
+			// Otherwise, start by inserting the original character - the first half of the autopair.
+			[super keyDown:theEvent];
+			
+			// Then process the second half of the autopair - the matching character.
+			currentRange = [self selectedRange];
+			if (currentRange.location != NSNotFound) {
+				NSTextStorage *textStorage = [self textStorage];
+
+				// Register the auto-pairing for undo
+				[self shouldChangeTextInRange:currentRange replacementString:matchingCharacter];
+
+				// Insert the matching character and give it the is-linked-pair-character attribute
+				[self replaceCharactersInRange:currentRange withString:matchingCharacter];
+				currentRange.length = 1;
+				[textStorage addAttribute:kAPlinked value:kAPval range:currentRange];
+
+				// Restore the original selection.
+				currentRange.length=0;
+				[self setSelectedRange:currentRange];
+			}
+			return;
+		}
+	}
+
+	// The default action is to perform the normal key-down action.
+	[super keyDown:theEvent];
+}
+
+
+- (void) deleteBackward:(id)sender
+{
+
+	// If the caret is currently inside a marked auto-pair, delete the characters on both sides
+	// of the caret.
+	NSRange currentRange = [self selectedRange];
+	if (currentRange.length == 0 && currentRange.location > 0 && [self areAdjacentCharsLinked])
+		[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
+
+	[super deleteBackward:sender];
+}
 
 
 /*
@@ -46,8 +251,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) doCommandBySelector:(SEL)aSelector
 {
 
-	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key.
-    if (aSelector == @selector(insertNewline:) && [[NSApp currentEvent] keyCode] != 0x4C) {
+	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
+    if (aSelector == @selector(insertNewline:) && (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C)) {
 		NSString *textViewString = [[self textStorage] string];
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
@@ -407,6 +612,56 @@ it should also be added to the flex file SPEditorTokens.l
 	nil];
 }
 
+
+/*
+ * Set whether this text view should apply the indentation on the current line to new lines.
+ */
+- (void)setAutoindent:(BOOL)enableAutoindent
+{
+	autoindentEnabled = enableAutoindent;
+}
+
+/*
+ * Retrieve whether this text view applies indentation on the current line to new lines.
+ */
+- (BOOL)autoindent
+{
+	return autoindentEnabled;
+}
+
+/*
+ * Set whether this text view should not autoindent when the Enter key is used, as opposed
+ * to the return key.  Also catches function-return.
+ */
+- (void)setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter
+{
+	autoindentIgnoresEnter = enableAutoindentIgnoresEnter;
+}
+
+/*
+ * Retrieve whether this text view should not autoindent when the Enter key is used.
+ */
+- (BOOL)autoindentIgnoresEnter
+{
+	return autoindentIgnoresEnter;
+}
+
+/*
+ * Set whether this text view should automatically create the matching closing char for ", ', ` and ( chars.
+ */
+- (void)setAutopair:(BOOL)enableAutopair
+{
+	autopairEnabled = enableAutopair;
+}
+
+/*
+ * Retrieve whether this text view automatically creates the matching closing char for ", ', ` and ( chars.
+ */
+- (BOOL)autopair
+{
+	return autopairEnabled;
+}
+
 /*******************
 SYNTAX HIGHLIGHTING!
 *******************/
@@ -486,11 +741,27 @@ sets self as delegate for the textView's textStorage to enable syntax highlighti
         [textStore addAttribute: NSForegroundColorAttributeName
                           value: tokenColor
                           range: tokenRange ];
-        
+        // this attr is used in the auto-pairing (keyDown:)
+        // to disable auto-pairing if caret is inside of any token found by lex
+        // maybe change it later (only for quotes) => discussion
+        [textStore addAttribute: kWQquoted
+                          value: kWQval
+                          range: tokenRange ];
+
     }
     
 }
 
+- (id) init
+{
+	if (self = [super init]) {
+		autoindentEnabled = YES;
+		autopairEnabled = YES;
+		autoindentIgnoresEnter = NO;
+	}
+	
+	return self;
+}
 
 
 @end

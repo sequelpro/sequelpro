@@ -541,7 +541,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 		queryFavorites = [[NSMutableArray array] retain];
 	}
 
-//set up interface
+	// Set up the interface
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
 	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
 		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
@@ -549,6 +549,9 @@ sets the connection (received from TableDocument) and makes things that have to 
 		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	[textView setContinuousSpellCheckingEnabled:NO];
+	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
+	[textView setAutoindentIgnoresEnter:YES];
+	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutopair"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{

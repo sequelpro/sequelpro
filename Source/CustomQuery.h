@@ -25,6 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMCopyTable.h"
+#import "CMTextView.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 
@@ -33,7 +34,7 @@
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;
-	IBOutlet id textView;
+	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet id errorText;
 	IBOutlet id affectedRowsText;
