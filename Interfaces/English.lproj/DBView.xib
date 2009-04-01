@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="287"/>
+			<integer value="5"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -551,7 +551,7 @@
 												<object class="NSTabViewItem" id="831053945">
 													<string key="NSIdentifier">source</string>
 													<object class="NSView" key="NSView" id="461236772">
-														<reference key="NSNextResponder" ref="714795046"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1387,7 +1387,7 @@
 																						<string key="NSResourceName">button_remove</string>
 																					</object>
 																					<string key="NSAlternateContents"/>
-																					<string key="NSKeyEquivalent"/>
+																					<string type="base64-UTF8" key="NSKeyEquivalent">fw</string>
 																					<int key="NSPeriodicDelay">400</int>
 																					<int key="NSPeriodicInterval">75</int>
 																				</object>
@@ -1938,7 +1938,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 7}, {637, 544}}</string>
-														<reference key="NSSuperview" ref="714795046"/>
 													</object>
 													<string key="NSLabel">Structure</string>
 													<reference key="NSColor" ref="62854682"/>
@@ -1947,7 +1946,7 @@
 												<object class="NSTabViewItem" id="624106058">
 													<string key="NSIdentifier">content</string>
 													<object class="NSView" key="NSView" id="1013108064">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="714795046"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2453,7 +2452,7 @@
 																	<int key="NSButtonFlags2">35</int>
 																	<reference key="NSNormalImage" ref="860961653"/>
 																	<string key="NSAlternateContents"/>
-																	<string key="NSKeyEquivalent"/>
+																	<string type="base64-UTF8" key="NSKeyEquivalent">fw</string>
 																	<int key="NSPeriodicDelay">400</int>
 																	<int key="NSPeriodicInterval">75</int>
 																</object>
@@ -2554,6 +2553,7 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 7}, {637, 544}}</string>
+														<reference key="NSSuperview" ref="714795046"/>
 													</object>
 													<string key="NSLabel">Content</string>
 													<reference key="NSColor" ref="62854682"/>
@@ -3438,14 +3438,14 @@
 													<reference key="NSTabView" ref="714795046"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="831053945"/>
+											<reference key="NSSelectedTabViewItem" ref="624106058"/>
 											<reference key="NSFont" ref="26"/>
 											<int key="NSTvFlags">134217731</int>
 											<bool key="NSAllowTruncatedLabels">YES</bool>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="461236772"/>
+												<reference ref="1013108064"/>
 											</object>
 										</object>
 									</object>
