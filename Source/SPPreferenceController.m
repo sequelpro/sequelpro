@@ -28,12 +28,12 @@
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
-#define PREFERENCE_TOOLBAR_GENERAL       @"Preference Toolbar General"
-#define PREFERENCE_TOOLBAR_TABLES        @"Preference Toolbar Tables"
-#define PREFERENCE_TOOLBAR_FAVORITES     @"Preference Toolbar Favourites"
-#define PREFERENCE_TOOLBAR_NOTIFICATIONS @"Preference Toolbar Notifications"
-#define PREFERENCE_TOOLBAR_AUTOUPDATE    @"Preference Toolbar Auto Update"
-#define PREFERENCE_TOOLBAR_ADVANCED      @"Preference Toolbar Advanced"
+#define PREFERENCE_TOOLBAR_GENERAL			@"Preference Toolbar General"
+#define PREFERENCE_TOOLBAR_TABLES			@"Preference Toolbar Tables"
+#define PREFERENCE_TOOLBAR_FAVORITES		@"Preference Toolbar Favourites"
+#define PREFERENCE_TOOLBAR_NOTIFICATIONS	@"Preference Toolbar Notifications"
+#define PREFERENCE_TOOLBAR_AUTOUPDATE		@"Preference Toolbar Auto Update"
+#define PREFERENCE_TOOLBAR_NETWORK			@"Preference Toolbar Network"
 
 #pragma mark -
 
@@ -159,10 +159,10 @@
 	if ([defaultFavouritePopup indexOfSelectedItem] == 0) {
 		[prefs setBool:YES forKey:@"SelectLastFavouriteUsed"];
 	} else {
-		[prefs setBool:NO forKey:@"selectLastFavouriteUsed"];
+		[prefs setBool:NO forKey:@"SelectLastFavouriteUsed"];
 
 		// Minus 2 from index to account for the "Last Used" and separator items
-		[prefs setInteger:[defaultFavouritePopup indexOfSelectedItem]-2 forKey:@"defaultFavourite"];
+		[prefs setInteger:[defaultFavouritePopup indexOfSelectedItem]-2 forKey:@"DefaultFavourite"];
 	}
 }
 
@@ -224,12 +224,12 @@
 }
 
 // -------------------------------------------------------------------------------
-// displayAdvancedPreferences:
+// displayNetworkPreferences:
 // -------------------------------------------------------------------------------
-- (IBAction)displayAdvancedPreferences:(id)sender
+- (IBAction)displayNetworkPreferences:(id)sender
 {
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_ADVANCED];
-	[self _resizeWindowForContentView:advancedView];
+	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_NETWORK];
+	[self _resizeWindowForContentView:networkView];
 }
 
 #pragma mark -
@@ -383,8 +383,8 @@
 	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_AUTOUPDATE]) {
 		return autoUpdateItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_ADVANCED]) {
-		return advancedItem;
+	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_NETWORK]) {
+		return networkItem;
 	}
 	
     return [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
@@ -395,7 +395,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_ADVANCED, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -403,7 +403,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_ADVANCED, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -411,7 +411,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_ADVANCED, nil];
+	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -479,13 +479,13 @@
     [autoUpdateItem setTarget:self];
     [autoUpdateItem setAction:@selector(displayAutoUpdatePreferences:)];
 	
-	// Advanced preferences
-	advancedItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_ADVANCED];
+	// Network preferences
+	networkItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NETWORK];
 	
-	[advancedItem setLabel:NSLocalizedString(@"Advanced", @"")];
-    [advancedItem setImage:[NSImage imageNamed:@"toolbar-preferences-advanced"]];
-    [advancedItem setTarget:self];
-    [advancedItem setAction:@selector(displayAdvancedPreferences:)];
+	[networkItem setLabel:NSLocalizedString(@"Network", @"")];
+    [networkItem setImage:[NSImage imageNamed:@"toolbar-preferences-network"]];
+    [networkItem setTarget:self];
+    [networkItem setAction:@selector(displayNetworkPreferences:)];
     
 	[toolbar setDelegate:self];
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];

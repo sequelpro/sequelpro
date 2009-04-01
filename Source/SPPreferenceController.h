@@ -34,7 +34,7 @@
 	IBOutlet NSView *tablesView;
 	IBOutlet NSView *favouritesView;
 	IBOutlet NSView *autoUpdateView;
-	IBOutlet NSView *advancedView;
+	IBOutlet NSView *networkView;
 	IBOutlet NSView *blankView;
 	
 	IBOutlet NSPopUpButton *defaultFavouritePopup;
@@ -51,7 +51,7 @@
 	NSToolbarItem *tablesItem;
 	NSToolbarItem *favouritesItem;
 	NSToolbarItem *autoUpdateItem;
-	NSToolbarItem *advancedItem;
+	NSToolbarItem *networkItem;
 
 	NSUserDefaults *prefs;
 }
@@ -68,6 +68,6 @@
 - (IBAction)displayFavouritePreferences:(id)sender;
 - (IBAction)displayNotificationPreferences:(id)sender;
 - (IBAction)displayAutoUpdatePreferences:(id)sender;
-- (IBAction)displayAdvancedPreferences:(id)sender;
+- (IBAction)displayNetworkPreferences:(id)sender;
 
 @end
