@@ -69,12 +69,12 @@
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
 		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
-		B57747DC0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747DB0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.m */; };
+		B57747DC0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */; };
 		B577483F0F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B57748370F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff */; };
 		B57748400F7A8B57003B34F9 /* toolbar-preferences-general.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */; };
 		B57748410F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B57748390F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff */; };
 		B57748420F7A8B57003B34F9 /* database.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483A0F7A8B57003B34F9 /* database.png */; };
-		B57748430F7A8B57003B34F9 /* toolbar-preferences-favourites.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483B0F7A8B57003B34F9 /* toolbar-preferences-favourites.png */; };
+		B57748430F7A8B57003B34F9 /* toolbar-preferences-favorites.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */; };
 		B57748440F7A8B57003B34F9 /* toolbar-preferences-network.png in Resources */ = {isa = PBXBuildFile; fileRef = B577483C0F7A8B57003B34F9 /* toolbar-preferences-network.png */; };
 		B57748450F7A8B57003B34F9 /* toolbar-preferences-security.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B577483D0F7A8B57003B34F9 /* toolbar-preferences-security.tiff */; };
 		B57748460F7A8B57003B34F9 /* toolbar-preferences-tables.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */; };
@@ -236,13 +236,13 @@
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
 		B57747D70F7A8990003B34F9 /* SPWindowAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowAdditions.h; sourceTree = "<group>"; };
 		B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowAdditions.m; sourceTree = "<group>"; };
-		B57747DA0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavouriteTextFieldCell.h; sourceTree = "<group>"; };
-		B57747DB0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavouriteTextFieldCell.m; sourceTree = "<group>"; };
+		B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteTextFieldCell.h; sourceTree = "<group>"; };
+		B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoriteTextFieldCell.m; sourceTree = "<group>"; };
 		B57748370F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-advanced.tiff"; sourceTree = "<group>"; };
 		B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-general.tiff"; sourceTree = "<group>"; };
 		B57748390F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-notifications.tiff"; sourceTree = "<group>"; };
 		B577483A0F7A8B57003B34F9 /* database.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = database.png; sourceTree = "<group>"; };
-		B577483B0F7A8B57003B34F9 /* toolbar-preferences-favourites.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-preferences-favourites.png"; sourceTree = "<group>"; };
+		B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-preferences-favorites.png"; sourceTree = "<group>"; };
 		B577483C0F7A8B57003B34F9 /* toolbar-preferences-network.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-preferences-network.png"; sourceTree = "<group>"; };
 		B577483D0F7A8B57003B34F9 /* toolbar-preferences-security.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-security.tiff"; sourceTree = "<group>"; };
 		B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-preferences-tables.tiff"; sourceTree = "<group>"; };
@@ -435,8 +435,8 @@
 			children = (
 				17E641680EF01F37001BC333 /* ImageAndTextCell.h */,
 				17E641690EF01F37001BC333 /* ImageAndTextCell.m */,
-				B57747DA0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.h */,
-				B57747DB0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.m */,
+				B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */,
+				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
 				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
 				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
 			);
@@ -507,7 +507,7 @@
 				B57748370F7A8B57003B34F9 /* toolbar-preferences-advanced.tiff */,
 				B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */,
 				B57748390F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff */,
-				B577483B0F7A8B57003B34F9 /* toolbar-preferences-favourites.png */,
+				B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */,
 				B577483C0F7A8B57003B34F9 /* toolbar-preferences-network.png */,
 				B577483D0F7A8B57003B34F9 /* toolbar-preferences-security.tiff */,
 				B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */,
@@ -714,7 +714,7 @@
 				B57748400F7A8B57003B34F9 /* toolbar-preferences-general.tiff in Resources */,
 				B57748410F7A8B57003B34F9 /* toolbar-preferences-notifications.tiff in Resources */,
 				B57748420F7A8B57003B34F9 /* database.png in Resources */,
-				B57748430F7A8B57003B34F9 /* toolbar-preferences-favourites.png in Resources */,
+				B57748430F7A8B57003B34F9 /* toolbar-preferences-favorites.png in Resources */,
 				B57748440F7A8B57003B34F9 /* toolbar-preferences-network.png in Resources */,
 				B57748450F7A8B57003B34F9 /* toolbar-preferences-security.tiff in Resources */,
 				B57748460F7A8B57003B34F9 /* toolbar-preferences-tables.tiff in Resources */,
@@ -778,7 +778,7 @@
 				B5E92F1C0F75B2E800012500 /* SPExportController.m in Sources */,
 				B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */,
 				B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */,
-				B57747DC0F7A89D0003B34F9 /* SPFavouriteTextFieldCell.m in Sources */,
+				B57747DC0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

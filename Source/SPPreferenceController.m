@@ -23,14 +23,14 @@
 
 #import "SPPreferenceController.h"
 #import "SPWindowAdditions.h"
-#import "SPFavouriteTextFieldCell.h"
+#import "SPFavoriteTextFieldCell.h"
 #import "KeyChain.h"
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
 #define PREFERENCE_TOOLBAR_GENERAL			@"Preference Toolbar General"
 #define PREFERENCE_TOOLBAR_TABLES			@"Preference Toolbar Tables"
-#define PREFERENCE_TOOLBAR_FAVORITES		@"Preference Toolbar Favourites"
+#define PREFERENCE_TOOLBAR_FAVORITES		@"Preference Toolbar Favorites"
 #define PREFERENCE_TOOLBAR_NOTIFICATIONS	@"Preference Toolbar Notifications"
 #define PREFERENCE_TOOLBAR_AUTOUPDATE		@"Preference Toolbar Auto Update"
 #define PREFERENCE_TOOLBAR_NETWORK			@"Preference Toolbar Network"
@@ -41,7 +41,7 @@
 
 - (void)_setupToolbar;
 - (void)_resizeWindowForContentView:(NSView *)view;
-- (void)_updateDefaultFavouritePopup;
+- (void)_updateDefaultFavoritePopup;
 
 @end
 
@@ -67,51 +67,51 @@
 	prefs    = [NSUserDefaults standardUserDefaults];
 	keychain = [[KeyChain alloc] init];
 
-	SPFavouriteTextFieldCell *tableCell = [[[SPFavouriteTextFieldCell alloc] init] autorelease];
+	SPFavoriteTextFieldCell *tableCell = [[[SPFavoriteTextFieldCell alloc] init] autorelease];
 	
 	[tableCell setImage:[NSImage imageNamed:@"database"]];
 	
 	// Replace column's NSTextFieldCell with custom SWProfileTextFieldCell
-	[[[favouritesTableView tableColumns] objectAtIndex:0] setDataCell:tableCell];
+	[[[favoritesTableView tableColumns] objectAtIndex:0] setDataCell:tableCell];
 	
-	[favouritesTableView registerForDraggedTypes:[NSArray arrayWithObject:FAVORITES_PB_DRAG_TYPE]];
+	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:FAVORITES_PB_DRAG_TYPE]];
 	
-	[favouritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-	[favouritesTableView reloadData];
+	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+	[favoritesTableView reloadData];
 	
-	[self _updateDefaultFavouritePopup];
+	[self _updateDefaultFavoritePopup];
 }
 
 #pragma mark -
 #pragma mark IBAction methods
 
 // -------------------------------------------------------------------------------
-// addFavourite:
+// addFavorite:
 // -------------------------------------------------------------------------------
-- (IBAction)addFavourite:(id)sender
+- (IBAction)addFavorite:(id)sender
 {
-	// Create default favourite
-	NSMutableDictionary *favourite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favourite", @"", @"", @"", @"", @"", nil] 
+	// Create default favorite
+	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", @"", @"", @"", @"", nil] 
 																	   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", nil]];
 	
-	[favouritesController addObject:favourite];
+	[favoritesController addObject:favorite];
 	
-	[favouritesTableView reloadData];
-	[self _updateDefaultFavouritePopup];
+	[favoritesTableView reloadData];
+	[self _updateDefaultFavoritePopup];
 }
 
 // -------------------------------------------------------------------------------
-// removeFavourite:
+// removeFavorite:
 // -------------------------------------------------------------------------------
-- (IBAction)removeFavourite:(id)sender
+- (IBAction)removeFavorite:(id)sender
 {
-	if ([favouritesTableView numberOfSelectedRows] == 1) {
+	if ([favoritesTableView numberOfSelectedRows] == 1) {
 		
-		// Get selected favourite's details
-		NSString *name     = [favouritesController valueForKeyPath:@"selection.name"];
-		NSString *user     = [favouritesController valueForKeyPath:@"selection.user"];
-		NSString *host     = [favouritesController valueForKeyPath:@"selection.host"];
-		NSString *database = [favouritesController valueForKeyPath:@"selection.database"];
+		// Get selected favorite's details
+		NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
+		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
+		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
+		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
 		
 		// Remove passwords from the Keychain
 		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
@@ -119,50 +119,59 @@
 		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
 								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 		
-		// Reset last used favourite
-		if ([favouritesTableView selectedRow] == [prefs integerForKey:@"LastFavouriteIndex"]) {
-			[prefs setInteger:0	forKey:@"LastFavouriteIndex"];
+		// Reset last used favorite
+		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"LastFavoriteIndex"]) {
+			[prefs setInteger:0	forKey:@"LastFavoriteIndex"];
 		}
 		
-		// Reset default favourite
-		if ([favouritesTableView selectedRow] == [prefs integerForKey:@"DefaultFavourite"]) {
-			[prefs setInteger:[prefs integerForKey:@"LastFavouriteIndex"] forKey:@"DefaultFavourite"];
+		// Reset default favorite
+		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"DefaultFavorite"]) {
+			[prefs setInteger:[prefs integerForKey:@"LastFavoriteIndex"] forKey:@"DefaultFavorite"];
 		}
 
-		[favouritesController removeObjectAtArrangedObjectIndex:[favouritesTableView selectedRow]];
+		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
 		
-		[favouritesTableView reloadData];
-		[self _updateDefaultFavouritePopup];
+		[favoritesTableView reloadData];
+		[self _updateDefaultFavoritePopup];
 	}
 }
 
 // -------------------------------------------------------------------------------
-// duplicateFavourite:
+// duplicateFavorite:
 // -------------------------------------------------------------------------------
-- (IBAction)duplicateFavourite:(id)sender
+- (IBAction)duplicateFavorite:(id)sender
 {
-	if ([favouritesTableView numberOfSelectedRows] == 1) {
-		NSMutableDictionary *favourite = [NSMutableDictionary dictionaryWithDictionary:[[favouritesController arrangedObjects] objectAtIndex:[favouritesTableView selectedRow]]];
+	if ([favoritesTableView numberOfSelectedRows] == 1) {
+		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
 		
-		[favouritesController addObject:favourite];
+		[favoritesController addObject:favorite];
 		
-		[favouritesTableView reloadData];
-		[self _updateDefaultFavouritePopup];
+		[favoritesTableView reloadData];
+		[self _updateDefaultFavoritePopup];
 	}
 }
 
 // -------------------------------------------------------------------------------
-// updateDefaultFavourite:
+// saveFavorite:
 // -------------------------------------------------------------------------------
-- (IBAction)updateDefaultFavourite:(id)sender
+- (IBAction)saveFavorite:(id)sender
 {
-	if ([defaultFavouritePopup indexOfSelectedItem] == 0) {
-		[prefs setBool:YES forKey:@"SelectLastFavouriteUsed"];
+	
+}
+
+
+// -------------------------------------------------------------------------------
+// updateDefaultFavorite:
+// -------------------------------------------------------------------------------
+- (IBAction)updateDefaultFavorite:(id)sender
+{
+	if ([defaultFavoritePopup indexOfSelectedItem] == 0) {
+		[prefs setBool:YES forKey:@"SelectLastFavoriteUsed"];
 	} else {
-		[prefs setBool:NO forKey:@"SelectLastFavouriteUsed"];
+		[prefs setBool:NO forKey:@"SelectLastFavoriteUsed"];
 
 		// Minus 2 from index to account for the "Last Used" and separator items
-		[prefs setInteger:[defaultFavouritePopup indexOfSelectedItem]-2 forKey:@"DefaultFavourite"];
+		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:@"DefaultFavorite"];
 	}
 }
 
@@ -188,19 +197,19 @@
 }
 
 // -------------------------------------------------------------------------------
-// displayFavouritePreferences:
+// displayFavoritePreferences:
 // -------------------------------------------------------------------------------
-- (IBAction)displayFavouritePreferences:(id)sender
+- (IBAction)displayFavoritePreferences:(id)sender
 {
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
-	[self _resizeWindowForContentView:favouritesView];
+	[self _resizeWindowForContentView:favoritesView];
 	
-	// Set the default favourite popup back to preference
-	if (sender == [defaultFavouritePopup lastItem]) {
-		if (![prefs boolForKey:@"SelectLastFavouriteUsed"]) {
-			[defaultFavouritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavourite"]+2];
+	// Set the default favorite popup back to preference
+	if (sender == [defaultFavoritePopup lastItem]) {
+		if (![prefs boolForKey:@"SelectLastFavoriteUsed"]) {
+			[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"]+2];
 		} else {
-			[defaultFavouritePopup selectItemAtIndex:0];
+			[defaultFavoritePopup selectItemAtIndex:0];
 		}
 	}
 }
@@ -240,7 +249,7 @@
 // -------------------------------------------------------------------------------
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [[favouritesController  arrangedObjects] count];
+	return [[favoritesController  arrangedObjects] count];
 }
 
 // -------------------------------------------------------------------------------
@@ -248,7 +257,7 @@
 // -------------------------------------------------------------------------------
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-	return [[[favouritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
 
 #pragma mark -
@@ -313,24 +322,24 @@
 		destinationRow--;
 	}
 	
-	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[[favouritesController arrangedObjects] objectAtIndex:originalRow]];
+	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:originalRow]];
 	
-	[favouritesController removeObjectAtArrangedObjectIndex:originalRow];
-	[favouritesController insertObject:draggedRow atArrangedObjectIndex:destinationRow];
+	[favoritesController removeObjectAtArrangedObjectIndex:originalRow];
+	[favoritesController insertObject:draggedRow atArrangedObjectIndex:destinationRow];
 	
-	[favouritesTableView reloadData];
-	[favouritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
+	[favoritesTableView reloadData];
+	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
 	
-	// Update default favourite to take on new value
-	if ([prefs integerForKey:@"LastFavouriteIndex"] == originalRow) {
-		[prefs setInteger:destinationRow forKey:@"LastFavouriteIndex"];
+	// Update default favorite to take on new value
+	if ([prefs integerForKey:@"LastFavoriteIndex"] == originalRow) {
+		[prefs setInteger:destinationRow forKey:@"LastFavoriteIndex"];
 	}
 	
-	// Update default favourite to take on new value
-	if ([prefs integerForKey:@"DefaultFavourite"] == originalRow) {
-		[prefs setInteger:destinationRow forKey:@"DefaultFavourite"];
+	// Update default favorite to take on new value
+	if ([prefs integerForKey:@"DefaultFavorite"] == originalRow) {
+		[prefs setInteger:destinationRow forKey:@"DefaultFavorite"];
 	}
-	[self _updateDefaultFavouritePopup];
+	[self _updateDefaultFavoritePopup];
 	
 	return YES;
 }
@@ -344,9 +353,9 @@
 // -------------------------------------------------------------------------------
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(int)index
 {
-	if ([cell isKindOfClass:[SPFavouriteTextFieldCell class]]) {
-		[cell setFavouriteName:[[[favouritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
-		[cell setFavouriteHost:[[[favouritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
+	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
+		[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
+		[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
 	}
 }
 
@@ -355,8 +364,8 @@
 // -------------------------------------------------------------------------------
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {	
-	if ([[favouritesTableView selectedRowIndexes] count] > 0) {
-		[favouritesController setSelectionIndexes:[favouritesTableView selectedRowIndexes]];		
+	if ([[favoritesTableView selectedRowIndexes] count] > 0) {
+		[favoritesController setSelectionIndexes:[favoritesTableView selectedRowIndexes]];		
 	}
 }
 
@@ -375,7 +384,7 @@
 		return tablesItem;
 	}
 	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_FAVORITES]) {
-		return favouritesItem;
+		return favoritesItem;
 	}
 	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_NOTIFICATIONS]) {
 		return notificationsItem;
@@ -455,13 +464,13 @@
 	[tablesItem setTarget:self];
 	[tablesItem setAction:@selector(displayTablePreferences:)];
 	
-	// Favourite preferences
-	favouritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
+	// Favorite preferences
+	favoritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
 	
-	[favouritesItem setLabel:NSLocalizedString(@"Favourites", @"")];
-    [favouritesItem setImage:[NSImage imageNamed:@"toolbar-preferences-favourites"]];
-    [favouritesItem setTarget:self];
-    [favouritesItem setAction:@selector(displayFavouritePreferences:)];
+	[favoritesItem setLabel:NSLocalizedString(@"Favorites", @"")];
+    [favoritesItem setImage:[NSImage imageNamed:@"toolbar-preferences-favorites"]];
+    [favoritesItem setTarget:self];
+    [favoritesItem setAction:@selector(displayFavoritePreferences:)];
 	
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
@@ -512,32 +521,32 @@
 
 
 // -------------------------------------------------------------------------------
-// _updateDefaultFavouritePopup:
+// _updateDefaultFavoritePopup:
 //
-// Build the default favourite popup button
+// Build the default favorite popup button
 // -------------------------------------------------------------------------------
-- (void)_updateDefaultFavouritePopup;
+- (void)_updateDefaultFavoritePopup;
 {
-	[defaultFavouritePopup removeAllItems];
+	[defaultFavoritePopup removeAllItems];
 	
-	// Use the last used favourite
-	[defaultFavouritePopup addItemWithTitle:@"Last Used"];
-	[[defaultFavouritePopup menu] addItem:[NSMenuItem separatorItem]];
+	// Use the last used favorite
+	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
+	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
-	// Load in current favourites
-	[defaultFavouritePopup addItemsWithTitles:[[favouritesController arrangedObjects] valueForKeyPath:@"name"]];
+	// Load in current favorites
+	[defaultFavoritePopup addItemsWithTitles:[[favoritesController arrangedObjects] valueForKeyPath:@"name"]];
 	
-	// Add item to switch to edit favourites pane
-	[[defaultFavouritePopup menu] addItem:[NSMenuItem separatorItem]];
-	[defaultFavouritePopup addItemWithTitle:@"Edit Favourites…"];
-	[[[defaultFavouritePopup menu] itemWithTitle:@"Edit Favourites…"] setAction:@selector(displayFavouritePreferences:)];
-	[[[defaultFavouritePopup menu] itemWithTitle:@"Edit Favourites…"] setTarget:self];
+	// Add item to switch to edit favorites pane
+	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
+	[defaultFavoritePopup addItemWithTitle:@"Edit Favorites…"];
+	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setAction:@selector(displayFavoritePreferences:)];
+	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
 	
-	// Select the default favourite from prefs
-	if (![prefs boolForKey:@"SelectLastFavouriteUsed"]) {
-		[defaultFavouritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavourite"] + 2];
+	// Select the default favorite from prefs
+	if (![prefs boolForKey:@"SelectLastFavoriteUsed"]) {
+		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"] + 2];
 	} else {
-		[defaultFavouritePopup selectItemAtIndex:0];
+		[defaultFavoritePopup selectItemAtIndex:0];
 	}
 }
 

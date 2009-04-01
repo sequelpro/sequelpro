@@ -1,5 +1,5 @@
 //
-//  SPFavouriteTextFieldCell.h
+//  SPFavoriteTextFieldCell.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Dec 29, 2008
@@ -23,20 +23,20 @@
 #import <Cocoa/Cocoa.h>
 #import "ImageAndTextCell.h"
 
-@interface SPFavouriteTextFieldCell : ImageAndTextCell
+@interface SPFavoriteTextFieldCell : ImageAndTextCell
 {
-	NSString *favouriteName;
-	NSString *favouriteHost;
+	NSString *favoriteName;
+	NSString *favoriteHost;
 	
 	NSColor  *mainStringColor;
 	NSColor  *subStringColor;
 }
 
-- (NSString *)favouriteName;
-- (void)setFavouriteName:(NSString *)name;
+- (NSString *)favoriteName;
+- (void)setFavoriteName:(NSString *)name;
 
-- (NSString *)favouriteHost;
-- (void)setFavouriteHost:(NSString *)host;
+- (NSString *)favoriteHost;
+- (void)setFavoriteHost:(NSString *)host;
 
 - (void)invertFontColors;
 - (void)restoreFontColors;
