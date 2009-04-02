@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4487"/>
+			<integer value="5281"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -175,6 +175,7 @@
 															</object>
 															<string key="NSFrame">{{1, 1}, {194, 393}}</string>
 															<reference key="NSSuperview" ref="233472824"/>
+															<reference key="NSNextKeyView" ref="251040077"/>
 															<reference key="NSDocView" ref="251040077"/>
 															<object class="NSColor" key="NSBGColor" id="1024678221">
 																<int key="NSColorSpace">6</int>
@@ -206,6 +207,7 @@
 													</object>
 													<string key="NSFrameSize">{196, 395}</string>
 													<reference key="NSSuperview" ref="355288374"/>
+													<reference key="NSNextKeyView" ref="73685676"/>
 													<int key="NSsFlags">530</int>
 													<reference key="NSVScroller" ref="693168867"/>
 													<reference key="NSHScroller" ref="656188692"/>
@@ -290,6 +292,7 @@
 															</object>
 															<string key="NSFrame">{{1, 1}, {194, 123}}</string>
 															<reference key="NSSuperview" ref="298226231"/>
+															<reference key="NSNextKeyView" ref="347093764"/>
 															<reference key="NSDocView" ref="347093764"/>
 															<reference key="NSBGColor" ref="1024678221"/>
 															<int key="NScvFlags">4</int>
@@ -316,6 +319,7 @@
 													</object>
 													<string key="NSFrame">{{0, 404}, {196, 125}}</string>
 													<reference key="NSSuperview" ref="355288374"/>
+													<reference key="NSNextKeyView" ref="685057119"/>
 													<int key="NSsFlags">530</int>
 													<reference key="NSVScroller" ref="245346414"/>
 													<reference key="NSHScroller" ref="353686052"/>
@@ -367,7 +371,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage">
+												<object class="NSCustomResource" key="NSNormalImage" id="646982536">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -382,10 +386,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<object class="NSCustomResource" key="NSImage" id="646277560">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_action</string>
-													</object>
+													<reference key="NSImage" ref="646982536"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2634,6 +2635,7 @@
 																						</object>
 																						<string key="NSFrame">{{1, 1}, {625, 155}}</string>
 																						<reference key="NSSuperview" ref="71560786"/>
+																						<reference key="NSNextKeyView" ref="1055190999"/>
 																						<reference key="NSDocView" ref="1055190999"/>
 																						<reference key="NSBGColor" ref="449903125"/>
 																						<object class="NSCursor" key="NSCursor" id="32917531">
@@ -2665,6 +2667,7 @@
 																				</object>
 																				<string key="NSFrameSize">{627, 157}</string>
 																				<reference key="NSSuperview" ref="873437769"/>
+																				<reference key="NSNextKeyView" ref="1072692119"/>
 																				<int key="NSsFlags">530</int>
 																				<reference key="NSVScroller" ref="413233170"/>
 																				<reference key="NSHScroller" ref="783638826"/>
@@ -2751,6 +2754,7 @@
 																						</object>
 																						<string key="NSFrame">{{1, 17}, {625, 228}}</string>
 																						<reference key="NSSuperview" ref="678281118"/>
+																						<reference key="NSNextKeyView" ref="581095761"/>
 																						<reference key="NSDocView" ref="581095761"/>
 																						<reference key="NSBGColor" ref="1024678221"/>
 																						<int key="NScvFlags">4</int>
@@ -2783,6 +2787,7 @@
 																						</object>
 																						<string key="NSFrame">{{1, 0}, {625, 17}}</string>
 																						<reference key="NSSuperview" ref="678281118"/>
+																						<reference key="NSNextKeyView" ref="1038415606"/>
 																						<reference key="NSDocView" ref="1038415606"/>
 																						<reference key="NSBGColor" ref="1024678221"/>
 																						<int key="NScvFlags">4</int>
@@ -2791,6 +2796,7 @@
 																				</object>
 																				<string key="NSFrameSize">{627, 246}</string>
 																				<reference key="NSSuperview" ref="345834048"/>
+																				<reference key="NSNextKeyView" ref="90844306"/>
 																				<int key="NSsFlags">562</int>
 																				<reference key="NSVScroller" ref="472831765"/>
 																				<reference key="NSHScroller" ref="851610321"/>
@@ -2947,7 +2953,10 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="646277560"/>
+																					<object class="NSCustomResource" key="NSNormalImage">
+																						<string key="NSClassName">NSImage</string>
+																						<string key="NSResourceName">button_action</string>
+																					</object>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2959,7 +2968,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="646277560"/>
+																						<reference key="NSImage" ref="646982536"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -3083,7 +3092,6 @@
 																								<reference key="NSMenu" ref="60735230"/>
 																								<string key="NSTitle">Completion List</string>
 																								<string type="base64-UTF8" key="NSKeyEquiv">Gw</string>
-																								<int key="NSKeyEquivModMask">524288</int>
 																								<int key="NSMnemonicLoc">2147483647</int>
 																								<reference key="NSOnImage" ref="594889092"/>
 																								<reference key="NSMixedImage" ref="515625830"/>
@@ -3129,7 +3137,7 @@
 																							</object>
 																						</object>
 																					</object>
-																					<int key="NSSelectedIndex">6</int>
+																					<int key="NSSelectedIndex">10</int>
 																					<bool key="NSPullDown">YES</bool>
 																					<int key="NSPreferredEdge">1</int>
 																					<bool key="NSUsesItemFromMenu">YES</bool>
@@ -19261,8 +19269,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{725, 361}, {863, 550}}</string>
-					<string>{{725, 361}, {863, 550}}</string>
+					<string>{{428, 361}, {863, 550}}</string>
+					<string>{{428, 361}, {863, 550}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{62, 352}, {845, 504}}</string>
@@ -19444,7 +19452,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{916, 520}, {236, 220}}</string>
+					<string>{{619, 520}, {236, 220}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
