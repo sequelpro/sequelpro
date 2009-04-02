@@ -138,6 +138,35 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			return;
 		}
 
+		// When a quote character is being inserted into a string quoted with other
+		// quote characters, or if it's the same character but is escaped, don't
+		// automatically match it.
+		if(
+			// Only for " ` or ' quote characters
+			(insertedCharacter == '\'' || insertedCharacter == '"' || insertedCharacter == '`')
+
+			// And if the next char marked as linked auto-pair
+			&& [self isNextCharMarkedBy:kAPlinked]
+
+			// And we are inside a quoted string
+			&& [self isNextCharMarkedBy:kWQquoted]
+
+			// And there is no selection, just the text caret
+			&& ![self selectedRange].length
+
+			&& (
+				// And the user is inserting an escaped string
+				[[self string] characterAtIndex:[self selectedRange].location-1] == '\\'
+				
+				// Or the user is inserting a character not matching the characters used to quote this string
+				|| [[self string] characterAtIndex:[self selectedRange].location] != insertedCharacter
+			)
+		)
+		{
+			[super keyDown: theEvent];
+			return;
+		}
+
 		// If the caret is inside a text string, without any selection, skip autopairing.
 		// There is one exception to this - if the caret is before a linked pair character,
 		// processing continues in order to check whether the next character should be jumped
@@ -819,7 +848,8 @@ sets self as delegate for the textView's textStorage to enable syntax highlighti
     NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
     NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
     NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
-    
+	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
+
     NSColor *tokenColor;
     
     int token;
@@ -844,6 +874,9 @@ sets self as delegate for the textView's textStorage to enable syntax highlighti
             case SPT_SINGLE_QUOTED_TEXT:
             case SPT_DOUBLE_QUOTED_TEXT:
                 tokenColor = quoteColor;
+                break;
+            case SPT_BACKTICK_QUOTED_TEXT:
+                tokenColor = backtickColor;
                 break;
             case SPT_RESERVED_WORD:
                 tokenColor = keywordColor;
