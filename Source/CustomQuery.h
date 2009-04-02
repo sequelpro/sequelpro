@@ -47,6 +47,7 @@
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
 	IBOutlet NSMenuItem *runSelectionMenuItem;
+	IBOutlet NSMenuItem *clearHistoryMenuItem;
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
 	IBOutlet NSMenuItem *shiftRightMenuItem;
 	IBOutlet NSMenuItem *completionListMenuItem;

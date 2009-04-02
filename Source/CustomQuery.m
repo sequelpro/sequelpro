@@ -161,6 +161,12 @@ closes the sheet
  */
 - (IBAction)gearMenuItemSelected:(id)sender
 {
+	// "Clear History" menu item - clear query history
+	if (sender == clearHistoryMenuItem) {
+		[queryHistoryButton removeAllItems];
+		[queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
+		[prefs setObject:[NSArray array] forKey:@"queryHistory"];
+	}
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
 	if (sender == shiftRightMenuItem) {
