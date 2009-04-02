@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.02">
+<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9G55</string>
-		<string key="IBDocument.InterfaceBuilderVersion">672</string>
+		<string key="IBDocument.InterfaceBuilderVersion">677</string>
 		<string key="IBDocument.AppKitVersion">949.43</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="227"/>
-			<integer value="81"/>
+			<integer value="791"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+		</object>
+		<object class="NSMutableDictionary" key="IBDocument.Metadata">
+			<bool key="EncodedWithXMLCoder">YES</bool>
+			<object class="NSArray" key="dict.sortedKeys">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+			</object>
+			<object class="NSMutableArray" key="dict.values">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="549353383">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -765,7 +773,7 @@
 								</object>
 								<object class="NSMenuItem" id="924530602">
 									<reference key="NSMenu" ref="466354362"/>
-									<string key="NSTitle">Toggle Console</string>
+									<string key="NSTitle">Show Console</string>
 									<string key="NSKeyEquiv">K</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -1374,7 +1382,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{213, 107}</string>
 				<object class="NSView" key="NSWindowView" id="577801299">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1716,7 +1724,6 @@
 									</object>
 									<string key="NSFrame">{{1, 17}, {425, 182}}</string>
 									<reference key="NSSuperview" ref="1003742956"/>
-									<reference key="NSNextKeyView" ref="207456822"/>
 									<reference key="NSDocView" ref="207456822"/>
 									<reference key="NSBGColor" ref="129141099"/>
 									<int key="NScvFlags">4</int>
@@ -1750,7 +1757,6 @@
 									</object>
 									<string key="NSFrame">{{1, 0}, {425, 17}}</string>
 									<reference key="NSSuperview" ref="1003742956"/>
-									<reference key="NSNextKeyView" ref="733755652"/>
 									<reference key="NSDocView" ref="733755652"/>
 									<reference key="NSBGColor" ref="129141099"/>
 									<int key="NScvFlags">4</int>
@@ -1759,7 +1765,6 @@
 							</object>
 							<string key="NSFrame">{{263, 40}, {427, 200}}</string>
 							<reference key="NSSuperview" ref="577801299"/>
-							<reference key="NSNextKeyView" ref="44813966"/>
 							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="257545235"/>
 							<reference key="NSHScroller" ref="1049987731"/>
@@ -2434,7 +2439,6 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 						</object>
 					</object>
 					<string key="NSFrameSize">{710, 282}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{213, 129}</string>
@@ -6878,7 +6882,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{243, 201}, {235, 183}}</string>
+					<string>{{420, 421}, {235, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -7444,17 +7448,42 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>clearConsole:</string>
+							<string>copy:</string>
 							<string>saveConsoleAs:</string>
+							<string>toggleShowSelectShowStatements:</string>
+							<string>toggleShowTimeStamps:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">consoleTextView</string>
-						<string key="NS.object.0">NSTextView</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>clearConsoleButton</string>
+							<string>consoleSearchField</string>
+							<string>consoleTableView</string>
+							<string>includeTimeStampsButton</string>
+							<string>progressIndicator</string>
+							<string>saveConsoleButton</string>
+							<string>saveLogView</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
+							<string>NSSearchField</string>
+							<string>NSTableView</string>
+							<string>NSButton</string>
+							<string>NSProgressIndicator</string>
+							<string>NSButton</string>
+							<string>NSView</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -7558,7 +7587,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>keyChainInstance</string>
 							<string>passwordField</string>
 							<string>portField</string>
-							<string>queryConsoleInstance</string>
 							<string>queryProgressBar</string>
 							<string>sidebarGrabber</string>
 							<string>socketField</string>
@@ -7593,7 +7621,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSArrayController</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

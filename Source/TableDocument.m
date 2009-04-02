@@ -607,7 +607,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)toggleConsole:(id)sender
 {
-	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:![[[SPQueryConsole sharedQueryConsole] window] isVisible]];
+	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
+	
+	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:(!isConsoleVisible)];
+	
+	// Only update the menu item title if its the menu item and not the toolbar
+	if ([sender isKindOfClass:[NSMenuItem class]]) {
+		[(NSMenuItem *)sender setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
+	}
 }
 
 /**
