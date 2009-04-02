@@ -155,6 +155,49 @@ closes the sheet
 }
 
 
+/*
+ * Perform simple actions (which don't require their own method), triggered by selecting the appropriate menu item
+ * in the "gear" action menu displayed beneath the cusotm query view.
+ */
+- (IBAction)gearMenuItemSelected:(id)sender
+{
+
+	// "Shift Right" menu item - indent the selection with an additional tab.
+	if (sender == shiftRightMenuItem) {
+		[textView shiftSelectionRight];
+	}
+
+	// "Shift Left" menu item - un-indent the selection by one tab if possible.
+	if (sender == shiftLeftMenuItem) {
+		[textView shiftSelectionLeft];
+	}
+
+	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
+	// on normal autocomplete usage.
+	if (sender == completionListMenuItem) {
+		[textView complete:self];
+	}
+
+	// "Indent new lines" toggle
+	if (sender == autoindentMenuItem) {
+		BOOL enableAutoindent = ([autoindentMenuItem state] == NSOffState);
+		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoindent"];
+		[prefs synchronize];
+		[autoindentMenuItem setState:enableAutoindent?NSOnState:NSOffState];
+		[textView setAutoindent:enableAutoindent];
+	}
+
+	// "Auto-pair characters" toggle
+	if (sender == autopairMenuItem) {
+		BOOL enableAutopair = ([autopairMenuItem state] == NSOffState);
+		[prefs setBool:enableAutopair forKey:@"CustomQueryAutopair"];
+		[prefs synchronize];
+		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
+		[textView setAutopair:enableAutopair];
+	}
+}
+
+
 #pragma mark -
 #pragma mark queryFavoritesSheet methods
 
@@ -549,8 +592,10 @@ sets the connection (received from TableDocument) and makes things that have to 
 		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	[textView setContinuousSpellCheckingEnabled:NO];
+	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoindent"]?NSOnState:NSOffState)];
 	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
 	[textView setAutoindentIgnoresEnter:YES];
+	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutopair"]?NSOnState:NSOffState)];
 	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutopair"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
@@ -891,9 +936,10 @@ traps enter key and
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	// If no text is selected, disable the button.
+	// If no text is selected, disable the button and action menu.
 	if ( [textView selectedRange].location == NSNotFound ) {
 		[runSelectionButton setEnabled:NO];
+		[runSelectionMenuItem setEnabled:NO];
 		return;
 	}
 
@@ -922,12 +968,15 @@ traps enter key and
 			) {
 
 			[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
 
 			// If a valid query is present at the cursor position, enable the button
 			if ([self queryAtPosition:selectionPosition]) {
 				[runSelectionButton setEnabled:YES];
+				[runSelectionMenuItem setEnabled:YES];
 			} else {
 				[runSelectionButton setEnabled:NO];
+				[runSelectionMenuItem setEnabled:NO];
 			}
 		}
 
@@ -935,6 +984,8 @@ traps enter key and
 	} else {
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
 		[runSelectionButton setEnabled:YES];		
+		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
+		[runSelectionMenuItem setEnabled:YES];		
 	}
 }
 

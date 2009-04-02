@@ -252,15 +252,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
-    if (aSelector == @selector(insertNewline:) && (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C)) {
+    if (aSelector == @selector(insertNewline:)
+		&& autoindentEnabled
+		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
+	{
 		NSString *textViewString = [[self textStorage] string];
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
-		NSUInteger lineStart, lineEnd;
+		NSRange currentLineRange;
 
 		// Extract the current line based on the text caret or selection start position
-		[textViewString getLineStart:&lineStart end:NULL contentsEnd:&lineEnd forRange:NSMakeRange([self selectedRange].location, 0)];
-		currentLine = [[NSString alloc] initWithString:[textViewString substringWithRange:NSMakeRange(lineStart, lineEnd - lineStart)]];
+		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+		currentLine = [[NSString alloc] initWithString:[textViewString substringWithRange:currentLineRange]];
 
 		// Scan all indentation characters on the line into a string
 		whitespaceScanner = [[NSScanner alloc] initWithString:currentLine];
@@ -281,6 +284,129 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[super doCommandBySelector:aSelector];
 }
 
+
+/*
+ * Shifts the selection, if any, rightwards by indenting any selected lines with one tab.
+ * If the caret is within a line, the selection is not changed after the index; if the selection
+ * has length, all lines crossed by the length are indented and fully selected.
+ * Returns whether or not an indentation was performed.
+ */
+- (BOOL) shiftSelectionRight
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSRange currentLineRange;
+	NSArray *lineRanges;
+	NSString *tabString = @"\t";
+	int i, indentedLinesLength = 0;
+
+	if ([self selectedRange].location == NSNotFound) return NO;
+
+	// Indent the currently selected line if the caret is within a single line
+	if ([self selectedRange].length == 0) {
+		NSRange currentLineRange;
+
+		// Extract the current line range based on the text caret
+		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+
+		// Register the indent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:tabString];
+
+		// Insert the new tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:tabString];
+
+		return YES;
+	}
+
+	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
+	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
+
+	// Loop through the ranges, storing a count of the overall length.
+	for (i = 0; i < [lineRanges count]; i++) {
+		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
+		indentedLinesLength += currentLineRange.length + 1;
+
+		// Register the indent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location+i, 0) replacementString:tabString];
+
+		// Insert the new tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location+i, 0) withString:tabString];
+	}
+
+	// Select the entirety of the new range
+	[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, indentedLinesLength)];
+
+	return YES;
+}
+
+
+/*
+ * Shifts the selection, if any, leftwards by un-indenting any selected lines by one tab if possible.
+ * If the caret is within a line, the selection is not changed after the undent; if the selection has
+ * length, all lines crossed by the length are un-indented and fully selected.
+ * Returns whether or not an indentation was performed.
+ */
+- (BOOL) shiftSelectionLeft
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSRange currentLineRange;
+	NSArray *lineRanges;
+	int i, unindentedLines = 0, unindentedLinesLength = 0;
+
+	if ([self selectedRange].location == NSNotFound) return NO;
+
+	// Undent the currently selected line if the caret is within a single line
+	if ([self selectedRange].length == 0) {
+		NSRange currentLineRange;
+
+		// Extract the current line range based on the text caret
+		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+
+		// Ensure that the line has length and that the first character is a tab
+		if (currentLineRange.length < 1
+			|| [textViewString characterAtIndex:currentLineRange.location] != '\t')
+			return NO;
+
+		// Register the undent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 1) replacementString:@""];
+
+		// Remove the tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 1) withString:@""];
+
+		return YES;
+	}
+
+	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
+	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
+
+	// Loop through the ranges, storing a count of the total lines changed and the new length.
+	for (i = 0; i < [lineRanges count]; i++) {
+		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
+		unindentedLinesLength += currentLineRange.length;
+		
+		// Ensure that the line has length and that the first character is a tab
+		if (currentLineRange.length < 1
+			|| [textViewString characterAtIndex:currentLineRange.location-unindentedLines] != '\t')
+			continue;
+
+		// Register the undent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) replacementString:@""];
+
+		// Remove the tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) withString:@""];
+		
+		// As a line has been unindented, modify counts and lengths
+		unindentedLines++;
+		unindentedLinesLength--;
+	}
+
+	// If a change was made, select the entirety of the new range and return success
+	if (unindentedLines) {
+		[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, unindentedLinesLength)];
+		return YES;
+	}
+
+	return NO;
+}
 
 /*
  * Handle autocompletion, returning a list of suggested completions for the supplied character range.

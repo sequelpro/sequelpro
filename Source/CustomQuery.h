@@ -46,6 +46,12 @@
 	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
+	IBOutlet NSMenuItem *runSelectionMenuItem;
+	IBOutlet NSMenuItem *shiftLeftMenuItem;
+	IBOutlet NSMenuItem *shiftRightMenuItem;
+	IBOutlet NSMenuItem *completionListMenuItem;
+	IBOutlet NSMenuItem *autoindentMenuItem;
+	IBOutlet NSMenuItem *autopairMenuItem;
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
@@ -60,6 +66,7 @@
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)gearMenuItemSelected:(id)sender;
 
 // queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;

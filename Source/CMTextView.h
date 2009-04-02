@@ -32,13 +32,15 @@
 - (BOOL) isNextCharMarkedBy:(id)attribute;
 - (BOOL) areAdjacentCharsLinked;
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
-- (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
-- (NSArray *)keywords;
-- (void)setAutoindent:(BOOL)enableAutoindent;
-- (BOOL)autoindent;
-- (void)setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
-- (BOOL)autoindentIgnoresEnter;
-- (void)setAutopair:(BOOL)enableAutopair;
-- (BOOL)autopair;
+- (BOOL) shiftSelectionRight;
+- (BOOL) shiftSelectionLeft;
+- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
+- (NSArray *) keywords;
+- (void) setAutoindent:(BOOL)enableAutoindent;
+- (BOOL) autoindent;
+- (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
+- (BOOL) autoindentIgnoresEnter;
+- (void) setAutopair:(BOOL)enableAutopair;
+- (BOOL) autopair;
 
 @end
