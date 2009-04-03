@@ -116,6 +116,134 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	return YES;
 }
 
+/*
+ * Select current line and returns found NSRange.
+ */
+- (NSRange)selectCurrentLine
+{
+	[self doCommandBySelector:@selector(moveToBeginningOfLine:)];
+	[self doCommandBySelector:@selector(moveToEndOfLineAndModifySelection:)];
+	
+	return([self selectedRange]);
+}
+
+/*
+ * Select current word and returns found NSRange.
+ *   finds: [| := caret]  |word  wo|rd  word|
+ * If | is in between whitespaces nothing will be selected.
+ */
+- (NSRange)selectCurrentWord
+{
+	NSRange curRange = [self selectedRange];
+	unsigned long curLocation = curRange.location;
+	[self doCommandBySelector:@selector(moveWordLeft:)];
+	[self  doCommandBySelector:@selector(moveWordRightAndModifySelection:)];
+
+	unsigned long newStartRange = [self selectedRange].location;
+	unsigned long newEndRange = newStartRange + [self selectedRange].length;
+
+	// if current location does not intersect with found range
+	// then caret is at the begin of a word -> change strategy
+	if(curLocation < newStartRange || curLocation > newEndRange)
+	{
+		[self setSelectedRange:curRange];
+		[self doCommandBySelector:@selector(moveWordRightAndModifySelection:)];
+	}
+	
+	if([[[self string] substringWithRange:[self selectedRange]] rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location != NSNotFound)
+		[self setSelectedRange:curRange];
+		
+	return([self selectedRange]);
+}
+
+/*
+ * Copy selected text chunk as RTF to preserve syntax highlighting
+ */
+- (void)copyAsRTF
+{
+
+	NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	NSTextStorage *textStorage = [self textStorage];
+	NSData *rtf = [textStorage RTFFromRange:[self selectedRange]
+		documentAttributes:nil];
+	
+	if (rtf)
+	{
+		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
+		[pb setData:rtf forType:NSRTFPboardType];
+	}
+
+}
+
+/*
+ * Change selection or current word to upper case and preserves the selection.
+ */
+- (void)doSelectionUpperCase
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] uppercaseString]];
+	[self setSelectedRange:curRange];
+}
+
+/*
+ * Change selection or current word to lower case and preserves the selection.
+ */
+- (void)doSelectionLowerCase
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] lowercaseString]];
+	[self setSelectedRange:curRange];
+}
+
+/*
+ * Change selection or current word to title case and preserves the selection.
+ */
+- (void)doSelectionTitleCase
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] capitalizedString]];
+	[self setSelectedRange:curRange];
+}
+
+/*
+ * Change selection or current word according to Unicode's NFD and preserves the selection.
+ */
+- (void)doDecomposedStringWithCanonicalMapping
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] decomposedStringWithCanonicalMapping]];
+	[self setSelectedRange:curRange];
+}
+
+/*
+ * Change selection or current word according to Unicode's NFKD and preserves the selection.
+ */
+- (void)doDecomposedStringWithCompatibilityMapping
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] decomposedStringWithCompatibilityMapping]];
+	[self setSelectedRange:curRange];
+}
+
+/*
+ * Change selection or current word according to Unicode's NFC and preserves the selection.
+ */
+- (void)doPrecomposedStringWithCanonicalMapping
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] precomposedStringWithCanonicalMapping]];
+	[self setSelectedRange:curRange];
+}
+
+/*
+ * Change selection or current word according to Unicode's NFKC to title case and preserves the selection.
+ */
+- (void)doPrecomposedStringWithCompatibilityMapping
+{
+	NSRange curRange = [self selectedRange];
+	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] precomposedStringWithCompatibilityMapping]];
+	[self setSelectedRange:curRange];
+}
 
 
 /*
@@ -123,21 +251,74 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void) keyDown:(NSEvent *)theEvent
 {
+	
+	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
+	
+	// Check if user pressed ⌥ to allow composing of accented characters.
+	// e.g. for US keyboard "⌥u a" to insert ä
+	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask)
+	{
+		[super keyDown: theEvent];
+		return;
+	}
+
 	NSString *characters = [theEvent characters];
+	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
+	unichar insertedCharacter = [characters characterAtIndex:0];
+	long curFlags = ([theEvent modifierFlags] & allFlags);
+	
+
+	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
+	if([charactersIgnMod isEqualToString:@"w"]) // ^W select current word
+		if(curFlags==(NSControlKeyMask))
+		{
+			[self selectCurrentWord];
+			return;
+		}
+
+	if([charactersIgnMod isEqualToString:@"l"]) // ^L select current line
+		if(curFlags==(NSControlKeyMask))
+		{
+			[self selectCurrentLine];
+			return;
+		}
+
+	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
+		if(curFlags==(NSControlKeyMask))
+		{
+			[self copyAsRTF];
+			return;
+		}
+
+	if([charactersIgnMod isEqualToString:@"u"])
+		// ^U upper case
+		if(curFlags==(NSControlKeyMask))
+			{
+				[self doSelectionUpperCase];
+				return;
+			}
+		// ^⌥U title case
+		if(curFlags==(NSControlKeyMask|NSAlternateKeyMask))
+		{
+			[self doSelectionTitleCase];
+			return;
+		}
+
+	if([charactersIgnMod isEqualToString:@"U"]) // ^⇧U lower case
+		if(([theEvent modifierFlags] 
+			& (NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))==(NSControlKeyMask))
+		{
+			[self doSelectionLowerCase];
+			return;
+		}
+
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if (autopairEnabled && characters && [characters length] == 1) {
-		unichar insertedCharacter = [characters characterAtIndex:0];
+
 		NSString *matchingCharacter = nil;
 		BOOL processAutopair = NO, skipTypedLinkedCharacter = NO;
 		NSRange currentRange;
-
-		// Check if user pressed ⌥ to allow composing of accented characters.
-		// e.g. for US keyboard "⌥u a" to insert ä
-		if ([theEvent modifierFlags] & NSAlternateKeyMask) {
-			[super keyDown: theEvent];
-			return;
-		}
 
 		// When a quote character is being inserted into a string quoted with other
 		// quote characters, or if it's the same character but is escaped, don't
@@ -501,31 +682,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[self insertText:@""];
 }
 
+
 /*
- * Copy selected text chunk as RTF to preserve syntax highlighting
+ * List of keywords for autocompletion. If you add a keyword here,
+ * it should also be added to the flex file SPEditorTokens.l
  */
-- (void)copyAsRTF:(id)sender
+-(NSArray *)keywords
 {
-
-	NSPasteboard *pb = [NSPasteboard generalPasteboard];
-	NSTextStorage *textStorage = [self textStorage];
-	NSData *rtf = [textStorage RTFFromRange:[self selectedRange]
-		documentAttributes:nil];
-	
-	if (rtf)
-	{
-		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
-		[pb setData:rtf forType:NSRTFPboardType];
-	}
-
-}
-
-
-/*
-List of keywords for autocompletion. If you add a keyword here,
-it should also be added to the flex file SPEditorTokens.l
-*/
--(NSArray *)keywords {
 	return [NSArray arrayWithObjects:
 	@"ADD",
 	@"ALL",
@@ -887,102 +1050,102 @@ SYNTAX HIGHLIGHTING!
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
 /*
- performs syntax highlighting
- This method recolors the entire text on every keypress. For performance reasons, this function does
- nothing if the text is more than a few KB.
- 
- The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
- 
- Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
+ *  Performs syntax highlighting.
+ *  This method recolors the entire text on every keypress. For performance reasons, this function does
+ *  nothing if the text is more than 20 KB.
+ *  
+ *  The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
+ *  
+ *  Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
  */
 {
-    NSTextStorage *textStore = [notification object];
-    
-    //make sure that the notification is from the correct textStorage object
-    if (textStore!=[self textStorage]) return;
-    
-    
-    NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
-    NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
-    NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
+	NSTextStorage *textStore = [notification object];
+
+	//make sure that the notification is from the correct textStorage object
+	if (textStore!=[self textStorage]) return;
+
+
+	NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
+	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
+	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
 	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
 
-    NSColor *tokenColor;
-    
-    int token;
-    NSRange textRange, tokenRange;
-    
-    textRange = NSMakeRange(0, [textStore length]);
-    
-    //don't color texts longer than about 20KB. would be too slow
-    if (textRange.length > 20000) return; 
-    
-    //first remove the old colors
-    [textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
-    
-    
-    //initialise flex
-    yyuoffset = 0; yyuleng = 0;
-    yy_switch_to_buffer(yy_scan_string([[textStore string] UTF8String]));
-    
-    //now loop through all the tokens
-    while (token=yylex()){
-        switch (token) {
-            case SPT_SINGLE_QUOTED_TEXT:
-            case SPT_DOUBLE_QUOTED_TEXT:
-                tokenColor = quoteColor;
-                break;
-            case SPT_BACKTICK_QUOTED_TEXT:
-                tokenColor = backtickColor;
-                break;
-            case SPT_RESERVED_WORD:
-                tokenColor = keywordColor;
-                break;
-            case SPT_COMMENT:
-                tokenColor = commentColor;
-                break;
-            default:
-                tokenColor = nil;
-        }
-        
-        if (!tokenColor) continue;
-        
-        tokenRange = NSMakeRange(yyuoffset, yyuleng);
-        
-        // make sure that tokenRange is valid (and therefore within textRange)
-        // otherwise a bug in the lex code could cause the the TextView to crash
-        tokenRange = NSIntersectionRange(tokenRange, textRange); 
-        if (!tokenRange.length) continue;
+	NSColor *tokenColor;
 
-        // Is the current token is marked as SQL keyword, uppercase it if required.
+	int token;
+	NSRange textRange, tokenRange;
+
+	textRange = NSMakeRange(0, [textStore length]);
+
+	//don't color texts longer than about 20KB. would be too slow
+	if (textRange.length > 20000) return; 
+
+	//first remove the old colors
+	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
+
+
+	//initialise flex
+	yyuoffset = 0; yyuleng = 0;
+	yy_switch_to_buffer(yy_scan_string([[textStore string] UTF8String]));
+
+	//now loop through all the tokens
+	while (token=yylex()){
+		switch (token) {
+			case SPT_SINGLE_QUOTED_TEXT:
+			case SPT_DOUBLE_QUOTED_TEXT:
+			tokenColor = quoteColor;
+			break;
+			case SPT_BACKTICK_QUOTED_TEXT:
+			tokenColor = backtickColor;
+			break;
+			case SPT_RESERVED_WORD:
+			tokenColor = keywordColor;
+			break;
+			case SPT_COMMENT:
+			tokenColor = commentColor;
+			break;
+			default:
+			tokenColor = nil;
+		}
+
+		if (!tokenColor) continue;
+
+		tokenRange = NSMakeRange(yyuoffset, yyuleng);
+
+		// make sure that tokenRange is valid (and therefore within textRange)
+		// otherwise a bug in the lex code could cause the the TextView to crash
+		tokenRange = NSIntersectionRange(tokenRange, textRange); 
+		if (!tokenRange.length) continue;
+
+		// Is the current token is marked as SQL keyword, uppercase it if required.
 		if (autouppercaseKeywordsEnabled &&
 			[[self textStorage] attribute:kSQLkeyword atIndex:tokenRange.location effectiveRange:nil])
-        {
-            // Note: Register it for undo doesn't work ?=> unreliable single char undo
-            // Replace it
-            [self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
-        }
+		{
+			// Note: Register it for undo doesn't work ?=> unreliable single char undo
+			// Replace it
+			[self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
+		}
 
-        [textStore addAttribute: NSForegroundColorAttributeName
-                          value: tokenColor
-                          range: tokenRange ];
+		[textStore addAttribute: NSForegroundColorAttributeName
+						  value: tokenColor
+						  range: tokenRange ];
 
-        // Add an attribute to be used in the auto-pairing (keyDown:)
-        // to disable auto-pairing if caret is inside of any token found by lex.
-        // For discussion: maybe change it later (only for quotes not keywords?)
-        [textStore addAttribute: kWQquoted
-                          value: kWQval
-                          range: tokenRange ];
+		// Add an attribute to be used in the auto-pairing (keyDown:)
+		// to disable auto-pairing if caret is inside of any token found by lex.
+		// For discussion: maybe change it later (only for quotes not keywords?)
+		[textStore addAttribute: kWQquoted 
+						  value: kWQval 
+						  range: tokenRange ];
 
 
-        // Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
+		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
-        if(token == SPT_RESERVED_WORD)
-                [textStore addAttribute: kSQLkeyword
-                                  value: kWQval
-                                  range: tokenRange ];
-    }
-    
+		if(token == SPT_RESERVED_WORD)
+			[textStore addAttribute: kSQLkeyword
+							  value: kWQval
+							  range: tokenRange ];
+	}
+
 }
 
 @end
