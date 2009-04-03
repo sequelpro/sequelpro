@@ -8,6 +8,73 @@
 
 /* Begin PBXBuildFile section */
 		170088CE0F5870E200DD6B51 /* SPQueryConsole.m in Sources */ = {isa = PBXBuildFile; fileRef = 170088CD0F5870E200DD6B51 /* SPQueryConsole.m */; };
+		171622C90F865E72000E3AF5 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		171622CA0F865E87000E3AF5 /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1728B77F0F82D93300E12957 /* libmysqlclient.a */; };
+		171622D60F866036000E3AF5 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 171622D40F866026000E3AF5 /* libcrypto.dylib */; };
+		171622D90F866066000E3AF5 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 171622D80F866066000E3AF5 /* libssl.dylib */; };
+		171622DB0F866080000E3AF5 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 171622DA0F866080000E3AF5 /* libz.dylib */; };
+		171622DC0F866135000E3AF5 /* MCPAttribute+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */; };
+		171622DD0F866135000E3AF5 /* MCPAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74C0F82D84E00E12957 /* MCPAttribute.h */; };
+		171622DE0F866135000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */; };
+		171622DF0F866135000E3AF5 /* MCPClassDescription+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7500F82D84E00E12957 /* MCPClassDescription+Private.h */; };
+		171622E00F866135000E3AF5 /* MCPClassDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7510F82D84E00E12957 /* MCPClassDescription.h */; };
+		171622E10F866135000E3AF5 /* MCPEntrepriseNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7530F82D84E00E12957 /* MCPEntrepriseNotifications.h */; };
+		171622E20F866135000E3AF5 /* MCPJoin.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7550F82D84E00E12957 /* MCPJoin.h */; };
+		171622E30F866135000E3AF5 /* MCPModel+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7570F82D84E00E12957 /* MCPModel+MCPEntreprise.h */; };
+		171622E40F866135000E3AF5 /* MCPModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7590F82D84E00E12957 /* MCPModel.h */; };
+		171622E50F866135000E3AF5 /* MCPObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75B0F82D84E00E12957 /* MCPObject.h */; };
+		171622E60F866135000E3AF5 /* MCPRelation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75D0F82D84E00E12957 /* MCPRelation+Private.h */; };
+		171622E70F866135000E3AF5 /* MCPRelation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75E0F82D84E00E12957 /* MCPRelation.h */; };
+		171622E80F866135000E3AF5 /* MCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7360F82D83900E12957 /* MCPConnection.h */; };
+		171622E90F866135000E3AF5 /* MCPConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7380F82D83900E12957 /* MCPConstants.h */; };
+		171622EA0F866135000E3AF5 /* MCPFastQueries.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7390F82D83900E12957 /* MCPFastQueries.h */; };
+		171622EB0F866135000E3AF5 /* MCPKit_bundled.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73B0F82D83900E12957 /* MCPKit_bundled.h */; };
+		171622ED0F866135000E3AF5 /* MCPNull.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73D0F82D83900E12957 /* MCPNull.h */; };
+		171622EE0F866135000E3AF5 /* MCPNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73F0F82D83900E12957 /* MCPNumber.h */; };
+		171622EF0F866135000E3AF5 /* MCPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7410F82D83900E12957 /* MCPResult.h */; };
+		171622F00F866135000E3AF5 /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7430F82D83900E12957 /* MCPResultPlus.h */; };
+		171622F10F866152000E3AF5 /* my_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7770F82D92500E12957 /* my_alloc.h */; };
+		171622F20F866152000E3AF5 /* my_list.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7780F82D92500E12957 /* my_list.h */; };
+		171622F30F866152000E3AF5 /* mysql.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7790F82D92500E12957 /* mysql.h */; };
+		171622F40F866152000E3AF5 /* mysql_com.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77A0F82D92500E12957 /* mysql_com.h */; };
+		171622F50F866152000E3AF5 /* mysql_embed.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77B0F82D92500E12957 /* mysql_embed.h */; };
+		171622F60F866152000E3AF5 /* mysql_time.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77C0F82D92500E12957 /* mysql_time.h */; };
+		171622F70F866152000E3AF5 /* mysql_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77D0F82D92500E12957 /* mysql_version.h */; };
+		171622F80F866152000E3AF5 /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77E0F82D92500E12957 /* typelib.h */; };
+		171622F90F86618F000E3AF5 /* MCPAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74D0F82D84E00E12957 /* MCPAttribute.m */; };
+		171622FA0F86618F000E3AF5 /* MCPClassDescription+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74F0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m */; };
+		171622FB0F86618F000E3AF5 /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7520F82D84E00E12957 /* MCPClassDescription.m */; };
+		171622FC0F86618F000E3AF5 /* MCPEntrepriseNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7540F82D84E00E12957 /* MCPEntrepriseNotifications.m */; };
+		171622FD0F86618F000E3AF5 /* MCPJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7560F82D84E00E12957 /* MCPJoin.m */; };
+		171622FE0F86618F000E3AF5 /* MCPModel+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7580F82D84E00E12957 /* MCPModel+MCPEntreprise.m */; };
+		171622FF0F86618F000E3AF5 /* MCPModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75A0F82D84E00E12957 /* MCPModel.m */; };
+		171623000F86618F000E3AF5 /* MCPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75C0F82D84E00E12957 /* MCPObject.m */; };
+		171623010F86618F000E3AF5 /* MCPRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75F0F82D84E00E12957 /* MCPRelation.m */; };
+		171623020F86618F000E3AF5 /* MCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7370F82D83900E12957 /* MCPConnection.m */; };
+		171623030F86618F000E3AF5 /* MCPFastQueries.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B73A0F82D83900E12957 /* MCPFastQueries.m */; };
+		171623040F86618F000E3AF5 /* MCPNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B73E0F82D83900E12957 /* MCPNull.m */; };
+		171623050F86618F000E3AF5 /* MCPNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7400F82D83900E12957 /* MCPNumber.m */; };
+		171623060F86618F000E3AF5 /* MCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7420F82D83900E12957 /* MCPResult.m */; };
+		171623070F86618F000E3AF5 /* MCPResultPlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7440F82D83900E12957 /* MCPResultPlus.m */; };
+		171623850F8677B4000E3AF5 /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
+		171623950F867F6B000E3AF5 /* build-mysql-client.sh in Resources */ = {isa = PBXBuildFile; fileRef = 171623940F867F6B000E3AF5 /* build-mysql-client.sh */; };
+		1728B7450F82D83900E12957 /* MCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7370F82D83900E12957 /* MCPConnection.m */; };
+		1728B7460F82D83900E12957 /* MCPFastQueries.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B73A0F82D83900E12957 /* MCPFastQueries.m */; };
+		1728B7470F82D83900E12957 /* MCPNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B73E0F82D83900E12957 /* MCPNull.m */; };
+		1728B7480F82D83900E12957 /* MCPNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7400F82D83900E12957 /* MCPNumber.m */; };
+		1728B7490F82D83900E12957 /* MCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7420F82D83900E12957 /* MCPResult.m */; };
+		1728B74A0F82D83900E12957 /* MCPResultPlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7440F82D83900E12957 /* MCPResultPlus.m */; };
+		1728B7600F82D84E00E12957 /* MCPAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74D0F82D84E00E12957 /* MCPAttribute.m */; };
+		1728B7610F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74F0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m */; };
+		1728B7620F82D84E00E12957 /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7520F82D84E00E12957 /* MCPClassDescription.m */; };
+		1728B7630F82D84E00E12957 /* MCPEntrepriseNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7540F82D84E00E12957 /* MCPEntrepriseNotifications.m */; };
+		1728B7640F82D84E00E12957 /* MCPJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7560F82D84E00E12957 /* MCPJoin.m */; };
+		1728B7650F82D84E00E12957 /* MCPModel+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7580F82D84E00E12957 /* MCPModel+MCPEntreprise.m */; };
+		1728B7660F82D84E00E12957 /* MCPModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75A0F82D84E00E12957 /* MCPModel.m */; };
+		1728B7670F82D84E00E12957 /* MCPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75C0F82D84E00E12957 /* MCPObject.m */; };
+		1728B7680F82D84E00E12957 /* MCPRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75F0F82D84E00E12957 /* MCPRelation.m */; };
+		1728B7820F82D93300E12957 /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1728B77F0F82D93300E12957 /* libmysqlclient.a */; };
+		1728B7830F82D93300E12957 /* libmysqlclient_r.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1728B7800F82D93300E12957 /* libmysqlclient_r.a */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		172A65140F7BED8B001E861A /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = 172A65120F7BED8B001E861A /* Console.xib */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
@@ -58,10 +125,8 @@
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
 		344819020F793DB500624B14 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 344819010F793DB500624B14 /* SPArrayAdditions.m */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
-		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
-		4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
@@ -87,6 +152,16 @@
 		B5FE36ED0F71E3A90021BC10 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		171621F20F8652B3000E3AF5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 171621EB0F865296000E3AF5;
+			remoteInfo = "MCPKit Framework";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		4DECC4940EC2B447008D359E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -95,7 +170,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
-				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
 				4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -127,6 +201,57 @@
 		1703EF3E0F0B0742005BBE7E /* sequel-pro_logo.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "sequel-pro_logo.jpg"; sourceTree = "<group>"; };
 		1703EF3F0F0B0742005BBE7E /* syntax.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = syntax.html; sourceTree = "<group>"; };
 		1703EF400F0B0742005BBE7E /* tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = tables.html; sourceTree = "<group>"; };
+		171621EC0F865296000E3AF5 /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		171622D40F866026000E3AF5 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
+		171622D80F866066000E3AF5 /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
+		171622DA0F866080000E3AF5 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		171623940F867F6B000E3AF5 /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
+		1728B7360F82D83900E12957 /* MCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnection.h; sourceTree = "<group>"; };
+		1728B7370F82D83900E12957 /* MCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPConnection.m; sourceTree = "<group>"; };
+		1728B7380F82D83900E12957 /* MCPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConstants.h; sourceTree = "<group>"; };
+		1728B7390F82D83900E12957 /* MCPFastQueries.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPFastQueries.h; sourceTree = "<group>"; };
+		1728B73A0F82D83900E12957 /* MCPFastQueries.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPFastQueries.m; sourceTree = "<group>"; };
+		1728B73B0F82D83900E12957 /* MCPKit_bundled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit_bundled.h; sourceTree = "<group>"; };
+		1728B73C0F82D83900E12957 /* MCPKit_system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit_system.h; sourceTree = "<group>"; };
+		1728B73D0F82D83900E12957 /* MCPNull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPNull.h; sourceTree = "<group>"; };
+		1728B73E0F82D83900E12957 /* MCPNull.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPNull.m; sourceTree = "<group>"; };
+		1728B73F0F82D83900E12957 /* MCPNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPNumber.h; sourceTree = "<group>"; };
+		1728B7400F82D83900E12957 /* MCPNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPNumber.m; sourceTree = "<group>"; };
+		1728B7410F82D83900E12957 /* MCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPResult.h; sourceTree = "<group>"; };
+		1728B7420F82D83900E12957 /* MCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResult.m; sourceTree = "<group>"; };
+		1728B7430F82D83900E12957 /* MCPResultPlus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPResultPlus.h; sourceTree = "<group>"; };
+		1728B7440F82D83900E12957 /* MCPResultPlus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResultPlus.m; sourceTree = "<group>"; };
+		1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPAttribute+Private.h"; sourceTree = "<group>"; };
+		1728B74C0F82D84E00E12957 /* MCPAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPAttribute.h; sourceTree = "<group>"; };
+		1728B74D0F82D84E00E12957 /* MCPAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPAttribute.m; sourceTree = "<group>"; };
+		1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPClassDescription+MCPEntreprise.h"; sourceTree = "<group>"; };
+		1728B74F0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MCPClassDescription+MCPEntreprise.m"; sourceTree = "<group>"; };
+		1728B7500F82D84E00E12957 /* MCPClassDescription+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPClassDescription+Private.h"; sourceTree = "<group>"; };
+		1728B7510F82D84E00E12957 /* MCPClassDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPClassDescription.h; sourceTree = "<group>"; };
+		1728B7520F82D84E00E12957 /* MCPClassDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPClassDescription.m; sourceTree = "<group>"; };
+		1728B7530F82D84E00E12957 /* MCPEntrepriseNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPEntrepriseNotifications.h; sourceTree = "<group>"; };
+		1728B7540F82D84E00E12957 /* MCPEntrepriseNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPEntrepriseNotifications.m; sourceTree = "<group>"; };
+		1728B7550F82D84E00E12957 /* MCPJoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPJoin.h; sourceTree = "<group>"; };
+		1728B7560F82D84E00E12957 /* MCPJoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPJoin.m; sourceTree = "<group>"; };
+		1728B7570F82D84E00E12957 /* MCPModel+MCPEntreprise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPModel+MCPEntreprise.h"; sourceTree = "<group>"; };
+		1728B7580F82D84E00E12957 /* MCPModel+MCPEntreprise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MCPModel+MCPEntreprise.m"; sourceTree = "<group>"; };
+		1728B7590F82D84E00E12957 /* MCPModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPModel.h; sourceTree = "<group>"; };
+		1728B75A0F82D84E00E12957 /* MCPModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPModel.m; sourceTree = "<group>"; };
+		1728B75B0F82D84E00E12957 /* MCPObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPObject.h; sourceTree = "<group>"; };
+		1728B75C0F82D84E00E12957 /* MCPObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPObject.m; sourceTree = "<group>"; };
+		1728B75D0F82D84E00E12957 /* MCPRelation+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPRelation+Private.h"; sourceTree = "<group>"; };
+		1728B75E0F82D84E00E12957 /* MCPRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPRelation.h; sourceTree = "<group>"; };
+		1728B75F0F82D84E00E12957 /* MCPRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPRelation.m; sourceTree = "<group>"; };
+		1728B7770F82D92500E12957 /* my_alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = my_alloc.h; sourceTree = "<group>"; };
+		1728B7780F82D92500E12957 /* my_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = my_list.h; sourceTree = "<group>"; };
+		1728B7790F82D92500E12957 /* mysql.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql.h; sourceTree = "<group>"; };
+		1728B77A0F82D92500E12957 /* mysql_com.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_com.h; sourceTree = "<group>"; };
+		1728B77B0F82D92500E12957 /* mysql_embed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_embed.h; sourceTree = "<group>"; };
+		1728B77C0F82D92500E12957 /* mysql_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_time.h; sourceTree = "<group>"; };
+		1728B77D0F82D92500E12957 /* mysql_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_version.h; sourceTree = "<group>"; };
+		1728B77E0F82D92500E12957 /* typelib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = typelib.h; sourceTree = "<group>"; };
+		1728B77F0F82D93300E12957 /* libmysqlclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient.a; sourceTree = "<group>"; };
+		1728B7800F82D93300E12957 /* libmysqlclient_r.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient_r.a; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		172A65130F7BED8B001E861A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
@@ -206,7 +331,6 @@
 		344819000F793DB500624B14 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
 		344819010F793DB500624B14 /* SPArrayAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPArrayAdditions.m; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
-		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		58186D200F4CB38900851FE9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ConnectionErrorDialog.xib; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
@@ -237,15 +361,29 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		171621EA0F865296000E3AF5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				171622C90F865E72000E3AF5 /* Cocoa.framework in Frameworks */,
+				171622D60F866036000E3AF5 /* libcrypto.dylib in Frameworks */,
+				171622CA0F865E87000E3AF5 /* libmysqlclient.a in Frameworks */,
+				171622D90F866066000E3AF5 /* libssl.dylib in Frameworks */,
+				171622DB0F866080000E3AF5 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D15AC330486D014006FF6A4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
 				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
-				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
 				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
 				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
+				171623850F8677B4000E3AF5 /* MCPKit.framework in Frameworks */,
+				1728B7820F82D93300E12957 /* libmysqlclient.a in Frameworks */,
+				1728B7830F82D93300E12957 /* libmysqlclient_r.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,9 +394,11 @@
 			isa = PBXGroup;
 			children = (
 				4DECC3320EC2A170008D359E /* Sparkle.framework */,
-				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
 				4DECC3340EC2A170008D359E /* Growl.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
+				171622DA0F866080000E3AF5 /* libz.dylib */,
+				171622D80F866066000E3AF5 /* libssl.dylib */,
+				171622D40F866026000E3AF5 /* libcrypto.dylib */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -310,11 +450,108 @@
 			path = topics;
 			sourceTree = "<group>";
 		};
+		1728B69D0F82D58E00E12957 /* MCPKit */ = {
+			isa = PBXGroup;
+			children = (
+				1728B7700F82D8C700E12957 /* MySQL */,
+				1728B7340F82D7DB00E12957 /* MCPEntrepriseKit */,
+				1728B7350F82D7F900E12957 /* MCPFoundationKit */,
+			);
+			name = MCPKit;
+			path = Frameworks/MCPKit;
+			sourceTree = "<group>";
+		};
+		1728B7340F82D7DB00E12957 /* MCPEntrepriseKit */ = {
+			isa = PBXGroup;
+			children = (
+				1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */,
+				1728B74C0F82D84E00E12957 /* MCPAttribute.h */,
+				1728B74D0F82D84E00E12957 /* MCPAttribute.m */,
+				1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */,
+				1728B74F0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m */,
+				1728B7500F82D84E00E12957 /* MCPClassDescription+Private.h */,
+				1728B7510F82D84E00E12957 /* MCPClassDescription.h */,
+				1728B7520F82D84E00E12957 /* MCPClassDescription.m */,
+				1728B7530F82D84E00E12957 /* MCPEntrepriseNotifications.h */,
+				1728B7540F82D84E00E12957 /* MCPEntrepriseNotifications.m */,
+				1728B7550F82D84E00E12957 /* MCPJoin.h */,
+				1728B7560F82D84E00E12957 /* MCPJoin.m */,
+				1728B7570F82D84E00E12957 /* MCPModel+MCPEntreprise.h */,
+				1728B7580F82D84E00E12957 /* MCPModel+MCPEntreprise.m */,
+				1728B7590F82D84E00E12957 /* MCPModel.h */,
+				1728B75A0F82D84E00E12957 /* MCPModel.m */,
+				1728B75B0F82D84E00E12957 /* MCPObject.h */,
+				1728B75C0F82D84E00E12957 /* MCPObject.m */,
+				1728B75D0F82D84E00E12957 /* MCPRelation+Private.h */,
+				1728B75E0F82D84E00E12957 /* MCPRelation.h */,
+				1728B75F0F82D84E00E12957 /* MCPRelation.m */,
+			);
+			path = MCPEntrepriseKit;
+			sourceTree = "<group>";
+		};
+		1728B7350F82D7F900E12957 /* MCPFoundationKit */ = {
+			isa = PBXGroup;
+			children = (
+				1728B7360F82D83900E12957 /* MCPConnection.h */,
+				1728B7370F82D83900E12957 /* MCPConnection.m */,
+				1728B7380F82D83900E12957 /* MCPConstants.h */,
+				1728B7390F82D83900E12957 /* MCPFastQueries.h */,
+				1728B73A0F82D83900E12957 /* MCPFastQueries.m */,
+				1728B73B0F82D83900E12957 /* MCPKit_bundled.h */,
+				1728B73C0F82D83900E12957 /* MCPKit_system.h */,
+				1728B73D0F82D83900E12957 /* MCPNull.h */,
+				1728B73E0F82D83900E12957 /* MCPNull.m */,
+				1728B73F0F82D83900E12957 /* MCPNumber.h */,
+				1728B7400F82D83900E12957 /* MCPNumber.m */,
+				1728B7410F82D83900E12957 /* MCPResult.h */,
+				1728B7420F82D83900E12957 /* MCPResult.m */,
+				1728B7430F82D83900E12957 /* MCPResultPlus.h */,
+				1728B7440F82D83900E12957 /* MCPResultPlus.m */,
+			);
+			path = MCPFoundationKit;
+			sourceTree = "<group>";
+		};
+		1728B7700F82D8C700E12957 /* MySQL */ = {
+			isa = PBXGroup;
+			children = (
+				1728B7710F82D8D000E12957 /* include */,
+				1728B7740F82D8E600E12957 /* lib */,
+			);
+			name = MySQL;
+			sourceTree = "<group>";
+		};
+		1728B7710F82D8D000E12957 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				1728B7770F82D92500E12957 /* my_alloc.h */,
+				1728B7780F82D92500E12957 /* my_list.h */,
+				1728B7790F82D92500E12957 /* mysql.h */,
+				1728B77A0F82D92500E12957 /* mysql_com.h */,
+				1728B77B0F82D92500E12957 /* mysql_embed.h */,
+				1728B77C0F82D92500E12957 /* mysql_time.h */,
+				1728B77D0F82D92500E12957 /* mysql_version.h */,
+				1728B77E0F82D92500E12957 /* typelib.h */,
+			);
+			name = include;
+			path = MySQL/include;
+			sourceTree = "<group>";
+		};
+		1728B7740F82D8E600E12957 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				1728B77F0F82D93300E12957 /* libmysqlclient.a */,
+				1728B7800F82D93300E12957 /* libmysqlclient_r.a */,
+			);
+			name = lib;
+			path = MySQL/lib;
+			sourceTree = "<group>";
+		};
 		1761FD9C0EF0486A00331368 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
 				1761FD9D0EF0488900331368 /* build-version.pl */,
 				178934980F30CDA10097539A /* trim-application.sh */,
+				171623940F867F6B000E3AF5 /* build-mysql-client.sh */,
 				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
 			path = Scripts;
@@ -514,6 +751,7 @@
 			isa = PBXGroup;
 			children = (
 				8D15AC370486D014006FF6A4 /* Sequel Pro.app */,
+				171621EC0F865296000E3AF5 /* MCPKit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -522,6 +760,7 @@
 			isa = PBXGroup;
 			children = (
 				17E641420EF01E8A001BC333 /* Source */,
+				1728B69D0F82D58E00E12957 /* MCPKit */,
 				17E642050EF020A3001BC333 /* Interfaces */,
 				17E641430EF01E90001BC333 /* Resources */,
 				1761FD9C0EF0486A00331368 /* Scripts */,
@@ -553,7 +792,63 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		171621E70F865296000E3AF5 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				171622EB0F866135000E3AF5 /* MCPKit_bundled.h in Headers */,
+				171622DC0F866135000E3AF5 /* MCPAttribute+Private.h in Headers */,
+				171622DD0F866135000E3AF5 /* MCPAttribute.h in Headers */,
+				171622DE0F866135000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */,
+				171622DF0F866135000E3AF5 /* MCPClassDescription+Private.h in Headers */,
+				171622E00F866135000E3AF5 /* MCPClassDescription.h in Headers */,
+				171622E10F866135000E3AF5 /* MCPEntrepriseNotifications.h in Headers */,
+				171622E20F866135000E3AF5 /* MCPJoin.h in Headers */,
+				171622E30F866135000E3AF5 /* MCPModel+MCPEntreprise.h in Headers */,
+				171622E40F866135000E3AF5 /* MCPModel.h in Headers */,
+				171622E50F866135000E3AF5 /* MCPObject.h in Headers */,
+				171622E60F866135000E3AF5 /* MCPRelation+Private.h in Headers */,
+				171622E70F866135000E3AF5 /* MCPRelation.h in Headers */,
+				171622E80F866135000E3AF5 /* MCPConnection.h in Headers */,
+				171622E90F866135000E3AF5 /* MCPConstants.h in Headers */,
+				171622EA0F866135000E3AF5 /* MCPFastQueries.h in Headers */,
+				171622ED0F866135000E3AF5 /* MCPNull.h in Headers */,
+				171622EE0F866135000E3AF5 /* MCPNumber.h in Headers */,
+				171622EF0F866135000E3AF5 /* MCPResult.h in Headers */,
+				171622F00F866135000E3AF5 /* MCPResultPlus.h in Headers */,
+				171622F10F866152000E3AF5 /* my_alloc.h in Headers */,
+				171622F20F866152000E3AF5 /* my_list.h in Headers */,
+				171622F30F866152000E3AF5 /* mysql.h in Headers */,
+				171622F40F866152000E3AF5 /* mysql_com.h in Headers */,
+				171622F50F866152000E3AF5 /* mysql_embed.h in Headers */,
+				171622F60F866152000E3AF5 /* mysql_time.h in Headers */,
+				171622F70F866152000E3AF5 /* mysql_version.h in Headers */,
+				171622F80F866152000E3AF5 /* typelib.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		171621EB0F865296000E3AF5 /* MCPKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 171621F10F865297000E3AF5 /* Build configuration list for PBXNativeTarget "MCPKit" */;
+			buildPhases = (
+				171621E70F865296000E3AF5 /* Headers */,
+				171621E80F865296000E3AF5 /* Resources */,
+				171621E90F865296000E3AF5 /* Sources */,
+				171621EA0F865296000E3AF5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MCPKit;
+			productName = "MCPKit Framework";
+			productReference = 171621EC0F865296000E3AF5 /* MCPKit.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		8D15AC270486D014006FF6A4 /* Sequel Pro */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */;
@@ -567,6 +862,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				171621F30F8652B3000E3AF5 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -587,11 +883,20 @@
 			projectRoot = "";
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
+				171621EB0F865296000E3AF5 /* MCPKit */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		171621E80F865296000E3AF5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				171623950F867F6B000E3AF5 /* build-mysql-client.sh in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D15AC2B0486D014006FF6A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -661,6 +966,28 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		171621E90F865296000E3AF5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				171622F90F86618F000E3AF5 /* MCPAttribute.m in Sources */,
+				171622FA0F86618F000E3AF5 /* MCPClassDescription+MCPEntreprise.m in Sources */,
+				171622FB0F86618F000E3AF5 /* MCPClassDescription.m in Sources */,
+				171622FC0F86618F000E3AF5 /* MCPEntrepriseNotifications.m in Sources */,
+				171622FD0F86618F000E3AF5 /* MCPJoin.m in Sources */,
+				171622FE0F86618F000E3AF5 /* MCPModel+MCPEntreprise.m in Sources */,
+				171622FF0F86618F000E3AF5 /* MCPModel.m in Sources */,
+				171623000F86618F000E3AF5 /* MCPObject.m in Sources */,
+				171623010F86618F000E3AF5 /* MCPRelation.m in Sources */,
+				171623020F86618F000E3AF5 /* MCPConnection.m in Sources */,
+				171623030F86618F000E3AF5 /* MCPFastQueries.m in Sources */,
+				171623040F86618F000E3AF5 /* MCPNull.m in Sources */,
+				171623050F86618F000E3AF5 /* MCPNumber.m in Sources */,
+				171623060F86618F000E3AF5 /* MCPResult.m in Sources */,
+				171623070F86618F000E3AF5 /* MCPResultPlus.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D15AC300486D014006FF6A4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -693,10 +1020,33 @@
 				344819020F793DB500624B14 /* SPArrayAdditions.m in Sources */,
 				172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */,
 				179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */,
+				1728B7450F82D83900E12957 /* MCPConnection.m in Sources */,
+				1728B7460F82D83900E12957 /* MCPFastQueries.m in Sources */,
+				1728B7470F82D83900E12957 /* MCPNull.m in Sources */,
+				1728B7480F82D83900E12957 /* MCPNumber.m in Sources */,
+				1728B7490F82D83900E12957 /* MCPResult.m in Sources */,
+				1728B74A0F82D83900E12957 /* MCPResultPlus.m in Sources */,
+				1728B7600F82D84E00E12957 /* MCPAttribute.m in Sources */,
+				1728B7610F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m in Sources */,
+				1728B7620F82D84E00E12957 /* MCPClassDescription.m in Sources */,
+				1728B7630F82D84E00E12957 /* MCPEntrepriseNotifications.m in Sources */,
+				1728B7640F82D84E00E12957 /* MCPJoin.m in Sources */,
+				1728B7650F82D84E00E12957 /* MCPModel+MCPEntreprise.m in Sources */,
+				1728B7660F82D84E00E12957 /* MCPModel.m in Sources */,
+				1728B7670F82D84E00E12957 /* MCPObject.m in Sources */,
+				1728B7680F82D84E00E12957 /* MCPRelation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		171621F30F8652B3000E3AF5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 171621EB0F865296000E3AF5 /* MCPKit */;
+			targetProxy = 171621F20F8652B3000E3AF5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		172A65120F7BED8B001E861A /* Console.xib */ = {
@@ -760,6 +1110,99 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		171621EE0F865297000E3AF5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				GCC_PREPROCESSOR_DEFINITIONS = "FRAMEWORK_TYPE=BUNDLED";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MCPKit;
+			};
+			name = Debug;
+		};
+		171621EF0F865297000E3AF5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				GCC_PREPROCESSOR_DEFINITIONS = "FRAMEWORK_TYPE=BUNDLED";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MCPKit;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		171621F00F865297000E3AF5 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				GCC_PREPROCESSOR_DEFINITIONS = "FRAMEWORK_TYPE=BUNDLED";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MCPKit;
+			};
+			name = Distribution;
+		};
 		588593F00F7AEB6900ED0E67 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -788,6 +1231,10 @@
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit Framework/MySQL/lib\"",
+				);
 				PRODUCT_NAME = "Sequel Pro";
 			};
 			name = Distribution;
@@ -810,6 +1257,10 @@
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit Framework/MySQL/lib\"",
+				);
 				PRODUCT_NAME = "Sequel Pro";
 			};
 			name = Debug;
@@ -829,6 +1280,10 @@
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit Framework/MySQL/lib\"",
+				);
 				PRODUCT_NAME = "Sequel Pro";
 			};
 			name = Release;
@@ -865,6 +1320,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		171621F10F865297000E3AF5 /* Build configuration list for PBXNativeTarget "MCPKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				171621EE0F865297000E3AF5 /* Debug */,
+				171621EF0F865297000E3AF5 /* Release */,
+				171621F00F865297000E3AF5 /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

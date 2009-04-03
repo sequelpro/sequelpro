@@ -27,12 +27,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import <MCPKit_bundled/MCPConstants.h>
-#import <MCPKit_bundled/MCPNull.h>
-#import <MCPKit_bundled/MCPResult.h>
-#import <MCPKit_bundled/MCPConnection.h>
-#import <MCPKit_bundled/MCPNumber.h>
-#import <MCPKit_bundled/MCPResultPlus.h>
-#import <MCPKit_bundled/MCPFastQueries.h>
+#import <MCPKit/MCPConstants.h>
+#import <MCPKit/MCPNull.h>
+#import <MCPKit/MCPResult.h>
+#import <MCPKit/MCPConnection.h>
+#import <MCPKit/MCPNumber.h>
+#import <MCPKit/MCPResultPlus.h>
+#import <MCPKit/MCPFastQueries.h>
+
 #import "mysql.h"
-//#import <SMySQL/mysql.h>
+
