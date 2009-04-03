@@ -501,6 +501,25 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[self insertText:@""];
 }
 
+/*
+ * Copy selected text chunk as RTF to preserve syntax highlighting
+ */
+- (void)copyAsRTF:(id)sender
+{
+
+	NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	NSTextStorage *textStorage = [self textStorage];
+	NSData *rtf = [textStorage RTFFromRange:[self selectedRange]
+		documentAttributes:nil];
+	
+	if (rtf)
+	{
+		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
+		[pb setData:rtf forType:NSRTFPboardType];
+	}
+
+}
+
 
 /*
 List of keywords for autocompletion. If you add a keyword here,
