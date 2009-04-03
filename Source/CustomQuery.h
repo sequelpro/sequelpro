@@ -53,6 +53,7 @@
 	IBOutlet NSMenuItem *completionListMenuItem;
 	IBOutlet NSMenuItem *autoindentMenuItem;
 	IBOutlet NSMenuItem *autopairMenuItem;
+	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;

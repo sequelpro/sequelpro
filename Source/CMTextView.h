@@ -27,6 +27,7 @@
 	BOOL autoindentEnabled;
 	BOOL autopairEnabled;
 	BOOL autoindentIgnoresEnter;
+	BOOL autouppercaseKeywordsEnabled;
 }
 
 - (BOOL) isNextCharMarkedBy:(id)attribute;
@@ -42,5 +43,7 @@
 - (BOOL) autoindentIgnoresEnter;
 - (void) setAutopair:(BOOL)enableAutopair;
 - (BOOL) autopair;
+- (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
+- (BOOL) autouppercaseKeywords;
 
 @end

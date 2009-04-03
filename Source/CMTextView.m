@@ -34,10 +34,11 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
 
-#define kAPlinked @"Linked" // attribute for a via auto-pair inserted char
-#define kAPval    @"linked"
-#define kWQquoted @"Quoted" // set via lex to indicate a quoted string
-#define kWQval    @"quoted"
+#define kAPlinked   @"Linked" // attribute for a via auto-pair inserted char
+#define kAPval      @"linked"
+#define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
+#define kWQval      @"quoted"
+#define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
 
 
 @implementation CMTextView
@@ -488,6 +489,20 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 
 /*
+ * Hook to invoke the auto-uppercasing of SQL keywords after pasting
+ */
+- (void)paste:(id)sender
+{
+	// Insert the content of the pasteboard
+	NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	[self insertText:[pb stringForType:NSStringPboardType]];
+
+	// Invoke the auto-uppercasing of SQL keywords via an additional trigger
+	[self insertText:@""];
+}
+
+
+/*
 List of keywords for autocompletion. If you add a keyword here,
 it should also be added to the flex file SPEditorTokens.l
 */
@@ -817,15 +832,38 @@ it should also be added to the flex file SPEditorTokens.l
 	return autopairEnabled;
 }
 
+/*
+ * Set whether SQL keywords should be automatically uppercased.
+ */
+- (void)setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords
+{
+	autouppercaseKeywordsEnabled = enableAutouppercaseKeywords;
+}
+
+/*
+ * Retrieve whether SQL keywords should be automaticallyuppercased.
+ */
+- (BOOL)autouppercaseKeywords
+{
+	return autouppercaseKeywordsEnabled;
+}
+
+
 /*******************
 SYNTAX HIGHLIGHTING!
 *******************/
 - (void)awakeFromNib
 /*
-sets self as delegate for the textView's textStorage to enable syntax highlighting
-*/
+ * Sets self as delegate for the textView's textStorage to enable syntax highlighting,
+ * and set defaults for general usage
+ */
 {
     [[self textStorage] setDelegate:self];
+
+	autoindentEnabled = YES;
+	autopairEnabled = YES;
+	autoindentIgnoresEnter = NO;
+	autouppercaseKeywordsEnabled = YES;
 }
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
@@ -896,31 +934,36 @@ sets self as delegate for the textView's textStorage to enable syntax highlighti
         // otherwise a bug in the lex code could cause the the TextView to crash
         tokenRange = NSIntersectionRange(tokenRange, textRange); 
         if (!tokenRange.length) continue;
-        
+
+        // Is the current token is marked as SQL keyword, uppercase it if required.
+		if (autouppercaseKeywordsEnabled &&
+			[[self textStorage] attribute:kSQLkeyword atIndex:tokenRange.location effectiveRange:nil])
+        {
+            // Note: Register it for undo doesn't work ?=> unreliable single char undo
+            // Replace it
+            [self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
+        }
+
         [textStore addAttribute: NSForegroundColorAttributeName
                           value: tokenColor
                           range: tokenRange ];
-        // this attr is used in the auto-pairing (keyDown:)
-        // to disable auto-pairing if caret is inside of any token found by lex
-        // maybe change it later (only for quotes) => discussion
+
+        // Add an attribute to be used in the auto-pairing (keyDown:)
+        // to disable auto-pairing if caret is inside of any token found by lex.
+        // For discussion: maybe change it later (only for quotes not keywords?)
         [textStore addAttribute: kWQquoted
                           value: kWQval
                           range: tokenRange ];
 
+
+        // Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
+		// Performing it one token later allows words which start as reserved keywords to be entered.
+        if(token == SPT_RESERVED_WORD)
+                [textStore addAttribute: kSQLkeyword
+                                  value: kWQval
+                                  range: tokenRange ];
     }
     
 }
-
-- (id) init
-{
-	if (self = [super init]) {
-		autoindentEnabled = YES;
-		autopairEnabled = YES;
-		autoindentIgnoresEnter = NO;
-	}
-	
-	return self;
-}
-
 
 @end

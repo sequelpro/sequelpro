@@ -673,6 +673,7 @@ checks for updates and opens download page in default browser
 							[NSNumber numberWithInt:0], @"lastUsedVersion",
 							[NSNumber numberWithBool:YES], @"CustomQueryAutopair",
 							[NSNumber numberWithBool:YES], @"CustomQueryAutoindent",
+							[NSNumber numberWithBool:NO], @"CustomQueryAutouppercaseKeywords",
 							nil]];
 
 	// For versions prior to r336, where column widths have been saved, walk through them and remove

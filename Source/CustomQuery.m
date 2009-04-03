@@ -201,6 +201,15 @@ closes the sheet
 		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
 		[textView setAutopair:enableAutopair];
 	}
+
+	// "Auto-uppercase keywords" toggle
+	if (sender == autouppercaseKeywordsMenuItem) {
+		BOOL enableAutouppercaseKeywords = ([autouppercaseKeywordsMenuItem state] == NSOffState);
+		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutouppercaseKeywords"];
+		[prefs synchronize];
+		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
+		[textView setAutouppercaseKeywords:enableAutouppercaseKeywords];
+	}
 }
 
 
@@ -603,6 +612,8 @@ sets the connection (received from TableDocument) and makes things that have to 
 	[textView setAutoindentIgnoresEnter:YES];
 	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutopair"]?NSOnState:NSOffState)];
 	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutopair"]];
+	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]?NSOnState:NSOffState)];
+	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{
