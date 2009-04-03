@@ -21,7 +21,6 @@
 //  More info at <http://mysql-cocoa.sourceforge.net/>
 //
 
-
 #import <Foundation/Foundation.h>
 
 @class MCPModel;
@@ -85,7 +84,5 @@
 
 #pragma mark Output for logging
 - (NSString *) descriptionWithLocale:(NSDictionary *) locale;
-//- (NSString *) descriptionWithLocale:(NSDictionary *) locale;
-//- (NSString *) description;
 
 @end
