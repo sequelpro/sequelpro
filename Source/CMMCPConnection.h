@@ -23,7 +23,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 #import "CMMCPResult.h"
 
 @interface NSObject (CMMCPConnectionDelegate)

@@ -23,7 +23,7 @@
 
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 #import "SPTableData.h"
 #import "SPSQLParser.h"
 #import "TableDocument.h"

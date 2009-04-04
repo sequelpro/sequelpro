@@ -13,34 +13,6 @@
 		171622D60F866036000E3AF5 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 171622D40F866026000E3AF5 /* libcrypto.dylib */; };
 		171622D90F866066000E3AF5 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 171622D80F866066000E3AF5 /* libssl.dylib */; };
 		171622DB0F866080000E3AF5 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 171622DA0F866080000E3AF5 /* libz.dylib */; };
-		171622DC0F866135000E3AF5 /* MCPAttribute+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */; };
-		171622DD0F866135000E3AF5 /* MCPAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74C0F82D84E00E12957 /* MCPAttribute.h */; };
-		171622DE0F866135000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */; };
-		171622DF0F866135000E3AF5 /* MCPClassDescription+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7500F82D84E00E12957 /* MCPClassDescription+Private.h */; };
-		171622E00F866135000E3AF5 /* MCPClassDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7510F82D84E00E12957 /* MCPClassDescription.h */; };
-		171622E10F866135000E3AF5 /* MCPEntrepriseNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7530F82D84E00E12957 /* MCPEntrepriseNotifications.h */; };
-		171622E20F866135000E3AF5 /* MCPJoin.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7550F82D84E00E12957 /* MCPJoin.h */; };
-		171622E30F866135000E3AF5 /* MCPModel+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7570F82D84E00E12957 /* MCPModel+MCPEntreprise.h */; };
-		171622E40F866135000E3AF5 /* MCPModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7590F82D84E00E12957 /* MCPModel.h */; };
-		171622E50F866135000E3AF5 /* MCPObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75B0F82D84E00E12957 /* MCPObject.h */; };
-		171622E60F866135000E3AF5 /* MCPRelation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75D0F82D84E00E12957 /* MCPRelation+Private.h */; };
-		171622E70F866135000E3AF5 /* MCPRelation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75E0F82D84E00E12957 /* MCPRelation.h */; };
-		171622E80F866135000E3AF5 /* MCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7360F82D83900E12957 /* MCPConnection.h */; };
-		171622E90F866135000E3AF5 /* MCPConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7380F82D83900E12957 /* MCPConstants.h */; };
-		171622EA0F866135000E3AF5 /* MCPFastQueries.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7390F82D83900E12957 /* MCPFastQueries.h */; };
-		171622EB0F866135000E3AF5 /* MCPKit_bundled.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73B0F82D83900E12957 /* MCPKit_bundled.h */; };
-		171622ED0F866135000E3AF5 /* MCPNull.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73D0F82D83900E12957 /* MCPNull.h */; };
-		171622EE0F866135000E3AF5 /* MCPNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73F0F82D83900E12957 /* MCPNumber.h */; };
-		171622EF0F866135000E3AF5 /* MCPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7410F82D83900E12957 /* MCPResult.h */; };
-		171622F00F866135000E3AF5 /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7430F82D83900E12957 /* MCPResultPlus.h */; };
-		171622F10F866152000E3AF5 /* my_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7770F82D92500E12957 /* my_alloc.h */; };
-		171622F20F866152000E3AF5 /* my_list.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7780F82D92500E12957 /* my_list.h */; };
-		171622F30F866152000E3AF5 /* mysql.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7790F82D92500E12957 /* mysql.h */; };
-		171622F40F866152000E3AF5 /* mysql_com.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77A0F82D92500E12957 /* mysql_com.h */; };
-		171622F50F866152000E3AF5 /* mysql_embed.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77B0F82D92500E12957 /* mysql_embed.h */; };
-		171622F60F866152000E3AF5 /* mysql_time.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77C0F82D92500E12957 /* mysql_time.h */; };
-		171622F70F866152000E3AF5 /* mysql_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77D0F82D92500E12957 /* mysql_version.h */; };
-		171622F80F866152000E3AF5 /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77E0F82D92500E12957 /* typelib.h */; };
 		171622F90F86618F000E3AF5 /* MCPAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74D0F82D84E00E12957 /* MCPAttribute.m */; };
 		171622FA0F86618F000E3AF5 /* MCPClassDescription+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74F0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m */; };
 		171622FB0F86618F000E3AF5 /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7520F82D84E00E12957 /* MCPClassDescription.m */; };
@@ -56,28 +28,40 @@
 		171623050F86618F000E3AF5 /* MCPNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7400F82D83900E12957 /* MCPNumber.m */; };
 		171623060F86618F000E3AF5 /* MCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7420F82D83900E12957 /* MCPResult.m */; };
 		171623070F86618F000E3AF5 /* MCPResultPlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7440F82D83900E12957 /* MCPResultPlus.m */; };
-		171623850F8677B4000E3AF5 /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
-		171623950F867F6B000E3AF5 /* build-mysql-client.sh in Resources */ = {isa = PBXBuildFile; fileRef = 171623940F867F6B000E3AF5 /* build-mysql-client.sh */; };
-		1728B7450F82D83900E12957 /* MCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7370F82D83900E12957 /* MCPConnection.m */; };
-		1728B7460F82D83900E12957 /* MCPFastQueries.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B73A0F82D83900E12957 /* MCPFastQueries.m */; };
-		1728B7470F82D83900E12957 /* MCPNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B73E0F82D83900E12957 /* MCPNull.m */; };
-		1728B7480F82D83900E12957 /* MCPNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7400F82D83900E12957 /* MCPNumber.m */; };
-		1728B7490F82D83900E12957 /* MCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7420F82D83900E12957 /* MCPResult.m */; };
-		1728B74A0F82D83900E12957 /* MCPResultPlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7440F82D83900E12957 /* MCPResultPlus.m */; };
-		1728B7600F82D84E00E12957 /* MCPAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74D0F82D84E00E12957 /* MCPAttribute.m */; };
-		1728B7610F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B74F0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m */; };
-		1728B7620F82D84E00E12957 /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7520F82D84E00E12957 /* MCPClassDescription.m */; };
-		1728B7630F82D84E00E12957 /* MCPEntrepriseNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7540F82D84E00E12957 /* MCPEntrepriseNotifications.m */; };
-		1728B7640F82D84E00E12957 /* MCPJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7560F82D84E00E12957 /* MCPJoin.m */; };
-		1728B7650F82D84E00E12957 /* MCPModel+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B7580F82D84E00E12957 /* MCPModel+MCPEntreprise.m */; };
-		1728B7660F82D84E00E12957 /* MCPModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75A0F82D84E00E12957 /* MCPModel.m */; };
-		1728B7670F82D84E00E12957 /* MCPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75C0F82D84E00E12957 /* MCPObject.m */; };
-		1728B7680F82D84E00E12957 /* MCPRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728B75F0F82D84E00E12957 /* MCPRelation.m */; };
-		1728B7820F82D93300E12957 /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1728B77F0F82D93300E12957 /* libmysqlclient.a */; };
-		1728B7830F82D93300E12957 /* libmysqlclient_r.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1728B7800F82D93300E12957 /* libmysqlclient_r.a */; };
+		171623850F8677B4000E3AF5 /* MCPKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
+		171624CE0F86B115000E3AF5 /* MCPKit-Framework.plist in Resources */ = {isa = PBXBuildFile; fileRef = 171624CD0F86B115000E3AF5 /* MCPKit-Framework.plist */; };
+		171624FD0F86E700000E3AF5 /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
+		171625350F86EA94000E3AF5 /* MCPAttribute+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625360F86EA94000E3AF5 /* MCPAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74C0F82D84E00E12957 /* MCPAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625370F86EA94000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625380F86EA94000E3AF5 /* MCPClassDescription+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7500F82D84E00E12957 /* MCPClassDescription+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625390F86EA94000E3AF5 /* MCPClassDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7510F82D84E00E12957 /* MCPClassDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716253A0F86EA94000E3AF5 /* MCPEntrepriseNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7530F82D84E00E12957 /* MCPEntrepriseNotifications.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716253B0F86EA94000E3AF5 /* MCPJoin.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7550F82D84E00E12957 /* MCPJoin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716253C0F86EA94000E3AF5 /* MCPModel+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7570F82D84E00E12957 /* MCPModel+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716253D0F86EA94000E3AF5 /* MCPModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7590F82D84E00E12957 /* MCPModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716253E0F86EA94000E3AF5 /* MCPObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75B0F82D84E00E12957 /* MCPObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716253F0F86EA94000E3AF5 /* MCPRelation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75D0F82D84E00E12957 /* MCPRelation+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625400F86EA94000E3AF5 /* MCPRelation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B75E0F82D84E00E12957 /* MCPRelation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625410F86EA94000E3AF5 /* MCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7360F82D83900E12957 /* MCPConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625420F86EA94000E3AF5 /* MCPConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7380F82D83900E12957 /* MCPConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625430F86EA94000E3AF5 /* MCPFastQueries.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7390F82D83900E12957 /* MCPFastQueries.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625450F86EA94000E3AF5 /* MCPNull.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73D0F82D83900E12957 /* MCPNull.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625460F86EA94000E3AF5 /* MCPNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B73F0F82D83900E12957 /* MCPNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625470F86EA94000E3AF5 /* MCPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7410F82D83900E12957 /* MCPResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625480F86EA94000E3AF5 /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7430F82D83900E12957 /* MCPResultPlus.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625490F86EAA2000E3AF5 /* my_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7770F82D92500E12957 /* my_alloc.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716254A0F86EAA2000E3AF5 /* my_list.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7780F82D92500E12957 /* my_list.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716254B0F86EAA2000E3AF5 /* mysql.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7790F82D92500E12957 /* mysql.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716254C0F86EAA2000E3AF5 /* mysql_com.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77A0F82D92500E12957 /* mysql_com.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716254D0F86EAA2000E3AF5 /* mysql_embed.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77B0F82D92500E12957 /* mysql_embed.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716254E0F86EAA2000E3AF5 /* mysql_time.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77C0F82D92500E12957 /* mysql_time.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1716254F0F86EAA2000E3AF5 /* mysql_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77D0F82D92500E12957 /* mysql_version.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		171625500F86EAA2000E3AF5 /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B77E0F82D92500E12957 /* typelib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		172A65140F7BED8B001E861A /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = 172A65120F7BED8B001E861A /* Console.xib */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
+		1762A2C20F88163600FBDABF /* MCPKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 1762A2A00F88155200FBDABF /* MCPKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
@@ -169,6 +153,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				171623850F8677B4000E3AF5 /* MCPKit.framework in CopyFiles */,
 				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
 				4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */,
 			);
@@ -206,13 +191,12 @@
 		171622D80F866066000E3AF5 /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
 		171622DA0F866080000E3AF5 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		171623940F867F6B000E3AF5 /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
+		171624CD0F86B115000E3AF5 /* MCPKit-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MCPKit-Framework.plist"; sourceTree = "<group>"; };
 		1728B7360F82D83900E12957 /* MCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnection.h; sourceTree = "<group>"; };
 		1728B7370F82D83900E12957 /* MCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPConnection.m; sourceTree = "<group>"; };
 		1728B7380F82D83900E12957 /* MCPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConstants.h; sourceTree = "<group>"; };
 		1728B7390F82D83900E12957 /* MCPFastQueries.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPFastQueries.h; sourceTree = "<group>"; };
 		1728B73A0F82D83900E12957 /* MCPFastQueries.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPFastQueries.m; sourceTree = "<group>"; };
-		1728B73B0F82D83900E12957 /* MCPKit_bundled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit_bundled.h; sourceTree = "<group>"; };
-		1728B73C0F82D83900E12957 /* MCPKit_system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit_system.h; sourceTree = "<group>"; };
 		1728B73D0F82D83900E12957 /* MCPNull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPNull.h; sourceTree = "<group>"; };
 		1728B73E0F82D83900E12957 /* MCPNull.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPNull.m; sourceTree = "<group>"; };
 		1728B73F0F82D83900E12957 /* MCPNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPNumber.h; sourceTree = "<group>"; };
@@ -257,6 +241,7 @@
 		172A65130F7BED8B001E861A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
+		1762A2A00F88155200FBDABF /* MCPKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit.h; sourceTree = "<group>"; };
 		1789343A0F30C1DD0097539A /* SPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditions.h; sourceTree = "<group>"; };
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
@@ -377,13 +362,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				171624FD0F86E700000E3AF5 /* MCPKit.framework in Frameworks */,
 				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
 				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
 				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
 				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
-				171623850F8677B4000E3AF5 /* MCPKit.framework in Frameworks */,
-				1728B7820F82D93300E12957 /* libmysqlclient.a in Frameworks */,
-				1728B7830F82D93300E12957 /* libmysqlclient_r.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -492,13 +475,12 @@
 		1728B7350F82D7F900E12957 /* MCPFoundationKit */ = {
 			isa = PBXGroup;
 			children = (
+				1762A2A00F88155200FBDABF /* MCPKit.h */,
 				1728B7360F82D83900E12957 /* MCPConnection.h */,
 				1728B7370F82D83900E12957 /* MCPConnection.m */,
 				1728B7380F82D83900E12957 /* MCPConstants.h */,
 				1728B7390F82D83900E12957 /* MCPFastQueries.h */,
 				1728B73A0F82D83900E12957 /* MCPFastQueries.m */,
-				1728B73B0F82D83900E12957 /* MCPKit_bundled.h */,
-				1728B73C0F82D83900E12957 /* MCPKit_system.h */,
 				1728B73D0F82D83900E12957 /* MCPNull.h */,
 				1728B73E0F82D83900E12957 /* MCPNull.m */,
 				1728B73F0F82D83900E12957 /* MCPNumber.h */,
@@ -579,6 +561,7 @@
 				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
 				17E642390EF0216C001BC333 /* Credits.rtf */,
 				17E641F40EF02088001BC333 /* askForPass.sh */,
+				171624CD0F86B115000E3AF5 /* MCPKit-Framework.plist */,
 				17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */,
 				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
@@ -793,38 +776,38 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		171621E70F865296000E3AF5 /* Headers */ = {
+		171625320F86EA72000E3AF5 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				171622EB0F866135000E3AF5 /* MCPKit_bundled.h in Headers */,
-				171622DC0F866135000E3AF5 /* MCPAttribute+Private.h in Headers */,
-				171622DD0F866135000E3AF5 /* MCPAttribute.h in Headers */,
-				171622DE0F866135000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */,
-				171622DF0F866135000E3AF5 /* MCPClassDescription+Private.h in Headers */,
-				171622E00F866135000E3AF5 /* MCPClassDescription.h in Headers */,
-				171622E10F866135000E3AF5 /* MCPEntrepriseNotifications.h in Headers */,
-				171622E20F866135000E3AF5 /* MCPJoin.h in Headers */,
-				171622E30F866135000E3AF5 /* MCPModel+MCPEntreprise.h in Headers */,
-				171622E40F866135000E3AF5 /* MCPModel.h in Headers */,
-				171622E50F866135000E3AF5 /* MCPObject.h in Headers */,
-				171622E60F866135000E3AF5 /* MCPRelation+Private.h in Headers */,
-				171622E70F866135000E3AF5 /* MCPRelation.h in Headers */,
-				171622E80F866135000E3AF5 /* MCPConnection.h in Headers */,
-				171622E90F866135000E3AF5 /* MCPConstants.h in Headers */,
-				171622EA0F866135000E3AF5 /* MCPFastQueries.h in Headers */,
-				171622ED0F866135000E3AF5 /* MCPNull.h in Headers */,
-				171622EE0F866135000E3AF5 /* MCPNumber.h in Headers */,
-				171622EF0F866135000E3AF5 /* MCPResult.h in Headers */,
-				171622F00F866135000E3AF5 /* MCPResultPlus.h in Headers */,
-				171622F10F866152000E3AF5 /* my_alloc.h in Headers */,
-				171622F20F866152000E3AF5 /* my_list.h in Headers */,
-				171622F30F866152000E3AF5 /* mysql.h in Headers */,
-				171622F40F866152000E3AF5 /* mysql_com.h in Headers */,
-				171622F50F866152000E3AF5 /* mysql_embed.h in Headers */,
-				171622F60F866152000E3AF5 /* mysql_time.h in Headers */,
-				171622F70F866152000E3AF5 /* mysql_version.h in Headers */,
-				171622F80F866152000E3AF5 /* typelib.h in Headers */,
+				1762A2C20F88163600FBDABF /* MCPKit.h in Headers */,
+				171625350F86EA94000E3AF5 /* MCPAttribute+Private.h in Headers */,
+				171625360F86EA94000E3AF5 /* MCPAttribute.h in Headers */,
+				171625370F86EA94000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */,
+				171625380F86EA94000E3AF5 /* MCPClassDescription+Private.h in Headers */,
+				171625390F86EA94000E3AF5 /* MCPClassDescription.h in Headers */,
+				1716253A0F86EA94000E3AF5 /* MCPEntrepriseNotifications.h in Headers */,
+				1716253B0F86EA94000E3AF5 /* MCPJoin.h in Headers */,
+				1716253C0F86EA94000E3AF5 /* MCPModel+MCPEntreprise.h in Headers */,
+				1716253D0F86EA94000E3AF5 /* MCPModel.h in Headers */,
+				1716253E0F86EA94000E3AF5 /* MCPObject.h in Headers */,
+				1716253F0F86EA94000E3AF5 /* MCPRelation+Private.h in Headers */,
+				171625400F86EA94000E3AF5 /* MCPRelation.h in Headers */,
+				171625410F86EA94000E3AF5 /* MCPConnection.h in Headers */,
+				171625420F86EA94000E3AF5 /* MCPConstants.h in Headers */,
+				171625430F86EA94000E3AF5 /* MCPFastQueries.h in Headers */,
+				171625450F86EA94000E3AF5 /* MCPNull.h in Headers */,
+				171625460F86EA94000E3AF5 /* MCPNumber.h in Headers */,
+				171625470F86EA94000E3AF5 /* MCPResult.h in Headers */,
+				171625480F86EA94000E3AF5 /* MCPResultPlus.h in Headers */,
+				171625490F86EAA2000E3AF5 /* my_alloc.h in Headers */,
+				1716254A0F86EAA2000E3AF5 /* my_list.h in Headers */,
+				1716254B0F86EAA2000E3AF5 /* mysql.h in Headers */,
+				1716254C0F86EAA2000E3AF5 /* mysql_com.h in Headers */,
+				1716254D0F86EAA2000E3AF5 /* mysql_embed.h in Headers */,
+				1716254E0F86EAA2000E3AF5 /* mysql_time.h in Headers */,
+				1716254F0F86EAA2000E3AF5 /* mysql_version.h in Headers */,
+				171625500F86EAA2000E3AF5 /* typelib.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -835,8 +818,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 171621F10F865297000E3AF5 /* Build configuration list for PBXNativeTarget "MCPKit" */;
 			buildPhases = (
-				171621E70F865296000E3AF5 /* Headers */,
-				171621E80F865296000E3AF5 /* Resources */,
+				171625320F86EA72000E3AF5 /* Headers */,
 				171621E90F865296000E3AF5 /* Sources */,
 				171621EA0F865296000E3AF5 /* Frameworks */,
 			);
@@ -853,8 +835,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */;
 			buildPhases = (
-				8D15AC2B0486D014006FF6A4 /* Resources */,
 				8D15AC300486D014006FF6A4 /* Sources */,
+				8D15AC2B0486D014006FF6A4 /* Resources */,
 				8D15AC330486D014006FF6A4 /* Frameworks */,
 				4DECC4940EC2B447008D359E /* CopyFiles */,
 				1761FDAF0EF0496500331368 /* Run Scripts */,
@@ -889,14 +871,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		171621E80F865296000E3AF5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				171623950F867F6B000E3AF5 /* build-mysql-client.sh in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8D15AC2B0486D014006FF6A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -943,6 +917,7 @@
 				58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */,
 				5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */,
 				172A65140F7BED8B001E861A /* Console.xib in Resources */,
+				171624CE0F86B115000E3AF5 /* MCPKit-Framework.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1020,21 +995,6 @@
 				344819020F793DB500624B14 /* SPArrayAdditions.m in Sources */,
 				172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */,
 				179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */,
-				1728B7450F82D83900E12957 /* MCPConnection.m in Sources */,
-				1728B7460F82D83900E12957 /* MCPFastQueries.m in Sources */,
-				1728B7470F82D83900E12957 /* MCPNull.m in Sources */,
-				1728B7480F82D83900E12957 /* MCPNumber.m in Sources */,
-				1728B7490F82D83900E12957 /* MCPResult.m in Sources */,
-				1728B74A0F82D83900E12957 /* MCPResultPlus.m in Sources */,
-				1728B7600F82D84E00E12957 /* MCPAttribute.m in Sources */,
-				1728B7610F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.m in Sources */,
-				1728B7620F82D84E00E12957 /* MCPClassDescription.m in Sources */,
-				1728B7630F82D84E00E12957 /* MCPEntrepriseNotifications.m in Sources */,
-				1728B7640F82D84E00E12957 /* MCPJoin.m in Sources */,
-				1728B7650F82D84E00E12957 /* MCPModel+MCPEntreprise.m in Sources */,
-				1728B7660F82D84E00E12957 /* MCPModel.m in Sources */,
-				1728B7670F82D84E00E12957 /* MCPObject.m in Sources */,
-				1728B7680F82D84E00E12957 /* MCPRelation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1113,7 +1073,6 @@
 		171621EE0F865297000E3AF5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1125,7 +1084,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				GCC_PREPROCESSOR_DEFINITIONS = "FRAMEWORK_TYPE=BUNDLED";
+				INFOPLIST_FILE = "Resources/MCPKit-Framework.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1145,7 +1104,6 @@
 		171621EF0F865297000E3AF5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1156,7 +1114,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				GCC_PREPROCESSOR_DEFINITIONS = "FRAMEWORK_TYPE=BUNDLED";
+				INFOPLIST_FILE = "Resources/MCPKit-Framework.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1177,7 +1135,6 @@
 		171621F00F865297000E3AF5 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -1186,7 +1143,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				GCC_PREPROCESSOR_DEFINITIONS = "FRAMEWORK_TYPE=BUNDLED";
+				INFOPLIST_FILE = "Resources/MCPKit-Framework.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1221,11 +1178,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/Frameworks\"",
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks\"";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
@@ -1244,11 +1197,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/Frameworks\"",
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
@@ -1270,11 +1219,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/Frameworks\"",
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks\"";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";

@@ -23,7 +23,7 @@ BINARY_DISTRIBUTION_SCRIPT='scripts/make_binary_distribution'
 
 usage() 
 {
-	echo "Usage: $(basename $0): -s <mysql_source_path> [-d]"
+	echo "Usage: $(basename $0): -s <mysql_source_path> [-q -c -d]"
 }
 
 if [ $# -eq 0 ]
@@ -116,9 +116,9 @@ echo 'Building binary distribution...'
 
 if [ "x${QUIET}" == 'xYES' ]
 then
-	"${BINARY_DISTRIBUTION_SCRIPT}" > /dev/null
+	$BINARY_DISTRIBUTION_SCRIPT > /dev/null
 else
-	"${BINARY_DISTRIBUTION_SCRIPT}"
+	$BINARY_DISTRIBUTION_SCRIPT
 fi
 
 if [ $? -eq 0 ]

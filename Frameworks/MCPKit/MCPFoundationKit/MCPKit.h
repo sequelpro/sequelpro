@@ -1,5 +1,5 @@
 /*
- *  MCPKit_bundled.h
+ *  MCPKit.h
  *  MCPKit
  *
  *  Created by serge cohen (serge.cohen@m4x.org) on Sat Dec 08 2001.
@@ -21,7 +21,7 @@
  *  More info at <http://mysql-cocoa.sourceforge.net/>
  * 
  *
- * $Id: MCPKit_bundled.h 335 2006-01-08 21:14:07Z serge $
+ * $Id: MCPKit.h 335 2006-01-08 21:14:07Z serge $
  * $Author: serge $
  */
 

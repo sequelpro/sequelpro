@@ -24,7 +24,6 @@
 
 #import "CMMCPResult.h"
 
-
 @implementation CMMCPResult
 
 /*
@@ -84,10 +83,9 @@ modified version for use with sequel-pro
                 case FIELD_TYPE_INT24:
                 case FIELD_TYPE_LONG:
                 case FIELD_TYPE_LONGLONG:
-                case FIELD_TYPE_DECIMAL:
                 case FIELD_TYPE_FLOAT:
                 case FIELD_TYPE_DOUBLE:
-                case FIELD_TYPE_NEW_DECIMAL:					
+                case FIELD_TYPE_DECIMAL:					
                 case FIELD_TYPE_TIMESTAMP:
                 case FIELD_TYPE_DATE:
                 case FIELD_TYPE_TIME:

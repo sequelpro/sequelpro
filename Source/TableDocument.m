@@ -777,7 +777,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
 	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1
-		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
+		NSLog(@"Error: unable to determine character encoding, MySQL version is %@. Defaulting to latin1.", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
 	

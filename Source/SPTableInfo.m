@@ -29,7 +29,7 @@
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 
 @interface SPTableInfo (PrivateAPI)
 

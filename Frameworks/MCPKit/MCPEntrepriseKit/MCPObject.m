@@ -8,7 +8,7 @@
 
 #import "MCPObject.h"
 
-#import <MCPKit/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 
 #import "MCPClassDescription.h"
 #import "MCPClassDescription+MCPEntreprise.h"

@@ -605,6 +605,7 @@ This method returned directly the #{mutable} object generated while going throug
 	 "*/
 {
 	NSMutableDictionary		*theDict = [self fetchTypesAsType:MCPTypeDictionary];
+		
 	if (theDict) {
 		return [NSDictionary dictionaryWithDictionary:theDict];
 	}
