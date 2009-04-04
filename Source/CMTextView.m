@@ -1093,19 +1093,19 @@ SYNTAX HIGHLIGHTING!
 		switch (token) {
 			case SPT_SINGLE_QUOTED_TEXT:
 			case SPT_DOUBLE_QUOTED_TEXT:
-			tokenColor = quoteColor;
-			break;
+			    tokenColor = quoteColor;
+			    break;
 			case SPT_BACKTICK_QUOTED_TEXT:
-			tokenColor = backtickColor;
-			break;
+			    tokenColor = backtickColor;
+			    break;
 			case SPT_RESERVED_WORD:
-			tokenColor = keywordColor;
-			break;
+			    tokenColor = keywordColor;
+			    break;
 			case SPT_COMMENT:
-			tokenColor = commentColor;
-			break;
+			    tokenColor = commentColor;
+			    break;
 			default:
-			tokenColor = nil;
+			    tokenColor = nil;
 		}
 
 		if (!tokenColor) continue;
@@ -1117,15 +1117,20 @@ SYNTAX HIGHLIGHTING!
 		tokenRange = NSIntersectionRange(tokenRange, textRange); 
 		if (!tokenRange.length) continue;
 
-		// Is the current token is marked as SQL keyword, uppercase it if required.
-		if (autouppercaseKeywordsEnabled &&
-			[[self textStorage] attribute:kSQLkeyword atIndex:tokenRange.location effectiveRange:nil])
-		{
-			// Note: Register it for undo doesn't work ?=> unreliable single char undo
-			// Replace it
-			[self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
-		}
-
+		// If the current token is marked as SQL keyword, uppercase it if required.
+		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; // Check the end of the token
+		if (autouppercaseKeywordsEnabled 
+			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
+			// check if next char is not a kSQLkeyword; if so then upper case keyword
+			// @try catch() for catching valid index esp. after deleteBackward:
+			@try {
+			if(![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil])
+				// Register it for undo
+				// [self shouldChangeTextInRange:tokenRange replacementString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
+				// NOTE: If one does this registering it ends up in single-character-undo
+				[self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
+			} @catch(id ae) {  }
+		
 		[textStore addAttribute: NSForegroundColorAttributeName
 						  value: tokenColor
 						  range: tokenRange ];
