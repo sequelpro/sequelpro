@@ -48,10 +48,7 @@ static BOOL				sDebugQueries = NO;
 
 
 @implementation MCPConnection
-/*"
-!{ $Id: MCPConnection.m 348 2006-02-26 18:55:32Z serge $ }
- !{ $Author: serge $ }
- 
+/*
  This class is used to keep a connection with a MySQL server, it correspond to the MYSQL structure of the C API, or the database handle of the PERL DBI/DBD interface.
  
  You have to start any work on a MySQL server by getting a working MCPConnection object.

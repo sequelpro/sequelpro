@@ -19,8 +19,6 @@
 //  Boston, MA 02111-1307, USA.
 //
 //  More info at <http://mysql-cocoa.sourceforge.net/>
-//
-
 
 #import <Foundation/Foundation.h>
 
@@ -28,7 +26,6 @@
 @class MCPClassDescription;
 @class MCPRelation;
 @class MCPJoin;
-
 
 @interface MCPAttribute : NSObject < NSCoding > {
 @protected

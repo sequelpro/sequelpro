@@ -22,7 +22,6 @@
 //
 
 #import "MCPAttribute.h"
-#import "MCPAttribute+Private.h"
 
 #import "MCPEntrepriseNotifications.h"
 
@@ -32,6 +31,12 @@
 #import "MCPJoin.h"
 
 static NSArray    *MCPRecognisedInternalType;
+
+@interface MCPAttribute (Private)
+
+- (void)setValueClassName:(NSString *) iClassName;
+
+@end
 
 @implementation MCPAttribute
 
@@ -454,15 +459,11 @@ static NSArray    *MCPRecognisedInternalType;
 
 @implementation MCPAttribute (Private)
 
-#pragma mark Setters
-- (void) setValueClassName:(NSString *) iClassName
+- (void)setValueClassName:(NSString *) iClassName
 {
 	if (NSClassFromString(iClassName) != valueClass) {
 		[self setValueClass:NSClassFromString(iClassName)];    
 	}
 }
-
-#pragma mark Pseudo-getters
-
 
 @end

@@ -31,7 +31,6 @@
 		171623850F8677B4000E3AF5 /* MCPKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
 		171624CE0F86B115000E3AF5 /* MCPKit-Framework.plist in Resources */ = {isa = PBXBuildFile; fileRef = 171624CD0F86B115000E3AF5 /* MCPKit-Framework.plist */; };
 		171624FD0F86E700000E3AF5 /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
-		171625350F86EA94000E3AF5 /* MCPAttribute+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		171625360F86EA94000E3AF5 /* MCPAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74C0F82D84E00E12957 /* MCPAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		171625370F86EA94000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		171625380F86EA94000E3AF5 /* MCPClassDescription+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1728B7500F82D84E00E12957 /* MCPClassDescription+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -205,7 +204,6 @@
 		1728B7420F82D83900E12957 /* MCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResult.m; sourceTree = "<group>"; };
 		1728B7430F82D83900E12957 /* MCPResultPlus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPResultPlus.h; sourceTree = "<group>"; };
 		1728B7440F82D83900E12957 /* MCPResultPlus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResultPlus.m; sourceTree = "<group>"; };
-		1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPAttribute+Private.h"; sourceTree = "<group>"; };
 		1728B74C0F82D84E00E12957 /* MCPAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPAttribute.h; sourceTree = "<group>"; };
 		1728B74D0F82D84E00E12957 /* MCPAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPAttribute.m; sourceTree = "<group>"; };
 		1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPClassDescription+MCPEntreprise.h"; sourceTree = "<group>"; };
@@ -447,7 +445,6 @@
 		1728B7340F82D7DB00E12957 /* MCPEntrepriseKit */ = {
 			isa = PBXGroup;
 			children = (
-				1728B74B0F82D84E00E12957 /* MCPAttribute+Private.h */,
 				1728B74C0F82D84E00E12957 /* MCPAttribute.h */,
 				1728B74D0F82D84E00E12957 /* MCPAttribute.m */,
 				1728B74E0F82D84E00E12957 /* MCPClassDescription+MCPEntreprise.h */,
@@ -781,7 +778,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				1762A2C20F88163600FBDABF /* MCPKit.h in Headers */,
-				171625350F86EA94000E3AF5 /* MCPAttribute+Private.h in Headers */,
 				171625360F86EA94000E3AF5 /* MCPAttribute.h in Headers */,
 				171625370F86EA94000E3AF5 /* MCPClassDescription+MCPEntreprise.h in Headers */,
 				171625380F86EA94000E3AF5 /* MCPClassDescription+Private.h in Headers */,
