@@ -256,7 +256,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
 	// e.g. for US keyboard "⌥u a" to insert ä
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask)
+	// or for non-US keyboards to allow to enter dead keys
+	// e.g. for German keyboard ` is a dead key, press space to enter `
+	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)
 	{
 		[super keyDown: theEvent];
 		return;
