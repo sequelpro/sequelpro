@@ -1,37 +1,36 @@
 //
+//  $Id$
+//
 //  MCPFastQueries.m
-//  SMySQL
+//  MCPKit
 //
-//  Created by Serge Cohen (serge.cohen@m4x.org) on Mon Jun 03 2002.
-//  Copyright (c) 2001 Serge Cohen.
+//  Created by Serge Cohen (serge.cohen@m4x.org) on 03/06/2002.
+//  Copyright (c) 2001 Serge Cohen. All rights reserved.
 //
-//  This code is free software; you can redistribute it and/or modify it under
-//  the terms of the GNU General Public License as published by the Free
-//  Software Foundation; either version 2 of the License, or any later version.
+//  Forked by the Sequel Pro team (sequelpro.com), April 2009
 //
-//  This code is distributed in the hope that it will be useful, but WITHOUT ANY
-//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-//  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-//  details.
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
 //
-//  For a copy of the GNU General Public License, visit <http://www.gnu.org/> or
-//  write to the Free Software Foundation, Inc., 59 Temple Place--Suite 330,
-//  Boston, MA 02111-1307, USA.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://mysql-cocoa.sourceforge.net/>
-//
-// $Id: MCPFastQueries.m 334 2006-01-08 20:32:38Z serge $
-// $Author: serge $
-
-#import "MCPResultPlus.h"
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "MCPFastQueries.h"
-
+#import "MCPResultPlus.h"
 
 @implementation MCPConnection (MCPFastQueries)
-/*"
-!{ $Id: MCPFastQueries.m 334 2006-01-08 20:32:38Z serge $ }
- 
+/*" 
 This actegory is made up to keep the extra methods out or the core of the framework.
 
 Basicly this is the place to add methods which are useful, but are just wrappers to the methods of the core (MCPConnection, MCPResult). The purpous being to have a single line call available for current tasks which otherwise would need a couple of lines and object defined.

@@ -1,28 +1,30 @@
 //
+//  $Id$
+//
 //  MCPResult.m
-//  SMySQL
+//  MCPKit
 //
-//  Created by serge cohen (serge.cohen@m4x.org) on Sat Dec 08 2001.
-//  Copyright (c) 2001 Serge Cohen.
+//  Created by Serge Cohen (serge.cohen@m4x.org) on 08/12/2002.
+//  Copyright (c) 2001 Serge Cohen. All rights reserved.
 //
-//  This code is free software; you can redistribute it and/or modify it under
-//  the terms of the GNU General Public License as published by the Free
-//  Software Foundation; either version 2 of the License, or any later version.
+//  Forked by the Sequel Pro team (sequelpro.com), April 2009
 //
-//  This code is distributed in the hope that it will be useful, but WITHOUT ANY
-//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-//  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-//  details.
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
 //
-//  For a copy of the GNU General Public License, visit <http://www.gnu.org/> or
-//  write to the Free Software Foundation, Inc., 59 Temple Place--Suite 330,
-//  Boston, MA 02111-1307, USA.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://mysql-cocoa.sourceforge.net/>
-//
-// $Id: MCPResult.m 348 2006-02-26 18:55:32Z serge $
-// $Author: serge $
-
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "MCPConnection.h"
 #import "MCPNull.h"
@@ -33,9 +35,7 @@
 NSCalendarDate		*MCPYear0000;
 
 @implementation MCPResult
-/*"
-!{ $Id: MCPResult.m 348 2006-02-26 18:55:32Z serge $ }
- 
+/*" 
  Hold the results of a query to a MySQL database server. It correspond to the MYSQL_RES structure of the C API, and to the statement handle of the PERL DBI/DBD.
  
  Uses the !{mysql_store_result()} function from the C API. 
@@ -877,6 +877,5 @@ Return a (long) string containing the table of results, first line being the fie
 	}
 	return theString;
 }
-
 
 @end
