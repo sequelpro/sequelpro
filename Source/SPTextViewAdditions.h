@@ -24,4 +24,14 @@
 
 @interface NSTextView (SPTextViewAdditions)
 
+- (IBAction)selectCurrentWord:(id)sender;
+- (IBAction)selectCurrentLine:(id)sender;
+- (IBAction)doSelectionUpperCase:(id)sender;
+- (IBAction)doSelectionLowerCase:(id)sender;
+- (IBAction)doSelectionTitleCase:(id)sender;
+- (IBAction)doDecomposedStringWithCanonicalMapping:(id)sender;
+- (IBAction)doDecomposedStringWithCompatibilityMapping:(id)sender;
+- (IBAction)doPrecomposedStringWithCanonicalMapping:(id)sender;
+- (IBAction)doPrecomposedStringWithCompatibilityMapping:(id)sender;
+
 @end

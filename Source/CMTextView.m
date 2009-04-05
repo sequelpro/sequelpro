@@ -117,46 +117,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
- * Select current line and returns found NSRange.
- */
-- (NSRange)selectCurrentLine
-{
-	[self doCommandBySelector:@selector(moveToBeginningOfLine:)];
-	[self doCommandBySelector:@selector(moveToEndOfLineAndModifySelection:)];
-	
-	return([self selectedRange]);
-}
-
-/*
- * Select current word and returns found NSRange.
- *   finds: [| := caret]  |word  wo|rd  word|
- * If | is in between whitespaces nothing will be selected.
- */
-- (NSRange)selectCurrentWord
-{
-	NSRange curRange = [self selectedRange];
-	unsigned long curLocation = curRange.location;
-	[self doCommandBySelector:@selector(moveWordLeft:)];
-	[self  doCommandBySelector:@selector(moveWordRightAndModifySelection:)];
-
-	unsigned long newStartRange = [self selectedRange].location;
-	unsigned long newEndRange = newStartRange + [self selectedRange].length;
-
-	// if current location does not intersect with found range
-	// then caret is at the begin of a word -> change strategy
-	if(curLocation < newStartRange || curLocation > newEndRange)
-	{
-		[self setSelectedRange:curRange];
-		[self doCommandBySelector:@selector(moveWordRightAndModifySelection:)];
-	}
-	
-	if([[[self string] substringWithRange:[self selectedRange]] rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location != NSNotFound)
-		[self setSelectedRange:curRange];
-		
-	return([self selectedRange]);
-}
-
-/*
  * Copy selected text chunk as RTF to preserve syntax highlighting
  */
 - (void)copyAsRTF
@@ -173,76 +133,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[pb setData:rtf forType:NSRTFPboardType];
 	}
 
-}
-
-/*
- * Change selection or current word to upper case and preserves the selection.
- */
-- (void)doSelectionUpperCase
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] uppercaseString]];
-	[self setSelectedRange:curRange];
-}
-
-/*
- * Change selection or current word to lower case and preserves the selection.
- */
-- (void)doSelectionLowerCase
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] lowercaseString]];
-	[self setSelectedRange:curRange];
-}
-
-/*
- * Change selection or current word to title case and preserves the selection.
- */
-- (void)doSelectionTitleCase
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] capitalizedString]];
-	[self setSelectedRange:curRange];
-}
-
-/*
- * Change selection or current word according to Unicode's NFD and preserves the selection.
- */
-- (void)doDecomposedStringWithCanonicalMapping
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] decomposedStringWithCanonicalMapping]];
-	[self setSelectedRange:curRange];
-}
-
-/*
- * Change selection or current word according to Unicode's NFKD and preserves the selection.
- */
-- (void)doDecomposedStringWithCompatibilityMapping
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] decomposedStringWithCompatibilityMapping]];
-	[self setSelectedRange:curRange];
-}
-
-/*
- * Change selection or current word according to Unicode's NFC and preserves the selection.
- */
-- (void)doPrecomposedStringWithCanonicalMapping
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] precomposedStringWithCanonicalMapping]];
-	[self setSelectedRange:curRange];
-}
-
-/*
- * Change selection or current word according to Unicode's NFKC to title case and preserves the selection.
- */
-- (void)doPrecomposedStringWithCompatibilityMapping
-{
-	NSRange curRange = [self selectedRange];
-	[self insertText:[[[self string] substringWithRange:(curRange.length)?curRange:[self selectCurrentWord]] precomposedStringWithCompatibilityMapping]];
-	[self setSelectedRange:curRange];
 }
 
 
@@ -271,49 +161,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	
 
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
-	if([charactersIgnMod isEqualToString:@"w"]) // ^W select current word
-		if(curFlags==(NSControlKeyMask))
-		{
-			[self selectCurrentWord];
-			return;
-		}
-
-	if([charactersIgnMod isEqualToString:@"l"]) // ^L select current line
-		if(curFlags==(NSControlKeyMask))
-		{
-			[self selectCurrentLine];
-			return;
-		}
-
 	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
 		if(curFlags==(NSControlKeyMask))
 		{
 			[self copyAsRTF];
 			return;
 		}
-
-	if([charactersIgnMod isEqualToString:@"u"])
-		// ^U upper case
-		if(curFlags==(NSControlKeyMask))
-			{
-				[self doSelectionUpperCase];
-				return;
-			}
-		// ^⌥U title case
-		if(curFlags==(NSControlKeyMask|NSAlternateKeyMask))
-		{
-			[self doSelectionTitleCase];
-			return;
-		}
-
-	if([charactersIgnMod isEqualToString:@"U"]) // ^⇧U lower case
-		if(([theEvent modifierFlags] 
-			& (NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))==(NSControlKeyMask))
-		{
-			[self doSelectionLowerCase];
-			return;
-		}
-
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if (autopairEnabled && characters && [characters length] == 1) {
