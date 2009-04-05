@@ -25,6 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 #import "CMCopyTable.h"
+#import "CMTextView.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 
@@ -33,7 +34,7 @@
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;
-	IBOutlet id textView;
+	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet id errorText;
 	IBOutlet id affectedRowsText;
@@ -45,6 +46,15 @@
 	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
+	IBOutlet NSMenuItem *runSelectionMenuItem;
+	IBOutlet NSMenuItem *clearHistoryMenuItem;
+	IBOutlet NSMenuItem *shiftLeftMenuItem;
+	IBOutlet NSMenuItem *shiftRightMenuItem;
+	IBOutlet NSMenuItem *completionListMenuItem;
+	IBOutlet NSMenuItem *editorFontMenuItem;
+	IBOutlet NSMenuItem *autoindentMenuItem;
+	IBOutlet NSMenuItem *autopairMenuItem;
+	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
@@ -59,6 +69,7 @@
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)gearMenuItemSelected:(id)sender;
 
 // queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;

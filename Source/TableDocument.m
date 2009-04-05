@@ -607,7 +607,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)toggleConsole:(id)sender
 {
-	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:![[[SPQueryConsole sharedQueryConsole] window] isVisible]];
+	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
+	
+	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:(!isConsoleVisible)];
+	
+	// Only update the menu item title if its the menu item and not the toolbar
+	if ([sender isKindOfClass:[NSMenuItem class]]) {
+		[(NSMenuItem *)sender setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
+	}
 }
 
 /**
@@ -1257,6 +1264,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 	[tableTabView selectTabViewItemAtIndex:2];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToRunQueryToolbarItemIdentifier"];
+
+	// Set the focus on the text field if no query has been run
+	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
 }
 
 - (IBAction)viewStatus:(id)sender

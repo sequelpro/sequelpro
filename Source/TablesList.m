@@ -35,12 +35,11 @@
 
 @implementation TablesList
 
-
 #pragma mark IBAction methods
 
-/*
-loads all table names in array tables and reload the tableView
-*/
+/**
+ * Loads all table names in array tables and reload the tableView
+ */
 - (IBAction)updateTables:(id)sender
 {
 	CMMCPResult *theResult;
@@ -105,28 +104,113 @@ loads all table names in array tables and reload the tableView
 	}
 }
 
-/*
-adds a new table to the tables-array (no changes in mysql-db)
-*/
+/**
+ * Adds a new table to the tables-array (no changes in mysql-db)
+ */
 - (IBAction)addTable:(id)sender
 {
-	if ( ![tableSourceInstance saveRowOnDeselect] ||
-			![tableContentInstance saveRowOnDeselect] ||
-			![tableDocumentInstance database] )
+	if ((![tableSourceInstance saveRowOnDeselect]) || (![tableContentInstance saveRowOnDeselect]) || (![tableDocumentInstance database])) {
 		return;
-	[tableWindow endEditingFor:nil];
+	}
 
-	[tables addObject:@""];
-	[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
-	[tablesListView reloadData];
-	[tablesListView selectRow:[tables count]-1 byExtendingSelection:NO];
-	[tablesListView editColumn:0 row:[tables count]-1 withEvent:nil select:YES];
+	[tableWindow endEditingFor:nil];
+	
+	[NSApp beginSheet:tableSheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+	
+	NSInteger returnCode = [NSApp runModalForWindow:tableSheet];
+	
+	[NSApp endSheet:tableSheet];
+	[tableSheet orderOut:nil];
+	
+	if (!returnCode) {
+		// Clear table name
+		[tableNameField setStringValue:@""];
+		
+		return;
+	}
+		
+	NSString *tableName = [tableNameField stringValue];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT)", [tableName backtickQuotedString]];
+	
+	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
+	if ([tableEncodingButton indexOfSelectedItem] > 0) {
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[tableDocumentInstance mysqlEncodingFromDisplayEncoding:[tableEncodingButton title]] backtickQuotedString]];
+	}
+	
+	// Create the table
+	[mySQLConnection queryString:createStatement];
+	
+	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		
+		// Table creation was successful
+		[tables addObject:tableName];
+		[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+		[tablesListView reloadData];
+		[tablesListView selectRow:([tables count] - 1) byExtendingSelection:NO];
+		
+		NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
+		
+		if (selectedIndex == 0) {
+			[tableSourceInstance loadTable:tableName];
+			structureLoaded = YES;
+			contentLoaded = NO;
+			statusLoaded = NO;
+		} 
+		else if (selectedIndex == 1) {
+			[tableContentInstance loadTable:tableName];
+			structureLoaded = NO;
+			contentLoaded = YES;
+			statusLoaded = NO;
+		} 
+		else if (selectedIndex == 3) {
+			[tableStatusInstance loadTable:tableName];
+			structureLoaded = NO;
+			contentLoaded = NO; 			
+			statusLoaded = YES;
+		} 
+		else {
+			statusLoaded = NO;
+			structureLoaded = NO;
+			contentLoaded = NO;
+		}
+		
+		// Set window title
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
+							  [tableDocumentInstance host], [tableDocumentInstance database], tableName]];
+	} 
+	else {
+		// Error while creating new table
+		alertSheetOpened = YES;
+		
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
+						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
+						  tableName, [mySQLConnection getLastErrorMessage]]);
+		
+		[tableTypes removeObjectAtIndex:([tableTypes count] - 1)];
+		[tables removeObjectAtIndex:([tables count] - 1)];
+		[tablesListView reloadData];
+	}
+	
+	// Clear table name
+	[tableNameField setStringValue:@""];
 }
 
-/*
-invoked when user hits the remove button
-alert sheet to ask user if he really wants to delete the table
-*/
+/**
+ * Closes the add table sheet and stops the modal session
+ */
+- (IBAction)closeTableSheet:(id)sender
+{
+	[NSApp stopModalWithCode:[sender tag]];
+}
+
+/**
+ * Invoked when user hits the remove button alert sheet to ask user if he really wants to delete the table.
+ */
 - (IBAction)removeTable:(id)sender
 {
 	if ( ![tablesListView numberOfSelectedRows] )
@@ -146,9 +230,9 @@ alert sheet to ask user if he really wants to delete the table
 	}
 }
 
-/*
-copies a table, if desired with content
-*/
+/**
+ * Copies a table, if desired with content
+ */
 - (IBAction)copyTable:(id)sender
 {
 	CMMCPResult *queryResult;
@@ -248,13 +332,11 @@ copies a table, if desired with content
     }
 }
 
-
 #pragma mark Alert sheet methods
 
-/*
-method for alert sheets
-invoked when user wants to delete a table
-*/
+/**
+ * Method for alert sheets. Invoked when user wants to delete a table.
+ */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
 	if ( [contextInfo isEqualToString:@"addRow"] ) {
@@ -267,9 +349,9 @@ invoked when user wants to delete a table
 	}
 }
 
-/*
-closes copyTableSheet and stops modal session
-*/
+/**
+ * Closes copyTableSheet and stops modal session
+ */
 - (IBAction)closeCopyTableSheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
@@ -277,9 +359,9 @@ closes copyTableSheet and stops modal session
 
 #pragma mark Additional methods
 
-/*
-removes selected table(s) from mysql-db and tableView
-*/
+/**
+ * Removes selected table(s) from mysql-db and tableView
+ */
 - (void)removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
@@ -322,30 +404,39 @@ removes selected table(s) from mysql-db and tableView
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
 }
 
-/*
-sets the connection (received from TableDocument) and makes things that have to be done only once 
-*/
+/**
+ * Sets the connection (received from TableDocument) and makes things that have to be done only once 
+ */
 - (void)setConnection:(CMMCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[self updateTables:self];
 }
 
-/*
-selects customQuery tab and passes query to customQueryInstance
-*/
+/**
+ * Selects customQuery tab and passes query to customQueryInstance
+ */
 - (void)doPerformQueryService:(NSString *)query
 {
 	[tabView selectTabViewItemAtIndex:2];
 	[customQueryInstance doPerformQueryService:query];
 }
 
+/**
+ * Performs interface validation for various controls.
+ */
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+	if ([notification object] == tableNameField) {
+		[addTableButton setEnabled:([[tableNameField stringValue] length] > 0)]; 
+	}
+}
 
 #pragma mark Getter methods
 
-/*
-returns the currently selected table or nil if no table or mulitple tables are selected
-*/
+/**
+ * Returns the currently selected table or nil if no table or mulitple tables are selected
+ */
 - (NSString *)tableName
 {
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
@@ -371,35 +462,41 @@ returns the currently selected table or nil if no table or mulitple tables are s
 	}
 }
 
+/**
+ * Database tables accessor
+ */
 - (NSArray *)tables
 {
 	return tables;
 }
 
+/**
+ * Database table types accessor
+ */
 - (NSArray *)tableTypes
 {
 	return tableTypes;
 }
 
-/*
-returns YES if table source has already been loaded
-*/
+/**
+ * Returns YES if table source has already been loaded
+ */
 - (BOOL)structureLoaded
 {
 	return structureLoaded;
 }
 
-/*
-returns YES if table content has already been loaded
-*/
+/**
+ * Returns YES if table content has already been loaded
+ */
 - (BOOL)contentLoaded
 {
 	return contentLoaded;
 }
 
-/*
-returns YES if table status has already been loaded
-*/
+/**
+ * Returns YES if table status has already been loaded
+ */
 - (BOOL)statusLoaded
 {
 	return statusLoaded;
@@ -407,9 +504,9 @@ returns YES if table status has already been loaded
 
 #pragma mark Setter methods
 
-/*
-Mark the content table for refresh when it's next switched to
-*/
+/**
+ * Mark the content table for refresh when it's next switched to
+ */
 - (void)setContentRequiresReload:(BOOL)reload
 {
 	contentLoaded = !reload;
@@ -417,147 +514,90 @@ Mark the content table for refresh when it's next switched to
 
 #pragma mark Datasource methods
 
+/**
+ * Returns the number of tables in the current database.
+ */
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [tables count];
 }
 
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+/**
+ * Returns the table names to be displayed in the tables list table view.
+ */
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-		return [tables objectAtIndex:rowIndex];
+	return [tables objectAtIndex:rowIndex];
 }
 
 /**
- * adds or renames a table (in tables-array and mysql-db)
- * removes new table from table-array if renaming had no success
+ * Renames a table (in tables-array and mysql-db).
+ * Removes new table from table-array if renaming had no success
  */
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-	
-	if ( [[tables objectAtIndex:rowIndex] isEqualToString:@""] ) {
-		//new table
-		if ( [anObject isEqualToString:@""] ) {
-			//table has no name
-			alertSheetOpened = YES;
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-				@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
-			[tables removeObjectAtIndex:rowIndex];
-			[tableTypes removeObjectAtIndex:rowIndex];
-			[tablesListView reloadData];
-		} else {
-			if ( [tableDocumentInstance supportsEncoding] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ (id int) DEFAULT CHARACTER SET %@", [anObject backtickQuotedString], [tableDocumentInstance connectionEncoding]]];
-			} else {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ (id int)", [anObject backtickQuotedString]]];
+	if ([[tables objectAtIndex:rowIndex] isEqualToString:anObject]) {
+		// No changes in table name
+	} 
+	else if ([anObject isEqualToString:@""]) {
+		// Table has no name
+		alertSheetOpened = YES;
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+	} 
+	else {
+		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[tables objectAtIndex:rowIndex] backtickQuotedString], [anObject backtickQuotedString]]];
+		
+		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			// Renamed with success
+			[tables replaceObjectAtIndex:rowIndex withObject:anObject];
+			
+			NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
+			
+			if (selectedIndex == 0) {
+				[tableSourceInstance loadTable:anObject];
+				structureLoaded = YES;
+				contentLoaded = NO;
+				statusLoaded = NO;
+			} 
+			else if (selectedIndex == 1) {
+				[tableContentInstance loadTable:anObject];
+				structureLoaded = NO;
+				contentLoaded = YES;
+				statusLoaded = NO;
+			} 
+			else if (selectedIndex == 3) {
+				[tableStatusInstance loadTable:anObject];
+				structureLoaded = NO;
+				contentLoaded = NO; 			
+				statusLoaded = YES;
+			} 
+			else {
+				statusLoaded = NO;
+				structureLoaded = NO;
+				contentLoaded = NO;
 			}
 			
-			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				//added table with success
-				[tables replaceObjectAtIndex:rowIndex withObject:anObject];
-				
-				if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-					[tableSourceInstance loadTable:anObject];
-					structureLoaded = YES;
-					contentLoaded = NO;
-					statusLoaded = NO;
-				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-					[tableContentInstance loadTable:anObject];
-					structureLoaded = NO;
-					contentLoaded = YES;
-					statusLoaded = NO;
-				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-					[tableStatusInstance loadTable:anObject];
-					statusLoaded = YES;
-					structureLoaded = NO;
-					contentLoaded = NO;
-				} else {
-					statusLoaded = NO;
-					structureLoaded = NO;
-					contentLoaded = NO;
-				}
-				
-				// set window title
-				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-					[tableDocumentInstance host], [tableDocumentInstance database], anObject]];
-			} else {
-				
-				//error while adding new table
-				alertSheetOpened = YES;
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-					@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
-							anObject, [mySQLConnection getLastErrorMessage]]);
-				[tableTypes removeObjectAtIndex:rowIndex];
-				[tables removeObjectAtIndex:rowIndex];
-				[tablesListView reloadData];
-			}
-		}
-	} else {
-		
-		//table modification
-		if ( [[tables objectAtIndex:rowIndex] isEqualToString:anObject] ) {
-			//no changes in table name
-//			NSLog(@"no changes in table name");
-		} else if ( [anObject isEqualToString:@""] ) {
-			//table has no name
-//			NSLog(@"name is nil");
+			// Set window title
+			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
+								  [tableDocumentInstance host], [tableDocumentInstance database], anObject]];
+		} 
+		else {
+			// Error while renaming
 			alertSheetOpened = YES;
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-				@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
-		} else {
-			[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[tables objectAtIndex:rowIndex] backtickQuotedString], [anObject backtickQuotedString]]];
-			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-//				NSLog(@"renamed table with success");
-				//renamed with success
-				[tables replaceObjectAtIndex:rowIndex withObject:anObject];
-				
-				if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-					[tableSourceInstance loadTable:anObject];
-					structureLoaded = YES;
-					contentLoaded = NO;
-					statusLoaded = NO;
-				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-					[tableContentInstance loadTable:anObject];
-					structureLoaded = NO;
-					contentLoaded = YES;
-					statusLoaded = NO;
-				} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-					[tableStatusInstance loadTable:anObject];
-					structureLoaded = NO;
-					contentLoaded = NO; 			
-					statusLoaded = YES;
-				} else {
-					statusLoaded = NO;
-					structureLoaded = NO;
-					contentLoaded = NO;
-				}
-				
-				// set window title
-				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-					[tableDocumentInstance host], [tableDocumentInstance database], anObject]];
-			} else {
-				//error while renaming
-//				NSLog(@"couldn't rename table");
-				alertSheetOpened = YES;
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-					@selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't rename table.\nMySQL said: %@", @"message of panel when table cannot be renamed"),
-							[mySQLConnection getLastErrorMessage]]);
-			}
+							  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename table.\nMySQL said: %@", @"message of panel when table cannot be renamed"),
+							  [mySQLConnection getLastErrorMessage]]);
 		}
 	}
 }
 
 #pragma mark TableView delegate methods
 
-/*
-traps enter and esc and edit/cancel without entering next row
-*/
+/**
+ * Traps enter and esc and edit/cancel without entering next row
+ */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ) {
@@ -584,28 +624,19 @@ traps enter and esc and edit/cancel without entering next row
 	}
 }
 
+/**
+ * Table view delegate method
+ */
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {
-/*
-	int row = [tablesListView editedRow];
-	int column = [tablesListView editedColumn];
-	NSTableColumn *tableColumn;
-	NSCell *cell;
-
-	if ( row != -1 ) {
-		tableColumn = [[tablesListView tableColumns] objectAtIndex:column]; 
-		cell = [tableColumn dataCellForRow:row]; 
-	[cell endEditing:[tablesListView currentEditor]]; 
-	}
-*/
-	//end editing (otherwise problems when user hits reload button)
+	// End editing (otherwise problems when user hits reload button)
 	[tableWindow endEditingFor:nil];
+	
 	if ( alertSheetOpened ) {
 		return NO;
 	}
 
-	//we have to be sure that TableSource and TableContent have finished editing
-//	if ( ![tableSourceInstance addRowToDB] || ![tableContentInstance addRowToDB] ) {
+	// We have to be sure that TableSource and TableContent have finished editing
 	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
 		return NO;
 	} else {
@@ -670,21 +701,26 @@ traps enter and esc and edit/cancel without entering next row
 	}	
 }
 
+/**
+ * Table view delegate method
+ */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
 	return (rowIndex != 0);
 }
 
-
+/**
+ * Table view delegate method
+ */
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
 {
 	return (row == 0);	
 }
 
-- (void)tableView:(NSTableView *)aTableView 
-  willDisplayCell:(id)aCell 
-   forTableColumn:(NSTableColumn *)aTableColumn 
-			  row:(int)rowIndex
+/**
+ * Table view delegate method
+ */
+- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"tables"]) {
 		if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_VIEW) {
@@ -700,28 +736,25 @@ traps enter and esc and edit/cancel without entering next row
 		{
 			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-		
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];
 	}
 }
 
+/**
+ * Table view delegate method
+ */
 - (float)tableView:(NSTableView *)tableView heightOfRow:(int)row
 {
-	if (row == 0) {
-		return 25;
-	} else {
-		return 17;
-	}
+	return (row == 0) ? 25 : 17;
 }
 
-#pragma mark -
 #pragma mark TabView delegate methods
 
-/*
-loads structure or source if tab selected the first time
-*/
+/**
+ * Loads structure or source if tab selected the first time
+ */
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ( [tablesListView numberOfSelectedRows] == 1 ) {
@@ -741,13 +774,11 @@ loads structure or source if tab selected the first time
 			statusLoaded = YES;
 		}
 	}
-/*
-	if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-		[tableDumpInstance reloadTables:self];
-	}
-*/
 }
 
+/**
+ * Menu item interface validation
+ */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	// popup button below table list
@@ -758,33 +789,36 @@ loads structure or source if tab selected the first time
 	}
 	
 	return [super validateMenuItem:menuItem];
-}
-		
+}		
 
-#pragma mark -
-//last but not least
+#pragma mark Other
+
+/**
+ * Standard init method. Performs various ivar initialisations. 
+ */
 - (id)init
 {
-	self = [super init];
+	if ((self = [super init])) {
+		tables = [[NSMutableArray alloc] init];
+		tableTypes = [[NSMutableArray alloc] init];
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
+		[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
+	}
 	
-	tables = [[NSMutableArray alloc] init];
-	tableTypes = [[NSMutableArray alloc] init];
-	structureLoaded = NO;
-	contentLoaded = NO;
-	statusLoaded = NO;
-	[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 	return self;
 }
 
+/**
+ * Standard dealloc method.
+ */
 - (void)dealloc
-{
-//	NSLog(@"TableList dealloc");
-	
-	[tables release];
-	[tableTypes release];
+{	
+	[tables release], tables = nil;
+	[tableTypes release], tableTypes = nil;
 	
 	[super dealloc];
 }
-
 
 @end

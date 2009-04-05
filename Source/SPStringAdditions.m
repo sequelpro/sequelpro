@@ -136,6 +136,39 @@
     return quotedString;
 }
 
+// -------------------------------------------------------------------------------
+// lineRangesForRange
+//
+// Returns an array of serialised NSRanges, each representing a line within the string
+// which is at least partially covered by the NSRange supplied.
+// Each line includes the line termination character(s) for the line.  As per
+// lineRangeForRange, lines are split by CR, LF, CRLF, U+2028 (Unicode line separator),
+// or U+2029 (Unicode paragraph separator).
+// -------------------------------------------------------------------------------
+- (NSArray *)lineRangesForRange:(NSRange)aRange
+{
+	NSMutableArray *lineRangesArray = [NSMutableArray array];
+	NSRange currentLineRange;
+
+	// Check that the range supplied is valid - if not return an empty array.
+	if (aRange.location == NSNotFound || aRange.location + aRange.length > [self length])
+		return lineRangesArray;
+
+	// Get the range of the first string covered by the specified range, and add it to the array
+	currentLineRange = [self lineRangeForRange:NSMakeRange(aRange.location, 0)];
+	[lineRangesArray addObject:NSStringFromRange(currentLineRange)];
+
+	// Loop through until the line end matches or surpasses the end of the specified range
+	while (currentLineRange.location + currentLineRange.length < aRange.location + aRange.length) {
+		currentLineRange = [self lineRangeForRange:NSMakeRange(currentLineRange.location + currentLineRange.length, 0)];
+		[lineRangesArray addObject:NSStringFromRange(currentLineRange)];
+	}
+
+	// Return the constructed array of ranges
+	return lineRangesArray;
+}
+
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 /*
  * componentsSeparatedByCharactersInSet:
