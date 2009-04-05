@@ -51,6 +51,7 @@
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
 	IBOutlet NSMenuItem *shiftRightMenuItem;
 	IBOutlet NSMenuItem *completionListMenuItem;
+	IBOutlet NSMenuItem *editorFontMenuItem;
 	IBOutlet NSMenuItem *autoindentMenuItem;
 	IBOutlet NSMenuItem *autopairMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;

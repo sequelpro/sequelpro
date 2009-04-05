@@ -56,13 +56,8 @@
 
 	[self performQueries:queries];
 
-	// Select the text of the query textView for re-editing and set standard font
+	// Select the text of the query textView for re-editing
 	[textView selectAll:self];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
 }
 
 /*
@@ -182,6 +177,12 @@ closes the sheet
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
 		[textView complete:self];
+	}
+
+	// "Editor font..." menu item to bring up the font panel
+	if (sender == editorFontMenuItem) {
+		[[NSFontPanel sharedFontPanel] setPanelFont:[textView font] isMultiple:NO];
+		[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
 	}
 
 	// "Indent new lines" toggle
@@ -601,11 +602,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 
 	// Set up the interface
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+	[textView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
 	[textView setContinuousSpellCheckingEnabled:NO];
 	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoindent"]?NSOnState:NSOffState)];
 	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
@@ -1007,6 +1004,20 @@ traps enter key and
 }
 
 
+/*
+ * Save the custom query editor font if it is changed.
+ */
+- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
+{
+
+	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
+	if (prefs) {
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+	}
+}
+
+
+
 #pragma mark -
 #pragma mark TableView notifications
 
@@ -1032,6 +1043,7 @@ traps enter key and
 - (id)init;
 {
 	self = [super init];
+	prefs = nil;
 	return self;
 }
 

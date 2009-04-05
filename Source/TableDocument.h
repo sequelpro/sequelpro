@@ -70,6 +70,8 @@
 	
 	IBOutlet id sidebarGrabber;
 	
+	IBOutlet NSTextView *customQueryTextView;
+	
 	IBOutlet NSTableView *dbTablesTableView;
 
 	IBOutlet id syntaxView;

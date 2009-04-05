@@ -1264,6 +1264,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 	[tableTabView selectTabViewItemAtIndex:2];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToRunQueryToolbarItemIdentifier"];
+
+	// Set the focus on the text field if no query has been run
+	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
 }
 
 - (IBAction)viewStatus:(id)sender
