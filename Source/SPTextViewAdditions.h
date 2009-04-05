@@ -33,5 +33,6 @@
 - (IBAction)doDecomposedStringWithCompatibilityMapping:(id)sender;
 - (IBAction)doPrecomposedStringWithCanonicalMapping:(id)sender;
 - (IBAction)doPrecomposedStringWithCompatibilityMapping:(id)sender;
+- (IBAction)doTranspose:(id)sender;
 
 @end

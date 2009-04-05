@@ -204,5 +204,62 @@
 }
 
 
+/*
+ * Transpose adjacent characters, or if a selection is given reverse the selected characters.
+ * If the caret is at the absolute end of the text field it transpose the two last charaters.
+ * If the caret is at the absolute beginnng of the text field do nothing.
+ * TODO: not yet combining-diacritics-safe
+ */
+- (IBAction)doTranspose:(id)sender
+{
+	NSRange curRange = [self selectedRange];
+	NSRange workingRange = curRange;
+	
+	if(!curRange.length)
+		@try // caret is in between two chars
+		{
+			if(curRange.location+1 >= [[self string] length])
+			{
+				// caret is at the end of a text field
+				// transpose last two characters
+				[self moveLeftAndModifySelection:self];
+				[self moveLeftAndModifySelection:self];
+				workingRange = [self selectedRange];
+			}
+			else if(curRange.location == 0)
+			{
+				// caret is at the beginning of the text field
+				// do nothing
+				workingRange.length = 0;
+			}
+			else
+			{
+				// caret is in between two characters
+				// reverse adjacent characters 
+				NSRange twoCharRange = NSMakeRange(curRange.location-1, 2);
+				[self setSelectedRange:twoCharRange];
+				workingRange = twoCharRange;
+			}
+		}
+		@catch(id ae)
+		{ workingRange.length = 0; }
+
+	
+	
+	// reverse string : TODO not yet combining diacritics safe!
+	if(workingRange.length > 1)
+	{
+		NSMutableString *reversedStr;
+		unsigned long len = workingRange.length;
+		reversedStr = [NSMutableString stringWithCapacity:len];
+		while (len > 0)
+			[reversedStr appendString:
+				[NSString stringWithFormat:@"%C", [[self string] characterAtIndex:--len+workingRange.location]]];
+
+		[self insertText:reversedStr];
+		[self setSelectedRange:curRange];
+	}
+}
+
 @end
 
