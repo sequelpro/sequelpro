@@ -24,14 +24,14 @@
 
 @interface SPQueryConsole : NSWindowController 
 {
-	NSFont *consoleFont;
-	NSMutableArray *messages, *messagesActiveSet, *messagesFilterSet, *messagesSubset;
-	
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
 	IBOutlet NSSearchField *consoleSearchField;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSButton *includeTimeStampsButton, *saveConsoleButton, *clearConsoleButton;
+	
+	NSFont *consoleFont;
+	NSMutableArray *messages, *messagesActiveSet, *messagesFilterSet, *messagesSubset;
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
@@ -46,5 +46,7 @@
 
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;
+
+- (NSUInteger)consoleMessageCount;
 
 @end

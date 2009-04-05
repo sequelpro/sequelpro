@@ -609,12 +609,15 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 {
 	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
 	
+	// Show or hide the console
 	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:(!isConsoleVisible)];
 	
+	// Get the menu item for showing and hiding the console. This is isn't the best way to get it as any 
+	// changes to the menu structure will result in the wrong item being selected.
+	NSMenuItem *menuItem = [[[[NSApp mainMenu] itemAtIndex:3] submenu] itemAtIndex:5];
+	
 	// Only update the menu item title if its the menu item and not the toolbar
-	if ([sender isKindOfClass:[NSMenuItem class]]) {
-		[(NSMenuItem *)sender setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
-	}
+	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
 }
 
 /**
@@ -1301,8 +1304,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	mainToolbar = [[[NSToolbar alloc] initWithIdentifier:@"TableWindowToolbar"] autorelease];
 	
 	// set up toolbar properties
-	[mainToolbar setAllowsUserCustomization: YES];
-	[mainToolbar setAutosavesConfiguration: YES];
+	[mainToolbar setAllowsUserCustomization:YES];
+	[mainToolbar setAutosavesConfiguration:YES];
 	[mainToolbar setDisplayMode:NSToolbarDisplayModeIconAndLabel];
 	
 	// set ourself as the delegate
@@ -1365,7 +1368,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 		//set up the target action
-		[toolbarItem setTarget:[SPQueryConsole sharedQueryConsole]];
+		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(clearConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
@@ -1452,6 +1455,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 			nil];
 }
 
+/**
+ * toolbar delegate method
+ */
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
 	return [NSArray arrayWithObjects:
@@ -1464,18 +1470,27 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * validates the toolbar items
+ * Validates the toolbar items
  */
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
-	if ([[toolbarItem itemIdentifier] isEqualToString:@"ToggleConsoleIdentifier"]) {
+	NSString *identifier = [toolbarItem itemIdentifier];
+	
+	// Toggle console item
+	if ([identifier isEqualToString:@"ToggleConsoleIdentifier"]) {
 		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
 			[toolbarItem setLabel:@"Hide Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-		} else {
+		} 
+		else {
 			[toolbarItem setLabel:@"Show Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		}
+	}
+	
+	// Clear console item
+	if ([identifier isEqualToString:@"ClearConsoleIdentifier"]) {
+		return ([[SPQueryConsole sharedQueryConsole] consoleMessageCount] > 0);
 	}
 	
 	return YES;

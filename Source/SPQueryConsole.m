@@ -225,6 +225,14 @@ static SPQueryConsole *sharedQueryConsole = nil;
 }
 
 /**
+ * Returns the number of messages currently in the console.
+ */
+- (NSUInteger)consoleMessageCount
+{
+	return [messages count];
+}
+
+/**
  * Called when the NSSavePanel sheet ends. Writes the console's current content to the selected file if required.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
@@ -309,6 +317,10 @@ static SPQueryConsole *sharedQueryConsole = nil;
 {	
 	if ([menuItem action] == @selector(copy:)) {
 		return ([consoleTableView numberOfSelectedRows] > 0);
+	}
+	
+	if ([menuItem action] == @selector(clearConsole:)) {
+		return ([self consoleMessageCount] > 0);
 	}
 		
 	return [[self window] validateMenuItem:menuItem];
