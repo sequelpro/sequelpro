@@ -635,11 +635,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
  */
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews
 {
-	BOOL uselatin1results = NO;
+	_encodingViaLatin1 = NO;
 
 	// Special-case UTF-8 over latin 1 to allow viewing/editing of mangled data.
 	if ([mysqlEncoding isEqualToString:@"utf8-"]) {
-		uselatin1results = YES;
+		_encodingViaLatin1 = YES;
 		mysqlEncoding = @"utf8";
 	}
 	
@@ -647,13 +647,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
 	
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		if (uselatin1results)
+		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
 		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
 	} else {
 		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
+		_encodingViaLatin1 = NO;
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
 			return;
@@ -661,7 +662,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 		
 	// update the selected menu item
-	if (uselatin1results) {
+	if (_encodingViaLatin1) {
 		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
 	} else {
 		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
@@ -682,6 +683,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (NSString *)connectionEncoding
 {
 	return _encoding;
+}
+
+/**
+ * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility
+ */
+- (BOOL)connectionEncodingViaLatin1
+{
+	return _encodingViaLatin1;
 }
 
 /**

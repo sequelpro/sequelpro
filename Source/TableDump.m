@@ -755,7 +755,7 @@
 {
 	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength, tableType;
 	CMMCPResult *queryResult;
-	NSString *tableName, *tableColumnTypeGrouping;
+	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
@@ -767,6 +767,7 @@
 	NSMutableArray *tableColumnNumericStatus;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	id createTableSyntax = nil;
+	BOOL previousConnectionEncodingViaLatin1;
 	
 	// Reset the interface
 	[errorsView setString:@""];
@@ -800,6 +801,12 @@
 	[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
 	[metaString appendString:@"# ************************************************************\n\n"];
 
+	// Add commands to store the client encodings used when importing and set to UTF8 to preserve data
+	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n"];
+	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n"];
+	[metaString appendString:@"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n"];
+	[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
+	
 	// Add commands to store and disable unique checks, foreign key checks, mode and notes where supported.
 	// Include trailing semicolons to ensure they're run individually.  Use mysql-version based comments.
 	if ( [addDropTableSwitch state] == NSOnState )
@@ -808,7 +815,14 @@
 	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
 	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
 
-	[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
+	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+
+	// Store the current connection encoding so it can be restored after the dump.
+	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	
+	// Set the connection to UTF8 to be able to export correctly.
+	[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 	
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
@@ -824,15 +838,9 @@
 		
 		// Add the name of table
 		[fileHandle writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName]
-							   dataUsingEncoding:connectionEncoding]];
+							   dataUsingEncoding:NSUTF8StringEncoding]];
 		
 		
-		// Add a "drop table" command if specified in the export dialog
-		if ( [addDropTableSwitch state] == NSOnState )
-			[fileHandle writeData:[[NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;\n\n", [tableName backtickQuotedString]]
-								   dataUsingEncoding:connectionEncoding]];
-		
-
 		// Determine whether this table is a table or a view via the create table command, and keep the create table syntax
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
 		if ( [queryResult numOfRows] ) {
@@ -849,17 +857,24 @@
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 			if ( [addErrorsSwitch state] == NSOnState ) {
-				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:connectionEncoding]];
+				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 		}
+
+
+		// Add a "drop table" command if specified in the export dialog
+		if ( [addDropTableSwitch state] == NSOnState )
+			[fileHandle writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SP_TABLETYPE_TABLE)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
+								   dataUsingEncoding:NSUTF8StringEncoding]];
+		
 
 		// Add the create syntax for the table if specified in the export dialog
 		if ( [addCreateTableSwitch state] == NSOnState && createTableSyntax) {
 			if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
 				createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:connectionEncoding] autorelease];
 			}
-			[fileHandle writeData:[createTableSyntax dataUsingEncoding:connectionEncoding]];
-			[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
+			[fileHandle writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];
+			[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 		
 		// Add the table content if required
@@ -903,7 +918,7 @@
 
 				// Construct the start of the insertion command
 				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(",
-										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:connectionEncoding]];
+										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				for ( j = 0 ; j < rowCount ; j++ ) {
@@ -973,30 +988,30 @@
 					}
 					
 					// Write this row to the file
-					[fileHandle writeData:[sqlString dataUsingEncoding:connectionEncoding]];
+					[fileHandle writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 				
 				// Complete the command
-				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
+				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 
 				// Unlock the table and re-enable keys if supported
 				[metaString setString:@""];
 				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\n", [tableName backtickQuotedString]]];
 				[metaString appendString:@"UNLOCK TABLES;\n"];
-				[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
+				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 					if ( [addErrorsSwitch state] == NSOnState ) {
 						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-											   dataUsingEncoding:connectionEncoding]];
+											   dataUsingEncoding:NSUTF8StringEncoding]];
 					}
 				}
 			}
 		}
 		
 		// Add an additional separator between tables
-		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:connectionEncoding]];
+		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
 	// Restore unique checks, foreign key checks, and other settings saved at the start
@@ -1006,7 +1021,19 @@
 	[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
 	if ( [addDropTableSwitch state] == NSOnState )
 		[metaString appendString:@"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n"];
-	[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
+
+	// Restore the client encoding to the original encoding before import
+	[metaString appendString:@"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n"];
+	[metaString appendString:@"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n"];
+	[metaString appendString:@"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n"];
+
+	// Write footer-type information to the file
+	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+
+	// Restore the connection character set to pre-export details
+	[tableDocumentInstance
+	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
+	 reloadingViews:NO];
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];

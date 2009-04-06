@@ -136,6 +136,7 @@ static void forcePingTimeout(int signalNumber);
 - (BOOL) reconnect
 {
 	NSString *currentEncoding = nil;
+	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
 
 	// Store the current database and encoding so they can be re-set if reconnection was successful
@@ -144,6 +145,9 @@ static void forcePingTimeout(int signalNumber);
 	}
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	}
+	if (delegate && [delegate boolForKey:@"_encodingViaLatin1"]) {
+		currentEncodingUsesLatin1Transport = [delegate boolForKey:@"_encodingViaLatin1"];
 	}
 
 	// Close the connection if it exists.
@@ -176,6 +180,9 @@ static void forcePingTimeout(int signalNumber);
 		if (currentEncoding) {
 			[self queryString:[NSString stringWithFormat:@"SET NAMES '%@'", currentEncoding]];
 			[self setEncoding:[CMMCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
+			if (currentEncodingUsesLatin1Transport) {
+				[self queryString:@"SET CHARACTER_SET_RESULTS=latin1"];			
+			}
 		}
 	} else if (parentWindow) {
 
