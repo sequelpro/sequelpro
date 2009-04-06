@@ -45,7 +45,8 @@
 
 - (void)awakeFromNib
 {
-	NSLog(@"Just loaded UserManagerView!");
+	// Add observers
+	//[treeController addObserver:self forKeyPath:@"arrangedObjects" options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:@"TreeController"];
 	
 	// Set up the sorting for the NSArrayControllers
 	NSSortDescriptor *sd = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
@@ -87,6 +88,8 @@
 
  - (void)_initializeUsers
 {
+	isInitializing = TRUE;
+	
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
@@ -112,6 +115,7 @@
 	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
 	[result release];
 	[pool release];
+	isInitializing = FALSE;
 }
 
 - (void)_initializeTree:(NSArray *)items
@@ -147,7 +151,6 @@
 			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
 			[childItem setLeaf:TRUE];
 			[userItem addChild:childItem];
-			
 			
 			[treeController insertObject:userItem atArrangedObjectIndexPath:[NSIndexPath indexPathWithIndex:[users count]]];			
 		}
@@ -206,6 +209,9 @@
 - (void)dealloc
 {
 	NSLog(@"SPUserManager dealloc.");
+	//[treeController removeObserver:self forKeyPath:@"arrangedObjects"];
+	[modifiedUsers release];
+	modifiedUsers = nil;
 	[dbList release];
 	dbList = nil;
 	[availablePrivs release];
@@ -227,18 +233,47 @@
 	{
 		if ([(SPUserItem *)[item  representedObject] host] != nil)
 		{
-			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"network-16"]];
+			NSImage *image1 = [[NSImage imageNamed:NSImageNameNetwork] retain];
+			[image1 setScalesWhenResized:YES];
+			[image1 setSize:(NSSize){16,16}];
+			[(ImageAndTextCell*)cell setImage:image1];
+			[image1 release];
 			
-		} else {
-			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"NSUser.png"]];
+		} 
+		else 
+		{
+			NSImage *image1 = [[NSImage imageNamed:NSImageNameUser] retain];
+			[image1 setScalesWhenResized:YES];
+			[image1 setSize:(NSSize){16,16}];
+			[(ImageAndTextCell*)cell setImage:image1];
+			[image1 release];
 		}
 	}
 }
 
+- (BOOL)outlineView:(NSOutlineView *)olv isGroupItem:(id)item
+{
+	return FALSE;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)olv shouldSelectItem:(id)item
+{
+	return TRUE;
+}
 // TableView Delegate Methods
 
 
-// General Action Methods
+// Observer methods
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if (context == @"TreeController" && !isInitializing) {
+		NSLog(@"Got Change!!");
+		NSLog(@"%@", change);
+	}
+}
+
+
+// General Action Methods 
 - (IBAction)doCancel:(id)sender
 {
 	[window close];
@@ -246,7 +281,18 @@
 
 - (IBAction)doApply:(id)sender
 {
+	[[self connection] selectDB:@"mysql"];
 	
+	for(int i = 0; i < [users count]; i++)
+	{
+		SPUserItem* user = [users objectAtIndex:i];
+		if ([user isLeaf])
+		{
+			CMMCPResult *result = nil;
+			
+			result = [[self connection] queryString:@"update user set User=%@,Host=%@,Password=%@,Select_priv 
+		}
+	}
 }
 
 // Schema Privileges Actions
@@ -260,5 +306,25 @@
 {
 	[availablePrivsController addObjects:[selectedPrivsController selectedObjects]];
 	[selectedPrivsController removeObjects:[selectedPrivsController selectedObjects]];
+}
+
+- (IBAction)addUser:(id)sender
+{
+	
+}
+
+- (IBAction)removeUser:(id)sender
+{
+	
+}
+
+- (IBAction)addHost:(id)sender
+{
+	
+}
+
+- (IBAction)removeHost:(id)sender
+{
+	
 }
 @end

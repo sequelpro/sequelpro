@@ -11,6 +11,17 @@
 @class CMMCPConnection;
 
 @interface SPUserManager : NSObject {
+@private
+	NSMutableArray *users;
+	NSArray *dbList;
+	NSMutableArray *availablePrivs;
+	NSMutableArray *selectedPrivs;
+	NSMutableArray *allPrivs;
+	
+	NSMutableArray *modifiedUsers;
+	
+	BOOL isInitializing;
+	
 	CMMCPConnection* mySqlConnection;
 	
 	IBOutlet NSOutlineView* outlineView;
@@ -49,11 +60,7 @@
 	IBOutlet NSButton *alterRoutineCB;
 	IBOutlet NSButton *createUserCB;
 	
-	NSMutableArray *users;
-	NSArray *dbList;
-	NSMutableArray *availablePrivs;
-	NSMutableArray *selectedPrivs;
-	NSMutableArray *allPrivs;
+	
 	
 }
 
@@ -61,6 +68,12 @@
 - (void)setConnection:(CMMCPConnection *)connection;
 - (CMMCPConnection *)connection;
 - (void)show;
+
+// Add/Remove Users
+- (IBAction)addUser:(id)sender;
+- (IBAction)removeUser:(id)sender;
+- (IBAction)addHost:(id)sender;
+- (IBAction)removeHost:(id)sender;
 
 // Schema Privileges Actions
 - (IBAction)addToSelected:(id)sender;
