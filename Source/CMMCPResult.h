@@ -25,11 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-#define FIELD_TYPE_BIT 16
-
-@interface CMMCPResult : MCPResult {
-
-}
+@interface CMMCPResult : MCPResult 
 
 - (id)fetchRowAsType:(MCPReturnType)aType;
 

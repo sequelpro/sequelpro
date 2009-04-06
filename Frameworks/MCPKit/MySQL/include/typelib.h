@@ -2,8 +2,7 @@
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
+   the Free Software Foundation; version 2 of the License.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,6 +17,8 @@
 #ifndef _typelib_h
 #define _typelib_h
 
+#include "my_alloc.h"
+
 typedef struct st_typelib {	/* Different types saved here */
   unsigned int count;		/* How many types */
   const char *name;		/* Name of typelib */
@@ -25,9 +26,13 @@ typedef struct st_typelib {	/* Different types saved here */
   unsigned int *type_lengths;
 } TYPELIB;
 
-extern int find_type(char *x,TYPELIB *typelib,unsigned int full_name);
+extern my_ulonglong find_typeset(char *x, TYPELIB *typelib,int *error_position);
+extern int find_type_or_exit(const char *x, TYPELIB *typelib,
+                             const char *option);
+extern int find_type(char *x, const TYPELIB *typelib, unsigned int full_name);
 extern void make_type(char *to,unsigned int nr,TYPELIB *typelib);
 extern const char *get_type(TYPELIB *typelib,unsigned int nr);
+extern TYPELIB *copy_typelib(MEM_ROOT *root, TYPELIB *from);
 
 extern TYPELIB sql_protocol_typelib;
 

@@ -3,6 +3,7 @@
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Jan 30, 2009
+//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by

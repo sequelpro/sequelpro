@@ -32,7 +32,7 @@
 
 #import "MCPResult.h"
 
-NSCalendarDate		*MCPYear0000;
+NSCalendarDate *MCPYear0000;
 
 @implementation MCPResult
 /*" 
@@ -870,6 +870,7 @@ Return a (long) string containing the table of results, first line being the fie
 	if (theCString == NULL) {
 		return @"";
 	}
+		
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
 	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
 	if (theString) {

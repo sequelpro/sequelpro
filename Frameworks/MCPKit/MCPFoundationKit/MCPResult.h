@@ -30,20 +30,16 @@
 #import "mysql.h"
 #import "MCPConstants.h"
 
-@interface MCPResult : NSObject {
+@interface MCPResult : NSObject 
+{
 @protected
-   MYSQL_RES			*mResult;		/*" The MYSQL_RES structure of the C API. "*/
+	MYSQL_RES			*mResult;		/*" The MYSQL_RES structure of the C API. "*/
 	NSArray				*mNames;			/*" An NSArray holding the name of the columns. "*/
 	NSDictionary		*mMySQLLocales;	/*" A Locales dictionary to define the locales of MySQL. "*/
 	NSStringEncoding	mEncoding;		/*" The encoding used by MySQL server, to ISO-1 default. "*/
 	unsigned int		mNumOfFields;	/*" The number of fields in the result. "*/
 	NSTimeZone			*mTimeZone;		/*" The time zone of the connection when the query was made. "*/
 }
-/*"
-Class maintenance
- "*/
-
-+ (void) initialize;
 
 	/*"
 	Init used #{only} by #{MCPConnection} 
@@ -51,7 +47,6 @@ Class maintenance
 
 - (id) initWithMySQLPtr:(MYSQL *) mySQLPtr encoding:(NSStringEncoding) theEncoding timeZone:(NSTimeZone *) iTimeZone;
 - (id) initWithResPtr:(MYSQL_RES *) mySQLResPtr encoding:(NSStringEncoding) theEncoding timeZone:(NSTimeZone *) iTimeZone;
-- (id) init;
 
 	/*"
 	General info on the result
@@ -91,20 +86,6 @@ Class maintenance
 	 "*/
 - (NSString *) stringWithText:(NSData *) theTextData;
 
-	/*"
-	Utility method
-	 "*/
-- (NSString *) description;
-
-	/*"
-	End of the scope...
-	 "*/
-
-- (void) dealloc;
-
-	/*"
-	Private methods, internal use only
-	 "*/
 - (const char *) cStringFromString:(NSString *) theString;
 - (NSString *) stringWithCString:(const char *) theCString;
 
