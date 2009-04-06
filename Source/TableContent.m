@@ -136,6 +136,10 @@
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
+	
+	// Retrieve the total number of rows of the current table
+	// to adjustify "Limit From:"
+	maxNumRowsOfCurrentTable = [[[tableDataInstance statusValues] objectForKey:@"Rows"] intValue];
 
 	// Retrieve the number of rows in the table and initially mark all as being visible.
 	numRows = [self getNumberOfRows];
@@ -421,6 +425,13 @@
 	if ( [limitRowsField intValue] <= 0 ) {
 		[limitRowsField setStringValue:@"1"];
 	}
+
+	// If limitRowsField > number of total found rows show the last limitRowsValue rows
+	if ( [prefs boolForKey:@"limitRows"] && [limitRowsField intValue] >= maxNumRowsOfCurrentTable ) {
+		int newLimit = maxNumRowsOfCurrentTable - [prefs integerForKey:@"limitRowsValue"];
+		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
+	}
+
 	
 	// If the filter field is empty, the limit field is at 1, and the selected filter is not looking
 	// for NULLs or NOT NULLs, then don't allow filtering.
@@ -576,14 +587,27 @@
 			queryString = [queryString stringByAppendingString:@" DESC"];
 	}
 
+	// retain the query before LIMIT
+	// to redo the query if nothing found for LIMIT > 1
+	NSString* tempQueryString;
 	// LIMIT if appropriate
 	if ( [prefs boolForKey:@"limitRows"] ) {
+		tempQueryString = [NSString stringWithString:queryString];
 		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", queryString,
 						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]];
 	}
 
 	theResult = [mySQLConnection queryString:queryString];
 	[filteredResult setArray:[self fetchResultAsArray:theResult]];
+	
+	// try it again if theResult is empty and limitRowsField > 1 by setting LIMIT to 0, limitRowsValue
+	if([prefs boolForKey:@"limitRows"] && [limitRowsField intValue] > 1 && [filteredResult count] == 0) {
+		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", tempQueryString,
+						0, [prefs integerForKey:@"limitRowsValue"]];
+		theResult = [mySQLConnection queryString:queryString];
+		[limitRowsField setStringValue:@"1"];
+		[filteredResult setArray:[self fetchResultAsArray:theResult]];
+	}
 	
 	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
 	
@@ -1113,7 +1137,9 @@
  */
 {
 	if ( [limitRowsStepper intValue] > 0 ) {
-		[limitRowsField setIntValue:[limitRowsField intValue]+[prefs integerForKey:@"limitRowsValue"]];
+		int newStep = [limitRowsField intValue]+[prefs integerForKey:@"limitRowsValue"];
+		// if newStep > the total number of rows in the current table retain the old value
+		[limitRowsField setIntValue:(newStep>maxNumRowsOfCurrentTable)?[limitRowsField intValue]:newStep];
 	} else {
 		if ( ([limitRowsField intValue]-[prefs integerForKey:@"limitRowsValue"]) < 1 ) {
 			[limitRowsField setIntValue:1];
