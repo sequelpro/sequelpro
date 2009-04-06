@@ -181,6 +181,28 @@
 	}
 }
 
+- (IBAction)doRemoveDiacritics:(id)sender
+{
+
+	NSRange curRange = [self selectedRange];
+	NSRange selRange = (curRange.length) ? curRange : [self getRangeForCurrentWord];
+	[self setSelectedRange:selRange];
+	NSString* convString = [[[self string] substringWithRange:selRange] decomposedStringWithCanonicalMapping];
+	NSArray* chars;
+	chars = [convString componentsSeparatedByCharactersInSet:[NSCharacterSet nonBaseCharacterSet]];
+	NSString* cleanString = [chars componentsJoinedByString:@""];
+	[self insertText:cleanString];
+	if(curRange.length)
+		[self setSelectedRange:NSMakeRange(selRange.location, [cleanString length])];
+	else
+	// if no selection place the caret at the end of the current word
+	{
+		NSRange newRange = [self getRangeForCurrentWord];
+		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+	}
+	
+}
+
 /*
  * Change selection or current word according to Unicode's NFKC to title case and preserves the selection.
  */

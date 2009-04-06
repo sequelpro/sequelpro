@@ -34,5 +34,6 @@
 - (IBAction)doPrecomposedStringWithCanonicalMapping:(id)sender;
 - (IBAction)doPrecomposedStringWithCompatibilityMapping:(id)sender;
 - (IBAction)doTranspose:(id)sender;
+- (IBAction)doRemoveDiacritics:(id)sender;
 
 @end
