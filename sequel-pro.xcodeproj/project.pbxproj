@@ -133,6 +133,7 @@
 		B5E2C5FA0F2353B5007446E0 /* TablePropertyIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5FE36ED0F71E3A90021BC10 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5FE36EB0F71E3A90021BC10 /* ConnectionView.xib */; };
+		BC8A4DE10F88F5590037FDE4 /* SPTextViewAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8A4DE00F88F5590037FDE4 /* SPTextViewAdditions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -341,6 +342,8 @@
 		B5E2C5F90F2353B5007446E0 /* TablePropertyIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TablePropertyIcon.png; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5FE36EC0F71E3A90021BC10 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ConnectionView.xib; sourceTree = "<group>"; };
+		BC8A4DDF0F88F5590037FDE4 /* SPTextViewAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextViewAdditions.h; sourceTree = "<group>"; };
+		BC8A4DE00F88F5590037FDE4 /* SPTextViewAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextViewAdditions.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -621,6 +624,8 @@
 		17E6416E0EF01F3B001BC333 /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				BC8A4DDF0F88F5590037FDE4 /* SPTextViewAdditions.h */,
+				BC8A4DE00F88F5590037FDE4 /* SPTextViewAdditions.m */,
 				1789343A0F30C1DD0097539A /* SPStringAdditions.h */,
 				1789343B0F30C1DD0097539A /* SPStringAdditions.m */,
 				344819000F793DB500624B14 /* SPArrayAdditions.h */,
@@ -991,6 +996,7 @@
 				344819020F793DB500624B14 /* SPArrayAdditions.m in Sources */,
 				172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */,
 				179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */,
+				BC8A4DE10F88F5590037FDE4 /* SPTextViewAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

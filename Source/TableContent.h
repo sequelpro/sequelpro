@@ -64,7 +64,7 @@
 	NSString *compareType, *sortField;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
-	int numRows, currentlyEditingRow;
+	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
 }
 

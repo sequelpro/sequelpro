@@ -26,8 +26,8 @@ int yyuoffset, yyuleng;
 %option noyywrap
 %option case-insensitive
 s		[ \t\n]+
-word	[a-z_0-9]
-nonword	[^a-z_0-9#\n\t]
+word	[a-z_0-9À-ﾟ]
+nonword	[^a-z_0-9À-ﾟ#\n\t]
 %x comment
 %%
 \"([^"\\]|\\(.|\n))*\"?			{ return SPT_DOUBLE_QUOTED_TEXT;   }      /* double quoted strings          */
