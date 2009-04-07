@@ -924,6 +924,7 @@ SYNTAX HIGHLIGHTING!
 	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
 	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
 	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
+	NSColor *numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
 
 	NSColor *tokenColor;
 
@@ -956,6 +957,9 @@ SYNTAX HIGHLIGHTING!
 			case SPT_RESERVED_WORD:
 			    tokenColor = keywordColor;
 			    break;
+			case SPT_NUMERIC:
+				tokenColor = numericColor;
+				break;
 			case SPT_COMMENT:
 			    tokenColor = commentColor;
 			    break;
