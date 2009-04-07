@@ -15,8 +15,8 @@ DEBUG='NO'
 CLEAN='NO'
 
 # C/C++ compiler flags
-CFLAGS='-arch ppc -arch i386 -arch ppc64 -arch x86_64 -O3 -fno-omit-frame-pointer'
-CXXFLAGS='-arch ppc -arch i386 -arch ppc64 -arch x86_64 -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti'
+export CFLAGS='-arch ppc -arch i386 -arch ppc64 -arch x86_64 -O3 -fno-omit-frame-pointer'
+export CXXFLAGS='-arch ppc -arch i386 -arch ppc64 -arch x86_64 -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti'
 
 CONFIGURE_OPTIONS='--without-server --enable-thread-safe-client'
 BINARY_DISTRIBUTION_SCRIPT='scripts/make_binary_distribution'
@@ -34,12 +34,7 @@ then
 fi
 
 echo ''
-echo "This script builds the following MySQL client libraries for distrubution in Sequel Pro's MCPKit MySQL framework:"
-echo ''
-echo '    + libmysqld.a'
-echo '    + libmysqlclient.a'
-echo '    + libmysqlclient_r.a'
-echo ''
+echo "This script builds the MySQL client libraries for distrubution in Sequel Pro's MCPKit MySQL framework."
 echo 'The are all built as 4-way (32/64 bit i386/PPC arch) binaries.'
 echo ''
 echo -n 'This may take a while, are you sure you want to continue [y | n]: '
