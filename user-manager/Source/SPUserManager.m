@@ -290,7 +290,6 @@
 		{
 			CMMCPResult *result = nil;
 			
-			result = [[self connection] queryString:@"update user set User=%@,Host=%@,Password=%@,Select_priv 
 		}
 	}
 }
