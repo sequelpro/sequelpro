@@ -240,7 +240,7 @@
 	if(!curRange.length)
 		@try // caret is in between two chars
 		{
-			if(curRange.location+1 >= [[self string] length])
+			if(curRange.location+1 > [[self string] length])
 			{
 				// caret is at the end of a text field
 				// transpose last two characters
