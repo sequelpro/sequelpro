@@ -57,6 +57,7 @@
 	[self performQueries:queries];
 
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView setSelectedRange:NSMakeRange(0,0)];
 	[textView insertText:@""];
 
 	// Select the text of the query textView for re-editing
