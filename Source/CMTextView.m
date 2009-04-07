@@ -976,14 +976,18 @@ SYNTAX HIGHLIGHTING!
 		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; // Check the end of the token
 		if (autouppercaseKeywordsEnabled 
 			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
-			// check if next char is not a kSQLkeyword; if so then upper case keyword
+			// check if next char is not a kSQLkeyword; if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
-			@try {
-			if(![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil])
-				// Register it for undo
-				// [self shouldChangeTextInRange:tokenRange replacementString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
-				// NOTE: If one does this registering it ends up in single-character-undo
-				[self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
+			@try
+			{
+				NSString* curTokenString = [[self string] substringWithRange:tokenRange];
+				if(![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil] &&
+					![[curTokenString uppercaseString] isEqualToString:curTokenString])
+				{
+					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
+					[self shouldChangeTextInRange:tokenRange replacementString:[curTokenString uppercaseString]];
+					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
+				}
 			} @catch(id ae) {  }
 		
 		[textStore addAttribute: NSForegroundColorAttributeName

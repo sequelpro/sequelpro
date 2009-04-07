@@ -56,6 +56,9 @@
 
 	[self performQueries:queries];
 
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView insertText:@""];
+
 	// Select the text of the query textView for re-editing
 	[textView selectAll:self];
 }
@@ -87,6 +90,12 @@
 		[queryParser release];
 	}
 	
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	// and preserve the selection
+	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView insertText:@""];
+	[textView setSelectedRange:selectedRange];
+
 	[self performQueries:queries];
 }
 
@@ -128,7 +137,11 @@ insert the choosen favorite query in the query textView or save query to favorit
 		[queryFavoritesSheet orderOut:nil];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] != 3) {
 //choose favorite
+		// Register the next action for undo
+		[textView shouldChangeTextInRange:[textView selectedRange] replacementString:[queryFavoritesButton titleOfSelectedItem]];
 		[textView replaceCharactersInRange:[textView selectedRange] withString:[queryFavoritesButton titleOfSelectedItem]];
+		// invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+		[textView insertText:@""];
 	}
 }
 
@@ -137,7 +150,11 @@ insert the choosen favorite query in the query textView or save query to favorit
 insert the choosen history query in the query textView
 */
 {
+	// Register the next action for undo
+	[textView shouldChangeTextInRange:NSMakeRange(0,[[textView string] length]) replacementString:[queryHistoryButton titleOfSelectedItem]];
 	[textView setString:[queryHistoryButton titleOfSelectedItem]];
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView insertText:@""];
 	[textView selectAll:self];
 }
 
