@@ -18,7 +18,7 @@ CLEAN='NO'
 export CFLAGS='-arch ppc -arch i386 -arch ppc64 -arch x86_64 -O3 -fno-omit-frame-pointer'
 export CXXFLAGS='-arch ppc -arch i386 -arch ppc64 -arch x86_64 -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti'
 
-CONFIGURE_OPTIONS='--without-server --enable-thread-safe-client'
+CONFIGURE_OPTIONS='--without-server --enable-thread-safe-client --disable-dependency-tracking'
 BINARY_DISTRIBUTION_SCRIPT='scripts/make_binary_distribution'
 
 usage() 
@@ -77,9 +77,9 @@ fi
 
 if [ "x${QUIET}" == 'xYES' ]
 then
-	configure $CONFIGURE_OPTIONS > /dev/null
+	./configure $CONFIGURE_OPTIONS > /dev/null
 else
-	configure $CONFIGURE_OPTIONS
+	./configure $CONFIGURE_OPTIONS
 fi
 
 if [ $? -eq 0 ]
