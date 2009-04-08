@@ -534,10 +534,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void)paste:(id)sender
 {
-	// Insert the content of the pasteboard
-	NSPasteboard *pb = [NSPasteboard generalPasteboard];
-	[self insertText:[pb stringForType:NSStringPboardType]];
 
+	[super paste:sender];
 	// Invoke the auto-uppercasing of SQL keywords via an additional trigger
 	[self insertText:@""];
 }
