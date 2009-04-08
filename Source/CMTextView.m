@@ -39,6 +39,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
 #define kWQval      @"quoted"
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
+#define kQuote      @"Quote"
 
 
 @implementation CMTextView
@@ -485,10 +486,20 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
 {
 
+	// Check if the caret is inside quotes "" or ''; if so 
+	// return the normal word suggestion due to the spelling's language
+	if([[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
+	{
+		NSSpellChecker* checker = [NSSpellChecker sharedSpellChecker];
+		NSArray* list = [checker completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
+		return list;
+	}
+
 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!"];
-	NSArray *textViewWords = [[self string] componentsSeparatedByCharactersInSet:separators];
-	NSString *partialString = [[self string] substringWithRange:charRange];
+	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+	NSString *partialString    = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
+
 	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
 	
 	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
@@ -508,21 +519,25 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
 	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+
+
 	unsigned i, insindex;
 	
 	insindex = 0;
-	for (i = 0; i < [matchingCompletions count]; i ++)
+	for (i = 0; i < [matchingCompletions count]; i++)
 	{
-		if ([partialString isEqualToString:[[matchingCompletions objectAtIndex:i] substringToIndex:partialLength]])
-		{
-			// Matches case --> Insert at beginning of completion list
-			[compl insertObject:[matchingCompletions objectAtIndex:i] atIndex:insindex++];
-		}
-		else
-		{
-			// Not matching case --> Insert at end of completion list
-			[compl addObject:[matchingCompletions objectAtIndex:i]];	
-		}
+		NSString* obj = [matchingCompletions objectAtIndex:i];
+		if(![compl containsObject:obj])
+			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
+			{
+				// Matches case --> Insert at beginning of completion list
+				[compl insertObject:obj atIndex:insindex++];
+			}
+			else
+			{
+				// Not matching case --> Insert at end of completion list
+				[compl addObject:obj];
+			}
 	}
 	
 	return [compl autorelease];
@@ -1023,6 +1038,12 @@ SYNTAX HIGHLIGHTING!
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			[textStore addAttribute: kSQLkeyword
+							  value: kWQval
+							  range: tokenRange ];
+		// Add an attribute to be used to distinguish quotes from keywords etc.
+		// used e.g. in completion suggestions
+		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT)
+			[textStore addAttribute: kQuote
 							  value: kWQval
 							  range: tokenRange ];
 	}
