@@ -375,11 +375,27 @@
 	NSError *errorStr = nil;
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
+	BOOL importSQLAsUTF8 = YES; 
 
-	//load file into string
-	dumpFile = [SPSQLParser stringWithContentsOfFile:filename
-										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
-											error:&errorStr];
+	// Load file into string.  For SQL imports, try UTF8 file encoding before the current encoding.
+	if ([fileType isEqualToString:@"SQL"]) {
+		NSLog(@"Reading as utf8");
+		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
+											 encoding:NSUTF8StringEncoding
+												error:&errorStr];
+												NSLog(dumpFile);
+		if (errorStr) {
+			importSQLAsUTF8 = NO;
+			errorStr = nil;
+		}
+	}
+
+	// If the SQL-as-UTF8 read failed, and for CSVs, use the current connection encoding.
+	if (!importSQLAsUTF8 || [fileType isEqualToString:@"CSV"]) {
+		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
+											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+												error:&errorStr];
+	}
 
 	if (errorStr) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
@@ -435,7 +451,11 @@
 			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
 				continue;
 
-			[mySQLConnection queryString:[queries objectAtIndex:i]];
+			if (importSQLAsUTF8) {
+				[mySQLConnection queryString:[queries objectAtIndex:i] usingEncoding:NSUTF8StringEncoding];			
+			} else {
+				[mySQLConnection queryString:[queries objectAtIndex:i]];
+			}
 			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];

@@ -345,15 +345,25 @@ static void forcePingTimeout(int signalNumber);
 
 
 /*
+ * Override the standard queryString: method to default to the connection encoding, as before,
+ * before pssing on to queryString: usingEncoding:.
+ */
+- (CMMCPResult *)queryString:(NSString *) query
+{
+	return [self queryString:query usingEncoding:mEncoding];
+}
+
+
+/*
  * Modified version of queryString to be used in Sequel Pro.
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either the query has been executed and the result can
  * be returned or the connection and document have been closed.
  */
-- (CMMCPResult *)queryString:(NSString *) query
+- (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult	*theResult;
-	const char	*theCQuery = [self cStringFromString:query];
+	const char	*theCQuery;
 	int			theQueryCode;
 	NSDate		*queryStartDate;
 
@@ -361,6 +371,9 @@ static void forcePingTimeout(int signalNumber);
 	if (!mConnected) return nil;
 
 	[self stopKeepAliveTimer];
+
+	// Generate the cString as appropriate
+	theCQuery = [self cStringFromString:query usingEncoding:encoding];
 
 	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
 	// has been requested - in which case return nil
@@ -661,5 +674,24 @@ static void forcePingTimeout(int signalNumber)
 		lastKeepAliveSuccess = nil;
 	}
 	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+}
+
+
+/*
+ * Modified version of the original to support a supplied encoding.
+ * For internal use only. Transforms a NSString to a C type string (ending with \0).
+ * Lossy conversions are enabled.
+ */
+- (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding
+{
+	NSMutableData	*theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	return (const char *)[theData bytes];
 }
 @end
