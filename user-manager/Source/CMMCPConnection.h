@@ -26,11 +26,6 @@
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPResult.h"
 
-// Set the connection timeout to enforce for all connections - used for the initial connection
-// timeout and ping timeouts, but not for long queries/reads/writes.
-// Probably worth moving this to a preference at some point.
-#define SP_CONNECTION_TIMEOUT 10
-
 @interface NSObject (CMMCPConnectionDelegate)
 
 - (void)willQueryString:(NSString *)query;
@@ -49,6 +44,9 @@
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
+	float lastQueryExecutionTime;
+	int connectionTimeout;
+	float keepAliveInterval;
 	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
@@ -66,12 +64,12 @@
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
+- (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
 - (void) setDelegate:(id)object;
 - (NSTimeZone *) timeZone;
 - (BOOL) pingConnection;
-- (double) keepAliveInterval;
 - (void) startKeepAliveTimerResettingState:(BOOL)resetState;
 - (void) stopKeepAliveTimer;
 - (void) keepAlive:(NSTimer *)theTimer;

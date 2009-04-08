@@ -1,8 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPArrayAdditions.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Jakob Egger on March 24, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,16 +22,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface NSString (SPStringAdditions)
+@interface NSArray (SPArrayAdditions)
 
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
-
-- (NSString *)backtickQuotedString;
-- (NSArray *)lineRangesForRange:(NSRange)aRange;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
+- (NSString *)componentsJoinedAndBacktickQuoted;
 
 @end

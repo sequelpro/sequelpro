@@ -59,7 +59,7 @@
 	NSMutableArray *tableFields, *indexes;
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
-	BOOL isEditingRow, isEditingNewRow, alertSheetOpened;
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 	int currentlyEditingRow;
 	NSUserDefaults *prefs;
 }

@@ -1,8 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPTextViewAdditions.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Hans-Jörg Bibiko on April 05, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,16 +22,18 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface NSString (SPStringAdditions)
+@interface NSTextView (SPTextViewAdditions)
 
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
-
-- (NSString *)backtickQuotedString;
-- (NSArray *)lineRangesForRange:(NSRange)aRange;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
+- (IBAction)selectCurrentWord:(id)sender;
+- (IBAction)selectCurrentLine:(id)sender;
+- (IBAction)doSelectionUpperCase:(id)sender;
+- (IBAction)doSelectionLowerCase:(id)sender;
+- (IBAction)doSelectionTitleCase:(id)sender;
+- (IBAction)doDecomposedStringWithCanonicalMapping:(id)sender;
+- (IBAction)doDecomposedStringWithCompatibilityMapping:(id)sender;
+- (IBAction)doPrecomposedStringWithCanonicalMapping:(id)sender;
+- (IBAction)doPrecomposedStringWithCompatibilityMapping:(id)sender;
+- (IBAction)doTranspose:(id)sender;
+- (IBAction)doRemoveDiacritics:(id)sender;
 
 @end

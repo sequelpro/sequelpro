@@ -25,6 +25,8 @@
 #import "TableSource.h"
 #import "TablesList.h"
 #import "SPTableData.h"
+#import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 
 @implementation TableSource
@@ -48,6 +50,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 
 	selectedTable = aTable;
 	[tableSourceView deselectAll:self];
+	[indexView deselectAll:self];
 
 	if ( isEditingRow )
 		return;
@@ -80,7 +83,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
   
 	//perform queries and load results in array (each row as a dictionary)
-	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", selectedTable]] retain];
+	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
 	
 	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
 	//	tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
@@ -88,7 +91,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
 	[tableSourceResult release];
 
-	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM `%@`", selectedTable]] retain];
+	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
@@ -179,10 +182,12 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	// If a view is selected, disable the buttons; otherwise enable.
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
 	[addFieldButton setEnabled:editingEnabled];
-	[copyFieldButton setEnabled:editingEnabled];
-	[removeFieldButton setEnabled:editingEnabled];
 	[addIndexButton setEnabled:editingEnabled];
-	[removeIndexButton setEnabled:editingEnabled];
+    
+    //the following three buttons will only be enabled if a row field/index is selected!
+	[copyFieldButton setEnabled:NO];
+	[removeFieldButton setEnabled:NO];
+	[removeIndexButton setEnabled:NO];
 	
 	//add columns to indexedColumnsField
 	[indexedColumnsField removeAllItems];
@@ -293,7 +298,7 @@ adds the index to the mysql-db and stops modal session with code 1 when success,
 			{
 				indexName = @"";
 			} else {
-				indexName = [NSString stringWithFormat:@"`%@`", [indexNameField stringValue]];
+				indexName = [[indexNameField stringValue] backtickQuotedString];
 			}
 		}
 		indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
@@ -306,14 +311,14 @@ adds the index to the mysql-db and stops modal session with code 1 when success,
 			}
 		}
 		
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` ADD %@ %@ (`%@`)",
-				selectedTable, [indexTypeField titleOfSelectedItem], indexName,
-				[tempIndexedColumns componentsJoinedByString:@"`,`"]]];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
+				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
+				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 
 /*
-NSLog([NSString stringWithFormat:@"ALTER TABLE `%@` ADD %@ %@ (`%@`)",
-				selectedTable, [indexTypeField titleOfSelectedItem], indexName,
-				[[[indexedColumnsField stringValue] componentsSeparatedByString:@","] componentsJoinedByString:@"`,`"]]);
+NSLog([NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
+				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
+				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]);
 */
 
 		if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -372,7 +377,7 @@ opens alertsheet and asks for confirmation
 		// alert any listeners that we are about to perform a query.
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 		
-		NSString *query = [NSString stringWithFormat:@"ALTER TABLE `%@` TYPE = %@",selectedTable,selectedItem];
+		NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ TYPE = %@",[selectedTable backtickQuotedString],selectedItem];
 		[mySQLConnection queryString:query];
 		
 		// The query is now complete.
@@ -565,14 +570,22 @@ fetches the result as an array with a dictionary for each row in it
  */
 - (BOOL)saveRowOnDeselect
 {
-	// If no rows are currently being edited, return success at once.
-	if (!isEditingRow) return YES;
+	// If no rows are currently being edited, or a save is already in progress, return success at once.
+	if (!isEditingRow || isSavingRow) return YES;
+	isSavingRow = YES;
+
+	// Save any edits which have been made but not saved to the table yet.
+	[tableWindow endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
-	if ([self addRowToDB]) return YES;
+	if ([self addRowToDB]) {
+		isSavingRow = NO;
+		return YES;
+	}
 
 	// Saving failed - reselect the old row and return failure.
 	[tableSourceView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	isSavingRow = NO;
 	return NO;
 }
 
@@ -598,22 +611,22 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	if ( isEditingNewRow ) {
 		//ADD syntax
 		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@",
-						selectedTable, [theRow objectForKey:@"Field"], [theRow objectForKey:@"Type"]];
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
+						[selectedTable backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString], [theRow objectForKey:@"Type"]];
 		} else {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` ADD `%@` %@(%@)",
-						selectedTable, [theRow objectForKey:@"Field"], [theRow objectForKey:@"Type"],
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@(%@)",
+						[selectedTable backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString], [theRow objectForKey:@"Type"],
 						[theRow objectForKey:@"Length"]];
 		}
 	} else {
 		//CHANGE syntax
 		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@",
-					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
+					[selectedTable backtickQuotedString], [[oldRow objectForKey:@"Field"] backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString],
 					[theRow objectForKey:@"Type"]];
 		} else {
-			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` CHANGE `%@` `%@` %@(%@)",
-					selectedTable, [oldRow objectForKey:@"Field"], [theRow objectForKey:@"Field"],
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@(%@)",
+					[selectedTable backtickQuotedString], [[oldRow objectForKey:@"Field"] backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString],
 					[theRow objectForKey:@"Type"], [theRow objectForKey:@"Length"]];
 		}
 	}
@@ -667,8 +680,8 @@ returns YES if no row is beeing edited and nothing has to be written to db
 			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
 				[queryString appendString:@" PRIMARY KEY"];
 			} else {
-				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (`%@`)",
-						[chooseKeyButton titleOfSelectedItem], [theRow objectForKey:@"Field"]]];
+				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)",
+						[chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
 	}
@@ -735,8 +748,8 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//remove row
-			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP `%@`",
-					selectedTable, [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
+					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 			
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self loadTable:selectedTable];
@@ -755,10 +768,10 @@ returns YES if no row is beeing edited and nothing has to be written to db
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//remove index
 			if ( [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP PRIMARY KEY", selectedTable]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [selectedTable backtickQuotedString]]];
 			} else {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE `%@` DROP INDEX `%@`",
-						selectedTable, [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"]]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
+						[selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
 			}
 		
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -851,6 +864,9 @@ returns a dictionary containing enum/set field names as key and possible values 
 			forTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
+    //make sure that the drag operation is for the right table view
+    if (aTableView!=tableSourceView) return;
+
 	if ( !isEditingRow ) {
 		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
 		isEditingRow = YES;
@@ -868,6 +884,10 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 */
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {
+    //make sure that the drag operation is started from the right table view
+    if (tableView!=tableSourceView) return NO;
+    
+    
 	int originalRow;
 	NSArray *pboardTypes;
 
@@ -895,6 +915,9 @@ would result in a position change.
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
 	proposedDropOperation:(NSTableViewDropOperation)operation
 {
+    //make sure that the drag operation is for the right table view
+    if (tableView!=tableSourceView) return NO;
+
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	int originalRow;
 
@@ -919,6 +942,9 @@ would result in a position change.
  */
 - (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)destinationRowIndex dropOperation:(NSTableViewDropOperation)operation
 {
+    //make sure that the drag operation is for the right table view
+    if (tableView!=tableSourceView) return NO;
+
 	int originalRowIndex;
 	NSMutableString *queryString;
 	NSDictionary *originalRow;
@@ -930,8 +956,8 @@ would result in a position change.
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// Begin construction of the reordering query
-	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE `%@` MODIFY COLUMN `%@` %@", selectedTable,
-		[originalRow objectForKey:@"Field"],
+	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
+		[[originalRow objectForKey:@"Field"] backtickQuotedString],
 		[originalRow objectForKey:@"Type"]];
 
 	// Add the length parameter if necessary
@@ -968,8 +994,8 @@ would result in a position change.
 	if ( destinationRowIndex == 0 ){
 		[queryString appendString:@" FIRST"];
 	} else {
-		[queryString appendString:[NSString stringWithFormat:@" AFTER `%@`",
-						[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"]]];
+		[queryString appendString:[NSString stringWithFormat:@" AFTER %@",
+						[[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"] backtickQuotedString]]];
 	}
 
 	// Run the query; report any errors, or reload the table on success
@@ -1000,13 +1026,32 @@ would result in a position change.
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-
-	// Check our notification object is our table fields view
-	if ([aNotification object] != tableSourceView)
-		return;
-
-	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
-	if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect] ) return;
+    //check for which table view the selection changed
+    if ([aNotification object] == tableSourceView) {
+        // If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
+        if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow ) {
+            [self saveRowOnDeselect];
+        }
+        
+        // check if there is currently a field selected
+        // and change button state accordingly
+        if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+            [removeFieldButton setEnabled:YES];
+            [copyFieldButton setEnabled:YES];
+        } else {
+            [removeFieldButton setEnabled:NO];
+            [copyFieldButton setEnabled:NO];
+        }
+    }
+    else if ([aNotification object] == indexView) {
+        // check if there is currently an index selected
+        // and change button state accordingly
+        if ([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+            [removeIndexButton setEnabled:YES];
+        } else {
+            [removeIndexButton setEnabled:NO];
+        }
+    }
 }
 
 /*
@@ -1070,7 +1115,11 @@ traps enter and esc and make/cancel editing without entering next row
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
  * is uneditable.
  */
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+    
+    //make sure that the message is from the right table view
+    if (tableView!=tableSourceView) return;
+
 	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
 }
 

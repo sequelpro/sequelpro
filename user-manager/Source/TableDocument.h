@@ -25,8 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+
+@class CMMCPConnection, CMMCPResult;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -72,6 +72,8 @@
 	
 	IBOutlet id sidebarGrabber;
 	
+	IBOutlet NSTextView *customQueryTextView;
+	
 	IBOutlet NSTableView *dbTablesTableView;
 
 	IBOutlet id syntaxView;
@@ -89,6 +91,7 @@
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
+	BOOL _encodingViaLatin1;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -133,6 +136,7 @@
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
 - (NSString *)connectionEncoding;
+- (BOOL)connectionEncodingViaLatin1;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;

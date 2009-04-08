@@ -28,6 +28,7 @@
 #import "SPSQLParser.h"
 #import "TableDocument.h"
 #import "TablesList.h"
+#import "SPStringAdditions.h"
 
 
 @implementation SPTableData
@@ -128,6 +129,24 @@
 		}
 	}
 	return [columns objectAtIndex:index];
+}
+
+/* 
+ * Checks if this column is type text or blob.
+ * Used to determine if we have to show a popup when we edit a value from this column.
+ */
+
+- (BOOL) columnIsBlobOrText:(NSString *)colName
+{
+	if ([columns count] == 0) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} else {
+			[self updateInformationForCurrentTable];
+		}
+	}
+	
+	return (BOOL) ([[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"textdata" ] || [[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
 }
 
 
@@ -241,11 +260,13 @@
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", tableName]];
+	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+																					   [tableName backtickQuotedString]
+																					]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		if (![mySQLConnection isConnected]) {
+		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
 		return nil;
@@ -284,13 +305,34 @@
 
 		// If the first character is a backtick, this is a field definition.
 		if ([fieldsParser characterAtIndex:0] =='`') {
-
-			// Capture the area between the two backticks as the name
-			[tableColumn setObject:[fieldsParser trimAndReturnStringFromCharacter:'`' toCharacter:'`' trimmingInclusively:YES returningInclusively:NO ignoringQuotedStrings:NO] forKey:@"name"];
+        
+            // Capture the area between the two backticks as the name
+            NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: '`' 
+                                                                     toCharacter: '`' 
+                                                             trimmingInclusively: YES 
+                                                            returningInclusively: NO 
+                                                           ignoringQuotedStrings: NO];
+            //if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
+			while ([fieldsParser characterAtIndex:0] =='`') {
+                fieldName = [fieldName stringByAppendingFormat: @"`%@",
+                                                                [fieldsParser trimAndReturnStringFromCharacter: '`' 
+                                                                                                   toCharacter: '`' 
+                                                                                           trimmingInclusively: YES 
+                                                                                          returningInclusively: NO 
+                                                                                         ignoringQuotedStrings: NO]
+                                                                 ];
+            }
+            
+            [tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
-
+			
+			//if column is not null, but doesn't have a default value, set empty string
+			if([[tableColumn objectForKey:@"null"] intValue] == 0 && [[tableColumn objectForKey:@"autoincrement"] intValue] == 0 && ![tableColumn objectForKey:@"default"]) {
+				[tableColumn setObject:@"" forKey:@"default"];
+			}
+			
 			// Store the column.
 			[tableColumns addObject:[NSDictionary dictionaryWithDictionary:tableColumn]];
 
@@ -393,11 +435,11 @@
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
 	// Retrieve the SHOW COLUMNS syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM `%@`", viewName]];
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		if (![mySQLConnection isConnected]) {
+		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving view information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
 		return nil;
@@ -477,9 +519,11 @@
 	// Run the status query and retrieve as a dictionary.
 	CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", [tableListInstance tableName]]];
 
-	// Check for any errors
+	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table status:\n\n%@", [mySQLConnection getLastErrorMessage]],  @"OK", nil, nil);
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table status:\n\n%@", [mySQLConnection getLastErrorMessage]],  @"OK", nil, nil);
+		}
 		return FALSE;
 	}
 
@@ -508,12 +552,18 @@
 	NSMutableDictionary *fieldDetails = [[NSMutableDictionary alloc] init];
 	NSMutableArray *detailParts;
 	NSString *detailString;
-	int i, partsArrayLength;
+	int i, definitionPartsIndex = 0, partsArrayLength;
 
 	if (![definitionParts count]) return [NSDictionary dictionary];
 
+	// Skip blank items within the definition parts
+	while (definitionPartsIndex < [definitionParts count]
+			&& ![[[definitionParts objectAtIndex:definitionPartsIndex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length])
+		definitionPartsIndex++;
+
 	// The first item is always the data type.
-	[fieldParser setString:[definitionParts objectAtIndex:0]];
+	[fieldParser setString:[definitionParts objectAtIndex:definitionPartsIndex]];
+	definitionPartsIndex++;
 
 	// If no field length definition is present, store only the type
 	if ([fieldParser firstOccurrenceOfCharacter:'(' ignoringQuotedStrings:YES] == NSNotFound) {
@@ -554,6 +604,7 @@
 		}
 		[detailParser release];
 	}
+	[fieldParser release];
 
 	// Also capture a general column type "group" to allow behavioural switches
 	detailString = [[NSString alloc] initWithString:[fieldDetails objectForKey:@"type"]];
@@ -583,6 +634,7 @@
 	} else {
 		[fieldDetails setObject:@"blobdata" forKey:@"typegrouping"];
 	}
+	[detailString release];
 
 	// Set up some column defaults for all columns
 	[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"null"];
@@ -593,8 +645,8 @@
 
 	// Walk through the remaining column definition parts storing recognised details
 	partsArrayLength = [definitionParts count];
-	for (i = 1; i < partsArrayLength; i++) {
-		detailString = [[NSString alloc] initWithString:[[definitionParts objectAtIndex:i] uppercaseString]];
+	for ( ; definitionPartsIndex < partsArrayLength; definitionPartsIndex++) {
+		detailString = [[NSString alloc] initWithString:[[definitionParts objectAtIndex:definitionPartsIndex] uppercaseString]];
 
 		// Whether numeric fields are unsigned
 		if ([detailString isEqualToString:@"UNSIGNED"]) {
@@ -609,30 +661,30 @@
 			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"binary"];
 
 		// Whether text types have a different encoding to the table
-		} else if ([detailString isEqualToString:@"CHARSET"] && (i + 1 < partsArrayLength)) {
-			if (![[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
-				[fieldDetails setValue:[definitionParts objectAtIndex:i+1] forKey:@"encoding"];
+		} else if ([detailString isEqualToString:@"CHARSET"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			if (![[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+1] forKey:@"encoding"];
 			}
-			i++;
-		} else if ([detailString isEqualToString:@"CHARACTER"] && (i + 2 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"SET"]) {
-			if (![[[definitionParts objectAtIndex:i+2] uppercaseString] isEqualToString:@"DEFAULT"]) {;
-				[fieldDetails setValue:[definitionParts objectAtIndex:i+2] forKey:@"encoding"];
+			definitionPartsIndex++;
+		} else if ([detailString isEqualToString:@"CHARACTER"] && (definitionPartsIndex + 2 < partsArrayLength)
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"SET"]) {
+			if (![[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"DEFAULT"]) {;
+				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+2] forKey:@"encoding"];
 			}
-			i = i + 2;
+			definitionPartsIndex += 2;
 
 		// Whether text types have a different collation to the table
-		} else if ([detailString isEqualToString:@"COLLATE"] && (i + 1 < partsArrayLength)) {
-			if (![[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
-				[fieldDetails setValue:[definitionParts objectAtIndex:i+1] forKey:@"collation"];
+		} else if ([detailString isEqualToString:@"COLLATE"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			if (![[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+1] forKey:@"collation"];
 			}
-			i++;
+			definitionPartsIndex++;
 
 		// Whether fields are NOT NULL
-		} else if ([detailString isEqualToString:@"NOT"] && (i + 1 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:i+1] uppercaseString] isEqualToString:@"NULL"]) {
+		} else if ([detailString isEqualToString:@"NOT"] && (definitionPartsIndex + 1 < partsArrayLength)
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"NULL"]) {
 			[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"null"];
-			i++;
+			definitionPartsIndex++;
 
 		// Whether fields are NULL
 		} else if ([detailString isEqualToString:@"NULL"]) {
@@ -643,11 +695,11 @@
 			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"autoincrement"];
 
 		// Field defaults
-		} else if ([detailString isEqualToString:@"DEFAULT"] && (i + 1 < partsArrayLength)) {
-			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:i+1]];
+		} else if ([detailString isEqualToString:@"DEFAULT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
 			[fieldDetails setValue:[detailParser unquotedString] forKey:@"default"];
 			[detailParser release];
-			i++;
+			definitionPartsIndex++;
 		}
 
 		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COMMENT 'foo' | COLUMN_FORMAT bar | STORAGE q | REFERENCES...

@@ -2,7 +2,7 @@
 //  CMTextView.h
 //  sequel-pro
 //
-//  Created by Carsten Blüm.
+//  Created by Carsten Bl√ºm.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -24,9 +24,26 @@
 #import <Cocoa/Cocoa.h>
 
 @interface CMTextView : NSTextView {
+	BOOL autoindentEnabled;
+	BOOL autopairEnabled;
+	BOOL autoindentIgnoresEnter;
+	BOOL autouppercaseKeywordsEnabled;
 }
 
--(NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
--(NSArray *)keywords;
+- (BOOL) isNextCharMarkedBy:(id)attribute;
+- (BOOL) areAdjacentCharsLinked;
+- (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
+- (BOOL) shiftSelectionRight;
+- (BOOL) shiftSelectionLeft;
+- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
+- (NSArray *) keywords;
+- (void) setAutoindent:(BOOL)enableAutoindent;
+- (BOOL) autoindent;
+- (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
+- (BOOL) autoindentIgnoresEnter;
+- (void) setAutopair:(BOOL)enableAutopair;
+- (BOOL) autopair;
+- (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
+- (BOOL) autouppercaseKeywords;
 
 @end

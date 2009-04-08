@@ -1,8 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPConsoleMessage.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on Mar 12, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,16 +22,19 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface NSString (SPStringAdditions)
+@interface SPConsoleMessage : NSObject 
+{
+	BOOL isError;
+	NSDate *messageDate;
+	NSString *message;
+}
 
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
+@property (readwrite, assign) BOOL isError;
+@property (readwrite, retain) NSDate *messageDate;
+@property (readwrite, retain) NSString *message;
 
-- (NSString *)backtickQuotedString;
-- (NSArray *)lineRangesForRange:(NSRange)aRange;
++ (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)consoleMessage date:(NSDate *)date;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
+- (id)initWithMessage:(NSString *)message date:(NSDate *)date;
 
 @end

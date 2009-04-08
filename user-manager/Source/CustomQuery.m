@@ -25,176 +25,81 @@
 #import "CustomQuery.h"
 #import "SPSQLParser.h"
 #import "SPGrowlController.h"
+#import "SPStringAdditions.h"
+
 
 @implementation CustomQuery
 
-//IBAction methods
-- (IBAction)performQuery:(id)sender;
+
+
+#pragma mark IBAction methods
+
+
 /*
-performs the mysql-query given by the user
-sets the tableView columns corresponding to the mysql-result
-*/
-{	
+ * Split all the queries in the text view, split them into individual queries,
+ * and run sequentially.
+ */
+- (IBAction)runAllQueries:(id)sender
+{
+	SPSQLParser *queryParser;
+	NSArray		*queries;
+
 	// Fixes bug in key equivalents.
-	if ([[NSApp currentEvent] type] == NSKeyUp)
-	{
+	if ([[NSApp currentEvent] type] == NSKeyUp) {
 		return;
 	}
-	
-	NSArray		*theColumns;
-	NSTableColumn	*theCol;
-	CMMCPResult	*theResult = nil;
-	NSArray		*queries;
-	NSMutableArray	*menuItems = [NSMutableArray array];
-	NSMutableArray	*tempResult = [NSMutableArray array];
-	NSMutableString	*errors = [NSMutableString string];
-	SPSQLParser *queryParser;
-	int i;
-
-	// Notify listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 	queries = [queryParser splitStringByCharacter:';'];
 	[queryParser release];
 
-	// Perform the queries in series
-	for ( i = 0 ; i < [queries count] ; i++ ) {
-		theResult = [mySQLConnection queryString:[queries objectAtIndex:i]];
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	[self performQueries:queries];
 
-			// If the query errored, append error to the error log for display at the end
-			if ( [queries count] > 1 ) {
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
-										i+1,
-										[mySQLConnection getLastErrorMessage]]];
-			} else {
-				[errors setString:[mySQLConnection getLastErrorMessage]];
-			}
-		}
-	}
-	
-	//perform empty query if no query is given
-	if ( [queries count] == 0 ) {
-		theResult = [mySQLConnection queryString:@""];
-		[errors setString:[mySQLConnection getLastErrorMessage]];
-	}
-	
-//put result in array
-	[queryResult release];
-	queryResult = nil;
-	if ( nil != theResult )
-	{
-		int r = [theResult numOfRows];
-		if (r) [theResult dataSeek:0];
-		for ( i = 0 ; i < r ; i++ ) {
-			[tempResult addObject:[theResult fetchRowAsArray]];
-		}
-		queryResult = [[NSArray arrayWithArray:tempResult] retain];
-	}
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView insertText:@""];
 
-//add query to history
-	[queryHistoryButton insertItemWithTitle:[textView string] atIndex:1];
-	while ( [queryHistoryButton numberOfItems] > 21 ) {
-		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-	}
-	for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
-	{
-		[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
-	}
-	[prefs setObject:menuItems forKey:@"queryHistory"];
-
-//select the text of the query textView and set standard font
+	// Select the text of the query textView for re-editing
 	[textView selectAll:self];
-	if ( [errors length] ) {
-		[errorText setStringValue:errors];
-	} else {
-		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
-	}
-	if ( [mySQLConnection affectedRows] != -1 ) {
-		[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%@ row(s) affected", @"text showing how many rows have been affected"),
-					[[NSNumber numberWithLongLong:[mySQLConnection affectedRows]] stringValue]]];
-	} else {
-		[affectedRowsText setStringValue:@""];
-	}
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
-
-	if ( !theResult || ![theResult numOfRows] ) {
-//no rows in result
-	//free tableView
-		theColumns = [customQueryView tableColumns];
-		while ([theColumns count]) {
-			[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
-		}
-//		theCol = [[NSTableColumn alloc] initWithIdentifier:@""];
-//		[[theCol headerCell] setStringValue:@""];
-//		[customQueryView addTableColumn:theCol];
-//		[customQueryView sizeLastColumnToFit];
-		[customQueryView reloadData];
-//		[theCol release];
-
-		//query finished
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-
-		// Query finished Growl notification        
-        [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
-                                                  notificationName:@"Query Finished"];
-		
-		return;
-	}
-
-//set columns
-//remove all columns
-	theColumns = [customQueryView tableColumns];
-//	i=0;
-	while ([theColumns count]) {
-		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
-//		i++;
-	}
-
-//add columns, corresponding to the query result
-	theColumns = [theResult fetchFieldNames];
-	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
-		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
-		[theCol setResizingMask:NSTableColumnUserResizingMask];
-		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
-		[dataCell setEditable:NO];
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		} else {
-			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
-		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		[theCol setDataCell:dataCell];
-		[[theCol headerCell] setStringValue:[theColumns objectAtIndex:i]];
-
-		[customQueryView addTableColumn:theCol];
-		[theCol release];
-	}
-	
-	[customQueryView sizeLastColumnToFit];
-	//tries to fix problem with last row (otherwise to small)
-	//sets last column to width of the first if smaller than 30
-	//problem not fixed for resizing window
-	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
-		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
-				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
-	[customQueryView reloadData];
-	
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	
-	// Query finished Growl notification    
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
-                                              notificationName:@"Query Finished"];
 }
+
+/*
+ * Depending on selection, run either the query containing the selection caret (if the caret is
+ * at a single point within the text view), or run the selected text (if a text range is selected).
+ */
+- (IBAction)runSelectedQueries:(id)sender
+{
+	NSArray *queries;
+	NSString *query;
+	NSRange selectedRange = [textView selectedRange];
+	SPSQLParser *queryParser;
+
+	// If the current selection is a single caret position, run the current query.
+	if (selectedRange.length == 0) {
+		query = [self queryAtPosition:selectedRange.location];
+		if (!query) {
+			NSBeep();
+			return;
+		}
+		queries = [NSArray arrayWithObject:query];
+
+	// Otherwise, run the selected text.
+	} else {
+		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
+		queries = [queryParser splitStringByCharacter:';'];
+		[queryParser release];
+	}
+	
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	// and preserve the selection
+	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView insertText:@""];
+	[textView setSelectedRange:selectedRange];
+
+	[self performQueries:queries];
+}
+
 
 - (IBAction)chooseQueryFavorite:(id)sender
 /*
@@ -233,7 +138,11 @@ insert the choosen favorite query in the query textView or save query to favorit
 		[queryFavoritesSheet orderOut:nil];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] != 3) {
 //choose favorite
+		// Register the next action for undo
+		[textView shouldChangeTextInRange:[textView selectedRange] replacementString:[queryFavoritesButton titleOfSelectedItem]];
 		[textView replaceCharactersInRange:[textView selectedRange] withString:[queryFavoritesButton titleOfSelectedItem]];
+		// invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+		[textView insertText:@""];
 	}
 }
 
@@ -242,7 +151,11 @@ insert the choosen favorite query in the query textView or save query to favorit
 insert the choosen history query in the query textView
 */
 {
+	// Register the next action for undo
+	[textView shouldChangeTextInRange:NSMakeRange(0,[[textView string] length]) replacementString:[queryHistoryButton titleOfSelectedItem]];
 	[textView setString:[queryHistoryButton titleOfSelectedItem]];
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView insertText:@""];
 	[textView selectAll:self];
 }
 
@@ -255,7 +168,74 @@ closes the sheet
 }
 
 
-//queryFavoritesSheet methods
+/*
+ * Perform simple actions (which don't require their own method), triggered by selecting the appropriate menu item
+ * in the "gear" action menu displayed beneath the cusotm query view.
+ */
+- (IBAction)gearMenuItemSelected:(id)sender
+{
+	// "Clear History" menu item - clear query history
+	if (sender == clearHistoryMenuItem) {
+		[queryHistoryButton removeAllItems];
+		[queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
+		[prefs setObject:[NSArray array] forKey:@"queryHistory"];
+	}
+
+	// "Shift Right" menu item - indent the selection with an additional tab.
+	if (sender == shiftRightMenuItem) {
+		[textView shiftSelectionRight];
+	}
+
+	// "Shift Left" menu item - un-indent the selection by one tab if possible.
+	if (sender == shiftLeftMenuItem) {
+		[textView shiftSelectionLeft];
+	}
+
+	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
+	// on normal autocomplete usage.
+	if (sender == completionListMenuItem) {
+		[textView complete:self];
+	}
+
+	// "Editor font..." menu item to bring up the font panel
+	if (sender == editorFontMenuItem) {
+		[[NSFontPanel sharedFontPanel] setPanelFont:[textView font] isMultiple:NO];
+		[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
+	}
+
+	// "Indent new lines" toggle
+	if (sender == autoindentMenuItem) {
+		BOOL enableAutoindent = ([autoindentMenuItem state] == NSOffState);
+		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoindent"];
+		[prefs synchronize];
+		[autoindentMenuItem setState:enableAutoindent?NSOnState:NSOffState];
+		[textView setAutoindent:enableAutoindent];
+	}
+
+	// "Auto-pair characters" toggle
+	if (sender == autopairMenuItem) {
+		BOOL enableAutopair = ([autopairMenuItem state] == NSOffState);
+		[prefs setBool:enableAutopair forKey:@"CustomQueryAutopair"];
+		[prefs synchronize];
+		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
+		[textView setAutopair:enableAutopair];
+	}
+
+	// "Auto-uppercase keywords" toggle
+	if (sender == autouppercaseKeywordsMenuItem) {
+		BOOL enableAutouppercaseKeywords = ([autouppercaseKeywordsMenuItem state] == NSOffState);
+		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutouppercaseKeywords"];
+		[prefs synchronize];
+		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
+		[textView setAutouppercaseKeywords:enableAutouppercaseKeywords];
+	}
+}
+
+
+#pragma mark -
+#pragma mark queryFavoritesSheet methods
+
+
 - (IBAction)addQueryFavorite:(id)sender
 /*
 adds a query favorite
@@ -352,7 +332,239 @@ closes queryFavoritesSheet and saves favorites to preferences
 }
 
 
-//getter methods
+#pragma mark -
+#pragma mark Query actions
+
+
+- (void)performQueries:(NSArray *)queries;
+/*
+performs the mysql-query given by the user
+sets the tableView columns corresponding to the mysql-result
+*/
+{	
+	
+	NSArray		*theColumns;
+	NSTableColumn	*theCol;
+	CMMCPResult	*theResult = nil;
+	NSMutableArray	*menuItems = [NSMutableArray array];
+	NSMutableArray	*tempResult = [NSMutableArray array];
+	NSMutableString	*errors = [NSMutableString string];
+	int i, totalQueriesRun = 0, totalAffectedRows = 0;
+	float executionTime = 0;
+
+	// Notify listeners that a query has started
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+
+	// Reset the current table view as necessary to avoid redraw and reload issues.
+	// Restore the view position to the top left to be within the results for all datasets.
+	[customQueryView scrollRowToVisible:0];
+	[customQueryView scrollColumnToVisible:0];
+
+	// Remove all the columns
+	theColumns = [customQueryView tableColumns];
+	while ([theColumns count]) {
+		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
+	}
+
+	// Perform the supplied queries in series
+	for ( i = 0 ; i < [queries count] ; i++ ) {
+	
+		// Don't run blank queries, or queries which only contain whitespace.
+		if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
+			continue;
+
+		// Run the query, timing execution (note this also includes network and overhead)
+		theResult = [mySQLConnection queryString:[queries objectAtIndex:i]];
+		executionTime += [mySQLConnection lastQueryExecutionTime];
+		totalQueriesRun++;
+
+		// Record any affected rows
+		if ( [mySQLConnection affectedRows] != -1 )
+			totalAffectedRows += [mySQLConnection affectedRows];
+
+		// Store any error messages
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+
+			// If the query errored, append error to the error log for display at the end
+			if ( [queries count] > 1 ) {
+				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
+										i+1,
+										[mySQLConnection getLastErrorMessage]]];
+			} else {
+				[errors setString:[mySQLConnection getLastErrorMessage]];
+			}
+		}
+	}
+	
+	//perform empty query if no query is given
+	if ( [queries count] == 0 ) {
+		theResult = [mySQLConnection queryString:@""];
+		[errors setString:[mySQLConnection getLastErrorMessage]];
+	}
+	
+//put result in array
+	[queryResult release];
+	queryResult = nil;
+	if ( nil != theResult )
+	{
+		int r = [theResult numOfRows];
+		if (r) [theResult dataSeek:0];
+		for ( i = 0 ; i < r ; i++ ) {
+			[tempResult addObject:[theResult fetchRowAsArray]];
+		}
+		queryResult = [[NSArray arrayWithArray:tempResult] retain];
+	}
+
+//add query to history
+	[queryHistoryButton insertItemWithTitle:[queries componentsJoinedByString:@"; "] atIndex:1];
+	while ( [queryHistoryButton numberOfItems] > 21 ) {
+		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+	}
+	for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
+	{
+		[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
+	}
+	[prefs setObject:menuItems forKey:@"queryHistory"];
+
+	if ( [errors length] ) {
+		[errorText setStringValue:errors];
+	} else {
+		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
+	}
+	
+	// Set up the status string
+	if ( totalQueriesRun > 1 ) {
+        if (totalAffectedRows==1) {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %i queries taking %@", @"text showing one row has been affected by multiple queries"),
+                                              totalQueriesRun,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+            
+        } else {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected in total, by %i queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+                                              totalAffectedRows,
+                                              totalQueriesRun,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+            
+        }
+	} else {
+        if (totalAffectedRows==1) {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+        } else {
+            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+                                              totalAffectedRows,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+            
+        }
+	}
+
+
+	// If no results were returned, redraw the empty table and post notifications before returning.
+	if ( !theResult || ![theResult numOfRows] ) {
+		[customQueryView reloadData];
+
+		// Notify any listeners that the query has completed
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
+		// Perform the Growl notification for query completion
+        [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
+                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
+                                                  notificationName:@"Query Finished"];
+		
+		return;
+	}
+
+
+	// Otherwise add columns corresponding to the query result
+	theColumns = [theResult fetchFieldNames];
+	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
+		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
+		[theCol setResizingMask:NSTableColumnUserResizingMask];
+		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
+		[dataCell setEditable:NO];
+		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
+		} else {
+			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+		[theCol setDataCell:dataCell];
+		[[theCol headerCell] setStringValue:[theColumns objectAtIndex:i]];
+
+		[customQueryView addTableColumn:theCol];
+		[theCol release];
+	}
+	
+	[customQueryView sizeLastColumnToFit];
+	//tries to fix problem with last row (otherwise to small)
+	//sets last column to width of the first if smaller than 30
+	//problem not fixed for resizing window
+	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
+		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
+				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
+	[customQueryView reloadData];
+	
+	//query finished
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	
+	// Query finished Growl notification    
+    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
+                                              notificationName:@"Query Finished"];
+}
+
+/*
+ * Retrieve the query at a position specified within the custom query
+ * text view.  This will return nil if the position specified is beyond
+ * the available string or if an empty query would be returned.
+ */
+- (NSString *)queryAtPosition:(long)position
+{
+	SPSQLParser *customQueryParser;
+	NSArray *queries;
+	NSString *query = nil;
+	int i, queryPosition = 0;
+
+	// If the supplied position is negative or beyond the end of the string, return nil.
+	if (position < 0 || position > [[textView string] length])
+		return nil;
+
+	// Split the current text into queries
+	customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
+	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringByCharacter:';']];
+	[customQueryParser release];
+
+	// Walk along the array of queries to identify the current query - taking into account
+	// the extra semicolon at the end of each query
+	for (i = 0; i < [queries count]; i++ ) {
+		queryPosition += [[queries objectAtIndex:i] length];
+		if (queryPosition >= position) {
+			query = [NSString stringWithString:[queries objectAtIndex:i]];
+			break;
+		}
+		queryPosition++;
+	}
+	
+	[queries release];
+
+	// Ensure the string isn't empty.
+	// (We could also strip comments for this check, but that prevents use of conditional comments)
+	if ([[query stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
+		return nil;
+
+	// Return the located string.
+	return query;
+}
+
+
+#pragma mark -
+#pragma mark Accessors
+
+
 - (NSArray *)currentResult
 /*
 returns the current result (as shown in custom result view) as array, the first object containing the field names as array, the following objects containing the rows as array
@@ -384,7 +596,10 @@ returns the current result (as shown in custom result view) as array, the first 
 }
 
 
-//additional methods
+#pragma mark -
+#pragma mark Additional methods
+
+
 - (void)setConnection:(CMMCPConnection *)theConnection
 /*
 sets the connection (received from TableDocument) and makes things that have to be done only once 
@@ -403,14 +618,17 @@ sets the connection (received from TableDocument) and makes things that have to 
 		queryFavorites = [[NSMutableArray array] retain];
 	}
 
-//set up interface
+	// Set up the interface
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+	[textView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
 	[textView setContinuousSpellCheckingEnabled:NO];
+	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoindent"]?NSOnState:NSOffState)];
+	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
+	[textView setAutoindentIgnoresEnter:YES];
+	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutopair"]?NSOnState:NSOffState)];
+	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutopair"]];
+	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]?NSOnState:NSOffState)];
+	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{
@@ -447,11 +665,14 @@ inserts the query in the textView and performs query
 */
 {
 	[textView setString:query];
-	[self performQuery:self];
+	[self runAllQueries:self];
 }
 
 
-//tableView datasource methods
+#pragma mark -
+#pragma mark TableView datasource methods
+
+
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if ( aTableView == customQueryView ) {
@@ -668,7 +889,10 @@ opens sheet with value when double clicking on a field
 }
 
 
-//splitView delegate methods
+#pragma mark -
+#pragma mark SplitView delegate methods
+
+
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 /*
 tells the splitView that it can collapse views
@@ -702,7 +926,10 @@ defines min position of splitView
 }
 
 
-//textView delegate methods
+#pragma mark -
+#pragma mark TextView delegate methods
+
+
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 /*
 traps enter key and
@@ -714,7 +941,7 @@ traps enter key and
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
 				[[[NSApp currentEvent] characters] isEqualToString:@"\003"] )
 		{
-			[self performQuery:self];
+			[self runAllQueries:self];
 			return YES;
 		} else {
 			return NO;
@@ -732,6 +959,88 @@ traps enter key and
 }
 
 /*
+ * A notification posted when the selection changes within the text view;
+ * used to control the run-currentrun-selection button state and action.
+ */
+- (void)textViewDidChangeSelection:(NSNotification *)aNotification
+{
+
+	// Ensure that the notification is from the custom query text view
+	if ( [aNotification object] != textView ) return;
+
+	// If no text is selected, disable the button and action menu.
+	if ( [textView selectedRange].location == NSNotFound ) {
+		[runSelectionButton setEnabled:NO];
+		[runSelectionMenuItem setEnabled:NO];
+		return;
+	}
+
+	// If the current selection is a single caret position, update the button based on
+	// whether the caret is inside a valid query.
+	if ([textView selectedRange].length == 0) {
+		int selectionPosition = [textView selectedRange].location;
+		int movedRangeStart, movedRangeLength;
+		NSRange oldSelection;
+
+		// Retrieve the old selection position
+        [[[aNotification userInfo] objectForKey:@"NSOldSelectedCharacterRange"] getValue:&oldSelection];
+
+		// Only process the query text if the selection previously had length, or moved more than 100 characters,
+		// or the intervening space contained a semicolon, or typing has been performed with no current query.
+		// This adds more checks to every keypress, but ensures the majority of the actions don't incur a
+		// parsing overhead - which is cheap on small text strings but heavy of large queries.
+		movedRangeStart = (selectionPosition < oldSelection.location)?selectionPosition:oldSelection.location;
+		movedRangeLength = abs(selectionPosition - oldSelection.location);
+		if (oldSelection.length > 0
+			|| movedRangeLength > 100
+			|| oldSelection.location > [[textView string] length]
+			|| [[textView string] rangeOfString:@";" options:0 range:NSMakeRange(movedRangeStart, movedRangeLength)].location != NSNotFound
+			|| (![runSelectionButton isEnabled] && selectionPosition > oldSelection.location
+				&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length])
+			) {
+
+			[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
+
+			// If a valid query is present at the cursor position, enable the button
+			if ([self queryAtPosition:selectionPosition]) {
+				[runSelectionButton setEnabled:YES];
+				[runSelectionMenuItem setEnabled:YES];
+			} else {
+				[runSelectionButton setEnabled:NO];
+				[runSelectionMenuItem setEnabled:NO];
+			}
+		}
+
+	// For selection ranges, enable the button.
+	} else {
+		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
+		[runSelectionButton setEnabled:YES];		
+		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
+		[runSelectionMenuItem setEnabled:YES];		
+	}
+}
+
+
+/*
+ * Save the custom query editor font if it is changed.
+ */
+- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
+{
+
+	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
+	if (prefs) {
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+	}
+}
+
+
+
+#pragma mark -
+#pragma mark TableView notifications
+
+
+/*
  * Updates various interface elements based on the current table view selection.
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
@@ -744,10 +1053,15 @@ traps enter key and
 	}
 }
 
+
+#pragma mark -
+
+
 // Last but not least
 - (id)init;
 {
 	self = [super init];
+	prefs = nil;
 	return self;
 }
 

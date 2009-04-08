@@ -31,6 +31,8 @@
 #import "SPGrowlController.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
+#import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 @implementation TableDump
 
@@ -242,11 +244,11 @@
 		
 		// Export the full resultset for the currently selected table to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportTableContentAsCSV"] ) {
-		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv"];
+		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv" usingMulti:NO];
 		
 		// Export the full resultset for the currently selected table to a file in XML format
 	} else if ( [contextInfo isEqualToString:@"exportTableContentAsXML"] ) {
-		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml"];
+		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml" usingMulti:NO];
 		
 		// Export the current "browse" view to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportBrowseViewAsCSV"] ) {
@@ -428,6 +430,11 @@
 		for ( i = 0 ; i < [queries count] ; i++ ) {
 			[singleProgressBar setDoubleValue:((i+1)*100/[queries count])];
 			[singleProgressBar displayIfNeeded];
+			
+			// Skip blank or whitespace-only queries to avoid errors
+			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
+				continue;
+
 			[mySQLConnection queryString:[queries objectAtIndex:i]];
 			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
@@ -584,7 +591,7 @@
 						if ( [fNames length] )
 							[fNames appendString:@","];
 						
-						[fNames appendString:[NSString stringWithFormat:@"`%@`", [[tableSourceInstance fieldNames] objectAtIndex:i]]];
+						[fNames appendString:[[[tableSourceInstance fieldNames] objectAtIndex:i] backtickQuotedString]];
 					}
 				}
 				
@@ -613,8 +620,8 @@
 						}
 						
 						//perform query
-						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@) VALUES (%@)",
-													  [fieldMappingPopup titleOfSelectedItem],
+						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
+													  [[fieldMappingPopup titleOfSelectedItem] backtickQuotedString],
 													  fNames,
 													  fValues]];
 						
@@ -746,20 +753,21 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength;
+	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength, tableType;
 	CMMCPResult *queryResult;
-	NSString *tableName, *tableColumnTypeGrouping;
+	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
-	NSMutableString *headerString = [NSMutableString string];
+	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
 	NSMutableString *sqlString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSDictionary *tableDetails;
 	NSMutableArray *tableColumnNumericStatus;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	id createTableSyntax;
+	id createTableSyntax = nil;
+	BOOL previousConnectionEncodingViaLatin1;
 	
 	// Reset the interface
 	[errorsView setString:@""];
@@ -783,16 +791,38 @@
 	}
 	
 	// Add the dump header to the dump file.
-	[headerString setString:@"# Sequel Pro dump\n"];
-	[headerString appendString:[NSString stringWithFormat:@"# Version %@\n",
-								[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[headerString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
-	[headerString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
-								[tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-	[headerString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
-	[headerString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
-	[headerString appendString:@"# ************************************************************\n\n"];
-	[fileHandle writeData:[headerString dataUsingEncoding:connectionEncoding]];
+	[metaString setString:@"# Sequel Pro dump\n"];
+	[metaString appendString:[NSString stringWithFormat:@"# Version %@\n",
+							 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+	[metaString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
+	[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
+							 [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
+	[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
+	[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
+	[metaString appendString:@"# ************************************************************\n\n"];
+
+	// Add commands to store the client encodings used when importing and set to UTF8 to preserve data
+	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n"];
+	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n"];
+	[metaString appendString:@"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n"];
+	[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
+	
+	// Add commands to store and disable unique checks, foreign key checks, mode and notes where supported.
+	// Include trailing semicolons to ensure they're run individually.  Use mysql-version based comments.
+	if ( [addDropTableSwitch state] == NSOnState )
+		[metaString appendString:@"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n"];
+	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
+	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
+	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
+
+	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+
+	// Store the current connection encoding so it can be restored after the dump.
+	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	
+	// Set the connection to UTF8 to be able to export correctly.
+	[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 	
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
@@ -808,36 +838,48 @@
 		
 		// Add the name of table
 		[fileHandle writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName]
-							   dataUsingEncoding:connectionEncoding]];
+							   dataUsingEncoding:NSUTF8StringEncoding]];
 		
 		
+		// Determine whether this table is a table or a view via the create table command, and keep the create table syntax
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		if ( [queryResult numOfRows] ) {
+			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+			if ([tableDetails objectForKey:@"Create View"]) {
+				createTableSyntax = [[[tableDetails objectForKey:@"Create View"] copy] autorelease];
+				tableType = SP_TABLETYPE_VIEW;
+			} else {
+				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
+				tableType = SP_TABLETYPE_TABLE;
+			}
+			[tableDetails release];
+		}
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+			if ( [addErrorsSwitch state] == NSOnState ) {
+				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+			}
+		}
+
+
 		// Add a "drop table" command if specified in the export dialog
 		if ( [addDropTableSwitch state] == NSOnState )
-			[fileHandle writeData:[[NSString stringWithFormat:@"DROP TABLE IF EXISTS `%@`;\n\n", tableName]
-								   dataUsingEncoding:connectionEncoding]];
+			[fileHandle writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SP_TABLETYPE_TABLE)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
+								   dataUsingEncoding:NSUTF8StringEncoding]];
 		
+
 		// Add the create syntax for the table if specified in the export dialog
-		if ( [addCreateTableSwitch state] == NSOnState ) {
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE `%@`", tableName]];
-			if ( [queryResult numOfRows] ) {
-				createTableSyntax = [[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"];
-				if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
-					createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:connectionEncoding] autorelease];
-				}
-				[fileHandle writeData:[createTableSyntax dataUsingEncoding:connectionEncoding]];
-				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
+		if ( [addCreateTableSwitch state] == NSOnState && createTableSyntax) {
+			if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
+				createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:connectionEncoding] autorelease];
 			}
-			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-				if ( [addErrorsSwitch state] == NSOnState ) {
-					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:connectionEncoding]];
-				}
-			}
+			[fileHandle writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];
+			[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 		
 		// Add the table content if required
-		if ( [addTableContentSwitch state] == NSOnState ) {
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
+		if ( [addTableContentSwitch state] == NSOnState && tableType == SP_TABLETYPE_TABLE ) {
+			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
 			fieldNames = [queryResult fetchFieldNames];
 			rowCount = [queryResult numOfRows];
 			
@@ -868,9 +910,15 @@
 				[queryResult dataSeek:0];
 				queryLength = 0;
 				
+				// Lock the table for writing and disable keys if supported
+				[metaString setString:@""];
+				[metaString appendString:[NSString stringWithFormat:@"LOCK TABLES %@ WRITE;\n", [tableName backtickQuotedString]]];
+				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n", [tableName backtickQuotedString]]];
+				[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
+
 				// Construct the start of the insertion command
-				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO `%@` (`%@`)\nVALUES\n\t(",
-										tableName, [fieldNames componentsJoinedByString:@"`,`"]] dataUsingEncoding:connectionEncoding]];
+				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(",
+										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				for ( j = 0 ; j < rowCount ; j++ ) {
@@ -929,8 +977,8 @@
 						
 						// Add a new INSERT starter command every ~250k of data.
 						if (queryLength > 250000) {
-							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO `%@` (`%@`)\nVALUES\n\t(",
-													 tableName, [fieldNames componentsJoinedByString:@"`,`"]]];
+							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(",
+													 [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
 							queryLength = 0;
 						} else {
 							[sqlString appendString:@"),\n\t("];
@@ -940,25 +988,52 @@
 					}
 					
 					// Write this row to the file
-					[fileHandle writeData:[sqlString dataUsingEncoding:connectionEncoding]];
+					[fileHandle writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 				
 				// Complete the command
-				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:connectionEncoding]];
+				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+
+				// Unlock the table and re-enable keys if supported
+				[metaString setString:@""];
+				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\n", [tableName backtickQuotedString]]];
+				[metaString appendString:@"UNLOCK TABLES;\n"];
+				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 					if ( [addErrorsSwitch state] == NSOnState ) {
 						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-											   dataUsingEncoding:connectionEncoding]];
+											   dataUsingEncoding:NSUTF8StringEncoding]];
 					}
 				}
 			}
 		}
 		
 		// Add an additional separator between tables
-		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:connectionEncoding]];
+		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
+	
+	// Restore unique checks, foreign key checks, and other settings saved at the start
+	[metaString setString:@"\n\n\n"];
+	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
+	[metaString appendString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n"];
+	[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
+	if ( [addDropTableSwitch state] == NSOnState )
+		[metaString appendString:@"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n"];
+
+	// Restore the client encoding to the original encoding before import
+	[metaString appendString:@"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n"];
+	[metaString appendString:@"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n"];
+	[metaString appendString:@"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n"];
+
+	// Write footer-type information to the file
+	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+
+	// Restore the connection character set to pre-export details
+	[tableDocumentInstance
+	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
+	 reloadingViews:NO];
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
@@ -1490,14 +1565,14 @@
 		}
 	}
 	
-	return [self exportTables:selectedTables toFileHandle:fileHandle usingFormat:type];
+	return [self exportTables:selectedTables toFileHandle:fileHandle usingFormat:type usingMulti:YES];
 }
 
 /*
  Walks through the selected tables and exports them to a file handle.  The export type must be
  "csv" for CSV format, and "xml" for XML format.
  */
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
 {
 	int i, j;
 	CMMCPResult *queryResult;
@@ -1586,7 +1661,7 @@
 		}
 
 		// Retrieve all the content within this table
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `%@`", tableName]];
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
 		
 		// Note any errors during retrieval
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -1604,15 +1679,27 @@
 		
 		// Use the appropriate export method to write the data to file
 		if ( [type isEqualToString:@"csv"] ) {
-			[self writeCsvForArray:nil orQueryResult:queryResult
-					  toFileHandle:fileHandle
-				  outputFieldNames:[exportMultipleFieldNamesSwitch state]
-					  terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
-						enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
-						 escapedBy:[exportMultipleFieldsEscapedField stringValue]
-						  lineEnds:[exportMultipleLinesTerminatedField stringValue]
-				withNumericColumns:tableColumnNumericStatus
-						  silently:YES];
+			if (multi) {
+				[self writeCsvForArray:nil orQueryResult:queryResult
+						  toFileHandle:fileHandle
+					  outputFieldNames:[exportMultipleFieldNamesSwitch state]
+						  terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
+							enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
+							 escapedBy:[exportMultipleFieldsEscapedField stringValue]
+							  lineEnds:[exportMultipleLinesTerminatedField stringValue]
+					withNumericColumns:tableColumnNumericStatus
+							  silently:YES];
+			} else {
+				[self writeCsvForArray:nil orQueryResult:queryResult
+						  toFileHandle:fileHandle
+					  outputFieldNames:[exportFieldNamesSwitch state]
+						  terminatedBy:[exportFieldsTerminatedField stringValue]
+							enclosedBy:[exportFieldsEnclosedField stringValue]
+							 escapedBy:[exportFieldsEscapedField stringValue]
+							  lineEnds:[exportLinesTerminatedField stringValue]
+					withNumericColumns:tableColumnNumericStatus
+							  silently:YES];
+			}
 
 			// Add a spacer to the file
 			[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];

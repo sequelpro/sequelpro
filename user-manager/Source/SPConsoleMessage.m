@@ -1,8 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPConsoleMessage.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on Mar 12, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,18 +20,35 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import "SPConsoleMessage.h"
 
-@interface NSString (SPStringAdditions)
+@implementation SPConsoleMessage
 
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
+@synthesize isError;
+@synthesize messageDate;
+@synthesize message;
 
-- (NSString *)backtickQuotedString;
-- (NSArray *)lineRangesForRange:(NSRange)aRange;
++ (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)message date:(NSDate *)date
+{
+	return [[[SPConsoleMessage alloc] initWithMessage:message date:date] autorelease];
+}
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
+- (id)initWithMessage:(NSString *)consoleMessage date:(NSDate *)date
+{
+	if ((self = [super init])) {
+		[self setMessage:consoleMessage];
+		[self setMessageDate:date];
+	}
+	
+	return self;
+}
+
+- (void)dealloc
+{
+	[message release], message = nil;
+	[messageDate release], messageDate = nil;
+	
+	[super dealloc];
+}
 
 @end

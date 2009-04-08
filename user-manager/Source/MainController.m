@@ -33,6 +33,10 @@ opens the preferences window
 */
 - (IBAction)openPreferences:(id)sender
 {
+
+	// Synchronize the prefs to disk to pick up any changes made to favourites in connection sheets
+	[prefs synchronize];
+
 	//get favorites if they exist
 	[favorites release];
 	if ( [prefs objectForKey:@"favorites"] != nil ) {
@@ -627,6 +631,7 @@ checks for updates and opens download page in default browser
 		[prefs setObject:[encodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
 	
 		[prefs setObject:favorites forKey:@"favorites"];
+		[prefs synchronize];
 	}
 	return YES;
 }
@@ -663,8 +668,13 @@ checks for updates and opens download page in default browser
 							[NSNumber numberWithBool:YES], @"fetchRowCount",
 							[NSNumber numberWithBool:YES], @"limitRows",
 							[NSNumber numberWithInt:1000], @"limitRowsValue",
+							[NSNumber numberWithInt:10], @"connectionTimeout",
 							[NSNumber numberWithInt:60], @"keepAliveInterval",
 							[NSNumber numberWithInt:0], @"lastUsedVersion",
+							[NSNumber numberWithBool:YES], @"CustomQueryAutopair",
+							[NSNumber numberWithBool:YES], @"CustomQueryAutoindent",
+							[NSNumber numberWithBool:NO], @"CustomQueryAutouppercaseKeywords",
+							[NSArchiver archivedDataWithRootObject:[NSFont fontWithName:@"Monaco" size:10.0]], @"CustomQueryEditorFont",
 							nil]];
 
 	// For versions prior to r336, where column widths have been saved, walk through them and remove
