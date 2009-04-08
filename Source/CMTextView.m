@@ -171,6 +171,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if (autopairEnabled && characters && [characters length] == 1) {
 
+		delBackwardsWasPressed = NO;
+
 		NSString *matchingCharacter = nil;
 		BOOL processAutopair = NO, skipTypedLinkedCharacter = NO;
 		NSRange currentRange;
@@ -304,7 +306,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSRange currentRange = [self selectedRange];
 	if (currentRange.length == 0 && currentRange.location > 0 && [self areAdjacentCharsLinked])
 		[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
-
+	
+	// Avoid auto-uppercasing if resulting word would be a SQL keyword;
+	// e.g. type inta| and deleteBackward:
+	delBackwardsWasPressed = YES;
 	[super deleteBackward:sender];
 }
 
@@ -901,6 +906,7 @@ SYNTAX HIGHLIGHTING!
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
 	autouppercaseKeywordsEnabled = YES;
+	delBackwardsWasPressed = NO;
 }
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
@@ -982,7 +988,7 @@ SYNTAX HIGHLIGHTING!
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; // Check the end of the token
-		if (autouppercaseKeywordsEnabled 
+		if (autouppercaseKeywordsEnabled && !delBackwardsWasPressed
 			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
@@ -1002,7 +1008,7 @@ SYNTAX HIGHLIGHTING!
 					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
 				}
 			}
-		
+
 		[textStore addAttribute: NSForegroundColorAttributeName
 						  value: tokenColor
 						  range: tokenRange ];
