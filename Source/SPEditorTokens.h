@@ -16,3 +16,4 @@
 #define SPT_WORD                 7
 #define SPT_OTHER                8
 #define SPT_NUMERIC              9
+#define SPT_VARIABLE            10

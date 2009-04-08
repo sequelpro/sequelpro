@@ -925,6 +925,7 @@ SYNTAX HIGHLIGHTING!
 	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
 	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
 	NSColor *numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
+	NSColor *variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
 
 	NSColor *tokenColor;
 
@@ -962,6 +963,9 @@ SYNTAX HIGHLIGHTING!
 				break;
 			case SPT_COMMENT:
 			    tokenColor = commentColor;
+			    break;
+			case SPT_VARIABLE:
+			    tokenColor = variableColor;
 			    break;
 			default:
 			    tokenColor = nil;
