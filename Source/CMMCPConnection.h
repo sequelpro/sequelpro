@@ -30,6 +30,7 @@
 
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
+- (BOOL)connectionEncodingViaLatin1;
 
 @end
 
