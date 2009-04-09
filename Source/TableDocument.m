@@ -1814,7 +1814,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 }
 
 
-// TableView datasource methods
+#pragma mark TableView datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
@@ -1835,6 +1835,37 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	}
 	
 	return theValue;
+}
+
+/**
+ * Although the connection sheet tableview uses bindings to display the favourites we implement this method in
+ * order to update the keychain associated with favourites that are renamed. Its not the best approach, but it works.
+ */
+- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
+	
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNamebBeingChanged]
+									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+	
+	if ( ![[passwordField stringValue] isEqualToString:@""] )
+		[keyChainInstance addPassword:[passwordField stringValue]
+							  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
+							  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+	
+	favoriteNamebBeingChanged = nil;
+}
+
+/**
+ * We implement this method so we can get the name of the favourtie before its renamed. We need the name so we
+ * look it up in the keychain and update its name, which is done in the above method. This is obviously not the
+ * best approach to doing this as it means we need an ivar just to track the favourite that is about to be renamed. 
+ */
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	favoriteNamebBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	
+	return YES;
 }
 
 - (IBAction)terminate:(id)sender
