@@ -501,7 +501,6 @@
 	[toolbar setAllowsUserCustomization:NO];
 	
 	[preferencesWindow setToolbar:toolbar];
-	[preferencesWindow setContentView:blankView];
 	[preferencesWindow setShowsToolbarButton:NO];
 	
 	[self displayGeneralPreferences:nil];
@@ -514,8 +513,19 @@
 // -------------------------------------------------------------------------------
 - (void)_resizeWindowForContentView:(NSView *)view
 {
-	[preferencesWindow setContentView:blankView];
-	[preferencesWindow resizeForContentView:view titleBarVisible:YES];
+	// remove all current views
+  NSEnumerator *en = [[[preferencesWindow contentView] subviews] objectEnumerator];
+  NSView *subview;
+  while (subview = [en nextObject]) {
+    [subview removeFromSuperview];
+  }
+  
+  // resize window
+  [preferencesWindow resizeForContentView:view titleBarVisible:YES];
+  
+  // add view
+  [[preferencesWindow contentView] addSubview:view];
+  [view setFrameOrigin:NSMakePoint(0, 0)];
 }
 
 

@@ -35,7 +35,6 @@
 	IBOutlet NSView *favoritesView;
 	IBOutlet NSView *autoUpdateView;
 	IBOutlet NSView *networkView;
-	IBOutlet NSView *blankView;
 	
 	IBOutlet NSPopUpButton *defaultFavoritePopup;
 	

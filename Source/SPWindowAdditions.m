@@ -70,9 +70,6 @@
 	frame.size.width  = viewSize.width; 
 	
 	[self setFrame:frame display:YES animate:YES];
-	
-	[[self contentView] retain];
-	[self setContentView:view];
 }
 
 @end
