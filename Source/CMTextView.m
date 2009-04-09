@@ -166,7 +166,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if(curFlags==(NSControlKeyMask))
 		{
 			[self copyAsRTF];
-			NSLog(@"hallo");
 			return;
 		}
 
