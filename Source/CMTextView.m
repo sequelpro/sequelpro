@@ -166,6 +166,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if(curFlags==(NSControlKeyMask))
 		{
 			[self copyAsRTF];
+			NSLog(@"hallo");
 			return;
 		}
 
@@ -296,6 +297,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
+	
 }
 
 
@@ -310,8 +312,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	
 	// Avoid auto-uppercasing if resulting word would be a SQL keyword;
 	// e.g. type inta| and deleteBackward:
-	delBackwardsWasPressed = YES;
+	delBackwardsWasPressed = YES;	
+
 	[super deleteBackward:sender];
+
 }
 
 
@@ -487,13 +491,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 
 	// Check if the caret is inside quotes "" or ''; if so 
-	// return the normal word suggestion due to the spelling's language
+	// return the normal word suggestion due to the spelling's settings
 	if([[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
-	{
-		NSSpellChecker* checker = [NSSpellChecker sharedSpellChecker];
-		NSArray* list = [checker completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
-		return list;
-	}
+		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
 
 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!"];
 	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
@@ -520,7 +520,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
 	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
 
-
 	unsigned i, insindex;
 	
 	insindex = 0;
@@ -529,17 +528,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		NSString* obj = [matchingCompletions objectAtIndex:i];
 		if(![compl containsObject:obj])
 			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
-			{
 				// Matches case --> Insert at beginning of completion list
 				[compl insertObject:obj atIndex:insindex++];
-			}
 			else
-			{
 				// Not matching case --> Insert at end of completion list
 				[compl addObject:obj];
-			}
 	}
-	
+
 	return [compl autorelease];
 }
 
@@ -1321,7 +1316,8 @@ SYNTAX HIGHLIGHTING!
 		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
-		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; // Check the end of the token
+		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; 
+		// Check the end of the token
 		if (autouppercaseKeywordsEnabled && !delBackwardsWasPressed
 			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
