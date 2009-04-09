@@ -26,11 +26,9 @@ static SPGrowlController *sharedGrowlController = nil;
 
 @implementation SPGrowlController
 
-// -------------------------------------------------------------------------------
-// sharedGrowlController
-//
-// Returns the shared Growl controller.
-// -------------------------------------------------------------------------------
+/*
+ * Returns the shared Growl controller.
+ */
 + (SPGrowlController *)sharedGrowlController
 {
     @synchronized(self) {
@@ -42,9 +40,6 @@ static SPGrowlController *sharedGrowlController = nil;
     return sharedGrowlController;
 }
 
-// -------------------------------------------------------------------------------
-// allocWithZone:
-// -------------------------------------------------------------------------------
 + (id)allocWithZone:(NSZone *)zone
 {    
     @synchronized(self) {
@@ -58,9 +53,6 @@ static SPGrowlController *sharedGrowlController = nil;
     return nil; // On subsequent allocation attempts return nil
 }
 
-// -------------------------------------------------------------------------------
-// init
-// -------------------------------------------------------------------------------
 - (id)init
 {
     if (self = [super init]) {
@@ -70,10 +62,9 @@ static SPGrowlController *sharedGrowlController = nil;
     return self;
 }
 
-// -------------------------------------------------------------------------------
-// The following base protocol methods are implemented to ensure the singleton 
-// status of this class.
-// -------------------------------------------------------------------------------
+/*
+ * The following base protocol methods are implemented to ensure the singleton status of this class.
+ */
 
 - (id)copyWithZone:(NSZone *)zone { return self; }
 
@@ -85,11 +76,9 @@ static SPGrowlController *sharedGrowlController = nil;
 
 - (void)release { }
 
-// -------------------------------------------------------------------------------
-// notifyWithTitle:description:notificationName:
-//
-// Posts a Growl notification using the supplied details and default values.
-// -------------------------------------------------------------------------------
+/*
+ * Posts a Growl notification using the supplied details and default values.
+ */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name
 {
     // Post notification
@@ -102,12 +91,9 @@ static SPGrowlController *sharedGrowlController = nil;
                                clickContext:nil];
 }
      
-// -------------------------------------------------------------------------------
-// notifyWithTitle:description:notificationName:
-//
-// Posts a Growl notification using the supplied details and effectively ignoring 
-// the default values.
-// -------------------------------------------------------------------------------
+/*
+ * Posts a Growl notification using the supplied details and effectively ignoring the default values.
+ */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
 {
     // Post notification

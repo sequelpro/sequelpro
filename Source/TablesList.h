@@ -31,8 +31,7 @@ enum sp_table_types
 	SP_TABLETYPE_VIEW = 1
 };
 
-@class CMMCResult;
-@class CMMCPConnection;
+@class CMMCResult, CMMCPConnection;
 
 @interface TablesList : NSObject {
 
@@ -50,32 +49,35 @@ enum sp_table_types
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableContentSwitch;
 	IBOutlet id tabView;
+	IBOutlet id tableSheet;
+	IBOutlet id tableNameField;
+	IBOutlet id tableEncodingButton;
+	IBOutlet id addTableButton;
 
 	CMMCPConnection *mySQLConnection;
+	
 	NSMutableArray *tables;
 	NSMutableArray *tableTypes;
-//	NSUserDefaults *prefs;
+
 	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
 }
 
-//IBAction methods
+// IBAction methods
 - (IBAction)updateTables:(id)sender;
 - (IBAction)addTable:(id)sender;
+- (IBAction)closeTableSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
 - (IBAction)copyTable:(id)sender;
 
-//alert sheet methods
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
-
-//copyTableSheet methods
+// copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;
 
-//additional methods
+// Additional methods
 - (void)removeTable;
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 
-//getter methods
+// Getters
 - (NSString *)tableName;
 - (int)tableType;
 - (NSArray *)tables;
@@ -84,22 +86,7 @@ enum sp_table_types
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;
 
-// Setter methods
+// Setters
 - (void)setContentRequiresReload:(BOOL)reload;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-
-//tableView delegate methods
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 
 @end

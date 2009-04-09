@@ -67,6 +67,10 @@ static void forcePingTimeout(int signalNumber);
 	connectionPort = 0;
 	connectionSocket = nil;
 	keepAliveTimer = nil;
+	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"connectionTimeout"] intValue];
+	if (!connectionTimeout) connectionTimeout = 10;
+	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue];
+	if (!keepAliveInterval) keepAliveInterval = 0;
 	lastKeepAliveSuccess = nil;
 	lastQueryExecutionTime = 0;
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
@@ -93,7 +97,6 @@ static void forcePingTimeout(int signalNumber);
 	if (socket) connectionSocket = [[NSString alloc] initWithString:socket];
 
 	if (mConnection != NULL) {
-		unsigned int connectionTimeout = SP_CONNECTION_TIMEOUT;
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 	}
 
@@ -133,6 +136,7 @@ static void forcePingTimeout(int signalNumber);
 - (BOOL) reconnect
 {
 	NSString *currentEncoding = nil;
+	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
 
 	// Store the current database and encoding so they can be re-set if reconnection was successful
@@ -141,6 +145,9 @@ static void forcePingTimeout(int signalNumber);
 	}
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	}
+	if (delegate && [delegate boolForKey:@"_encodingViaLatin1"]) {
+		currentEncodingUsesLatin1Transport = [delegate boolForKey:@"_encodingViaLatin1"];
 	}
 
 	// Close the connection if it exists.
@@ -158,7 +165,6 @@ static void forcePingTimeout(int signalNumber);
 	if (mConnection != NULL) {
 
 		// Set a connection timeout for the new connection
-		unsigned int connectionTimeout = SP_CONNECTION_TIMEOUT;
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 
 		// Attempt to reestablish the connection - using own method so everything gets set up as standard.
@@ -174,6 +180,9 @@ static void forcePingTimeout(int signalNumber);
 		if (currentEncoding) {
 			[self queryString:[NSString stringWithFormat:@"SET NAMES '%@'", currentEncoding]];
 			[self setEncoding:[CMMCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
+			if (currentEncodingUsesLatin1Transport) {
+				[self queryString:@"SET CHARACTER_SET_RESULTS=latin1"];			
+			}
 		}
 	} else if (parentWindow) {
 
@@ -336,15 +345,25 @@ static void forcePingTimeout(int signalNumber);
 
 
 /*
+ * Override the standard queryString: method to default to the connection encoding, as before,
+ * before pssing on to queryString: usingEncoding:.
+ */
+- (CMMCPResult *)queryString:(NSString *) query
+{
+	return [self queryString:query usingEncoding:mEncoding];
+}
+
+
+/*
  * Modified version of queryString to be used in Sequel Pro.
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either the query has been executed and the result can
  * be returned or the connection and document have been closed.
  */
-- (CMMCPResult *)queryString:(NSString *) query
+- (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult	*theResult;
-	const char	*theCQuery = [self cStringFromString:query];
+	const char	*theCQuery;
 	int			theQueryCode;
 	NSDate		*queryStartDate;
 
@@ -352,6 +371,9 @@ static void forcePingTimeout(int signalNumber);
 	if (!mConnected) return nil;
 
 	[self stopKeepAliveTimer];
+
+	// Generate the cString as appropriate
+	theCQuery = [self cStringFromString:query usingEncoding:encoding];
 
 	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
 	// has been requested - in which case return nil
@@ -542,7 +564,7 @@ static void forcePingTimeout(int signalNumber);
 	sigemptyset(&timeoutAction.sa_mask);
 	timeoutAction.sa_flags = 0;
 	sigaction(SIGALRM, &timeoutAction, NULL);
-	alarm(SP_CONNECTION_TIMEOUT+1);
+	alarm(connectionTimeout+1);
 
 	// Set up a "restore point", returning 0; if longjmp is used later with this reference, execution
 	// jumps back to this point and returns a nonzero value, so this function evaluates to false when initially
@@ -587,28 +609,11 @@ static void forcePingTimeout(int signalNumber)
 	longjmp(pingTimeoutJumpLocation, 1);
 }
 
-
-/*
- * Returns the keepalive interval, or 0 if keepalive should be disabled.
- * Sequel Pro draws this from the preferences with a default of 60 secs.
- */
-- (double) keepAliveInterval
-{
-	double interval;
-
-	interval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue];
-	if (!interval) interval = 0;
-	
-	return interval;
-}
-
 /*
  * Restarts a keepalive to fire in the future.
  */
 - (void) startKeepAliveTimerResettingState:(BOOL)resetState
 {
-	double interval;
-
 	if (keepAliveTimer) [self stopKeepAliveTimer];
 	if (!mConnected) return;
 
@@ -617,10 +622,9 @@ static void forcePingTimeout(int signalNumber)
 		lastKeepAliveSuccess = nil;
 	}
 
-	interval = [self keepAliveInterval];
-	if (interval) {
+	if (keepAliveInterval) {
 		keepAliveTimer = [NSTimer
-							scheduledTimerWithTimeInterval:interval
+							scheduledTimerWithTimeInterval:keepAliveInterval
 							target:self
 							selector:@selector(keepAlive:)
 							userInfo:nil
@@ -652,7 +656,7 @@ static void forcePingTimeout(int signalNumber)
 	// cut but mysql doesn't pick up on the fact - see comment for pingConnection above.  The same
 	// forced-timeout approach cannot be used here on a background thread.
 	// When the connection is disconnected in code, these 5 "hanging" threads are automatically cleaned.
-	if (lastKeepAliveSuccess && [lastKeepAliveSuccess timeIntervalSinceNow] < -5 * [self keepAliveInterval]) return;
+	if (lastKeepAliveSuccess && [lastKeepAliveSuccess timeIntervalSinceNow] < -5 * keepAliveInterval) return;
 
 	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
 	[self startKeepAliveTimerResettingState:NO];
@@ -670,5 +674,24 @@ static void forcePingTimeout(int signalNumber)
 		lastKeepAliveSuccess = nil;
 	}
 	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+}
+
+
+/*
+ * Modified version of the original to support a supplied encoding.
+ * For internal use only. Transforms a NSString to a C type string (ending with \0).
+ * Lossy conversions are enabled.
+ */
+- (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding
+{
+	NSMutableData	*theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	return (const char *)[theData bytes];
 }
 @end

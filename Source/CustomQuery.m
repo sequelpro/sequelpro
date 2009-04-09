@@ -56,13 +56,12 @@
 
 	[self performQueries:queries];
 
-	// Select the text of the query textView for re-editing and set standard font
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView insertText:@""];
+
+	// Select the text of the query textView for re-editing
 	[textView selectAll:self];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
 }
 
 /*
@@ -92,6 +91,12 @@
 		[queryParser release];
 	}
 	
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	// and preserve the selection
+	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView insertText:@""];
+	[textView setSelectedRange:selectedRange];
+
 	[self performQueries:queries];
 }
 
@@ -133,7 +138,11 @@ insert the choosen favorite query in the query textView or save query to favorit
 		[queryFavoritesSheet orderOut:nil];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] != 3) {
 //choose favorite
+		// Register the next action for undo
+		[textView shouldChangeTextInRange:[textView selectedRange] replacementString:[queryFavoritesButton titleOfSelectedItem]];
 		[textView replaceCharactersInRange:[textView selectedRange] withString:[queryFavoritesButton titleOfSelectedItem]];
+		// invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+		[textView insertText:@""];
 	}
 }
 
@@ -142,7 +151,11 @@ insert the choosen favorite query in the query textView or save query to favorit
 insert the choosen history query in the query textView
 */
 {
+	// Register the next action for undo
+	[textView shouldChangeTextInRange:NSMakeRange(0,[[textView string] length]) replacementString:[queryHistoryButton titleOfSelectedItem]];
 	[textView setString:[queryHistoryButton titleOfSelectedItem]];
+	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+	[textView insertText:@""];
 	[textView selectAll:self];
 }
 
@@ -152,6 +165,70 @@ closes the sheet
 */
 {
 	[NSApp stopModal];
+}
+
+
+/*
+ * Perform simple actions (which don't require their own method), triggered by selecting the appropriate menu item
+ * in the "gear" action menu displayed beneath the cusotm query view.
+ */
+- (IBAction)gearMenuItemSelected:(id)sender
+{
+	// "Clear History" menu item - clear query history
+	if (sender == clearHistoryMenuItem) {
+		[queryHistoryButton removeAllItems];
+		[queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
+		[prefs setObject:[NSArray array] forKey:@"queryHistory"];
+	}
+
+	// "Shift Right" menu item - indent the selection with an additional tab.
+	if (sender == shiftRightMenuItem) {
+		[textView shiftSelectionRight];
+	}
+
+	// "Shift Left" menu item - un-indent the selection by one tab if possible.
+	if (sender == shiftLeftMenuItem) {
+		[textView shiftSelectionLeft];
+	}
+
+	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
+	// on normal autocomplete usage.
+	if (sender == completionListMenuItem) {
+		[textView complete:self];
+	}
+
+	// "Editor font..." menu item to bring up the font panel
+	if (sender == editorFontMenuItem) {
+		[[NSFontPanel sharedFontPanel] setPanelFont:[textView font] isMultiple:NO];
+		[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
+	}
+
+	// "Indent new lines" toggle
+	if (sender == autoindentMenuItem) {
+		BOOL enableAutoindent = ([autoindentMenuItem state] == NSOffState);
+		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoindent"];
+		[prefs synchronize];
+		[autoindentMenuItem setState:enableAutoindent?NSOnState:NSOffState];
+		[textView setAutoindent:enableAutoindent];
+	}
+
+	// "Auto-pair characters" toggle
+	if (sender == autopairMenuItem) {
+		BOOL enableAutopair = ([autopairMenuItem state] == NSOffState);
+		[prefs setBool:enableAutopair forKey:@"CustomQueryAutopair"];
+		[prefs synchronize];
+		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
+		[textView setAutopair:enableAutopair];
+	}
+
+	// "Auto-uppercase keywords" toggle
+	if (sender == autouppercaseKeywordsMenuItem) {
+		BOOL enableAutouppercaseKeywords = ([autouppercaseKeywordsMenuItem state] == NSOffState);
+		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutouppercaseKeywords"];
+		[prefs synchronize];
+		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
+		[textView setAutouppercaseKeywords:enableAutouppercaseKeywords];
+	}
 }
 
 
@@ -278,6 +355,17 @@ sets the tableView columns corresponding to the mysql-result
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
+	// Reset the current table view as necessary to avoid redraw and reload issues.
+	// Restore the view position to the top left to be within the results for all datasets.
+	[customQueryView scrollRowToVisible:0];
+	[customQueryView scrollColumnToVisible:0];
+
+	// Remove all the columns
+	theColumns = [customQueryView tableColumns];
+	while ([theColumns count]) {
+		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
+	}
+
 	// Perform the supplied queries in series
 	for ( i = 0 ; i < [queries count] ; i++ ) {
 	
@@ -373,25 +461,16 @@ sets the tableView columns corresponding to the mysql-result
             
         }
 	}
-    
-	if ( !theResult || ![theResult numOfRows] ) {
-//no rows in result
-	//free tableView
-		theColumns = [customQueryView tableColumns];
-		while ([theColumns count]) {
-			[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
-		}
-//		theCol = [[NSTableColumn alloc] initWithIdentifier:@""];
-//		[[theCol headerCell] setStringValue:@""];
-//		[customQueryView addTableColumn:theCol];
-//		[customQueryView sizeLastColumnToFit];
-		[customQueryView reloadData];
-//		[theCol release];
 
-		//query finished
+
+	// If no results were returned, redraw the empty table and post notifications before returning.
+	if ( !theResult || ![theResult numOfRows] ) {
+		[customQueryView reloadData];
+
+		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
-		// Query finished Growl notification        
+		// Perform the Growl notification for query completion
         [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
                                                   notificationName:@"Query Finished"];
@@ -399,16 +478,8 @@ sets the tableView columns corresponding to the mysql-result
 		return;
 	}
 
-//set columns
-//remove all columns
-	theColumns = [customQueryView tableColumns];
-//	i=0;
-	while ([theColumns count]) {
-		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
-//		i++;
-	}
 
-//add columns, corresponding to the query result
+	// Otherwise add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
 	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
@@ -547,14 +618,17 @@ sets the connection (received from TableDocument) and makes things that have to 
 		queryFavorites = [[NSMutableArray array] retain];
 	}
 
-//set up interface
+	// Set up the interface
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
-		[textView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[textView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+	[textView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
 	[textView setContinuousSpellCheckingEnabled:NO];
+	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoindent"]?NSOnState:NSOffState)];
+	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
+	[textView setAutoindentIgnoresEnter:YES];
+	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutopair"]?NSOnState:NSOffState)];
+	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutopair"]];
+	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]?NSOnState:NSOffState)];
+	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{
@@ -894,9 +968,10 @@ traps enter key and
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	// If no text is selected, disable the button.
+	// If no text is selected, disable the button and action menu.
 	if ( [textView selectedRange].location == NSNotFound ) {
 		[runSelectionButton setEnabled:NO];
+		[runSelectionMenuItem setEnabled:NO];
 		return;
 	}
 
@@ -925,12 +1000,15 @@ traps enter key and
 			) {
 
 			[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
 
 			// If a valid query is present at the cursor position, enable the button
 			if ([self queryAtPosition:selectionPosition]) {
 				[runSelectionButton setEnabled:YES];
+				[runSelectionMenuItem setEnabled:YES];
 			} else {
 				[runSelectionButton setEnabled:NO];
+				[runSelectionMenuItem setEnabled:NO];
 			}
 		}
 
@@ -938,8 +1016,24 @@ traps enter key and
 	} else {
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
 		[runSelectionButton setEnabled:YES];		
+		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
+		[runSelectionMenuItem setEnabled:YES];		
 	}
 }
+
+
+/*
+ * Save the custom query editor font if it is changed.
+ */
+- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
+{
+
+	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
+	if (prefs) {
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+	}
+}
+
 
 
 #pragma mark -
@@ -967,6 +1061,7 @@ traps enter key and
 - (id)init;
 {
 	self = [super init];
+	prefs = nil;
 	return self;
 }
 
