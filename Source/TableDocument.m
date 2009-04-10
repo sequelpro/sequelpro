@@ -1848,10 +1848,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNamebBeingChanged]
 									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
-	if ( ![[passwordField stringValue] isEqualToString:@""] )
-		[keyChainInstance addPassword:[passwordField stringValue]
-							  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
-							  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+	[keyChainInstance addPassword:[passwordField stringValue]
+						  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
+						  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
 	favoriteNamebBeingChanged = nil;
 }
