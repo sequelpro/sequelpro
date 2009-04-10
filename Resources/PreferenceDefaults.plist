@@ -28,6 +28,8 @@
 	<true/>
 	<key>UseKeepAlive</key>
 	<true/>
+	<key>KeepAliveInterval</key>
+	<integer>0</integer>
 	<key>UseMonospacedFonts</key>
 	<false/>
 </dict>

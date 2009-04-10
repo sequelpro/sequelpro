@@ -656,7 +656,7 @@
 
 		// If encoding is set to Autodetect, update the connection character set encoding
 		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
 			if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
 				[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
 				[tableDataInstance resetAllData];

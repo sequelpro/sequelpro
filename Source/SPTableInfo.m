@@ -155,7 +155,7 @@
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
+		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];

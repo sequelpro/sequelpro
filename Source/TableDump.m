@@ -747,7 +747,7 @@
 	[fieldMappingButtonOptions setArray:[importArray objectAtIndex:currentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"nullValue"]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"NullValue"]]];
 		} else {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [fieldMappingButtonOptions objectAtIndex:i]]];
 		}
@@ -1102,7 +1102,7 @@
 	NSMutableString *csvCell = [NSMutableString string];
 	NSMutableArray *csvRow = [NSMutableArray array];
 	NSMutableString *csvString = [NSMutableString string];
-	NSString *nullString = [NSString stringWithString:[prefs objectForKey:@"nullValue"]];
+	NSString *nullString = [NSString stringWithString:[prefs objectForKey:@"NullValue"]];
 	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString;
 	NSString *dataConversionString;
 	NSScanner *csvNumericTester;
@@ -1393,14 +1393,14 @@
 			fieldCount = [tempRowArray count];
 		} else {
 			while ( [tempRowArray count] < fieldCount ) {
-				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"nullValue"]]];
+				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"NullValue"]]];
 			}
 		}
 		for ( i = 0 ; i < [tempRowArray count] ; i++ ) {
 			
 			// Insert a NSNull object if the cell contains an unescaped null character or an unescaped string
 			// which matches the NULL string set in preferences.
-			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
+			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"NullValue"]] ) {
 				[tempRowArray replaceObjectAtIndex:i withObject:[NSNull null]];
 				
 			} else {
@@ -1901,7 +1901,7 @@
 	[[exportDumpTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleCSVTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleXMLTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
@@ -1942,7 +1942,7 @@
    forTableColumn:(NSTableColumn *)aTableColumn 
 			  row:(int)rowIndex
 {
-	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
+	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"UseMonospacedFonts"] ) {
 		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	}
 	else

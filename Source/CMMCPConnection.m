@@ -67,9 +67,9 @@ static void forcePingTimeout(int signalNumber);
 	connectionPort = 0;
 	connectionSocket = nil;
 	keepAliveTimer = nil;
-	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"connectionTimeout"] intValue];
+	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
-	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue];
+	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
 	if (!keepAliveInterval) keepAliveInterval = 0;
 	lastKeepAliveSuccess = nil;
 	lastQueryExecutionTime = 0;
@@ -146,8 +146,8 @@ static void forcePingTimeout(int signalNumber);
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
 	}
-	if (delegate && [delegate boolForKey:@"_encodingViaLatin1"]) {
-		currentEncodingUsesLatin1Transport = [delegate boolForKey:@"_encodingViaLatin1"];
+	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1];
 	}
 
 	// Close the connection if it exists.
@@ -178,10 +178,10 @@ static void forcePingTimeout(int signalNumber);
 			[self selectDB:currentDatabase];
 		}
 		if (currentEncoding) {
-			[self queryString:[NSString stringWithFormat:@"SET NAMES '%@'", currentEncoding]];
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
 			[self setEncoding:[CMMCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
 			if (currentEncodingUsesLatin1Transport) {
-				[self queryString:@"SET CHARACTER_SET_RESULTS=latin1"];			
+				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
 			}
 		}
 	} else if (parentWindow) {
@@ -444,9 +444,14 @@ static void forcePingTimeout(int signalNumber);
  */
 - (BOOL)checkConnection
 {
+	unsigned long threadid;
+
 	if (!mConnected) return NO;
 
 	BOOL connectionVerified = FALSE;
+
+	// Get the current thread ID for this connection
+	threadid = mConnection->thread_id;
 
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
@@ -473,6 +478,16 @@ static void forcePingTimeout(int signalNumber);
 			// "Retry" has been selected - return a recursive call.
 			default:
 				return [self checkConnection];
+		}
+
+	// If a connection exists, check whether the thread id differs; if so, the connection has
+	// probably been reestablished and we need to reset the connection encoding
+	} else if (threadid != mConnection->thread_id) {
+		if (delegate && [delegate valueForKey:@"_encoding"]) {
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+			if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+				if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+			}
 		}
 	}
 

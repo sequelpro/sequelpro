@@ -370,7 +370,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage" id="450985937">
+												<object class="NSCustomResource" key="NSNormalImage">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -385,7 +385,10 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<reference key="NSImage" ref="450985937"/>
+													<object class="NSCustomResource" key="NSImage" id="511277763">
+														<string key="NSClassName">NSImage</string>
+														<string key="NSResourceName">button_action</string>
+													</object>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2927,7 +2930,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="450985937"/>
+																					<reference key="NSNormalImage" ref="511277763"/>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2939,7 +2942,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="450985937"/>
+																						<reference key="NSImage" ref="511277763"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -4110,6 +4113,7 @@
 													</object>
 													<string key="NSFrame">{{1, 17}, {213, 157}}</string>
 													<reference key="NSSuperview" ref="112292194"/>
+													<reference key="NSNextKeyView" ref="158332213"/>
 													<reference key="NSDocView" ref="158332213"/>
 													<reference key="NSBGColor" ref="1024678221"/>
 													<int key="NScvFlags">4</int>
@@ -4142,6 +4146,7 @@
 													</object>
 													<string key="NSFrame">{{1, 0}, {213, 17}}</string>
 													<reference key="NSSuperview" ref="112292194"/>
+													<reference key="NSNextKeyView" ref="975843240"/>
 													<reference key="NSDocView" ref="975843240"/>
 													<reference key="NSBGColor" ref="1024678221"/>
 													<int key="NScvFlags">4</int>
@@ -4150,6 +4155,7 @@
 											</object>
 											<string key="NSFrame">{{12, 34}, {215, 175}}</string>
 											<reference key="NSSuperview" ref="781284031"/>
+											<reference key="NSNextKeyView" ref="131927425"/>
 											<int key="NSsFlags">562</int>
 											<reference key="NSVScroller" ref="785468991"/>
 											<reference key="NSHScroller" ref="710690013"/>
@@ -9948,7 +9954,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 			<object class="NSCustomObject" id="1006422530">
 				<string key="NSClassName">SPTableData</string>
 			</object>
-			<object class="NSCustomObject" id="302807618">
+			<object class="NSCustomObject" id="4626">
 				<string key="NSClassName">SPExportController</string>
 			</object>
 		</object>
@@ -12506,10 +12512,18 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">tableWindow</string>
-						<reference key="source" ref="302807618"/>
+						<reference key="source" ref="4626"/>
 						<reference key="destination" ref="207157706"/>
 					</object>
 					<int key="connectionID">5378</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">spExportControllerInstance</string>
+						<reference key="source" ref="427689665"/>
+						<reference key="destination" ref="4626"/>
+					</object>
+					<int key="connectionID">5379</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -17743,7 +17757,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5377</int>
-						<reference key="object" ref="302807618"/>
+						<reference key="object" ref="4626"/>
 						<reference key="parent" ref="1043842561"/>
 						<string key="objectName">SPExportController</string>
 					</object>
@@ -20744,7 +20758,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5378</int>
+			<int key="maxID">5379</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -21001,6 +21015,13 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPWindowAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">SPExportController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -21082,8 +21103,8 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBUserSource</string>
-						<string key="minorKey"/>
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPExportController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -21345,6 +21366,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>queryProgressBar</string>
 							<string>sidebarGrabber</string>
 							<string>socketField</string>
+							<string>spExportControllerInstance</string>
 							<string>syntaxView</string>
 							<string>syntaxViewContent</string>
 							<string>tableContentInstance</string>
@@ -21377,6 +21399,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSArrayController</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -21458,9 +21481,13 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>reloadTables:</string>
 							<string>selectTables:</string>
 							<string>stepRow:</string>
+							<string>switchInput:</string>
+							<string>switchTab:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -21499,6 +21526,10 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>exportMultipleLinesTerminatedField</string>
 							<string>exportMultipleXMLTableView</string>
 							<string>exportMultipleXMLView</string>
+							<string>exportTabBar</string>
+							<string>exportTableList</string>
+							<string>exportToolbar</string>
+							<string>exportWindow</string>
 							<string>fieldMappingPopup</string>
 							<string>fieldMappingSheet</string>
 							<string>fieldMappingTableView</string>
@@ -21526,6 +21557,10 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

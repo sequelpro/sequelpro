@@ -143,11 +143,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
    forTableColumn:(NSTableColumn *)aTableColumn 
 			  row:(int)rowIndex
 {
-//	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
-//		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-//	} else {
 		[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-//	}
 }
 
 #pragma mark -

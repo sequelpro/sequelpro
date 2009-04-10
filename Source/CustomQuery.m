@@ -486,7 +486,7 @@ sets the tableView columns corresponding to the mysql-result
 		[theCol setResizingMask:NSTableColumnUserResizingMask];
 		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		[dataCell setEditable:NO];
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -632,7 +632,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[[column dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[[column dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -708,7 +708,7 @@ inserts the query in the textView and performs query
 			return [tmp autorelease];
 		}
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] )
-			return [prefs objectForKey:@"nullValue"];
+			return [prefs objectForKey:@"NullValue"];
 	
 		return [theRow objectAtIndex:[theIdentifier intValue]];
 	} else if ( aTableView == queryFavoritesView ) {
@@ -867,7 +867,7 @@ opens sheet with value when double clicking on a field
 			}
 			[theValue autorelease];
 		} else if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] ) {
-			theValue = [prefs objectForKey:@"nullValue"];
+			theValue = [prefs objectForKey:@"NullValue"];
 		} else {
 			theValue = [theRow objectAtIndex:[theIdentifier intValue]];
 		}
