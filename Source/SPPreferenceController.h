@@ -41,6 +41,7 @@
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSArrayController *favoritesController;
 	
+	IBOutlet NSSecureTextField *passwordField;
 	KeyChain *keychain;
 	
 	NSToolbar *toolbar;
