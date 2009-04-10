@@ -33,15 +33,16 @@
 @class MCPRelation;
 @class MCPRelation;
 
-@interface MCPClassDescription : NSClassDescription < NSCoding > {
+@interface MCPClassDescription : NSClassDescription <NSCoding> 
+{
 @protected
-	MCPModel					*model;				// The model where we stand
-	NSString             *name;            // Name of the class (can not use className, as it is already used by NSObject).
-	NSString             *externalName;    // Name of the table for storage
-	NSMutableArray       *attributes;      // array of the attributes of the class description
-	NSMutableArray       *relations;       // array of the relations of the class description (both origin and destination)
-	NSMutableArray			*incomings;			// array if the INCOMMING relation (just to be sure we are able to invalidate those if necessary)
-	Class						representedClass;	// the class object that the description represents.
+	MCPModel	   *model;			  // The model where we stand
+	NSString	   *name;             // Name of the class (can not use className, as it is already used by NSObject).
+	NSString       *externalName;     // Name of the table for storage
+	NSMutableArray *attributes;       // array of the attributes of the class description
+	NSMutableArray *relations;        // array of the relations of the class description (both origin and destination)
+	NSMutableArray *incomings;		  // array if the INCOMMING relation (just to be sure we are able to invalidate those if necessary)
+	Class			representedClass; // the class object that the description represents.
 }
 
 #warning hasSingleIntAutoGenKey should be a method returning the obvious (from the name).

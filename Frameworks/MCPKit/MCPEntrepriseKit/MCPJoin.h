@@ -34,14 +34,15 @@
 @class MCPRelation;
 @class MCPRelation;
 
-@interface MCPJoin : NSObject < NSCoding > {
+@interface MCPJoin : NSObject <NSCoding> 
+{
 @protected
-// Note that NONE of these attributes are retained!!!
-// Instead all these objects are notified of the existence of the join
-//   and are responsible to invalidate/delete it if necessary.
-	MCPRelation			*relation;
-	MCPAttribute		*origin;
-	MCPAttribute		*destination;
+	// Note that NONE of these attributes are retained!!!
+	// Instead all these objects are notified of the existence of the join
+	// and are responsible to invalidate/delete it if necessary.
+	MCPRelation  *relation;
+	MCPAttribute *origin;
+	MCPAttribute *destination;
 }
 
 #pragma mark Class methods

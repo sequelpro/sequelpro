@@ -34,7 +34,6 @@
 #import "MCPRelation.h"
 #import "MCPRelation.h"
 
-
 @implementation MCPJoin
 
 #pragma mark Class methods
@@ -46,7 +45,6 @@
 	return;
 }
 
-
 #pragma mark Life cycle
 - (id) initForRelation:(MCPRelation *) iRelation from:(MCPAttribute *) iOrigin to:(MCPAttribute *) iDestination;
 {
@@ -55,7 +53,6 @@
 		relation = iRelation;
 		[self setOrigin:iOrigin];
 		[self setDestination:iDestination];
-//		NSLog(@"MAKING a new object : %@", self);
 	}
 	return self;
 }
@@ -74,15 +71,13 @@
 
 - (void) dealloc
 {
-// Nothing to release, because the attributes are NOT retained.
-//	NSLog(@"DEALLOCATING object : %@", self);
+	// Nothing to release, because the attributes are NOT retained.
 	[super dealloc];
 }
 
 #pragma mark NSCoding protocol
 - (id) initWithCoder:(NSCoder *) decoder
 {
-//	NSLog(@"MAKING a new object : %@", self);
 	self = [super init];
 	if ((self) && ([decoder allowsKeyedCoding])) {
 		relation = [decoder decodeObjectForKey:@"MCPrelation"];

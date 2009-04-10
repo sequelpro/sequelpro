@@ -38,9 +38,10 @@
 
 #import "MCPJoin.h"
 
-static NSArray			*MCPexistingDeleteRules;
+static NSArray *MCPexistingDeleteRules;
 
 @implementation MCPRelation
+
 #pragma mark Class methods
 + (void) initialize
 {
@@ -80,7 +81,6 @@ static NSArray			*MCPexistingDeleteRules;
 		[self setOrigin:iFrom];
 		[self setDestination:iTo];
 		joins = [[NSMutableArray alloc] init];
-	//	NSLog(@"MAKING a new object : %@", self);
 	}
 	return self;
 }
@@ -103,7 +103,6 @@ static NSArray			*MCPexistingDeleteRules;
 
 - (void) dealloc
 {
-//	NSLog(@"DEALLOCATING object : %@", self);
 	[joins release]; // Should be empty by now...
 	[name release];
 // The inverse relation don't have an inverse relation any more...
@@ -134,7 +133,7 @@ static NSArray			*MCPexistingDeleteRules;
 		[self setIsMandatory:[decoder decodeBoolForKey:@"MCPisMandatory"]];
 		[self setOwnsDestintation:[decoder decodeBoolForKey:@"MCPownsDestination"]];
 	}
-//	NSLog(@"MAKING a new object : %@", self);
+
 	return self;
 }
 
@@ -422,13 +421,11 @@ static NSArray			*MCPexistingDeleteRules;
 - (id) retain
 {
 	[super retain];
-//	NSLog(@"in -[MCPRelation retain] for %@, count is %u (after retain).", self, [self retainCount]);
 	return self;
 }
 
 - (void) release
 {
-//	NSLog(@"in -[MCPRelation release] for %@, count is %u (after release).", self, [self retainCount]-1);
 	[super release];
 	return;
 }
@@ -436,6 +433,7 @@ static NSArray			*MCPexistingDeleteRules;
 @end
 
 @implementation MCPRelation (Private)
+
 #pragma mark Making some work
 - (void) invalidateJoins
 {

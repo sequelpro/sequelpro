@@ -41,17 +41,18 @@ typedef enum {
 	OnDeleteNoAction = 5
 } MCPRelationDeleteRule;
 
-@interface MCPRelation : NSObject < NSCoding > {
+@interface MCPRelation : NSObject <NSCoding> 
+{
 @protected
-	NSString						*name;            // Name of the relation
-	MCPRelationDeleteRule	deleteRule;       // Delete rule : what to do of the destination when origin is deleted
-	MCPRelation					*inverseRelation; // The inverse relation (or nil if no inverse present)
-	MCPClassDescription		*origin;          // The class description from which the relation originate
-	MCPClassDescription		*destination;     // The class description to which the relation arrives
-	NSMutableArray				*joins;				// Joining attributes (array of MCPJoin)
-	BOOL							isToMany;         // Is the relation to many (or to one)
-	BOOL							isMandatory;      // Is the relation mandatory for the class description (origin)
-	BOOL							ownsDestination;  // The origin class description owns the destination class description(ies)
+	NSString			  *name;            // Name of the relation
+	MCPRelationDeleteRule deleteRule;       // Delete rule : what to do of the destination when origin is deleted
+	MCPRelation			  *inverseRelation; // The inverse relation (or nil if no inverse present)
+	MCPClassDescription	  *origin;          // The class description from which the relation originate
+	MCPClassDescription	  *destination;     // The class description to which the relation arrives
+	NSMutableArray		  *joins;			// Joining attributes (array of MCPJoin)
+	BOOL				  isToMany;         // Is the relation to many (or to one)
+	BOOL				  isMandatory;      // Is the relation mandatory for the class description (origin)
+	BOOL				  ownsDestination;  // The origin class description owns the destination class description(ies)
 }
 
 #pragma mark Class methods

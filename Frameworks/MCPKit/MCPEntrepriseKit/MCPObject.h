@@ -30,22 +30,22 @@
 
 /*" Possible return code on some operations of the database interaction. "*/
 typedef enum {
-   MCPDBReturnUnknown         = 0,     /*"Unknown state, should not happen."*/
-   MCPDBReturnDeleted         = 1,     /*"The entry have been successfuly deleted from DB."*/
-   MCPDBReturnUsed            = 2,     /*"The entry can not be removed, because some entries are still connected to it (some delete restrict/inhibit delete)."*/
-   MCPDBReturnNone            = 3,     /*"No entry exist with this Id."*/
-   MCPDBReturnNew             = 4,     /*"The entry was indeed new and inserted in the database."*/
-   MCPDBReturnUpdated         = 5,     /*"The entry was updated in the DB."*/
-   MCPDBReturnIncompleteKey   = 6,     /*"Part of the primary key is missing, action not taken."*/
-   MCPDBReturnMultiple        = 7,     /*"Multiple rows are found with a query supposed to return at most one row."*/
-   MCPDBReturnNoIdentity      = 8,     /*"The object does not have attributes that defines identity."*/
-   MCPDBReturnNoKey           = 9,     /*"There is no primary key defined for this entity."*/
-   MCPDBReturnNoConnection    = 10,    /*"The MCPObject is not having a connection."*/
+	MCPDBReturnUnknown         = 0,     /*"Unknown state, should not happen."*/
+	MCPDBReturnDeleted         = 1,     /*"The entry have been successfuly deleted from DB."*/
+	MCPDBReturnUsed            = 2,     /*"The entry can not be removed, because some entries are still connected to it (some delete restrict/inhibit delete)."*/
+	MCPDBReturnNone            = 3,     /*"No entry exist with this Id."*/
+	MCPDBReturnNew             = 4,     /*"The entry was indeed new and inserted in the database."*/
+	MCPDBReturnUpdated         = 5,     /*"The entry was updated in the DB."*/
+	MCPDBReturnIncompleteKey   = 6,     /*"Part of the primary key is missing, action not taken."*/
+	MCPDBReturnMultiple        = 7,     /*"Multiple rows are found with a query supposed to return at most one row."*/
+	MCPDBReturnNoIdentity      = 8,     /*"The object does not have attributes that defines identity."*/
+	MCPDBReturnNoKey           = 9,     /*"There is no primary key defined for this entity."*/
+	MCPDBReturnNoConnection    = 10,    /*"The MCPObject is not having a connection."*/
 	MCPDBReturnWrongRelationOrigin = 11,		/*"Looking for a relation not which origin is not of the specified class."*/
 	MCPDBReturnWrongRelationCardinality = 12,	/*"Using a method assuming a cardinality of the relation while the relation as the other one."*/
 	MCPDBReturnNoSuchRelation	= 13,		/*"There is no relation with such a name starting from this class."*/
 	MCPDBReturnNotTarget			= 14,		/*"Tried to remove an object from a relation, while the objects does NOT belong to the relation."*/
-   MCPDBReturnOK              = 100    /*"Everything went OK."*/
+	MCPDBReturnOK              = 100    /*"Everything went OK."*/
 } MCPDBReturnCode;
 
 @class MCPConnection;

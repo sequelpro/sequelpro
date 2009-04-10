@@ -45,7 +45,6 @@
 	return;
 }
 
-
 #pragma mark Life cycle
 - (id) initWithName:(NSString *) iName
 {
@@ -54,13 +53,12 @@
 		[self setName:iName];
 		classDescriptions = [[NSMutableArray alloc] init];
 	}
-//	NSLog(@"MAKING a new object : %@", self);
+	
 	return self;
 }
 
 - (void) dealloc
 {
-//	NSLog(@"DEALLOCATING object : %@", self);
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[name release];
 	[classDescriptions release];
@@ -72,7 +70,6 @@
 {
 	self = [super init];
 	if ((self) && ([decoder allowsKeyedCoding])) {
-//      NSLog(@"in MCPModel initWithCoder, model = %@ (pointer = %p)", self, self);
 		[self setName:[decoder decodeObjectForKey:@"MCPname"]];
 		[self setClassDescriptions:[decoder decodeObjectForKey:@"MCPclassDescriptions"]];
 		[self setUsesInnoDBTables:[decoder decodeBoolForKey:@"MCPusesInnoDBTables"]];
@@ -80,7 +77,7 @@
 	else {
 		NSLog(@"For some reason, unable to decode MCPModel from the coder!!!");
 	}
-//	NSLog(@"MAKING a new object : %@", self);
+
 	return self;
 }
 
@@ -91,7 +88,6 @@
 		return;
 	}
 //   [super encodeWithCoder:encoder];
-//   NSLog(@"in MCPModel encodeWithCoder, model = %@ (pointer = %p)", self, self);
 	[encoder encodeObject:[self name] forKey:@"MCPname"];
 	[encoder encodeObject:[self classDescriptions] forKey:@"MCPclassDescriptions"];
 	[encoder encodeBool:[self usesInnoDBTables] forKey:@"MCPusesInnoDBTables"];
@@ -146,7 +142,6 @@
 	usesInnoDBTables = iUsesInnoDB;
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:self];
 }
-
 
 // Deprecated : non KVC
 /*
@@ -209,13 +204,11 @@
 	return usesInnoDBTables;
 }
 
-
 // Deprecated : non KVC
 
 #pragma mark Output for logging
 - (NSString *) descriptionWithLocale:(NSDictionary *) locale
 {
-//	NSLog(@"Enterred in -[MCPModel descriptionWithLocale:]...");
 	return [NSString stringWithFormat:@"<MCPModel with name %@ : %p>", [self name], self];
 }
 

@@ -32,13 +32,14 @@
 @class MCPAttribute;
 @class MCPRelation;
 
-@interface MCPModel : NSObject < NSCoding > {
+@interface MCPModel : NSObject <NSCoding> 
+{
 @protected
-	NSString                *name;					// Name of the model ... useless.
-	NSMutableArray          *classDescriptions;	// Order of the class descriptions in the model.
-	BOOL                    usesInnoDBTables;		// The database should use InnoDB tables.
-// Might add a string holding définition of tables.
-// Might also add some sort of template for generated files (at least the header).
+	NSString	   *name;			   // Name of the model ... useless.
+	NSMutableArray *classDescriptions; // Order of the class descriptions in the model.
+	BOOL			usesInnoDBTables;  // The database should use InnoDB tables.
+	// Might add a string holding définition of tables.
+	// Might also add some sort of template for generated files (at least the header).
 }
 
 #pragma mark Class methods

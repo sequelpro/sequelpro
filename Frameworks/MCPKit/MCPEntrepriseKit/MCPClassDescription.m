@@ -35,8 +35,8 @@
 #import "MCPAttribute.h"
 #import "MCPRelation.h"
 
-
 @implementation MCPClassDescription
+
 #pragma mark Class methods
 + (void) initialize
 {
@@ -45,7 +45,6 @@
 	}
 	return;
 }
-
 
 #pragma mark Life cycle
 - (id) initInModel:(MCPModel *) iModel withName:(NSString *) iName
@@ -68,7 +67,6 @@
 //   NSArray        *theRelations;
 //   unsigned int   i;
 	
-//	NSLog(@"DEALLOCATING object : %@", self);
 	[name release];
 	[externalName release];
 	[attributes release];
@@ -102,7 +100,7 @@
 	else {
 		NSLog(@"For some reason, unable to decode MCPClassDescription from the coder!!!");
 	}
-//	NSLog(@"MAKING a new object : %@", self);
+
 	return self;
 }
 
@@ -114,7 +112,6 @@
 	}
 //	[encoder encodeObject:[self model] forKey:@"MCPmodel"];
 	[encoder encodeConditionalObject:[self model] forKey:@"MCPmodel"];
-//   NSLog(@"in MCPClassDescription encodeWithCoder, model = %@ (pointer = %p)", [self model], [self model]);
 	[encoder encodeObject:[self name] forKey:@"MCPname"];
 	[encoder encodeObject:[self externalName] forKey:@"MCPexternalName"];
 	[encoder encodeObject:[self attributes] forKey:@"MCPattributes"];
@@ -201,13 +198,11 @@
 - (NSString *) name
 {
 	return name;
-//   return [NSString stringWithString:className];
 }
 
 - (NSString *) externalName
 {
 	return externalName;
-//   return [NSString stringWithString:externalName];
 }
 
 - (NSArray *) attributes
@@ -291,7 +286,6 @@
    NSMutableString         *theOutput = [NSMutableString string];
    unsigned                i;
 
-//	NSLog(@"Enterred in -[MCPClassDescription descriptionWithLocale]...");
    [theOutput appendFormat:@"MCPClassDescription for class : %@ (table : %@)\n", [self name], [self externalName]];
    for (i=0; [attributes count] != i; ++i) {
       MCPAttribute      *theAttribute = (MCPAttribute *) [attributes objectAtIndex:i];
@@ -301,22 +295,18 @@
    return theOutput;	
 }
 
-
 #pragma mark For debugging the retain counting
 - (id) retain
 {
 	[super retain];
-//	NSLog(@"in -[MCPClassDescription retain] for %@, count is %u (after retain).", self, [self retainCount]);
 	return self;
 }
 
 - (void) release
 {
-//	NSLog(@"in -[MCPClassDescription release] for %@, count is %u (after release).", self, [self retainCount]-1);
 	[super release];
 	return;
 }
-
 
 @end
 

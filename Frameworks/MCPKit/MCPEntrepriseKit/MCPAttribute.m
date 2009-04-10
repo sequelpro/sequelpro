@@ -67,7 +67,6 @@ static NSArray    *MCPRecognisedInternalType;
 		[self setName:iName];
 //		relations = (NSMutableArray *)(CFArrayCreateMutable (kCFAllocatorDefault, 0, NULL));
 		joins = [[NSMutableArray alloc] init];
-	//	NSLog(@"MAKING a new object : %@", self);
 	}
 	return self;
 }
@@ -77,7 +76,6 @@ static NSArray    *MCPRecognisedInternalType;
 //	NSArray           *theRelations;
 //	unsigned int      i;
 
-//	NSLog(@"DEALLOCATING object : %@", self);
 	[name release];
 	[internalType release];
 	[externalName release];
@@ -361,7 +359,6 @@ static NSArray    *MCPRecognisedInternalType;
 - (NSString *) valueClassName
 {
 	return NSStringFromClass(valueClass);
-//	return [valueClass className];
 }
 
 - (NSString *) internalType
@@ -449,13 +446,11 @@ static NSArray    *MCPRecognisedInternalType;
 - (id) retain
 {
 	[super retain];
-//	NSLog(@"in -[MCPAttribute retain] for %@, count is %u (after retain).", self, [self retainCount]);
 	return self;
 }
 
 - (void) release
 {
-//	NSLog(@"in -[MCPAttribute release] for %@, count is %u (after release).", self, [self retainCount]-1);
 	[super release];
 	return;
 }
