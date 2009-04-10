@@ -115,6 +115,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 //start sheet
 
 /**
+ * Set whether the connection sheet should automaticall start connecting
+ */
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect
+{
+	_shouldOpenConnectionAutomatically = shouldAutomaticallyConnect;
+}
+
+/**
  * tries to connect to a database server, shows connect sheet prompting user to
  * enter details/select favorite and shoows alert sheets on failure.
  */
@@ -133,11 +141,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 
 	// Connect automatically to the last used or default favourite
 	// connectSheet must open first.
-	// TODO: Auto connect on startup only. New connections should NOT automatically connect.
-	if ([prefs boolForKey:@"AutoConnectToDefault"]) {
+	if (_shouldOpenConnectionAutomatically) {
 		[self connect:self];
 	}
-	
 }
 
 

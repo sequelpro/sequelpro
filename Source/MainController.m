@@ -131,6 +131,28 @@
 #pragma mark Other methods
 
 /**
+ * Override the default open-blank-document methods to automatically connect
+ * automatically opened windows.
+ */
+- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
+{
+	TableDocument *firstTableDocument;
+	
+	// Manually open a new document, setting MainController as sender to trigger autoconnection
+	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"]) {
+			[firstTableDocument setShouldAutomaticallyConnect:YES];
+		}
+		[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
+		[firstTableDocument makeWindowControllers];
+		[firstTableDocument showWindows];
+	}
+
+	// Return NO to the automatic opening
+	return NO;
+}
+
+/**
  * What exactly is this for? 
  */
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command

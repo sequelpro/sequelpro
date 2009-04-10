@@ -92,12 +92,14 @@
 	BOOL _supportsEncoding;
 	NSString *_encoding;
 	BOOL _encodingViaLatin1;
+	BOOL _shouldOpenConnectionAutomatically;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
 }
 
 //start sheet
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (IBAction)connectToDB:(id)sender;
 - (IBAction)connect:(id)sender;
 - (IBAction)cancelConnectSheet:(id)sender;
