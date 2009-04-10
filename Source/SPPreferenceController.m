@@ -175,6 +175,7 @@
 	}
 }
 
+
 #pragma mark -
 #pragma mark Toolbar item IBAction methods
 
@@ -249,7 +250,7 @@
 // -------------------------------------------------------------------------------
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [[favoritesController  arrangedObjects] count];
+	return [[favoritesController arrangedObjects] count];
 }
 
 // -------------------------------------------------------------------------------
@@ -367,6 +368,14 @@
 	if ([[favoritesTableView selectedRowIndexes] count] > 0) {
 		[favoritesController setSelectionIndexes:[favoritesTableView selectedRowIndexes]];		
 	}
+
+//	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favoritesController valueForKeyPath:@"selection.name"]];
+//	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+//								 [favoritesController valueForKeyPath:@"selection.user"],
+//								 [favoritesController valueForKeyPath:@"selection.host"],
+//								 [favoritesController valueForKeyPath:@"selection.database"]];
+//	
+//	NSLog(@"%@", [keychain getPasswordForName:keychainName account:keychainAccount]);
 }
 
 #pragma mark -

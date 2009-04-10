@@ -86,7 +86,7 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
-	NSString *favoriteNamebBeingChanged;
+	NSString *favoriteNameBeingChanged;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;

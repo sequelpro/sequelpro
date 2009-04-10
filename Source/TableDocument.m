@@ -115,7 +115,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 - (IBAction)connectToDB:(id)sender
 {
 	
-	// load the details of the curretnly selected favorite into the text boxes in connect sheet
+	// load the details of the currently selected favorite into the text boxes in connect sheet
 	[self chooseFavorite:self];
 	
 	// run the connect sheet (modal)
@@ -124,6 +124,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		modalDelegate:self
 	   didEndSelector:@selector(connectSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
+
+	// Connect automatically to the last used or default favourite
+	// connectSheet must open first.
+	// TODO: Auto connect on startup only. New connections should NOT automatically connect.
+	if ([prefs boolForKey:@"AutoConnectToDefault"]) {
+		[self connect:self];
+	}
+	
 }
 
 
@@ -1689,7 +1697,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
 	
 	if([prefs boolForKey:@"SelectLastFavoriteUsed"] == YES){
-		[favoritesController setSelectionIndexes:[NSIndexSet indexSetWithIndex:[prefs integerForKey:@"LastFavoriteIndex"]]];
+		[favoritesController setSelectionIndex:[prefs integerForKey:@"LastFavoriteIndex"]];
+	} else {
+		[favoritesController setSelectionIndex:[prefs integerForKey:@"DefaultFavorite"]];
 	}
 }
 
@@ -1853,14 +1863,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 {
 	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
 	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNamebBeingChanged]
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNameBeingChanged]
 									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
 	[keyChainInstance addPassword:[passwordField stringValue]
 						  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
 						  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
-	favoriteNamebBeingChanged = nil;
+	favoriteNameBeingChanged = nil;
 }
 
 /**
@@ -1870,7 +1880,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  */
 - (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	favoriteNamebBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	favoriteNameBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
 	
 	return YES;
 }

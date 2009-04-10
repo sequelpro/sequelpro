@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="17"/>
+			<integer value="403"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -53,7 +53,7 @@
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
 			<object class="NSCustomView" id="594324362">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -567,7 +567,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{500, 171}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="395894064">
@@ -771,7 +770,7 @@
 									<int key="NS.length">0</int>
 									<bool key="NS.negative">YES</bool>
 									<bool key="NS.compact">NO</bool>
-									<int key="NS.mantissa.bo">2</int>
+									<int key="NS.mantissa.bo">1</int>
 									<bytes key="NS.mantissa">AAAAAAAAAAAAAAAAAAAAAA</bytes>
 								</object>
 								<reference key="NS.max" ref="815260591"/>
@@ -948,7 +947,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="593732956">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1597,7 +1596,7 @@
 									</object>
 									<object class="NSButton" id="438875755">
 										<reference key="NSNextResponder" ref="343315962"/>
-										<int key="NSvFlags">268</int>
+										<int key="NSvFlags">289</int>
 										<string key="NSFrame">{{192, 12}, {96, 32}}</string>
 										<reference key="NSSuperview" ref="343315962"/>
 										<bool key="NSEnabled">YES</bool>
@@ -1628,6 +1627,7 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{500, 381}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="1041614321">
@@ -1970,6 +1970,9 @@ AQAAAAA</bytes>
 					<string>sshHost</string>
 					<string>sshUser</string>
 					<string>sshPort</string>
+					<object class="NSMutableString">
+						<characters key="NS.bytes">selectedFavoritePassword</characters>
+					</object>
 				</object>
 				<bool key="NSEditable">YES</bool>
 				<bool key="NSAutomaticallyPreparesContent">YES</bool>
@@ -3339,7 +3342,6 @@ AQAAAAA</bytes>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="796172881"/>
 							<reference ref="755342553"/>
-							<reference ref="133134378"/>
 							<reference ref="707085995"/>
 							<reference ref="77492794"/>
 							<reference ref="415835787"/>
@@ -3361,6 +3363,7 @@ AQAAAAA</bytes>
 							<reference ref="1041581151"/>
 							<reference ref="311258049"/>
 							<reference ref="438875755"/>
+							<reference ref="133134378"/>
 						</object>
 						<reference key="parent" ref="141072039"/>
 					</object>
@@ -4548,7 +4551,7 @@ AQAAAAA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{539, 716}, {500, 381}}</string>
+					<string>{{42, 443}, {500, 381}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4789,7 +4792,7 @@ AQAAAAA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">720</int>
+			<int key="maxID">728</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
