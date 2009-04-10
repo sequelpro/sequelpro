@@ -45,6 +45,12 @@
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
 NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocumentFavoritesControllerFavoritesDidChange";
 
+@interface TableDocument (PrivateAPI)
+
+- (BOOL)_favoriteAlreadyExists:(NSString *)database host:(NSString *)host user:(NSString *)user;
+
+@end
+
 @implementation TableDocument
 
 - (id)init
@@ -1367,6 +1373,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
 	
+	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
+		return (![self _favoriteAlreadyExists:[self database] host:[self host] user:[self user]]);
+	}
+	
 	return [super validateMenuItem:menuItem];
 }
 
@@ -1439,6 +1449,21 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStatusToolbarItemIdentifier"];
 }
 
+/**
+ * Adds the current database connection details to the user's favorites if it doesn't already exist.
+ */
+- (IBAction)addConnectionToFavorites:(id)sender
+{
+	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
+	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
+	// as we don't know what's calling this method.
+	if ([self _favoriteAlreadyExists:[self database] host:[self host] user:[self user]]) {
+		return;
+	}
+	
+	// Add current connection to favorites using the same method as used on the connection sheet to provide consistency.
+	[self connectSheetAddToFavorites:self];
+}
 
 #pragma mark Toolbar Methods
 
@@ -1902,6 +1927,29 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[prefs release];
 	
 	[super dealloc];
+}
+
+@end
+
+@implementation TableDocument (PrivateAPI)
+
+/**
+ * Checks to see if a favorite with the supplied details already exists.
+ */
+- (BOOL)_favoriteAlreadyExists:(NSString *)database host:(NSString *)host user:(NSString *)user
+{	
+	// Loop the favorites and check their details
+	for (NSDictionary *favorite in favorites) 
+	{		
+		if ([[favorite objectForKey:@"database"] isEqualToString:database] &&
+			[[favorite objectForKey:@"host"] isEqualToString:host] &&
+			[[favorite objectForKey:@"user"] isEqualToString:user]) {
+			
+			return YES;
+		}
+	}
+	
+	return NO;
 }
 
 @end
