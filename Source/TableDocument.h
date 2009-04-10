@@ -42,6 +42,7 @@
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
+	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;
@@ -85,7 +86,7 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
-	NSString *favoriteNamebBeingChanged;
+	NSString *favoriteNameBeingChanged;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;

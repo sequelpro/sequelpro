@@ -33,6 +33,7 @@
 #import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
+#import "SPExportController.h"
 #import "SPQueryConsole.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
@@ -98,12 +99,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 
 - (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
 {
-	
 	NSPrintInfo *printInfo = [self printInfo];
 	[printInfo setHorizontalPagination:NSFitPagination];
 	[printInfo setVerticalPagination:NSAutoPagination];
 	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
 	return printOp;
+
 }
 
 - (CMMCPConnection *)sharedConnection
@@ -120,7 +121,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 - (IBAction)connectToDB:(id)sender
 {
 	
-	// load the details of the curretnly selected favorite into the text boxes in connect sheet
+	// load the details of the currently selected favorite into the text boxes in connect sheet
 	[self chooseFavorite:self];
 	
 	// run the connect sheet (modal)
@@ -129,6 +130,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		modalDelegate:self
 	   didEndSelector:@selector(connectSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
+
+	// Connect automatically to the last used or default favourite
+	// connectSheet must open first.
+	// TODO: Auto connect on startup only. New connections should NOT automatically connect.
+	if ([prefs boolForKey:@"AutoConnectToDefault"]) {
+		[self connect:self];
+	}
+	
 }
 
 
@@ -206,7 +215,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		//register as delegate
 		[mySQLConnection setDelegate:self];
 		// set encoding
-		NSString *encodingName = [prefs objectForKey:@"encoding"];
+		NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
 		if ( [encodingName isEqualToString:@"Autodetect"] ) {
 			[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
 		} else {
@@ -227,6 +236,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		[tableContentInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
+		[spExportControllerInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
 		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
@@ -243,7 +253,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		//can't connect to host
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
-						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"connectionTimeout"] intValue], [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]]);
 	} else if (code == 3) {
 		//can't connect to db
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
@@ -288,7 +298,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
 	[passwordField setStringValue:[self selectedFavoritePassword]];
 	
-	[prefs setInteger:[favoritesController selectionIndex] forKey:@"lastFavoriteIndex"];
+	[prefs setInteger:[favoritesController selectionIndex] forKey:@"LastFavoriteIndex"];
 }
 
 /**
@@ -1309,7 +1319,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  */
 - (IBAction)export:(id)sender
 {
-	[tableDumpInstance exportFile:[sender tag]];
+	if ([sender tag] == -1) {
+		//[tableDumpInstance export];
+		
+		[spExportControllerInstance export];
+	} else {
+		[tableDumpInstance exportFile:[sender tag]];
+	}
 }
 
 - (IBAction)exportTable:(id)sender
@@ -1685,7 +1701,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
 	
 	//set up interface
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[SPQueryConsole sharedQueryConsole] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
@@ -1705,8 +1721,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	//	[self connectToDB:nil];
 	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
 	
-	if([prefs boolForKey:@"selectLastFavoriteUsed"] == YES){
-		[favoritesController setSelectionIndexes:[NSIndexSet indexSetWithIndex:[prefs integerForKey:@"lastFavoriteIndex"]]];
+	if([prefs boolForKey:@"SelectLastFavoriteUsed"] == YES){
+		[favoritesController setSelectionIndex:[prefs integerForKey:@"LastFavoriteIndex"]];
+	} else {
+		[favoritesController setSelectionIndex:[prefs integerForKey:@"DefaultFavorite"]];
 	}
 }
 
@@ -1870,14 +1888,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 {
 	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
 	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNamebBeingChanged]
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNameBeingChanged]
 									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
 	[keyChainInstance addPassword:[passwordField stringValue]
 						  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
 						  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
-	favoriteNamebBeingChanged = nil;
+	favoriteNameBeingChanged = nil;
 }
 
 /**
@@ -1887,7 +1905,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  */
 - (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	favoriteNamebBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	favoriteNameBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
 	
 	return YES;
 }
