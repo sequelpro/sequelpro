@@ -136,6 +136,7 @@ static void forcePingTimeout(int signalNumber);
 - (BOOL) reconnect
 {
 	NSString *currentEncoding = nil;
+	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
 
 	// Store the current database and encoding so they can be re-set if reconnection was successful
@@ -144,6 +145,9 @@ static void forcePingTimeout(int signalNumber);
 	}
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	}
+	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1];
 	}
 
 	// Close the connection if it exists.
@@ -174,8 +178,11 @@ static void forcePingTimeout(int signalNumber);
 			[self selectDB:currentDatabase];
 		}
 		if (currentEncoding) {
-			[self queryString:[NSString stringWithFormat:@"SET NAMES '%@'", currentEncoding]];
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
 			[self setEncoding:[CMMCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
+			if (currentEncodingUsesLatin1Transport) {
+				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+			}
 		}
 	} else if (parentWindow) {
 
@@ -338,15 +345,25 @@ static void forcePingTimeout(int signalNumber);
 
 
 /*
+ * Override the standard queryString: method to default to the connection encoding, as before,
+ * before pssing on to queryString: usingEncoding:.
+ */
+- (CMMCPResult *)queryString:(NSString *) query
+{
+	return [self queryString:query usingEncoding:mEncoding];
+}
+
+
+/*
  * Modified version of queryString to be used in Sequel Pro.
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either the query has been executed and the result can
  * be returned or the connection and document have been closed.
  */
-- (CMMCPResult *)queryString:(NSString *) query
+- (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult	*theResult;
-	const char	*theCQuery = [self cStringFromString:query];
+	const char	*theCQuery;
 	int			theQueryCode;
 	NSDate		*queryStartDate;
 
@@ -354,6 +371,9 @@ static void forcePingTimeout(int signalNumber);
 	if (!mConnected) return nil;
 
 	[self stopKeepAliveTimer];
+
+	// Generate the cString as appropriate
+	theCQuery = [self cStringFromString:query usingEncoding:encoding];
 
 	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
 	// has been requested - in which case return nil
@@ -424,9 +444,14 @@ static void forcePingTimeout(int signalNumber);
  */
 - (BOOL)checkConnection
 {
+	unsigned long threadid;
+
 	if (!mConnected) return NO;
 
 	BOOL connectionVerified = FALSE;
+
+	// Get the current thread ID for this connection
+	threadid = mConnection->thread_id;
 
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
@@ -453,6 +478,16 @@ static void forcePingTimeout(int signalNumber);
 			// "Retry" has been selected - return a recursive call.
 			default:
 				return [self checkConnection];
+		}
+
+	// If a connection exists, check whether the thread id differs; if so, the connection has
+	// probably been reestablished and we need to reset the connection encoding
+	} else if (threadid != mConnection->thread_id) {
+		if (delegate && [delegate valueForKey:@"_encoding"]) {
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+			if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+				if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+			}
 		}
 	}
 
@@ -654,5 +689,24 @@ static void forcePingTimeout(int signalNumber)
 		lastKeepAliveSuccess = nil;
 	}
 	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+}
+
+
+/*
+ * Modified version of the original to support a supplied encoding.
+ * For internal use only. Transforms a NSString to a C type string (ending with \0).
+ * Lossy conversions are enabled.
+ */
+- (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding
+{
+	NSMutableData	*theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	return (const char *)[theData bytes];
 }
 @end

@@ -88,6 +88,7 @@
 
 	// Remove existing columns from the table
 	theColumns = [tableContentView tableColumns];
+	
 	while ([theColumns count]) {
 		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
 	}
@@ -95,7 +96,6 @@
 	// If no table has been supplied, reset the view to a blank table and disabled elements
 	if ( [aTable isEqualToString:@""] || !aTable )
 	{
-
 		// Empty the stored data arrays
 		[fullResult removeAllObjects];
 		[filteredResult removeAllObjects];
@@ -132,7 +132,7 @@
 	// Post a notification that a query will be performed
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
-	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
+	// Retrieve the field names and types for this table from the data cache. This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
@@ -244,6 +244,7 @@
 		[fieldField selectItemWithTitle:preservedFilterField];
 		[self setCompareTypes:self];
 	}
+	
 	if (preserveCurrentView && preservedFilterField != nil
 		&& [fieldField itemWithTitle:preservedFilterField]
 		&& [compareField itemWithTitle:preservedFilterComparison]) {
@@ -303,17 +304,25 @@
 	}
 	
 	[fullResult setArray:[self fetchResultAsArray:queryResult]];
+	
+	// This to fix an issue where by areShowingAllRows is set to NO above during the restore of the filter options
+	// leading the code to believe that the result set is filtered. If the filtered result set count is the same as the
+	// maximum rows in the table then filtering is currently not in use and we set areShowingAllRows back to YES.
+	if ([filteredResult count] == maxNumRowsOfCurrentTable) {
+		areShowingAllRows = YES;
+	}
 
 	// Apply any filtering and update the row count
 	if (!areShowingAllRows) {
 		[self filterTable:self];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
-	} else {
+	} 
+	else {
 		[filteredResult setArray:fullResult];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), [fullResult count]]];
 	}
 
-	// Reload the table data.
+	// Reload the table data
 	[tableContentView reloadData];
 	
 	// Post the notification that the query is finished
@@ -321,13 +330,12 @@
 }
 
 /*
- * Reloads the current table data, performing a new SQL query.  Now attempts to preserve sort order, filters, and viewport.
+ * Reloads the current table data, performing a new SQL query. Now attempts to preserve sort order, filters, and viewport.
  */
 - (IBAction)reloadTable:(id)sender
 {
-
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if (![self saveRowOnDeselect]) return;
 
 	// Store the current viewport location
 	NSRect viewRect = [tableContentView visibleRect];
@@ -335,12 +343,12 @@
 	// Clear the table data column cache
 	[tableDataInstance resetColumnData];
 
+	// Load the table's data
 	[self loadTable:selectedTable];
 	
 	// Restore the viewport
 	[tableContentView scrollRectToVisible:viewRect];
 }
-
 
 /*
  * Reload the table values without reconfiguring the tableView (with filter and limit if set)

@@ -15,7 +15,7 @@
  */
  
 #import "SPEditorTokens.h"
-int utf8strlen(const char *s);
+int utf8strlen(const char * _s);
 int yyuoffset, yyuleng;
 
 #define YY_NO_UNPUT
@@ -25,10 +25,22 @@ int yyuoffset, yyuleng;
 %}
 %option noyywrap
 %option case-insensitive
+
 s		[ \t\n]+
-word	[a-z_0-9À-ﾟ]
+alpha	[a-z_\.À-ﾟ]
+numeric	([+-]?(([0-9]+\.[0-9]+)|([0-9]*\.[0-9]+)|([0-9]+))(e[+-]?[0-9]+)?)
+ops		"+"|"-"|"*"|"/"
+word	[a-z_\.0-9À-ﾟ@]
+variable	@{1,2}[a-z_\.0-9À-ﾟ$]+
 nonword	[^a-z_0-9À-ﾟ#\n\t]
+keyworda	(G(R(OUP{s}BY|ANT(S)?)|E(T_FORMAT|OMETRY(COLLECTION)?)|LOBAL)|B(Y(TE)?|TREE|I(GINT|N(LOG|ARY)|T)|O(TH|OL(EAN)?)|E(GIN|TWEEN|FORE)|LOB|ACKUP{s}TABLE)|H(IGH_PRIORITY|O(STS|UR(_(MI(NUTE|CROSECOND)|SECOND))?)|ELP|A(SH|NDLER|VING))|C(R(OSS|EATE)|H(ECK(SUM{s}TABLE)?|A(R(SET|ACTER)?|NGE(D)?|IN))|IPHER|O(M(M(IT(TED)?|ENT)|P(RESSED|LETION|ACT))|N(S(TRAINT|ISTENT)|NECTION|CURRENT|T(RIBUTORS|INUE|AINS)|DITION|VERT)|DE|L(UMN|LATE)|ALESCE{s}PARTITION)|U(R(RENT_(TIME(STAMP)?|DATE|USER)|SOR)|BE)|L(IENT|OSE)|A(S(CADE(D)?|E)|CHE{s}INDEX|LL))|I(GNORE|MPORT{s}TABLESPACE|S(SUER|OLATION)?|N(S(TALL|E(RT(_METHOD)?|NSITIVE))|N(O(BASE|DB)|ER)|T(1|2|8|3|O({s}(DUMP|OUT)FILE)?|4|E(RVAL|GER))?|ITIAL_SIZE|OUT|DEX(ES)?|VOKER|FILE)?|TERATE|O_THREAD|DENTIFIED|F)|D(ROP|YNAMIC|I(RECTORY|S(CARD{s}TABLESPACE|TINCT(ROW)?|K|ABLE{s}KEYS)|V)|O(UBLE)?|U(MPFILE|PLICATE|AL)|E(S(C(RIBE)?|_KEY_FILE)|C(IMAL|LARE)?|TERMINISTIC|F(INER|AULT)|L(ETE|AY(_KEY_WRITE|ED))|ALLOCATE)|A(Y(_(MI(NUTE|CROSECOND)|SECOND|HOUR))?|T(E(TIME)?|A(BASE(S)?|FILE)?)))|JOIN|E(RRORS|X(TEN(T_SIZE|DED)|I(STS|T)|P(LAIN|ANSION)|ECUTE)|SCAPE(D{s}BY)?|N(GINE(S)?|CLOSED{s}BY|D(S)?|UM|ABLE{s}KEYS)|VE(RY|NT)|LSE(IF)?|ACH)|K(ILL({s}(CONNECTION|QUERY))?|EY(S|_BLOCK_SIZE)?)|F(R(OM|AC_SECOND)|I(RST|XED|LE)|O(R(CE|EIGN)?|UND)|U(NCTION|LL(TEXT)?)|ETCH|L(OAT(8|4)?|USH)|A(ST|LSE))|A(G(GREGATE|AINST)|S(C(II)?|ENSITIVE)?|N(Y|D|ALYZE)|C(CESSIBLE|TION)|T|DD|UT(HORS|O(_INCREMENT|EXTEND_SIZE))|VG(_ROW_LENGTH)?|FTER|L(GORITHM|TER|L)))
+keywordl	(R(TREE|IGHT|O(UTINE|W(S|_FORMAT)?|LL(BACK|UP))|E(GEXP|MOVE{s}PARTITIONING|BUILD{s}PARTITION|S(T(RICT|ORE{s}TABLE)|UME|ET)|NAME|COVER|TURN(S)?|ORGANIZE{s}PARTITION|D(O(_BUFFER_SIZE|FILE)|UNDANT)|P(EAT(ABLE)?|L(ICATION|ACE)|AIR)|VOKE|QUIRE|FERENCES|L(OAD|EASE|AY_(THREAD|LOG_(POS|FILE)))|A(D(S|_(ONLY|WRITE))?|L))|LIKE|ANGE)|M(I(GRATE|N(_ROWS|UTE(_(MICROSECOND|SECOND))?)|CROSECOND|DDLEINT)|O(NTH|D(IF(Y|IES)|E)?)|U(TEX|LTI(PO(INT|LYGON)|LINESTRING))|E(RGE|MORY|DIUM(BLOB|TEXT|INT)?)|A(X(_(ROWS|SIZE|CONNECTIONS_PER_HOUR|U(SER_CONNECTIONS|PDATES_PER_HOUR)|QUERIES_PER_HOUR)|VALUE)|STER(_(S(SL(_(C(IPHER|ERT|A(PATH)?)|VERIFY_SERVER_CERT|KEY))?|ERVER_ID)|HOST|CONNECT_RETRY|USER|P(ORT|ASSWORD)|LOG_(POS|FILE)))?|TCH))|N(CHAR|O(NE|_W(RITE_TO_BINLOG|AIT)|T|DEGROUP)?|DB(CLUSTER)?|U(MERIC|LL)|E(XT|W)|VARCHAR|A(ME(S)?|T(IONAL|URAL)))|O(R(DER{s}BY)?|N({s}(DUPLICATE{s}KEY{s}UPDATE)?|E(_SHOT)?|LINE)|UT(ER|FILE)?|P(TI(MIZE|ON(ALLY)?)|EN)|FF(SET|LINE)|LD_PASSWORD)|P(R(I(MARY|VILEGES)|OCE(SS|DURE)|E(SERVE|CISION|PARE|V))|HASE|O(INT|LYGON)|URGE|A(R(SER|TI(TION(S|ING)?|AL))|SSWORD|CK_KEYS))|QU(ICK|ERY|ARTER)|L(I(MIT|ST|NE(S(TRING)?|AR)|KE)|O(G(S|FILE)|NG(BLOB|TEXT)?|C(K(S)?|AL(TIME(STAMP)?)?)|OP|W_PRIORITY|AD{s}(DATA|INDEX{s}INTO{s}CACHE))|E(SS|VEL|FT|A(DING|VE(S)?))|A(ST|NGUAGE)))
+keywords	(X(OR|509|A)|S(MALLINT|SL|H(OW({s}(E(NGINE(S)?|RRORS)|M(ASTER|UTEX)|BINLOG|GRANTS|INNODB|P(RIVILEGES|ROFILE(S)?|ROCEDURE{s}CODE)|SLAVE{s}(HOSTS|STATUS)|TRIGGERS|VARIABLES|WARNINGS|PROCESSLIST|FIELDS|PLUGIN(S)?|STORAGE{s}ENGINES|TABLE{s}TYPES|CO(LUMNS|LLATION)|BINLOG{s}EVENTS))?|UTDOWN|ARE)|NAPSHOT|CHE(MA(S)?|DULE(R)?)|T(R(ING|AIGHT_JOIN)|OP|A(RT(S|ING{s}BY)?|TUS))|I(GNED|MPLE)|O(ME|NAME|UNDS)|U(B(JECT|PARTITION(S)?)|SPEND|PER)|P(ECIFIC|ATIAL)|E(RIAL(IZABLE)?|SSION|NSITIVE|C(OND(_MICROSECOND)?|URITY)|T({s}(PASSWORD|NAMES|ONE_SHOT))?|PARATOR|LECT)|QL(STATE|_(B(IG_RESULT|UFFER_RESULT)|SMALL_RESULT|NO_CACHE|CA(CHE|LC_FOUND_ROWS)|T(SI_(M(INUTE|ONTH)|SECOND|HOUR|YEAR|DAY|QUARTER|FRAC_SECOND|WEEK)|HREAD))|EXCEPTION|WARNING)?|LAVE|AVEPOINT)|YEAR(_MONTH)?|T(R(IGGER(S)?|U(NCATE|E)|A(NSACTION|ILING))|H(EN|AN)|YPE|I(ME(STAMP(DIFF|ADD)?)?|NY(BLOB|TEXT|INT))|O|E(RMINATED{s}BY|XT|MP(TABLE|ORARY))|ABLE(S(PACE)?)?)|ZEROFILL|U(S(ING|E(R(_RESOURCES)?|_FRM)?|AGE)|N(SIGNED|COMMITTED|TIL|I(NSTALL|CODE|ON|QUE)|D(O(_BUFFER_SIZE|FILE)?|EFINED)|KNOWN|LOCK)|TC_(TIME(STAMP)?|DATE)|P(GRADE|DATE))|V(IEW|A(R(BINARY|YING|CHAR(ACTER)?|IABLES)|LUE(S)?))|W(RITE|H(ILE|E(RE|N))|ITH({s}PARSER)?|ORK|EEK|A(RNINGS|IT)))
+
+
 %x comment
+%x equation
+%x varequation
 %%
 \"([^"\\]|\\(.|\n))*\"?			{ return SPT_DOUBLE_QUOTED_TEXT;   }      /* double quoted strings          */
 '([^'\\]|\\(.|\n))*'?			{ return SPT_SINGLE_QUOTED_TEXT;   }      /* single quoted strings          */
@@ -43,236 +55,31 @@ nonword	[^a-z_0-9À-ﾟ#\n\t]
                                                                              http://www.stillhq.com/pdfdb/000561/data.pdf
                                                                                                             */
                                                                                                             
-#[^\n]*\n?				        |									      /* # Comments                     */
---[ \t][^\n]*\n?				{ return SPT_COMMENT;  }		          /* -- Comments                    */
+#[^\n]*\n?			        |											/* # Comments                     */
+--[ \t][^\n]*\n?			{ return SPT_COMMENT; }						/* -- Comments                    */
 
-{s}								{ return SPT_WHITESPACE;    }		      /* ignore spaces                  */
-ADD                         	|
-ACCESSIBLE                      |
-ADD                             |
-ALL                             |
-ALTER                           |
-ANALYZE                         |
-AND                             |
-AS                              |
-ASC                             |
-ASENSITIVE                      |
-BEFORE                          |
-BETWEEN                         |
-BIGINT                          |
-BINARY                          |
-BLOB                            |
-BOTH                            |
-BY                              |
-CALL                            |
-CASCADE                         |
-CASE                            |
-CHANGE                          |
-CHAR                            |
-CHARACTER                       |
-CHECK                           |
-COLLATE                         |
-COLUMN                          |
-CONDITION                       |
-CONSTRAINT                      |
-CONTINUE                        |
-CONVERT                         |
-CREATE                          |
-CROSS                           |
-CURRENT_DATE                    |
-CURRENT_TIME                    |
-CURRENT_TIMESTAMP               |
-CURRENT_USER                    |
-CURSOR                          |
-DATABASE                        |
-DATABASES                       |
-DAY_HOUR                        |
-DAY_MICROSECOND                 |
-DAY_MINUTE                      |
-DAY_SECOND                      |
-DEC                             |
-DECIMAL                         |
-DECLARE                         |
-DEFAULT                         |
-DELAYED                         |
-DELETE                          |
-DESC                            |
-DESCRIBE                        |
-DETERMINISTIC                   |
-DISTINCT                        |
-DISTINCTROW                     |
-DIV                             |
-DOUBLE                          |
-DROP                            |
-DUAL                            |
-EACH                            |
-ELSE                            |
-ELSEIF                          |
-ENCLOSED                        |
-ESCAPED                         |
-EXISTS                          |
-EXIT                            |
-EXPLAIN                         |
-FALSE                           |
-FETCH                           |
-FLOAT                           |
-FLOAT4                          |
-FLOAT8                          |
-FOR                             |
-FORCE                           |
-FOREIGN                         |
-FROM                            |
-FULLTEXT                        |
-GRANT                           |
-GROUP                           |
-HAVING                          |
-HIGH_PRIORITY                   |
-HOUR_MICROSECOND                |
-HOUR_MINUTE                     |
-HOUR_SECOND                     |
-IF                              |
-IGNORE                          |
-IN                              |
-INDEX                           |
-INFILE                          |
-INNER                           |
-INOUT                           |
-INSENSITIVE                     |
-INSERT                          |
-INT                             |
-INT1                            |
-INT2                            |
-INT3                            |
-INT4                            |
-INT8                            |
-INTEGER                         |
-INTERVAL                        |
-INTO                            |
-IS                              |
-ITERATE                         |
-JOIN                            |
-KEY                             |
-KEYS                            |
-KILL                            |
-LEADING                         |
-LEAVE                           |
-LEFT                            |
-LIKE                            |
-LIMIT                           |
-LINEAR                          |
-LINES                           |
-LOAD                            |
-LOCALTIME                       |
-LOCALTIMESTAMP                  |
-LOCK                            |
-LONG                            |
-LONGBLOB                        |
-LONGTEXT                        |
-LOOP                            |
-LOW_PRIORITY                    |
-MASTER_SSL_VERIFY_SERVER_CERT   |
-MATCH                           |
-MEDIUMBLOB                      |
-MEDIUMINT                       |
-MEDIUMTEXT                      |
-MIDDLEINT                       |
-MINUTE_MICROSECOND              |
-MINUTE_SECOND                   |
-MOD                             |
-MODIFIES                        |
-NATURAL                         |
-NOT                             |
-NO_WRITE_TO_BINLOG              |
-NULL                            |
-NUMERIC                         |
-ON                              |
-OPTIMIZE                        |
-OPTION                          |
-OPTIONALLY                      |
-OR                              |
-ORDER                           |
-OUT                             |
-OUTER                           |
-OUTFILE                         |
-PRECISION                       |
-PRIMARY                         |
-PROCEDURE                       |
-PURGE                           |
-RANGE                           |
-READ                            |
-READS                           |
-READ_WRITE                      |
-REAL                            |
-REFERENCES                      |
-REGEXP                          |
-RELEASE                         |
-RENAME                          |
-REPEAT                          |
-REPLACE                         |
-REQUIRE                         |
-RESTRICT                        |
-RETURN                          |
-REVOKE                          |
-RIGHT                           |
-RLIKE                           |
-SCHEMA                          |
-SCHEMAS                         |
-SECOND_MICROSECOND              |
-SELECT                          |
-SENSITIVE                       |
-SEPARATOR                       |
-SET                             |
-SHOW                            |
-SMALLINT                        |
-SPATIAL                         |
-SPECIFIC                        |
-SQL                             |
-SQLEXCEPTION                    |
-SQLSTATE                        |
-SQLWARNING                      |
-SQL_BIG_RESULT                  |
-SQL_CALC_FOUND_ROWS             |
-SQL_SMALL_RESULT                |
-SSL                             |
-STARTING                        |
-STRAIGHT_JOIN                   |
-TABLE                           |
-TERMINATED                      |
-THEN                            |
-TINYBLOB                        |
-TINYINT                         |
-TINYTEXT                        |
-TO                              |
-TRAILING                        |
-TRIGGER                         |
-TRUE                            |
-UNDO                            |
-UNION                           |
-UNIQUE                          |
-UNLOCK                          |
-UNSIGNED                        |
-UPDATE                          |
-USAGE                           |
-USE                             |
-USING                           |
-UTC_DATE                        |
-UTC_TIME                        |
-UTC_TIMESTAMP                   |
-VALUES                          |
-VARBINARY                       |
-VARCHAR                         |
-VARCHARACTER                    |
-VARYING                         |
-WHEN                            |
-WHERE                           |
-WHILE                           |
-WITH                            |
-WRITE                           |
-XOR                             |
-YEAR_MONTH                      |
-ZEROFILL            			{ return SPT_RESERVED_WORD;        }   /* all the mysql reserved words  */
-{word}+							{ return SPT_WORD;                 }   /* return any word               */
-{nonword}						{ return SPT_OTHER;                }   /* return anything else          */
+{variable}/{ops}			{ BEGIN(varequation); return SPT_VARIABLE; }/* SQL variables before operator*/
+<varequation>{ops}			{ BEGIN(INITIAL); return SPT_OTHER; }
+{variable}					{ return SPT_VARIABLE; }					/* SQL variables */
+
+{numeric}/{ops}				{ BEGIN(equation); return SPT_NUMERIC; }	/* numeric before operator        */
+<equation>{ops}				{ BEGIN(INITIAL); return SPT_OTHER; }		/* set operator after a numeric   */
+{numeric}/{alpha}			{ return SPT_WORD; }						/* catch numeric followed by char */
+
+{s}+						{ return SPT_WHITESPACE; }					/* ignore spaces                  */
+
+{keyworda}					{ return SPT_RESERVED_WORD; }				/* all the mysql reserved words   */
+{keywordl}					{ return SPT_RESERVED_WORD; }				/* all the mysql reserved words   */
+{keywords}					{ return SPT_RESERVED_WORD; }				/* all the mysql reserved words   */
+
+
+{numeric}					{ return SPT_NUMERIC; }						/* single numeric value           */
+
+{word}+						{ return SPT_WORD; }						/* return any word                */
+
+{nonword}					{ return SPT_OTHER; }						/* return anything else           */
+
+
                     			
 <<EOF>>   						{
                                     BEGIN(INITIAL);   /* make sure we return to initial state when finished! */
@@ -281,20 +88,576 @@ ZEROFILL            			{ return SPT_RESERVED_WORD;        }   /* all the mysql r
           						}
 %%
 
-int utf8strlen(const char *s)
-/*
- This simple function calculates the string length of an UTF-8 string
- It's fast enough and easy to comprehend
- 
- Adapted from Kragen Javier Sitaker's my_strlen_utf8_c function as
- found on http://canonical.org/~kragen/strlen-utf8.html
- */
+#define ONEMASK ((size_t)(-1) / 0xFF)
+// adapted from http://www.daemonology.net/blog/2008-06-05-faster-utf8-strlen.html
+int utf8strlen(const char * _s)
 {
-    int j=0;
-	while (*s)
-    {
-		if ((*s & 0xC0) != 0x80) j++;
-		s++;
+	const char * s;
+	size_t count = 0;
+	size_t u;
+	unsigned char b;
+
+	/* Handle any initial misaligned bytes. */
+	for (s = _s; (uintptr_t)(s) & (sizeof(size_t) - 1); s++) {
+		b = *s;
+
+		/* Exit if we hit a zero byte. */
+		if (b == '\0')
+			goto done;
+
+		/* Is this byte NOT the first byte of a character? */
+		count += (b >> 7) & ((~b) >> 6);
 	}
-	return (j);
+
+	/* Handle complete blocks. */
+	for (; ; s += sizeof(size_t)) {
+		/* Prefetch 256 bytes ahead. */
+		__builtin_prefetch(&s[256], 0, 0);
+
+		/* Grab 4 or 8 bytes of UTF-8 data. */
+		u = *(size_t *)(s);
+
+		/* Exit the loop if there are any zero bytes. */
+		if ((u - ONEMASK) & (~u) & (ONEMASK * 0x80))
+			break;
+
+		/* Count bytes which are NOT the first byte of a character. */
+		u = ((u & (ONEMASK * 0x80)) >> 7) & ((~u) >> 6);
+		count += (u * ONEMASK) >> ((sizeof(size_t) - 1) * 8);
+	}
+
+	/* Take care of any left-over bytes. */
+	for (; ; s++) {
+		b = *s;
+
+		/* Exit if we hit a zero byte. */
+		if (b == '\0')
+			break;
+
+		/* Is this byte NOT the first byte of a character? */
+		count += (b >> 7) & ((~b) >> 6);
+	}
+
+done:
+	return ((s - _s) - count);
 }
+
+/* un-optimized keywords:
+ACCESSIBLE
+ACTION
+ADD
+AFTER
+AGAINST
+AGGREGATE
+ALGORITHM
+ALL
+ALTER
+ANALYZE
+AND
+ANY
+AS
+ASC
+ASCII
+ASENSITIVE
+AT
+AUTHORS
+AUTOEXTEND_SIZE
+AUTO_INCREMENT
+AVG
+AVG_ROW_LENGTH
+BACKUP{s}TABLE
+BEFORE
+BEGIN
+BETWEEN
+BIGINT
+BINARY
+BINLOG
+BIT
+BLOB
+BOOL
+BOOLEAN
+BOTH
+BTREE
+BY
+BYTE
+CACHE{s}INDEX
+CALL
+CASCADE
+CASCADED
+CASE
+CHAIN
+CHANGE
+CHANGED
+CHAR
+CHARACTER
+CHARSET
+CHECK
+CHECKSUM{s}TABLE
+CIPHER
+CLIENT
+CLOSE
+COALESCE{s}PARTITION
+CODE
+COLLATE
+COLUMN
+COMMENT
+COMMIT
+COMMITTED
+COMPACT
+COMPLETION
+COMPRESSED
+CONCURRENT
+CONDITION
+CONNECTION
+CONSISTENT
+CONSTRAINT
+CONTAINS
+CONTINUE
+CONTRIBUTORS
+CONVERT
+CREATE
+CROSS
+CUBE
+CURRENT_DATE
+CURRENT_TIME
+CURRENT_TIMESTAMP
+CURRENT_USER
+CURSOR
+DATA
+DATABASE
+DATABASES
+DATAFILE
+DATE
+DATETIME
+DAY
+DAY_HOUR
+DAY_MICROSECOND
+DAY_MINUTE
+DAY_SECOND
+DEALLOCATE
+DEC
+DECIMAL
+DECLARE
+DEFAULT
+DEFINER
+DELAYED
+DELAY_KEY_WRITE
+DELETE
+DESC
+DESCRIBE
+DES_KEY_FILE
+DETERMINISTIC
+DIRECTORY
+DISABLE{s}KEYS
+DISCARD{s}TABLESPACE
+DISK
+DISTINCT
+DISTINCTROW
+DIV
+DO
+DOUBLE
+DROP
+DUAL
+DUMPFILE
+DUPLICATE
+DYNAMIC
+EACH
+ELSE
+ELSEIF
+ENABLE{s}KEYS
+ENCLOSED{s}BY
+END
+ENDS
+ENGINE
+ENGINES
+ENUM
+ERRORS
+ESCAPE
+ESCAPED{s}BY
+EVENT
+EVERY
+EXECUTE
+EXISTS
+EXIT
+EXPANSION
+EXPLAIN
+EXTENDED
+EXTENT_SIZE
+FALSE
+FAST
+FETCH
+FILE
+FIRST
+FIXED
+FLOAT
+FLOAT4
+FLOAT8
+FLUSH
+FOR
+FORCE
+FOREIGN
+FOUND
+FRAC_SECOND
+FROM
+FULL
+FULLTEXT
+FUNCTION
+GEOMETRY
+GEOMETRYCOLLECTION
+GET_FORMAT
+GLOBAL
+GRANT
+GRANTS
+GROUP{s}BY
+HANDLER
+HASH
+HAVING
+HELP
+HIGH_PRIORITY
+HOSTS
+HOUR
+HOUR_MICROSECOND
+HOUR_MINUTE
+HOUR_SECOND
+IDENTIFIED
+IF
+IGNORE
+IMPORT{s}TABLESPACE
+IN
+INDEX
+INDEXES
+INFILE
+INITIAL_SIZE
+INNER
+INNOBASE
+INNODB
+INOUT
+INSENSITIVE
+INSERT
+INSERT_METHOD
+INSTALL
+INT
+INT1
+INT2
+INT3
+INT4
+INT8
+INTEGER
+INTERVAL
+INTO({s}(DUMP|OUT)FILE)?
+INVOKER
+IO_THREAD
+IS
+ISOLATION
+ISSUER
+ITERATE
+JOIN
+KEY
+KEYS
+KEY_BLOCK_SIZE
+KILL({s}(CONNECTION|QUERY))?
+LANGUAGE
+LAST
+LEADING
+LEAVE
+LEAVES
+LEFT
+LESS
+LEVEL
+LIKE
+LIMIT
+LINEAR
+LINES
+LINESTRING
+LIST
+LOAD{s}(DATA|INDEX{s}INTO{s}CACHE)
+LOCAL
+LOCALTIME
+LOCALTIMESTAMP
+LOCK
+LOCKS
+LOGFILE
+LOGS
+LONG
+LONGBLOB
+LONGTEXT
+LOOP
+LOW_PRIORITY
+MASTER
+MASTER_CONNECT_RETRY
+MASTER_HOST
+MASTER_LOG_FILE
+MASTER_LOG_POS
+MASTER_PASSWORD
+MASTER_PORT
+MASTER_SERVER_ID
+MASTER_SSL
+MASTER_SSL_CA
+MASTER_SSL_CAPATH
+MASTER_SSL_CERT
+MASTER_SSL_CIPHER
+MASTER_SSL_KEY
+MASTER_SSL_VERIFY_SERVER_CERT
+MASTER_USER
+MATCH
+MAXVALUE
+MAX_CONNECTIONS_PER_HOUR
+MAX_QUERIES_PER_HOUR
+MAX_ROWS
+MAX_SIZE
+MAX_UPDATES_PER_HOUR
+MAX_USER_CONNECTIONS
+MEDIUM
+MEDIUMBLOB
+MEDIUMINT
+MEDIUMTEXT
+MEMORY
+MERGE
+MICROSECOND
+MIDDLEINT
+MIGRATE
+MINUTE
+MINUTE_MICROSECOND
+MINUTE_SECOND
+MIN_ROWS
+MOD
+MODE
+MODIFIES
+MODIFY
+MONTH
+MULTILINESTRING
+MULTIPOINT
+MULTIPOLYGON
+MUTEX
+NAME
+NAMES
+NATIONAL
+NATURAL
+NCHAR
+NDB
+NDBCLUSTER
+NEW
+NEXT
+NO
+NODEGROUP
+NONE
+NOT
+NO_WAIT
+NO_WRITE_TO_BINLOG
+NULL
+NUMERIC
+NVARCHAR
+OFFLINE
+OFFSET
+OLD_PASSWORD
+ONE
+ONE_SHOT
+ONLINE
+ON{s}(DUPLICATE{s}KEY{s}UPDATE)?
+OPEN
+OPTIMIZE
+OPTION
+OPTIONALLY
+OR
+ORDER{s}BY
+OUT
+OUTER
+OUTFILE
+PACK_KEYS
+PARSER
+PARTIAL
+PARTITION
+PARTITIONING
+PARTITIONS
+PASSWORD
+PHASE
+POINT
+POLYGON
+PRECISION
+PREPARE
+PRESERVE
+PREV
+PRIMARY
+PRIVILEGES
+PROCEDURE
+PROCESS
+PURGE
+QUARTER
+QUERY
+QUICK
+RANGE
+READ
+READS
+READ_ONLY
+READ_WRITE
+REAL
+REBUILD{s}PARTITION
+RECOVER
+REDOFILE
+REDO_BUFFER_SIZE
+REDUNDANT
+REFERENCES
+REGEXP
+RELAY_LOG_FILE
+RELAY_LOG_POS
+RELAY_THREAD
+RELEASE
+RELOAD
+REMOVE{s}PARTITIONING
+RENAME
+REORGANIZE{s}PARTITION
+REPAIR
+REPEAT
+REPEATABLE
+REPLACE
+REPLICATION
+REQUIRE
+RESET
+RESTORE{s}TABLE
+RESTRICT
+RESUME
+RETURN
+RETURNS
+REVOKE
+RIGHT
+RLIKE
+ROLLBACK
+ROLLUP
+ROUTINE
+ROW
+ROWS
+ROW_FORMAT
+RTREE
+SAVEPOINT
+SCHEDULE
+SCHEDULER
+SCHEMA
+SCHEMAS
+SECOND
+SECOND_MICROSECOND
+SECURITY
+SELECT
+SENSITIVE
+SEPARATOR
+SERIAL
+SERIALIZABLE
+SESSION
+SET({s}(PASSWORD|NAMES|ONE_SHOT))?
+SHARE
+SHOW({s}(E(NGINE(S)?|RRORS)|M(ASTER|UTEX)|BINLOG|GRANTS|INNODB|P(RIVILEGES|ROFILE(S)?|ROCEDURE{s}CODE)|SLAVE{s}(HOSTS|STATUS)|TRIGGERS|VARIABLES|WARNINGS|PROCESSLIST|FIELDS|PLUGIN(S)?|STORAGE{s}ENGINES|TABLE{s}TYPES|CO(LUMNS|LLATION)|BINLOG{s}EVENTS))?
+SHUTDOWN
+SIGNED
+SIMPLE
+SLAVE
+SMALLINT
+SNAPSHOT
+SOME
+SONAME
+SOUNDS
+SPATIAL
+SPECIFIC
+SQL
+SQLEXCEPTION
+SQLSTATE
+SQLWARNING
+SQL_BIG_RESULT
+SQL_BUFFER_RESULT
+SQL_CACHE
+SQL_CALC_FOUND_ROWS
+SQL_NO_CACHE
+SQL_SMALL_RESULT
+SQL_THREAD
+SQL_TSI_DAY
+SQL_TSI_FRAC_SECOND
+SQL_TSI_HOUR
+SQL_TSI_MINUTE
+SQL_TSI_MONTH
+SQL_TSI_QUARTER
+SQL_TSI_SECOND
+SQL_TSI_WEEK
+SQL_TSI_YEAR
+SSL
+START
+STARTING{s}BY
+STARTS
+STATUS
+STOP
+STRAIGHT_JOIN
+STRING
+SUBJECT
+SUBPARTITION
+SUBPARTITIONS
+SUPER
+SUSPEND
+TABLE
+TABLES
+TABLESPACE
+TEMPORARY
+TEMPTABLE
+TERMINATED{s}BY
+TEXT
+THAN
+THEN
+TIME
+TIMESTAMP
+TIMESTAMPADD
+TIMESTAMPDIFF
+TINYBLOB
+TINYINT
+TINYTEXT
+TO
+TRAILING
+TRANSACTION
+TRIGGER
+TRIGGERS
+TRUE
+TRUNCATE
+TYPE
+UNCOMMITTED
+UNDEFINED
+UNDO
+UNDOFILE
+UNDO_BUFFER_SIZE
+UNICODE
+UNINSTALL
+UNION
+UNIQUE
+UNKNOWN
+UNLOCK
+UNSIGNED
+UNTIL
+UPDATE
+UPGRADE
+USAGE
+USE
+USER
+USER_RESOURCES
+USE_FRM
+USING
+UTC_DATE
+UTC_TIME
+UTC_TIMESTAMP
+VALUE
+VALUES
+VARBINARY
+VARCHAR
+VARCHARACTER
+VARIABLES
+VARYING
+VIEW
+WAIT
+WARNINGS
+WEEK
+WHEN
+WHERE
+WHILE
+WITH({s}PARSER)?
+WORK
+WRITE
+X509
+XA
+XOR
+YEAR
+YEAR_MONTH
+ZEROFILL
+*/

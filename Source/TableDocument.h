@@ -85,10 +85,12 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
+	NSString *favoriteNamebBeingChanged;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
+	BOOL _encodingViaLatin1;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -131,6 +133,7 @@
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
 - (NSString *)connectionEncoding;
+- (BOOL)connectionEncodingViaLatin1;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;
@@ -176,6 +179,7 @@
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
+- (IBAction)addConnectionToFavorites:(id)sender;
 
 //toolbar methods
 - (void)setupToolbar;
@@ -185,33 +189,9 @@
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 - (void)updateChooseDatabaseToolbarItemWidth;
 
-//NSDocument methods
-- (NSString *)windowNibName;
-- (void)windowControllerDidLoadNib:(NSWindowController *)aController;
-- (void)windowWillClose:(NSNotification *)aNotification;
-
-//NSWindow delegate methods
-- (BOOL)windowShouldClose:(id)sender;
-
 //SMySQL delegate methods
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
-
-// Connection sheet delegate methods
-- (void) controlTextDidChange:(NSNotification *)aNotification;
-
-//splitView delegate methods
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex;
-
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
 
 @end
 

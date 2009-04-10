@@ -39,6 +39,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
 #define kWQval      @"quoted"
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
+#define kQuote      @"Quote"
 
 
 @implementation CMTextView
@@ -171,6 +172,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if (autopairEnabled && characters && [characters length] == 1) {
 
+		delBackwardsWasPressed = NO;
+
 		NSString *matchingCharacter = nil;
 		BOOL processAutopair = NO, skipTypedLinkedCharacter = NO;
 		NSRange currentRange;
@@ -293,6 +296,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
+	
 }
 
 
@@ -304,8 +308,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSRange currentRange = [self selectedRange];
 	if (currentRange.length == 0 && currentRange.location > 0 && [self areAdjacentCharsLinked])
 		[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
+	
+	// Avoid auto-uppercasing if resulting word would be a SQL keyword;
+	// e.g. type inta| and deleteBackward:
+	delBackwardsWasPressed = YES;	
 
 	[super deleteBackward:sender];
+
 }
 
 
@@ -480,10 +489,16 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
 {
 
+	// Check if the caret is inside quotes "" or ''; if so 
+	// return the normal word suggestion due to the spelling's settings
+	if([[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
+		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
+
 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!"];
-	NSArray *textViewWords = [[self string] componentsSeparatedByCharactersInSet:separators];
-	NSString *partialString = [[self string] substringWithRange:charRange];
+	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+	NSString *partialString    = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
+
 	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
 	
 	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
@@ -503,23 +518,22 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
 	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+
 	unsigned i, insindex;
 	
 	insindex = 0;
-	for (i = 0; i < [matchingCompletions count]; i ++)
+	for (i = 0; i < [matchingCompletions count]; i++)
 	{
-		if ([partialString isEqualToString:[[matchingCompletions objectAtIndex:i] substringToIndex:partialLength]])
-		{
-			// Matches case --> Insert at beginning of completion list
-			[compl insertObject:[matchingCompletions objectAtIndex:i] atIndex:insindex++];
-		}
-		else
-		{
-			// Not matching case --> Insert at end of completion list
-			[compl addObject:[matchingCompletions objectAtIndex:i]];	
-		}
+		NSString* obj = [matchingCompletions objectAtIndex:i];
+		if(![compl containsObject:obj])
+			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
+				// Matches case --> Insert at beginning of completion list
+				[compl insertObject:obj atIndex:insindex++];
+			else
+				// Not matching case --> Insert at end of completion list
+				[compl addObject:obj];
 	}
-	
+
 	return [compl autorelease];
 }
 
@@ -529,10 +543,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void)paste:(id)sender
 {
-	// Insert the content of the pasteboard
-	NSPasteboard *pb = [NSPasteboard generalPasteboard];
-	[self insertText:[pb stringForType:NSStringPboardType]];
 
+	[super paste:sender];
 	// Invoke the auto-uppercasing of SQL keywords via an additional trigger
 	[self insertText:@""];
 }
@@ -545,8 +557,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 -(NSArray *)keywords
 {
 	return [NSArray arrayWithObjects:
+	@"ACCESSIBLE",
+	@"ACTION",
 	@"ADD",
+	@"AFTER",
+	@"AGAINST",
+	@"AGGREGATE",
+	@"ALGORITHM",
 	@"ALL",
+	@"ALTER",
 	@"ALTER TABLE",
 	@"ALTER VIEW",
 	@"ALTER SCHEMA",
@@ -557,29 +576,70 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"ALTER PROCEDURE",
 	@"ANALYZE",
 	@"AND",
+	@"ANY",
+	@"AS",
 	@"ASC",
+	@"ASCII",
 	@"ASENSITIVE",
+	@"AT",
+	@"AUTHORS",
+	@"AUTOEXTEND_SIZE",
+	@"AUTO_INCREMENT",
+	@"AVG",
+	@"AVG_ROW_LENGTH",
+	@"BACKUP",
 	@"BEFORE",
+	@"BEGIN",
 	@"BETWEEN",
 	@"BIGINT",
 	@"BINARY",
+	@"BINLOG",
+	@"BIT",
 	@"BLOB",
+	@"BOOL",
+	@"BOOLEAN",
 	@"BOTH",
+	@"BTREE",
+	@"BY",
+	@"BYTE",
+	@"CACHE",
 	@"CALL",
 	@"CASCADE",
+	@"CASCADED",
 	@"CASE",
+	@"CHAIN",
 	@"CHANGE",
+	@"CHANGED",
 	@"CHAR",
 	@"CHARACTER",
+	@"CHARSET",
 	@"CHECK",
+	@"CHECKSUM",
+	@"CIPHER",
+	@"CLIENT",
+	@"CLOSE",
+	@"COALESCE",
+	@"CODE",
 	@"COLLATE",
+	@"COLLATION",
 	@"COLUMN",
 	@"COLUMNS",
+	@"COMMENT",
+	@"COMMIT",
+	@"COMMITTED",
+	@"COMPACT",
+	@"COMPLETION",
+	@"COMPRESSED",
+	@"CONCURRENT",
 	@"CONDITION",
 	@"CONNECTION",
+	@"CONSISTENT",
 	@"CONSTRAINT",
+	@"CONTAINS",
 	@"CONTINUE",
+	@"CONTRIBUTORS",
 	@"CONVERT",
+	@"CREATE",
 	@"CREATE VIEW",
 	@"CREATE INDEX",
 	@"CREATE FUNCTION",
@@ -590,30 +650,46 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"CREATE TABLE",
 	@"CREATE USER",
 	@"CROSS",
+	@"CUBE",
 	@"CURRENT_DATE",
 	@"CURRENT_TIME",
 	@"CURRENT_TIMESTAMP",
 	@"CURRENT_USER",
 	@"CURSOR",
+	@"DATA",
 	@"DATABASE",
 	@"DATABASES",
+	@"DATAFILE",
+	@"DATE",
+	@"DATETIME",
+	@"DAY",
 	@"DAY_HOUR",
 	@"DAY_MICROSECOND",
 	@"DAY_MINUTE",
 	@"DAY_SECOND",
+	@"DEALLOCATE",
 	@"DEC",
 	@"DECIMAL",
 	@"DECLARE",
 	@"DEFAULT",
+	@"DEFINER",
 	@"DELAYED",
+	@"DELAY_KEY_WRITE",
 	@"DELETE",
 	@"DESC",
 	@"DESCRIBE",
+	@"DES_KEY_FILE",
 	@"DETERMINISTIC",
+	@"DIRECTORY",
+	@"DISABLE",
+	@"DISCARD",
+	@"DISK",
 	@"DISTINCT",
 	@"DISTINCTROW",
 	@"DIV",
+	@"DO",
 	@"DOUBLE",
+	@"DROP",
 	@"DROP TABLE",
 	@"DROP TRIGGER",
 	@"DROP VIEW",
@@ -627,107 +703,296 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"DROP PRIMARY KEY",
 	@"DROP DATABASE",
 	@"DUAL",
+	@"DUMPFILE",
+	@"DUPLICATE",
+	@"DYNAMIC",
 	@"EACH",
 	@"ELSE",
 	@"ELSEIF",
+	@"ENABLE",
 	@"ENCLOSED",
+	@"END",
+	@"ENDS",
+	@"ENGINE",
+	@"ENGINES",
+	@"ENUM",
+	@"ERRORS",
+	@"ESCAPE",
 	@"ESCAPED",
+	@"EVENT",
+	@"EVENTS",
+	@"EVERY",
+	@"EXECUTE",
 	@"EXISTS",
 	@"EXIT",
+	@"EXPANSION",
 	@"EXPLAIN",
+	@"EXTENDED",
+	@"EXTENT_SIZE",
 	@"FALSE",
+	@"FAST",
 	@"FETCH",
 	@"FIELDS",
+	@"FILE",
+	@"FIRST",
+	@"FIXED",
 	@"FLOAT",
+	@"FLOAT4",
+	@"FLOAT8",
+	@"FLUSH",
 	@"FOR",
 	@"FORCE",
+	@"FOREIGN",
 	@"FOREIGN KEY",
 	@"FOUND",
+	@"FRAC_SECOND",
 	@"FROM",
+	@"FULL",
 	@"FULLTEXT",
-	@"GOTO",
+	@"FUNCTION",
+	@"GEOMETRY",
+	@"GEOMETRYCOLLECTION",
+	@"GET_FORMAT",
+	@"GLOBAL",
 	@"GRANT",
+	@"GRANTS",
 	@"GROUP",
+	@"HANDLER",
+	@"HASH",
 	@"HAVING",
+	@"HELP",
 	@"HIGH_PRIORITY",
+	@"HOSTS",
+	@"HOUR",
 	@"HOUR_MICROSECOND",
 	@"HOUR_MINUTE",
 	@"HOUR_SECOND",
+	@"IDENTIFIED",
+	@"IF",
 	@"IGNORE",
+	@"IMPORT",
+	@"IN",
 	@"INDEX",
+	@"INDEXES",
 	@"INFILE",
+	@"INITIAL_SIZE",
 	@"INNER",
+	@"INNOBASE",
+	@"INNODB",
 	@"INOUT",
 	@"INSENSITIVE",
 	@"INSERT",
+	@"INSERT_METHOD",
+	@"INSTALL",
 	@"INT",
+	@"INT1",
+	@"INT2",
+	@"INT3",
+	@"INT4",
+	@"INT8",
 	@"INTEGER",
 	@"INTERVAL",
 	@"INTO",
+	@"INVOKER",
+	@"IO_THREAD",
+	@"IS",
+	@"ISOLATION",
+	@"ISSUER",
 	@"ITERATE",
 	@"JOIN",
 	@"KEY",
 	@"KEYS",
+	@"KEY_BLOCK_SIZE",
 	@"KILL",
+	@"LANGUAGE",
+	@"LAST",
 	@"LEADING",
 	@"LEAVE",
+	@"LEAVES",
 	@"LEFT",
+	@"LESS",
+	@"LEVEL",
 	@"LIKE",
 	@"LIMIT",
+	@"LINEAR",
 	@"LINES",
-	@"LOAD",
+	@"LINESTRING",
+	@"LIST",
+	@"LOAD DATA",
+	@"LOCAL",
 	@"LOCALTIME",
 	@"LOCALTIMESTAMP",
 	@"LOCK",
+	@"LOCKS",
+	@"LOGFILE",
+	@"LOGS",
 	@"LONG",
 	@"LONGBLOB",
 	@"LONGTEXT",
 	@"LOOP",
 	@"LOW_PRIORITY",
+	@"MASTER",
+	@"MASTER_CONNECT_RETRY",
+	@"MASTER_HOST",
+	@"MASTER_LOG_FILE",
+	@"MASTER_LOG_POS",
+	@"MASTER_PASSWORD",
+	@"MASTER_PORT",
+	@"MASTER_SERVER_ID",
+	@"MASTER_SSL",
+	@"MASTER_SSL_CA",
+	@"MASTER_SSL_CAPATH",
+	@"MASTER_SSL_CERT",
+	@"MASTER_SSL_CIPHER",
+	@"MASTER_SSL_KEY",
+	@"MASTER_USER",
 	@"MATCH",
+	@"MAXVALUE",
+	@"MAX_CONNECTIONS_PER_HOUR",
+	@"MAX_QUERIES_PER_HOUR",
+	@"MAX_ROWS",
+	@"MAX_SIZE",
+	@"MAX_UPDATES_PER_HOUR",
+	@"MAX_USER_CONNECTIONS",
+	@"MEDIUM",
 	@"MEDIUMBLOB",
 	@"MEDIUMINT",
 	@"MEDIUMTEXT",
+	@"MEMORY",
+	@"MERGE",
+	@"MICROSECOND",
 	@"MIDDLEINT",
+	@"MIGRATE",
+	@"MINUTE",
 	@"MINUTE_MICROSECOND",
 	@"MINUTE_SECOND",
+	@"MIN_ROWS",
 	@"MOD",
+	@"MODE",
+	@"MODIFIES",
+	@"MODIFY",
+	@"MONTH",
+	@"MULTILINESTRING",
+	@"MULTIPOINT",
+	@"MULTIPOLYGON",
+	@"MUTEX",
+	@"NAME",
+	@"NAMES",
+	@"NATIONAL",
 	@"NATURAL",
+	@"NCHAR",
+	@"NDB",
+	@"NDBCLUSTER",
+	@"NEW",
+	@"NEXT",
+	@"NO",
+	@"NODEGROUP",
+	@"NONE",
 	@"NOT",
+	@"NO_WAIT",
 	@"NO_WRITE_TO_BINLOG",
 	@"NULL",
 	@"NUMERIC",
+	@"NVARCHAR",
+	@"OFFSET",
+	@"OLD_PASSWORD",
 	@"ON",
+	@"ONE",
+	@"ONE_SHOT",
+	@"OPEN",
 	@"OPTIMIZE",
 	@"OPTION",
 	@"OPTIONALLY",
+	@"OR",
 	@"ORDER",
 	@"OUT",
 	@"OUTER",
 	@"OUTFILE",
+	@"PACK_KEYS",
+	@"PARSER",
+	@"PARTIAL",
+	@"PARTITION",
+	@"PARTITIONING",
+	@"PARTITIONS",
+	@"PASSWORD",
+	@"PHASE",
+	@"PLUGIN",
+	@"PLUGINS",
+	@"POINT",
+	@"POLYGON",
 	@"PRECISION",
+	@"PREPARE",
+	@"PRESERVE",
+	@"PREV",
 	@"PRIMARY",
 	@"PRIVILEGES",
 	@"PROCEDURE",
+	@"PROCESS",
+	@"PROCESSLIST",
 	@"PURGE",
+	@"QUARTER",
+	@"QUERY",
+	@"QUICK",
+	@"RANGE",
 	@"READ",
+	@"READS",
+	@"READ_ONLY",
+	@"READ_WRITE",
 	@"REAL",
+	@"REBUILD",
+	@"RECOVER",
+	@"REDOFILE",
+	@"REDO_BUFFER_SIZE",
+	@"REDUNDANT",
 	@"REFERENCES",
 	@"REGEXP",
+	@"RELAY_LOG_FILE",
+	@"RELAY_LOG_POS",
+	@"RELAY_THREAD",
+	@"RELEASE",
+	@"RELOAD",
+	@"REMOVE",
 	@"RENAME",
+	@"REORGANIZE",
+	@"REPAIR",
 	@"REPEAT",
+	@"REPEATABLE",
 	@"REPLACE",
+	@"REPLICATION",
 	@"REQUIRE",
+	@"RESET",
+	@"RESTORE",
 	@"RESTRICT",
+	@"RESUME",
 	@"RETURN",
+	@"RETURNS",
 	@"REVOKE",
 	@"RIGHT",
 	@"RLIKE",
+	@"ROLLBACK",
+	@"ROLLUP",
+	@"ROUTINE",
+	@"ROW",
+	@"ROWS",
+	@"ROW_FORMAT",
+	@"RTREE",
+	@"SAVEPOINT",
+	@"SCHEDULE",
+	@"SCHEDULER",
+	@"SCHEMA",
+	@"SCHEMAS",
+	@"SECOND",
 	@"SECOND_MICROSECOND",
+	@"SECURITY",
 	@"SELECT",
 	@"SENSITIVE",
 	@"SEPARATOR",
+	@"SERIAL",
+	@"SERIALIZABLE",
+	@"SESSION",
 	@"SET",
+	@"SHARE",
+	@"SHOW",
 	@"SHOW PROCEDURE STATUS",
 	@"SHOW PROCESSLIST",
 	@"SHOW SCHEMAS",
@@ -767,8 +1032,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"SHOW ENGINE",
 	@"SHOW ENGINES",
 	@"SHOW KEYS",
+	@"SHUTDOWN",
+	@"SIGNED",
+	@"SIMPLE",
+	@"SLAVE",
 	@"SMALLINT",
+	@"SNAPSHOT",
+	@"SOME",
 	@"SONAME",
+	@"SOUNDS",
 	@"SPATIAL",
 	@"SPECIFIC",
 	@"SQL",
@@ -776,44 +1048,105 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"SQLSTATE",
 	@"SQLWARNING",
 	@"SQL_BIG_RESULT",
+	@"SQL_BUFFER_RESULT",
+	@"SQL_CACHE",
 	@"SQL_CALC_FOUND_ROWS",
+	@"SQL_NO_CACHE",
 	@"SQL_SMALL_RESULT",
+	@"SQL_THREAD",
+	@"SQL_TSI_DAY",
+	@"SQL_TSI_FRAC_SECOND",
+	@"SQL_TSI_HOUR",
+	@"SQL_TSI_MINUTE",
+	@"SQL_TSI_MONTH",
+	@"SQL_TSI_QUARTER",
+	@"SQL_TSI_SECOND",
+	@"SQL_TSI_WEEK",
+	@"SQL_TSI_YEAR",
 	@"SSL",
+	@"START",
 	@"STARTING",
+	@"STARTS",
+	@"STATUS",
+	@"STOP",
+	@"STORAGE",
 	@"STRAIGHT_JOIN",
+	@"STRING",
+	@"SUBJECT",
+	@"SUBPARTITION",
+	@"SUBPARTITIONS",
+	@"SUPER",
+	@"SUSPEND",
 	@"TABLE",
 	@"TABLES",
+	@"TABLESPACE",
+	@"TEMPORARY",
+	@"TEMPTABLE",
 	@"TERMINATED",
+	@"TEXT",
+	@"THAN",
 	@"THEN",
+	@"TIME",
+	@"TIMESTAMP",
+	@"TIMESTAMPADD",
+	@"TIMESTAMPDIFF",
 	@"TINYBLOB",
 	@"TINYINT",
 	@"TINYTEXT",
+	@"TO",
 	@"TRAILING",
+	@"TRANSACTION",
 	@"TRIGGER",
+	@"TRIGGERS",
 	@"TRUE",
+	@"TRUNCATE",
+	@"TYPE",
+	@"TYPES",
+	@"UNCOMMITTED",
+	@"UNDEFINED",
 	@"UNDO",
+	@"UNDOFILE",
+	@"UNDO_BUFFER_SIZE",
+	@"UNICODE",
+	@"UNINSTALL",
 	@"UNION",
 	@"UNIQUE",
+	@"UNKNOWN",
 	@"UNLOCK",
 	@"UNSIGNED",
+	@"UNTIL",
 	@"UPDATE",
+	@"UPGRADE",
 	@"USAGE",
 	@"USE",
+	@"USER",
+	@"USER_RESOURCES",
+	@"USE_FRM",
 	@"USING",
 	@"UTC_DATE",
 	@"UTC_TIME",
 	@"UTC_TIMESTAMP",
+	@"VALUE",
 	@"VALUES",
 	@"VARBINARY",
 	@"VARCHAR",
 	@"VARCHARACTER",
+	@"VARIABLES",
 	@"VARYING",
+	@"VIEW",
+	@"WAIT",
+	@"WARNINGS",
+	@"WEEK",
 	@"WHEN",
 	@"WHERE",
 	@"WHILE",
 	@"WITH",
+	@"WORK",
 	@"WRITE",
+	@"X509",
+	@"XA",
 	@"XOR",
+	@"YEAR",
 	@"YEAR_MONTH",
 	@"ZEROFILL",
 	nil];
@@ -901,6 +1234,7 @@ SYNTAX HIGHLIGHTING!
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
 	autouppercaseKeywordsEnabled = YES;
+	delBackwardsWasPressed = NO;
 }
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
@@ -924,6 +1258,8 @@ SYNTAX HIGHLIGHTING!
 	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
 	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
 	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
+	NSColor *numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
+	NSColor *variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
 
 	NSColor *tokenColor;
 
@@ -956,8 +1292,14 @@ SYNTAX HIGHLIGHTING!
 			case SPT_RESERVED_WORD:
 			    tokenColor = keywordColor;
 			    break;
+			case SPT_NUMERIC:
+				tokenColor = numericColor;
+				break;
 			case SPT_COMMENT:
 			    tokenColor = commentColor;
+			    break;
+			case SPT_VARIABLE:
+			    tokenColor = variableColor;
 			    break;
 			default:
 			    tokenColor = nil;
@@ -973,19 +1315,29 @@ SYNTAX HIGHLIGHTING!
 		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
-		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; // Check the end of the token
-		if (autouppercaseKeywordsEnabled 
+		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; 
+		// Check the end of the token
+		if (autouppercaseKeywordsEnabled && !delBackwardsWasPressed
 			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
-			// check if next char is not a kSQLkeyword; if so then upper case keyword
+			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
+			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
-			@try {
-			if(![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil])
-				// Register it for undo
-				// [self shouldChangeTextInRange:tokenRange replacementString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
-				// NOTE: If one does this registering it ends up in single-character-undo
-				[self replaceCharactersInRange:tokenRange withString:[[[self string] substringWithRange:tokenRange] uppercaseString]];
-			} @catch(id ae) {  }
-		
+			{
+				NSString* curTokenString = [[self string] substringWithRange:tokenRange];
+				BOOL doIt = NO;
+				@try
+				{
+						doIt = ![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil];
+				} @catch(id ae) { doIt = YES;  }
+
+				if(doIt && ![[curTokenString uppercaseString] isEqualToString:curTokenString])
+				{
+					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
+					[self shouldChangeTextInRange:tokenRange replacementString:[curTokenString uppercaseString]];
+					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
+				}
+			}
+
 		[textStore addAttribute: NSForegroundColorAttributeName
 						  value: tokenColor
 						  range: tokenRange ];
@@ -1002,6 +1354,12 @@ SYNTAX HIGHLIGHTING!
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			[textStore addAttribute: kSQLkeyword
+							  value: kWQval
+							  range: tokenRange ];
+		// Add an attribute to be used to distinguish quotes from keywords etc.
+		// used e.g. in completion suggestions
+		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT)
+			[textStore addAttribute: kQuote
 							  value: kWQval
 							  range: tokenRange ];
 	}
