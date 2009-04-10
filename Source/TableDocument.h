@@ -179,6 +179,7 @@
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
+- (IBAction)addConnectionToFavorites:(id)sender;
 
 //toolbar methods
 - (void)setupToolbar;
