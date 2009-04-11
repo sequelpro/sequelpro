@@ -396,6 +396,10 @@ sets the tableView columns corresponding to the mysql-result
 		}
 	}
 	
+	if(usedQuery)
+		[usedQuery release];
+	usedQuery = [[NSString stringWithString:[queries componentsJoinedByString:@";\n"]] retain];
+	
 	//perform empty query if no query is given
 	if ( [queries count] == 0 ) {
 		theResult = [mySQLConnection queryString:@""];
@@ -668,6 +672,10 @@ inserts the query in the textView and performs query
 	[self runAllQueries:self];
 }
 
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
 
 #pragma mark -
 #pragma mark TableView datasource methods
@@ -1062,6 +1070,7 @@ traps enter key and
 {
 	self = [super init];
 	prefs = nil;
+	usedQuery = [[NSString stringWithString:@""] retain];
 	return self;
 }
 
@@ -1070,6 +1079,7 @@ traps enter key and
 	[queryResult release];
 	[prefs release];
 	[queryFavorites release];
+	[usedQuery release];
 	
 	[super dealloc];
 }

@@ -50,6 +50,7 @@
 	sortField = nil;
 	areShowingAllRows = false;
 	currentlyEditingRow = -1;
+	usedQuery = [[NSString stringWithString:@""] retain];
 		
 	return self;
 }
@@ -297,6 +298,8 @@
 						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 	}
 
+	[self setUsedQuery:query];
+	
 	queryResult = [mySQLConnection queryString:query];
 	if ( queryResult == nil ) {
 		NSLog(@"Loading table data for %@ failed, query string was: %@", aTable, query);
@@ -393,6 +396,9 @@
 						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 		[limitRowsField selectText:self];
 	}
+	
+	[self setUsedQuery:queryString];
+	
 	queryResult = [mySQLConnection queryString:queryString];
 	//	[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
 	[fullResult setArray:[self fetchResultAsArray:queryResult]];
@@ -605,6 +611,8 @@
 						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
 	}
 
+	[self setUsedQuery:queryString];
+	
 	theResult = [mySQLConnection queryString:queryString];
 	[filteredResult setArray:[self fetchResultAsArray:theResult]];
 	
@@ -652,6 +660,18 @@
 {
 	// If the user is filtering for NULLs then disabled the filter field, otherwise enable it.
 	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
+}
+
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
+
+- (void)setUsedQuery:(NSString *)query
+{
+	if(usedQuery)
+		[usedQuery release];
+	usedQuery = [[NSString stringWithString:query] retain];
 }
 
 
@@ -1659,6 +1679,7 @@
 										[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 					}
 					
+					[self setUsedQuery:queryString];
 					queryResult = [mySQLConnection queryString:queryString];
 					//						[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
 					[fullResult setArray:[self fetchResultAsArray:queryResult]];
@@ -2189,6 +2210,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[compareType release];
 	if (sortField) [sortField release];
 	[prefs release];
+	[usedQuery release];
 	
 	[super dealloc];
 }

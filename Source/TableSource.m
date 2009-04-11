@@ -91,7 +91,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
 	[tableSourceResult release];
 
-	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
+	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"NSPrintPanelShowsPageSetupAccessory %@", [selectedTable backtickQuotedString]]] retain];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
@@ -830,6 +830,23 @@ returns a dictionary containing enum/set field names as key and possible values 
 - (NSDictionary *)enumFields
 {
 	return [NSDictionary dictionaryWithDictionary:enumFields];
+}
+
+- (NSArray *)tableStructureForPrint
+{
+	CMMCPResult *queryResult;
+	NSMutableArray *tempResult = [NSMutableArray array];
+	int i;
+	
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	[tempResult addObject:[queryResult fetchFieldNames]];
+	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+		[tempResult addObject:[queryResult fetchRowAsArray]];
+	}
+	
+	return tempResult;
 }
 
 #pragma mark TableView datasource methods
