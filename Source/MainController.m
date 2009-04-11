@@ -28,7 +28,7 @@
 #import "SPPreferenceController.h"
 
 #define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
-#define SEQUEL_PRO_DONATIONS_URL @"http://code.google.com/p/sequel-pro/wiki/Donations"
+#define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
 #define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
 
 @implementation MainController
