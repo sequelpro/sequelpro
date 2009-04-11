@@ -425,9 +425,9 @@
 		17E641430EF01E90001BC333 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */,
 				17E6418B0EF01FF7001BC333 /* Images */,
 				1703EF2A0F0B0742005BBE7E /* english_help */,
+				296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */,
 				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
 				17E641F60EF02088001BC333 /* Info.plist */,
 				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
