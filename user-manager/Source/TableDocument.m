@@ -34,6 +34,7 @@
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPUserManager.h"
+#import "SPExportController.h"
 #import "SPQueryConsole.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
@@ -43,18 +44,23 @@
 #import "CMMCPResult.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
-NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFavoritesControllerFavoritesDidChange";
+NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocumentFavoritesControllerFavoritesDidChange";
+
+@interface TableDocument (PrivateAPI)
+
+- (BOOL)_favoriteAlreadyExists:(NSString *)database host:(NSString *)host user:(NSString *)user;
+
+@end
 
 @implementation TableDocument
 
 - (id)init
 {
-	if (![super init])
-		return nil;
-	
-	_encoding = [@"utf8" retain];
-	chooseDatabaseButton = nil;
-	chooseDatabaseToolbarItem = nil;
+	if ((self = [super init])) {
+		_encoding = [@"utf8" retain];
+		chooseDatabaseButton = nil;
+		chooseDatabaseToolbarItem = nil;
+	}
 		
 	return self;
 }
@@ -94,12 +100,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 
 - (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
 {
-	
 	NSPrintInfo *printInfo = [self printInfo];
 	[printInfo setHorizontalPagination:NSFitPagination];
 	[printInfo setVerticalPagination:NSAutoPagination];
 	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
 	return printOp;
+
 }
 
 - (CMMCPConnection *)sharedConnection
@@ -107,8 +113,15 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	return mySQLConnection;
 }
 
-
 //start sheet
+
+/**
+ * Set whether the connection sheet should automaticall start connecting
+ */
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect
+{
+	_shouldOpenConnectionAutomatically = shouldAutomaticallyConnect;
+}
 
 /**
  * tries to connect to a database server, shows connect sheet prompting user to
@@ -117,7 +130,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 - (IBAction)connectToDB:(id)sender
 {
 	
-	// load the details of the curretnly selected favorite into the text boxes in connect sheet
+	// load the details of the currently selected favorite into the text boxes in connect sheet
 	[self chooseFavorite:self];
 	
 	// run the connect sheet (modal)
@@ -126,6 +139,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		modalDelegate:self
 	   didEndSelector:@selector(connectSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
+
+	// Connect automatically to the last used or default favourite
+	// connectSheet must open first.
+	if (_shouldOpenConnectionAutomatically) {
+		[self connect:self];
+	}
 }
 
 
@@ -203,7 +222,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		//register as delegate
 		[mySQLConnection setDelegate:self];
 		// set encoding
-		NSString *encodingName = [prefs objectForKey:@"encoding"];
+		NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
 		if ( [encodingName isEqualToString:@"Autodetect"] ) {
 			[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
 		} else {
@@ -224,6 +243,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		[tableContentInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
+		[spExportControllerInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
 		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
@@ -240,7 +260,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		//can't connect to host
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect",
-						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"connectionTimeout"] intValue], [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]]);
 	} else if (code == 3) {
 		//can't connect to db
 		NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
@@ -260,12 +280,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[tableWindow close];
 }
 
-- (IBAction)closeSheet:(id)sender
-/*
- invoked when user hits the cancel button of the connectSheet
- stops modal session with code 0
- reused when user hits the close button of the variablseSheet or of the createTableSyntaxSheet
+/**
+ * Invoked when user hits the cancel button of the connectSheet
+ * stops modal session with code 0
+ * reused when user hits the close button of the variablseSheet or of the createTableSyntaxSheet
  */
+- (IBAction)closeSheet:(id)sender
 {
 	[NSApp stopModalWithCode:0];
 }
@@ -285,7 +305,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
 	[passwordField setStringValue:[self selectedFavoritePassword]];
 	
-	[prefs setInteger:[favoritesController selectionIndex] forKey:@"lastFavoriteIndex"];
+	[prefs setInteger:[favoritesController selectionIndex] forKey:@"LastFavoriteIndex"];
 }
 
 /**
@@ -820,9 +840,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	return _supportsEncoding;
 }
 
-
 #pragma mark Table Methods
 
+/**
+ * Displays the CREATE TABLE syntax of the selected table to the user via a HUD panel.
+ */
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
@@ -846,6 +868,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
+/**
+ * Copies the CREATE TABLE syntax of the selected table to the pasteboard.
+ */
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
 	// Create the query and get results
@@ -876,146 +901,264 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
                                               notificationName:@"Table Syntax Copied"];
 }
 
+/**
+ * Performs a MySQL check table on the selected table and presents the result to the user via an alert sheet.
+ */
 - (IBAction)checkTable:(id)sender
-{
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
-	
-	//Create the query and get results
-	query = [NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]];
-	theResult = [mySQLConnection queryString:query];
+{	
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while checking table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			
+			[[NSAlert alertWithMessageText:@"Unable to check table" 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to check the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:tableWindow 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+							   contextInfo:NULL];			
 		}
+		
 		return;
 	}
 	
 	// Process result
-	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Check '%@' table", [self table]], [NSString stringWithFormat:@"Check: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	
+	NSString *message = @"";
+	
+	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Check table successfully passed." : @"Check table failed.";
+	
+	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
+	
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Check table '%@'", [self table]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:message] 
+		  beginSheetModalForWindow:tableWindow 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];	
 }
 
+/**
+ * Analyzes the selected table and presents the result to the user via an alert sheet.
+ */
 - (IBAction)analyzeTable:(id)sender
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
-	
-	//Create the query and get results
-	query = [NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]];
-	theResult = [mySQLConnection queryString:query];
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while analyzing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			
+			[[NSAlert alertWithMessageText:@"Unable to analyze table" 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to analyze the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:tableWindow 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+							   contextInfo:NULL];			
 		}
+		
 		return;
 	}
 	
 	// Process result
-	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Analyze '%@' table", [self table]], [NSString stringWithFormat:@"Analyze: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	
+	NSString *message = @"";
+	
+	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully analyzed table" : @"Analyze table failed.";
+	
+	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
+	
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Analyze table '%@'", [self table]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:message] 
+		  beginSheetModalForWindow:tableWindow 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];
 }
 
+/**
+ * Optimizes the selected table and presents the result to the user via an alert sheet.
+ */
 - (IBAction)optimizeTable:(id)sender
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
-	
-	//Create the query and get results
-	query = [NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]];
-	theResult = [mySQLConnection queryString:query];
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while optimizing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			
+			[[NSAlert alertWithMessageText:@"Unable to optimize table" 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to optimize the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:tableWindow 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+							   contextInfo:NULL];			
 		}
+		
 		return;
 	}
 	
 	// Process result
-	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Optimize '%@' table", [self table]], [NSString stringWithFormat:@"Optimize: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	
+	NSString *message = @"";
+	
+	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully optimized table" : @"Optimize table failed.";
+	
+	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
+	
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Optimize table '%@'", [self table]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:message] 
+		  beginSheetModalForWindow:tableWindow 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];
 }
 
+/**
+ * Repairs the selected table and presents the result to the user via an alert sheet.
+ */
 - (IBAction)repairTable:(id)sender
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
-	
-	//Create the query and get results
-	query = [NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]];
-	theResult = [mySQLConnection queryString:query];
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while repairing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			
+			[[NSAlert alertWithMessageText:@"Unable to repair table" 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to repair the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:tableWindow 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+							   contextInfo:NULL];			
 		}
+		
 		return;
 	}
 	
 	// Process result
-	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Repair '%@' table", [self table]], [NSString stringWithFormat:@"Repair: %@", [theRow objectForKey:@"Msg_text"]], @"OK", nil, nil);
+	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	
+	NSString *message = @"";
+	
+	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully repaired table" : @"Repair table failed.";
+	
+	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
+	
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Repair table '%@'", [self table]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:message] 
+		  beginSheetModalForWindow:tableWindow 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];
 }
 
+/**
+ * Flush the selected table and inform the user via a dialog sheet.
+ */
 - (IBAction)flushTable:(id)sender
 {
-	NSString *query;
-	CMMCPResult *theResult;
-	
-	//Create the query and get results
-	query = [NSString stringWithFormat:@"FLUSH TABLE %@", [[self table] backtickQuotedString]];
-	theResult = [mySQLConnection queryString:query];
+	[mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while flushing table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			
+			[[NSAlert alertWithMessageText:@"Unable to flush table" 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to flush the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:tableWindow 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+						       contextInfo:NULL];			
 		}
+		
 		return;
 	}
-	
-	// Process result
-	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Flush '%@' table", [self table]], @"Flushed", @"OK", nil, nil);
+		
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Flush table '%@'", [self table]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:@"Table was successfully flushed"] 
+		  beginSheetModalForWindow:tableWindow 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];
 }
 
+/**
+ * Runs a MySQL checksum on the selected table and present the result to the user via an alert sheet.
+ */
 - (IBAction)checksumTable:(id)sender
-{
-	NSString *query;
-	CMMCPResult *theResult;
-	NSDictionary *theRow;
-	
-	//Create the query and get results
-	query = [NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]];
-	theResult = [mySQLConnection queryString:query];
+{	
+	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while performming checksum on table.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			
+			[[NSAlert alertWithMessageText:@"Unable to perform checksum" 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while performing the checksum on table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:tableWindow 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+							   contextInfo:NULL];			
 		}
 		return;
 	}
 	
 	// Process result
-	theRow = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	NSRunInformationalAlertPanel([NSString stringWithFormat:@"Checksum '%@' table", [self table]], [NSString stringWithFormat:@"Checksum: %@", [theRow objectForKey:@"Checksum"]], @"OK", nil, nil);
+	NSString *result = [[[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject] objectForKey:@"Checksum"];
+	
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Checksum table '%@'", [self table]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:[NSString stringWithFormat:@"Table checksum: %@", result]] 
+		  beginSheetModalForWindow:tableWindow 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];		
 }
-
 
 #pragma mark Other Methods
+
 /**
- * returns the host
+ * Returns the host
  */
 - (NSString *)host
 {
@@ -1023,7 +1166,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * passes query to tablesListInstance
+ * Passes query to tablesListInstance
  */
 - (void)doPerformQueryService:(NSString *)query
 {
@@ -1032,7 +1175,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 /**
- * flushes the mysql privileges
+ * Flushes the mysql privileges
  */
 - (void)flushPrivileges:(id)sender
 {
@@ -1048,10 +1191,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 }
 
-- (void)showVariables:(id)sender
-/*
- shows the mysql variables
+/**
+ * Shows the MySQL server variables
  */
+- (void)showVariables:(id)sender
 {
 	CMMCPResult *theResult;
 	NSMutableArray *tempResult = [NSMutableArray array];
@@ -1089,48 +1232,48 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
                                               notificationName:@"Disconnected"];
 }
 
+// Getter methods
 
-//getter methods
-- (NSString *)database
-/*
- returns the currently selected database
+/**
+ * Returns the currently selected database
  */
+- (NSString *)database
 {
 	return selectedDatabase;
 }
 
-- (NSString *)table
-/*
- returns the currently selected table (passing the request to TablesList)
+/**
+ * Returns the currently selected table (passing the request to TablesList)
  */
+- (NSString *)table
 {
 	return [tablesListInstance tableName];
 }
 
-- (NSString *)mySQLVersion
-/*
- returns the mysql version
+/**
+ * Returns the MySQL version
  */
+- (NSString *)mySQLVersion
 {
 	return mySQLVersion;
 }
 
-- (NSString *)user
-/*
- returns the mysql version
+/**
+ * Returns the current user
  */
+- (NSString *)user
 {
 	return [userField stringValue];
 }
 
+// Notification center methods
 
-//notification center methods
-- (void)willPerformQuery:(NSNotification *)notification
-/*
- invoked before a query is performed
+/**
+ * Invoked before a query is performed
  */
+- (void)willPerformQuery:(NSNotification *)notification
 {
-	// Only start the progress indicator is this document window is key. 
+	// Only start the progress indicator if this document window is key. 
 	// Because we are starting the progress indicator based on the notification
 	// of a query being started, we have to prevent other windows from 
 	// starting theirs. The same is also true for the below hasPerformedQuery:
@@ -1143,46 +1286,53 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	}
 }
 
-- (void)hasPerformedQuery:(NSNotification *)notification
-/*
- invoked after a query has been performed
+/**
+ * Invoked after a query has been performed
  */
+- (void)hasPerformedQuery:(NSNotification *)notification
 {
 	if ([tableWindow isKeyWindow]) {
 		[queryProgressBar stopAnimation:self];
 	}
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification
-/*
- invoked when the application will terminate
+/**
+ * Invoked when the application will terminate
  */
+- (void)applicationWillTerminate:(NSNotification *)notification
 {
 	[tablesListInstance selectionShouldChangeInTableView:nil];
 }
 
-- (void)tunnelStatusChanged:(NSNotification *)notification
-/*
- the status of the tunnel has changed
+/**
+ * The status of the tunnel has changed
  */
+- (void)tunnelStatusChanged:(NSNotification *)notification
 {
 }
 
-//menu methods
-- (IBAction)import:(id)sender
-/*
- passes the request to the tableDump object
+// Menu methods
+
+/**
+ * Passes the request to the tableDump object
  */
+- (IBAction)import:(id)sender
 {
 	[tableDumpInstance importFile];
 }
 
-- (IBAction)export:(id)sender
-/*
- passes the request to the tableDump object
+/**
+ * Passes the request to the tableDump object
  */
+- (IBAction)export:(id)sender
 {
-	[tableDumpInstance exportFile:[sender tag]];
+	if ([sender tag] == -1) {
+		//[tableDumpInstance export];
+		
+		[spExportControllerInstance export];
+	} else {
+		[tableDumpInstance exportFile:[sender tag]];
+	}
 }
 
 - (IBAction)exportTable:(id)sender
@@ -1235,6 +1385,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 		return (mySQLConnection != nil);
 	}
 		
+	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
+		return (![self _favoriteAlreadyExists:[self database] host:[self host] user:[self user]]);
+	}
+	
 	return [super validateMenuItem:menuItem];
 	
 }
@@ -1308,6 +1462,21 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStatusToolbarItemIdentifier"];
 }
 
+/**
+ * Adds the current database connection details to the user's favorites if it doesn't already exist.
+ */
+- (IBAction)addConnectionToFavorites:(id)sender
+{
+	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
+	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
+	// as we don't know what's calling this method.
+	if ([self _favoriteAlreadyExists:[self database] host:[self host] user:[self user]]) {
+		return;
+	}
+	
+	// Add current connection to favorites using the same method as used on the connection sheet to provide consistency.
+	[self connectSheetAddToFavorites:self];
+}
 
 #pragma mark Toolbar Methods
 
@@ -1545,7 +1714,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
 	
 	//set up interface
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[SPQueryConsole sharedQueryConsole] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
@@ -1565,11 +1734,18 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	//	[self connectToDB:nil];
 	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
 	
-	if([prefs boolForKey:@"selectLastFavoriteUsed"] == YES){
-		[favoritesController setSelectionIndexes:[NSIndexSet indexSetWithIndex:[prefs integerForKey:@"lastFavoriteIndex"]]];
+	if([prefs boolForKey:@"SelectLastFavoriteUsed"] == YES){
+		[favoritesController setSelectionIndex:[prefs integerForKey:@"LastFavoriteIndex"]];
+	} else {
+		[favoritesController setSelectionIndex:[prefs integerForKey:@"DefaultFavorite"]];
 	}
 }
 
+// NSWindow delegate methods
+
+/**
+ * Invoked when the document window is about to close
+ */
 - (void)windowWillClose:(NSNotification *)aNotification
 {
 	//reset print settings, so we're not prompted about saving them
@@ -1580,11 +1756,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-//NSWindow delegate methods
-- (BOOL)windowShouldClose:(id)sender
-/*
- invoked when the document window should close
+/**
+ * Invoked when the document window should close
  */
+- (BOOL)windowShouldClose:(id)sender
 {
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
 		return NO;
@@ -1695,15 +1870,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange = @"TableDocumentFa
 }
 
 
-//tableView datasource methods
+#pragma mark TableView datasource methods
+
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [variables count];
 }
 
-- (id)tableView:(NSTableView *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	id theValue;
 	
@@ -1717,6 +1891,36 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 	
 	return theValue;
+}
+
+/**
+ * Although the connection sheet tableview uses bindings to display the favourites we implement this method in
+ * order to update the keychain associated with favourites that are renamed. Its not the best approach, but it works.
+ */
+- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
+	
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNameBeingChanged]
+									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+	
+	[keyChainInstance addPassword:[passwordField stringValue]
+						  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
+						  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+	
+	favoriteNameBeingChanged = nil;
+}
+
+/**
+ * We implement this method so we can get the name of the favourtie before its renamed. We need the name so we
+ * look it up in the keychain and update its name, which is done in the above method. This is obviously not the
+ * best approach to doing this as it means we need an ivar just to track the favourite that is about to be renamed. 
+ */
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	favoriteNameBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	
+	return YES;
 }
 
 - (IBAction)terminate:(id)sender
@@ -1751,6 +1955,29 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[prefs release];
 	
 	[super dealloc];
+}
+
+@end
+
+@implementation TableDocument (PrivateAPI)
+
+/**
+ * Checks to see if a favorite with the supplied details already exists.
+ */
+- (BOOL)_favoriteAlreadyExists:(NSString *)database host:(NSString *)host user:(NSString *)user
+{	
+	// Loop the favorites and check their details
+	for (NSDictionary *favorite in favorites) 
+	{		
+		if ([[favorite objectForKey:@"database"] isEqualToString:database] &&
+			[[favorite objectForKey:@"host"] isEqualToString:host] &&
+			[[favorite objectForKey:@"user"] isEqualToString:user]) {
+			
+			return YES;
+		}
+	}
+	
+	return NO;
 }
 
 @end

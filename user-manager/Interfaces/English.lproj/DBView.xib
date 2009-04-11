@@ -370,7 +370,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage" id="450985937">
+												<object class="NSCustomResource" key="NSNormalImage" id="1068138296">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -385,7 +385,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<reference key="NSImage" ref="450985937"/>
+													<reference key="NSImage" ref="1068138296"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2927,7 +2927,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="450985937"/>
+																					<reference key="NSNormalImage" ref="1068138296"/>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2939,7 +2939,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="450985937"/>
+																						<reference key="NSImage" ref="1068138296"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -4270,7 +4270,7 @@
 									<reference key="NSSuperview" ref="248896606"/>
 								</object>
 							</object>
-							<string key="NSFrame">{{-3, 44}, {525, 222}}</string>
+							<string key="NSFrame">{{-3, 42}, {525, 222}}</string>
 							<reference key="NSSuperview" ref="586457094"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
@@ -8274,6 +8274,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								</object>
 								<string key="NSFrame">{{1, 1}, {198, 107}}</string>
 								<reference key="NSSuperview" ref="27548452"/>
+								<reference key="NSNextKeyView" ref="29661959"/>
 								<reference key="NSDocView" ref="29661959"/>
 								<reference key="NSBGColor" ref="1024678221"/>
 								<int key="NScvFlags">4</int>
@@ -8301,6 +8302,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<string key="NSFrame">{{20, 20}, {211, 109}}</string>
 						<reference key="NSSuperview" ref="774289419"/>
+						<reference key="NSNextKeyView" ref="383807970"/>
 						<int key="NSsFlags">18</int>
 						<reference key="NSVScroller" ref="438736883"/>
 						<reference key="NSHScroller" ref="721548430"/>
@@ -9948,6 +9950,9 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 			</object>
 			<object class="NSCustomObject" id="1006422530">
 				<string key="NSClassName">SPTableData</string>
+			</object>
+			<object class="NSCustomObject" id="4626">
+				<string key="NSClassName">SPExportController</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -12484,6 +12489,38 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="1055190999"/>
 					</object>
 					<int key="connectionID">5373</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dataSource</string>
+						<reference key="source" ref="158332213"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">5374</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="158332213"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">5376</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableWindow</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="207157706"/>
+					</object>
+					<int key="connectionID">5378</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">spExportControllerInstance</string>
+						<reference key="source" ref="427689665"/>
+						<reference key="destination" ref="4626"/>
+					</object>
+					<int key="connectionID">5379</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -17715,6 +17752,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="object" ref="702094011"/>
 						<reference key="parent" ref="60735230"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5377</int>
+						<reference key="object" ref="4626"/>
+						<reference key="parent" ref="1043842561"/>
+						<string key="objectName">SPExportController</string>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -18828,6 +18871,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>5360.IBPluginDependency</string>
 					<string>5361.IBPluginDependency</string>
 					<string>5369.IBPluginDependency</string>
+					<string>5377.IBPluginDependency</string>
 					<string>557.IBPluginDependency</string>
 					<string>557.ImportedFromIB2</string>
 					<string>565.IBEditorWindowLastContentRect</string>
@@ -19706,8 +19750,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{429, 388}, {519, 335}}</string>
-					<string>{{429, 388}, {519, 335}}</string>
+					<string>{{476, 484}, {519, 335}}</string>
+					<string>{{476, 484}, {519, 335}}</string>
 					<reference ref="9"/>
 					<string>{{136, 447}, {519, 335}}</string>
 					<reference ref="8"/>
@@ -20440,6 +20484,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{456, 426}, {292, 112}}</string>
 					<string>{{456, 426}, {292, 112}}</string>
@@ -20710,7 +20755,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5373</int>
+			<int key="maxID">5381</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -20964,6 +21009,99 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPTextViewAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPWindowAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeSheet:</string>
+							<string>switchInput:</string>
+							<string>switchTab:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>exampleNameLabel</string>
+							<string>exportCSVFieldsEscapedField</string>
+							<string>exportCSVFieldsTerminatedField</string>
+							<string>exportCSVFieldsWrappedField</string>
+							<string>exportCSVIncludeFieldNamesCheck</string>
+							<string>exportCSVLinesTerminatedField</string>
+							<string>exportExcelSheetOrFilePerTableMatrix</string>
+							<string>exportFilePerTableCheck</string>
+							<string>exportFilePerTableNote</string>
+							<string>exportHTMLIncludeHeadAndBodyTagsCheck</string>
+							<string>exportHTMLIncludeStructureCheck</string>
+							<string>exportInputMatrix</string>
+							<string>exportPDFIncludeStructureCheck</string>
+							<string>exportSQLIncludeDropSyntaxCheck</string>
+							<string>exportSQLIncludeErrorsCheck</string>
+							<string>exportSQLIncludeStructureCheck</string>
+							<string>exportTabBar</string>
+							<string>exportTableList</string>
+							<string>exportToolbar</string>
+							<string>exportWindow</string>
+							<string>exportXMLIncludeStructureCheck</string>
+							<string>tableDocumentInstance</string>
+							<string>tableWindow</string>
+							<string>tablesListInstance</string>
+							<string>tokenNameField</string>
+							<string>tokenNameTokensField</string>
+							<string>tokenNameView</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPExportController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -21225,6 +21363,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>queryProgressBar</string>
 							<string>sidebarGrabber</string>
 							<string>socketField</string>
+							<string>spExportControllerInstance</string>
 							<string>syntaxView</string>
 							<string>syntaxViewContent</string>
 							<string>tableContentInstance</string>
@@ -21257,6 +21396,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSArrayController</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -21338,9 +21478,13 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>reloadTables:</string>
 							<string>selectTables:</string>
 							<string>stepRow:</string>
+							<string>switchInput:</string>
+							<string>switchTab:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -21379,6 +21523,10 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>exportMultipleLinesTerminatedField</string>
 							<string>exportMultipleXMLTableView</string>
 							<string>exportMultipleXMLView</string>
+							<string>exportTabBar</string>
+							<string>exportTableList</string>
+							<string>exportToolbar</string>
+							<string>exportWindow</string>
 							<string>fieldMappingPopup</string>
 							<string>fieldMappingSheet</string>
 							<string>fieldMappingTableView</string>
@@ -21406,6 +21554,10 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

@@ -15,11 +15,11 @@
 #define COLUMNIDNAME @"NameColumn"
 
 @interface SPUserManager (PrivateMethods)
-- (void)_initializeTree:(NSArray *)items;
-- (void)_initializeUsers;
-- (void)_initializeDatabaseList;
-- (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
-- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
+- (void)initializeTree:(NSArray *)items;
+- (void)initializeUsers;
+- (void)initializeDatabaseList;
+- (void)initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
+- (void)initializeSchemaPrivilegesWithItems:(NSArray *)items;
 @end
 
 @implementation SPUserManager
@@ -44,10 +44,7 @@
 }
 
 - (void)awakeFromNib
-{
-	// Add observers
-	//[treeController addObserver:self forKeyPath:@"arrangedObjects" options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:@"TreeController"];
-	
+{	
 	// Set up the sorting for the NSArrayControllers
 	NSSortDescriptor *sd = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
 	[selectedPrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
@@ -62,15 +59,15 @@
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
 	
-	[self _initializeDatabaseList];
+	[self initializeDatabaseList];
 	availablePrivs = [[NSMutableArray alloc] init];
 	selectedPrivs = [[NSMutableArray alloc] init];
 	
 	// Initializing could take a while so run in a separate thread
-	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
+	[NSThread detachNewThreadSelector:@selector(initializeUsers) toTarget:self withObject:nil];	
 }
 
-- (void)_initializeDatabaseList
+- (void)initializeDatabaseList
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	MCPResult *result = [[self connection] listDBs];
@@ -86,7 +83,7 @@
 	[pool release];
 }
 
- - (void)_initializeUsers
+ - (void)initializeUsers
 {
 	isInitializing = TRUE;
 	
@@ -111,14 +108,14 @@
 	}
 	[usersResultArray addObjectsFromArray:resultAsArray];
 
-	[self performSelectorOnMainThread:@selector(_initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
-	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
+	[self performSelectorOnMainThread:@selector(initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
+	[self initializeSchemaPrivilegesWithItems:usersResultArray];
 	[result release];
 	[pool release];
 	isInitializing = FALSE;
 }
 
-- (void)_initializeTree:(NSArray *)items
+- (void)initializeTree:(NSArray *)items
 {
 	for(int i = 0; i < [items count]; i++)
 	{
@@ -133,7 +130,7 @@
 			[childItem setUsername: [[items objectAtIndex:i] valueForKey:@"User"]];
 			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
 			[childItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
-			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
+			[self initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
 			[childItem setLeaf:TRUE];
 			[parent addChild:childItem];
 		}
@@ -148,7 +145,7 @@
 			[childItem setUsername: username];
 			[childItem setPassword: [[items objectAtIndex:i] valueForKey:@"Password"]];
 			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
-			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
+			[self initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
 			[childItem setLeaf:TRUE];
 			[userItem addChild:childItem];
 			
@@ -157,7 +154,7 @@
 	}
 }
 
-- (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
+- (void)initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
 {
 	NSArray *itemKeys = [item allKeys];
 	NSMutableDictionary *globalPrivs = [NSMutableDictionary dictionary];
@@ -173,7 +170,7 @@
 	[childItem setGlobalPrivileges:globalPrivs];
 }
 
-- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items
+- (void)initializeSchemaPrivilegesWithItems:(NSArray *)items
 {
 	NSDictionary *firstItem = [items objectAtIndex:0];
 	NSArray *keys = [firstItem allKeys];

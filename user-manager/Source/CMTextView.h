@@ -28,6 +28,7 @@
 	BOOL autopairEnabled;
 	BOOL autoindentIgnoresEnter;
 	BOOL autouppercaseKeywordsEnabled;
+	BOOL delBackwardsWasPressed;
 }
 
 - (BOOL) isNextCharMarkedBy:(id)attribute;

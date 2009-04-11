@@ -83,6 +83,12 @@
 		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
 	}
 	
+	if (timeInterval < 10) {
+		[numberFormatter setFormat:@"#,##0.00 s"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	}
+
 	if (timeInterval < 100) {
 		[numberFormatter setFormat:@"#,##0.0 s"];
 

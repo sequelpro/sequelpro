@@ -656,7 +656,7 @@
 
 		// If encoding is set to Autodetect, update the connection character set encoding
 		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
 			if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
 				[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
 				[tableDataInstance resetAllData];
@@ -728,14 +728,9 @@
 		} else {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
 		}
+		
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
-		if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
-			[(ImageAndTextCell*)aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		}
-		else
-		{
-			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
+		[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];

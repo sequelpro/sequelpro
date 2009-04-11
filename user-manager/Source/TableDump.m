@@ -90,11 +90,23 @@
  ends the modal session
  */
 {
+	[NSApp endSheet:exportWindow];
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
 #pragma mark -
 #pragma mark export methods
+
+- (void)export
+{
+	[self reloadTables:self];
+	[NSApp beginSheet:exportWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+}
+
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet orderOut:self];
+}
 
 - (void)exportFile:(int)tag
 /*
@@ -375,11 +387,27 @@
 	NSError *errorStr = nil;
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
+	BOOL importSQLAsUTF8 = YES; 
 
-	//load file into string
-	dumpFile = [SPSQLParser stringWithContentsOfFile:filename
-										 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
-											error:&errorStr];
+	// Load file into string.  For SQL imports, try UTF8 file encoding before the current encoding.
+	if ([fileType isEqualToString:@"SQL"]) {
+		NSLog(@"Reading as utf8");
+		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
+											 encoding:NSUTF8StringEncoding
+												error:&errorStr];
+												NSLog(dumpFile);
+		if (errorStr) {
+			importSQLAsUTF8 = NO;
+			errorStr = nil;
+		}
+	}
+
+	// If the SQL-as-UTF8 read failed, and for CSVs, use the current connection encoding.
+	if (!importSQLAsUTF8 || [fileType isEqualToString:@"CSV"]) {
+		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
+											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+												error:&errorStr];
+	}
 
 	if (errorStr) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
@@ -435,7 +463,11 @@
 			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
 				continue;
 
-			[mySQLConnection queryString:[queries objectAtIndex:i]];
+			if (importSQLAsUTF8) {
+				[mySQLConnection queryString:[queries objectAtIndex:i] usingEncoding:NSUTF8StringEncoding];			
+			} else {
+				[mySQLConnection queryString:[queries objectAtIndex:i]];
+			}
 			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
@@ -715,7 +747,7 @@
 	[fieldMappingButtonOptions setArray:[importArray objectAtIndex:currentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"nullValue"]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"NullValue"]]];
 		} else {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [fieldMappingButtonOptions objectAtIndex:i]]];
 		}
@@ -1070,7 +1102,7 @@
 	NSMutableString *csvCell = [NSMutableString string];
 	NSMutableArray *csvRow = [NSMutableArray array];
 	NSMutableString *csvString = [NSMutableString string];
-	NSString *nullString = [NSString stringWithString:[prefs objectForKey:@"nullValue"]];
+	NSString *nullString = [NSString stringWithString:[prefs objectForKey:@"NullValue"]];
 	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString;
 	NSString *dataConversionString;
 	NSScanner *csvNumericTester;
@@ -1361,14 +1393,14 @@
 			fieldCount = [tempRowArray count];
 		} else {
 			while ( [tempRowArray count] < fieldCount ) {
-				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"nullValue"]]];
+				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"NullValue"]]];
 			}
 		}
 		for ( i = 0 ; i < [tempRowArray count] ; i++ ) {
 			
 			// Insert a NSNull object if the cell contains an unescaped null character or an unescaped string
 			// which matches the NULL string set in preferences.
-			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
+			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"NullValue"]] ) {
 				[tempRowArray replaceObjectAtIndex:i withObject:[NSNull null]];
 				
 			} else {
@@ -1869,7 +1901,7 @@
 	[[exportDumpTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleCSVTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleXMLTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
@@ -1910,7 +1942,7 @@
    forTableColumn:(NSTableColumn *)aTableColumn 
 			  row:(int)rowIndex
 {
-	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
+	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"UseMonospacedFonts"] ) {
 		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	}
 	else
@@ -1987,6 +2019,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 #pragma mark -
 #pragma mark other
+
+- (void)awakeFromNib
+{
+	[self switchTab:[[exportToolbar items] objectAtIndex:0]];
+	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+}
+	
 //last but not least
 - (id)init;
 {
@@ -2008,7 +2047,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[fieldMappingArray release];
 	[savePath release];
 	[openPath release];
-	[prefs release];   
+	[prefs release];
 	
 	[super dealloc];
 }
@@ -2016,6 +2055,41 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (IBAction)cancelProgressBar:(id)sender
 {
 	progressCancelled = YES;	
+}
+
+- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
+{
+	NSArray *array = [toolbar items];
+	NSMutableArray *items = [NSMutableArray arrayWithCapacity:6];
+	
+	for (NSToolbarItem *item in array)
+	{
+		[items addObject:[item itemIdentifier]];
+	}
+	
+    return items;
+}
+
+#pragma mark New Export methods
+
+- (IBAction)switchTab:(id)sender
+{
+	if ([sender isKindOfClass:[NSToolbarItem class]]) {
+		[exportTabBar selectTabViewItemWithIdentifier:[[sender label] lowercaseString]];
+	}
+}
+
+- (IBAction)switchInput:(id)sender
+{
+	if ([sender isKindOfClass:[NSMatrix class]]) {
+		[exportTableList setEnabled:([[sender selectedCell] tag] == 3)];
+	}
+}
+
+
+- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem
+{
+	return YES;
 }
 
 @end

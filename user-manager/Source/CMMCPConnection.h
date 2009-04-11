@@ -30,6 +30,7 @@
 
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
+- (BOOL)connectionEncodingViaLatin1;
 
 @end
 
@@ -64,6 +65,7 @@
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
+- (CMMCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
@@ -74,5 +76,6 @@
 - (void) stopKeepAliveTimer;
 - (void) keepAlive:(NSTimer *)theTimer;
 - (void) threadedKeepAlive;
+- (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding;
 
 @end

@@ -44,6 +44,7 @@
 	IBOutlet id tableStatusInstance;
 	IBOutlet id userManagerInstance;
 	IBOutlet id queryConsoleInstance;
+	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;
@@ -87,11 +88,13 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
+	NSString *favoriteNameBeingChanged;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
 	BOOL _encodingViaLatin1;
+	BOOL _shouldOpenConnectionAutomatically;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -100,6 +103,7 @@
 - (IBAction)openUserManager:(id)sender;
 
 //start sheet
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (IBAction)connectToDB:(id)sender;
 - (IBAction)connect:(id)sender;
 - (IBAction)cancelConnectSheet:(id)sender;
@@ -182,6 +186,7 @@
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
+- (IBAction)addConnectionToFavorites:(id)sender;
 
 //toolbar methods
 - (void)setupToolbar;
@@ -191,33 +196,9 @@
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 - (void)updateChooseDatabaseToolbarItemWidth;
 
-//NSDocument methods
-- (NSString *)windowNibName;
-- (void)windowControllerDidLoadNib:(NSWindowController *)aController;
-- (void)windowWillClose:(NSNotification *)aNotification;
-
-//NSWindow delegate methods
-- (BOOL)windowShouldClose:(id)sender;
-
 //SMySQL delegate methods
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
-
-// Connection sheet delegate methods
-- (void) controlTextDidChange:(NSNotification *)aNotification;
-
-//splitView delegate methods
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex;
-
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
 
 @end
 

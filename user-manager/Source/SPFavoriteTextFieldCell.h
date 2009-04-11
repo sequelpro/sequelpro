@@ -1,9 +1,8 @@
 //
-//  MainController.h
+//  SPFavoriteTextFieldCell.h
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
-//  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on Dec 29, 2008
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,33 +19,26 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import "ImageAndTextCell.h"
 
-@class SPPreferenceController;
-
-@interface MainController : NSObject 
+@interface SPFavoriteTextFieldCell : ImageAndTextCell
 {
-	BOOL isNewFavorite;
+	NSString *favoriteName;
+	NSString *favoriteHost;
 	
-	NSMutableArray *favorites;
-	
-	SPPreferenceController *prefsController;
+	NSColor  *mainStringColor;
+	NSColor  *subStringColor;
 }
 
-// IBAction methods
-- (IBAction)openPreferences:(id)sender;
+- (NSString *)favoriteName;
+- (void)setFavoriteName:(NSString *)name;
 
-// Services menu methods
-- (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error;
+- (NSString *)favoriteHost;
+- (void)setFavoriteHost:(NSString *)host;
 
-// Menu methods
-- (IBAction)donate:(id)sender;
-- (IBAction)visitWebsite:(id)sender;
-- (IBAction)visitHelpWebsite:(id)sender;
-
-// Other
-- (id)handleQuitScriptCommand:(NSScriptCommand *)command;
+- (void)invertFontColors;
+- (void)restoreFontColors;
 
 @end

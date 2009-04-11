@@ -180,7 +180,7 @@
 		}
 		
 		// Set the data cell font according to the preferences
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -254,7 +254,7 @@
 	}
 
 	// Enable or disable the limit fields according to preference setting
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 
 		// Attempt to preserve the limit value if it's still valid
 		if (!preserveCurrentView || [limitRowsField intValue] < 1 || [limitRowsField intValue] >= numRows) {	
@@ -264,8 +264,8 @@
 		[limitRowsButton setEnabled:YES];
 		[limitRowsStepper setEnabled:YES];
 		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-									   [prefs integerForKey:@"limitRowsValue"]]];
-		if ([prefs integerForKey:@"limitRowsValue"] < numRows)
+									   [prefs integerForKey:@"LimitResultsValue"]]];
+		if ([prefs integerForKey:@"LimitResultsValue"] < numRows)
 			areShowingAllRows = NO;
 	} else {
 		[limitRowsField setEnabled:NO];
@@ -288,13 +288,13 @@
 			query = [query stringByAppendingString:@" DESC"];
 	}
 	
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 		if ( [limitRowsField intValue] <= 0 ) {
 			[limitRowsField setStringValue:@"1"];
 		}
 		query = [query stringByAppendingString:
 					[NSString stringWithFormat:@" LIMIT %d,%d",
-						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
+						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 	}
 
 	queryResult = [mySQLConnection queryString:query];
@@ -362,12 +362,12 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
 	//enable or disable limit fields
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 		[limitRowsField setEnabled:YES];
 		[limitRowsButton setEnabled:YES];
 		[limitRowsStepper setEnabled:YES];
 		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-									   [prefs integerForKey:@"limitRowsValue"]]];
+									   [prefs integerForKey:@"LimitResultsValue"]]];
 	} else {
 		[limitRowsField setEnabled:NO];
 		[limitRowsButton setEnabled:NO];
@@ -384,13 +384,13 @@
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
 	}
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 		if ( [limitRowsField intValue] <= 0 ) {
 			[limitRowsField setStringValue:@"1"];
 		}
 		queryString = [queryString stringByAppendingString:
 					   [NSString stringWithFormat:@" LIMIT %d,%d",
-						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
+						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 		[limitRowsField selectText:self];
 	}
 	queryResult = [mySQLConnection queryString:queryString];
@@ -435,15 +435,15 @@
 	}
 
 	// If limitRowsField > number of total found rows show the last limitRowsValue rows
-	if ( [prefs boolForKey:@"limitRows"] && [limitRowsField intValue] >= maxNumRowsOfCurrentTable ) {
-		int newLimit = maxNumRowsOfCurrentTable - [prefs integerForKey:@"limitRowsValue"];
+	if ( [prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRowsOfCurrentTable ) {
+		int newLimit = maxNumRowsOfCurrentTable - [prefs integerForKey:@"LimitResultsValue"];
 		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
 	}
 
 	
 	// If the filter field is empty, the limit field is at 1, and the selected filter is not looking
 	// for NULLs or NOT NULLs, then don't allow filtering.
-	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"]) && (![prefs boolForKey:@"limitRows"] || [limitRowsField intValue] == 1)) {
+	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"]) && (![prefs boolForKey:@"LimitResults"] || [limitRowsField intValue] == 1)) {
 		[argument release];
 		[self showAll:sender];
 		return;
@@ -599,19 +599,19 @@
 	// to redo the query if nothing found for LIMIT > 1
 	NSString* tempQueryString;
 	// LIMIT if appropriate
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 		tempQueryString = [NSString stringWithString:queryString];
 		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", queryString,
-						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]];
+						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
 	}
 
 	theResult = [mySQLConnection queryString:queryString];
 	[filteredResult setArray:[self fetchResultAsArray:theResult]];
 	
 	// try it again if theResult is empty and limitRowsField > 1 by setting LIMIT to 0, limitRowsValue
-	if([prefs boolForKey:@"limitRows"] && [limitRowsField intValue] > 1 && [filteredResult count] == 0) {
+	if([prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] > 1 && [filteredResult count] == 0) {
 		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", tempQueryString,
-						0, [prefs integerForKey:@"limitRowsValue"]];
+						0, [prefs integerForKey:@"LimitResultsValue"]];
 		theResult = [mySQLConnection queryString:queryString];
 		[limitRowsField setStringValue:@"1"];
 		[filteredResult setArray:[self fetchResultAsArray:theResult]];
@@ -673,7 +673,7 @@
 	for ( i = 0 ; i < [columns count] ; i++ ) {
 		column = [columns objectAtIndex:i];
 		if ([column objectForKey:@"default"] == nil) {
-			[newRow setObject:[prefs stringForKey:@"nullValue"] forKey:[column objectForKey:@"name"]];
+			[newRow setObject:[prefs stringForKey:@"NullValue"] forKey:[column objectForKey:@"name"]];
 		} else {
 			[newRow setObject:[column objectForKey:@"default"] forKey:[column objectForKey:@"name"]];
 		}
@@ -715,7 +715,7 @@
 	[filteredResult insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
 	
 	//if we don't show blobs, read data for this duplicate column from db
-	if ([prefs boolForKey:@"dontShowBlob"]) {
+	if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 		// Abort if there are no indices on this table - argumentForRow will display an error.
 		if (![[self argumentForRow:[tableContentView selectedRow]] length]){
 			return;
@@ -732,12 +732,12 @@
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
-			[tempRow setObject:[prefs stringForKey:@"nullValue"] forKey:[row objectForKey:@"Field"]];
-		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"dontShowBlob"] && dbDataRow) {
+			[tempRow setObject:[prefs stringForKey:@"NullValue"] forKey:[row objectForKey:@"Field"]];
+		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"LoadBlobsAsNeeded"] && dbDataRow) {
 			NSString *valueString = nil;
 			//if what we read from DB is NULL (NSNull), we replace it with the string NULL
 			if([[dbDataRow objectForKey:[row objectForKey:@"Field"]] isKindOfClass:[NSNull class]])
-				valueString = [prefs objectForKey:@"nullValue"];
+				valueString = [prefs objectForKey:@"NullValue"];
 			else
 				valueString = [dbDataRow objectForKey:[row objectForKey:@"Field"]];
 			[tempRow setObject:valueString forKey:[row objectForKey:@"Field"]];
@@ -767,11 +767,11 @@
 	/*
 	 if ( ([tableContentView numberOfSelectedRows] == [self numberOfRowsInTableView:tableContentView]) &&
 	 areShowingAllRows &&
-	 (![prefs boolForKey:@"limitRows"] || ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"limitRowsValue"])) ) {
+	 (![prefs boolForKey:@"LimitResults"] || ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"LimitResultsValue"])) ) {
 	 */
 	if ( ([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && 
-		(([prefs boolForKey:@"limitRows"] && [tableContentView numberOfSelectedRows] == [self fetchNumberOfRows]) ||
-		 (![prefs boolForKey:@"limitRows"] && [tableContentView numberOfSelectedRows] == [self getNumberOfRows])) ) {
+		(([prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self fetchNumberOfRows]) ||
+		 (![prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self getNumberOfRows])) ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
 						  nil, @"removeallrows", NSLocalizedString(@"Do you really want to delete all rows?", @"message of panel asking for confirmation for deleting all rows"));
 	} else if ( [tableContentView numberOfSelectedRows] == 1 ) {
@@ -1051,7 +1051,7 @@
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
 	
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[argumentField setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		[limitRowsField setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
@@ -1062,9 +1062,9 @@
 	}
 	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	[limitRowsStepper setEnabled:NO];
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-									   [prefs integerForKey:@"limitRowsValue"]]];
+									   [prefs integerForKey:@"LimitResultsValue"]]];
 	} else {
 		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 		[limitRowsField setStringValue:@""];
@@ -1145,14 +1145,14 @@
  */
 {
 	if ( [limitRowsStepper intValue] > 0 ) {
-		int newStep = [limitRowsField intValue]+[prefs integerForKey:@"limitRowsValue"];
+		int newStep = [limitRowsField intValue]+[prefs integerForKey:@"LimitResultsValue"];
 		// if newStep > the total number of rows in the current table retain the old value
 		[limitRowsField setIntValue:(newStep>maxNumRowsOfCurrentTable)?[limitRowsField intValue]:newStep];
 	} else {
-		if ( ([limitRowsField intValue]-[prefs integerForKey:@"limitRowsValue"]) < 1 ) {
+		if ( ([limitRowsField intValue]-[prefs integerForKey:@"LimitResultsValue"]) < 1 ) {
 			[limitRowsField setIntValue:1];
 		} else {
-			[limitRowsField setIntValue:[limitRowsField intValue]-[prefs integerForKey:@"limitRowsValue"]];
+			[limitRowsField setIntValue:[limitRowsField intValue]-[prefs integerForKey:@"LimitResultsValue"]];
 		}
 	}
 	[limitRowsStepper setIntValue:0];
@@ -1180,14 +1180,14 @@
 
 		while ( key = [enumerator nextObject] ) {
 			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] ) {
-				[modifiedRow setObject:[prefs stringForKey:@"nullValue"] forKey:key];
+				[modifiedRow setObject:[prefs stringForKey:@"NullValue"] forKey:key];
 			} else {
 				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
 			}
 		}
 
 		// Add values for hidden blob and text fields if appropriate
-		if ( [prefs boolForKey:@"dontShowBlob"] ) {
+		if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 			for ( j = 0 ; j < [columns count] ; j++ ) {
 				if ( [tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:j] objectForKey:@"name"] ] ) {
 					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
@@ -1240,7 +1240,7 @@
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
 		rowObject = [[filteredResult objectAtIndex:currentlyEditingRow] objectForKey:[columnNames objectAtIndex:i]];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
-		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"nullValue"]]
+		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
 
 			//NULL when user entered the nullValue string defined in the prefs or when a number field isn't set
@@ -1291,7 +1291,7 @@
 	
 	// If no rows have been changed, show error if appropriate.	
 	if ( ![mySQLConnection affectedRows] ) {
-		if ( [prefs boolForKey:@"showError"] ) {
+		if ( [prefs boolForKey:@"ShowNoAffectedRowsError"] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 		} else {
@@ -1310,7 +1310,7 @@
 
 		// New row created successfully
 		if ( isEditingNewRow ) {
-			if ( [prefs boolForKey:@"reloadAfterAdding"] ) {
+			if ( [prefs boolForKey:@"ReloadAfterAddingRow"] ) {
 				[self reloadTableValues:self];
 				[tableContentView deselectAll:self];
 				[tableWindow endEditingFor:nil];
@@ -1329,7 +1329,7 @@
 
 		// Existing row edited successfully
 		} else {
-			if ( [prefs boolForKey:@"reloadAfterEditing"] ) {
+			if ( [prefs boolForKey:@"ReloadAfterEditingRow"] ) {
 				[self reloadTableValues:self];
 				[tableContentView deselectAll:self];
 				[tableWindow endEditingFor:nil];
@@ -1342,13 +1342,13 @@
 					if ( isDesc )
 						query = [query stringByAppendingString:@" DESC"];
 				}
-				if ( [prefs boolForKey:@"limitRows"] ) {
+				if ( [prefs boolForKey:@"LimitResults"] ) {
 					if ( [limitRowsField intValue] <= 0 ) {
 						[limitRowsField setStringValue:@"1"];
 					}
 					query = [query stringByAppendingString:
 							 [NSString stringWithFormat:@" LIMIT %d,%d",
-							  [limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
+							  [limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 				}
 				queryResult = [mySQLConnection queryString:query];
 				[fullResult setArray:[self fetchResultAsArray:queryResult]];
@@ -1438,7 +1438,7 @@
 		
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
-		if ( [prefs boolForKey:@"dontShowBlob"] && [self tableContainsBlobOrTextColumns] ) {
+		if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && [self tableContainsBlobOrTextColumns] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"You can't hide blob and text fields when working with tables without index.", @"message of panel when trying to edit tables without index and with hidden blob/text fields"));
 			[keys removeAllObjects];
@@ -1471,7 +1471,7 @@
 			[value setString:[tempValue description]];
 		}
 
-		if ( [value isEqualToString:[prefs stringForKey:@"nullValue"]] ) {
+		if ( [value isEqualToString:[prefs stringForKey:@"NullValue"]] ) {
 			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [[keys objectAtIndex:i] backtickQuotedString]]];
 		} else {
 
@@ -1535,7 +1535,7 @@
 	NSArray *columns = [tableDataInstance columns];
 	NSArray *columnNames = [tableDataInstance columnNames];
 	
-	if ( [prefs boolForKey:@"dontShowBlob"] ) {
+	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
 			if (![tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:i] objectForKey:@"name"]] ) {
 				[fields addObject:[columnNames objectAtIndex:i]];
@@ -1591,7 +1591,7 @@
 			/*
 			 if ( ([tableContentView numberOfSelectedRows] == [self numberOfRowsInTableView:tableContentView]) &&
 			 areShowingAllRows &&
-			 ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"limitRowsValue"]) ) {
+			 ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"LimitResultsValue"]) ) {
 			 */
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -1632,7 +1632,7 @@
 			}
 			
 			//do deleting (after enumerating)
-			if ( [prefs boolForKey:@"reloadAfterRemoving"] ) {
+			if ( [prefs boolForKey:@"ReloadAfterRemovingRow"] ) {
 				[self reloadTableValues:self];
 			} else {
 				for ( i = 0 ; i < [filteredResult count] ; i++ ) {
@@ -1650,13 +1650,13 @@
 						if ( isDesc )
 							queryString = [queryString stringByAppendingString:@" DESC"];
 					}
-					if ( [prefs boolForKey:@"limitRows"] ) {
+					if ( [prefs boolForKey:@"LimitResults"] ) {
 						if ( [limitRowsField intValue] <= 0 ) {
 							[limitRowsField setStringValue:@"1"];
 						}
 						queryString = [queryString stringByAppendingString:
 									   [NSString stringWithFormat:@" LIMIT %d,%d",
-										[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
+										[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 					}
 					
 					queryResult = [mySQLConnection queryString:queryString];
@@ -1682,7 +1682,7 @@
  */
 - (int)getNumberOfRows
 {
-	if ([prefs boolForKey:@"limitRows"] && [prefs boolForKey:@"fetchRowCount"]) {
+	if ([prefs boolForKey:@"LimitResults"] && [prefs boolForKey:@"FetchCorrectRowCount"]) {
 		numRows = [self fetchNumberOfRows];
 	} else {
 		numRows = [fullResult count];
@@ -1737,7 +1737,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 {
     // Check if loading of text/blob fields is disabled
     // If not, all text fields are loaded and we don't have to make them gray
-    if ([prefs boolForKey:@"dontShowBlob"])
+    if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
     {
         // Make sure that the cell actually responds to setTextColor:
         // In the future, we might use different cells for the table view
@@ -1838,13 +1838,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 				   [selectedTable backtickQuotedString], [sortField backtickQuotedString]];
 	if ( isDesc )
 		queryString = [queryString stringByAppendingString:@" DESC"];
-	if ( [prefs boolForKey:@"limitRows"] ) {
+	if ( [prefs boolForKey:@"LimitResults"] ) {
 		if ( [limitRowsField intValue] <= 0 ) {
 			[limitRowsField setStringValue:@"1"];
 		}
 		queryString = [queryString stringByAppendingString:
 					   [NSString stringWithFormat:@" LIMIT %d,%d",
-						[limitRowsField intValue]-1, [prefs integerForKey:@"limitRowsValue"]]];
+						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 	}
 	queryResult = [mySQLConnection queryString:queryString];
 	
@@ -1967,7 +1967,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	CMMCPResult *tempResult;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
-	if ( [prefs boolForKey:@"dontShowBlob"] && !isEditingRow ) {
+	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow ) {
 
 		// If the table does contain blob or text fields, load the values ready for editing.
 		if ( [self tableContainsBlobOrTextColumns] ) {
@@ -1985,7 +1985,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			enumerator = [tempRow keyEnumerator];
 			while ( key = [enumerator nextObject] ) {
 				if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] ) {
-					[modifiedRow setObject:[prefs stringForKey:@"nullValue"] forKey:key];
+					[modifiedRow setObject:[prefs stringForKey:@"NullValue"] forKey:key];
 				} else {
 					[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
 				}
