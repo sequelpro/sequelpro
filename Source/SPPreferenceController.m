@@ -149,61 +149,32 @@
 
 	// For versions prior to r561 (0.9.5), migrate old pref keys where they exist to the new pref keys
 	if (recordedVersionNumber < 561) {
-		if ([prefs objectForKey:@"encoding"]) {
-			[prefs setObject:[prefs objectForKey:@"encoding"] forKey:@"DefaultEncoding"];
-			[prefs removeObjectForKey:@"encoding"];
-		}
-		if ([prefs objectForKey:@"useMonospacedFonts"]) {
-			[prefs setObject:[prefs objectForKey:@"useMonospacedFonts"] forKey:@"UseMonospacedFonts"];
-			[prefs removeObjectForKey:@"useMonospacedFonts"];
-		}
-		if ([prefs objectForKey:@"reloadAfterAdding"]) {
-			[prefs setObject:[prefs objectForKey:@"reloadAfterAdding"] forKey:@"ReloadAfterAddingRow"];
-			[prefs removeObjectForKey:@"reloadAfterAdding"];
-		}
-		if ([prefs objectForKey:@"reloadAfterEditing"]) {
-			[prefs setObject:[prefs objectForKey:@"reloadAfterEditing"] forKey:@"ReloadAfterEditingRow"];
-			[prefs removeObjectForKey:@"reloadAfterEditing"];
-		}
-		if ([prefs objectForKey:@"reloadAfterRemoving"]) {
-			[prefs setObject:[prefs objectForKey:@"reloadAfterRemoving"] forKey:@"ReloadAfterRemovingRow"];
-			[prefs removeObjectForKey:@"reloadAfterRemoving"];
-		}
-		if ([prefs objectForKey:@"dontShowBlob"]) {
-			[prefs setObject:[prefs objectForKey:@"dontShowBlob"] forKey:@"LoadBlobsAsNeeded"];
-			[prefs removeObjectForKey:@"dontShowBlob"];
-		}
-		if ([prefs objectForKey:@"fetchRowCount"]) {
-			[prefs setObject:[prefs objectForKey:@"fetchRowCount"] forKey:@"FetchCorrectRowCount"];
-			[prefs removeObjectForKey:@"fetchRowCount"];
-		}
-		if ([prefs objectForKey:@"limitRows"]) {
-			[prefs setObject:[prefs objectForKey:@"limitRows"] forKey:@"LimitResults"];
-			[prefs removeObjectForKey:@"limitRows"];
-		}
-		if ([prefs objectForKey:@"limitRowsValue"]) {
-			[prefs setObject:[prefs objectForKey:@"limitRowsValue"] forKey:@"LimitResultsValue"];
-			[prefs removeObjectForKey:@"limitRowsValue"];
-		}
-		if ([prefs objectForKey:@"nullValue"]) {
-			[prefs setObject:[prefs objectForKey:@"nullValue"] forKey:@"NullValue"];
-			[prefs removeObjectForKey:@"nullValue"];
-		}
-		if ([prefs objectForKey:@"showError"]) {
-			[prefs setObject:[prefs objectForKey:@"showError"] forKey:@"ShowNoAffectedRowsError"];
-			[prefs removeObjectForKey:@"showError"];
-		}
-		if ([prefs objectForKey:@"connectionTimeout"]) {
-			[prefs setObject:[prefs objectForKey:@"connectionTimeout"] forKey:@"ConnectionTimeoutValue"];
-			[prefs removeObjectForKey:@"connectionTimeout"];
-		}
-		if ([prefs objectForKey:@"keepAliveInterval"]) {
-			[prefs setObject:[prefs objectForKey:@"keepAliveInterval"] forKey:@"KeepAliveInterval"];
-			[prefs removeObjectForKey:@"keepAliveInterval"];
-		}
-		if ([prefs objectForKey:@"lastFavoriteIndex"]) {
-			[prefs setObject:[prefs objectForKey:@"lastFavoriteIndex"] forKey:@"LastFavoriteIndex"];
-			[prefs removeObjectForKey:@"lastFavoriteIndex"];
+		NSEnumerator *keyEnumerator;
+		NSString *oldKey, *newKey;
+		NSDictionary *keysToUpgrade = [NSDictionary dictionaryWithObjectsAndKeys:
+			@"encoding", @"DefaultEncoding",
+			@"useMonospacedFonts", @"UseMonospacedFonts",
+			@"reloadAfterAdding", @"ReloadAfterAddingRow",
+			@"reloadAfterEditing", @"ReloadAfterEditingRow",
+			@"reloadAfterRemoving", @"ReloadAfterRemovingRow",
+			@"dontShowBlob", @"LoadBlobsAsNeeded",
+			@"fetchRowCount", @"FetchCorrectRowCount",
+			@"limitRows", @"LimitResults",
+			@"limitRowsValue", @"LimitResultsValue",
+			@"nullValue", @"NullValue",
+			@"showError", @"ShowNoAffectedRowsError",
+			@"connectionTimeout", @"ConnectionTimeoutValue",
+			@"keepAliveInterval", @"KeepAliveInterval",
+			@"lastFavoriteIndex", @"LastFavoriteIndex",
+			nil];
+
+		keyEnumerator = [keysToUpgrade keyEnumerator];
+		while (newKey = [keyEnumerator nextObject]) {
+			oldKey = [keysToUpgrade objectForKey:newKey];
+			if ([prefs objectForKey:oldKey]) {
+				[prefs setObject:[prefs objectForKey:oldKey] forKey:newKey];
+				[prefs removeObjectForKey:oldKey];
+			}
 		}
 
 		// Remove outdated keys
