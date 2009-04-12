@@ -56,6 +56,8 @@
 	NSUserDefaults *prefs;
 }
 
+- (void)applyRevisionChanges;
+
 // IBAction methods
 - (IBAction)addFavorite:(id)sender;
 - (IBAction)removeFavorite:(id)sender;

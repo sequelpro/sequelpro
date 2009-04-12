@@ -33,7 +33,7 @@
 	<key>KeepAliveInterval</key>
 	<integer>60</integer>
 	<key>CustomQueryEditorFont</key>
-	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaUCEBVs2NGNdBgAAADgAAAD//kIAaQB0AHMAdAByAGUAYQBtAFYAZQByAGEAUwBhAG4AcwBNAG8AbgBvAC0AUgBvAG0AYQBuAIQBZguEAWMAmAGYAJgAhg==</data>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
 	<key>CustomQueryAutoindent</key>
 	<true/>
 	<key>CustomQueryAutopair</key>

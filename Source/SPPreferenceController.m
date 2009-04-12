@@ -54,7 +54,11 @@
 // -------------------------------------------------------------------------------
 - (id)init
 {
-	return [super initWithWindowNibName:@"Preferences"];
+	if (self = [super initWithWindowNibName:@"Preferences"]) {
+		prefs = [NSUserDefaults standardUserDefaults];
+		[self applyRevisionChanges];
+	}
+	return self;
 }
 
 // -------------------------------------------------------------------------------
@@ -64,9 +68,8 @@
 {	
 	[self _setupToolbar];
 	
-	prefs    = [NSUserDefaults standardUserDefaults];
 	keychain = [[KeyChain alloc] init];
-
+	
 	SPFavoriteTextFieldCell *tableCell = [[[SPFavoriteTextFieldCell alloc] init] autorelease];
 	
 	[tableCell setImage:[NSImage imageNamed:@"database"]];
@@ -81,6 +84,137 @@
 	
 	[self _updateDefaultFavoritePopup];
 }
+
+// -------------------------------------------------------------------------------
+// applyRevisionChanges
+// Checks the revision number, applies any preference upgrades, and updates to
+// latest revision.
+// Currently uses both lastUsedVersion and LastUsedVersion for <0.9.5 compatibility.
+// -------------------------------------------------------------------------------
+- (void)applyRevisionChanges
+{
+	int currentVersionNumber, recordedVersionNumber = 0;
+
+	// Get the current bundle version number (the SVN build number) for per-version upgrades
+	currentVersionNumber = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] intValue];
+
+	// Get the current revision
+	if ([prefs objectForKey:@"lastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"lastUsedVersion"] intValue];
+	if ([prefs objectForKey:@"LastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"LastUsedVersion"] intValue];
+
+	// Skip processing if the current version matches recorded version
+	if (currentVersionNumber == recordedVersionNumber) return;
+
+	// If no recorded version, update to current revision and skip processing
+	if (!recordedVersionNumber) {
+		[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];
+		return;
+	}
+
+	// For versions prior to r336 (0.9.4), where column widths have been saved, walk through them and remove
+	// any table widths set to 15 or less (fix for mangled columns caused by Issue #140)
+	if (recordedVersionNumber < 336 && [prefs objectForKey:@"tableColumnWidths"] != nil) {
+		NSEnumerator *databaseEnumerator, *tableEnumerator, *columnEnumerator;
+		NSString *databaseKey, *tableKey, *columnKey;
+		NSMutableDictionary *newDatabase, *newTable;
+		float columnWidth;
+		NSMutableDictionary *newTableColumnWidths = [[NSMutableDictionary alloc] init];
+
+		databaseEnumerator = [[prefs objectForKey:@"tableColumnWidths"] keyEnumerator];
+		while (databaseKey = [databaseEnumerator nextObject]) {
+			newDatabase = [[NSMutableDictionary alloc] init];
+			tableEnumerator = [[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] keyEnumerator];
+			while (tableKey = [tableEnumerator nextObject]) {
+				newTable = [[NSMutableDictionary alloc] init];
+				columnEnumerator = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] objectForKey:tableKey] keyEnumerator];
+				while (columnKey = [columnEnumerator nextObject]) {
+					columnWidth = [[[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] floatValue];
+					if (columnWidth >= 15) {
+						[newTable setObject:[NSNumber numberWithFloat:columnWidth] forKey:[NSString stringWithString:columnKey]];
+					}
+				}
+				if ([newTable count]) {
+					[newDatabase setObject:[NSDictionary dictionaryWithDictionary:newTable] forKey:[NSString stringWithString:tableKey]];
+				}
+				[newTable release];
+			}
+			if ([newDatabase count]) {
+				[newTableColumnWidths setObject:[NSDictionary dictionaryWithDictionary:newDatabase] forKey:[NSString stringWithString:databaseKey]];
+			}
+			[newDatabase release];
+		}
+		[prefs setObject:[NSDictionary dictionaryWithDictionary:newTableColumnWidths] forKey:@"tableColumnWidths"];
+		[newTableColumnWidths release];
+	}
+
+	// For versions prior to r561 (0.9.5), migrate old pref keys where they exist to the new pref keys
+	if (recordedVersionNumber < 561) {
+		if ([prefs objectForKey:@"encoding"]) {
+			[prefs setObject:[prefs objectForKey:@"encoding"] forKey:@"DefaultEncoding"];
+			[prefs removeObjectForKey:@"encoding"];
+		}
+		if ([prefs objectForKey:@"useMonospacedFonts"]) {
+			[prefs setObject:[prefs objectForKey:@"useMonospacedFonts"] forKey:@"UseMonospacedFonts"];
+			[prefs removeObjectForKey:@"useMonospacedFonts"];
+		}
+		if ([prefs objectForKey:@"reloadAfterAdding"]) {
+			[prefs setObject:[prefs objectForKey:@"reloadAfterAdding"] forKey:@"ReloadAfterAddingRow"];
+			[prefs removeObjectForKey:@"reloadAfterAdding"];
+		}
+		if ([prefs objectForKey:@"reloadAfterEditing"]) {
+			[prefs setObject:[prefs objectForKey:@"reloadAfterEditing"] forKey:@"ReloadAfterEditingRow"];
+			[prefs removeObjectForKey:@"reloadAfterEditing"];
+		}
+		if ([prefs objectForKey:@"reloadAfterRemoving"]) {
+			[prefs setObject:[prefs objectForKey:@"reloadAfterRemoving"] forKey:@"ReloadAfterRemovingRow"];
+			[prefs removeObjectForKey:@"reloadAfterRemoving"];
+		}
+		if ([prefs objectForKey:@"dontShowBlob"]) {
+			[prefs setObject:[prefs objectForKey:@"dontShowBlob"] forKey:@"LoadBlobsAsNeeded"];
+			[prefs removeObjectForKey:@"dontShowBlob"];
+		}
+		if ([prefs objectForKey:@"fetchRowCount"]) {
+			[prefs setObject:[prefs objectForKey:@"fetchRowCount"] forKey:@"FetchCorrectRowCount"];
+			[prefs removeObjectForKey:@"fetchRowCount"];
+		}
+		if ([prefs objectForKey:@"limitRows"]) {
+			[prefs setObject:[prefs objectForKey:@"limitRows"] forKey:@"LimitResults"];
+			[prefs removeObjectForKey:@"limitRows"];
+		}
+		if ([prefs objectForKey:@"limitRowsValue"]) {
+			[prefs setObject:[prefs objectForKey:@"limitRowsValue"] forKey:@"LimitResultsValue"];
+			[prefs removeObjectForKey:@"limitRowsValue"];
+		}
+		if ([prefs objectForKey:@"nullValue"]) {
+			[prefs setObject:[prefs objectForKey:@"nullValue"] forKey:@"NullValue"];
+			[prefs removeObjectForKey:@"nullValue"];
+		}
+		if ([prefs objectForKey:@"showError"]) {
+			[prefs setObject:[prefs objectForKey:@"showError"] forKey:@"ShowNoAffectedRowsError"];
+			[prefs removeObjectForKey:@"showError"];
+		}
+		if ([prefs objectForKey:@"connectionTimeout"]) {
+			[prefs setObject:[prefs objectForKey:@"connectionTimeout"] forKey:@"ConnectionTimeoutValue"];
+			[prefs removeObjectForKey:@"connectionTimeout"];
+		}
+		if ([prefs objectForKey:@"keepAliveInterval"]) {
+			[prefs setObject:[prefs objectForKey:@"keepAliveInterval"] forKey:@"KeepAliveInterval"];
+			[prefs removeObjectForKey:@"keepAliveInterval"];
+		}
+		if ([prefs objectForKey:@"lastFavoriteIndex"]) {
+			[prefs setObject:[prefs objectForKey:@"lastFavoriteIndex"] forKey:@"LastFavoriteIndex"];
+			[prefs removeObjectForKey:@"lastFavoriteIndex"];
+		}
+
+		// Remove outdated keys
+		[prefs removeObjectForKey:@"lastUsedVersion"];
+		[prefs removeObjectForKey:@"version"];
+	}
+
+	// Update the prefs revision
+	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];	
+}
+
 
 #pragma mark -
 #pragma mark IBAction methods
