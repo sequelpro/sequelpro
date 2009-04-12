@@ -91,7 +91,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
 	[tableSourceResult release];
 
-	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"NSPrintPanelShowsPageSetupAccessory %@", [selectedTable backtickQuotedString]]] retain];
+	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
