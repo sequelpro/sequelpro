@@ -249,6 +249,9 @@
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
 		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
 		
+		// Alter the name to ensure the keychain item isn't shared and therefore overwritten when changed
+		[favorite setObject:[NSString stringWithFormat:@"%@ Copy", [favorite objectForKey:@"name"]] forKey:@"name"];
+
 		[favoritesController addObject:favorite];
 		
 		[favoritesTableView reloadData];
