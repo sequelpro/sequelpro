@@ -547,7 +547,85 @@
 	[super dealloc];
 }
 
+
+#pragma mark -
+#pragma mark TextField delegate methods
+
+// -------------------------------------------------------------------------------
+// control:textShouldEndEditing:
+// Trap editing end notifications and use them to update the keychain password
+// appropriately when name, host, user, password or database changes.
+// -------------------------------------------------------------------------------
+- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
+{
+	NSString *oldKeychainName, *newKeychainName;
+	NSString *oldKeychainAccount, *newKeychainAccount;
+	NSString *oldPassword;
+
+	// Only proceed for name, host, user or database changes
+	if (control != nameField && control != hostField && control != userField && control != passwordField && control != databaseField)
+		return YES;
+
+	// Set the current keychain name and account strings
+	oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favoritesController valueForKeyPath:@"selection.name"]];
+	oldKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+						  [favoritesController valueForKeyPath:@"selection.user"],
+						  [favoritesController valueForKeyPath:@"selection.host"],
+						  [favoritesController valueForKeyPath:@"selection.database"]];
+
+	// Retrieve the old password
+	oldPassword = [keychain getPasswordForName:oldKeychainName account:oldKeychainAccount];
+	
+	// If no details have changed, skip processing
+	if ([nameField stringValue] == [favoritesController valueForKeyPath:@"selection.name"]
+		&& [hostField stringValue] == [favoritesController valueForKeyPath:@"selection.host"]
+		&& [userField stringValue] == [favoritesController valueForKeyPath:@"selection.user"]
+		&& [databaseField stringValue] == [favoritesController valueForKeyPath:@"selection.database"]
+		&& [passwordField stringValue] == oldPassword) {
+		oldPassword = nil;
+		return YES;
+	}
+	oldPassword = nil;
+
+	// Set up the new keychain name and account strings
+	newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]];
+	newKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+						  [userField stringValue],
+						  [hostField stringValue],
+						  [databaseField stringValue]];
+
+	// Delete the old keychain item
+	[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+	// Add the new keychain item if the password field has a value
+	if ([passwordField stringValue])
+		[keychain addPassword:[passwordField stringValue] forName:newKeychainName account:newKeychainAccount];
+
+	// Proceed with editing
+	return YES;
+}
+
+
+#pragma mark -
+#pragma mark Window delegate methods
+
+// -------------------------------------------------------------------------------
+// windowWillClose:
+// Trap window close notifications and use them to ensure changes are saved.
+// -------------------------------------------------------------------------------
+- (void)windowWillClose:(NSNotification *)notification
+{
+
+	// Mark the currently selected field in the window as having finished editing, to trigger saves.
+	if ([preferencesWindow firstResponder])
+		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
+}
+
+
+
 @end
+
+
 
 #pragma mark -
 
