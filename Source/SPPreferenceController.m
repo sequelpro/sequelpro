@@ -85,6 +85,9 @@
 	[self _updateDefaultFavoritePopup];
 }
 
+#pragma mark -
+#pragma mark Preferences upgrade routine
+
 // -------------------------------------------------------------------------------
 // applyRevisionChanges
 // Checks the revision number, applies any preference upgrades, and updates to
@@ -182,6 +185,34 @@
 		[prefs removeObjectForKey:@"version"];
 	}
 
+	// For versions prior to r567 (0.9.5), add a timestamp-based identifier to favorites and keychain entries
+	if (recordedVersionNumber < 567 && [prefs objectForKey:@"favorites"]) {
+		int i;
+		NSMutableArray *favoritesArray = [prefs objectForKey:@"favorites"];
+		NSMutableDictionary *favorite;
+		NSString *password, *keychainName, *keychainAccount;
+		KeyChain *upgradeKeychain = [[KeyChain alloc] init];
+
+		// Cycle through the favorites, generating a timestamp-derived ID for each and renaming associated keychain items.
+		for (i = 0; i < [favoritesArray count]; i++) {
+			favorite = [favoritesArray objectAtIndex:i];	
+			[favorite setObject:[NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
+			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]];
+			keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+								[favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
+			password = [upgradeKeychain getPasswordForName:keychainName account:keychainAccount];
+			[upgradeKeychain deletePasswordForName:keychainName account:keychainAccount];
+			if (password && [password length]) {
+				keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+				[upgradeKeychain addPassword:password forName:keychainName account:keychainAccount];
+			}
+			[favoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithDictionary:favorite]];
+		}
+		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:@"favorites"];
+		[upgradeKeychain release];
+		password = nil;
+	}
+
 	// Update the prefs revision
 	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];	
 }
@@ -195,9 +226,11 @@
 // -------------------------------------------------------------------------------
 - (IBAction)addFavorite:(id)sender
 {
+	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+
 	// Create default favorite
-	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", @"", @"", @"", @"", nil] 
-																	   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", nil]];
+	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", @"", @"", @"", @"", favoriteid, nil] 
+																	   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
 	
@@ -217,11 +250,12 @@
 		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
 		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
 		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
-		
+		int favoriteid = [[favoritesController valueForKeyPath:@"selection.id"] intValue];
+
 		// Remove passwords from the Keychain
-		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
+		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", name, favoriteid]
 								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
+		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", name, favoriteid]
 								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 		
 		// Reset last used favorite
@@ -247,13 +281,31 @@
 - (IBAction)duplicateFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
+		NSString *keychainName, *keychainAccount, *password;
 		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
-		
-		// Alter the name to ensure the keychain item isn't shared and therefore overwritten when changed
+		NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+
+		// Select the keychain password for duplication
+		keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+		keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+							[favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
+		password = [keychain getPasswordForName:keychainName account:keychainAccount];
+
+		// Update the unique ID
+		[favorite setObject:favoriteid forKey:@"id"];
+
+		// Alter the name for clarity
 		[favorite setObject:[NSString stringWithFormat:@"%@ Copy", [favorite objectForKey:@"name"]] forKey:@"name"];
 
-		[favoritesController addObject:favorite];
+		// Create a new keychain item if appropriate
+		if (password && [password length]) {
+			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+			[keychain addPassword:password forName:keychainName account:keychainAccount];
+		}
+		password = nil;
 		
+		[favoritesController addObject:favorite];
+
 		[favoritesTableView reloadData];
 		[self _updateDefaultFavoritePopup];
 	}
@@ -477,7 +529,14 @@
 		[favoritesController setSelectionIndexes:[favoritesTableView selectedRowIndexes]];		
 	}
 
-	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favoritesController valueForKeyPath:@"selection.name"]];
+	// If no selection is present, blank the field.
+	if ([[favoritesTableView selectedRowIndexes] count] == 0) {
+		[passwordField setStringValue:@""];
+		return;
+	}
+
+	// Otherwise retrieve and set the password.
+	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
 	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 								 [favoritesController valueForKeyPath:@"selection.user"],
 								 [favoritesController valueForKeyPath:@"selection.host"],
@@ -570,7 +629,7 @@
 		return YES;
 
 	// Set the current keychain name and account strings
-	oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favoritesController valueForKeyPath:@"selection.name"]];
+	oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
 	oldKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 						  [favoritesController valueForKeyPath:@"selection.user"],
 						  [favoritesController valueForKeyPath:@"selection.host"],
@@ -591,7 +650,7 @@
 	oldPassword = nil;
 
 	// Set up the new keychain name and account strings
-	newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [nameField stringValue]];
+	newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
 	newKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 						  [userField stringValue],
 						  [hostField stringValue],
@@ -601,7 +660,7 @@
 	[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
 
 	// Add the new keychain item if the password field has a value
-	if ([passwordField stringValue])
+	if ([[passwordField stringValue] length])
 		[keychain addPassword:[passwordField stringValue] forName:newKeychainName account:newKeychainAccount];
 
 	// Proceed with editing

@@ -428,10 +428,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	NSString *user     = [self valueForKeyPath:@"selectedFavorite.user"];
 	NSString *host     = [self valueForKeyPath:@"selectedFavorite.host"];
 	NSString *database = [self valueForKeyPath:@"selectedFavorite.database"];
+	int favoriteid = [[self valueForKeyPath:@"selectedFavorite.id"] intValue];
 	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", name, favoriteid]
 									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", name, favoriteid]
 									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	
 	// Remove from favorites array controller
@@ -478,7 +479,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	if (![self selectedFavorite])
 		return nil;
 	
-	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [self valueForKeyPath:@"selectedFavorite.name"]];
+	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [self valueForKeyPath:@"selectedFavorite.name"], [[self valueForKeyPath:@"selectedFavorite.id"] intValue]];
 	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 								 [self valueForKeyPath:@"selectedFavorite.user"],
 								 [self valueForKeyPath:@"selectedFavorite.host"],
@@ -505,6 +506,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 				   sshPort:(NSString *)sshPort // no-longer in use
 {
 	NSString *favoriteName = [NSString stringWithFormat:@"%@@%@", user, host];
+	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 	if (![database isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", database, favoriteName];
 	
@@ -517,13 +519,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[self willChangeValueForKey:@"favorites"];
 	
 	// write favorites and password
-	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	nil]
-															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", nil]];
+	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	favoriteid, nil]
+															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
 	[favorites addObject:newFavorite];
 	
 	if (![password isEqualToString:@""]) {
 		[keyChainInstance addPassword:password
-							  forName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteName]
+							  forName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteName, [favoriteid intValue]]
 							  account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	}
 	
@@ -1998,13 +2000,15 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 {
 	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
 	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNameBeingChanged]
+	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteNameBeingChanged, [[favorite objectForKey:@"id"] intValue]]
 									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
-	[keyChainInstance addPassword:[passwordField stringValue]
-						  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
-						  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
-	
+	if ([[passwordField stringValue] length]) {
+		[keyChainInstance addPassword:[passwordField stringValue]
+							  forName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", object, [[favorite objectForKey:@"id"] intValue]]
+							  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
+	}
+
 	favoriteNameBeingChanged = nil;
 }
 
