@@ -633,6 +633,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"COLLATION",
 	@"COLUMN",
 	@"COLUMNS",
+	@"COLUMN_FORMAT"
 	@"COMMENT",
 	@"COMMIT",
 	@"COMMITTED",
