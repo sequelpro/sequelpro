@@ -105,8 +105,8 @@
 	if ([prefs objectForKey:@"lastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"lastUsedVersion"] intValue];
 	if ([prefs objectForKey:@"LastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"LastUsedVersion"] intValue];
 
-	// Skip processing if the current version matches recorded version
-	if (currentVersionNumber == recordedVersionNumber) return;
+	// Skip processing if the current version matches or is less than recorded version
+	if (currentVersionNumber <= recordedVersionNumber) return;
 
 	// If no recorded version, update to current revision and skip processing
 	if (!recordedVersionNumber) {
