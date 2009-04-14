@@ -692,7 +692,7 @@
 	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
 	for ( i = 0 ; i < [columns count] ; i++ ) {
 		column = [columns objectAtIndex:i];
-		if ([column objectForKey:@"default"] == nil) {
+		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
 			[newRow setObject:[prefs stringForKey:@"NullValue"] forKey:[column objectForKey:@"name"]];
 		} else {
 			[newRow setObject:[column objectForKey:@"default"] forKey:[column objectForKey:@"name"]];
