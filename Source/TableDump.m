@@ -118,13 +118,13 @@
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	[savePanel setAllowsOtherFileTypes:YES];
 	[savePanel setExtensionHidden:NO];
-	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%d.%m.%Y" timeZone:nil locale:nil];
+	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil];
 	
 	switch ( tag ) {
 		case 5:
 			// export dump
 			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@_dump %@.sql", [tableDocumentInstance database], currentDate];
+			file = [NSString stringWithFormat:@"%@_%@.sql", [tableDocumentInstance database], currentDate];
 			[savePanel setRequiredFileType:@"sql"];
 			[savePanel setAccessoryView:exportDumpView];
 			contextInfo = @"exportDump";
