@@ -30,8 +30,6 @@
 {
 	BOOL isNewFavorite;
 	
-	NSMutableArray *favorites;
-	
 	SPPreferenceController *prefsController;
 }
 

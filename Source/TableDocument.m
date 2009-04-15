@@ -47,7 +47,6 @@
 #import "ICUTemplateMatcher.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
-NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocumentFavoritesControllerFavoritesDidChange";
 
 @interface TableDocument (PrivateAPI)
 
@@ -74,9 +73,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	// register selection did change handler for favorites controller (used in connect sheet)
 	[favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
 	
-	// register value change handler for favourites, so we can save them to preferences
-	[self addObserver:self forKeyPath:@"favorites" options:0 context:TableDocumentFavoritesControllerFavoritesDidChange];
-	
 	// register double click for the favorites view (double click favorite to connect)
 	[connectFavoritesTableView setTarget:self];
 	
@@ -93,12 +89,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		[self chooseFavorite:self];
 		return;
 	}
-	
-	if (context == TableDocumentFavoritesControllerFavoritesDidChange) {
-		[prefs setObject:[self favorites] forKey:@"favorites"];
-		return;
-	}
-	
+
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
@@ -265,10 +256,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 - (IBAction)connect:(id)sender
 {
 	int code;
-
-	// Save the favourites - commits any unsaved changes ie favourite renames
-	[prefs setObject:[self favorites] forKey:@"favorites"];
-	[prefs synchronize];
 	
 	[connectProgressBar startAnimation:self];
 	[connectProgressStatusText setHidden:NO];
@@ -441,24 +428,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 }
 
 /**
- * Return the favorites array.
- */
-- (NSMutableArray *)favorites
-{
-	// if no favorites, load from user defaults
-	if (!favorites) {
-		favorites = [[NSMutableArray alloc] initWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"favorites"]];
-	}
-	
-	// if no favorites in user defaults, load empty ones
-	if (!favorites) {
-		favorites = [[NSMutableArray array] retain];
-	}
-	
-	return favorites;
-}
-
-/**
  * returns a KVC-compliant proxy to the currently selected favorite, or nil if nothing selected.
  * 
  * see [NSObjectController selection]
@@ -516,20 +485,16 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		return;
 	}
 	
-	[self willChangeValueForKey:@"favorites"];
-	
 	// write favorites and password
 	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	favoriteid, nil]
 															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
-	[favorites addObject:newFavorite];
-	
 	if (![password isEqualToString:@""]) {
 		[keyChainInstance addPassword:password
 							  forName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteName, [favoriteid intValue]]
 							  account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	}
 	
-	[self didChangeValueForKey:@"favorites"];
+	[favoritesController addObject:newFavorite];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
 }
 
@@ -1892,12 +1857,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  * When a favorite is selected, and the connection details are edited, deselect the favorite;
  * this is clearer and also prevents a failed connection from being repopulated with the
  * favorite's details instead of the last used details.
- * This method allows the password to be changed without altering the selection.
  */
 - (void) controlTextDidChange:(NSNotification *)aNotification
 {
-	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == databaseField
-		|| [aNotification object] == socketField || [aNotification object] == portField) {
+	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == passwordField
+		|| [aNotification object] == databaseField || [aNotification object] == socketField || [aNotification object] == portField) {
 		[favoritesController setSelectionIndexes:[NSIndexSet indexSet]];
 	}
 	else if ([aNotification object] == databaseNameField) {
@@ -1998,8 +1962,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  */
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
-	
+	NSDictionary *favorite = [[favoritesController arrangedObjects] objectAtIndex:rowIndex];
+	NSMutableDictionary *newFavorite;
+
 	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteNameBeingChanged, [[favorite objectForKey:@"id"] intValue]]
 									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	
@@ -2009,6 +1974,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 							  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
 	}
 
+	// Update the favorites array controller
+	newFavorite = [NSMutableDictionary dictionaryWithDictionary:favorite];
+	[newFavorite setObject:[NSString stringWithString:object] forKey:@"name"];
+	[favoritesController insertObject:newFavorite atArrangedObjectIndex:rowIndex];
+	[favoritesController removeObjectAtArrangedObjectIndex:(rowIndex+1)];
+	[favoritesController setSelectionIndex:rowIndex];
+	
 	favoriteNameBeingChanged = nil;
 }
 
@@ -2019,7 +1991,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  */
 - (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	favoriteNameBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	favoriteNameBeingChanged = [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:@"name"];
 	
 	return YES;
 }
@@ -2034,7 +2006,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 {
 	[chooseDatabaseButton release];
 	[mySQLConnection release];
-	[favorites release];
 	[variables release];
 	[selectedDatabase release];
 	[mySQLVersion release];
@@ -2051,14 +2022,20 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  * Checks to see if a favorite with the supplied details already exists.
  */
 - (BOOL)_favoriteAlreadyExists:(NSString *)database host:(NSString *)host user:(NSString *)user
-{	
+{
+	NSArray *favorites = [favoritesController arrangedObjects];
+
+	// Ensure database, host, and user match prefs format
+	if (!database) database = @"";
+	if (!host) host = @"";
+	if (!user) user = @"";
+
 	// Loop the favorites and check their details
-	for (NSDictionary *favorite in favorites) 
-	{		
+	for (NSDictionary *favorite in favorites)
+	{
 		if ([[favorite objectForKey:@"database"] isEqualToString:database] &&
 			[[favorite objectForKey:@"host"] isEqualToString:host] &&
 			[[favorite objectForKey:@"user"] isEqualToString:user]) {
-			
 			return YES;
 		}
 	}
