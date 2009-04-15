@@ -195,7 +195,8 @@
 
 		// Cycle through the favorites, generating a timestamp-derived ID for each and renaming associated keychain items.
 		for (i = 0; i < [favoritesArray count]; i++) {
-			favorite = [favoritesArray objectAtIndex:i];	
+			favorite = [favoritesArray objectAtIndex:i];
+			if ([favorite objectForKey:@"id"]) continue;	
 			[favorite setObject:[NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
 			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]];
 			keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
@@ -524,7 +525,7 @@
 // tableViewSelectionDidChange:
 // -------------------------------------------------------------------------------
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
-{	
+{
 	if ([[favoritesTableView selectedRowIndexes] count] > 0) {
 		[favoritesController setSelectionIndexes:[favoritesTableView selectedRowIndexes]];		
 	}
