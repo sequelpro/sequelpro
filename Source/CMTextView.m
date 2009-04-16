@@ -1277,6 +1277,12 @@ SYNTAX HIGHLIGHTING!
 	autoindentIgnoresEnter = NO;
 	autouppercaseKeywordsEnabled = YES;
 	delBackwardsWasPressed = NO;
+
+    lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
+    [scrollView setVerticalRulerView:lineNumberView];
+    [scrollView setHasHorizontalRuler:NO];
+    [scrollView setHasVerticalRuler:YES];
+    [scrollView setRulersVisible:YES];
 }
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification

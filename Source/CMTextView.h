@@ -22,6 +22,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import "NoodleLineNumberView.h"
 
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
@@ -29,6 +30,9 @@
 	BOOL autoindentIgnoresEnter;
 	BOOL autouppercaseKeywordsEnabled;
 	BOOL delBackwardsWasPressed;
+	NoodleLineNumberView *lineNumberView;
+	
+	IBOutlet NSScrollView *scrollView;
 }
 
 - (BOOL) isNextCharMarkedBy:(id)attribute;
