@@ -54,6 +54,7 @@
 	IBOutlet id favoritesButton;
 	IBOutlet NSTableView *connectFavoritesTableView;
 	IBOutlet NSArrayController *favoritesController;
+	IBOutlet id nameField;
 	IBOutlet id hostField;
 	IBOutlet id socketField;
 	IBOutlet id userField;
@@ -86,7 +87,6 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
-	NSString *favoriteNameBeingChanged;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
@@ -107,11 +107,11 @@
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
-- (IBAction)removeFavorite:(id)sender;
+- (IBAction)editFavorites:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;
-- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
+- (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password
 					  port:(NSString *)port database:(NSString *)database
 					useSSH:(BOOL)useSSH // no-longer in use
@@ -164,6 +164,7 @@
 - (void)closeConnection;
 
 //getter methods
+- (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
 - (NSString *)mySQLVersion;

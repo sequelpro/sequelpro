@@ -75,6 +75,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	// register double click for the favorites view (double click favorite to connect)
 	[connectFavoritesTableView setTarget:self];
+	[connectFavoritesTableView setDoubleAction:@selector(connect:)];
 	
 	// find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
@@ -240,6 +241,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// Connect automatically to the last used or default favourite
 	// connectSheet must open first.
 	if (_shouldOpenConnectionAutomatically) {
+		_shouldOpenConnectionAutomatically = false;
 		[self connect:self];
 	}
 }
@@ -341,8 +343,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
 						   [hostField stringValue], [databaseField stringValue]]];
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
-							   [hostField stringValue], [databaseField stringValue]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [databaseField stringValue]]];
 		
 		// Connected Growl notification		
         [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
@@ -391,6 +392,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if (![self selectedFavorite])
 		return;
 	
+	[nameField setStringValue:[self valueForKeyPath:@"selectedFavorite.name"]];
 	[hostField setStringValue:[self valueForKeyPath:@"selectedFavorite.host"]];
 	[socketField setStringValue:[self valueForKeyPath:@"selectedFavorite.socket"]];
 	[userField setStringValue:[self valueForKeyPath:@"selectedFavorite.user"]];
@@ -402,28 +404,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 /**
- * Remove the selected favourite. Instead of calling the remove: method of the Favorites NSArrayController
- * directly in the XIB we do it here because we also need to remove the keychain password.
+ * Opens the preferences window, or brings it to the front, and switch to the favorites tab.
+ * If a favorite is selected in the connection sheet, it is also select in the prefs window.
  */
-- (IBAction)removeFavorite:(id)sender
+- (IBAction)editFavorites:(id)sender
 {
-	if (![self selectedFavorite]) {
-		return;
-	}
-	
-	NSString *name     = [self valueForKeyPath:@"selectedFavorite.name"];
-	NSString *user     = [self valueForKeyPath:@"selectedFavorite.user"];
-	NSString *host     = [self valueForKeyPath:@"selectedFavorite.host"];
-	NSString *database = [self valueForKeyPath:@"selectedFavorite.database"];
-	int favoriteid = [[self valueForKeyPath:@"selectedFavorite.id"] intValue];
-	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", name, favoriteid]
-									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", name, favoriteid]
-									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-	
-	// Remove from favorites array controller
-	[favoritesController remove:[self selectedFavorite]];
 
 }
 
@@ -459,24 +444,24 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 - (void)connectSheetAddToFavorites:(id)sender
 {
-	[self addToFavoritesHost:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
+	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
 }
 
 /**
  * add actual connection to favorites
  */
-- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
-					  user:(NSString *)user password:(NSString *)password
-					  port:(NSString *)port database:(NSString *)database
-					useSSH:(BOOL)useSSH // no-longer in use
-				   sshHost:(NSString *)sshHost // no-longer in use
-				   sshUser:(NSString *)sshUser // no-longer in use
-			   sshPassword:(NSString *)sshPassword // no-longer in use
-				   sshPort:(NSString *)sshPort // no-longer in use
+- (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
+					 user:(NSString *)user password:(NSString *)password
+					 port:(NSString *)port database:(NSString *)database
+				   useSSH:(BOOL)useSSH // no-longer in use
+				  sshHost:(NSString *)sshHost // no-longer in use
+				  sshUser:(NSString *)sshUser // no-longer in use
+			  sshPassword:(NSString *)sshPassword // no-longer in use
+				  sshPort:(NSString *)sshPort // no-longer in use
 {
-	NSString *favoriteName = [NSString stringWithFormat:@"%@@%@", user, host];
+	NSString *favoriteName = [name length]?name:[NSString stringWithFormat:@"%@@%@", user, host];
 	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	if (![database isEqualToString:@""])
+	if (![name length] && ![database isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", database, favoriteName];
 	
 	// test if host and socket are not nil
@@ -529,7 +514,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[self setDatabases:self];
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/", mySQLVersion, [userField stringValue], [hostField stringValue]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/", mySQLVersion, [self name]]];
 	}
 }
 
@@ -601,7 +586,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	selectedDatabase = [[chooseDatabaseButton titleOfSelectedItem] retain];
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue], [hostField stringValue], [self database]]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
 }
 
 /**
@@ -670,7 +655,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[self setDatabases:self];
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue], [hostField stringValue], selectedDatabase]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], selectedDatabase]];
 }
 
 /**
@@ -1236,6 +1221,17 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (NSString *)host
 {
 	return [hostField stringValue];
+}
+
+/**
+ * Returns the name
+ */
+- (NSString *)name
+{
+	if ([[nameField stringValue] length]) {
+		return [nameField stringValue];
+	}
+		return [NSString stringWithFormat:@"%@@%@", [userField stringValue], [hostField stringValue]];
 }
 
 /**
@@ -1860,8 +1856,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (void) controlTextDidChange:(NSNotification *)aNotification
 {
-	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == passwordField
-		|| [aNotification object] == databaseField || [aNotification object] == socketField || [aNotification object] == portField) {
+	if ([aNotification object] == nameField || [aNotification object] == hostField
+		|| [aNotification object] == userField || [aNotification object] == passwordField
+		|| [aNotification object] == databaseField || [aNotification object] == socketField
+		|| [aNotification object] == portField) {
 		[favoritesController setSelectionIndexes:[NSIndexSet indexSet]];
 	}
 	else if ([aNotification object] == databaseNameField) {
@@ -1954,46 +1952,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 	
 	return theValue;
-}
-
-/**
- * Although the connection sheet tableview uses bindings to display the favourites we implement this method in
- * order to update the keychain associated with favourites that are renamed. Its not the best approach, but it works.
- */
-- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	NSDictionary *favorite = [[favoritesController arrangedObjects] objectAtIndex:rowIndex];
-	NSMutableDictionary *newFavorite;
-
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteNameBeingChanged, [[favorite objectForKey:@"id"] intValue]]
-									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
-	
-	if ([[passwordField stringValue] length]) {
-		[keyChainInstance addPassword:[passwordField stringValue]
-							  forName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", object, [[favorite objectForKey:@"id"] intValue]]
-							  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
-	}
-
-	// Update the favorites array controller
-	newFavorite = [NSMutableDictionary dictionaryWithDictionary:favorite];
-	[newFavorite setObject:[NSString stringWithString:object] forKey:@"name"];
-	[favoritesController insertObject:newFavorite atArrangedObjectIndex:rowIndex];
-	[favoritesController removeObjectAtArrangedObjectIndex:(rowIndex+1)];
-	[favoritesController setSelectionIndex:rowIndex];
-	
-	favoriteNameBeingChanged = nil;
-}
-
-/**
- * We implement this method so we can get the name of the favourtie before its renamed. We need the name so we
- * look it up in the keychain and update its name, which is done in the above method. This is obviously not the
- * best approach to doing this as it means we need an ivar just to track the favourite that is about to be renamed. 
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	favoriteNameBeingChanged = [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:@"name"];
-	
-	return YES;
 }
 
 - (IBAction)terminate:(id)sender

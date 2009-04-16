@@ -179,8 +179,8 @@
 		}
 		
 		// Set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-							  [tableDocumentInstance host], [tableDocumentInstance database], tableName]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+							  [tableDocumentInstance name], [tableDocumentInstance database], tableName]];
 	} 
 	else {
 		// Error while creating new table
@@ -397,8 +397,8 @@
 	[tablesListView reloadData];
 	
 	// set window title
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-								[tableDocumentInstance host], [tableDocumentInstance database]]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
+								[tableDocumentInstance name], [tableDocumentInstance database]]];
 	if ( error )
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
@@ -579,8 +579,8 @@
 			}
 			
 			// Set window title
-			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-								  [tableDocumentInstance host], [tableDocumentInstance database], anObject]];
+			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+								  [tableDocumentInstance name], [tableDocumentInstance database], anObject]];
 		} 
 		else {
 			// Error while renaming
@@ -685,8 +685,8 @@
 		}
 		 
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+									[tableDocumentInstance name], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -696,8 +696,8 @@
 		statusLoaded = NO;
 		
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-									[tableDocumentInstance host], [tableDocumentInstance database]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
+									[tableDocumentInstance name], [tableDocumentInstance database]]];
 	}	
 }
 
