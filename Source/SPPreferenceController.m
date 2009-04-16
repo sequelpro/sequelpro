@@ -41,7 +41,6 @@
 
 - (void)_setupToolbar;
 - (void)_resizeWindowForContentView:(NSView *)view;
-- (void)_updateDefaultFavoritePopup;
 
 @end
 
@@ -82,7 +81,7 @@
 	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 	[favoritesTableView reloadData];
 	
-	[self _updateDefaultFavoritePopup];
+	[self updateDefaultFavoritePopup];
 }
 
 #pragma mark -
@@ -236,7 +235,7 @@
 	[favoritesController addObject:favorite];
 	
 	[favoritesTableView reloadData];
-	[self _updateDefaultFavoritePopup];
+	[self updateDefaultFavoritePopup];
 }
 
 // -------------------------------------------------------------------------------
@@ -272,7 +271,7 @@
 		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
 		
 		[favoritesTableView reloadData];
-		[self _updateDefaultFavoritePopup];
+		[self updateDefaultFavoritePopup];
 	}
 }
 
@@ -308,7 +307,7 @@
 		[favoritesController addObject:favorite];
 
 		[favoritesTableView reloadData];
-		[self _updateDefaultFavoritePopup];
+		[self updateDefaultFavoritePopup];
 	}
 }
 
@@ -501,7 +500,7 @@
 	if ([prefs integerForKey:@"DefaultFavorite"] == originalRow) {
 		[prefs setInteger:destinationRow forKey:@"DefaultFavorite"];
 	}
-	[self _updateDefaultFavoritePopup];
+	[self updateDefaultFavoritePopup];
 	
 	return YES;
 }
@@ -685,6 +684,49 @@
 }
 
 
+#pragma mark -
+#pragma mark Other
+
+
+// -------------------------------------------------------------------------------
+// updateDefaultFavoritePopup:
+//
+// Build the default favorite popup button
+// -------------------------------------------------------------------------------
+- (void)updateDefaultFavoritePopup;
+{
+	[defaultFavoritePopup removeAllItems];
+	
+	// Use the last used favorite
+	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
+	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
+	
+	// Load in current favorites
+	[defaultFavoritePopup addItemsWithTitles:[[favoritesController arrangedObjects] valueForKeyPath:@"name"]];
+	
+	// Add item to switch to edit favorites pane
+	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
+	[defaultFavoritePopup addItemWithTitle:@"Edit Favorites…"];
+	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setAction:@selector(displayFavoritePreferences:)];
+	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
+	
+	// Select the default favorite from prefs
+	if (![prefs boolForKey:@"SelectLastFavoriteUsed"]) {
+		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"] + 2];
+	} else {
+		[defaultFavoritePopup selectItemAtIndex:0];
+	}
+}
+
+// -------------------------------------------------------------------------------
+// selectFavorite:
+//
+// Selects the specified favorite(s) in the favorites list
+// -------------------------------------------------------------------------------
+- (void)selectFavorites:(NSArray *)favorites
+{
+	[favoritesController setSelectedObjects:favorites];
+}
 
 @end
 
@@ -782,39 +824,5 @@
   [[preferencesWindow contentView] addSubview:view];
   [view setFrameOrigin:NSMakePoint(0, 0)];
 }
-
-
-
-// -------------------------------------------------------------------------------
-// _updateDefaultFavoritePopup:
-//
-// Build the default favorite popup button
-// -------------------------------------------------------------------------------
-- (void)_updateDefaultFavoritePopup;
-{
-	[defaultFavoritePopup removeAllItems];
-	
-	// Use the last used favorite
-	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
-	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	
-	// Load in current favorites
-	[defaultFavoritePopup addItemsWithTitles:[[favoritesController arrangedObjects] valueForKeyPath:@"name"]];
-	
-	// Add item to switch to edit favorites pane
-	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	[defaultFavoritePopup addItemWithTitle:@"Edit Favorites…"];
-	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setAction:@selector(displayFavoritePreferences:)];
-	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
-	
-	// Select the default favorite from prefs
-	if (![prefs boolForKey:@"SelectLastFavoriteUsed"]) {
-		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"] + 2];
-	} else {
-		[defaultFavoritePopup selectItemAtIndex:0];
-	}
-}
-
-
 
 @end

@@ -70,6 +70,18 @@
 }
 
 #pragma mark -
+#pragma mark Getters
+
+/**
+ * Provide a method to retrieve the prefs controller
+ */
+- (SPPreferenceController *)preferenceController
+{
+	return prefsController;
+}
+
+
+#pragma mark -
 #pragma mark Services menu methods
 
 /**

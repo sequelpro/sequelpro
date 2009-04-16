@@ -41,6 +41,8 @@
 #import "SPQueryConsole.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "MainController.h"
+#import "SPPreferenceController.h"
 
 //used for printing
 #import "MGTemplateEngine.h"
@@ -409,7 +411,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)editFavorites:(id)sender
 {
-
+	SPPreferenceController *prefsController = [[NSApp delegate] preferenceController];
+	
+	[prefsController showWindow:self];
+	[prefsController displayFavoritePreferences:self];
+	[prefsController selectFavorites:[favoritesController selectedObjects]];	
 }
 
 /**
@@ -481,6 +487,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	[favoritesController addObject:newFavorite];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
+	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
 }
 
 /**

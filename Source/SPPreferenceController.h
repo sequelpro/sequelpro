@@ -77,4 +77,8 @@
 - (IBAction)displayAutoUpdatePreferences:(id)sender;
 - (IBAction)displayNetworkPreferences:(id)sender;
 
+// Other
+- (void)updateDefaultFavoritePopup;
+- (void)selectFavorites:(NSArray *)favorite;
+
 @end
