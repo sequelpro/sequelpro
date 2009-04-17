@@ -497,10 +497,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  * if contextInfo == removedatabase -> tries to remove the selected database
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-{
-	[sheet orderOut:self];
-	
+{	
 	if ([contextInfo isEqualToString:@"connect"]) {
+		[sheet orderOut:self];
 		[self connectToDB:nil];
 		return;
 	}
@@ -680,10 +679,19 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {
 	if ([chooseDatabaseButton indexOfSelectedItem] == 0)
 		return;
+	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil])
 		return;
 	
-	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]]);
+	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete database '%@'?", @"delete database message"), [self database]]
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									  otherButton:nil 
+						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
 }
 
 #pragma mark Console methods
@@ -1604,10 +1612,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
 		
 		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
-			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
+			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"Hide Console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
-			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"toolbar item for showconsole")];
+			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"Show Console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		}
 		

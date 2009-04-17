@@ -213,21 +213,25 @@
  */
 - (IBAction)removeTable:(id)sender
 {
-	if ( ![tablesListView numberOfSelectedRows] )
+	if (![tablesListView numberOfSelectedRows])
 		return;
+	
 	[tableWindow endEditingFor:nil];
+	
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self,
-			@selector(sheetDidEnd:returnCode:contextInfo:), nil,
-			@"removeRow", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the table %@?", @"message of panel asking for confirmation for deleting table"),
-				[tables objectAtIndex:[tablesListView selectedRow]]]);
-	} else {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self,
-			@selector(sheetDidEnd:returnCode:contextInfo:), nil,
-			@"removeRow", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the selected tables?", @"message of panel asking for confirmation for deleting tables"),
-				[tables objectAtIndex:[tablesListView selectedRow]]]);
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	if ([tablesListView numberOfSelectedRows] == 1) {
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete table '%@'?", @"delete table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the table '%@'. This operation cannot be undone.", @"delete table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+	} 
+	else {
+		[alert setMessageText:NSLocalizedString(@"Delete selected tables?", @"delete tables message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected tables. This operation cannot be undone.", @"delete tables informative message")];
 	}
+		
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
 }
 
 /**
@@ -343,7 +347,6 @@
 		alertSheetOpened = NO;
 	} else if ( [contextInfo isEqualToString:@"removeRow"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-			[sheet orderOut:self];
 			[self removeTable];
 		}
 	}

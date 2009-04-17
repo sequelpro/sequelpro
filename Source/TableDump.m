@@ -410,7 +410,7 @@
 	}
 
 	if (errorStr) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
@@ -536,7 +536,7 @@
 		[singleProgressBar setIndeterminate:NO];
 		
 		if([importArray count] == 0){
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil,
 							  tableWindow, self,
