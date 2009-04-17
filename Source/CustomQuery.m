@@ -421,7 +421,7 @@ sets the tableView columns corresponding to the mysql-result
 
 //add query to history
 	[queryHistoryButton insertItemWithTitle:[queries componentsJoinedByString:@"; "] atIndex:1];
-	while ( [queryHistoryButton numberOfItems] > 21 ) {
+	while ( [queryHistoryButton numberOfItems] > [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue] + 1 ) {
 		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 	}
 	for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )

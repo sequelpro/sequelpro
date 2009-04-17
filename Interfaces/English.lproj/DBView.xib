@@ -366,7 +366,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage">
+												<object class="NSCustomResource" key="NSNormalImage" id="367500642">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -381,10 +381,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<object class="NSCustomResource" key="NSImage" id="335884728">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_action</string>
-													</object>
+													<reference key="NSImage" ref="367500642"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2920,7 +2917,10 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="335884728"/>
+																					<object class="NSCustomResource" key="NSNormalImage">
+																						<string key="NSClassName">NSImage</string>
+																						<string key="NSResourceName">button_action</string>
+																					</object>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2932,7 +2932,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="335884728"/>
+																						<reference key="NSImage" ref="367500642"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -3121,7 +3121,7 @@
 																							</object>
 																						</object>
 																					</object>
-																					<int key="NSSelectedIndex">13</int>
+																					<int key="NSSelectedIndex">6</int>
 																					<bool key="NSPullDown">YES</bool>
 																					<int key="NSPreferredEdge">1</int>
 																					<bool key="NSUsesItemFromMenu">YES</bool>
@@ -9932,6 +9932,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="461189245">
+				<object class="NSMutableArray" key="NSDeclaredKeys">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<string>CustomQueryMaxHistoryItems</string>
+				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSArrayController" id="302582105">
@@ -12597,6 +12601,26 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="71560786"/>
 					</object>
 					<int key="connectionID">5410</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: values.CustomQueryMaxHistoryItems</string>
+						<reference key="source" ref="86760255"/>
+						<reference key="destination" ref="461189245"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="86760255"/>
+							<reference key="NSDestination" ref="461189245"/>
+							<string key="NSLabel">hidden: values.CustomQueryMaxHistoryItems</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">values.CustomQueryMaxHistoryItems</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSValueTransformerName</string>
+								<string key="NS.object.0">NSNegateBoolean</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5415</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -19374,7 +19398,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="86760255"/>
-							<string key="toolTip">Choose a query out of the last 20 queries</string>
+							<string key="toolTip">Choose a query from your recent queries</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -19402,7 +19426,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{442, 599}, {137, 20}}</string>
+					<string>{{383, 624}, {137, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -20873,7 +20897,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5410</int>
+			<int key="maxID">5415</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

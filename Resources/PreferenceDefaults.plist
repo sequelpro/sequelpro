@@ -6,6 +6,8 @@
 	<string>Autodetect</string>
 	<key>UseMonospacedFonts</key>
 	<false/>
+	<key>CustomQueryMaxHistoryItems</key>
+	<integer>20</integer>
 	<key>ReloadAfterAddingRow</key>
 	<true/>
 	<key>ReloadAfterEditingRow</key>
@@ -40,5 +42,9 @@
 	<true/>
 	<key>CustomQueryAutouppercaseKeywords</key>
 	<false/>
+	<key>SelectLastFavoriteUsed</key>
+	<true/>
+	<key>LastFavoriteIndex</key>
+	<integer>0</integer>
 </dict>
 </plist>
