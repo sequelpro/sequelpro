@@ -31,7 +31,10 @@
 	IBOutlet NSButton *includeTimeStampsButton, *saveConsoleButton, *clearConsoleButton;
 	
 	NSFont *consoleFont;
-	NSMutableArray *messages, *messagesActiveSet, *messagesFilterSet, *messagesSubset;
+	NSMutableArray *messagesFullSet, *messagesFilteredSet, *messagesVisibleSet;
+	BOOL showSelectStatementsAreDisabled;
+	BOOL filterIsActive;
+	NSMutableString *activeFilterString;
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
