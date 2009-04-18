@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import <WebKit/WebKit.h>
+#import <WebKit/Webkit.h>
 
 @class CMMCPConnection, CMMCPResult;
 
@@ -63,7 +63,7 @@
 	IBOutlet id databaseField;
 
 	IBOutlet id connectProgressBar;
-	IBOutlet id connectProgressStatusText;
+	IBOutlet NSTextField *connectProgressStatusText;
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;
