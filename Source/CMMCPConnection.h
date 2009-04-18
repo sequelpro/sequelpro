@@ -47,6 +47,7 @@
 	NSString *connectionSocket;
 	float lastQueryExecutionTime;
 	int connectionTimeout;
+	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
 	NSTimer *keepAliveTimer;

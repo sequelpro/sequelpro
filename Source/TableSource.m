@@ -236,7 +236,7 @@ adds an empty row to the tableSource-array and goes into edit mode
 	if ( ![self saveRowOnDeselect] ) return;
 
 	[tableFields addObject:[NSMutableDictionary
-		dictionaryWithObjects:[NSArray arrayWithObjects:@"",@"int",@"",@"0",@"0",@"0",@"YES",@"",[prefs stringForKey:@"nullValue"],@"None",nil]
+		dictionaryWithObjects:[NSArray arrayWithObjects:@"",@"int",@"",@"0",@"0",@"0",@"YES",@"",[prefs stringForKey:@"NullValue"],@"None",nil]
 		forKeys:[NSArray arrayWithObjects:@"Field",@"Type",@"Length",@"unsigned",@"zerofill",@"binary",@"Null",@"Key",@"Default",@"Extra",nil]]];
 
 	[tableSourceView reloadData];
@@ -503,7 +503,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 
 	while ( (indexColumn = [indexColumnsEnumerator nextObject]) ) {
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 		else 
@@ -512,7 +512,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 		}
 	}
 	while ( (fieldColumn = [fieldColumnsEnumerator nextObject]) ) {
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[[fieldColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		}
 		else
@@ -542,7 +542,7 @@ fetches the result as an array with a dictionary for each row in it
 		for (int i = 0; i < [keys count] ; i++) {
 			key = [keys objectAtIndex:i];
 			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] )
-				[tempRow setObject:[prefs objectForKey:@"nullValue"] forKey:key];
+				[tempRow setObject:[prefs objectForKey:@"NullValue"] forKey:key];
 		}
 		// change some fields to be more human-readable or GUI compatible
 		if ( [[tempRow objectForKey:@"Extra"] isEqualToString:@""] ) {
@@ -646,7 +646,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	if ( [[theRow objectForKey:@"Null"] isEqualToString:@"NO"] )
 		[queryString appendString:@" NOT NULL"];
 	if ( ![[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"] && !([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && [[theRow objectForKey:@"Default"] isEqualToString:@"NULL"]) ) {
-		if ( [[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"nullValue"]] ) {
+		if ( [[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]] ) {
 			if ([[theRow objectForKey:@"Null"] isEqualToString:@"YES"] ) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
@@ -793,9 +793,9 @@ get the default value for a specified field
 - (NSString *)defaultValueForField:(NSString *)field
 {
 	if ( ![defaultValues objectForKey:field] ) {
-		return [prefs objectForKey:@"nullValue"];	
+		return [prefs objectForKey:@"NullValue"];	
 	} else if ( [[defaultValues objectForKey:field] isMemberOfClass:[NSNull class]] ) {
-		return [prefs objectForKey:@"nullValue"];
+		return [prefs objectForKey:@"NullValue"];
 	} else {
 		return [defaultValues objectForKey:field];
 	}
@@ -830,6 +830,23 @@ returns a dictionary containing enum/set field names as key and possible values 
 - (NSDictionary *)enumFields
 {
 	return [NSDictionary dictionaryWithDictionary:enumFields];
+}
+
+- (NSArray *)tableStructureForPrint
+{
+	CMMCPResult *queryResult;
+	NSMutableArray *tempResult = [NSMutableArray array];
+	int i;
+	
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	[tempResult addObject:[queryResult fetchFieldNames]];
+	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+		[tempResult addObject:[queryResult fetchRowAsArray]];
+	}
+	
+	return tempResult;
 }
 
 #pragma mark TableView datasource methods
@@ -980,7 +997,7 @@ would result in a position change.
 	}
 
 	// Add the default value
-	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"nullValue"]]) {
+	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
 		if ([[originalRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
 			[queryString appendString:@" DEFAULT NULL"];
 		}

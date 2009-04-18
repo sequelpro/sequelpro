@@ -179,8 +179,8 @@
 		}
 		
 		// Set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-							  [tableDocumentInstance host], [tableDocumentInstance database], tableName]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+							  [tableDocumentInstance name], [tableDocumentInstance database], tableName]];
 	} 
 	else {
 		// Error while creating new table
@@ -213,21 +213,25 @@
  */
 - (IBAction)removeTable:(id)sender
 {
-	if ( ![tablesListView numberOfSelectedRows] )
+	if (![tablesListView numberOfSelectedRows])
 		return;
+	
 	[tableWindow endEditingFor:nil];
+	
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self,
-			@selector(sheetDidEnd:returnCode:contextInfo:), nil,
-			@"removeRow", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the table %@?", @"message of panel asking for confirmation for deleting table"),
-				[tables objectAtIndex:[tablesListView selectedRow]]]);
-	} else {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self,
-			@selector(sheetDidEnd:returnCode:contextInfo:), nil,
-			@"removeRow", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the selected tables?", @"message of panel asking for confirmation for deleting tables"),
-				[tables objectAtIndex:[tablesListView selectedRow]]]);
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	if ([tablesListView numberOfSelectedRows] == 1) {
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete table '%@'?", @"delete table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the table '%@'. This operation cannot be undone.", @"delete table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+	} 
+	else {
+		[alert setMessageText:NSLocalizedString(@"Delete selected tables?", @"delete tables message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected tables. This operation cannot be undone.", @"delete tables informative message")];
 	}
+		
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
 }
 
 /**
@@ -343,7 +347,6 @@
 		alertSheetOpened = NO;
 	} else if ( [contextInfo isEqualToString:@"removeRow"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-			[sheet orderOut:self];
 			[self removeTable];
 		}
 	}
@@ -397,8 +400,8 @@
 	[tablesListView reloadData];
 	
 	// set window title
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-								[tableDocumentInstance host], [tableDocumentInstance database]]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
+								[tableDocumentInstance name], [tableDocumentInstance database]]];
 	if ( error )
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
@@ -579,8 +582,8 @@
 			}
 			
 			// Set window title
-			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-								  [tableDocumentInstance host], [tableDocumentInstance database], anObject]];
+			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+								  [tableDocumentInstance name], [tableDocumentInstance database], anObject]];
 		} 
 		else {
 			// Error while renaming
@@ -656,7 +659,7 @@
 
 		// If encoding is set to Autodetect, update the connection character set encoding
 		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"encoding"] isEqualToString:@"Autodetect"]) {
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
 			if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
 				[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
 				[tableDataInstance resetAllData];
@@ -685,8 +688,8 @@
 		}
 		 
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+									[tableDocumentInstance name], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -696,8 +699,8 @@
 		statusLoaded = NO;
 		
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-									[tableDocumentInstance host], [tableDocumentInstance database]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
+									[tableDocumentInstance name], [tableDocumentInstance database]]];
 	}	
 }
 
@@ -728,14 +731,9 @@
 		} else {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
 		}
+		
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
-		if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"useMonospacedFonts"] ) {
-			[(ImageAndTextCell*)aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		}
-		else
-		{
-			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
+		[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];

@@ -31,5 +31,6 @@
 
 // Post notification
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name;
+- (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext;
 
 @end

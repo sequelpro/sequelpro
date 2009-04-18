@@ -25,6 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
+#import <WebKit/WebKit.h>
 
 @class CMMCPConnection, CMMCPResult;
 
@@ -42,6 +43,7 @@
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
+	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;
@@ -52,6 +54,7 @@
 	IBOutlet id favoritesButton;
 	IBOutlet NSTableView *connectFavoritesTableView;
 	IBOutlet NSArrayController *favoritesController;
+	IBOutlet id nameField;
 	IBOutlet id hostField;
 	IBOutlet id socketField;
 	IBOutlet id userField;
@@ -80,33 +83,35 @@
 
 	CMMCPConnection *mySQLConnection;
 
-	NSMutableArray *favorites;
 	NSArray *variables;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
-	NSString *favoriteNamebBeingChanged;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
 	BOOL _encodingViaLatin1;
+	BOOL _shouldOpenConnectionAutomatically;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
+	
+	WebView *printWebView;
 }
 
 //start sheet
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (IBAction)connectToDB:(id)sender;
 - (IBAction)connect:(id)sender;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
-- (IBAction)removeFavorite:(id)sender;
+- (IBAction)editFavorites:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;
-- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
+- (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password
 					  port:(NSString *)port database:(NSString *)database
 					useSSH:(BOOL)useSSH // no-longer in use
@@ -114,7 +119,8 @@
 				   sshUser:(NSString *)sshUser // no-longer in use
 			   sshPassword:(NSString *)sshPassword // no-longer in use
 				   sshPort:(NSString *)sshPort; // no-longer in use
-- (NSMutableArray *)favorites;
+
+- (NSString *)getHTMLforPrint;
 
 //alert sheets method
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
@@ -158,6 +164,7 @@
 - (void)closeConnection;
 
 //getter methods
+- (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
 - (NSString *)mySQLVersion;

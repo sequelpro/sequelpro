@@ -61,6 +61,8 @@
 	NSMutableArray *queryFavorites;
 	
 	CMMCPConnection *mySQLConnection;
+	
+	NSString *usedQuery;
 }
 
 // IBAction methods
@@ -88,5 +90,6 @@
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
+- (NSString *)usedQuery;
 
 @end

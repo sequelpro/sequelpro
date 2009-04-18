@@ -396,6 +396,10 @@ sets the tableView columns corresponding to the mysql-result
 		}
 	}
 	
+	if(usedQuery)
+		[usedQuery release];
+	usedQuery = [[NSString stringWithString:[queries componentsJoinedByString:@";\n"]] retain];
+	
 	//perform empty query if no query is given
 	if ( [queries count] == 0 ) {
 		theResult = [mySQLConnection queryString:@""];
@@ -417,7 +421,7 @@ sets the tableView columns corresponding to the mysql-result
 
 //add query to history
 	[queryHistoryButton insertItemWithTitle:[queries componentsJoinedByString:@"; "] atIndex:1];
-	while ( [queryHistoryButton numberOfItems] > 21 ) {
+	while ( [queryHistoryButton numberOfItems] > [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue] + 1 ) {
 		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 	}
 	for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
@@ -486,7 +490,7 @@ sets the tableView columns corresponding to the mysql-result
 		[theCol setResizingMask:NSTableColumnUserResizingMask];
 		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		[dataCell setEditable:NO];
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -632,7 +636,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{
-		if ( [prefs boolForKey:@"useMonospacedFonts"] ) {
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[[column dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[[column dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -668,6 +672,10 @@ inserts the query in the textView and performs query
 	[self runAllQueries:self];
 }
 
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
 
 #pragma mark -
 #pragma mark TableView datasource methods
@@ -708,7 +716,7 @@ inserts the query in the textView and performs query
 			return [tmp autorelease];
 		}
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] )
-			return [prefs objectForKey:@"nullValue"];
+			return [prefs objectForKey:@"NullValue"];
 	
 		return [theRow objectAtIndex:[theIdentifier intValue]];
 	} else if ( aTableView == queryFavoritesView ) {
@@ -867,7 +875,7 @@ opens sheet with value when double clicking on a field
 			}
 			[theValue autorelease];
 		} else if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] ) {
-			theValue = [prefs objectForKey:@"nullValue"];
+			theValue = [prefs objectForKey:@"NullValue"];
 		} else {
 			theValue = [theRow objectAtIndex:[theIdentifier intValue]];
 		}
@@ -1062,6 +1070,7 @@ traps enter key and
 {
 	self = [super init];
 	prefs = nil;
+	usedQuery = [[NSString stringWithString:@""] retain];
 	return self;
 }
 
@@ -1070,6 +1079,7 @@ traps enter key and
 	[queryResult release];
 	[prefs release];
 	[queryFavorites release];
+	[usedQuery release];
 	
 	[super dealloc];
 }

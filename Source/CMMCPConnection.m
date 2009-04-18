@@ -67,9 +67,10 @@ static void forcePingTimeout(int signalNumber);
 	connectionPort = 0;
 	connectionSocket = nil;
 	keepAliveTimer = nil;
-	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"connectionTimeout"] intValue];
+	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
-	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue];
+	useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
+	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
 	if (!keepAliveInterval) keepAliveInterval = 0;
 	lastKeepAliveSuccess = nil;
 	lastQueryExecutionTime = 0;
@@ -637,7 +638,7 @@ static void forcePingTimeout(int signalNumber)
 		lastKeepAliveSuccess = nil;
 	}
 
-	if (keepAliveInterval) {
+	if (useKeepAlive && keepAliveInterval) {
 		keepAliveTimer = [NSTimer
 							scheduledTimerWithTimeInterval:keepAliveInterval
 							target:self

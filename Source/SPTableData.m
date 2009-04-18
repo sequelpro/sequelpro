@@ -473,7 +473,7 @@
 		// Select the column default if available
 		if ([resultRow objectForKey:@"Default"]) {
 			if ([[resultRow objectForKey:@"Default"] isNSNull]) {
-				[tableColumn setValue:[NSString stringWithString:[[NSUserDefaults standardUserDefaults] objectForKey:@"nullValue"]] forKey:@"default"];			
+				[tableColumn setValue:[NSString stringWithString:[[NSUserDefaults standardUserDefaults] objectForKey:@"NullValue"]] forKey:@"default"];			
 			} else {
 				[tableColumn setValue:[NSString stringWithString:[resultRow objectForKey:@"Default"]] forKey:@"default"];
 			}
