@@ -187,14 +187,14 @@
 	// For versions prior to r567 (0.9.5), add a timestamp-based identifier to favorites and keychain entries
 	if (recordedVersionNumber < 567 && [prefs objectForKey:@"favorites"]) {
 		int i;
-		NSMutableArray *favoritesArray = [prefs objectForKey:@"favorites"];
+		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
 		NSMutableDictionary *favorite;
 		NSString *password, *keychainName, *keychainAccount;
 		KeyChain *upgradeKeychain = [[KeyChain alloc] init];
 
 		// Cycle through the favorites, generating a timestamp-derived ID for each and renaming associated keychain items.
 		for (i = 0; i < [favoritesArray count]; i++) {
-			favorite = [favoritesArray objectAtIndex:i];
+			favorite = [NSMutableDictionary dictionaryWithDictionary:[favoritesArray objectAtIndex:i]];
 			if ([favorite objectForKey:@"id"]) continue;	
 			[favorite setObject:[NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
 			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]];
