@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import <WebKit/Webkit.h>
+#import <WebKit/WebKit.h>
 
 @class CMMCPConnection, CMMCPResult;
 
