@@ -31,8 +31,11 @@
  */
 - (NSRange)getRangeForCurrentWord
 {
-
 	NSRange curRange = [self selectedRange];
+	
+	if (curRange.length)
+        return curRange;
+	
 	unsigned long curLocation = curRange.location;
 
 	[self moveWordLeft:self];
@@ -57,7 +60,6 @@
 	[self setSelectedRange:curRange];
 	
 	return(wordRange);
-	
 }
 
 /*
