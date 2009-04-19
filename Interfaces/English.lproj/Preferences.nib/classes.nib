@@ -1,0 +1,49 @@
+{
+    IBClasses = (
+        {CLASS = NSObject; LANGUAGE = ObjC; }, 
+        {CLASS = NSWindow; LANGUAGE = ObjC; SUPERCLASS = NSResponder; }, 
+        {
+            ACTIONS = {
+                addFavorite = id; 
+                displayAutoUpdatePreferences = id; 
+                displayFavoritePreferences = id; 
+                displayGeneralPreferences = id; 
+                displayNetworkPreferences = id; 
+                displayNotificationPreferences = id; 
+                displayTablePreferences = id; 
+                duplicateFavorite = id; 
+                removeFavorite = id; 
+                saveFavorite = id; 
+                updateDefaultFavorite = id; 
+            }; 
+            CLASS = SPPreferenceController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                autoUpdateView = NSView; 
+                databaseField = NSTextField; 
+                defaultFavoritePopup = NSPopUpButton; 
+                favoritesController = NSArrayController; 
+                favoritesTableView = NSTableView; 
+                favoritesView = NSView; 
+                generalView = NSView; 
+                hostField = NSTextField; 
+                nameField = NSTextField; 
+                networkView = NSView; 
+                notificationsView = NSView; 
+                passwordField = NSSecureTextField; 
+                preferencesWindow = NSWindow; 
+                tablesView = NSView; 
+                userField = NSTextField; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {
+            ACTIONS = {checkForUpdates = id; }; 
+            CLASS = SUUpdater; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {delegate = id; }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

@@ -60,11 +60,11 @@
 			case '-':
 				if (stringLength < currentStringIndex + 2) break;
 				if ([string characterAtIndex:currentStringIndex+1] != '-') break;
-				if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[string characterAtIndex:currentStringIndex+2]]) break;
+				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:[string characterAtIndex:currentStringIndex+2]]) break;
 				commentEndIndex = [self endIndexOfCommentOfType:SPDoubleDashComment startingAtIndex:currentStringIndex];
 				
 				// Remove the comment
-				[string deleteCharactersInRange:NSMakeRange(currentStringIndex, commentEndIndex - currentStringIndex + 1)];
+				[self deleteCharactersInRange:NSMakeRange(currentStringIndex, commentEndIndex - currentStringIndex + 1)];
 				stringLength -= commentEndIndex - currentStringIndex + 1;
 				currentStringIndex--;
 				break;
@@ -73,7 +73,7 @@
 				commentEndIndex = [self endIndexOfCommentOfType:SPHashComment startingAtIndex:currentStringIndex];
 				
 				// Remove the comment
-				[string deleteCharactersInRange:NSMakeRange(currentStringIndex, commentEndIndex - currentStringIndex + 1)];
+				[self deleteCharactersInRange:NSMakeRange(currentStringIndex, commentEndIndex - currentStringIndex + 1)];
 				stringLength -= commentEndIndex - currentStringIndex + 1;
 				currentStringIndex--;
 				break;
@@ -85,7 +85,7 @@
 				commentEndIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
 				
 				// Remove the comment
-				[string deleteCharactersInRange:NSMakeRange(currentStringIndex, commentEndIndex - currentStringIndex + 1)];
+				[self deleteCharactersInRange:NSMakeRange(currentStringIndex, commentEndIndex - currentStringIndex + 1)];
 				stringLength -= commentEndIndex - currentStringIndex + 1;
 				currentStringIndex--;
 				break;
@@ -158,7 +158,7 @@
 	if (stringIndex == NSNotFound) return NO;
 	
 	// If it has been found, trim the string appropriately and return YES
-	[string deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusive?1:0))];
+	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusive?1:0))];
 	return YES;
 }
 
@@ -213,7 +213,7 @@
 	
 	// Select the appropriate string range, truncate the current string, and return the selected string
 	resultString = [NSString stringWithString:[string substringWithRange:NSMakeRange(0, stringIndex + (inclusiveReturn?1:0))]];
-	[string deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusiveTrim?1:0))];
+	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusiveTrim?1:0))];
 	return resultString;
 }
 
@@ -255,7 +255,7 @@
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
 	long fromCharacterIndex, toCharacterIndex;
-	
+
 	// Look for the first occurrence of the from: character
 	fromCharacterIndex = [self firstOccurrenceOfCharacter:fromCharacter afterIndex:-1 skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
 	if (fromCharacterIndex == NSNotFound) return nil;
@@ -318,7 +318,7 @@
 	
 	// Select the correct part of the string, truncate the current string, and return the selected string.
 	resultString = [string substringWithRange:NSMakeRange(fromCharacterIndex + (inclusiveReturn?0:1), toCharacterIndex + (inclusiveReturn?1:-1) - fromCharacterIndex)];
-	[string deleteCharactersInRange:NSMakeRange(fromCharacterIndex + (inclusiveTrim?0:1), toCharacterIndex + (inclusiveTrim?1:-1) - fromCharacterIndex)];
+	[self deleteCharactersInRange:NSMakeRange(fromCharacterIndex + (inclusiveTrim?0:1), toCharacterIndex + (inclusiveTrim?1:-1) - fromCharacterIndex)];
 	return resultString;
 }
 
@@ -358,16 +358,14 @@
 	NSMutableArray *resultsArray = [NSMutableArray array];
 	long stringIndex = -1, nextIndex = 0;
 	
-	// Walk through the string finding the character to split by, and add non-zero length strings.
+	// Walk through the string finding the character to split by, and add all strings to the array.
 	while (1) {
 		nextIndex = [self firstOccurrenceOfCharacter:character afterIndex:stringIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
 		if (nextIndex == NSNotFound) {
 			break;
 		}
 		
-		if (nextIndex - stringIndex - 1 > 0) {
-			[resultsArray addObject:[string substringWithRange:NSMakeRange(stringIndex+1, nextIndex - stringIndex - 1)]];
-		}
+		[resultsArray addObject:[string substringWithRange:NSMakeRange(stringIndex+1, nextIndex - stringIndex - 1)]];
 		stringIndex = nextIndex;
 	}
 	
@@ -408,12 +406,16 @@
 	long stringLength = [string length];
 	int bracketingLevel = 0;
 
+	// Cache frequently used selectors, avoiding dynamic binding overhead
+	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
+	IMP endIndex = [self methodForSelector:@selector(endIndexOfStringQuotedByCharacter:startingAtIndex:)];
+
 	// Sanity check inputs
 	if (startIndex < -1) startIndex = -1;
 
 	// Walk along the string, processing characters
 	for (currentStringIndex = startIndex + 1; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = [string characterAtIndex:currentStringIndex];
+		currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex);
 
 		// Check for the ending character, and if it has been found and quoting/brackets is valid, return.
 		if (currentCharacter == character) {
@@ -430,7 +432,7 @@
 			case '"':
 			case '`':
 				if (!ignoreQuotedStrings) break;
-				quotedStringEndIndex = [self endIndexOfStringQuotedByCharacter:currentCharacter startingAtIndex:currentStringIndex+1];
+				quotedStringEndIndex = (long)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
 				if (quotedStringEndIndex == NSNotFound) {
 					return NSNotFound;
 				}
@@ -449,8 +451,8 @@
 			// For comments starting "--[\s]", ensure the start syntax is valid before proceeding.
 			case '-':
 				if (stringLength < currentStringIndex + 2) break;
-				if ([string characterAtIndex:currentStringIndex+1] != '-') break;
-				if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[string characterAtIndex:currentStringIndex+2]]) break;
+				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '-') break;
+				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+2)]) break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPDoubleDashComment startingAtIndex:currentStringIndex];
 				break;
 
@@ -461,7 +463,7 @@
 			// For comments starting "/*", ensure the start syntax is valid before proceeding.
 			case '/':
 				if (stringLength < currentStringIndex + 1) break;
-				if ([string characterAtIndex:currentStringIndex+1] != '*') break;
+				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '*') break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
 				break;
 		}
@@ -480,17 +482,20 @@
 	BOOL characterIsEscaped;
 	unichar currentCharacter;
 
+	// Cache the charAtIndex selector, avoiding dynamic binding overhead
+	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
+
 	stringLength = [string length];
 
 	// Walk the string looking for the string end
 	for ( currentStringIndex = index; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = [string characterAtIndex:currentStringIndex];
+		currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex);
 
 		// If the string end is a backtick and one has been encountered, treat it as end of string
 		if (quoteCharacter == '`' && currentCharacter == '`') {
 		
 			// ...as long as the next character isn't also a backtick, in which case it's being quoted.  Skip both.
-			if ((currentStringIndex + 1) < stringLength && [string characterAtIndex:currentStringIndex+1] == '`') {
+			if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) == '`') {
 				currentStringIndex++;
 				continue;
 			}
@@ -504,7 +509,7 @@
 			characterIsEscaped = NO;
 			i = 1;
 			quotedStringLength = currentStringIndex - 1;
-			while ((quotedStringLength - i) > 0 && [string characterAtIndex:currentStringIndex - i] == '\\') {
+			while ((quotedStringLength - i) > 0 && (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex - i) == '\\') {
 				characterIsEscaped = !characterIsEscaped;
 				i++;
 			}
@@ -512,7 +517,7 @@
 			// If an even number have been found, it may be the end of the string - as long as the subsequent character
 			// isn't also the same character, in which case it's another form of escaping.
 			if (!characterIsEscaped) {
-				if ((currentStringIndex + 1) < stringLength && [string characterAtIndex:currentStringIndex+1] == quoteCharacter) {
+				if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) == quoteCharacter) {
 					currentStringIndex++;
 					continue;
 				}
@@ -534,6 +539,9 @@
 	long stringLength = [string length];
 	unichar currentCharacter;
 
+	// Cache the charAtIndex selector, avoiding dynamic binding overhead
+	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
+
 	switch (commentType) {
 	
 		// For comments of type "--[\s]", start the comment processing two characters in to match the start syntax,
@@ -545,7 +553,7 @@
 		case SPHashComment:
 			index++;
 			for ( ; index < stringLength; index++ ) {
-				currentCharacter = [string characterAtIndex:index];
+				currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), index);
 				if (currentCharacter == '\r' || currentCharacter == '\n') {
 					return index-1;
 				}
@@ -557,8 +565,8 @@
 		case SPCStyleComment:
 			index = index+2;
 			for ( ; index < stringLength; index++ ) {
-				if ([string characterAtIndex:index] == '*') {
-					if ((stringLength > index + 1) && [string characterAtIndex:index+1] == '/') {
+				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), index) == '*') {
+					if ((stringLength > index + 1) && (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), index+1) == '/') {
 						return (index+1);
 					}
 				}
@@ -569,6 +577,52 @@
 	return (stringLength-1);
 }
 
+/*
+ * Provide a method to retrieve a character from the local cache.
+ * Does no bounds checking on the underlying string, and so is kept
+ * separate for characterAtIndex:.
+ */
+- (unichar) charAtIndex:(long)index
+{
+
+	// If the current cache doesn't include the current character, update it.
+	if (index > charCacheEnd || index < charCacheStart) {
+		if (charCacheEnd > -1) {
+			free(stringCharCache);
+		}
+		unsigned int remainingStringLength = [string length] - index;
+		unsigned int newcachelength = (CHARACTER_CACHE_LENGTH < remainingStringLength)?CHARACTER_CACHE_LENGTH:remainingStringLength;
+		stringCharCache = (unichar *)calloc(newcachelength, sizeof(unichar));
+		[string getCharacters:stringCharCache range:NSMakeRange(index, newcachelength)];
+		charCacheEnd = index + newcachelength - 1;
+		charCacheStart = index;
+	}
+	return stringCharCache[index - charCacheStart];
+}
+
+/*
+ * Provide a method to clear the cache, and use it when updating the string.
+ */
+- (void) clearCharCache
+{
+	if (charCacheEnd > -1) {
+		free(stringCharCache);
+	}
+	charCacheEnd = -1;
+	charCacheStart = 0;
+}
+- (void) deleteCharactersInRange:(NSRange)aRange
+{
+	[super deleteCharactersInRange:aRange];
+	[self clearCharCache];
+}
+- (void) insertString:(NSString *)aString atIndex:(int)anIndex
+{
+	[super insertString:aString atIndex:anIndex];
+	[self clearCharCache];
+}
+
+
 
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -
@@ -576,45 +630,53 @@
 	if (self = [super init]) {
 		string = [[NSMutableString string] retain];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithBytes:(const void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytes:bytes length:length encoding:encoding];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithBytesNoCopy:(void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytesNoCopy:bytes length:length encoding:encoding freeWhenDone:flag];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithCapacity:(unsigned int)capacity {
 	if (self = [super init]) {
 		string = [[NSMutableString stringWithCapacity:capacity] retain];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithCharactersNoCopy:(unichar *)characters length:(unsigned int)length freeWhenDone:(BOOL)flag {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCharactersNoCopy:characters length:length freeWhenDone:flag];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithContentsOfFile:(id)path {
+	charCacheEnd = -1;
 	return [self initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
 }
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)encoding error:(NSError **)error {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithContentsOfFile:path encoding:encoding error:error];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithCString:(const char *)nullTerminatedCString encoding:(NSStringEncoding)encoding {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCString:nullTerminatedCString encoding:encoding];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithFormat:(NSString *)format, ... {
@@ -622,12 +684,14 @@
 	va_start(argList, format);
 	id str = [self initWithFormat:format arguments:argList];
 	va_end(argList);
+	charCacheEnd = -1;
 	return str;
 }
 - (id) initWithFormat:(NSString *)format arguments:(va_list)argList {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithFormat:format arguments:argList];
 	}
+	charCacheEnd = -1;
 	return self;
 }
 - (unsigned int) length {
@@ -641,15 +705,19 @@
 }
 - (unsigned int) replaceOccurrencesOfString:(NSString *)target withString:(NSString *)replacement options:(unsigned)options range:(NSRange)searchRange {
 	return [string replaceOccurrencesOfString:target withString:replacement options:options range:searchRange];
+	[self clearCharCache];
 }
 - (void) setString:(NSString *)aString {
 	[string setString:aString];
+	[self clearCharCache];
 }
 - (void) replaceCharactersInRange:(NSRange)range withString:(NSString *)aString {
 	[string replaceCharactersInRange:range withString:aString];
+	[self clearCharCache];
 }
 - (void) dealloc {
 	[string release];
+	if (charCacheEnd != -1) free(stringCharCache);
 	[super dealloc];
 }
 @end

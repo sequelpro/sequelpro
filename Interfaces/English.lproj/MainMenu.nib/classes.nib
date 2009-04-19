@@ -39,65 +39,54 @@
             LANGUAGE = ObjC; 
             SUPERCLASS = NSObject; 
         }, 
-        {CLASS = KeyChain; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
-            ACTIONS = {
-                addFavorite = id; 
-                checkForUpdates = id; 
-                chooseLimitRows = id; 
-                closeFavoriteSheet = id; 
-                closePreferences = id; 
-                copyFavorite = id; 
-                donate = id; 
-                openPreferences = id; 
-                removeFavorite = id; 
-                toggleUseSSH = id; 
-                visitHelpWebsite = id; 
-                visitWebsite = id; 
-            }; 
+            ACTIONS = {donate = id; openPreferences = id; visitHelpWebsite = id; visitWebsite = id; }; 
             CLASS = MainController; 
             LANGUAGE = ObjC; 
-            OUTLETS = {
-                databaseField = id; 
-                dontShowBlobSwitch = id; 
-                encodingPopUpButton = id; 
-                favoriteSheet = id; 
-                fetchRowCountSwitch = id; 
-                hostField = id; 
-                keyChainInstance = id; 
-                limitRowsField = id; 
-                limitRowsSwitch = id; 
-                nameField = id; 
-                nullValueField = id; 
-                passwordField = id; 
-                portField = id; 
-                preferencesWindow = id; 
-                reloadAfterAddingSwitch = id; 
-                reloadAfterEditingSwitch = id; 
-                reloadAfterRemovingSwitch = id; 
-                showErrorSwitch = id; 
-                socketField = id; 
-                sshCheckbox = id; 
-                sshHostField = id; 
-                sshPasswordField = id; 
-                sshPortField = id; 
-                sshUserField = id; 
-                tableView = id; 
-                useMonospacedFontsSwitch = id; 
-                userField = id; 
-            }; 
             SUPERCLASS = NSObject; 
         }, 
         {CLASS = NSMenu; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {CLASS = NSObject; LANGUAGE = ObjC; }, 
         {
-            ACTIONS = {clearConsole = id; saveConsoleAs = id; }; 
+            ACTIONS = {
+                doDecomposedStringWithCanonicalMapping = id; 
+                doDecomposedStringWithCompatibilityMapping = id; 
+                doPrecomposedStringWithCanonicalMapping = id; 
+                doPrecomposedStringWithCompatibilityMapping = id; 
+                doRemoveDiacritics = id; 
+                doSelectionLowerCase = id; 
+                doSelectionTitleCase = id; 
+                doSelectionUpperCase = id; 
+                doTranspose = id; 
+                selectCurrentLine = id; 
+                selectCurrentWord = id; 
+            }; 
+            CLASS = NSTextView; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSText; 
+        }, 
+        {CLASS = NSWindow; LANGUAGE = ObjC; SUPERCLASS = NSResponder; }, 
+        {
+            ACTIONS = {
+                clearConsole = id; 
+                copy = id; 
+                saveConsoleAs = id; 
+                toggleShowSelectShowStatements = id; 
+                toggleShowTimeStamps = id; 
+            }; 
             CLASS = SPQueryConsole; 
             LANGUAGE = ObjC; 
-            OUTLETS = {consoleView = SPQueryConsoleView; }; 
+            OUTLETS = {
+                clearConsoleButton = NSButton; 
+                consoleSearchField = NSSearchField; 
+                consoleTableView = NSTableView; 
+                includeTimeStampsButton = NSButton; 
+                progressIndicator = NSProgressIndicator; 
+                saveConsoleButton = NSButton; 
+                saveLogView = NSView; 
+            }; 
             SUPERCLASS = NSWindowController; 
         }, 
-        {CLASS = SPQueryConsoleView; LANGUAGE = ObjC; SUPERCLASS = NSView; }, 
         {
             ACTIONS = {checkForUpdates = id; }; 
             CLASS = SUUpdater; 
@@ -107,6 +96,7 @@
         }, 
         {
             ACTIONS = {
+                addConnectionToFavorites = id; 
                 addDatabase = id; 
                 analyzeTable = id; 
                 cancelConnectSheet = id; 
@@ -121,6 +111,7 @@
                 connectSheetAddToFavorites = id; 
                 connectToDB = id; 
                 copyCreateTableSyntax = id; 
+                editFavorites = id; 
                 export = id; 
                 exportMultipleTables = id; 
                 exportTable = id; 
@@ -129,7 +120,6 @@
                 import = id; 
                 optimizeTable = id; 
                 removeDatabase = id; 
-                removeFavorite = id; 
                 repairTable = id; 
                 setDatabases = id; 
                 showCreateTableSyntax = id; 
@@ -150,6 +140,7 @@
                 connectSheet = id; 
                 createTableSyntaxWindow = NSWindow; 
                 customQueryInstance = id; 
+                customQueryTextView = NSTextView; 
                 databaseEncodingButton = id; 
                 databaseField = id; 
                 databaseNameField = id; 
@@ -159,12 +150,13 @@
                 favoritesController = NSArrayController; 
                 hostField = id; 
                 keyChainInstance = id; 
+                nameField = id; 
                 passwordField = id; 
                 portField = id; 
-                queryConsoleInstance = id; 
                 queryProgressBar = id; 
                 sidebarGrabber = id; 
                 socketField = id; 
+                spExportControllerInstance = id; 
                 syntaxView = id; 
                 syntaxViewContent = id; 
                 tableContentInstance = id; 
@@ -180,33 +172,6 @@
                 variablesTableView = id; 
             }; 
             SUPERCLASS = NSDocument; 
-        }, 
-        {
-            ACTIONS = {
-                addTable = id; 
-                closeCopyTableSheet = id; 
-                copyTable = id; 
-                removeTable = id; 
-                updateTables = id; 
-            }; 
-            CLASS = TablesList; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {
-                copyTableContentSwitch = id; 
-                copyTableNameField = id; 
-                copyTableSheet = id; 
-                customQueryInstance = id; 
-                tabView = id; 
-                tableContentInstance = id; 
-                tableDataInstance = id; 
-                tableDocumentInstance = id; 
-                tableDumpInstance = id; 
-                tableSourceInstance = id; 
-                tableStatusInstance = id; 
-                tableWindow = id; 
-                tablesListView = id; 
-            }; 
-            SUPERCLASS = NSObject; 
         }
     ); 
     IBVersion = 1; 

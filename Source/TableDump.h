@@ -58,6 +58,12 @@
     IBOutlet id exportMultipleFieldsEscapedField;
     IBOutlet id exportMultipleLinesTerminatedField;
 	
+	// New Export Window
+	IBOutlet id exportWindow;
+	IBOutlet id exportTabBar;
+	IBOutlet id exportToolbar;
+	IBOutlet id	exportTableList;
+	
 	IBOutlet id importCSVView;
 	IBOutlet NSPopUpButton *importFormatPopup;
 	IBOutlet id importCSVBox;
@@ -104,8 +110,9 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
+
 //export methods
-//- (IBAction)saveDump:(id)sender;
+- (void)export;
 - (void)exportFile:(int)tag;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
@@ -132,8 +139,13 @@
 	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
+
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
 - (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
+
+// New Export methods
+- (IBAction)switchTab:(id)sender;
+- (IBAction)switchInput:(id)sender;
 
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;

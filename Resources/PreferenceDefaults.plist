@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DefaultEncoding</key>
+	<string>Autodetect</string>
+	<key>UseMonospacedFonts</key>
+	<false/>
+	<key>CustomQueryMaxHistoryItems</key>
+	<integer>20</integer>
+	<key>ReloadAfterAddingRow</key>
+	<true/>
+	<key>ReloadAfterEditingRow</key>
+	<true/>
+	<key>ReloadAfterRemovingRow</key>
+	<false/>
+	<key>LoadBlobsAsNeeded</key>
+	<false/>
+	<key>FetchCorrectRowCount</key>
+	<true/>
+	<key>LimitResults</key>
+	<true/>
+	<key>LimitResultsValue</key>
+	<integer>1000</integer>
+	<key>NullValue</key>
+	<string>NULL</string>
+	<key>ShowNoAffectedRowsError</key>
+	<true/>
+	<key>GrowlEnabled</key>
+	<true/>
+	<key>ConnectionTimeoutValue</key>
+	<integer>10</integer>
+	<key>UseKeepAlive</key>
+	<true/>
+	<key>KeepAliveInterval</key>
+	<integer>60</integer>
+	<key>CustomQueryEditorFont</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
+	<key>CustomQueryAutoindent</key>
+	<true/>
+	<key>CustomQueryAutopair</key>
+	<true/>
+	<key>CustomQueryAutouppercaseKeywords</key>
+	<false/>
+	<key>SelectLastFavoriteUsed</key>
+	<true/>
+	<key>LastFavoriteIndex</key>
+	<integer>0</integer>
+</dict>
+</plist>

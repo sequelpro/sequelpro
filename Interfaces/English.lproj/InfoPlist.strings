@@ -1,4 +1,4 @@
 /* Localized versions of Info.plist keys */
 
-CFBundleGetInfoString = "Sequel Pro version 0.9.4, Copyright 2002-2009 Sequel Pro and CocoaMySQL team.";
+CFBundleGetInfoString = "Sequel Pro version 0.9.5 Tiger Version, Copyright 2002-2009 Sequel Pro and CocoaMySQL team.";
 NSHumanReadableCopyright = "Copyright 2002-2009 Sequel Pro and CocoaMySQL team.";

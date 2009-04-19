@@ -1,17 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>IBDocumentLocation</key>
+	<string>69 85 356 240 0 0 1024 746 </string>
+	<key>IBEditorPositions</key>
+	<dict>
+		<key>1058</key>
+		<string>263 422 498 199 0 0 1024 746 </string>
+		<key>1113</key>
+		<string>361 422 301 199 0 0 1024 746 </string>
+		<key>3994</key>
+		<string>402 485 220 74 0 0 1024 746 </string>
+		<key>4529</key>
+		<string>293 433 437 177 0 0 1024 746 </string>
+		<key>815</key>
+		<string>290 443 444 158 0 0 1024 746 </string>
+		<key>910</key>
+		<string>273 426 477 191 0 0 1024 746 </string>
+	</dict>
 	<key>IBFramework Version</key>
-	<string>677</string>
+	<string>489.0</string>
 	<key>IBLastKnownRelativeProjectPath</key>
 	<string>../../sequel-pro.xcodeproj</string>
+	<key>IBLockedTabItems</key>
+	<array>
+		<integer>28</integer>
+	</array>
 	<key>IBOldestOS</key>
 	<integer>5</integer>
-	<key>IBOpenObjects</key>
-	<array/>
 	<key>IBSystem Version</key>
-	<string>9G55</string>
+	<string>8S165</string>
 	<key>targetFramework</key>
 	<string>IBCocoaFramework</string>
 </dict>

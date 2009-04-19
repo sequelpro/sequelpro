@@ -4,11 +4,6 @@
 
 @implementation TableStatus
 
-- (void)awakeFromNib
-{
-	// TODO: implement awake code.
-}
-
 - (void)setConnection:(CMMCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
@@ -34,28 +29,20 @@
 		// Format date strings to the user's long date format
 		else if ([aKey isEqualToString:@"Create_time"] ||
 				 [aKey isEqualToString:@"Update_time"]) {
-								
+			
 			// Create date formatter
 			NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
 			
-			// Set the date format returned by MySQL
-			[dateFormatter setDateFormat:@"%Y-%m-%d %H:%M:%S"];
-			
-			// Get the date instance
-			NSDate *date = [dateFormatter dateFromString:value];
-			
-			// This behaviour should be set after the above date string is parsed to a date object so we can
-			// use the below style methods.
 			[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
-						
+			
 			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
 			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
-						
-			value = [dateFormatter stringFromDate:date];
+			
+			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
 		}
 	}
 	
-	NSString* labelVal = [NSString stringWithFormat:@"%@: %@", label, value];
+	NSString *labelVal = [NSString stringWithFormat:@"%@: %@", label, value];
 	
 	return labelVal;
 }
@@ -64,11 +51,21 @@
 {
 	// Store the table name away for future use...
 	selectedTable = aTable;
+
+	// Retrieve the table status information via the table data cache
+	statusFields = [tableDataInstance statusValues];
 	
-	// No table selected
-	if([aTable isEqualToString:@""] || !aTable) {
-		[tableName setStringValue:@"Name: --"];
-		[tableType setStringValue:@"Type: --"];
+	// No table selected or view selected
+	if([aTable isEqualToString:@""] || !aTable || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+	
+		if ([[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+			[tableName setStringValue:[NSString stringWithFormat:@"Name: %@", selectedTable]];
+			[tableType setStringValue:@"Type: View"];
+		} else {
+			[tableName setStringValue:@"Name: --"];
+			[tableType setStringValue:@"Type: --"];
+		}
+
 		[tableCreatedAt setStringValue:@"Created At: --"];
 		[tableUpdatedAt setStringValue:@"Updated At: --"];
 
@@ -89,9 +86,6 @@
 
 		return;
 	}
-
-	// Retrieve the table status information via the table data cache
-	statusFields = [tableDataInstance statusValues];
 
 	// Assign the table values...
 	[tableName setStringValue:[NSString stringWithFormat:@"Name: %@",selectedTable]];
@@ -129,4 +123,5 @@
 	
 	return self;
 }
+
 @end

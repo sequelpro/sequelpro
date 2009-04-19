@@ -22,11 +22,33 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import "NoodleLineNumberView.h"
 
 @interface CMTextView : NSTextView {
+	BOOL autoindentEnabled;
+	BOOL autopairEnabled;
+	BOOL autoindentIgnoresEnter;
+	BOOL autouppercaseKeywordsEnabled;
+	BOOL delBackwardsWasPressed;
+	NoodleLineNumberView *lineNumberView;
+	
+	IBOutlet NSScrollView *scrollView;
 }
 
--(NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
--(NSArray *)keywords;
+- (BOOL) isNextCharMarkedBy:(id)attribute;
+- (BOOL) areAdjacentCharsLinked;
+- (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
+- (BOOL) shiftSelectionRight;
+- (BOOL) shiftSelectionLeft;
+- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
+- (NSArray *) keywords;
+- (void) setAutoindent:(BOOL)enableAutoindent;
+- (BOOL) autoindent;
+- (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
+- (BOOL) autoindentIgnoresEnter;
+- (void) setAutopair:(BOOL)enableAutopair;
+- (BOOL) autopair;
+- (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
+- (BOOL) autouppercaseKeywords;
 
 @end
