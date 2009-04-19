@@ -32,6 +32,8 @@
 	BOOL delBackwardsWasPressed;
 	NoodleLineNumberView *lineNumberView;
 	
+	NSString *lookupInDocumentationTitle;
+	
 	IBOutlet NSScrollView *scrollView;
 }
 

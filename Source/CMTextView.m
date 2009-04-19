@@ -41,8 +41,57 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
 #define kQuote      @"Quote"
 
+#define MYSQL_DOC_SEARCH_URL @"http://search.mysql.com/search?q=%@"
 
 @implementation CMTextView
+
+/*
+ * Add a menu item to context menu for looking up mysql documentation.
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event 
+{	
+	// Set title of the menu item
+	lookupInDocumentationTitle = NSLocalizedString(@"Lookup In MySQL Documentation", @"Lookup In MySQL Documentation");
+	
+	// Add the menu item if it doesn't yet exist
+	NSMenu *menu = [[self class] defaultMenu];
+	
+	if ([[[self class] defaultMenu] itemWithTitle:lookupInDocumentationTitle] == nil) {
+		
+		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
+		[menu insertItemWithTitle:lookupInDocumentationTitle action:@selector(lookupSelectionInDocumentation) keyEquivalent:@"" atIndex:4];
+	}
+	
+    return menu;
+}
+
+/*
+ * Open a search for the current selection on mysql.com 
+ */
+- (void)lookupSelectionInDocumentation 
+{	
+	// Get the current selection and encode it to be used in a URL
+	NSString *keyword = [[[[self string] substringWithRange:[self selectedRange]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
+					
+	// Open MySQL Documentation search in browser using the terms
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:MYSQL_DOC_SEARCH_URL, keyword]];
+	
+	[[NSWorkspace sharedWorkspace] openURL:url];
+}
+
+/*
+ * Disable the lookup in documentation function when there is no selection. 
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
+{	
+	// Enable or disable the lookup in documentation menu item depending on whether there is a 
+	// selection and whether it is a reasonable length.
+	if ([menuItem action] == @selector(lookupSelectionInDocumentation)) {
+		return (([self selectedRange].length) || ([self selectedRange].length > 256));
+	}
+	
+	return YES;
+}
 
 /*
  * Checks if the char after the current caret position/selection matches a supplied attribute
@@ -60,7 +109,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	return NO;
 }
-
 
 /*
  * Checks if the caret is wrapped by auto-paired characters.
@@ -93,7 +141,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	return NO;
 }
-
 
 /*
  * If the textview has a selection, wrap it with the supplied prefix and suffix strings;
@@ -133,9 +180,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
 		[pb setData:rtf forType:NSRTFPboardType];
 	}
-
 }
-
 
 /*
  * Handle some keyDown events in order to provide autopairing functionality (if enabled).
@@ -1301,7 +1346,6 @@ SYNTAX HIGHLIGHTING!
 	//make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
-
 	NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
 	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
 	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
@@ -1411,7 +1455,6 @@ SYNTAX HIGHLIGHTING!
 							  value: kWQval
 							  range: tokenRange ];
 	}
-
 }
 
 @end
