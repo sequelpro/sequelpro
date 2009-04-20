@@ -110,11 +110,14 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)release { }
 
 /**
- * Set the window's auto save name.
+ * Set the window's auto save name and initialise display
  */
 - (void)awakeFromNib
 {
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowTimestamps"]];
+	showSelectStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowSelectsAndShows"];
+	[self _updateFilterState];
 }
 
 /**
@@ -201,18 +204,15 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
 	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:([sender state])];
-	[showTimeStampsMenuItem setState:![sender state]];
 }
 
 /**
  * Toggles the hiding of messages containing SELECT and SHOW statements
  */
 - (IBAction)toggleShowSelectShowStatements:(id)sender
-{
-	showSelectStatementsAreDisabled = [sender state];
-	
+{	
 	// Store the state of the toggle for later quick reference
-	[showSelectShowStatementsMenuItem setState:!showSelectStatementsAreDisabled];
+	showSelectStatementsAreDisabled = [sender state];
 	
 	[self _updateFilterState];
 }
