@@ -465,6 +465,8 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
+		[saveConsoleButton setEnabled:YES];
+		[clearConsoleButton setEnabled:YES];
 	}
 
 	// Reload the table and scroll to the new message
