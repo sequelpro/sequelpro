@@ -10,13 +10,20 @@
 
 @class CMMCPConnection;
 
-@interface SPUserManager : NSObject {
-@private
-	NSMutableArray *users;
+@interface SPUserManager : NSWindowController {
+
+	NSPersistentStoreCoordinator *persistentStoreCoordinator;
+    NSManagedObjectModel *managedObjectModel;
+    NSManagedObjectContext *managedObjectContext;
+	
 	NSArray *dbList;
+	NSMutableArray *users;
 	NSMutableArray *availablePrivs;
 	NSMutableArray *selectedPrivs;
 	NSMutableArray *allPrivs;
+	
+	NSMutableArray *addedUsers;
+	NSMutableArray *removedUsers;
 	
 	NSMutableArray *modifiedUsers;
 	
@@ -59,10 +66,11 @@
 	IBOutlet NSButton *createRoutineCB;
 	IBOutlet NSButton *alterRoutineCB;
 	IBOutlet NSButton *createUserCB;
-	
-	
-	
 }
+
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
+- (NSManagedObjectModel *)managedObjectModel;
+- (NSManagedObjectContext *)managedObjectContext;
 
 - (id)initWithConnection:(CMMCPConnection *)connection;
 - (void)setConnection:(CMMCPConnection *)connection;
@@ -82,7 +90,4 @@
 // General
 - (IBAction)doCancel:(id)sender;
 - (IBAction)doApply:(id)sender;
-
-
-
 @end

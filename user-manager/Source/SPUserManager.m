@@ -15,16 +15,18 @@
 #define COLUMNIDNAME @"NameColumn"
 
 @interface SPUserManager (PrivateMethods)
-- (void)initializeTree:(NSArray *)items;
-- (void)initializeUsers;
-- (void)initializeDatabaseList;
-- (void)initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
-- (void)initializeSchemaPrivilegesWithItems:(NSArray *)items;
+- (void)_initializeTree:(NSArray *)items;
+- (void)_initializeUsers;
+- (void)_initializeDatabaseList;
+- (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
+- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
+- (void)_selectParentFromSelection;
 @end
 
 @implementation SPUserManager
 
-- (id)init {
+- (id)init 
+{
 	[self dealloc];
 	@throw [NSException exceptionWithName:@"BadInitCall" reason:@"Can't call init here" userInfo:nil];
 	return nil;
@@ -59,15 +61,16 @@
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
 	
-	[self initializeDatabaseList];
+	[self _initializeDatabaseList];
+	
 	availablePrivs = [[NSMutableArray alloc] init];
 	selectedPrivs = [[NSMutableArray alloc] init];
 	
 	// Initializing could take a while so run in a separate thread
-	[NSThread detachNewThreadSelector:@selector(initializeUsers) toTarget:self withObject:nil];	
+	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
 }
 
-- (void)initializeDatabaseList
+- (void)_initializeDatabaseList
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	MCPResult *result = [[self connection] listDBs];
@@ -83,7 +86,7 @@
 	[pool release];
 }
 
- - (void)initializeUsers
+ - (void)_initializeUsers
 {
 	isInitializing = TRUE;
 	
@@ -99,8 +102,7 @@
 		// Go to the beginning
 		[result dataSeek:0];
 	}
-	[users release];
-	users = nil;
+	[users release], users = nil;
 	users = [[NSMutableArray alloc] init];
 	for(int i = 0; i < rows; i++)
 	{
@@ -108,14 +110,14 @@
 	}
 	[usersResultArray addObjectsFromArray:resultAsArray];
 
-	[self performSelectorOnMainThread:@selector(initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
-	[self initializeSchemaPrivilegesWithItems:usersResultArray];
+	[self performSelectorOnMainThread:@selector(_initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
+	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
 	[result release];
 	[pool release];
 	isInitializing = FALSE;
 }
 
-- (void)initializeTree:(NSArray *)items
+- (void)_initializeTree:(NSArray *)items
 {
 	for(int i = 0; i < [items count]; i++)
 	{
@@ -130,7 +132,7 @@
 			[childItem setUsername: [[items objectAtIndex:i] valueForKey:@"User"]];
 			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
 			[childItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
-			[self initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
+			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
 			[childItem setLeaf:TRUE];
 			[parent addChild:childItem];
 		}
@@ -145,7 +147,7 @@
 			[childItem setUsername: username];
 			[childItem setPassword: [[items objectAtIndex:i] valueForKey:@"Password"]];
 			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
-			[self initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
+			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
 			[childItem setLeaf:TRUE];
 			[userItem addChild:childItem];
 			
@@ -154,7 +156,7 @@
 	}
 }
 
-- (void)initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
+- (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
 {
 	NSArray *itemKeys = [item allKeys];
 	NSMutableDictionary *globalPrivs = [NSMutableDictionary dictionary];
@@ -170,7 +172,7 @@
 	[childItem setGlobalPrivileges:globalPrivs];
 }
 
-- (void)initializeSchemaPrivilegesWithItems:(NSArray *)items
+- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items
 {
 	NSDictionary *firstItem = [items objectAtIndex:0];
 	NSArray *keys = [firstItem allKeys];
@@ -184,6 +186,89 @@
 		}
 
 	}
+}
+
+
+/**
+ Returns the support folder for the application, used to store the Core Data
+ store file.  This code uses a folder named "CoreDataTutorial" for
+ the content, either in the NSApplicationSupportDirectory location or (if the
+ former cannot be found), the system's temporary directory.
+ */
+
+- (NSString *)applicationSupportFolder {
+	
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
+    return [basePath stringByAppendingPathComponent:@"SequelPro"];
+}
+
+/**
+ Creates, retains, and returns the managed object model for the application 
+ by merging all of the models found in the application bundle.
+ */
+
+- (NSManagedObjectModel *)managedObjectModel {
+	
+    if (managedObjectModel != nil) {
+        return managedObjectModel;
+    }
+	
+    managedObjectModel = [[NSManagedObjectModel mergedModelFromBundles:nil] retain];    
+    return managedObjectModel;
+}
+
+/**
+ Returns the persistent store coordinator for the application.  This 
+ implementation will create and return a coordinator, having added the 
+ store for the application to it.  (The folder for the store is created, 
+ if necessary.)
+ */
+
+- (NSPersistentStoreCoordinator *) persistentStoreCoordinator {
+	
+    if (persistentStoreCoordinator != nil) {
+        return persistentStoreCoordinator;
+    }
+	
+    NSFileManager *fileManager;
+    NSString *applicationSupportFolder = nil;
+    NSURL *url;
+    NSError *error;
+    
+    fileManager = [NSFileManager defaultManager];
+    applicationSupportFolder = [self applicationSupportFolder];
+    if ( ![fileManager fileExistsAtPath:applicationSupportFolder isDirectory:NULL] ) {
+        [fileManager createDirectoryAtPath:applicationSupportFolder attributes:nil];
+    }
+    
+    url = [NSURL fileURLWithPath: [applicationSupportFolder stringByAppendingPathComponent: @"SequelProUserData.xml"]];
+    persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
+    if (![persistentStoreCoordinator addPersistentStoreWithType:NSXMLStoreType configuration:nil URL:url options:nil error:&error]){
+        [[NSApplication sharedApplication] presentError:error];
+    }    
+	
+    return persistentStoreCoordinator;
+}
+
+/**
+ Returns the managed object context for the application (which is already
+ bound to the persistent store coordinator for the application.) 
+ */
+
+- (NSManagedObjectContext *) managedObjectContext {
+	
+    if (managedObjectContext != nil) {
+        return managedObjectContext;
+    }
+	
+    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+    if (coordinator != nil) {
+        managedObjectContext = [[NSManagedObjectContext alloc] init];
+        [managedObjectContext setPersistentStoreCoordinator: coordinator];
+    }
+    
+    return managedObjectContext;
 }
 
 - (void)setConnection:(CMMCPConnection *)connection
@@ -206,19 +291,19 @@
 - (void)dealloc
 {
 	NSLog(@"SPUserManager dealloc.");
-	//[treeController removeObserver:self forKeyPath:@"arrangedObjects"];
-	[modifiedUsers release];
-	modifiedUsers = nil;
-	[dbList release];
-	dbList = nil;
-	[availablePrivs release];
-	availablePrivs = nil;
-	[selectedPrivs release];
-	selectedPrivs = nil;
-	[allPrivs release];
-	allPrivs = nil;
-	[users release];
-	users = nil;
+	
+	[managedObjectContext release], managedObjectContext = nil;
+    [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
+    [managedObjectModel release], managedObjectModel = nil;
+	
+	[modifiedUsers release], modifiedUsers = nil;
+	[addedUsers release],addedUsers = nil;
+	[removedUsers release],removedUsers = nil;
+	[dbList release],dbList = nil;
+	[availablePrivs release],availablePrivs = nil;
+	[selectedPrivs release],selectedPrivs = nil;
+	[allPrivs release],allPrivs = nil;
+	[users release],users = nil;
 	[mySqlConnection release];
 	[super dealloc];
 }
@@ -273,22 +358,12 @@
 // General Action Methods 
 - (IBAction)doCancel:(id)sender
 {
-	[window close];
+	[self close];
 }
 
 - (IBAction)doApply:(id)sender
 {
-	[[self connection] selectDB:@"mysql"];
 	
-	for(int i = 0; i < [users count]; i++)
-	{
-		SPUserItem* user = [users objectAtIndex:i];
-		if ([user isLeaf])
-		{
-			CMMCPResult *result = nil;
-			
-		}
-	}
 }
 
 // Schema Privileges Actions
@@ -306,7 +381,24 @@
 
 - (IBAction)addUser:(id)sender
 {
-	
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		if ([[[treeController selectedObjects] objectAtIndex:0] isLeaf])
+		{
+			[self _selectParentFromSelection];
+		}
+		
+		NSIndexPath *indexPath;
+		indexPath = [NSIndexPath indexPathWithIndex:[users count]];
+		SPUserItem *newItem = [[SPUserItem alloc] init];
+		[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
+		if (addedUsers == nil)
+		{
+			addedUsers = [[NSMutableArray alloc] init];
+		}
+		[addedUsers addObject:newItem];
+		[newItem release];
+	}
 }
 
 - (IBAction)removeUser:(id)sender
@@ -322,5 +414,24 @@
 - (IBAction)removeHost:(id)sender
 {
 	
+}
+
+- (void)_selectParentFromSelection
+{
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		NSTreeNode *firstSelectedNode = [[treeController selectedNodes] objectAtIndex:0];
+		NSTreeNode *parentNode = [firstSelectedNode parentNode];
+		if (parentNode)
+		{
+			NSIndexPath *parentIndex = [parentNode indexPath];
+			[treeController setSelectionIndexPath:parentIndex];
+		}
+		else
+		{
+			NSArray *selectedIndexPaths = [treeController selectionIndexPaths];
+			[treeController removeSelectionIndexPaths:selectedIndexPaths];
+		}
+	}
 }
 @end
