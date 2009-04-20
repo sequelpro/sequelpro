@@ -29,6 +29,7 @@
 	IBOutlet NSSearchField *consoleSearchField;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSButton *includeTimeStampsButton, *saveConsoleButton, *clearConsoleButton;
+	IBOutlet NSMenuItem *showTimeStampsMenuItem, *showSelectShowStatementsMenuItem;
 	
 	NSFont *consoleFont;
 	NSMutableArray *messagesFullSet, *messagesFilteredSet, *messagesVisibleSet;

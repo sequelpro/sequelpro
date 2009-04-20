@@ -200,7 +200,8 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:(![sender intValue])];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:([sender state])];
+	[showTimeStampsMenuItem setState:![sender state]];
 }
 
 /**
@@ -208,9 +209,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (IBAction)toggleShowSelectShowStatements:(id)sender
 {
+	showSelectStatementsAreDisabled = [sender state];
+	
 	// Store the state of the toggle for later quick reference
-	showSelectStatementsAreDisabled = ![sender intValue];
-
+	[showSelectShowStatementsMenuItem setState:!showSelectStatementsAreDisabled];
+	
 	[self _updateFilterState];
 }
 
