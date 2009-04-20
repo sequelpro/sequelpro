@@ -84,7 +84,6 @@
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
 		B52460D80F8EF92300171639 /* SPTextViewAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D60F8EF92300171639 /* SPTextViewAdditions.m */; };
 		B52460DB0F8EF93B00171639 /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52460D90F8EF93B00171639 /* Console.xib */; };
-		B52461030F8EF9F500171639 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52461010F8EF9F500171639 /* ConnectionView.xib */; };
 		B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B53857330F9CC3B600EB2354 /* button_clear.tiff */; };
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
@@ -122,7 +121,6 @@
 		B5E92F400F75B32100012500 /* toolbar-export-xml.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
-		B5FE3D750F8231F50061A7E2 /* DataMigrationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5FE3D740F8231F50061A7E2 /* DataMigrationDialog.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -283,7 +281,6 @@
 		B52460D50F8EF92300171639 /* SPTextViewAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextViewAdditions.h; sourceTree = "<group>"; };
 		B52460D60F8EF92300171639 /* SPTextViewAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextViewAdditions.m; sourceTree = "<group>"; };
 		B52460DA0F8EF93B00171639 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
-		B52461020F8EF9F500171639 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ConnectionView.xib; sourceTree = "<group>"; };
 		B53857330F9CC3B600EB2354 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
@@ -324,7 +321,6 @@
 		B5E92F390F75B32100012500 /* toolbar-export-xls.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xls.tiff"; sourceTree = "<group>"; };
 		B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xml.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		B5F4F7310F7BC6790059AE84 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DataMigrationDialog.xib; sourceTree = "<group>"; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -627,8 +623,6 @@
 				B52460D90F8EF93B00171639 /* Console.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
-				B52461010F8EF9F500171639 /* ConnectionView.xib */,
-				B5FE3D740F8231F50061A7E2 /* DataMigrationDialog.xib */,
 				B57747D00F7A891A003B34F9 /* Preferences.xib */,
 				B5E92F170F75B2D100012500 /* ExportDialog.xib */,
 			);
@@ -816,12 +810,10 @@
 				B57748440F7A8B57003B34F9 /* toolbar-preferences-network.png in Resources */,
 				B57748450F7A8B57003B34F9 /* toolbar-preferences-security.tiff in Resources */,
 				B57748460F7A8B57003B34F9 /* toolbar-preferences-tables.tiff in Resources */,
-				B5FE3D750F8231F50061A7E2 /* DataMigrationDialog.xib in Resources */,
 				B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */,
 				B58730EB0F8381A600087794 /* toolbar-preferences-autoupdate.tiff in Resources */,
 				B58731280F838C9E00087794 /* PreferenceDefaults.plist in Resources */,
 				B52460DB0F8EF93B00171639 /* Console.xib in Resources */,
-				B52461030F8EF9F500171639 /* ConnectionView.xib in Resources */,
 				296DC8D20F90950C002A3258 /* sequel-pro-print-template.html in Resources */,
 				B508B5DA0F9837A200E03A69 /* button_edit.tiff in Resources */,
 				B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */,
@@ -948,14 +940,6 @@
 			name = Console.xib;
 			sourceTree = "<group>";
 		};
-		B52461010F8EF9F500171639 /* ConnectionView.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				B52461020F8EF9F500171639 /* English */,
-			);
-			name = ConnectionView.xib;
-			sourceTree = "<group>";
-		};
 		B57747D00F7A891A003B34F9 /* Preferences.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -970,14 +954,6 @@
 				B5E92F180F75B2D100012500 /* English */,
 			);
 			name = ExportDialog.xib;
-			sourceTree = "<group>";
-		};
-		B5FE3D740F8231F50061A7E2 /* DataMigrationDialog.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				B5F4F7310F7BC6790059AE84 /* English */,
-			);
-			name = DataMigrationDialog.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
