@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="62"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -336,7 +336,7 @@
 						</object>
 						<object class="NSProgressIndicator" id="223792049">
 							<reference key="NSNextResponder" ref="215475093"/>
-							<int key="NSvFlags">-2147482335</int>
+							<int key="NSvFlags">-2147482359</int>
 							<object class="NSPSMatrix" key="NSDrawMatrix"/>
 							<string key="NSFrame">{{549, 175}, {16, 16}}</string>
 							<reference key="NSSuperview" ref="215475093"/>
@@ -385,7 +385,7 @@
 								<reference key="NSControlView" ref="544468485"/>
 								<int key="NSButtonFlags">-2042609409</int>
 								<int key="NSButtonFlags2">35</int>
-								<object class="NSCustomResource" key="NSNormalImage">
+								<object class="NSCustomResource" key="NSNormalImage" id="1002325917">
 									<string key="NSClassName">NSImage</string>
 									<string key="NSResourceName">button_action</string>
 								</object>
@@ -400,10 +400,7 @@
 									<string key="NSKeyEquiv"/>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
-									<object class="NSCustomResource" key="NSImage">
-										<string key="NSClassName">NSImage</string>
-										<string key="NSResourceName">button_action</string>
-									</object>
+									<reference key="NSImage" ref="1002325917"/>
 									<string key="NSAction">_popUpItemAction:</string>
 									<reference key="NSTarget" ref="146997448"/>
 								</object>
@@ -984,8 +981,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{270, 824}, {575, 203}}</string>
-					<string>{{270, 824}, {575, 203}}</string>
+					<string>{{504, 238}, {575, 203}}</string>
+					<string>{{504, 238}, {575, 203}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{575, 130}</string>
