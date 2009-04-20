@@ -54,14 +54,23 @@
 	queries = [queryParser splitStringByCharacter:';'];
 	[queryParser release];
 
+	NSRange curRange = [textView selectedRange];
+	// Unselect a selection if given to avoid interferring with error highlighting
+	[textView setSelectedRange:NSMakeRange(curRange.location, 0)];
 	[self performQueries:queries];
+	// If no error was selected reconstruct a given selection
+	if([textView selectedRange].length == 0)
+		[textView setSelectedRange:curRange];
 
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-	[textView setSelectedRange:NSMakeRange(0,0)];
+	NSRange oldRange = [textView selectedRange];
+	[textView setSelectedRange:NSMakeRange(oldRange.location,0)];
 	[textView insertText:@""];
+	[textView setSelectedRange:oldRange];
+	
 
 	// Select the text of the query textView for re-editing
-	[textView selectAll:self];
+	//[textView selectAll:self];
 }
 
 /*
@@ -93,7 +102,7 @@
 	
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
 	// and preserve the selection
-	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView setSelectedRange:NSMakeRange(selectedRange.location,0)];
 	[textView insertText:@""];
 	[textView setSelectedRange:selectedRange];
 
@@ -430,8 +439,36 @@ sets the tableView columns corresponding to the mysql-result
 	}
 	[prefs setObject:menuItems forKey:@"queryHistory"];
 
+	// Error checking
 	if ( [errors length] ) {
+		// set the error text
 		[errorText setStringValue:errors];
+		// select the line x of the first error if error message contains "at line x"
+		NSError *err1 = NULL;
+		NSRange errorLineNumberRange = [errors rangeOfRegex:@"at line ([0-9]+)" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+		if(errorLineNumberRange.length) // if a line number was found
+		{
+			// Get the line number
+			unsigned int errorAtLine = [[errors substringWithRange:errorLineNumberRange] intValue];
+			[textView selectLineNumber:errorAtLine ignoreLeadingNewLines:YES];
+
+			// Check for near message
+			NSRange errorNearMessageRange = [errors rangeOfRegex:@"use near '(.*?)'" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+			if(errorNearMessageRange.length) // if a "near message" was found
+			{
+				// Get the line of the first error via the current selected line
+				NSRange lineRange = [[textView string] lineRangeForRange:NSMakeRange([textView selectedRange].location, 0)];
+				// Build the range to search for nearMessage (beginning from the error line to try to avoid mismatching)
+				NSRange theRange = NSMakeRange(lineRange.location, [[textView string] length]-lineRange.location);
+				// Get the range in textView of the near message
+				NSRange textNearMessageRange = [[[textView string] substringWithRange:theRange] rangeOfString:[errors substringWithRange:errorNearMessageRange] options:NSLiteralSearch];
+				// Correct the near message range
+				textNearMessageRange = NSMakeRange(textNearMessageRange.location+lineRange.location, textNearMessageRange.length);
+				// Select the near message and scroll to it
+				[textView setSelectedRange:textNearMessageRange];
+				[textView scrollRangeToVisible:textNearMessageRange];
+			}
+		}
 	} else {
 		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
 	}

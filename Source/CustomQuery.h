@@ -28,6 +28,7 @@
 #import "CMTextView.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "RegexKitLite.h"
 
 @interface CustomQuery : NSObject {
 
