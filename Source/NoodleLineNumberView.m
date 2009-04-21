@@ -40,7 +40,6 @@
 - (NSMutableArray *)lineIndices;
 - (void)invalidateLineIndices;
 - (void)calculateLines;
-- (unsigned)lineNumberForCharacterIndex:(unsigned)index inText:(NSString *)text;
 - (NSDictionary *)textAttributes;
 
 @end

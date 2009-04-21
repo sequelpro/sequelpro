@@ -57,4 +57,6 @@
 
 - (unsigned)lineNumberForLocation:(float)location;
 
+- (unsigned)lineNumberForCharacterIndex:(unsigned)index inText:(NSString *)text;
+
 @end
