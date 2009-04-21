@@ -700,6 +700,12 @@ sets the connection (received from TableDocument) and makes things that have to 
 		[queryHistoryButton addItemsWithTitles:[prefs objectForKey:@"queryHistory"]];
 	}
 	[self setFavorites];
+	
+	// To be able to disable runSelectionMenuItem
+	[[runSelectionMenuItem menu] setAutoenablesItems:NO];
+	// Disable runSelectionMenuItem in the gear menu
+	[runSelectionMenuItem setEnabled:NO];
+	
 }
 
 - (void)setFavorites
@@ -1029,6 +1035,9 @@ traps enter key and
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
+	// To be able to disable runSelectionMenuItem
+	[[runSelectionMenuItem menu] setAutoenablesItems:NO];
+
 	// If no text is selected, disable the button and action menu.
 	if ( [textView selectedRange].location == NSNotFound ) {
 		[runSelectionButton setEnabled:NO];
@@ -1106,9 +1115,9 @@ traps enter key and
 	// For selection ranges, enable the button.
 	} else {
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
-		[runSelectionButton setEnabled:YES];		
+		[runSelectionButton setEnabled:YES];
 		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
-		[runSelectionMenuItem setEnabled:YES];		
+		[runSelectionMenuItem setEnabled:YES];
 	}
 }
 
@@ -1154,6 +1163,7 @@ traps enter key and
 	self = [super init];
 	prefs = nil;
 	usedQuery = [[NSString stringWithString:@""] retain];
+
 	return self;
 }
 
