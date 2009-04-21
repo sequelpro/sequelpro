@@ -48,6 +48,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 @implementation CMTextView
 
 /*
+ * Returns the associated line number for a character position inside of the CMTextView
+ */
+- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex
+{
+	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
+}
+
+/*
  * Add a menu item to context menu for looking up mysql documentation.
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event 

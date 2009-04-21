@@ -53,5 +53,6 @@
 - (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
 - (BOOL) autouppercaseKeywords;
 - (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
+- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
 
 @end
