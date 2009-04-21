@@ -590,9 +590,25 @@ sets the tableView columns corresponding to the mysql-result
 		queryPosition += [[queries objectAtIndex:i] length];
 		if (queryPosition >= position) {
 		
-			// If lookbehind is enabled, determine whether it's valid
-			if (doLookBehind) {
-				if (i && [[[[textView string] substringWithRange:NSMakeRange(queryStartPosition, position - queryStartPosition)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0) {
+			// If lookbehind is enabled, determine whether it's valid and check
+			// if after the caret position are only white spaces or newlines
+			if (*doLookBehind) {
+				NSCharacterSet *trimSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+				NSString *string = [textView string];
+				unsigned int curCaretPosition = [textView selectedRange].location;
+				NSRange curlineRange = [string lineRangeForRange:NSMakeRange(curCaretPosition, 0)];
+				NSString *lineTailFromCaret = [[string substringWithRange:
+					NSMakeRange([textView selectedRange].location, 
+						curlineRange.length + curlineRange.location - curCaretPosition)] stringByTrimmingCharactersInSet:trimSet];
+
+				if (i
+					&&
+					![[[string substringWithRange:
+						NSMakeRange(queryStartPosition, position - queryStartPosition)] stringByTrimmingCharactersInSet:trimSet] length]
+					&&
+					![lineTailFromCaret length]
+					)
+				{
 					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
 					break;
 				}
@@ -1068,7 +1084,13 @@ traps enter key and
 		if (!updateQueryButtons && [[textView string] rangeOfString:@";" options:0 range:NSMakeRange(movedRangeStart, movedRangeLength)].location != NSNotFound) updateQueryButtons = TRUE;
 		if (!updateQueryButtons && ![runSelectionButton isEnabled] && selectionPosition > oldSelection.location
 				&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length]) updateQueryButtons = TRUE;
-		if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")]) {
+		if (!updateQueryButtons && 
+				(
+					[[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")]
+					||
+					[[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")]
+				)
+			) {
 			int charPosition;
 			unichar theChar;
 			for (charPosition = selectionPosition; charPosition > 0; charPosition--) {
