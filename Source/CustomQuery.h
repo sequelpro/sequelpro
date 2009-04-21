@@ -82,7 +82,7 @@
 
 // Query actions
 - (void)performQueries:(NSArray *)queries;
-- (NSString *)queryAtPosition:(long)position;
+- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
 
 // Accessors
 - (NSArray *)currentResult;
