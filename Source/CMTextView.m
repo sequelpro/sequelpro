@@ -591,7 +591,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	if([[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
 
-	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!"];
+	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;"];
 	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
 	NSString *partialString    = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
