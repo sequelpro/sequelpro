@@ -64,6 +64,8 @@
 	CMMCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
+	
+	int queryStartPosition;
 }
 
 // IBAction methods
@@ -83,6 +85,8 @@
 // Query actions
 - (void)performQueries:(NSArray *)queries;
 - (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
 
 // Accessors
 - (NSArray *)currentResult;

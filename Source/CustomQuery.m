@@ -57,6 +57,9 @@
 	NSRange curRange = [textView selectedRange];
 	// Unselect a selection if given to avoid interferring with error highlighting
 	[textView setSelectedRange:NSMakeRange(curRange.location, 0)];
+	// Reset queryStartPosition
+	queryStartPosition = 0;
+
 	[self performQueries:queries];
 	// If no error was selected reconstruct a given selection
 	if([textView selectedRange].length == 0)
@@ -361,6 +364,8 @@ sets the tableView columns corresponding to the mysql-result
 	NSMutableString	*errors = [NSMutableString string];
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
 	float executionTime = 0;
+	int firstErrorOccuredInQuery = -1;
+	BOOL suppressErrorSheet = NO;
 
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -394,12 +399,44 @@ sets the tableView columns corresponding to the mysql-result
 
 		// Store any error messages
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-
+			
 			// If the query errored, append error to the error log for display at the end
 			if ( [queries count] > 1 ) {
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
+				if(firstErrorOccuredInQuery == -1)
+					firstErrorOccuredInQuery = i+1;
+				
+				if(!suppressErrorSheet)
+				{
+					// Update error text for the user
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
 										i+1,
 										[mySQLConnection getLastErrorMessage]]];
+					[errorText setStringValue:errors];
+					// ask the user to continue after detecting an error
+					NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+					[alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
+					[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
+					[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
+					[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
+					[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
+					[alert setAlertStyle:NSWarningAlertStyle];
+					int choice = [alert runModal];
+					switch (choice){
+						case NSAlertFirstButtonReturn:
+							suppressErrorSheet = YES;
+						case NSAlertSecondButtonReturn:
+							break;
+						default:
+							if(i < [queries count]-1) // output that message only if it was not the last one
+								[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
+							i = [queries count]; // break for loop; for safety reasons stop the execution of the following queries
+					}
+				
+				} else {
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
+											i+1,
+											[mySQLConnection getLastErrorMessage]]];
+				}
 			} else {
 				[errors setString:[mySQLConnection getLastErrorMessage]];
 			}
@@ -416,7 +453,7 @@ sets the tableView columns corresponding to the mysql-result
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
 	
-//put result in array
+	//put result in array
 	[queryResult release];
 	queryResult = nil;
 	if ( nil != theResult )
@@ -429,7 +466,7 @@ sets the tableView columns corresponding to the mysql-result
 		queryResult = [[NSArray arrayWithArray:tempResult] retain];
 	}
 
-//add query to history
+	//add query to history
 	[queryHistoryButton insertItemWithTitle:[queries componentsJoinedByString:@"; "] atIndex:1];
 	while ( [queryHistoryButton numberOfItems] > [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue] + 1 ) {
 		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
@@ -446,7 +483,7 @@ sets the tableView columns corresponding to the mysql-result
 		[errorText setStringValue:errors];
 		// select the line x of the first error if error message contains "at line x"
 		NSError *err1 = NULL;
-		NSRange errorLineNumberRange = [errors rangeOfRegex:@"at line ([0-9]+)" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+		NSRange errorLineNumberRange = [errors rangeOfRegex:@"([0-9]+)$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
 		if(errorLineNumberRange.length) // if a line number was found
 		{
 			// Get the line number
@@ -454,54 +491,67 @@ sets the tableView columns corresponding to the mysql-result
 			[textView selectLineNumber:errorAtLine ignoreLeadingNewLines:YES];
 
 			// Check for near message
-			NSRange errorNearMessageRange = [errors rangeOfRegex:@"use near '(.*?)'" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+			NSRange errorNearMessageRange = [errors rangeOfRegex:@" '(.*?)' " options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
 			if(errorNearMessageRange.length) // if a "near message" was found
 			{
-				// Get the line of the first error via the current selected line
-				NSRange lineRange = [[textView string] lineRangeForRange:NSMakeRange([textView selectedRange].location, 0)];
-				// Build the range to search for nearMessage (beginning from the error line to try to avoid mismatching)
-				NSRange theRange = NSMakeRange(lineRange.location, [[textView string] length]-lineRange.location);
+				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
+				NSRange theRange = NSMakeRange(queryStartPosition, [[textView string] length]-queryStartPosition);
 				// Get the range in textView of the near message
 				NSRange textNearMessageRange = [[[textView string] substringWithRange:theRange] rangeOfString:[errors substringWithRange:errorNearMessageRange] options:NSLiteralSearch];
-				// Correct the near message range
-				textNearMessageRange = NSMakeRange(textNearMessageRange.location+lineRange.location, textNearMessageRange.length);
+				// Correct the near message range relative to queryStartPosition
+				textNearMessageRange = NSMakeRange(textNearMessageRange.location+queryStartPosition, textNearMessageRange.length);
 				// Select the near message and scroll to it
 				[textView setSelectedRange:textNearMessageRange];
 				[textView scrollRangeToVisible:textNearMessageRange];
 			}
+		} else { // Select first erroneous query entirely
+			
+			NSRange queryRange;
+			if(firstErrorOccuredInQuery == -1) // for current or previous query
+			{
+				BOOL isLookBehind = YES;
+				queryRange = [self queryTextRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
+				[textView setSelectedRange:queryRange];
+			} else {
+				// select the query for which the first error was detected
+				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
+				[textView setSelectedRange:queryRange];
+			}
+
 		}
+		
 	} else {
 		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
 	}
 	
 	// Set up the status string
 	if ( totalQueriesRun > 1 ) {
-        if (totalAffectedRows==1) {
-            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %i queries taking %@", @"text showing one row has been affected by multiple queries"),
+		if (totalAffectedRows==1) {
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %i queries taking %@", @"text showing one row has been affected by multiple queries"),
                                               totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
-            
-        } else {
-            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected in total, by %i queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+
+		} else {
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected in total, by %i queries taking %@", @"text showing how many rows have been affected by multiple queries"),
                                               totalAffectedRows,
                                               totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
-            
-        }
+
+		}
 	} else {
-        if (totalAffectedRows==1) {
-            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
+		if (totalAffectedRows==1) {
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
-        } else {
-            [affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+		} else {
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
                                               totalAffectedRows,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
-            
-        }
+
+		}
 	}
 
 
@@ -513,10 +563,10 @@ sets the tableView columns corresponding to the mysql-result
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
 		// Perform the Growl notification for query completion
-        [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
+		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
                                                   notificationName:@"Query Finished"];
-		
+
 		return;
 	}
 
@@ -560,6 +610,123 @@ sets the tableView columns corresponding to the mysql-result
 }
 
 /*
+ * Retrieve the range of the query at a position specified 
+ * within the custom query text view.
+ */
+- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
+{
+	SPSQLParser *customQueryParser;
+	NSArray *queries;
+	NSString *query = nil;
+	int i, lastQueryStartPosition, queryPosition = 0;
+
+	// If the supplied position is negative or beyond the end of the string, return nil.
+	if (position < 0 || position > [[textView string] length])
+		return NSMakeRange(NSNotFound,0);
+
+	// Split the current text into queries
+	customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
+	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringByCharacter:';']];
+	[customQueryParser release];
+
+	// Walk along the array of queries to identify the current query - taking into account
+	// the extra semicolon at the end of each query
+	for (i = 0; i < [queries count]; i++ ) {
+		lastQueryStartPosition = queryStartPosition;
+		queryStartPosition = queryPosition;
+		queryPosition += [[queries objectAtIndex:i] length];
+		if (queryPosition >= position) {
+		
+			// If lookbehind is enabled, determine whether it's valid and check
+			// if after the caret position are only white spaces or newlines
+			if (*doLookBehind) {
+				NSCharacterSet *trimSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+				NSString *string = [textView string];
+				unsigned int curCaretPosition = [textView selectedRange].location;
+				NSRange curlineRange = [string lineRangeForRange:NSMakeRange(curCaretPosition, 0)];
+				NSString *lineTailFromCaret = [[string substringWithRange:
+					NSMakeRange([textView selectedRange].location,
+						curlineRange.length + curlineRange.location - curCaretPosition)] stringByTrimmingCharactersInSet:trimSet];
+
+				if (i
+					&&
+					![[[string substringWithRange:
+						NSMakeRange(queryStartPosition, position - queryStartPosition)] stringByTrimmingCharactersInSet:trimSet] length]
+					&&
+					![lineTailFromCaret length]
+					)
+				{
+					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
+					queryStartPosition = lastQueryStartPosition;
+					break;
+				}
+				*doLookBehind = NO;
+			}
+			
+			query = [NSString stringWithString:[queries objectAtIndex:i]];
+			break;
+		}
+		queryPosition++;
+	}
+	if (doLookBehind && position == [[textView string] length] && !query)
+	{
+		query = [queries lastObject];
+	} 
+
+	if(queryStartPosition < 0) queryStartPosition = 0;
+
+	[queries release];
+
+	// Remove all leading white spaces
+	NSError *err;
+	int offset = [query rangeOfRegex:@"^(\\s*)" options:RKLNoOptions inRange:NSMakeRange(0, [query length]) capture:1 error:&err].length;
+
+	return NSMakeRange(queryStartPosition+offset, [query length]-offset);
+}
+
+/*
+ * Retrieve the range of the query for the passed index seen from a start position
+ * specified within the custom query text view.  
+ */
+- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position
+{
+	SPSQLParser *customQueryParser;
+	NSArray *queries;
+	int i;
+
+	// If the supplied position is negative or beyond the end of the string, return nil.
+	if (position < 0 || position > [[textView string] length])
+		return NSMakeRange(NSNotFound,0);
+
+	// Split the current text into queries
+	customQueryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:NSMakeRange(position, [[textView string] length]-position)]];
+	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringByCharacter:';']];
+	[customQueryParser release];
+	anIndex--;
+	if(anIndex < 0 || anIndex >= [queries count])
+	{
+		[queries release];
+		return NSMakeRange(NSNotFound, 0);
+	}
+
+	NSString * theQuery = [queries objectAtIndex:anIndex];
+
+	// Calculate the text length before that query at index anIndex
+	long prevQueriesLength = 0;
+	for (i = 0; i < anIndex; i++ ) {
+		prevQueriesLength += [[queries objectAtIndex:i] length] + 1;
+	}
+
+	[queries release];
+	
+	// Remove all leading white spaces
+	NSError *err;
+	int offset = [theQuery rangeOfRegex:@"^(\\s*)" options:RKLNoOptions inRange:NSMakeRange(0, [theQuery length]) capture:1 error:&err].length;
+
+	return NSMakeRange(position+offset+prevQueriesLength, [theQuery length] - offset);
+}
+
+/*
  * Retrieve the query at a position specified within the custom query
  * text view.  This will return nil if the position specified is beyond
  * the available string or if an empty query would be returned.
@@ -572,7 +739,7 @@ sets the tableView columns corresponding to the mysql-result
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
 	NSString *query = nil;
-	int i, queryPosition = 0, queryStartPosition;
+	int i, lastQueryStartPosition, queryPosition = 0;
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
 	if (position < 0 || position > [[textView string] length])
@@ -586,6 +753,7 @@ sets the tableView columns corresponding to the mysql-result
 	// Walk along the array of queries to identify the current query - taking into account
 	// the extra semicolon at the end of each query
 	for (i = 0; i < [queries count]; i++ ) {
+		lastQueryStartPosition = queryStartPosition;
 		queryStartPosition = queryPosition;
 		queryPosition += [[queries objectAtIndex:i] length];
 		if (queryPosition >= position) {
@@ -598,7 +766,7 @@ sets the tableView columns corresponding to the mysql-result
 				unsigned int curCaretPosition = [textView selectedRange].location;
 				NSRange curlineRange = [string lineRangeForRange:NSMakeRange(curCaretPosition, 0)];
 				NSString *lineTailFromCaret = [[string substringWithRange:
-					NSMakeRange([textView selectedRange].location, 
+					NSMakeRange([textView selectedRange].location,
 						curlineRange.length + curlineRange.location - curCaretPosition)] stringByTrimmingCharactersInSet:trimSet];
 
 				if (i
@@ -610,6 +778,7 @@ sets the tableView columns corresponding to the mysql-result
 					)
 				{
 					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
+					queryStartPosition = lastQueryStartPosition;
 					break;
 				}
 				*doLookBehind = NO;
@@ -620,8 +789,13 @@ sets the tableView columns corresponding to the mysql-result
 		}
 		queryPosition++;
 	}
-	if (doLookBehind && position == [[textView string] length] && !query) query = [queries lastObject];
-	
+	if (doLookBehind && position == [[textView string] length] && !query)
+	{
+		query = [queries lastObject];
+	} 
+
+	if(queryStartPosition < 0) queryStartPosition = 0;
+
 	[queries release];
 
 	// Ensure the string isn't empty.
@@ -1177,7 +1351,6 @@ traps enter key and
 
 
 #pragma mark -
-
 
 // Last but not least
 - (id)init;
