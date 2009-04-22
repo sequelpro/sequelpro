@@ -479,7 +479,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
  * and whether it should be hidden if the SELECT/SHOW toggle is off.
  */
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message
-{
+{	
 	BOOL messageMatchesCurrentFilters = YES;
 
 	// Check whether to hide the message based on the current filter text, if any
@@ -492,7 +492,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	// If hiding SELECTs and SHOWs is toggled to on, check whether the message is a SELECT or SHOW
 	if (messageMatchesCurrentFilters
 		&& showSelectStatementsAreDisabled
-		&& ([message hasPrefix:@"SELECT"] || [message hasPrefix:@"SHOW"]))
+		&& ([[message uppercaseString] hasPrefix:@"SELECT"] || [[message uppercaseString] hasPrefix:@"SHOW"]))
 	{
 		messageMatchesCurrentFilters = NO;
 	}
