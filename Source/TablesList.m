@@ -221,14 +221,36 @@
 	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
+
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	NSString *tblTypes;
+	unsigned currentIndex = [indexes lastIndex];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
-		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete table '%@'?", @"delete table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the table '%@'. This operation cannot be undone.", @"delete table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
+			tblTypes = NSLocalizedString(@"view", @"view");
+		else
+			tblTypes = NSLocalizedString(@"table", @"table");
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete %@ '%@'?", @"delete table/view message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'. This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
 	else {
-		[alert setMessageText:NSLocalizedString(@"Delete selected tables?", @"delete tables message")];
-		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected tables. This operation cannot be undone.", @"delete tables informative message")];
+		int tblTypesChecksum = 0;
+		while (currentIndex != NSNotFound)
+		{
+			tblTypesChecksum += [[tableTypes objectAtIndex:currentIndex] intValue];
+			currentIndex = [indexes indexLessThanIndex:currentIndex];
+		}
+
+		if(tblTypesChecksum == 0)
+			tblTypes = NSLocalizedString(@"tables", @"tables");
+		else if(tblTypesChecksum == [indexes count])
+			tblTypes = NSLocalizedString(@"views", @"views");
+		else
+			tblTypes = NSLocalizedString(@"tables/views", @"tables/views");
+
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete selected %@?", @"delete tables/views message"), tblTypes]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@. This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
 	}
 		
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
@@ -375,10 +397,17 @@
 	unsigned currentIndex = [indexes lastIndex];
 	while (currentIndex != NSNotFound)
 	{
-		[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
-																  [[tables objectAtIndex:currentIndex] backtickQuotedString]
-																]];
-		
+
+		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
+		{
+			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
+																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
+																	]];
+		} else {
+			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
+																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
+																	]];
+		}
 		if ( [[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 			//dropped table with success
 			[tables removeObjectAtIndex:currentIndex];
@@ -669,7 +698,7 @@
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
-			contentLoaded = NO;   
+			contentLoaded = NO;
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
 			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
@@ -679,7 +708,7 @@
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
 			[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = NO;
-			contentLoaded = NO;	 		
+			contentLoaded = NO;
 			statusLoaded = YES;
 		} else {
 			structureLoaded = NO;
