@@ -391,11 +391,14 @@
 
 	// Load file into string.  For SQL imports, try UTF8 file encoding before the current encoding.
 	if ([fileType isEqualToString:@"SQL"]) {
-		NSLog(@"Reading as utf8");
+		NSLog(@"Attempting to read as utf8");
 		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 											 encoding:NSUTF8StringEncoding
 												error:&errorStr];
-												NSLog(dumpFile);
+
+		// This will crash if dumpFile is big.
+		DLog(dumpFile);
+	
 		if (errorStr) {
 			importSQLAsUTF8 = NO;
 			errorStr = nil;
@@ -404,6 +407,7 @@
 
 	// If the SQL-as-UTF8 read failed, and for CSVs, use the current connection encoding.
 	if (!importSQLAsUTF8 || [fileType isEqualToString:@"CSV"]) {
+		NSLog(@"Reading using connection encoding");
 		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 												error:&errorStr];
