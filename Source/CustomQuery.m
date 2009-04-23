@@ -801,6 +801,7 @@ sets the tableView columns corresponding to the mysql-result
 				// If there is a previous query and the position should be associated with it, do so.
 				if (i && positionAssociatedWithPreviousQuery && [[[queries objectAtIndex:i-1] stringByTrimmingCharactersInSet:newlineSet] length]) {
 					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
+					queryStartPosition = lastQueryStartPosition;
 					break;
 				}
 
@@ -915,8 +916,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 	}
 	[self setFavorites];
 	
-	// To be able to disable runSelectionMenuItem
-	[[runSelectionMenuItem menu] setAutoenablesItems:NO];
 	// Disable runSelectionMenuItem in the gear menu
 	[runSelectionMenuItem setEnabled:NO];
 	
@@ -1248,9 +1247,6 @@ traps enter key and
 
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
-
-	// To be able to disable runSelectionMenuItem
-	[[runSelectionMenuItem menu] setAutoenablesItems:NO];
 
 	// If no text is selected, disable the button and action menu.
 	if ( [textView selectedRange].location == NSNotFound ) {
