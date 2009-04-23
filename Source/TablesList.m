@@ -257,7 +257,7 @@
 }
 
 /**
- * Copies a table, if desired with content
+ * Copies a table, if desired with content, or view
  */
 - (IBAction)copyTable:(id)sender
 {
@@ -267,6 +267,8 @@
 //	NSMutableString *rowValue = [NSMutableString string];
 //	NSMutableArray *fieldValues;
 	int code;
+	BOOL isView;
+	NSString *tblType;
 //	int rowCount, i, j;
 //	BOOL errors = NO;
 
@@ -277,9 +279,24 @@
 	}
 	[tableWindow endEditingFor:nil];
 
+	// Detect table type: table or view
+	isView = [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW;
+
 	//open copyTableSheet
 	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@Copy", [tables objectAtIndex:[tablesListView selectedRow]]]];
 	[copyTableContentSwitch setState:NSOffState];
+	// Hide if selected item is a view
+	[copyTableContentSwitch setEnabled:!isView];
+	// Set message according to table type and the table type string
+	if(isView) {
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate view to", @"duplicate view message")];
+		tblType = @"VIEW";
+	} else {
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate table to", @"duplicate table message")];
+		tblType = @"TABLE";
+	}
+
+
 	[NSApp beginSheet:copyTableSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
@@ -299,30 +316,38 @@
 	}
 
 	//get table structure
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@",
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
+					tblType,
 					[[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 					]];
 	
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't get table information.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't get table information.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 
     } else {
 		//insert new table name in create syntax and create new table
 		NSScanner *scanner = [NSScanner alloc];
 		NSString *scanString;
 
-        [scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
-        [scanner scanUpToString:@"(" intoString:nil];
-        [scanner scanUpToString:@"" intoString:&scanString];
-        [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+		if(isView){
+			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
+			[scanner scanUpToString:@"AS" intoString:nil];
+			[scanner scanUpToString:@"" intoString:&scanString];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+		} else {
+			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
+			[scanner scanUpToString:@"(" intoString:nil];
+			[scanner scanUpToString:@"" intoString:&scanString];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+		}
 		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table
-            NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't create table.\nMySQL said: %@", @"message of panel when table cannot be created"), [mySQLConnection getLastErrorMessage]]);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't create table.\nMySQL said: %@", @"message of panel when table cannot be created"), [mySQLConnection getLastErrorMessage]]);
         } else {
 			
             if ( [copyTableContentSwitch state] == NSOnState ) {
@@ -349,13 +374,16 @@
                 }
             }
 			
-            [tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
-			[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
-            [tablesListView reloadData];
-            [tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
-            [tablesListView scrollRowToVisible:[tablesListView selectedRow]];
-        }
-    }
+			[tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
+			[tableTypes insertObject:[NSNumber numberWithInt:(isView)?SP_TABLETYPE_VIEW : SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
+			[tablesListView reloadData];
+			[tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
+			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+			[self updateTables:self];
+			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+
+		}
+	}
 }
 
 #pragma mark Alert sheet methods
@@ -385,7 +413,7 @@
 #pragma mark Additional methods
 
 /**
- * Removes selected table(s) from mysql-db and tableView
+ * Removes selected table(s) or view(s) from mysql-db and tableView
  */
 - (void)removeTable
 {
