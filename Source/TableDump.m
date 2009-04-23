@@ -882,7 +882,7 @@
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {
-				createTableSyntax = [[[tableDetails objectForKey:@"Create View"] copy] autorelease];
+				createTableSyntax = [[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier];
 				tableType = SP_TABLETYPE_VIEW;
 			} else {
 				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];

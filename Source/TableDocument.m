@@ -936,8 +936,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-	
-	[syntaxViewContent setString:tableSyntax];
+
+	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
+		[syntaxViewContent setString:[tableSyntax createViewSyntaxPrettifier]];
+	else
+		[syntaxViewContent setString:tableSyntax];
+
 	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
@@ -966,10 +970,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-	[pb setString:tableSyntax forType:NSStringPboardType];
-    
-    // Table syntax copied Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
+	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
+		[pb setString:[tableSyntax createViewSyntaxPrettifier] forType:NSStringPboardType];
+	else
+		[pb setString:tableSyntax forType:NSStringPboardType];
+
+	// Table syntax copied Growl notification
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
                                               notificationName:@"Table Syntax Copied"];
 }
