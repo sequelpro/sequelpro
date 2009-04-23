@@ -53,6 +53,9 @@ enum sp_table_types
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
 	IBOutlet id addTableButton;
+	
+	IBOutlet NSMenuItem *removeTableMenuItem;
+	IBOutlet NSMenuItem *duplicateTableMenuItem;
 
 	CMMCPConnection *mySQLConnection;
 	

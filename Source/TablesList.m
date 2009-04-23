@@ -715,7 +715,21 @@
 			contentLoaded = NO;
 			statusLoaded = NO;
 		}
-		 
+
+		// To be able to disable duplicateTableMenuItem
+		[[duplicateTableMenuItem menu] setAutoenablesItems:NO];
+
+		// Set gear menu items Remove/Duplicate table/view according to the table types
+		[duplicateTableMenuItem setEnabled:YES];
+		if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW)
+		{
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
+		} else {
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
+		}
+
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
@@ -726,7 +740,27 @@
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
-		
+
+		// To be able to disable duplicateTableMenuItem
+		[[duplicateTableMenuItem menu] setAutoenablesItems:NO];
+
+		// Set gear menu items Remove/Duplicate table/view according to the table types
+		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+		unsigned currentIndex = [indexes lastIndex];
+		[duplicateTableMenuItem setEnabled:NO];
+		int tblTypesChecksum = 0;
+		while (currentIndex != NSNotFound)
+		{
+			tblTypesChecksum += [[tableTypes objectAtIndex:currentIndex] intValue];
+			currentIndex = [indexes indexLessThanIndex:currentIndex];
+		}
+		if(tblTypesChecksum == 0)
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables", @"remove tables menu title")];
+		else if(tblTypesChecksum == [indexes count])
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove views", @"remove views menu title")];
+		else
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables/views", @"remove tables/views menu title")];
+
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database]]];
