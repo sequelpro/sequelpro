@@ -618,7 +618,7 @@ sets the tableView columns corresponding to the mysql-result
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
 	NSString *query = nil;
-	int i, lastQueryStartPosition, queryPosition = 0;
+	int i, j, lastQueryStartPosition, queryPosition = 0;
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
 	if (position < 0 || position > [[textView string] length])
@@ -636,39 +636,53 @@ sets the tableView columns corresponding to the mysql-result
 		queryStartPosition = queryPosition;
 		queryPosition += [[queries objectAtIndex:i] length];
 		if (queryPosition >= position) {
-		
-			// If lookbehind is enabled, determine whether it's valid and check
-			// if after the caret position are only white spaces or newlines
-			if (*doLookBehind) {
-				NSCharacterSet *trimSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-				NSString *string = [textView string];
-				unsigned int curCaretPosition = [textView selectedRange].location;
-				NSRange curlineRange = [string lineRangeForRange:NSMakeRange(curCaretPosition, 0)];
-				NSString *lineTailFromCaret = [[string substringWithRange:
-					NSMakeRange([textView selectedRange].location,
-						curlineRange.length + curlineRange.location - curCaretPosition)] stringByTrimmingCharactersInSet:trimSet];
 
-				if (i
-					&&
-					![[[string substringWithRange:
-						NSMakeRange(queryStartPosition, position - queryStartPosition)] stringByTrimmingCharactersInSet:trimSet] length]
-					&&
-					![lineTailFromCaret length]
-					)
-				{
+			// If lookbehind is enabled, check whether the current position could be considered to
+			// be within the previous query.  A position just after a semicolon is always considered
+			// to be within the previous query; otherwise, if there is only whitespace *and newlines*
+			// before the next character, also consider the position to belong to the previous query.
+			if (*doLookBehind) {
+				BOOL positionAssociatedWithPreviousQuery = NO;
+				NSCharacterSet *newlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
+				// If the caret is at the very start of the string, always associate
+				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
+
+				// Otherwise associate if only whitespace since previous, and a newline before next.
+				if (!positionAssociatedWithPreviousQuery) {
+					NSString *stringToPrevious = [[textView string] substringWithRange:NSMakeRange(queryStartPosition, position - queryStartPosition)];
+					NSString *stringToEnd = [[textView string] substringWithRange:NSMakeRange(position, queryPosition - position)];
+					NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
+					if (![[stringToPrevious stringByTrimmingCharactersInSet:newlineSet] length]) {
+						for (j = 0; j < [stringToEnd length]; j++) {
+							if ([whitespaceSet characterIsMember:[stringToEnd characterAtIndex:j]]) continue;
+							if ([newlineSet characterIsMember:[stringToEnd characterAtIndex:j]]) {
+								positionAssociatedWithPreviousQuery = YES;
+							}
+							break;
+						}
+					}
+				}
+
+				// If there is a previous query and the position should and can be associated with it, do so.
+				if (i && positionAssociatedWithPreviousQuery && [[[queries objectAtIndex:i-1] stringByTrimmingCharactersInSet:newlineSet] length]) {
 					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
 					queryStartPosition = lastQueryStartPosition;
 					break;
 				}
+
+				// Lookbehind failed - set the pointer to NO so the parent knows.
 				*doLookBehind = NO;
 			}
-			
+
 			query = [NSString stringWithString:[queries objectAtIndex:i]];
 			break;
 		}
 		queryPosition++;
 	}
-	if (doLookBehind && position == [[textView string] length] && !query)
+
+	// For lookbehinds catch position at the very end of a string ending in a semicolon
+	if (*doLookBehind && position == [[textView string] length] && !query)
 	{
 		query = [queries lastObject];
 	} 
@@ -731,15 +745,14 @@ sets the tableView columns corresponding to the mysql-result
  * text view.  This will return nil if the position specified is beyond
  * the available string or if an empty query would be returned.
  * If lookBehind is set, returns the *previous* query, but only if the
- * caret is after a query ending in a semicolon, on the same line, and
- * separated only by whitespace.
+ * caret should be associated with the previous query based on whitespace.
  */
 - (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
 {
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
 	NSString *query = nil;
-	int i, lastQueryStartPosition, queryPosition = 0;
+	int i, j, lastQueryStartPosition, queryPosition = 0;
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
 	if (position < 0 || position > [[textView string] length])
@@ -758,29 +771,40 @@ sets the tableView columns corresponding to the mysql-result
 		queryPosition += [[queries objectAtIndex:i] length];
 		if (queryPosition >= position) {
 		
-			// If lookbehind is enabled, determine whether it's valid and check
-			// if after the caret position are only white spaces or newlines
+			// If lookbehind is enabled, check whether the current position could be considered to
+			// be within the previous query.  A position just after a semicolon is always considered
+			// to be within the previous query; otherwise, if there is only whitespace *and newlines*
+			// before the next character, also consider the position to belong to the previous query.
 			if (*doLookBehind) {
-				NSCharacterSet *trimSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-				NSString *string = [textView string];
-				unsigned int curCaretPosition = [textView selectedRange].location;
-				NSRange curlineRange = [string lineRangeForRange:NSMakeRange(curCaretPosition, 0)];
-				NSString *lineTailFromCaret = [[string substringWithRange:
-					NSMakeRange([textView selectedRange].location,
-						curlineRange.length + curlineRange.location - curCaretPosition)] stringByTrimmingCharactersInSet:trimSet];
+				BOOL positionAssociatedWithPreviousQuery = NO;
+				NSCharacterSet *newlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
-				if (i
-					&&
-					![[[string substringWithRange:
-						NSMakeRange(queryStartPosition, position - queryStartPosition)] stringByTrimmingCharactersInSet:trimSet] length]
-					&&
-					![lineTailFromCaret length]
-					)
-				{
+				// If the caret is at the very start of the string, always associate
+				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
+
+				// Otherwise associate if only whitespace since previous, and a newline before next.
+				if (!positionAssociatedWithPreviousQuery) {
+					NSString *stringToPrevious = [[textView string] substringWithRange:NSMakeRange(queryStartPosition, position - queryStartPosition)];
+					NSString *stringToEnd = [[textView string] substringWithRange:NSMakeRange(position, queryPosition - position)];
+					NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
+					if (![[stringToPrevious stringByTrimmingCharactersInSet:newlineSet] length]) {
+						for (j = 0; j < [stringToEnd length]; j++) {
+							if ([whitespaceSet characterIsMember:[stringToEnd characterAtIndex:j]]) continue;
+							if ([newlineSet characterIsMember:[stringToEnd characterAtIndex:j]]) {
+								positionAssociatedWithPreviousQuery = YES;
+							}
+							break;
+						}
+					}
+				}
+
+				// If there is a previous query and the position should be associated with it, do so.
+				if (i && positionAssociatedWithPreviousQuery && [[[queries objectAtIndex:i-1] stringByTrimmingCharactersInSet:newlineSet] length]) {
 					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
-					queryStartPosition = lastQueryStartPosition;
 					break;
 				}
+
+				// Lookbehind failed - set the pointer to NO so the parent knows.
 				*doLookBehind = NO;
 			}
 			
@@ -789,12 +813,12 @@ sets the tableView columns corresponding to the mysql-result
 		}
 		queryPosition++;
 	}
-	if (doLookBehind && position == [[textView string] length] && !query)
+
+	// For lookbehinds catch position at the very end of a string ending in a semicolon
+	if (*doLookBehind && position == [[textView string] length] && !query)
 	{
 		query = [queries lastObject];
 	} 
-
-	if(queryStartPosition < 0) queryStartPosition = 0;
 
 	[queries release];
 
@@ -1242,6 +1266,7 @@ traps enter key and
 		int movedRangeStart, movedRangeLength;
 		BOOL updateQueryButtons = FALSE;
 		NSRange oldSelection;
+		NSCharacterSet *whitespaceAndNewlineCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 		// Retrieve the old selection position
         [[[aNotification userInfo] objectForKey:@"NSOldSelectedCharacterRange"] getValue:&oldSelection];
@@ -1257,14 +1282,8 @@ traps enter key and
 		if (!updateQueryButtons && oldSelection.location > [[textView string] length]) updateQueryButtons = TRUE;
 		if (!updateQueryButtons && [[textView string] rangeOfString:@";" options:0 range:NSMakeRange(movedRangeStart, movedRangeLength)].location != NSNotFound) updateQueryButtons = TRUE;
 		if (!updateQueryButtons && ![runSelectionButton isEnabled] && selectionPosition > oldSelection.location
-				&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length]) updateQueryButtons = TRUE;
-		if (!updateQueryButtons && 
-				(
-					[[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")]
-					||
-					[[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")]
-				)
-			) {
+				&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:whitespaceAndNewlineCharset] length]) updateQueryButtons = TRUE;
+		if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")]) {
 			int charPosition;
 			unichar theChar;
 			for (charPosition = selectionPosition; charPosition > 0; charPosition--) {
@@ -1273,20 +1292,11 @@ traps enter key and
 					updateQueryButtons = TRUE;
 					break;
 				}
-				if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:theChar]) break;
+				if (![whitespaceAndNewlineCharset characterIsMember:theChar]) break;
 			}
 		}
 		if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")]) {
-			int charPosition;
-			unichar theChar;
-			for (charPosition = selectionPosition; charPosition > 0; charPosition--) {
-				theChar = [[textView string] characterAtIndex:charPosition-1];
-				if (theChar == ';') break;
-				if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:theChar]) {
-					updateQueryButtons = TRUE;
-					break;
-				}
-			}
+			updateQueryButtons = TRUE;
 		}
 		
 		if (updateQueryButtons) {
