@@ -376,9 +376,7 @@
 			
 			[tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
 			[tableTypes insertObject:[NSNumber numberWithInt:(isView)?SP_TABLETYPE_VIEW : SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
-			[tablesListView reloadData];
 			[tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
-			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 			[self updateTables:self];
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 
@@ -709,6 +707,7 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
+
 	if ( [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] ) {
 		
 		// Reset the table information caches
@@ -744,16 +743,32 @@
 			statusLoaded = NO;
 		}
 
-		// To be able to disable duplicateTableMenuItem
-		[[duplicateTableMenuItem menu] setAutoenablesItems:NO];
-
-		// Set gear menu items Remove/Duplicate table/view according to the table types
-		[duplicateTableMenuItem setEnabled:YES];
+		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
+		// according to the table types
 		if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW)
 		{
+			// Change mainMenu > Table > ... according to table type
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:3] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:4] setHidden:YES]; // repair
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:YES]; // analyse
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:7] setHidden:YES]; // optimize
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:YES]; // checksum
+
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
 		} else {
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:3] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:4] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:7] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:NO];
+
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
 		}
@@ -769,13 +784,9 @@
 		contentLoaded = NO;
 		statusLoaded = NO;
 
-		// To be able to disable duplicateTableMenuItem
-		[[duplicateTableMenuItem menu] setAutoenablesItems:NO];
-
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 		unsigned currentIndex = [indexes lastIndex];
-		[duplicateTableMenuItem setEnabled:NO];
 		int tblTypesChecksum = 0;
 		while (currentIndex != NSNotFound)
 		{
@@ -871,8 +882,11 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	// popup button below table list
-	if ([menuItem action] == @selector(copyTable:) ||
-		[menuItem action] == @selector(removeTable:))
+	if ([menuItem action] == @selector(copyTable:))
+	{
+		return [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
+	}
+	if ([menuItem action] == @selector(removeTable:))
 	{
 		return [tablesListView numberOfSelectedRows] > 0;
 	}
