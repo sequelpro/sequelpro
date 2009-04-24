@@ -23,6 +23,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import <WebKit/WebKit.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMCopyTable.h"
 #import "CMTextView.h"
@@ -57,6 +58,9 @@
 	IBOutlet NSMenuItem *autopairMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 
+	IBOutlet NSWindow *helpWebViewWindow;
+	IBOutlet id helpWebView;
+
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
@@ -75,6 +79,7 @@
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
+- (IBAction)getHelpForCurrentWord:(id)sender;
 
 // queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;

@@ -26,7 +26,7 @@
 #import "SPSQLParser.h"
 #import "SPGrowlController.h"
 #import "SPStringAdditions.h"
-
+#import "SPTextViewAdditions.h"
 
 @implementation CustomQuery
 
@@ -111,6 +111,75 @@
 	[textView setSelectedRange:selectedRange];
 
 	[self performQueries:queries];
+}
+
+/*
+ * Return the help string formatted from executing "HELP 'aString'"
+ */
+- (IBAction)getHelpForCurrentWord:(id)sender
+{
+	NSString *aString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
+
+	if(![aString length]) return;
+	
+	CMMCPResult	*theResult = nil;
+	NSDictionary *tableDetails;
+	NSMutableString *theHelp = [NSMutableString string];
+	[theHelp setString:
+	@"<html>"
+	@"<head>"
+	@"  <style type='text/css' media='screen'>"
+	@"      body {"
+	@"          margin: 0px;"
+	@"          padding: 20px;"
+	@"          overflow: hidden;"
+	@"          display: table-cell;"
+	@"      }"
+	@"      .code {"
+	@"          font-family:Monaco;"
+	@"      }"
+	@"      .header {"
+	@"          background-color:#eeeeee;"
+	@"          padding:5mm;"
+	@"      }"
+	@"  </style>"
+	@"</head>"
+	@"<body>"
+	];
+		
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", aString]];
+	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || ![theResult numOfRows]) return;
+	
+	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult fetchRowAsDictionary]];
+
+	if ([tableDetails objectForKey:@"description"]) { // help found
+		if ([tableDetails objectForKey:@"name"]) {
+			[theHelp appendString:@"<h2 class='header'>"];
+			[theHelp appendString:[[[tableDetails objectForKey:@"name"] copy] autorelease]];
+			[theHelp appendString:@"</h2>"];
+
+		}
+		if ([tableDetails objectForKey:@"description"]) {
+			[theHelp appendString:@"<pre class='code'>"];
+			[theHelp appendString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
+			[theHelp appendString:@"</pre>"];
+		}
+		if([tableDetails objectForKey:@"example"]){
+			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
+			if([examples length]){
+				[theHelp appendString:@"<br><br><i><b>Example:</b></i><br><pre class='code'>"];
+				[theHelp appendString:examples];
+				[theHelp appendString:@"</pre>"];
+			}
+		}
+		[theHelp appendString:@"</body></html>"];
+		
+	}
+	
+	[tableDetails release];
+	[[helpWebView mainFrame] loadHTMLString:theHelp baseURL:nil];
+	[helpWebViewWindow orderFront:self];
+
 }
 
 
@@ -1226,6 +1295,7 @@ traps enter key and
 		} else {
 			return NO;
 		}
+		
 	} else if ( aTextView == valueTextField ) {
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] )
 		{
@@ -1374,8 +1444,8 @@ traps enter key and
 	[prefs release];
 	[queryFavorites release];
 	[usedQuery release];
-	
 	[super dealloc];
+
 }
 	
 @end

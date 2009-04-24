@@ -22,6 +22,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMTextView.h"
+#import "CustomQuery.h"
 #import "TableDocument.h"
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
@@ -263,6 +264,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if(curFlags==(NSControlKeyMask))
 		{
 			[self copyAsRTF];
+			return;
+		}
+	if([charactersIgnMod isEqualToString:@"h"]) // ^C copy as RTF
+		if(curFlags==(NSControlKeyMask))
+		{
+			
+			[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] getHelpForCurrentWord:self];
 			return;
 		}
 
@@ -1692,6 +1700,7 @@ SYNTAX HIGHLIGHTING!
     [scrollView setHasHorizontalRuler:NO];
     [scrollView setHasVerticalRuler:YES];
     [scrollView setRulersVisible:YES];
+
 }
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
