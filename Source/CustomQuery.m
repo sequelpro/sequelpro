@@ -700,6 +700,9 @@ sets the connection (received from TableDocument) and makes things that have to 
 		[queryHistoryButton addItemsWithTitles:[prefs objectForKey:@"queryHistory"]];
 	}
 	[self setFavorites];
+
+	// Disable runSelectionMenuItem in the gear menu
+	[runSelectionMenuItem setEnabled:NO];
 }
 
 - (void)setFavorites
