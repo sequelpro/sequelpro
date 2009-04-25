@@ -54,14 +54,24 @@
 	queries = [queryParser splitStringByCharacter:';'];
 	[queryParser release];
 
+	NSRange curRange = [textView selectedRange];
+	// Unselect a selection if given to avoid interferring with error highlighting
+	[textView setSelectedRange:NSMakeRange(curRange.location, 0)];
+
 	[self performQueries:queries];
 
+	// If no error was selected reconstruct a given selection
+	if([textView selectedRange].length == 0)
+		[textView setSelectedRange:curRange];
+
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-	[textView setSelectedRange:NSMakeRange(0,0)];
+	NSRange oldRange = [textView selectedRange];
+	[textView setSelectedRange:NSMakeRange(oldRange.location,0)];
 	[textView insertText:@""];
+	[textView setSelectedRange:oldRange];
 
 	// Select the text of the query textView for re-editing
-	[textView selectAll:self];
+	//[textView selectAll:self];
 }
 
 /*
@@ -77,7 +87,8 @@
 
 	// If the current selection is a single caret position, run the current query.
 	if (selectedRange.length == 0) {
-		query = [self queryAtPosition:selectedRange.location];
+		BOOL doLookBehind = YES;
+		query = [self queryAtPosition:selectedRange.location lookBehind:&doLookBehind];
 		if (!query) {
 			NSBeep();
 			return;
@@ -93,7 +104,7 @@
 	
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
 	// and preserve the selection
-	[textView setSelectedRange:NSMakeRange(0,0)];
+	[textView setSelectedRange:NSMakeRange(selectedRange.location,0)];
 	[textView insertText:@""];
 	[textView setSelectedRange:selectedRange];
 
@@ -426,8 +437,36 @@ sets the tableView columns corresponding to the mysql-result
 	}
 	[prefs setObject:menuItems forKey:@"queryHistory"];
 
+	// Error checking
 	if ( [errors length] ) {
+		// set the error text
 		[errorText setStringValue:errors];
+		// select the line x of the first error if error message contains "at line x"
+		NSError *err1 = NULL;
+		NSRange errorLineNumberRange = [errors rangeOfRegex:@"at line ([0-9]+)" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+		if(errorLineNumberRange.length) // if a line number was found
+		{
+			// Get the line number
+			unsigned int errorAtLine = [[errors substringWithRange:errorLineNumberRange] intValue];
+			[textView selectLineNumber:errorAtLine ignoreLeadingNewLines:YES];
+
+			// Check for near message
+			NSRange errorNearMessageRange = [errors rangeOfRegex:@"use near '(.*?)'" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+			if(errorNearMessageRange.length) // if a "near message" was found
+			{
+				// Get the line of the first error via the current selected line
+				NSRange lineRange = [[textView string] lineRangeForRange:NSMakeRange([textView selectedRange].location, 0)];
+				// Build the range to search for nearMessage (beginning from the error line to try to avoid mismatching)
+				NSRange theRange = NSMakeRange(lineRange.location, [[textView string] length]-lineRange.location);
+				// Get the range in textView of the near message
+				NSRange textNearMessageRange = [[[textView string] substringWithRange:theRange] rangeOfString:[errors substringWithRange:errorNearMessageRange] options:NSLiteralSearch];
+				// Correct the near message range
+				textNearMessageRange = NSMakeRange(textNearMessageRange.location+lineRange.location, textNearMessageRange.length);
+				// Select the near message and scroll to it
+				[textView setSelectedRange:textNearMessageRange];
+				[textView scrollRangeToVisible:textNearMessageRange];
+			}
+		}
 	} else {
 		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
 	}
@@ -521,13 +560,16 @@ sets the tableView columns corresponding to the mysql-result
  * Retrieve the query at a position specified within the custom query
  * text view.  This will return nil if the position specified is beyond
  * the available string or if an empty query would be returned.
+ * If lookBehind is set, returns the *previous* query, but only if the
+ * caret is after a query ending in a semicolon, on the same line, and
+ * separated only by whitespace.
  */
-- (NSString *)queryAtPosition:(long)position
+- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
 {
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
 	NSString *query = nil;
-	int i, queryPosition = 0;
+	int i, queryPosition = 0, queryStartPosition;
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
 	if (position < 0 || position > [[textView string] length])
@@ -541,13 +583,24 @@ sets the tableView columns corresponding to the mysql-result
 	// Walk along the array of queries to identify the current query - taking into account
 	// the extra semicolon at the end of each query
 	for (i = 0; i < [queries count]; i++ ) {
+		queryStartPosition = queryPosition;
 		queryPosition += [[queries objectAtIndex:i] length];
 		if (queryPosition >= position) {
+
+			// If lookbehind is enabled, determine whether it's valid
+			if (doLookBehind) {
+				if (i && [[[[textView string] substringWithRange:NSMakeRange(queryStartPosition, position - queryStartPosition)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0) {
+					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
+					break;
+				}
+				*doLookBehind = NO;
+			}
 			query = [NSString stringWithString:[queries objectAtIndex:i]];
 			break;
 		}
 		queryPosition++;
 	}
+	if (doLookBehind && position == [[textView string] length] && !query) query = [queries lastObject];
 	
 	[queries release];
 
@@ -980,6 +1033,7 @@ traps enter key and
 	if ([textView selectedRange].length == 0) {
 		int selectionPosition = [textView selectedRange].location;
 		int movedRangeStart, movedRangeLength;
+		BOOL updateQueryButtons = FALSE;
 		NSRange oldSelection;
 
 		// Retrieve the old selection position
@@ -991,19 +1045,48 @@ traps enter key and
 		// parsing overhead - which is cheap on small text strings but heavy of large queries.
 		movedRangeStart = (selectionPosition < oldSelection.location)?selectionPosition:oldSelection.location;
 		movedRangeLength = abs(selectionPosition - oldSelection.location);
-		if (oldSelection.length > 0
-			|| movedRangeLength > 100
-			|| oldSelection.location > [[textView string] length]
-			|| [[textView string] rangeOfString:@";" options:0 range:NSMakeRange(movedRangeStart, movedRangeLength)].location != NSNotFound
-			|| (![runSelectionButton isEnabled] && selectionPosition > oldSelection.location
-				&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length])
-			) {
+		if (oldSelection.length > 0) updateQueryButtons = TRUE;
+		if (!updateQueryButtons && movedRangeLength > 100) updateQueryButtons = TRUE;
+		if (!updateQueryButtons && oldSelection.location > [[textView string] length]) updateQueryButtons = TRUE;
+		if (!updateQueryButtons && [[textView string] rangeOfString:@";" options:0 range:NSMakeRange(movedRangeStart, movedRangeLength)].location != NSNotFound) updateQueryButtons = TRUE;
+		if (!updateQueryButtons && ![runSelectionButton isEnabled] && selectionPosition > oldSelection.location
+				&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length]) updateQueryButtons = TRUE;
+		if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")]) {
+			int charPosition;
+			unichar theChar;
+			for (charPosition = selectionPosition; charPosition > 0; charPosition--) {
+				theChar = [[textView string] characterAtIndex:charPosition-1];
+				if (theChar == ';') {
+					updateQueryButtons = TRUE;
+					break;
+				}
+				if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:theChar]) break;
+			}
+		}
+		if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")]) {
+			int charPosition;
+			unichar theChar;
+			for (charPosition = selectionPosition; charPosition > 0; charPosition--) {
+				theChar = [[textView string] characterAtIndex:charPosition-1];
+				if (theChar == ';') break;
+				if (![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:theChar]) {
+					updateQueryButtons = TRUE;
+					break;
+				}
+			}
+		}
 
+		if (updateQueryButtons) {
 			[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
 			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
 
 			// If a valid query is present at the cursor position, enable the button
-			if ([self queryAtPosition:selectionPosition]) {
+			BOOL isLookBehind = YES;
+			if ([self queryAtPosition:selectionPosition lookBehind:&isLookBehind]) {
+				if (isLookBehind) {
+					[runSelectionButton setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
+					[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
+				}
 				[runSelectionButton setEnabled:YES];
 				[runSelectionMenuItem setEnabled:YES];
 			} else {

@@ -391,11 +391,9 @@
 
 	// Load file into string.  For SQL imports, try UTF8 file encoding before the current encoding.
 	if ([fileType isEqualToString:@"SQL"]) {
-		NSLog(@"Reading as utf8");
 		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 											 encoding:NSUTF8StringEncoding
 												error:&errorStr];
-												NSLog(dumpFile);
 		if (errorStr) {
 			importSQLAsUTF8 = NO;
 			errorStr = nil;

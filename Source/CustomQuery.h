@@ -28,6 +28,7 @@
 #import "CMTextView.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "RegexKitLite.h"
 
 @interface CustomQuery : NSObject {
 
@@ -79,7 +80,7 @@
 
 // Query actions
 - (void)performQueries:(NSArray *)queries;
-- (NSString *)queryAtPosition:(long)position;
+- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
 
 // Accessors
 - (NSArray *)currentResult;

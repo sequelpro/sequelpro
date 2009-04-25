@@ -111,11 +111,18 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)release { }
 
 /**
- * Set the window's auto save name.
+ * Set the window's auto save name and initialise display
  */
 - (void)awakeFromNib
 {
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowTimestamps"]) {
+		uncollapsedDateColumnWidth = [[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] width];
+		[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setMinWidth:0.0];
+		[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setWidth: 0.0];	
+	}
+	showSelectStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowSelectsAndShows"];
+	[self _updateFilterState];
 }
 
 /**
@@ -201,7 +208,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
-	if ([sender intValue]) {
+	if ([sender state]) {
 		[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setMinWidth:50.0];
 		[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setWidth:uncollapsedDateColumnWidth];
 	} else {
@@ -216,8 +223,9 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (IBAction)toggleShowSelectShowStatements:(id)sender
 {
+
 	// Store the state of the toggle for later quick reference
-	showSelectStatementsAreDisabled = ![sender intValue];
+	showSelectStatementsAreDisabled = ![sender state];
 
 	[self _updateFilterState];
 }
@@ -485,6 +493,8 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
+		[saveConsoleButton setEnabled:YES];
+		[clearConsoleButton setEnabled:YES];
 	}
 
 	// Reload the table and scroll to the new message

@@ -108,6 +108,9 @@
 		584146D60F9AB15B00A34B47 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 584146BA0F9AAD6C00A34B47 /* Sparkle.framework */; };
 		584146D70F9AB15B00A34B47 /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 584146BB0F9AAD6C00A34B47 /* Growl.framework */; };
 		584146D80F9AB15B00A34B47 /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 584146BC0F9AAD6C00A34B47 /* MCPKit_bundled.framework */; };
+		58414B5E0FA343F200A34B47 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 58414B5C0FA343F200A34B47 /* RegexKitLite.m */; };
+		58414B670FA3452000A34B47 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 58414B660FA3452000A34B47 /* libicucore.dylib */; };
+		58414B6B0FA3459700A34B47 /* button_clear.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58414B6A0FA3459700A34B47 /* button_clear.tiff */; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
@@ -287,6 +290,10 @@
 		584146BA0F9AAD6C00A34B47 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		584146BB0F9AAD6C00A34B47 /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		584146BC0F9AAD6C00A34B47 /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
+		58414B5C0FA343F200A34B47 /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
+		58414B5D0FA343F200A34B47 /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
+		58414B660FA3452000A34B47 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
+		58414B6A0FA3459700A34B47 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
 		58C56EF30F438E120035701E /* SPDataCellFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataCellFormatter.h; sourceTree = "<group>"; };
 		58C56EF40F438E120035701E /* SPDataCellFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataCellFormatter.m; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
@@ -307,6 +314,7 @@
 				584146D00F9AB00600A34B47 /* Growl.framework in Frameworks */,
 				584146D20F9AB01700A34B47 /* MCPKit_bundled.framework in Frameworks */,
 				584146D40F9AB02B00A34B47 /* Sparkle.framework in Frameworks */,
+				58414B670FA3452000A34B47 /* libicucore.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -472,6 +480,7 @@
 		17E6416E0EF01F3B001BC333 /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				58414B5B0FA343DB00A34B47 /* RegexKitLite */,
 				17E6416F0EF01F4C001BC333 /* Keychain */,
 				17E641700EF01F52001BC333 /* MCPKit */,
 				58FEF15E0F23D60A00518E8E /* Parsing */,
@@ -536,6 +545,7 @@
 				584144B50F9A40BB00A34B47 /* button_add.tiff */,
 				584144B60F9A40BB00A34B47 /* button_bar_handle.tiff */,
 				584144B70F9A40BB00A34B47 /* button_bar_spacer.tiff */,
+				58414B6A0FA3459700A34B47 /* button_clear.tiff */,
 				584144B80F9A40BB00A34B47 /* button_duplicate.tiff */,
 				584144B90F9A40BB00A34B47 /* button_edit_mode_selected.tiff */,
 				584144BA0F9A40BB00A34B47 /* button_edit_mode.tiff */,
@@ -614,6 +624,7 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
+				58414B660FA3452000A34B47 /* libicucore.dylib */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -640,6 +651,15 @@
 				584144580F9A34EC00A34B47 /* SPWindowAdditions.m */,
 			);
 			name = "Category Additions";
+			sourceTree = "<group>";
+		};
+		58414B5B0FA343DB00A34B47 /* RegexKitLite */ = {
+			isa = PBXGroup;
+			children = (
+				58414B5D0FA343F200A34B47 /* RegexKitLite.h */,
+				58414B5C0FA343F200A34B47 /* RegexKitLite.m */,
+			);
+			name = RegexKitLite;
 			sourceTree = "<group>";
 		};
 		58FEF15E0F23D60A00518E8E /* Parsing */ = {
@@ -762,6 +782,7 @@
 				584146830F9AAC6200A34B47 /* DBView.nib in Resources */,
 				584146840F9AAC6200A34B47 /* MainMenu.nib in Resources */,
 				584146850F9AAC6200A34B47 /* Preferences.nib in Resources */,
+				58414B6B0FA3459700A34B47 /* button_clear.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -823,6 +844,7 @@
 				584144590F9A34EC00A34B47 /* SPArrayAdditions.m in Sources */,
 				5841445A0F9A34EC00A34B47 /* SPTextViewAdditions.m in Sources */,
 				5841445B0F9A34EC00A34B47 /* SPWindowAdditions.m in Sources */,
+				58414B5E0FA343F200A34B47 /* RegexKitLite.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

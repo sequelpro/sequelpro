@@ -22,7 +22,9 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMTextView.h"
+#import "TableDocument.h"
 #import "SPStringAdditions.h"
+#import "SPTextViewAdditions.h"
 
 /*
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
@@ -41,7 +43,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
 #define kQuote      @"Quote"
 
-#define MYSQL_DOC_SEARCH_URL @"http://search.mysql.com/search?q=%@"
+#define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
 @implementation CMTextView
 
@@ -66,28 +68,41 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
- * Open a search for the current selection on mysql.com 
+ * Open the refman if available or a search for the current selection or current word on mysql.com 
  */
 - (void)lookupSelectionInDocumentation 
 {	
+	// Get the major MySQL server version in the form of x.x, which is basically the first 3 characters of the returned version string
+	NSString *version = [[(TableDocument *)[[self window] delegate] mySQLVersion] substringToIndex:3];
+	
 	// Get the current selection and encode it to be used in a URL
-	NSString *keyword = [[[[self string] substringWithRange:[self selectedRange]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
-					
+	NSString *keyword = [[[self string] substringWithRange:[self getRangeForCurrentWord]] lowercaseString];
+	
+	// Remove whitespace and newlines
+	keyword = [keyword stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	// Remove whitespace and newlines within the keyword
+	NSMutableString *mutableKeyword = [keyword mutableCopy];
+	[mutableKeyword replaceOccurrencesOfString:@" " withString:@"" options:0 range:NSMakeRange(0, [mutableKeyword length])];
+	[mutableKeyword replaceOccurrencesOfString:@"\n" withString:@"" options:0 range:NSMakeRange(0, [mutableKeyword length])];
+	keyword = [NSString stringWithString:mutableKeyword];
+	[mutableKeyword release];
+
 	// Open MySQL Documentation search in browser using the terms
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:MYSQL_DOC_SEARCH_URL, keyword]];
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:MYSQL_DOC_SEARCH_URL, version, [keyword stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 	
 	[[NSWorkspace sharedWorkspace] openURL:url];
 }
 
 /*
- * Disable the lookup in documentation function when there is no selection. 
+ * Disable the lookup in documentation function when getRangeForCurrentWord returns zero length. 
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
 {	
 	// Enable or disable the lookup in documentation menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
 	if ([menuItem action] == @selector(lookupSelectionInDocumentation)) {
-		return (([self selectedRange].length) || ([self selectedRange].length > 256));
+		return (([self getRangeForCurrentWord].length) || ([self getRangeForCurrentWord].length > 256));
 	}
 	
 	return YES;
@@ -180,6 +195,37 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
 		[pb setData:rtf forType:NSRTFPboardType];
 	}
+}
+
+/*
+ * Selects the line lineNumber relatively to a selection (if given) and scrolls to it
+ */
+- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines
+{
+	NSRange selRange;
+	NSArray *lineRanges;
+	if([self selectedRange].length)
+		lineRanges = [[[self string] substringWithRange:[self selectedRange]] lineRangesForRange:NSMakeRange(0, [self selectedRange].length)];
+	else
+		lineRanges = [[self string] lineRangesForRange:NSMakeRange(0, [[self string] length])];
+	int offset = 0;
+	if(ignLeadingNewLines) // ignore leading empty lines
+	{
+		int arrayCount = [lineRanges count];
+		int i;
+		for (i = 0; i < arrayCount; i++) {
+			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
+				break;
+			offset++;
+		}
+	}
+	selRange = NSRangeFromString([lineRanges objectAtIndex:lineNumber-1+offset]);
+
+	// adjust selRange if a selection was given
+	if([self selectedRange].length)
+		selRange.location += [self selectedRange].location;
+	[self setSelectedRange:selRange];
+	[self scrollRangeToVisible:selRange];
 }
 
 /*
