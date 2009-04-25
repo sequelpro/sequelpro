@@ -45,7 +45,7 @@ cp -R "${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}" "${DMG_BUILD_PATH}
 hdiutil create -srcfolder "${DISTTEMP}" -volname "$DMG_VOLUME_NAME" -fs HFS+ -fsargs '-c c=64,a=16,e=16' -format UDRW "${DMG_BUILD_PATH}/${DMG_NAME}.temp.dmg" > /dev/null
 
 # Compress the disk image
-hdiutil convert "${DMG_BUILD_PATH}/${DMG_NAME}.temp.dmg" -format UDZO -imagekey lib-level=9 -o "${DMG_BUILD_PATH}/${DMG_NAME}.dmg" > /dev/null
+hdiutil convert "${DMG_BUILD_PATH}/${DMG_NAME}.temp.dmg" -format UDBZ -o "${DMG_BUILD_PATH}/${DMG_NAME}.dmg" > /dev/null
 
 # Remove temporary files and copies
 rm -rf "${DISTTEMP}"
