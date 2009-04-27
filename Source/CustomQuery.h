@@ -60,6 +60,8 @@
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet id helpWebView;
+	IBOutlet NSSearchField *helpSearchField;
+	NSString *lastHelpString;
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
@@ -80,6 +82,10 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
 - (IBAction)getHelpForCurrentWord:(id)sender;
+- (IBAction)showHelpForSearchString:(id)sender;
+- (IBAction)showHelpContent:(id)sender;
+- (IBAction)showLastHelp:(id)sender;
+
 
 // queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;
@@ -96,10 +102,15 @@
 // Accessors
 - (NSArray *)currentResult;
 
+// MySQL Help
+- (void)showHelpFor:(NSString *)aString;
+- (NSString *)getHTMLHelpFor:(NSString *)aString;
+
 // Other
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (NSString *)usedQuery;
+
 
 @end
