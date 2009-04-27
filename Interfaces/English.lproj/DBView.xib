@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5428"/>
-			<integer value="3994"/>
+			<integer value="5429"/>
 			<integer value="662"/>
+			<integer value="3994"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7910,6 +7910,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							</object>
 							<string key="NSFrameSize">{351, 273}</string>
 							<reference key="NSSuperview" ref="539508428"/>
+							<reference key="NSNextKeyView"/>
 							<string key="FrameName"/>
 							<string key="GroupName"/>
 							<object class="WebPreferences" key="Preferences">
@@ -7935,7 +7936,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<object class="NSSearchField" id="375350404">
 							<reference key="NSNextResponder" ref="539508428"/>
-							<int key="NSvFlags">265</int>
+							<int key="NSvFlags">266</int>
 							<string key="NSFrame">{{243, 282}, {98, 19}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
@@ -8089,7 +8090,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<object class="NSButton" id="82616913">
 							<reference key="NSNextResponder" ref="539508428"/>
-							<int key="NSvFlags">265</int>
+							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{193, 283}, {43, 17}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
@@ -8113,7 +8114,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<object class="NSButton" id="867359114">
 							<reference key="NSNextResponder" ref="539508428"/>
-							<int key="NSvFlags">265</int>
+							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{158, 283}, {35, 17}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
@@ -8133,7 +8134,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<object class="NSButton" id="859272377">
 							<reference key="NSNextResponder" ref="539508428"/>
-							<int key="NSvFlags">265</int>
+							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{115, 283}, {43, 17}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
@@ -21816,7 +21817,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5506</int>
+			<int key="maxID">5507</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

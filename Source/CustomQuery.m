@@ -1357,6 +1357,9 @@ traps enter key and
 	}
 }
 
+
+
+#pragma mark -
 #pragma mark MySQL Help
 
 
@@ -1457,7 +1460,7 @@ traps enter key and
 {
 	switch([helpNavigator selectedSegment])
 	{
-		case 1:
+		case 1: // TOC
 			[self showHelpFor:@"contents"];
 			break;
 	}
@@ -1575,21 +1578,54 @@ traps enter key and
 
 			// detect and generate http links
 			aRange = NSMakeRange(0,0);
-			int safeCnt = 0; // safety counter - not more thn 20 links allowed
+			int safeCnt = 0; // safety counter - not more than 200 loops allowed
 			while(1){
-				aRange = [desc rangeOfRegex:@" ((https?|ftp:file)://.*?)\\s" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
+				aRange = [desc rangeOfRegex:@"\\s((https?|ftp:file)://.*?)\\s" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
 				if(aRange.location != NSNotFound) {
-					if([[desc substringWithRange:aRange] hasSuffix:@"."] )
+					if([[desc substringWithRange:aRange] hasSuffix:@"."] || [[desc substringWithRange:aRange] hasSuffix:@")"])
 						aRange.length -= 1;
+					if([[desc substringWithRange:aRange] hasSuffix:@".)"] || [[desc substringWithRange:aRange] hasSuffix:@")."])
+						aRange.length -= 2;
 					aUrl = [desc substringWithRange:aRange];
 					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];
 				}
 				else
 					break;
 				safeCnt++;
-				if(safeCnt > 20)
+				if(safeCnt > 200)
 					break;
 			}
+			// detect and generate mysql links for "[HELP keyword]"
+			aRange = NSMakeRange(0,0);
+			safeCnt = 0;
+			while(1){
+				// TODO how to catch in HELP 'grant' last see [HELP SHOW GRANTS] ?? it's ridiculous
+				aRange = [desc rangeOfRegex:@"\\[HELP ([^ ]*?)\\]" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length+53, [desc length]-53-aRange.location-aRange.length) capture:1 error:&err1];
+				if(aRange.location != NSNotFound) {
+					aUrl = [desc substringWithRange:aRange];
+					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
+				}
+				else
+					break;
+				safeCnt++;
+				if(safeCnt > 200)
+					break;
+			}
+			// detect and generate mysql links for capitalzed letters
+			// aRange = NSMakeRange(0,0);
+			// safeCnt = 0;
+			// while(1){
+			// 	aRange = [desc rangeOfRegex:@"(?<!\\w)([A-Z_]{2,}( [A-Z_]{2,})?)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
+			// 	if(aRange.location != NSNotFound) {
+			// 		aUrl = [desc substringWithRange:aRange];
+			// 		[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
+			// 	}
+			// 	else
+			// 		break;
+			// 	safeCnt++;
+			// 	if(safeCnt > 200)
+			// 		break;
+			// }
 
 			[theHelp appendString:@"<pre class='code'>"];
 			[theHelp appendString:desc];
