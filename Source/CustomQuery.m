@@ -28,8 +28,9 @@
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
 
-@implementation CustomQuery
+#define MYSQL_DEV_SEARCH_URL @"http://search.mysql.com/search?q=%@&site=refman-%@"
 
+@implementation CustomQuery
 
 
 #pragma mark IBAction methods
@@ -111,221 +112,6 @@
 	[textView setSelectedRange:selectedRange];
 
 	[self performQueries:queries];
-}
-
-/*
- * Retrieve and show the data for "HELP 'search word'"
- */
-
-- (IBAction)showHelpForSearchString:(id)sender
-{
-	[self showHelpFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-}
-
-/*
- * Retrieve and show the data for "HELP 'currentWord'"
- */
-- (IBAction)getHelpForCurrentWord:(id)sender
-{
-	NSString *aString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
-
-	// if(![aString length]) return;
-
-	[self showHelpFor:aString];
-
-}
-
-/*
- * Retrieve and show the data for "HELP 'contents' (MySQL help root)".
- */
-
-- (IBAction)showHelpContent:(id)sender
-{
-	[self showHelpFor:@"contents"];
-}
-
-- (IBAction)showLastHelp:(id)sender
-{
-	NSLog(@"%@", lastHelpString);
-	if([lastHelpString length])
-		[self showHelpFor:lastHelpString];
-}
-
-
-/*
- * Retrieve and show the data for "HELP 'aString'".
- */
-- (void)showHelpFor:(NSString *)aString
-{
-	NSString * helpString = [self getHTMLHelpFor:aString];
-	lastHelpString = [[NSString stringWithString:aString] retain];
-	// Order out the Help window
-	if(![helpWebViewWindow isVisible])
-	{
-		
-		// Get the major MySQL server version in the form of x.x, which is basically the first 3 characters of the returned version string
-		//get mysql version
-		CMMCPResult *theResult = nil;
-		NSString *mySQLVersion;
-		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
-		NSString *version = [[theResult fetchRowAsArray] objectAtIndex:1];
-		if ( [version isKindOfClass:[NSData class]] ) {
-			// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
-			mySQLVersion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
-		} else {
-			mySQLVersion = [[NSString stringWithString:version] retain];
-		}
-
-		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), [mySQLVersion substringToIndex:3]]];
-		[helpWebViewWindow orderFront:helpWebView];
-	}
-	
-	if(![helpString length]) return;
-	
-	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil]; 
-
-}
-
-
-/*
- * Return the help string HTML formatted from executing "HELP 'aString'".
- * If more than one help topic was found return a link list.
- */
-- (NSString *)getHTMLHelpFor:(NSString *)aString
-{
-
-	if(![aString length]) return(@"");
-	
-	CMMCPResult	*theResult = nil;
-	NSDictionary *tableDetails;
-	NSRange aRange;
-	NSMutableString *theHelp = [NSMutableString string];
-	[theHelp setString:
-	@"<html>"
-	@"<head>"
-	@"  <style type='text/css' media='screen'>"
-	@"      body {"
-	@"          margin: 2px;"
-	@"          padding: 10px;"
-	@"          font-family:'Helvetica';"
-	@"          font-size:9pt;"
-	@"      }"
-	@"      .internallink {"
-	@"          color:#6A81DD;"
-	@"          text-decoration:none;"
-	@"      }"
-	@"      .code {"
-	@"          font-family:Monaco;"
-	@"      }"
-	@"      .header {"
-	@"          padding:5mm;"
-	@"      }"
-	@"  </style>"
-	@"</head>"
-	@"<body>"
-
-	];
-		
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", aString]];
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || ![theResult numOfRows]) return @"";
-	
-	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult fetchRowAsDictionary]];
-
-	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
-		if ([tableDetails objectForKey:@"name"]) {
-			[theHelp appendString:@"<h2 class='header'>&nbsp;&nbsp;"];
-			[theHelp appendString:[[[tableDetails objectForKey:@"name"] copy] autorelease]];
-			[theHelp appendString:@"</h2>"];
-
-		}
-		if ([tableDetails objectForKey:@"description"]) {
-			NSMutableString *desc = [NSMutableString string];
-			NSError *err1 = NULL;
-			NSString *aUrl;
-			
-			[desc setString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
-			
-			// Look for an URL and create an HTML link out of it
-			aRange = [desc rangeOfRegex:@"URL: +(.*)" options:RKLNoOptions inRange:NSMakeRange(0, [desc length]) capture:1 error:&err1];
-			if(aRange.location != NSNotFound) {
-				aUrl = [desc substringWithRange:aRange];
-				[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];
-			}
-			// aRange = NSMakeRange(0,0);
-			// int safeCnt = 0;
-			// while(1){
-			// 	aRange = [desc rangeOfRegex:@"(http.*?)\\s" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
-			// 	if(aRange.location != NSNotFound) {
-			// 		aUrl = [desc substringWithRange:aRange];
-			// 		[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];
-			// 	}
-			// 	else
-			// 		break;
-			// 	safeCnt++;
-			// 	if(safeCnt > 20)
-			// 		break;
-			// }
-
-			[theHelp appendString:@"<pre class='code'>"];
-			[theHelp appendString:desc];
-			[theHelp appendString:@"</pre>"];
-		}
-		if([tableDetails objectForKey:@"example"]){
-			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
-			if([examples length]){
-				[theHelp appendString:@"<br><br><i><b>Example:</b></i><br><br><pre class='code'>"];
-				[theHelp appendString:examples];
-				[theHelp appendString:@"</pre>"];
-			}
-		}
-	} else { // list all found topics
-		int i;
-		int r = [theResult numOfRows];
-		if (r) [theResult dataSeek:0];
-
-		if(![aString isEqualToString:@"contents"])
-			[theHelp appendString:[NSString stringWithFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), aString]];
-		else
-			[theHelp appendString:[NSString stringWithFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), aString]];
-
-		[theHelp appendString:@"<ul>"];
-		for ( i = 0 ; i < r ; i++ ) {
-			NSArray *anArray = [theResult fetchRowAsArray];
-			NSString *topic = [anArray objectAtIndex:[anArray count]-2];
-			[theHelp appendString:
-				[NSString stringWithFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic]];
-		}
-		[theHelp appendString:@"</ul>"];
-	}
-	[theHelp appendString:@"</body></html>"];
-
-	[tableDetails release];
-	return theHelp;
-
-}
-
-/*
- * Link detector: If user clicked at an http link open it in the default browser,
- * otherwise search for it in the MySQL help.
- */
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
-{
-	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
-	if([[[request URL] scheme] isEqualToString:@"applewebdata"]){
-		[self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)]];
-		[listener ignore];
-	} else {
-		if (navigationType == WebNavigationTypeOther) {
-			[listener use];
-		} else if (navigationType == WebNavigationTypeLinkClicked) {
-			[[NSWorkspace sharedWorkspace] openURL:[actionInformation objectForKey:WebActionOriginalURLKey]];
-			[listener ignore];
-		} else {
-			// Ignore WebNavigationTypeFormSubmitted, WebNavigationTypeBackForward, 
-			// WebNavigationTypeReload and WebNavigationTypeFormResubmitted.
-			[listener ignore];
-		}
-	}
 }
 
 
@@ -1568,6 +1354,302 @@ traps enter key and
 		// Enable/disable buttons
 		[removeQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
 		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
+	}
+}
+
+#pragma mark MySQL Help
+
+
+/*
+ * Retrieve and show the data for "HELP 'aString'".
+ */
+- (void)showHelpFor:(NSString *)aString
+{
+	NSString * helpString = [self getHTMLHelpFor:aString];
+	// Order out the Help window
+	if(![helpWebViewWindow isVisible])
+	{
+		
+		// Get the major MySQL server version in the form of x.x, which is basically the first 3 characters of the returned version string
+		//get mysql version
+		CMMCPResult *theResult = nil;
+		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
+		NSString *version = [[theResult fetchRowAsArray] objectAtIndex:1];
+		if ( [version isKindOfClass:[NSData class]] ) {
+			// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
+			mySQLversion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
+		} else {
+			mySQLversion = [[NSString stringWithString:version] retain];
+		}
+
+		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), [mySQLversion substringToIndex:3]]];
+		[helpWebViewWindow orderFront:helpWebView];
+		helpTarget = 2;
+		[self helpTargetValidation];
+	}
+	
+	if(![helpString length]) return;
+	
+	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil];
+	
+
+}
+
+
+/*
+ * Retrieve and show the data for "HELP 'search word'" according to helpTarget
+ */
+- (IBAction)showHelpForSearchString:(id)sender
+{
+	switch(helpTarget)
+	{
+		case 0: // page
+		[helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES];
+		break;
+		case 1: // online
+		// Open MySQL Documentation search in browser using the term
+		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
+			[[NSString stringWithFormat:
+				MYSQL_DEV_SEARCH_URL,
+				[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+				[[mySQLversion substringToIndex:3] stringByReplacingOccurrencesOfString:@"." withString:@""]]
+			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
+		// [[helpWebView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:
+		// 	[[NSString stringWithFormat:
+		// 		MYSQL_DEV_SEARCH_URL,
+		// 		[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+		// 		[[mySQLversion substringToIndex:3] stringByReplacingOccurrencesOfString:@"." withString:@""]]
+		// 	stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]]];
+		break;
+		case 2: // MySQL
+		[self showHelpFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		break;
+	}
+}
+
+/*
+ * Retrieve and show the data for "HELP 'currentWord'"
+ */
+- (IBAction)getHelpForCurrentWord:(id)sender
+{
+	NSString *aString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
+	// if(![aString length]) return;
+	[self showHelpFor:aString];
+}
+
+/*
+ * Find Next/Previous in current page
+ */
+- (IBAction)helpSearchFindNextInPage:(id)sender
+{
+	if(!helpTarget)
+		[helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES];
+}
+- (IBAction)helpSearchFindPreviousInPage:(id)sender
+{
+	if(!helpTarget)
+		[helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:NO caseSensitive:NO wrap:YES];
+}
+/*
+ * Navigation for back/TOC/forward
+ */
+- (IBAction)helpSegmentDispachter:(id)sender
+{
+	switch([helpNavigator selectedSegment])
+	{
+		case 1:
+			[self showHelpFor:@"contents"];
+			break;
+	}
+}
+
+/*
+ * Set helpTarget
+ */
+
+- (IBAction)helpTargetPageButton:(id)sender
+{
+	helpTarget = 0;
+	[self helpTargetValidation];
+}
+- (IBAction)helpTargetOnlineButton:(id)sender
+{
+	helpTarget = 1;
+	[self helpTargetValidation];
+}
+- (IBAction)helpTargetMySQLButton:(id)sender
+{
+	helpTarget = 2;
+	[self helpTargetValidation];
+}
+
+/*
+ * Control search target buttons and help behaviour
+ */
+- (void)helpTargetValidation
+{
+	switch(helpTarget)
+	{
+		case 0: // page
+		[helpTargetPageButton setState:NSOnState];
+		[helpTargetOnlineButton setState:NSOffState];
+		[helpTargetMySQLButton setState:NSOffState];
+		[helpSearchFieldCell setSendsWholeSearchString:YES];
+		break;
+		case 1: // online
+		[helpTargetPageButton setState:NSOffState];
+		[helpTargetOnlineButton setState:NSOnState];
+		[helpTargetMySQLButton setState:NSOffState];
+		[helpSearchFieldCell setSendsWholeSearchString:YES];
+		break;
+		case 2: // MySQL
+		[helpTargetPageButton setState:NSOffState];
+		[helpTargetOnlineButton setState:NSOffState];
+		[helpTargetMySQLButton setState:NSOnState];
+		[helpSearchFieldCell setSendsWholeSearchString:NO];
+		break;
+	}
+}
+
+/*
+ * Return the help string HTML formatted from executing "HELP 'aString'".
+ * If more than one help topic was found return a link list.
+ */
+- (NSString *)getHTMLHelpFor:(NSString *)aString
+{
+
+	if(![aString length]) return(@"");
+	
+	CMMCPResult	*theResult = nil;
+	NSDictionary *tableDetails;
+	NSRange aRange;
+	NSMutableString *theHelp = [NSMutableString string];
+	[theHelp setString:
+	@"<html>"
+	@"<head>"
+	@"  <style type='text/css' media='screen'>"
+	@"      body {"
+	@"          margin: 2px;"
+	@"          padding: 10px;"
+	@"          font-family:'Helvetica';"
+	@"          font-size:9pt;"
+	@"      }"
+	@"      .internallink {"
+	@"          color:#6A81DD;"
+	@"          text-decoration:none;"
+	@"      }"
+	@"      .code {"
+	@"          font-family:Monaco;"
+	@"      }"
+	@"      .searchstring {"
+	@"      }"
+	@"      .header {"
+	@"          padding:2mm;"
+	@"      }"
+	@"  </style>"
+	@"</head>"
+	@"<body>"
+
+	];
+		
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", aString]];
+	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || ![theResult numOfRows]) return @"";
+	
+	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult fetchRowAsDictionary]];
+
+	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
+		if ([tableDetails objectForKey:@"name"]) {
+			[theHelp appendString:@"<h2 class='header'>&nbsp;&nbsp;"];
+			[theHelp appendString:[[[tableDetails objectForKey:@"name"] copy] autorelease]];
+			[theHelp appendString:@"</h2>"];
+
+		}
+		if ([tableDetails objectForKey:@"description"]) {
+			NSMutableString *desc = [NSMutableString string];
+			NSError *err1 = NULL;
+			NSString *aUrl;
+			
+			[desc setString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
+
+			[desc replaceOccurrencesOfString:[aString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [aString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
+
+			// detect and generate http links
+			aRange = NSMakeRange(0,0);
+			int safeCnt = 0; // safety counter - not more thn 20 links allowed
+			while(1){
+				aRange = [desc rangeOfRegex:@" ((https?|ftp:file)://.*?)\\s" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
+				if(aRange.location != NSNotFound) {
+					if([[desc substringWithRange:aRange] hasSuffix:@"."] )
+						aRange.length -= 1;
+					aUrl = [desc substringWithRange:aRange];
+					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];
+				}
+				else
+					break;
+				safeCnt++;
+				if(safeCnt > 20)
+					break;
+			}
+
+			[theHelp appendString:@"<pre class='code'>"];
+			[theHelp appendString:desc];
+			[theHelp appendString:@"</pre>"];
+		}
+		if([tableDetails objectForKey:@"example"]){
+			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
+			if([examples length]){
+				[theHelp appendString:@"<br><br><i><b>Example:</b></i><br><br><pre class='code'>"];
+				[theHelp appendString:examples];
+				[theHelp appendString:@"</pre>"];
+			}
+		}
+	} else { // list all found topics
+		int i;
+		int r = [theResult numOfRows];
+		if (r) [theResult dataSeek:0];
+
+		if(![aString isEqualToString:@"contents"])
+			[theHelp appendString:[NSString stringWithFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), aString]];
+		else
+			[theHelp appendString:[NSString stringWithFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), aString]];
+
+		[theHelp appendString:@"<ul>"];
+		for ( i = 0 ; i < r ; i++ ) {
+			NSArray *anArray = [theResult fetchRowAsArray];
+			NSString *topic = [anArray objectAtIndex:[anArray count]-2];
+			[theHelp appendString:
+				[NSString stringWithFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic]];
+		}
+		[theHelp appendString:@"</ul>"];
+	}
+	[theHelp appendString:@"</body></html>"];
+
+	[tableDetails release];
+	return theHelp;
+
+}
+
+/*
+ * Link detector: If user clicked at an http link open it in the default browser,
+ * otherwise search for it in the MySQL help.
+ */
+- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
+{
+	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
+	if([[[request URL] scheme] isEqualToString:@"applewebdata"]){
+		[self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)]];
+		[listener ignore];
+	} else {
+		if (navigationType == WebNavigationTypeOther) {
+			[listener use];
+		} else if (navigationType == WebNavigationTypeLinkClicked) {
+			[[NSWorkspace sharedWorkspace] openURL:[actionInformation objectForKey:WebActionOriginalURLKey]];
+			[listener ignore];
+		} else {
+			// Ignore WebNavigationTypeFormSubmitted, WebNavigationTypeBackForward, 
+			// WebNavigationTypeReload and WebNavigationTypeFormResubmitted.
+			[listener ignore];
+		}
 	}
 }
 
