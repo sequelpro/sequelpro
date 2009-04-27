@@ -27,7 +27,7 @@
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
 
 #define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
-#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"log"
+#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"sql"
 
 #define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
 
@@ -454,7 +454,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (void)_addMessageToConsole:(NSString *)message isError:(BOOL)error
 {
-	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByAppendingString:@";"] date:[NSDate date]];
+	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "] stringByAppendingString:@";"] date:[NSDate date]];
 
 	[consoleMessage setIsError:error];
 
@@ -479,7 +479,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
  * and whether it should be hidden if the SELECT/SHOW toggle is off.
  */
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message
-{
+{	
 	BOOL messageMatchesCurrentFilters = YES;
 
 	// Check whether to hide the message based on the current filter text, if any
@@ -492,7 +492,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	// If hiding SELECTs and SHOWs is toggled to on, check whether the message is a SELECT or SHOW
 	if (messageMatchesCurrentFilters
 		&& showSelectStatementsAreDisabled
-		&& ([message hasPrefix:@"SELECT"] || [message hasPrefix:@"SHOW"]))
+		&& ([[message uppercaseString] hasPrefix:@"SELECT"] || [[message uppercaseString] hasPrefix:@"SHOW"]))
 	{
 		messageMatchesCurrentFilters = NO;
 	}
