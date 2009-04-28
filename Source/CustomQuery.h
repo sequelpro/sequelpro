@@ -80,6 +80,7 @@
 	
 	int queryStartPosition;
 	int helpTarget;
+	WebHistory *helpHistory;
 	
 }
 
@@ -116,7 +117,7 @@
 - (NSArray *)currentResult;
 
 // MySQL Help
-- (void)showHelpFor:(NSString *)aString;
+- (void)showHelpFor:(NSString *)aString setHistory:(BOOL)setHistory;
 - (NSString *)getHTMLHelpFor:(NSString *)aString;
 - (void)helpTargetValidation;
 

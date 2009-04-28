@@ -1366,7 +1366,7 @@ traps enter key and
 /*
  * Retrieve and show the data for "HELP 'aString'".
  */
-- (void)showHelpFor:(NSString *)aString
+- (void)showHelpFor:(NSString *)aString setHistory:(BOOL)setHistory
 {
 	NSString * helpString = [self getHTMLHelpFor:aString];
 	// Order out the Help window if not visible
@@ -1384,14 +1384,32 @@ traps enter key and
 		} else {
 			mySQLversion = [[NSString stringWithString:version] retain];
 		}
-
+		// init Help view
 		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), [mySQLversion substringToIndex:3]]];
+		[helpWebView setMaintainsBackForwardList:YES];
+		[[helpWebView backForwardList] setCapacity:20];
+		if([[helpWebView backForwardList] backListCount] < 1)
+		{
+			[helpNavigator setEnabled:NO forSegment:0];
+			[helpNavigator setEnabled:NO forSegment:2];
+		} else {
+			[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
+			[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
+		}
 		[helpWebViewWindow orderFront:helpWebView];
 		helpTarget = 2; // set default to search in MySQL help
 		[self helpTargetValidation];
 	}
 	
 	if(![helpString length]) return;
+	
+	if(setHistory)
+	{
+		WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[NSString stringWithFormat:@"applewebdata://%@", aString] title:aString lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
+		[[helpWebView backForwardList] addItem:aWebHistoryItem];
+	}
+	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
+	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
 	
 	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil];
 	
@@ -1413,6 +1431,8 @@ traps enter key and
 		break;
 		case 1: // online
 		// Open MySQL Documentation search in browser
+		if(![searchTerm length])
+			break;
 		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
 			[[NSString stringWithFormat:
 				MYSQL_DEV_SEARCH_URL,
@@ -1427,7 +1447,7 @@ traps enter key and
 		// 	stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]]];
 		break;
 		case 2: // MySQL
-		[self showHelpFor:searchTerm];
+		[self showHelpFor:searchTerm setHistory:YES];
 		break;
 	}
 }
@@ -1439,7 +1459,7 @@ traps enter key and
 {
 	NSString *aString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
 	// if(![aString length]) return;
-	[self showHelpFor:aString];
+	[self showHelpFor:aString setHistory:YES];
 }
 
 /*
@@ -1464,10 +1484,25 @@ traps enter key and
 {
 	switch([helpNavigator selectedSegment])
 	{
+		case 0:
+		if([[helpWebView backForwardList] backListCount]) {
+			[self showHelpFor:[[[[helpWebView backForwardList] backItem] URLString] lastPathComponent] setHistory:NO];
+			[[helpWebView backForwardList] goBack];
+		}
+		break;
 		case 1: // TOC
-			[self showHelpFor:@"contents"];
-			break;
+		[self showHelpFor:@"contents" setHistory:YES];
+		break;
+		case 2:
+		if([[helpWebView backForwardList] forwardListCount]) {
+			[self showHelpFor:[[[[helpWebView backForwardList] forwardItem] URLString] lastPathComponent] setHistory:NO];
+			[[helpWebView backForwardList] goForward];
+		}
+		break;
 	}
+	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
+	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
+	
 }
 
 /*
@@ -1673,8 +1708,11 @@ traps enter key and
 {
 	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
 	if([[[request URL] scheme] isEqualToString:@"applewebdata"]){
-		[self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)]];
+		[self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)] setHistory:YES];
 		[listener ignore];
+		// WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[[request URL] absoluteString] title:[[request URL] path] lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
+		// [[helpWebView backForwardList] addItem:aWebHistoryItem];
+
 	} else {
 		if (navigationType == WebNavigationTypeOther) {
 			[listener use];
@@ -1689,6 +1727,13 @@ traps enter key and
 	}
 }
 
+/*
+ * Up to now no contextual menu in helpWebView 
+ */
+- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
+{
+	return nil;
+}
 
 #pragma mark -
 
