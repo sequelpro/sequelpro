@@ -1374,10 +1374,7 @@ traps enter key and
 	if(![helpWebViewWindow isVisible])
 	{
 		mySQLversion = [[[(TableDocument *)[[textView window] delegate] mySQLVersion] substringToIndex:3] retain];
-		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", 
-			NSLocalizedString(@"MySQL Help", @"mysql help"), 
-			NSLocalizedString(@"version", @"version"), 
-			mySQLversion]];
+		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), mySQLversion]];
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
 		if([[helpWebView backForwardList] backListCount] < 1)
@@ -1388,7 +1385,8 @@ traps enter key and
 			[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
 			[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
 		}
-		[helpWebViewWindow orderFront:helpWebView];
+		if(![helpString isEqualToString:@"__no_help_available"])
+			[helpWebViewWindow orderFront:helpWebView];
 		helpTarget = 2; // set default to search in MySQL help
 		[self helpTargetValidation];
 	}
@@ -1575,6 +1573,9 @@ traps enter key and
 	@"      .code {"
 	@"          font-family:Monaco;"
 	@"      }"
+	@"      .example {"
+	@"          font-family:Courier;"
+	@"      }"
 	@"      .searchstring {"
 	@"      }"
 	@"      .header {"
@@ -1587,7 +1588,16 @@ traps enter key and
 	];
 		
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", aString]];
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || ![theResult numOfRows]) return @"";
+	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || ![theResult numOfRows])
+	{
+		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
+			[[NSString stringWithFormat:
+				MYSQL_DEV_SEARCH_URL,
+				aString,
+				[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
+			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
+		return @"__no_help_available";
+	}
 	
 	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult fetchRowAsDictionary]];
 
@@ -1661,7 +1671,7 @@ traps enter key and
 		if([tableDetails objectForKey:@"example"]){
 			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
 			if([examples length]){
-				[theHelp appendString:@"<br><br><i><b>Example:</b></i><br><br><pre class='code'>"];
+				[theHelp appendString:@"<br><i><b>Example:</b></i><br><pre class='example'>"];
 				[theHelp appendString:examples];
 				[theHelp appendString:@"</pre>"];
 			}
