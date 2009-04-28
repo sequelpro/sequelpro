@@ -372,7 +372,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage">
+												<object class="NSCustomResource" key="NSNormalImage" id="173181941">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -387,10 +387,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<object class="NSCustomResource" key="NSImage" id="690561376">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_action</string>
-													</object>
+													<reference key="NSImage" ref="173181941"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2267,8 +2264,8 @@
 																			<bool key="NS.raise.underflow">YES</bool>
 																			<bool key="NS.raise.dividebyzero">YES</bool>
 																		</object>
-																		<string key="NS.decimal">.</string>
-																		<string key="NS.thousand">,</string>
+																		<string key="NS.decimal">,</string>
+																		<string key="NS.thousand">.</string>
 																		<bool key="NS.hasthousands">NO</bool>
 																		<bool key="NS.localized">YES</bool>
 																		<bool key="NS.allowsfloats">NO</bool>
@@ -2954,7 +2951,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="690561376"/>
+																					<reference key="NSNormalImage" ref="173181941"/>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2966,7 +2963,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="690561376"/>
+																						<reference key="NSImage" ref="173181941"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -6336,7 +6333,7 @@
 									<string>public.url-name</string>
 								</object>
 							</object>
-							<string key="NSFrameSize">{381, 265}</string>
+							<string key="NSFrameSize">{381, 264}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<reference key="NSNextKeyView"/>
 							<string key="FrameName"/>
@@ -21534,8 +21531,8 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{423, 65}, {381, 301}}</string>
-					<string>{{423, 65}, {381, 301}}</string>
+					<string>{{171, 161}, {381, 301}}</string>
+					<string>{{171, 161}, {381, 301}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{351, 120}</string>
