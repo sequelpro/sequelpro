@@ -27,6 +27,7 @@
 #import "SPGrowlController.h"
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
+#import "TableDocument.h"
 
 #define MYSQL_DEV_SEARCH_URL @"http://search.mysql.com/search?q=%@&site=refman-%@"
 
@@ -1372,20 +1373,11 @@ traps enter key and
 	// Order out the Help window if not visible
 	if(![helpWebViewWindow isVisible])
 	{
-		
-		// Get the major MySQL server version in the form of x.x, which is basically the first 3 characters of the returned version string
-		//get mysql version
-		CMMCPResult *theResult = nil;
-		theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
-		NSString *version = [[theResult fetchRowAsArray] objectAtIndex:1];
-		if ( [version isKindOfClass:[NSData class]] ) {
-			// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
-			mySQLversion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
-		} else {
-			mySQLversion = [[NSString stringWithString:version] retain];
-		}
-		// init Help view
-		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), [mySQLversion substringToIndex:3]]];
+		mySQLversion = [[[(TableDocument *)[[textView window] delegate] mySQLVersion] substringToIndex:3] retain];
+		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", 
+			NSLocalizedString(@"MySQL Help", @"mysql help"), 
+			NSLocalizedString(@"version", @"version"), 
+			mySQLversion]];
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
 		if([[helpWebView backForwardList] backListCount] < 1)
@@ -1437,7 +1429,7 @@ traps enter key and
 			[[NSString stringWithFormat:
 				MYSQL_DEV_SEARCH_URL,
 				searchTerm,
-				[[mySQLversion substringToIndex:3] stringByReplacingOccurrencesOfString:@"." withString:@""]]
+				[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
 			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 		// [[helpWebView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:
 		// 	[[NSString stringWithFormat:
@@ -1586,7 +1578,7 @@ traps enter key and
 	@"      .searchstring {"
 	@"      }"
 	@"      .header {"
-	@"          padding:2mm;"
+	@"          padding-bottom:5px;"
 	@"      }"
 	@"  </style>"
 	@"</head>"
@@ -1601,7 +1593,7 @@ traps enter key and
 
 	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
 		if ([tableDetails objectForKey:@"name"]) {
-			[theHelp appendString:@"<h2 class='header'>&nbsp;&nbsp;"];
+			[theHelp appendString:@"<h2 class='header'>"];
 			[theHelp appendString:[[[tableDetails objectForKey:@"name"] copy] autorelease]];
 			[theHelp appendString:@"</h2>"];
 

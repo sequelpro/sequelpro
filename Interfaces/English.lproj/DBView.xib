@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5428"/>
+			<integer value="5429"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6481,7 +6481,7 @@
 											<string key="NSClassName">NSImage</string>
 											<string key="NSResourceName">NSLeftFacingTriangleTemplate</string>
 										</object>
-										<string key="NSSegmentItemTooltip">Go Back</string>
+										<string key="NSSegmentItemTooltip">Show the previous page</string>
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 									<object class="NSSegmentItem">
@@ -6502,7 +6502,7 @@
 											<string key="NSResourceName">NSRightFacingTriangleTemplate</string>
 										</object>
 										<string key="NSSegmentItemLabel"/>
-										<string key="NSSegmentItemTooltip">Go Forward</string>
+										<string key="NSSegmentItemTooltip">Show the next page</string>
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 								</object>
@@ -21498,8 +21498,8 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{792, 192}, {351, 309}}</string>
-					<string>{{792, 192}, {351, 309}}</string>
+					<string>{{704, 285}, {351, 309}}</string>
+					<string>{{704, 285}, {351, 309}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{351, 120}</string>
