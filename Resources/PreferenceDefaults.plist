@@ -50,5 +50,7 @@
 	<true/>
 	<key>ConsoleShowSelectsAndShows</key>
 	<true/>
+	<key>ConsoleShowHelps</key>
+	<true/>
 </dict>
 </plist>
