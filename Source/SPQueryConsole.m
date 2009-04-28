@@ -85,6 +85,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		messagesFilteredSet	= [[NSMutableArray alloc] init];
 
 		showSelectStatementsAreDisabled = NO;
+		showHelpStatementsAreDisabled = NO;
 		filterIsActive = NO;
 		activeFilterString = [[NSMutableString alloc] init];
 
@@ -117,6 +118,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
 	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowTimestamps"]];
 	showSelectStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowSelectsAndShows"];
+	showHelpStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowHelps"];
 	[self _updateFilterState];
 }
 
@@ -213,6 +215,17 @@ static SPQueryConsole *sharedQueryConsole = nil;
 {	
 	// Store the state of the toggle for later quick reference
 	showSelectStatementsAreDisabled = [sender state];
+	
+	[self _updateFilterState];
+}
+
+/**
+ * Toggles the hiding of messages containing HELP statements
+ */
+- (IBAction)toggleShowHelpStatements:(id)sender
+{	
+	// Store the state of the toggle for later quick reference
+	showHelpStatementsAreDisabled = [sender state];
 	
 	[self _updateFilterState];
 }
@@ -400,7 +413,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 
 	// If filtering is disabled and all show/selects are shown, empty the filtered
 	// result set and set the full set to visible.
-	if (!filterIsActive && !showSelectStatementsAreDisabled) {
+	if (!filterIsActive && !showSelectStatementsAreDisabled && !showHelpStatementsAreDisabled) {
 		messagesVisibleSet = messagesFullSet;
 
 		[consoleTableView reloadData];
@@ -461,7 +474,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	[messagesFullSet addObject:consoleMessage];
 
 	// If filtering is active, determine whether to add a reference to the filtered set
-	if ((showSelectStatementsAreDisabled || filterIsActive)
+	if ((showSelectStatementsAreDisabled || showHelpStatementsAreDisabled || filterIsActive)
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
@@ -493,6 +506,13 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	if (messageMatchesCurrentFilters
 		&& showSelectStatementsAreDisabled
 		&& ([[message uppercaseString] hasPrefix:@"SELECT"] || [[message uppercaseString] hasPrefix:@"SHOW"]))
+	{
+		messageMatchesCurrentFilters = NO;
+	}
+	// If hiding HELP is toggled to on, check whether the message is a HELP
+	if (messageMatchesCurrentFilters
+		&& showHelpStatementsAreDisabled
+		&& ([[message uppercaseString] hasPrefix:@"HELP"]))
 	{
 		messageMatchesCurrentFilters = NO;
 	}
