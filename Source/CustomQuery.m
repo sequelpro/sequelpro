@@ -1369,7 +1369,7 @@ traps enter key and
 - (void)showHelpFor:(NSString *)aString
 {
 	NSString * helpString = [self getHTMLHelpFor:aString];
-	// Order out the Help window
+	// Order out the Help window if not visible
 	if(![helpWebViewWindow isVisible])
 	{
 		
@@ -1387,7 +1387,7 @@ traps enter key and
 
 		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), [mySQLversion substringToIndex:3]]];
 		[helpWebViewWindow orderFront:helpWebView];
-		helpTarget = 2;
+		helpTarget = 2; // set default to search in MySQL help
 		[self helpTargetValidation];
 	}
 	
@@ -1404,17 +1404,19 @@ traps enter key and
  */
 - (IBAction)showHelpForSearchString:(id)sender
 {
+	NSString *searchTerm = [[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	switch(helpTarget)
 	{
 		case 0: // page
-		[helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES];
+		if(![helpWebView searchFor:searchTerm direction:YES caseSensitive:NO wrap:YES])
+			if([searchTerm length]) NSBeep();
 		break;
 		case 1: // online
-		// Open MySQL Documentation search in browser using the term
+		// Open MySQL Documentation search in browser
 		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
 			[[NSString stringWithFormat:
 				MYSQL_DEV_SEARCH_URL,
-				[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+				searchTerm,
 				[[mySQLversion substringToIndex:3] stringByReplacingOccurrencesOfString:@"." withString:@""]]
 			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 		// [[helpWebView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:
@@ -1425,7 +1427,7 @@ traps enter key and
 		// 	stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]]];
 		break;
 		case 2: // MySQL
-		[self showHelpFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		[self showHelpFor:searchTerm];
 		break;
 	}
 }
@@ -1446,12 +1448,14 @@ traps enter key and
 - (IBAction)helpSearchFindNextInPage:(id)sender
 {
 	if(!helpTarget)
-		[helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES];
+		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES])
+			NSBeep();
 }
 - (IBAction)helpSearchFindPreviousInPage:(id)sender
 {
 	if(!helpTarget)
-		[helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:NO caseSensitive:NO wrap:YES];
+		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:NO caseSensitive:NO wrap:YES])
+			NSBeep();
 }
 /*
  * Navigation for back/TOC/forward
@@ -1574,18 +1578,14 @@ traps enter key and
 			
 			[desc setString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
 
-			[desc replaceOccurrencesOfString:[aString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [aString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
+			//[desc replaceOccurrencesOfString:[aString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [aString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
 
 			// detect and generate http links
 			aRange = NSMakeRange(0,0);
 			int safeCnt = 0; // safety counter - not more than 200 loops allowed
 			while(1){
-				aRange = [desc rangeOfRegex:@"\\s((https?|ftp:file)://.*?)\\s" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
+				aRange = [desc rangeOfRegex:@"\\s((https?|ftp|file)://.*?html)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
 				if(aRange.location != NSNotFound) {
-					if([[desc substringWithRange:aRange] hasSuffix:@"."] || [[desc substringWithRange:aRange] hasSuffix:@")"])
-						aRange.length -= 1;
-					if([[desc substringWithRange:aRange] hasSuffix:@".)"] || [[desc substringWithRange:aRange] hasSuffix:@")."])
-						aRange.length -= 2;
 					aUrl = [desc substringWithRange:aRange];
 					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];
 				}
