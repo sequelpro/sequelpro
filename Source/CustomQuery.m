@@ -1390,6 +1390,8 @@ traps enter key and
 		helpTarget = 2; // set default to search in MySQL help
 		[self helpTargetValidation];
 	}
+	if([helpString isEqualToString:@"__no_help_available"])
+		[helpWebViewWindow close];
 	
 	if(![helpString length]) return;
 	
@@ -1588,7 +1590,7 @@ traps enter key and
 	];
 		
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", aString]];
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || ![theResult numOfRows])
+	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 	{
 		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
 			[[NSString stringWithFormat:
@@ -1598,7 +1600,11 @@ traps enter key and
 			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 		return @"__no_help_available";
 	}
-	
+	if(![theResult numOfRows]) {
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", aString]];
+		if(![theResult numOfRows])
+			return @"";
+	}
 	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult fetchRowAsDictionary]];
 
 	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
