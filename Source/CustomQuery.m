@@ -1606,17 +1606,18 @@ traps enter key and
 	[theHelp setString:@""];
 	
 	// search via: HELP 'searchString'
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", searchString]];
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 	{
 		// if an error or HELP is not supported fall back to online search
+		NSLog(@"Error in HELP statement for '%@'", searchString);
 		[self openMySQLonlineDocumentationWithString:searchString];
 		return SP_HELP_NOT_AVAILABLE;
 	}
 	// nothing found?
 	if(![theResult numOfRows]) {
 		// try to search via: HELP 'searchString%'
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", searchString]];
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 		// really nothing found?
 		if(![theResult numOfRows])
 			return @"";
