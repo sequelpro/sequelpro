@@ -1813,6 +1813,7 @@ traps enter key and
 		[searchInMySQLonline setEnabled:YES];
 		[searchInMySQLonline setTarget:self];
 		[returnArray addObject:searchInMySQLonline];
+		[returnArray addObject:[NSMenuItem separatorItem]];
 		[returnArray addObjectsFromArray:defaultMenuItems];
 		return returnArray;
 		break;
