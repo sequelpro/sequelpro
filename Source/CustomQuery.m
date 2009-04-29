@@ -1431,18 +1431,34 @@ traps enter key and
 				searchTerm,
 				[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
 			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
-		// [[helpWebView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:
-		// 	[[NSString stringWithFormat:
-		// 		MYSQL_DEV_SEARCH_URL,
-		// 		[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
-		// 		[[mySQLversion substringToIndex:3] stringByReplacingOccurrencesOfString:@"." withString:@""]]
-		// 	stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]]];
 		break;
 		case 2: // MySQL
 		[self showHelpFor:searchTerm setHistory:YES];
 		break;
 	}
 }
+
+/*
+ * Retrieve and show the Help for the selected text in the webview
+ */
+- (IBAction)showHelpForWebViewSelection:(id)sender
+{
+	[self showHelpFor:[[helpWebView selectedDOMRange] text] setHistory:YES];
+}
+
+/*
+ * Retrieve and show MySQL's online documentation for the selected text in the webview
+ */
+- (IBAction)searchInDocForWebViewSelection:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
+		[[NSString stringWithFormat:
+			MYSQL_DEV_SEARCH_URL,
+			[[helpWebView selectedDOMRange] text],
+			[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
+		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
+}
+
 
 /*
  * Retrieve and show the data for "HELP 'currentWord'"
@@ -1710,38 +1726,83 @@ traps enter key and
 
 /*
  * Link detector: If user clicked at an http link open it in the default browser,
- * otherwise search for it in the MySQL help.
+ * otherwise search for it in the MySQL help. Additionally handle back/forward events from
+ * keyboard and context menu.
  */
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
 	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
-	if([[[request URL] scheme] isEqualToString:@"applewebdata"]){
-		[self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)] setHistory:YES];
+	if([[[request URL] scheme] isEqualToString:@"applewebdata"] && navigationType == WebNavigationTypeLinkClicked){
+		// [self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)] setHistory:YES];
+		[self showHelpFor:[[[request URL] path] lastPathComponent] setHistory:YES];
 		[listener ignore];
-		// WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[[request URL] absoluteString] title:[[request URL] path] lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
-		// [[helpWebView backForwardList] addItem:aWebHistoryItem];
-
 	} else {
 		if (navigationType == WebNavigationTypeOther) {
+			// catch reload event
+			// if([[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] isEqualToString:@"about:blank"])
+			// 	[listener use];
+			// else
 			[listener use];
 		} else if (navigationType == WebNavigationTypeLinkClicked) {
+			// show http in browser
 			[[NSWorkspace sharedWorkspace] openURL:[actionInformation objectForKey:WebActionOriginalURLKey]];
 			[listener ignore];
+		} else if (navigationType == WebNavigationTypeBackForward) {
+			// catch back/forward events from contextual menu
+			[self showHelpFor:[[[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSASCIIStringEncoding] setHistory:NO];
+			[listener ignore];
+		} else if (navigationType == WebNavigationTypeReload) {
+			// just in case
+			[listener ignore];
 		} else {
-			// Ignore WebNavigationTypeFormSubmitted, WebNavigationTypeBackForward, 
-			// WebNavigationTypeReload and WebNavigationTypeFormResubmitted.
+			// Ignore WebNavigationTypeFormSubmitted, WebNavigationTypeFormResubmitted.
 			[listener ignore];
 		}
 	}
 }
 
+
 /*
- * Up to now no contextual menu in helpWebView 
+ * Manage contextual menu in helpWebView 
  */
 - (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
 {
+	int menuType = [defaultMenuItems count];
+	NSMutableArray *returnArray = [[NSMutableArray array] autorelease];
+	NSMenuItem *searchInMySQL;
+	NSMenuItem *searchInMySQLonline;
+
+	// dispatcher for different context menus via the number of menu items
+	switch(menuType)
+	{
+		case 1: // only reload
+		return nil;
+		break;
+		case 2: // back and reload
+		return [NSArray arrayWithObjects:[defaultMenuItems objectAtIndex:0], nil];
+		break;
+		case 3: // back, forward, and reload
+		return [NSArray arrayWithObjects:[defaultMenuItems objectAtIndex:0], [defaultMenuItems objectAtIndex:1], nil];
+		break;
+		case 4: // cursor over link (only allow copy link)
+		return [NSArray arrayWithObjects:[defaultMenuItems objectAtIndex:3], nil];
+		break;
+		case 6: // menu for a selection, add Search in MySQL Help
+		searchInMySQL = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Help", @"Search in MySQL Help") action:@selector(showHelpForWebViewSelection:) keyEquivalent:@""];
+		[searchInMySQL setEnabled:YES];
+		[searchInMySQL setTarget:self];
+		[returnArray addObject:searchInMySQL];
+		searchInMySQLonline = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Documentation", @"Search in MySQL Documentation") action:@selector(searchInDocForWebViewSelection:) keyEquivalent:@""];
+		[searchInMySQLonline setEnabled:YES];
+		[searchInMySQLonline setTarget:self];
+		[returnArray addObject:searchInMySQLonline];
+		[returnArray addObjectsFromArray:defaultMenuItems];
+		return returnArray;
+		break;
+	}
 	return nil;
 }
+
 
 #pragma mark -
 
