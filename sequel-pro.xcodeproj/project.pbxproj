@@ -121,6 +121,7 @@
 		B5E92F400F75B32100012500 /* toolbar-export-xml.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
+		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -322,6 +323,7 @@
 		B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xml.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
+		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -440,6 +442,7 @@
 				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
 				5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */,
+				BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -817,6 +820,7 @@
 				296DC8D20F90950C002A3258 /* sequel-pro-print-template.html in Resources */,
 				B508B5DA0F9837A200E03A69 /* button_edit.tiff in Resources */,
 				B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */,
+				BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

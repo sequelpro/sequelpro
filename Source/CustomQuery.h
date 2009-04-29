@@ -90,7 +90,7 @@
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
-- (IBAction)getHelpForCurrentWord:(id)sender;
+- (IBAction)showHelpForCurrentWord:(id)sender;
 - (IBAction)showHelpForSearchString:(id)sender;
 - (IBAction)helpSegmentDispatcher:(id)sender;
 - (IBAction)helpTargetDispatcher:(id)sender;
@@ -117,9 +117,11 @@
 - (NSArray *)currentResult;
 
 // MySQL Help
-- (void)showHelpFor:(NSString *)aString setHistory:(BOOL)setHistory;
-- (NSString *)getHTMLHelpFor:(NSString *)aString;
+- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;
+- (void)showHelpFor:(NSString *)aString addToHistory:(BOOL)addToHistory;
 - (void)helpTargetValidation;
+- (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
+
 
 // Other
 - (void)setConnection:(CMMCPConnection *)theConnection;

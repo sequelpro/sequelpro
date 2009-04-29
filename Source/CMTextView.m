@@ -270,7 +270,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if(curFlags==(NSControlKeyMask))
 		{
 			
-			[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] getHelpForCurrentWord:self];
+			[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
 			return;
 		}
 

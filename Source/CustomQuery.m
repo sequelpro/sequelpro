@@ -29,7 +29,16 @@
 #import "SPTextViewAdditions.h"
 #import "TableDocument.h"
 
-#define MYSQL_DEV_SEARCH_URL @"http://search.mysql.com/search?q=%@&site=refman-%@"
+#define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
+#define SP_HELP_SEARCH_IN_MYSQL   0
+#define SP_HELP_SEARCH_IN_PAGE    1
+#define SP_HELP_SEARCH_IN_WEB     2
+#define SP_HELP_GOBACK_BUTTON     0
+#define SP_HELP_SHOW_TOC_BUTTON   1
+#define SP_HELP_GOFORWARD_BUTTON  2
+#define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
+#define SP_HELP_TOC_SEARCH_STRING @"contents"
+
 
 @implementation CustomQuery
 
@@ -1365,110 +1374,120 @@ traps enter key and
 
 
 /*
- * Retrieve and show the data for "HELP 'aString'".
+ * Show the data for "HELP 'searchString'".
  */
-- (void)showHelpFor:(NSString *)aString setHistory:(BOOL)setHistory
+- (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory
 {
-	NSString * helpString = [self getHTMLHelpFor:aString];
-	// Order out the Help window if not visible
+	NSString * helpString = [self getHTMLformattedMySQLHelpFor:searchString];
+	// Order out resp. init the Help window if not visible
 	if(![helpWebViewWindow isVisible])
 	{
+		// get current MySQL version for title and online search
 		mySQLversion = [[[(TableDocument *)[[textView window] delegate] mySQLVersion] substringToIndex:3] retain];
+
 		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), mySQLversion]];
+
+		// init search history
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
+
+		// init goback/forward buttons
 		if([[helpWebView backForwardList] backListCount] < 1)
 		{
-			[helpNavigator setEnabled:NO forSegment:0];
-			[helpNavigator setEnabled:NO forSegment:2];
+			[helpNavigator setEnabled:NO forSegment:SP_HELP_GOBACK_BUTTON];
+			[helpNavigator setEnabled:NO forSegment:SP_HELP_GOFORWARD_BUTTON];
 		} else {
-			[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
-			[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
+			[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
+			[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
 		}
-		if(![helpString isEqualToString:@"__no_help_available"])
-			[helpWebViewWindow orderFront:helpWebView];
-		helpTarget = 2; // set default to search in MySQL help
-		[helpTargetSelector setSelectedSegment:2];
+
+		// set default to search in MySQL help
+		helpTarget = SP_HELP_SEARCH_IN_MYSQL;
+		[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_MYSQL];
 		[self helpTargetValidation];
+
+		// order out Help window if Help is available
+		if(![helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
+			[helpWebViewWindow orderFront:helpWebView];
+			
 	}
-	if([helpString isEqualToString:@"__no_help_available"])
+
+	// close Help window if no Help avaiable
+	if([helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
 		[helpWebViewWindow close];
 	
 	if(![helpString length]) return;
 	
-	if(setHistory)
+	// add searchString to history list
+	if(addToHistory)
 	{
-		WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[NSString stringWithFormat:@"applewebdata://%@", aString] title:aString lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
+		WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[NSString stringWithFormat:@"applewebdata://%@", searchString] title:searchString lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
 		[[helpWebView backForwardList] addItem:aWebHistoryItem];
 	}
-	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
-	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
+
+	// validate goback/forward buttons
+	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
+	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
 	
+	// load HTML formatted help into the webview
 	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil];
 	
-
 }
 
 
 /*
- * Retrieve and show the data for "HELP 'search word'" according to helpTarget
+ * Show the data for "HELP 'search word'" according to helpTarget
  */
 - (IBAction)showHelpForSearchString:(id)sender
 {
-	NSString *searchTerm = [[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	NSString *searchString = [[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	switch(helpTarget)
 	{
-		case 0: // page
-		if(![helpWebView searchFor:searchTerm direction:YES caseSensitive:NO wrap:YES])
-			if([searchTerm length]) NSBeep();
-		break;
-		case 1: // online
-		// Open MySQL Documentation search in browser
-		if(![searchTerm length])
+		case SP_HELP_SEARCH_IN_PAGE:
+			if(![helpWebView searchFor:searchString direction:YES caseSensitive:NO wrap:YES])
+				if([searchString length]) NSBeep();
 			break;
-		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
-			[[NSString stringWithFormat:
-				MYSQL_DEV_SEARCH_URL,
-				searchTerm,
-				[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
-			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
-		break;
-		case 2: // MySQL
-		[self showHelpFor:searchTerm setHistory:YES];
-		break;
+		case SP_HELP_SEARCH_IN_WEB:
+			if(![searchString length])
+				break;
+			[self openMySQLonlineDocumentationWithString:searchString];
+			break;
+		case SP_HELP_SEARCH_IN_MYSQL:
+			[self showHelpFor:searchString addToHistory:YES];
+			break;
 	}
 }
 
 /*
- * Retrieve and show the Help for the selected text in the webview
+ * Show the Help for the selected text in the webview
  */
 - (IBAction)showHelpForWebViewSelection:(id)sender
 {
-	[self showHelpFor:[[helpWebView selectedDOMRange] text] setHistory:YES];
+	[self showHelpFor:[[helpWebView selectedDOMRange] text] addToHistory:YES];
 }
 
 /*
- * Retrieve and show MySQL's online documentation for the selected text in the webview
+ * Show MySQL's online documentation for the selected text in the webview
  */
 - (IBAction)searchInDocForWebViewSelection:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
-		[[NSString stringWithFormat:
-			MYSQL_DEV_SEARCH_URL,
-			[[helpWebView selectedDOMRange] text],
-			[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
-		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
+	NSString *searchString = [[[helpWebView selectedDOMRange] text] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	if(![searchString length])
+	{
+		NSBeep();
+		return;
+	}
+	[self openMySQLonlineDocumentationWithString:searchString];
 }
 
 
 /*
- * Retrieve and show the data for "HELP 'currentWord'"
+ * Show the data for "HELP 'currentWord'"
  */
-- (IBAction)getHelpForCurrentWord:(id)sender
+- (IBAction)showHelpForCurrentWord:(id)sender
 {
-	NSString *aString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
-	// if(![aString length]) return;
-	[self showHelpFor:aString setHistory:YES];
+	NSString *searchString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
+	[self showHelpFor:searchString addToHistory:YES];
 }
 
 /*
@@ -1476,13 +1495,13 @@ traps enter key and
  */
 - (IBAction)helpSearchFindNextInPage:(id)sender
 {
-	if(!helpTarget)
+	if(helpTarget == SP_HELP_SEARCH_IN_PAGE)
 		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES])
 			NSBeep();
 }
 - (IBAction)helpSearchFindPreviousInPage:(id)sender
 {
-	if(!helpTarget)
+	if(helpTarget == SP_HELP_SEARCH_IN_PAGE)
 		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:NO caseSensitive:NO wrap:YES])
 			NSBeep();
 }
@@ -1494,138 +1513,111 @@ traps enter key and
 {
 	switch([helpNavigator selectedSegment])
 	{
-		case 0:
-		if([[helpWebView backForwardList] backListCount]) {
-			[self showHelpFor:[[[[helpWebView backForwardList] backItem] URLString] lastPathComponent] setHistory:NO];
-			[[helpWebView backForwardList] goBack];
-		}
-		break;
-		case 1: // TOC
-		[self showHelpFor:@"contents" setHistory:YES];
-		break;
-		case 2:
-		if([[helpWebView backForwardList] forwardListCount]) {
-			[self showHelpFor:[[[[helpWebView backForwardList] forwardItem] URLString] lastPathComponent] setHistory:NO];
-			[[helpWebView backForwardList] goForward];
-		}
-		break;
+		case SP_HELP_GOBACK_BUTTON:
+			if([[helpWebView backForwardList] backListCount]) {
+				[self showHelpFor:[[[[helpWebView backForwardList] backItem] URLString] lastPathComponent] addToHistory:NO];
+				[[helpWebView backForwardList] goBack];
+			}
+			break;
+		case SP_HELP_SHOW_TOC_BUTTON:
+			[self showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
+			break;
+		case SP_HELP_GOFORWARD_BUTTON:
+			if([[helpWebView backForwardList] forwardListCount]) {
+				[self showHelpFor:[[[[helpWebView backForwardList] forwardItem] URLString] lastPathComponent] addToHistory:NO];
+				[[helpWebView backForwardList] goForward];
+			}
+			break;
 	}
-	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:0];
-	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:2];
+	// validate goback and goforward buttons according history
+	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
+	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
 	
 }
 
 /*
- * Set helpTarget
+ * Set helpTarget according user choice via mouse and keyboard short-cuts.
  */
 - (IBAction)helpSelectHelpTargetMySQL:(id)sender
 {
-	helpTarget = 2;
-	[helpTargetSelector setSelectedSegment:2];
+	helpTarget = SP_HELP_SEARCH_IN_MYSQL;
+	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_MYSQL];
 	[self helpTargetValidation];
 }
 - (IBAction)helpSelectHelpTargetPage:(id)sender
 {
-	helpTarget = 0;
-	[helpTargetSelector setSelectedSegment:1];
+	helpTarget = SP_HELP_SEARCH_IN_PAGE;
+	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_PAGE];
 	[self helpTargetValidation];
 }
 - (IBAction)helpSelectHelpTargetWeb:(id)sender
 {
-	helpTarget = 1;
-	[helpTargetSelector setSelectedSegment:0];
+	helpTarget = SP_HELP_SEARCH_IN_WEB;
+	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_WEB];
 	[self helpTargetValidation];
 }
 - (IBAction)helpTargetDispatcher:(id)sender
 {
-	switch([helpTargetSelector selectedSegment])
-	{
-		case 0:
-		helpTarget = 1;
-		break;
-		case 1:
-		helpTarget = 0;
-		break;
-		case 2:
-		helpTarget = 2;
-		break;
-	}
+	helpTarget = [helpTargetSelector selectedSegment];
 	[self helpTargetValidation];
 }
+
 /*
- * Control search target buttons and help behaviour
+ * Control the help search field behaviour.
  */
 - (void)helpTargetValidation
 {
 	switch(helpTarget)
 	{
-		case 0: // page
-		case 1: // online
+		case SP_HELP_SEARCH_IN_PAGE:
+		case SP_HELP_SEARCH_IN_WEB:
 		[helpSearchFieldCell setSendsWholeSearchString:YES];
 		break;
-		case 2: // MySQL
+		case SP_HELP_SEARCH_IN_MYSQL:
 		[helpSearchFieldCell setSendsWholeSearchString:NO];
 		break;
 	}
 }
 
+- (void)openMySQLonlineDocumentationWithString:(NSString *)searchString
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
+		[[NSString stringWithFormat:
+			SP_MYSQL_DEV_SEARCH_URL,
+			searchString,
+			[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
+		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
+}
+
 /*
- * Return the help string HTML formatted from executing "HELP 'aString'".
+ * Return the help string HTML formatted from executing "HELP 'searchString'".
  * If more than one help topic was found return a link list.
  */
-- (NSString *)getHTMLHelpFor:(NSString *)aString
+- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString
 {
 
-	if(![aString length]) return(@"");
+	if(![searchString length]) return @"";
 	
-	CMMCPResult	*theResult = nil;
-	NSDictionary *tableDetails;
-	NSRange aRange;
+	NSRange         aRange;
+	CMMCPResult     *theResult = nil;
+	NSDictionary    *tableDetails;
 	NSMutableString *theHelp = [NSMutableString string];
-	[theHelp setString:
-	@"<html>"
-	@"<head>"
-	@"  <style type='text/css' media='screen'>"
-	@"      body {"
-	@"          margin: 2px;"
-	@"          padding: 10px;"
-	@"          font-family:'Helvetica';"
-	@"          font-size:9pt;"
-	@"      }"
-	@"      .internallink {"
-	@"          color:#6A81DD;"
-	@"          text-decoration:none;"
-	@"      }"
-	@"      .code {"
-	@"          font-family:Monaco;"
-	@"      }"
-	@"      .example {"
-	@"          font-family:Courier;"
-	@"      }"
-	@"      .searchstring {"
-	@"      }"
-	@"      .header {"
-	@"          padding-bottom:5px;"
-	@"      }"
-	@"  </style>"
-	@"</head>"
-	@"<body>"
 
-	];
-		
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", aString]];
+	[theHelp setString:@""];
+	
+	// search via: HELP 'searchString'
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", searchString]];
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 	{
-		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
-			[[NSString stringWithFormat:
-				MYSQL_DEV_SEARCH_URL,
-				aString,
-				[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
-			stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
-		return @"__no_help_available";
+		// if an error or HELP is not supported fall back to online search
+		[self openMySQLonlineDocumentationWithString:searchString];
+		return SP_HELP_NOT_AVAILABLE;
 	}
+	// nothing found?
 	if(![theResult numOfRows]) {
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", aString]];
+		// try to search via: HELP 'searchString%'
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", searchString]];
+		// really nothing found?
 		if(![theResult numOfRows])
 			return @"";
 	}
@@ -1645,7 +1637,7 @@ traps enter key and
 			
 			[desc setString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
 
-			//[desc replaceOccurrencesOfString:[aString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [aString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
+			//[desc replaceOccurrencesOfString:[searchString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [searchString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
 
 			// detect and generate http links
 			aRange = NSMakeRange(0,0);
@@ -1694,10 +1686,11 @@ traps enter key and
 			// 		break;
 			// }
 
-			[theHelp appendString:@"<pre class='code'>"];
+			[theHelp appendString:@"<pre class='description'>"];
 			[theHelp appendString:desc];
 			[theHelp appendString:@"</pre>"];
 		}
+		// are examples available?
 		if([tableDetails objectForKey:@"example"]){
 			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
 			if([examples length]){
@@ -1710,12 +1703,13 @@ traps enter key and
 		int i;
 		int r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
-
-		if(![aString isEqualToString:@"contents"])
-			[theHelp appendString:[NSString stringWithFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), aString]];
+		// check if HELP 'contents' is called
+		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
+			[theHelp appendString:[NSString stringWithFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString]];
 		else
-			[theHelp appendString:[NSString stringWithFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), aString]];
+			[theHelp appendString:[NSString stringWithFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), searchString]];
 
+		// iterate through all found rows and print them as HTML ul/li list
 		[theHelp appendString:@"<ul>"];
 		for ( i = 0 ; i < r ; i++ ) {
 			NSArray *anArray = [theResult fetchRowAsArray];
@@ -1725,12 +1719,26 @@ traps enter key and
 		}
 		[theHelp appendString:@"</ul>"];
 	}
-	[theHelp appendString:@"</body></html>"];
 
 	[tableDetails release];
-	return theHelp;
+	
+	NSString *helpHTMLTemplatePath = [[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"];
+	NSError *error;
+	NSString *helpHTMLTemplate = [[NSString alloc]
+			initWithContentsOfFile:helpHTMLTemplatePath
+			encoding:NSUTF8StringEncoding
+			error:&error];
+	// an error occurred while reading
+	if (helpHTMLTemplate == nil)
+		return [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]];
+
+	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
 
 }
+
+//////////////////////////////
+// WebView delegate methods //
+//////////////////////////////
 
 /*
  * Link detector: If user clicked at an http link open it in the default browser,
@@ -1740,9 +1748,9 @@ traps enter key and
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
 	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
+
 	if([[[request URL] scheme] isEqualToString:@"applewebdata"] && navigationType == WebNavigationTypeLinkClicked){
-		// [self showHelpFor:[[[request URL] path] substringWithRange:NSMakeRange(1,[[[request URL] path] length]-1)] setHistory:YES];
-		[self showHelpFor:[[[request URL] path] lastPathComponent] setHistory:YES];
+		[self showHelpFor:[[[request URL] path] lastPathComponent] addToHistory:YES];
 		[listener ignore];
 	} else {
 		if (navigationType == WebNavigationTypeOther) {
@@ -1757,7 +1765,7 @@ traps enter key and
 			[listener ignore];
 		} else if (navigationType == WebNavigationTypeBackForward) {
 			// catch back/forward events from contextual menu
-			[self showHelpFor:[[[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSASCIIStringEncoding] setHistory:NO];
+			[self showHelpFor:[[[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSASCIIStringEncoding] addToHistory:NO];
 			[listener ignore];
 		} else if (navigationType == WebNavigationTypeReload) {
 			// just in case
@@ -1771,7 +1779,8 @@ traps enter key and
 
 
 /*
- * Manage contextual menu in helpWebView 
+ * Manage contextual menu in helpWebView
+ * Ignore "Reload", "Open Link", "Open Link in new Window", "Download link".
  */
 - (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
 {

@@ -372,7 +372,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage">
+												<object class="NSCustomResource" key="NSNormalImage" id="818950635">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -387,10 +387,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<object class="NSCustomResource" key="NSImage" id="247330881">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_action</string>
-													</object>
+													<reference key="NSImage" ref="818950635"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2267,8 +2264,8 @@
 																			<bool key="NS.raise.underflow">YES</bool>
 																			<bool key="NS.raise.dividebyzero">YES</bool>
 																		</object>
-																		<string key="NS.decimal">.</string>
-																		<string key="NS.thousand">,</string>
+																		<string key="NS.decimal">,</string>
+																		<string key="NS.thousand">.</string>
 																		<bool key="NS.hasthousands">NO</bool>
 																		<bool key="NS.localized">YES</bool>
 																		<bool key="NS.allowsfloats">NO</bool>
@@ -2954,7 +2951,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="247330881"/>
+																					<reference key="NSNormalImage" ref="818950635"/>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2966,7 +2963,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="247330881"/>
+																						<reference key="NSImage" ref="818950635"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -6365,7 +6362,7 @@
 						<object class="NSSearchField" id="375350404">
 							<reference key="NSNextResponder" ref="539508428"/>
 							<int key="NSvFlags">266</int>
-							<string key="NSFrame">{{122, 280}, {220, 19}}</string>
+							<string key="NSFrame">{{122, 280}, {218, 19}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSearchFieldCell" key="NSCell" id="980282163">
@@ -6599,7 +6596,7 @@
 						<object class="NSSegmentedControl" id="781717900">
 							<reference key="NSNextResponder" ref="539508428"/>
 							<int key="NSvFlags">265</int>
-							<string key="NSFrame">{{349, 281}, {145, 18}}</string>
+							<string key="NSFrame">{{347, 281}, {145, 18}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSegmentedCell" key="NSCell" id="814562035">
@@ -6611,27 +6608,26 @@
 									<bool key="EncodedWithXMLCoder">YES</bool>
 									<object class="NSSegmentItem">
 										<double key="NSSegmentItemWidth">4.600000e+01</double>
-										<string key="NSSegmentItemLabel">Web</string>
-										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIHRoZSBvbmxpbmUgZG9jdW1lbnRhdGlvbiBb4oyl4oyYV10</string>
+										<string key="NSSegmentItemLabel">MySQL</string>
+										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIE15U1FMIEhlbHAgIFvih6fijJhNXQ</string>
+										<bool key="NSSegmentItemSelected">YES</bool>
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 									<object class="NSSegmentItem">
 										<double key="NSSegmentItemWidth">4.600000e+01</double>
 										<string key="NSSegmentItemLabel">Page</string>
-										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIGN1cnJlbnQgcGFnZSBb4oyl4oyYUF0</string>
+										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIGN1cnJlbnQgcGFnZSBb4oen4oyYUF0</string>
 										<int key="NSSegmentItemTag">1</int>
-										<bool key="NSSegmentItemSelected">YES</bool>
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 									<object class="NSSegmentItem">
 										<double key="NSSegmentItemWidth">4.500000e+01</double>
-										<string key="NSSegmentItemLabel">MySQL</string>
-										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIE15U1FMIEhlbHAgIFvijKXijJhNXQ</string>
+										<string key="NSSegmentItemLabel">Web</string>
+										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIHRoZSBvbmxpbmUgZG9jdW1lbnRhdGlvbiBb4oen4oyYV10</string>
 										<int key="NSSegmentItemTag">2</int>
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 								</object>
-								<int key="NSSelectedSegment">1</int>
 								<int key="NSSegmentStyle">3</int>
 							</object>
 						</object>
@@ -6648,9 +6644,9 @@
 								<reference key="NSSupport" ref="244931163"/>
 								<reference key="NSControlView" ref="898579432"/>
 								<int key="NSButtonFlags">-2038284033</int>
-								<int key="NSButtonFlags2">402653313</int>
+								<int key="NSButtonFlags2">268435585</int>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent">w</string>
+								<string key="NSKeyEquivalent">W</string>
 								<int key="NSPeriodicDelay">200</int>
 								<int key="NSPeriodicInterval">25</int>
 							</object>
@@ -6668,9 +6664,9 @@
 								<reference key="NSSupport" ref="244931163"/>
 								<reference key="NSControlView" ref="296086739"/>
 								<int key="NSButtonFlags">-2038284033</int>
-								<int key="NSButtonFlags2">402653313</int>
+								<int key="NSButtonFlags2">268435585</int>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent">p</string>
+								<string key="NSKeyEquivalent">P</string>
 								<int key="NSPeriodicDelay">200</int>
 								<int key="NSPeriodicInterval">25</int>
 							</object>
@@ -6688,9 +6684,9 @@
 								<reference key="NSSupport" ref="244931163"/>
 								<reference key="NSControlView" ref="111700280"/>
 								<int key="NSButtonFlags">-2038284033</int>
-								<int key="NSButtonFlags2">402653313</int>
+								<int key="NSButtonFlags2">268435585</int>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent">m</string>
+								<string key="NSKeyEquivalent">M</string>
 								<int key="NSPeriodicDelay">200</int>
 								<int key="NSPeriodicInterval">25</int>
 							</object>
@@ -18602,11 +18598,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<reference ref="881970916"/>
 							<reference ref="771216088"/>
 							<reference ref="375350404"/>
-							<reference ref="781717900"/>
 							<reference ref="898579432"/>
 							<reference ref="296086739"/>
 							<reference ref="111700280"/>
 							<reference ref="379816804"/>
+							<reference ref="781717900"/>
 						</object>
 						<reference key="parent" ref="78186995"/>
 					</object>
