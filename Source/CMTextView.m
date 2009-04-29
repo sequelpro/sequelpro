@@ -40,7 +40,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kAPlinked   @"Linked" // attribute for a via auto-pair inserted char
 #define kAPval      @"linked"
 #define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
-#define kWQval      @"quoted"
+#define kWquoted    @"isQuoted"
+#define kWQval      @"aValue"
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
 #define kQuote      @"Quote"
 
@@ -241,6 +242,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) keyDown:(NSEvent *)theEvent
 {
 	
+	if(autohelpEnabled) // cancel autoHelp request
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
+	
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
@@ -401,7 +407,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-	
+	if(autohelpEnabled)
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:1];
+
 }
 
 
@@ -1654,6 +1662,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
+ * Set whether MySQL Help should be automatically invoked while typing.
+ */
+- (void)setAutohelp:(BOOL)enableAutohelp
+{
+	autohelpEnabled = enableAutohelp;
+}
+
+/*
  * Retrieve whether this text view automatically creates the matching closing char for ", ', ` and ( chars.
  */
 - (BOOL)autopair
@@ -1670,11 +1686,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
- * Retrieve whether SQL keywords should be automaticallyuppercased.
+ * Retrieve whether SQL keywords should be automatically uppercased.
  */
 - (BOOL)autouppercaseKeywords
 {
 	return autouppercaseKeywordsEnabled;
+}
+
+/*
+ * Retrieve whether MySQL Help should be automatically invoked while typing.
+ */
+- (BOOL)autohelp
+{
+	return autohelpEnabled;
 }
 
 
@@ -1693,14 +1717,34 @@ SYNTAX HIGHLIGHTING!
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
 	autouppercaseKeywordsEnabled = YES;
+	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 
-    lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
-    [scrollView setVerticalRulerView:lineNumberView];
-    [scrollView setHasHorizontalRuler:NO];
-    [scrollView setHasVerticalRuler:YES];
-    [scrollView setRulersVisible:YES];
 
+	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
+	[scrollView setVerticalRulerView:lineNumberView];
+	[scrollView setHasHorizontalRuler:NO];
+	[scrollView setHasVerticalRuler:YES];
+	[scrollView setRulersVisible:YES];
+
+}
+
+
+- (void)autoHelp
+{
+	if(!autohelpEnabled) return;
+	
+	if([self selectedRange].length)
+	{
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
+		return;
+	}
+	
+	long cursorPosition = [self selectedRange].location;
+	if (cursorPosition >= [[self string] length]) cursorPosition--;
+	if(cursorPosition > -1 && (![[[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil] isEqualToString:kWquoted]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
+	
 }
 
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
@@ -1714,6 +1758,8 @@ SYNTAX HIGHLIGHTING!
  *  Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
  */
 {
+
+
 	NSTextStorage *textStore = [notification object];
 
 	//make sure that the notification is from the correct textStorage object
@@ -1738,7 +1784,6 @@ SYNTAX HIGHLIGHTING!
 
 	//first remove the old colors
 	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
-
 
 	//initialise flex
 	yyuoffset = 0; yyuleng = 0;
@@ -1823,11 +1868,12 @@ SYNTAX HIGHLIGHTING!
 							  range: tokenRange ];
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
-		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT)
+		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT || SPT_BACKTICK_QUOTED_TEXT)
 			[textStore addAttribute: kQuote
-							  value: kWQval
+							  value: kWquoted
 							  range: tokenRange ];
 	}
+	
 }
 
 @end

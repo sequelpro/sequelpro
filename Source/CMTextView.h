@@ -30,6 +30,7 @@
 	BOOL autoindentIgnoresEnter;
 	BOOL autouppercaseKeywordsEnabled;
 	BOOL delBackwardsWasPressed;
+	BOOL autohelpEnabled;
 	NoodleLineNumberView *lineNumberView;
 	
 	NSString *lookupInDocumentationTitle;
@@ -52,7 +53,10 @@
 - (BOOL) autopair;
 - (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
 - (BOOL) autouppercaseKeywords;
+- (void) setAutohelp:(BOOL)enableAutohelp;
+- (BOOL) autohelp;
 - (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
+- (void) autoHelp;
 
 @end
