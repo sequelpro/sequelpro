@@ -27,7 +27,7 @@
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
 
 #define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
-#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"log"
+#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"sql"
 
 #define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
 
@@ -482,7 +482,9 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (void)_addMessageToConsole:(NSString *)message isError:(BOOL)error
 {
-	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByAppendingString:@";"] date:[NSDate date]];
+	NSMutableString *mutableMessage = [NSMutableString stringWithString:[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+	[mutableMessage replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, [mutableMessage length])];
+	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[mutableMessage stringByAppendingString:@";"] date:[NSDate date]];
 
 	[consoleMessage setIsError:error];
 
@@ -520,7 +522,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	// If hiding SELECTs and SHOWs is toggled to on, check whether the message is a SELECT or SHOW
 	if (messageMatchesCurrentFilters
 		&& showSelectStatementsAreDisabled
-		&& ([message hasPrefix:@"SELECT"] || [message hasPrefix:@"SHOW"]))
+		&& ([[message uppercaseString] hasPrefix:@"SELECT"] || [[message uppercaseString] hasPrefix:@"SHOW"]))
 	{
 		messageMatchesCurrentFilters = NO;
 	}
