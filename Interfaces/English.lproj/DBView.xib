@@ -372,7 +372,7 @@
 												<reference key="NSControlView" ref="1029554648"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage" id="173181941">
+												<object class="NSCustomResource" key="NSNormalImage">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -387,7 +387,10 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<reference key="NSImage" ref="173181941"/>
+													<object class="NSCustomResource" key="NSImage" id="247330881">
+														<string key="NSClassName">NSImage</string>
+														<string key="NSResourceName">button_action</string>
+													</object>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2264,8 +2267,8 @@
 																			<bool key="NS.raise.underflow">YES</bool>
 																			<bool key="NS.raise.dividebyzero">YES</bool>
 																		</object>
-																		<string key="NS.decimal">,</string>
-																		<string key="NS.thousand">.</string>
+																		<string key="NS.decimal">.</string>
+																		<string key="NS.thousand">,</string>
 																		<bool key="NS.hasthousands">NO</bool>
 																		<bool key="NS.localized">YES</bool>
 																		<bool key="NS.allowsfloats">NO</bool>
@@ -2951,7 +2954,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<reference key="NSNormalImage" ref="173181941"/>
+																					<reference key="NSNormalImage" ref="247330881"/>
 																					<string key="NSAlternateContents"/>
 																					<string key="NSKeyEquivalent"/>
 																					<int key="NSPeriodicDelay">400</int>
@@ -2963,7 +2966,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="173181941"/>
+																						<reference key="NSImage" ref="247330881"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -6298,7 +6301,7 @@
 			<object class="NSWindowTemplate" id="78186995">
 				<int key="NSWindowStyleMask">31</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{415, 136}, {485, 308}}</string>
+				<string key="NSWindowRect">{{415, 136}, {505, 308}}</string>
 				<int key="NSWTFlags">-201325568</int>
 				<string key="NSWindowTitle">MySQL Help</string>
 				<string key="NSWindowClass">NSPanel</string>
@@ -6333,7 +6336,7 @@
 									<string>public.url-name</string>
 								</object>
 							</object>
-							<string key="NSFrameSize">{485, 271}</string>
+							<string key="NSFrameSize">{505, 271}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<reference key="NSNextKeyView"/>
 							<string key="FrameName"/>
@@ -6574,7 +6577,7 @@
 						<object class="NSBox" id="379816804">
 							<reference key="NSNextResponder" ref="539508428"/>
 							<int key="NSvFlags">10</int>
-							<string key="NSFrame">{{0, 269}, {485, 5}}</string>
+							<string key="NSFrame">{{0, 269}, {505, 5}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
@@ -6596,7 +6599,7 @@
 						<object class="NSSegmentedControl" id="781717900">
 							<reference key="NSNextResponder" ref="539508428"/>
 							<int key="NSvFlags">265</int>
-							<string key="NSFrame">{{349, 280}, {125, 18}}</string>
+							<string key="NSFrame">{{349, 281}, {145, 18}}</string>
 							<reference key="NSSuperview" ref="539508428"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSegmentedCell" key="NSCell" id="814562035">
@@ -6607,13 +6610,13 @@
 								<object class="NSMutableArray" key="NSSegmentImages">
 									<bool key="EncodedWithXMLCoder">YES</bool>
 									<object class="NSSegmentItem">
-										<double key="NSSegmentItemWidth">3.900000e+01</double>
+										<double key="NSSegmentItemWidth">4.600000e+01</double>
 										<string key="NSSegmentItemLabel">Web</string>
 										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIHRoZSBvbmxpbmUgZG9jdW1lbnRhdGlvbiBb4oyl4oyYV10</string>
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 									<object class="NSSegmentItem">
-										<double key="NSSegmentItemWidth">3.900000e+01</double>
+										<double key="NSSegmentItemWidth">4.600000e+01</double>
 										<string key="NSSegmentItemLabel">Page</string>
 										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIGN1cnJlbnQgcGFnZSBb4oyl4oyYUF0</string>
 										<int key="NSSegmentItemTag">1</int>
@@ -6621,7 +6624,7 @@
 										<int key="NSSegmentItemImageScaling">0</int>
 									</object>
 									<object class="NSSegmentItem">
-										<double key="NSSegmentItemWidth">3.900000e+01</double>
+										<double key="NSSegmentItemWidth">4.500000e+01</double>
 										<string key="NSSegmentItemLabel">MySQL</string>
 										<string type="base64-UTF8" key="NSSegmentItemTooltip">U2VhcmNoIGluIE15U1FMIEhlbHAgIFvijKXijJhNXQ</string>
 										<int key="NSSegmentItemTag">2</int>
@@ -6693,7 +6696,7 @@
 							</object>
 						</object>
 					</object>
-					<string key="NSFrameSize">{485, 308}</string>
+					<string key="NSFrameSize">{505, 308}</string>
 					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 1002}}</string>
@@ -18599,11 +18602,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<reference ref="881970916"/>
 							<reference ref="771216088"/>
 							<reference ref="375350404"/>
-							<reference ref="379816804"/>
 							<reference ref="781717900"/>
 							<reference ref="898579432"/>
 							<reference ref="296086739"/>
 							<reference ref="111700280"/>
+							<reference ref="379816804"/>
 						</object>
 						<reference key="parent" ref="78186995"/>
 					</object>
@@ -19922,6 +19925,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>5509.IBViewIntegration.shadowOffsetHeight</string>
 					<string>5509.IBViewIntegration.shadowOffsetWidth</string>
 					<string>5510.IBPluginDependency</string>
+					<string>5510.IBSegmentedControlTracker.RoundRobinState</string>
+					<string>5510.IBSegmentedControlTracker.WasGrowing</string>
 					<string>5511.IBPluginDependency</string>
 					<string>5514.IBPluginDependency</string>
 					<string>5515.IBPluginDependency</string>
@@ -21572,8 +21577,8 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{440, 261}, {485, 308}}</string>
-					<string>{{440, 261}, {485, 308}}</string>
+					<string>{{305, 131}, {505, 308}}</string>
+					<string>{{305, 131}, {505, 308}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{351, 120}</string>
@@ -21599,6 +21604,8 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<real value="2.000000e+01"/>
 					<real value="0.000000e+00"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="2"/>
+					<reference ref="8"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -21959,10 +21966,11 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>getHelpForCurrentWord:</string>
 							<string>helpSearchFindNextInPage:</string>
 							<string>helpSearchFindPreviousInPage:</string>
-							<string>helpSegmentDispachter:</string>
-							<string>helpTargetMySQLButton:</string>
-							<string>helpTargetOnlineButton:</string>
-							<string>helpTargetPageButton:</string>
+							<string>helpSegmentDispatcher:</string>
+							<string>helpSelectHelpTargetMySQL:</string>
+							<string>helpSelectHelpTargetPage:</string>
+							<string>helpSelectHelpTargetWeb:</string>
+							<string>helpTargetDispatcher:</string>
 							<string>removeQueryFavorite:</string>
 							<string>runAllQueries:</string>
 							<string>runSelectedQueries:</string>
@@ -21970,6 +21978,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -22007,9 +22016,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>helpNavigator</string>
 							<string>helpSearchField</string>
 							<string>helpSearchFieldCell</string>
-							<string>helpTargetMySQLButton</string>
-							<string>helpTargetOnlineButton</string>
-							<string>helpTargetPageButton</string>
+							<string>helpTargetSelector</string>
 							<string>helpWebView</string>
 							<string>helpWebViewWindow</string>
 							<string>queryFavoritesButton</string>
@@ -22042,9 +22049,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>NSSegmentedControl</string>
 							<string>NSSearchField</string>
 							<string>NSSearchFieldCell</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+							<string>NSSegmentedControl</string>
 							<string>id</string>
 							<string>NSWindow</string>
 							<string>id</string>
@@ -23016,133 +23021,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
-					</object>
-				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">CustomQuery</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSMutableArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addQueryFavorite:</string>
-							<string>chooseQueryFavorite:</string>
-							<string>chooseQueryHistory:</string>
-							<string>closeQueryFavoritesSheet:</string>
-							<string>closeSheet:</string>
-							<string>copyQueryFavorite:</string>
-							<string>gearMenuItemSelected:</string>
-							<string>getHelpForCurrentWord:</string>
-							<string>helpSearchFindNextInPage:</string>
-							<string>helpSearchFindPreviousInPage:</string>
-							<string>helpSegmentDispatcher:</string>
-							<string>helpSelectHelpTargetMySQL:</string>
-							<string>helpSelectHelpTargetPage:</string>
-							<string>helpSelectHelpTargetWeb:</string>
-							<string>helpTargetDispatcher:</string>
-							<string>removeQueryFavorite:</string>
-							<string>runAllQueries:</string>
-							<string>runSelectedQueries:</string>
-							<string>showHelpForSearchString:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSMutableArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>affectedRowsText</string>
-							<string>autoindentMenuItem</string>
-							<string>autopairMenuItem</string>
-							<string>autouppercaseKeywordsMenuItem</string>
-							<string>clearHistoryMenuItem</string>
-							<string>completionListMenuItem</string>
-							<string>copyQueryFavoriteButton</string>
-							<string>customQueryView</string>
-							<string>editorFontMenuItem</string>
-							<string>errorText</string>
-							<string>helpNavigator</string>
-							<string>helpSearchField</string>
-							<string>helpSearchFieldCell</string>
-							<string>helpTargetSelector</string>
-							<string>helpWebView</string>
-							<string>helpWebViewWindow</string>
-							<string>queryFavoritesButton</string>
-							<string>queryFavoritesSheet</string>
-							<string>queryFavoritesView</string>
-							<string>queryHistoryButton</string>
-							<string>removeQueryFavoriteButton</string>
-							<string>runAllButton</string>
-							<string>runSelectionButton</string>
-							<string>runSelectionMenuItem</string>
-							<string>shiftLeftMenuItem</string>
-							<string>shiftRightMenuItem</string>
-							<string>tableWindow</string>
-							<string>textView</string>
-							<string>valueSheet</string>
-							<string>valueTextField</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>CMCopyTable</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>NSSegmentedControl</string>
-							<string>NSSearchField</string>
-							<string>NSSearchFieldCell</string>
-							<string>NSSegmentedControl</string>
-							<string>id</string>
-							<string>NSWindow</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>CMTextView</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/CustomQuery.h</string>
 					</object>
 				</object>
 			</object>
