@@ -1388,6 +1388,7 @@ traps enter key and
 		if(![helpString isEqualToString:@"__no_help_available"])
 			[helpWebViewWindow orderFront:helpWebView];
 		helpTarget = 2; // set default to search in MySQL help
+		[helpTargetSelector setSelectedSegment:2];
 		[self helpTargetValidation];
 	}
 	if([helpString isEqualToString:@"__no_help_available"])
@@ -1485,10 +1486,11 @@ traps enter key and
 		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:NO caseSensitive:NO wrap:YES])
 			NSBeep();
 }
+
 /*
  * Navigation for back/TOC/forward
  */
-- (IBAction)helpSegmentDispachter:(id)sender
+- (IBAction)helpSegmentDispatcher:(id)sender
 {
 	switch([helpNavigator selectedSegment])
 	{
@@ -1516,23 +1518,40 @@ traps enter key and
 /*
  * Set helpTarget
  */
-
-- (IBAction)helpTargetPageButton:(id)sender
-{
-	helpTarget = 0;
-	[self helpTargetValidation];
-}
-- (IBAction)helpTargetOnlineButton:(id)sender
-{
-	helpTarget = 1;
-	[self helpTargetValidation];
-}
-- (IBAction)helpTargetMySQLButton:(id)sender
+- (IBAction)helpSelectHelpTargetMySQL:(id)sender
 {
 	helpTarget = 2;
+	[helpTargetSelector setSelectedSegment:2];
 	[self helpTargetValidation];
 }
-
+- (IBAction)helpSelectHelpTargetPage:(id)sender
+{
+	helpTarget = 0;
+	[helpTargetSelector setSelectedSegment:1];
+	[self helpTargetValidation];
+}
+- (IBAction)helpSelectHelpTargetWeb:(id)sender
+{
+	helpTarget = 1;
+	[helpTargetSelector setSelectedSegment:0];
+	[self helpTargetValidation];
+}
+- (IBAction)helpTargetDispatcher:(id)sender
+{
+	switch([helpTargetSelector selectedSegment])
+	{
+		case 0:
+		helpTarget = 1;
+		break;
+		case 1:
+		helpTarget = 0;
+		break;
+		case 2:
+		helpTarget = 2;
+		break;
+	}
+	[self helpTargetValidation];
+}
 /*
  * Control search target buttons and help behaviour
  */
@@ -1541,21 +1560,10 @@ traps enter key and
 	switch(helpTarget)
 	{
 		case 0: // page
-		[helpTargetPageButton setState:NSOnState];
-		[helpTargetOnlineButton setState:NSOffState];
-		[helpTargetMySQLButton setState:NSOffState];
-		[helpSearchFieldCell setSendsWholeSearchString:YES];
-		break;
 		case 1: // online
-		[helpTargetPageButton setState:NSOffState];
-		[helpTargetOnlineButton setState:NSOnState];
-		[helpTargetMySQLButton setState:NSOffState];
 		[helpSearchFieldCell setSendsWholeSearchString:YES];
 		break;
 		case 2: // MySQL
-		[helpTargetPageButton setState:NSOffState];
-		[helpTargetOnlineButton setState:NSOffState];
-		[helpTargetMySQLButton setState:NSOnState];
 		[helpSearchFieldCell setSendsWholeSearchString:NO];
 		break;
 	}

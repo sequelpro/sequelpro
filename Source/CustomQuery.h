@@ -48,9 +48,6 @@
 	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
-	IBOutlet id helpTargetPageButton;
-	IBOutlet id helpTargetOnlineButton;
-	IBOutlet id helpTargetMySQLButton;
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *clearHistoryMenuItem;
@@ -67,6 +64,8 @@
 	IBOutlet NSSearchField *helpSearchField;
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
+	IBOutlet NSSegmentedControl *helpTargetSelector;
+
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
@@ -93,12 +92,13 @@
 - (IBAction)gearMenuItemSelected:(id)sender;
 - (IBAction)getHelpForCurrentWord:(id)sender;
 - (IBAction)showHelpForSearchString:(id)sender;
-- (IBAction)helpSegmentDispachter:(id)sender;
-- (IBAction)helpTargetPageButton:(id)sender;
-- (IBAction)helpTargetOnlineButton:(id)sender;
-- (IBAction)helpTargetMySQLButton:(id)sender;
+- (IBAction)helpSegmentDispatcher:(id)sender;
+- (IBAction)helpTargetDispatcher:(id)sender;
 - (IBAction)helpSearchFindNextInPage:(id)sender;
 - (IBAction)helpSearchFindPreviousInPage:(id)sender;
+- (IBAction)helpSelectHelpTargetMySQL:(id)sender;
+- (IBAction)helpSelectHelpTargetPage:(id)sender;
+- (IBAction)helpSelectHelpTargetWeb:(id)sender;
 
 
 // queryFavoritesSheet methods
