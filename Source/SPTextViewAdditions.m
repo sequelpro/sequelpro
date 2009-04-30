@@ -49,10 +49,21 @@
 	if(curLocation < newStartRange || curLocation > newEndRange)
 	{
 		[self setSelectedRange:curRange];
-		[self moveWordRightAndModifySelection:self];
+		[self moveWordRight:self];
+		[self moveWordLeftAndModifySelection:self];
+		newStartRange = [self selectedRange].location;
+		newEndRange = newStartRange + [self selectedRange].length;
 	}
 	
-	if([[[self string] substringWithRange:[self selectedRange]] rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location != NSNotFound)
+	// how many space in front of the selection
+	int bias = [self selectedRange].length - [[[[self string] substringWithRange:[self selectedRange]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length];
+	[self setSelectedRange:NSMakeRange([self selectedRange].location+bias, [self selectedRange].length-bias)];
+	newStartRange += bias;
+	newEndRange -= bias;
+
+	// is caret inside the selection still?
+	if(curLocation < newStartRange || curLocation > newEndRange 
+		|| [[[self string] substringWithRange:[self selectedRange]] rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location != NSNotFound)
 		[self setSelectedRange:curRange];
 	
 	NSRange wordRange = [self selectedRange];

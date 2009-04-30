@@ -33,12 +33,15 @@
 	BOOL autohelpEnabled;
 	NoodleLineNumberView *lineNumberView;
 	
-	NSString *lookupInDocumentationTitle;
+	NSString *showMySQLHelpFor;
 	
 	BOOL sqlStringIsTooLarge;
 	
 	IBOutlet NSScrollView *scrollView;
+	
 }
+
+- (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
 - (BOOL) isNextCharMarkedBy:(id)attribute;
 - (BOOL) areAdjacentCharsLinked;

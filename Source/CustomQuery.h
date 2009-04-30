@@ -57,6 +57,7 @@
 	IBOutlet NSMenuItem *editorFontMenuItem;
 	IBOutlet NSMenuItem *autoindentMenuItem;
 	IBOutlet NSMenuItem *autopairMenuItem;
+	IBOutlet NSMenuItem *autohelpMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;

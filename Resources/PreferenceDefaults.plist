@@ -42,6 +42,8 @@
 	<true/>
 	<key>CustomQueryAutouppercaseKeywords</key>
 	<false/>
+	<key>CustomQueryAutohelp</key>
+	<false/>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>
 	<key>LastFavoriteIndex</key>

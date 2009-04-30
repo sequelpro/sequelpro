@@ -44,6 +44,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kQuote      @"Quote"
 #define kValue      @"dummy"
 
+#define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
+
 
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
@@ -63,56 +65,48 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {	
 	// Set title of the menu item
-	lookupInDocumentationTitle = NSLocalizedString(@"Lookup In MySQL Documentation", @"Lookup In MySQL Documentation");
+	if([self selectedRange].length)
+		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection");
+	else
+		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word");
 	
 	// Add the menu item if it doesn't yet exist
 	NSMenu *menu = [[self class] defaultMenu];
 	
-	if ([[[self class] defaultMenu] itemWithTitle:lookupInDocumentationTitle] == nil) {
-		
+	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
+	{
 		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
-		[menu insertItemWithTitle:lookupInDocumentationTitle action:@selector(lookupSelectionInDocumentation) keyEquivalent:@"" atIndex:4];
+		NSMenuItem *showMySQLHelpForMenuItem = [[NSMenuItem alloc] initWithTitle:showMySQLHelpFor action:@selector(showMySQLHelpForCurrentWord:) keyEquivalent:@"h"];
+		[showMySQLHelpForMenuItem setTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG];
+		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
+	} else {
+		[[menu itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] setTitle:showMySQLHelpFor];
 	}
-	
     return menu;
 }
 
 /*
- * pen the refman if available or a search for the current selection or current word on mysql.com 
- */
-- (void)lookupSelectionInDocumentation 
-{	
-	// Get the major MySQL server version in the form of x.x, which is basically the first 3 characters of the returned version string
-	NSString *version = [[(TableDocument *)[[self window] delegate] mySQLVersion] substringToIndex:3];
-	
-	// Get the current selection and encode it to be used in a URL
-	NSString *keyword = [[[self string] substringWithRange:[self getRangeForCurrentWord]] lowercaseString];
-	
-	// Remove whitespace and newlines
-	keyword = [keyword stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	// Remove whitespace and newlines within the keyword
-	keyword = [keyword stringByReplacingOccurrencesOfString:@" " withString:@""];
-	keyword = [keyword stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-
-	// Open MySQL Documentation search in browser using the terms
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:MYSQL_DOC_SEARCH_URL, version, [keyword stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
-	
-	[[NSWorkspace sharedWorkspace] openURL:url];
-}
-
-/*
- * Disable the lookup in documentation function when getRangeForCurrentWord returns zero length. 
+ * Disable the search in the MySQL help function when getRangeForCurrentWord returns zero length. 
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
 {	
-	// Enable or disable the lookup in documentation menu item depending on whether there is a 
+	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
-	if ([menuItem action] == @selector(lookupSelectionInDocumentation)) {
-		return (([self getRangeForCurrentWord].length) || ([self getRangeForCurrentWord].length > 256));
+	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
+		long stringSize = [self getRangeForCurrentWord].length;
+		return (stringSize || stringSize > 64);
 	}
 	
 	return YES;
+}
+
+/*
+ * Search for the current selection or current word in the MySQL Help 
+ */
+- (IBAction)showMySQLHelpForCurrentWord:(id)sender
+{	
+	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
 }
 
 /*
@@ -276,7 +270,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if(curFlags==(NSControlKeyMask))
 		{
 			
-			[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
+			[self showMySQLHelpForCurrentWord:self];
 			return;
 		}
 
@@ -1732,7 +1726,6 @@ SYNTAX HIGHLIGHTING!
 	autouppercaseKeywordsEnabled = YES;
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
-
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
