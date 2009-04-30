@@ -37,7 +37,6 @@
 #define SP_HELP_SHOW_TOC_BUTTON   1
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
-#define SP_HELP_TOC_SEARCH_STRING @"contents"
 
 
 @implementation CustomQuery
@@ -1383,6 +1382,21 @@ traps enter key and
 #pragma mark -
 #pragma mark MySQL Help
 
+/*
+ * Set the MySQL version as X.Y for Help window title and online search
+ */
+- (void)setMySQLversion:(NSString *)theVersion
+{
+	mySQLversion = [[theVersion substringToIndex:3] retain];
+}
+
+/*
+ * Return the Help window.
+ */
+- (NSWindow *)helpWebViewWindow
+{
+	return helpWebViewWindow;
+}
 
 /*
  * Show the data for "HELP 'searchString'".
@@ -1390,18 +1404,13 @@ traps enter key and
 - (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory
 {
 	NSString * helpString = [self getHTMLformattedMySQLHelpFor:searchString];
+
 	// Order out resp. init the Help window if not visible
 	if(![helpWebViewWindow isVisible])
 	{
-		// get current MySQL version for title and online search
-		mySQLversion = [[[(TableDocument *)[[textView window] delegate] mySQLVersion] substringToIndex:3] retain];
-
+		// set title of the Help window
 		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), mySQLversion]];
-
-		// init search history
-		[helpWebView setMaintainsBackForwardList:YES];
-		[[helpWebView backForwardList] setCapacity:20];
-
+	
 		// init goback/forward buttons
 		if([[helpWebView backForwardList] backListCount] < 1)
 		{
@@ -1871,6 +1880,10 @@ traps enter key and
 		NSLog(@"%@", [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]]);
 		NSBeep();
 	}
+
+	// init search history
+	[helpWebView setMaintainsBackForwardList:YES];
+	[[helpWebView backForwardList] setCapacity:20];
 
 	return self;
 }

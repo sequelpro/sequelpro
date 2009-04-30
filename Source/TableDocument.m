@@ -339,6 +339,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[tableSourceInstance setConnection:mySQLConnection];
 		[tableContentInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
+		[customQueryInstance setMySQLversion:mySQLVersion];
 		[tableDumpInstance setConnection:mySQLConnection];
 		[spExportControllerInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
@@ -1436,11 +1437,22 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	return [self export:sender];
 }
 
+/*
+ * Show the MySQL Help TOC of the current MySQL connection
+ * Invoked by the MainMenu > Help > MySQL Help
+ */
+- (IBAction)showMySQLHelp:(id)sender
+{
+	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
+	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
+}
+
+
 /**
  * Menu validation
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{	
+{
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
@@ -1816,7 +1828,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	//set up toolbar
 	[self setupToolbar];
-	//	[self connectToDB:nil];
+	// [self connectToDB:nil];
 	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
 	
 	if([prefs boolForKey:@"SelectLastFavoriteUsed"] == YES){
@@ -1835,6 +1847,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {	
 	if ([mySQLConnection isConnected]) [self closeConnection];
 	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
+	[[customQueryInstance helpWebViewWindow] release];
+	[createTableSyntaxWindow release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
