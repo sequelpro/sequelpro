@@ -1723,16 +1723,6 @@ traps enter key and
 
 	[tableDetails release];
 	
-	NSString *helpHTMLTemplatePath = [[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"];
-	NSError *error;
-	NSString *helpHTMLTemplate = [[NSString alloc]
-			initWithContentsOfFile:helpHTMLTemplatePath
-			encoding:NSUTF8StringEncoding
-			error:&error];
-	// an error occurred while reading
-	if (helpHTMLTemplate == nil)
-		return [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]];
-
 	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
 
 }
@@ -1781,45 +1771,71 @@ traps enter key and
 
 /*
  * Manage contextual menu in helpWebView
- * Ignore "Reload", "Open Link", "Open Link in new Window", "Download link".
+ * Ignore "Reload", "Open Link", "Open Link in new Window", "Download link" etc.
  */
 - (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
 {
-	int menuType = [defaultMenuItems count];
-	NSMutableArray *returnArray = [[NSMutableArray array] autorelease];
-	NSMenuItem *searchInMySQL;
-	NSMenuItem *searchInMySQLonline;
 
-	// dispatcher for different context menus via the number of menu items
-	switch(menuType)
+	NSMutableArray *webViewMenuItems = [[defaultMenuItems mutableCopy] autorelease];
+	
+	if (webViewMenuItems)
 	{
-		case 1: // only reload
-		return nil;
-		break;
-		case 2: // back and reload
-		return [NSArray arrayWithObjects:[defaultMenuItems objectAtIndex:0], nil];
-		break;
-		case 3: // back, forward, and reload
-		return [NSArray arrayWithObjects:[defaultMenuItems objectAtIndex:0], [defaultMenuItems objectAtIndex:1], nil];
-		break;
-		case 4: // cursor over link (only allow copy link)
-		return [NSArray arrayWithObjects:[defaultMenuItems objectAtIndex:3], nil];
-		break;
-		case 6: // menu for a selection, add Search in MySQL Help
-		searchInMySQL = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Help", @"Search in MySQL Help") action:@selector(showHelpForWebViewSelection:) keyEquivalent:@""];
-		[searchInMySQL setEnabled:YES];
-		[searchInMySQL setTarget:self];
-		[returnArray addObject:searchInMySQL];
+		// Remove all needless default menu items 
+		NSEnumerator *itemEnumerator = [defaultMenuItems objectEnumerator];
+		NSMenuItem *menuItem = nil;
+		while (menuItem = [itemEnumerator nextObject])
+		{
+			int tag = [menuItem tag];
+			switch (tag)
+			{
+				case 2000: // WebMenuItemTagOpenLink
+				case WebMenuItemTagOpenLinkInNewWindow:
+				case WebMenuItemTagDownloadLinkToDisk:
+				case WebMenuItemTagOpenImageInNewWindow:
+				case WebMenuItemTagDownloadImageToDisk:
+				case WebMenuItemTagCopyImageToClipboard:
+				case WebMenuItemTagOpenFrameInNewWindow:
+				case WebMenuItemTagStop:
+				case WebMenuItemTagReload:
+				case WebMenuItemTagCut:
+				case WebMenuItemTagPaste:
+				case WebMenuItemTagSpellingGuess:
+				case WebMenuItemTagNoGuessesFound:
+				case WebMenuItemTagIgnoreSpelling:
+				case WebMenuItemTagLearnSpelling:
+				case WebMenuItemTagOther:
+				case WebMenuItemTagOpenWithDefaultApplication:
+				[webViewMenuItems removeObjectIdenticalTo: menuItem];
+				break;
+			}
+		}
+	}
+
+	// Add two menu items for a selection
+	if(webViewMenuItems 
+		&& [[element objectForKey:@"WebElementIsSelected"] boolValue] 
+		&& ![[element objectForKey:@"WebElementLinkIsLive"] boolValue])
+	{
+
+		NSMenuItem *searchInMySQL;
+		NSMenuItem *searchInMySQLonline;
+
+		[webViewMenuItems insertObject:[NSMenuItem separatorItem] atIndex:0];
+
 		searchInMySQLonline = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Documentation", @"Search in MySQL Documentation") action:@selector(searchInDocForWebViewSelection:) keyEquivalent:@""];
 		[searchInMySQLonline setEnabled:YES];
 		[searchInMySQLonline setTarget:self];
-		[returnArray addObject:searchInMySQLonline];
-		[returnArray addObject:[NSMenuItem separatorItem]];
-		[returnArray addObjectsFromArray:defaultMenuItems];
-		return returnArray;
-		break;
+		[webViewMenuItems insertObject:searchInMySQLonline atIndex:0];
+
+		searchInMySQL = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Help", @"Search in MySQL Help") action:@selector(showHelpForWebViewSelection:) keyEquivalent:@""];
+		[searchInMySQL setEnabled:YES];
+		[searchInMySQL setTarget:self];
+		[webViewMenuItems insertObject:searchInMySQL atIndex:0];
+
 	}
-	return nil;
+
+	return webViewMenuItems;
+
 }
 
 
@@ -1831,6 +1847,19 @@ traps enter key and
 	self = [super init];
 	prefs = nil;
 	usedQuery = [[NSString stringWithString:@""] retain];
+
+	// init helpHTMLTemplate
+	NSError *error;
+	helpHTMLTemplate = [[NSString alloc]
+			initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"]
+			encoding:NSUTF8StringEncoding
+			error:&error];
+	// an error occurred while reading
+	if (helpHTMLTemplate == nil)
+	{
+		NSLog(@"%@", [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]]);
+		NSBeep();
+	}
 
 	return self;
 }

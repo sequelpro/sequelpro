@@ -75,12 +75,13 @@
 	
 	NSString *usedQuery;
 	NSString *mySQLversion;
-	
-	
+		
 	int queryStartPosition;
+	
 	int helpTarget;
 	WebHistory *helpHistory;
-	
+	NSString *helpHTMLTemplate;
+		
 }
 
 // IBAction methods
