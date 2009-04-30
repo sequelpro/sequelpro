@@ -35,6 +35,8 @@
 	
 	NSString *lookupInDocumentationTitle;
 	
+	BOOL sqlStringIsTooLarge;
+	
 	IBOutlet NSScrollView *scrollView;
 }
 

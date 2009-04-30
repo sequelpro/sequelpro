@@ -40,10 +40,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kAPlinked   @"Linked" // attribute for a via auto-pair inserted char
 #define kAPval      @"linked"
 #define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
-#define kWquoted    @"isQuoted"
-#define kWQval      @"aValue"
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
 #define kQuote      @"Quote"
+#define kValue      @"dummy"
+
 
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
@@ -241,7 +241,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void) keyDown:(NSEvent *)theEvent
 {
-	
+
 	if(autohelpEnabled) // cancel autoHelp request
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
@@ -412,6 +412,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 }
 
+- (void)mouseDown:(NSEvent *)theEvent
+{
+
+	if(autohelpEnabled) // cancel autoHelp request
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+	[super mouseDown:theEvent];
+	if(autohelpEnabled)
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:1];
+
+}
 
 - (void) deleteBackward:(id)sender
 {
@@ -604,7 +617,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
-	if([[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
+	if(!sqlStringIsTooLarge && [[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
 
 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
@@ -1742,7 +1755,7 @@ SYNTAX HIGHLIGHTING!
 	
 	long cursorPosition = [self selectedRange].location;
 	if (cursorPosition >= [[self string] length]) cursorPosition--;
-	if(cursorPosition > -1 && (![[[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil] isEqualToString:kWquoted]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
+	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
 		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
 	
 }
@@ -1779,11 +1792,14 @@ SYNTAX HIGHLIGHTING!
 
 	textRange = NSMakeRange(0, [textStore length]);
 
-	//don't color texts longer than about 20KB. would be too slow
-	if (textRange.length > 20000) return; 
-
-	//first remove the old colors
+	//first remove the old colors and kQuote
 	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
+	[textStore removeAttribute:kQuote range:textRange];
+
+	//don't color texts longer than about 20KB. would be too slow
+	sqlStringIsTooLarge = (textRange.length > 20000);
+	if(sqlStringIsTooLarge) return;
+
 
 	//initialise flex
 	yyuoffset = 0; yyuleng = 0;
@@ -1856,7 +1872,7 @@ SYNTAX HIGHLIGHTING!
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
 		[textStore addAttribute: kWQquoted 
-						  value: kWQval 
+						  value: kValue 
 						  range: tokenRange ];
 
 
@@ -1864,13 +1880,13 @@ SYNTAX HIGHLIGHTING!
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			[textStore addAttribute: kSQLkeyword
-							  value: kWQval
+							  value: kValue
 							  range: tokenRange ];
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
 		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT || SPT_BACKTICK_QUOTED_TEXT)
 			[textStore addAttribute: kQuote
-							  value: kWquoted
+							  value: kValue
 							  range: tokenRange ];
 	}
 	

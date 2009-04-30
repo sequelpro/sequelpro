@@ -60,7 +60,7 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;
-	IBOutlet id helpWebView;
+	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;

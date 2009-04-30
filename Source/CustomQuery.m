@@ -1811,7 +1811,7 @@ traps enter key and
 		}
 	}
 
-	// Add two menu items for a selection
+	// Add two menu items for a selection if no link is given
 	if(webViewMenuItems 
 		&& [[element objectForKey:@"WebElementIsSelected"] boolValue] 
 		&& ![[element objectForKey:@"WebElementLinkIsLive"] boolValue])
