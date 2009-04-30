@@ -455,10 +455,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
 		NSRange currentLineRange;
+		int lineCursorLocation;
 
 		// Extract the current line based on the text caret or selection start position
 		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
 		currentLine = [[NSString alloc] initWithString:[textViewString substringWithRange:currentLineRange]];
+		lineCursorLocation = [self selectedRange].location - currentLineRange.location;
 
 		// Scan all indentation characters on the line into a string
 		whitespaceScanner = [[NSScanner alloc] initWithString:currentLine];
@@ -471,7 +473,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[self insertNewline:self];
 
 		// Replicate the indentation on the previous line if one was found.
-		if (indentString) [self insertText:indentString];
+		if (indentString) {
+			if (lineCursorLocation < [indentString length]) {
+				[self insertText:[indentString substringWithRange:NSMakeRange(0, lineCursorLocation)]];
+			} else {
+				[self insertText:indentString];
+			}
+		}
 
 		// Return to avoid the original implementation, preventing double linebreaks
 		return;
