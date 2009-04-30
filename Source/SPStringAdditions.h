@@ -30,6 +30,7 @@
 
 - (NSString *)backtickQuotedString;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
+- (NSString *)createViewSyntaxPrettifier;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;

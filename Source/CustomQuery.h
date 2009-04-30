@@ -24,10 +24,12 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
+#import <WebKit/WebKit.h>
 #import "CMCopyTable.h"
 #import "CMTextView.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "RegexKitLite.h"
 
 @interface CustomQuery : NSObject {
 
@@ -46,6 +48,7 @@
 	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
+
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *clearHistoryMenuItem;
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
@@ -54,7 +57,16 @@
 	IBOutlet NSMenuItem *editorFontMenuItem;
 	IBOutlet NSMenuItem *autoindentMenuItem;
 	IBOutlet NSMenuItem *autopairMenuItem;
+	IBOutlet NSMenuItem *autohelpMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
+
+	IBOutlet NSWindow *helpWebViewWindow;
+	IBOutlet WebView *helpWebView;
+	IBOutlet NSSearchField *helpSearchField;
+	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
+	IBOutlet NSSegmentedControl *helpNavigator;
+	IBOutlet NSSegmentedControl *helpTargetSelector;
+
 
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
@@ -63,6 +75,14 @@
 	CMMCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
+	NSString *mySQLversion;
+		
+	int queryStartPosition;
+	
+	int helpTarget;
+	WebHistory *helpHistory;
+	NSString *helpHTMLTemplate;
+		
 }
 
 // IBAction methods
@@ -72,6 +92,16 @@
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
+- (IBAction)showHelpForCurrentWord:(id)sender;
+- (IBAction)showHelpForSearchString:(id)sender;
+- (IBAction)helpSegmentDispatcher:(id)sender;
+- (IBAction)helpTargetDispatcher:(id)sender;
+- (IBAction)helpSearchFindNextInPage:(id)sender;
+- (IBAction)helpSearchFindPreviousInPage:(id)sender;
+- (IBAction)helpSelectHelpTargetMySQL:(id)sender;
+- (IBAction)helpSelectHelpTargetPage:(id)sender;
+- (IBAction)helpSelectHelpTargetWeb:(id)sender;
+
 
 // queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;
@@ -81,15 +111,25 @@
 
 // Query actions
 - (void)performQueries:(NSArray *)queries;
-- (NSString *)queryAtPosition:(long)position;
+- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
 
 // Accessors
 - (NSArray *)currentResult;
+
+// MySQL Help
+- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;
+- (void)showHelpFor:(NSString *)aString addToHistory:(BOOL)addToHistory;
+- (void)helpTargetValidation;
+- (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
+
 
 // Other
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (NSString *)usedQuery;
+
 
 @end

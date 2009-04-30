@@ -187,14 +187,14 @@
 	// For versions prior to r567 (0.9.5), add a timestamp-based identifier to favorites and keychain entries
 	if (recordedVersionNumber < 567 && [prefs objectForKey:@"favorites"]) {
 		int i;
-		NSMutableArray *favoritesArray = [prefs objectForKey:@"favorites"];
+		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
 		NSMutableDictionary *favorite;
 		NSString *password, *keychainName, *keychainAccount;
 		KeyChain *upgradeKeychain = [[KeyChain alloc] init];
 
 		// Cycle through the favorites, generating a timestamp-derived ID for each and renaming associated keychain items.
 		for (i = 0; i < [favoritesArray count]; i++) {
-			favorite = [favoritesArray objectAtIndex:i];
+			favorite = [NSMutableDictionary dictionaryWithDictionary:[favoritesArray objectAtIndex:i]];
 			if ([favorite objectForKey:@"id"]) continue;	
 			[favorite setObject:[NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
 			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]];
@@ -216,7 +216,6 @@
 	// Update the prefs revision
 	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];	
 }
-
 
 #pragma mark -
 #pragma mark IBAction methods
@@ -319,7 +318,6 @@
 	
 }
 
-
 // -------------------------------------------------------------------------------
 // updateDefaultFavorite:
 // -------------------------------------------------------------------------------
@@ -334,7 +332,6 @@
 		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:@"DefaultFavorite"];
 	}
 }
-
 
 #pragma mark -
 #pragma mark Toolbar item IBAction methods
@@ -505,7 +502,6 @@
 	return YES;
 }
 
-
 #pragma mark -
 #pragma mark TableView delegate methods
 	
@@ -599,16 +595,24 @@
 	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
+#pragma mark -
+#pragma mark SplitView delegate methods
+
 // -------------------------------------------------------------------------------
-// dealloc
+// splitView:constrainMaxCoordinate:ofSubviewAt:
 // -------------------------------------------------------------------------------
-- (void)dealloc
+- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
 {
-	[keychain release], keychain = nil;
-	
-	[super dealloc];
+	return (proposedMax - 220);
 }
 
+// -------------------------------------------------------------------------------
+// splitView:constrainMinCoordinate:ofSubviewAt:
+// -------------------------------------------------------------------------------
+- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+{
+	return (proposedMin + 100);
+}
 
 #pragma mark -
 #pragma mark TextField delegate methods
@@ -667,7 +671,6 @@
 	return YES;
 }
 
-
 #pragma mark -
 #pragma mark Window delegate methods
 
@@ -677,16 +680,13 @@
 // -------------------------------------------------------------------------------
 - (void)windowWillClose:(NSNotification *)notification
 {
-
 	// Mark the currently selected field in the window as having finished editing, to trigger saves.
 	if ([preferencesWindow firstResponder])
 		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
 }
 
-
 #pragma mark -
 #pragma mark Other
-
 
 // -------------------------------------------------------------------------------
 // updateDefaultFavoritePopup:
@@ -728,9 +728,17 @@
 	[favoritesController setSelectedObjects:favorites];
 }
 
+// -------------------------------------------------------------------------------
+// dealloc
+// -------------------------------------------------------------------------------
+- (void)dealloc
+{
+	[keychain release], keychain = nil;
+	
+	[super dealloc];
+}
+
 @end
-
-
 
 #pragma mark -
 
@@ -811,18 +819,20 @@
 - (void)_resizeWindowForContentView:(NSView *)view
 {
 	// remove all current views
-  NSEnumerator *en = [[[preferencesWindow contentView] subviews] objectEnumerator];
-  NSView *subview;
-  while (subview = [en nextObject]) {
-    [subview removeFromSuperview];
-  }
+	NSEnumerator *en = [[[preferencesWindow contentView] subviews] objectEnumerator];
+	NSView *subview;
   
-  // resize window
-  [preferencesWindow resizeForContentView:view titleBarVisible:YES];
+	while (subview = [en nextObject]) 
+	{
+		[subview removeFromSuperview];
+	}
   
-  // add view
-  [[preferencesWindow contentView] addSubview:view];
-  [view setFrameOrigin:NSMakePoint(0, 0)];
+	// resize window
+	[preferencesWindow resizeForContentView:view titleBarVisible:YES];
+  
+	// add view
+	[[preferencesWindow contentView] addSubview:view];
+	[view setFrameOrigin:NSMakePoint(0, 0)];
 }
 
 @end

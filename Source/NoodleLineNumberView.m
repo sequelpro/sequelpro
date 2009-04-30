@@ -28,7 +28,7 @@
 //
 
 // This version of the NoodleLineNumberView for Sequel Pro removes marker
-// functionality.
+// functionality and adds selection by clicking on the ruler.
 
 #import "NoodleLineNumberView.h"
 
@@ -40,7 +40,6 @@
 - (NSMutableArray *)lineIndices;
 - (void)invalidateLineIndices;
 - (void)calculateLines;
-- (unsigned)lineNumberForCharacterIndex:(unsigned)index inText:(NSString *)text;
 - (NSDictionary *)textAttributes;
 
 @end
@@ -440,6 +439,69 @@
     }
 }
 
+- (void)mouseDown:(NSEvent *)theEvent
+{
+	NSPoint					location;
+	unsigned				line;
+	NSTextView				*view;
+	
+    if (![[self clientView] isKindOfClass:[NSTextView class]]) return;
+	view = (NSTextView *)[self clientView];
+	
+	location = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+	line = [self lineNumberForLocation:location.y];
+	dragSelectionStartLine = line;
+	
+	if (line != NSNotFound)
+	{
+		unsigned int selectionStart, selectionEnd;
+		NSMutableArray *lines = [self lineIndices];
+
+		selectionStart = [[lines objectAtIndex:(line - 1)] unsignedIntValue];
+		if (line < [lines count]) {
+			selectionEnd = [[lines objectAtIndex:line] unsignedIntValue];
+		} else {
+			selectionEnd = [[view string] length];
+		}
+		[view setSelectedRange:NSMakeRange(selectionStart, selectionEnd - selectionStart)];
+	}
+}
+
+- (void)mouseDragged:(NSEvent *)theEvent
+{
+	NSPoint					location;
+	unsigned				line, startLine, endLine;
+	NSTextView				*view;
+	
+    if (![[self clientView] isKindOfClass:[NSTextView class]] || dragSelectionStartLine == NSNotFound) return;
+	view = (NSTextView *)[self clientView];
+	
+	location = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+	line = [self lineNumberForLocation:location.y];
+
+	if (line != NSNotFound)
+	{
+		unsigned int selectionStart, selectionEnd;
+		NSMutableArray *lines = [self lineIndices];
+		if (line >= dragSelectionStartLine) {
+			startLine = dragSelectionStartLine;
+			endLine = line;
+		} else {
+			startLine = line;
+			endLine = dragSelectionStartLine;
+		}
+
+		selectionStart = [[lines objectAtIndex:(startLine - 1)] unsignedIntValue];
+		if (endLine < [lines count]) {
+			selectionEnd = [[lines objectAtIndex:endLine] unsignedIntValue];
+		} else {
+			selectionEnd = [[view string] length];
+		}
+		[view setSelectedRange:NSMakeRange(selectionStart, selectionEnd - selectionStart)];
+	}
+	
+	[view autoscroll:theEvent];
+}
 
 #pragma mark NSCoding methods
 

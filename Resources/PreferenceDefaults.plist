@@ -42,9 +42,17 @@
 	<true/>
 	<key>CustomQueryAutouppercaseKeywords</key>
 	<false/>
+	<key>CustomQueryAutohelp</key>
+	<false/>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>
 	<key>LastFavoriteIndex</key>
 	<integer>0</integer>
+	<key>ConsoleShowTimestamps</key>
+	<true/>
+	<key>ConsoleShowSelectsAndShows</key>
+	<true/>
+	<key>ConsoleShowHelps</key>
+	<true/>
 </dict>
 </plist>

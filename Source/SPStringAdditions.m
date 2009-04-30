@@ -22,6 +22,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPStringAdditions.h"
+#import "RegexKitLite.h"
 
 @implementation NSString (SPStringAdditions)
 
@@ -125,23 +126,69 @@
 // -------------------------------------------------------------------------------
 - (NSString *)backtickQuotedString
 {
-    // mutableCopy automatically retains the returned string, so don't forget to release it later...
-    NSMutableString *workingCopy = [self mutableCopy];
-    
-    // First double all backticks in the string to escape them
-    // I don't want to use "stringByReplacingOccurrencesOfString:withString:" because it's only available in 10.5
-    [workingCopy replaceOccurrencesOfString: @"`"  
+	// mutableCopy automatically retains the returned string, so don't forget to release it later...
+	NSMutableString *workingCopy = [self mutableCopy];
+
+	// First double all backticks in the string to escape them
+	// I don't want to use "stringByReplacingOccurrencesOfString:withString:" because it's only available in 10.5
+	[workingCopy replaceOccurrencesOfString: @"`"  
                                   withString: @"``" 
                                      options: NSLiteralSearch 
                                        range: NSMakeRange(0, [workingCopy length]) ];
                                        
-    // Add the quotes around the string
-	NSString *quotedString = [NSString stringWithFormat:	@"`%@`", workingCopy];
-    
-    [workingCopy release];
-    
-    return quotedString;
+	// Add the quotes around the string
+	NSString *quotedString = [NSString stringWithFormat: @"`%@`", workingCopy];
+
+	[workingCopy release];
+
+	return quotedString;
 }
+
+
+// -------------------------------------------------------------------------------
+// createViewSyntaxPrettifier
+//
+// Returns a 'CREATE VIEW SYNTAX' string a bit more readable
+// If the string doesn't match it returns the unchanged string.
+// -------------------------------------------------------------------------------
+- (NSString *)createViewSyntaxPrettifier
+{
+	NSRange searchRange = NSMakeRange(0, [self length]);
+	NSRange matchedRange;
+	NSError *err = NULL;
+	NSMutableString *tblSyntax = [NSMutableString stringWithCapacity:[self length]];
+	NSString * re = @"(.*?) AS select (.*?) (from.*)";
+	
+	// create view syntax
+	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:1 error:&err];
+	
+	if(!matchedRange.length || matchedRange.length > [self length]) return([self description]);
+	
+	[tblSyntax appendString:[self substringWithRange:matchedRange]];
+	[tblSyntax appendString:@"\nAS select\n   "];
+	
+	// match all column definitions, split them by ',', and rejoin them by '\n'
+	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:2 error:&err];
+	
+	if(!matchedRange.length || matchedRange.length > [self length]) return([self description]);
+	
+	[tblSyntax appendString:
+		[[[self substringWithRange:matchedRange] componentsSeparatedByString:@"`,`"] componentsJoinedByString:@"`,\n   `"]];
+	
+	// from ... at a new line
+	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:3 error:&err];
+	
+	if(!matchedRange.length || matchedRange.length > [self length]) return([self description]);
+	
+	[tblSyntax appendString:@"\n"];
+	[tblSyntax appendString:[self substringWithRange:matchedRange]];
+	
+	// where clause at a new line if given
+	[tblSyntax replaceOccurrencesOfString:@" where (" withString:@"\nwhere (" options:NSLiteralSearch range:NSMakeRange(0, [tblSyntax length])];
+	
+	return(tblSyntax);
+}
+
 
 // -------------------------------------------------------------------------------
 // lineRangesForRange

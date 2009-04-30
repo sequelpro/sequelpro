@@ -28,7 +28,7 @@
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
 
 #define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
-#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"log"
+#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"sql"
 
 #define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
 
@@ -86,6 +86,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		messagesFilteredSet	= [[NSMutableArray alloc] init];
 
 		showSelectStatementsAreDisabled = NO;
+		showHelpStatementsAreDisabled = NO;
 		filterIsActive = NO;
 		activeFilterString = [[NSMutableString alloc] init];
 
@@ -111,11 +112,15 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)release { }
 
 /**
- * Set the window's auto save name.
+ * Set the window's auto save name and initialise display
  */
 - (void)awakeFromNib
 {
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowTimestamps"]];
+	showSelectStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowSelectsAndShows"];
+	showHelpStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowHelps"];
+	[self _updateFilterState];
 }
 
 /**
@@ -201,17 +206,28 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:(![sender intValue])];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:([sender state])];
 }
 
 /**
  * Toggles the hiding of messages containing SELECT and SHOW statements
  */
 - (IBAction)toggleShowSelectShowStatements:(id)sender
-{
+{	
 	// Store the state of the toggle for later quick reference
-	showSelectStatementsAreDisabled = ![sender intValue];
+	showSelectStatementsAreDisabled = [sender state];
+	
+	[self _updateFilterState];
+}
 
+/**
+ * Toggles the hiding of messages containing HELP statements
+ */
+- (IBAction)toggleShowHelpStatements:(id)sender
+{	
+	// Store the state of the toggle for later quick reference
+	showHelpStatementsAreDisabled = [sender state];
+	
 	[self _updateFilterState];
 }
 
@@ -398,7 +414,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 
 	// If filtering is disabled and all show/selects are shown, empty the filtered
 	// result set and set the full set to visible.
-	if (!filterIsActive && !showSelectStatementsAreDisabled) {
+	if (!filterIsActive && !showSelectStatementsAreDisabled && !showHelpStatementsAreDisabled) {
 		messagesVisibleSet = messagesFullSet;
 
 		[consoleTableView reloadData];
@@ -452,17 +468,19 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (void)_addMessageToConsole:(NSString *)message isError:(BOOL)error
 {
-	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByAppendingString:@";"] date:[NSDate date]];
+	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "] stringByAppendingString:@";"] date:[NSDate date]];
 
 	[consoleMessage setIsError:error];
 
 	[messagesFullSet addObject:consoleMessage];
 
 	// If filtering is active, determine whether to add a reference to the filtered set
-	if ((showSelectStatementsAreDisabled || filterIsActive)
+	if ((showSelectStatementsAreDisabled || showHelpStatementsAreDisabled || filterIsActive)
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
+		[saveConsoleButton setEnabled:YES];
+		[clearConsoleButton setEnabled:YES];
 	}
 
 	// Reload the table and scroll to the new message
@@ -475,7 +493,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
  * and whether it should be hidden if the SELECT/SHOW toggle is off.
  */
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message
-{
+{	
 	BOOL messageMatchesCurrentFilters = YES;
 
 	// Check whether to hide the message based on the current filter text, if any
@@ -488,7 +506,14 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	// If hiding SELECTs and SHOWs is toggled to on, check whether the message is a SELECT or SHOW
 	if (messageMatchesCurrentFilters
 		&& showSelectStatementsAreDisabled
-		&& ([message hasPrefix:@"SELECT"] || [message hasPrefix:@"SHOW"]))
+		&& ([[message uppercaseString] hasPrefix:@"SELECT"] || [[message uppercaseString] hasPrefix:@"SHOW"]))
+	{
+		messageMatchesCurrentFilters = NO;
+	}
+	// If hiding HELP is toggled to on, check whether the message is a HELP
+	if (messageMatchesCurrentFilters
+		&& showHelpStatementsAreDisabled
+		&& ([[message uppercaseString] hasPrefix:@"HELP"]))
 	{
 		messageMatchesCurrentFilters = NO;
 	}

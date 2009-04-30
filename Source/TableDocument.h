@@ -63,7 +63,7 @@
 	IBOutlet id databaseField;
 
 	IBOutlet id connectProgressBar;
-	IBOutlet id connectProgressStatusText;
+	IBOutlet NSTextField *connectProgressStatusText;
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;

@@ -30,10 +30,18 @@
 	BOOL autoindentIgnoresEnter;
 	BOOL autouppercaseKeywordsEnabled;
 	BOOL delBackwardsWasPressed;
+	BOOL autohelpEnabled;
 	NoodleLineNumberView *lineNumberView;
 	
+	NSString *showMySQLHelpFor;
+	
+	BOOL sqlStringIsTooLarge;
+	
 	IBOutlet NSScrollView *scrollView;
+	
 }
+
+- (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
 - (BOOL) isNextCharMarkedBy:(id)attribute;
 - (BOOL) areAdjacentCharsLinked;
@@ -50,5 +58,10 @@
 - (BOOL) autopair;
 - (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
 - (BOOL) autouppercaseKeywords;
+- (void) setAutohelp:(BOOL)enableAutohelp;
+- (BOOL) autohelp;
+- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
+- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
+- (void) autoHelp;
 
 @end
