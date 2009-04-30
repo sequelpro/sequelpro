@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="403"/>
+			<integer value="17"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -53,7 +53,7 @@
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
 			<object class="NSCustomView" id="594324362">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -627,10 +627,10 @@
 									</object>
 									<object class="NSMutableArray" key="dict.values">
 										<bool key="EncodedWithXMLCoder">YES</bool>
-										<integer value="1" id="9"/>
+										<boolean value="NO" id="6"/>
 										<integer value="1040"/>
-										<real value="9.900000e+01" id="793620525"/>
-										<integer value="2"/>
+										<real value="1.000000e+02" id="105669561"/>
+										<integer value="3"/>
 										<real value="0.000000e+00" id="826702528"/>
 									</object>
 								</object>
@@ -657,7 +657,7 @@
 									</object>
 								</object>
 								<reference key="NS.min" ref="826702528"/>
-								<reference key="NS.max" ref="793620525"/>
+								<reference key="NS.max" ref="105669561"/>
 								<object class="NSDecimalNumberHandler" key="NS.rounding">
 									<int key="NS.roundingmode">3</int>
 									<bool key="NS.raise.overflow">YES</bool>
@@ -668,7 +668,7 @@
 								<string key="NS.thousand">,</string>
 								<bool key="NS.hasthousands">NO</bool>
 								<bool key="NS.localized">YES</bool>
-								<bool key="NS.allowsfloats">YES</bool>
+								<bool key="NS.allowsfloats">NO</bool>
 							</object>
 							<reference key="NSControlView" ref="155059"/>
 							<bool key="NSDrawsBackground">YES</bool>
@@ -699,6 +699,7 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{500, 218}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="395894064">
@@ -874,7 +875,7 @@
 										<real value="1.000000e+04" id="19260826"/>
 										<real value="0.000000e+00" id="842280658"/>
 										<reference ref="8"/>
-										<reference ref="9"/>
+										<integer value="1" id="9"/>
 									</object>
 								</object>
 								<string key="NS.positiveformat">#1</string>
@@ -1061,7 +1062,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="593732956">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1243,7 +1244,6 @@
 												</object>
 												<string key="NSFrame">{{1, 1}, {198, 358}}</string>
 												<reference key="NSSuperview" ref="533802223"/>
-												<reference key="NSNextKeyView" ref="279932544"/>
 												<reference key="NSDocView" ref="279932544"/>
 												<reference key="NSBGColor" ref="887465699"/>
 												<int key="NScvFlags">4</int>
@@ -1271,7 +1271,6 @@
 										</object>
 										<string key="NSFrame">{{-2, 22}, {200, 360}}</string>
 										<reference key="NSSuperview" ref="984943037"/>
-										<reference key="NSNextKeyView" ref="253139122"/>
 										<int key="NSsFlags">530</int>
 										<reference key="NSVScroller" ref="940130901"/>
 										<reference key="NSHScroller" ref="2545381"/>
@@ -1721,7 +1720,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{500, 381}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="1041614321">
@@ -2785,7 +2783,7 @@ AQAAAAA</bytes>
 							<string key="NSKeyPath">arrangedObjects.name</string>
 							<object class="NSDictionary" key="NSOptions">
 								<string key="NS.key.0">NSAllowsEditingMultipleValuesSelection</string>
-								<boolean value="NO" key="NS.object.0" id="6"/>
+								<reference key="NS.object.0" ref="6"/>
 							</object>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
