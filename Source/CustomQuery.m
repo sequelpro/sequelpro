@@ -1534,19 +1534,13 @@ traps enter key and
 	switch([helpNavigator selectedSegment])
 	{
 		case SP_HELP_GOBACK_BUTTON:
-			if([[helpWebView backForwardList] backListCount]) {
-				[self showHelpFor:[[[[helpWebView backForwardList] backItem] URLString] lastPathComponent] addToHistory:NO];
-				[[helpWebView backForwardList] goBack];
-			}
+			[helpWebView goBack];
 			break;
 		case SP_HELP_SHOW_TOC_BUTTON:
 			[self showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
 			break;
 		case SP_HELP_GOFORWARD_BUTTON:
-			if([[helpWebView backForwardList] forwardListCount]) {
-				[self showHelpFor:[[[[helpWebView backForwardList] forwardItem] URLString] lastPathComponent] addToHistory:NO];
-				[[helpWebView backForwardList] goForward];
-			}
+			[helpWebView goForward];
 			break;
 	}
 	// validate goback and goforward buttons according history
