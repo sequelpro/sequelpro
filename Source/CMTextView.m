@@ -42,7 +42,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
 #define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
 #define kQuote      @"Quote"
+#define kQuoteValue @"isQuoted"
 #define kValue      @"dummy"
+#define kBTQuote    @"BTQuote"
+#define kBTQuoteValue @"isBTQuoted"
 
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
 
@@ -230,6 +233,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[self scrollRangeToVisible:selRange];
 }
 
+
 /*
  * Handle some keyDown events in order to provide autopairing functionality (if enabled).
  */
@@ -406,6 +410,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 }
 
+
+/*
+ * Notify autoHelp if user changed the insertion point
+ */
 - (void)mouseDown:(NSEvent *)theEvent
 {
 
@@ -617,39 +625,58 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
 {
 
+	if (!charRange.length) return nil;
+	
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
-	if(!sqlStringIsTooLarge && [[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
+	if(!sqlStringIsTooLarge && [[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
 
-	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
-	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+
+	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
+	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
+
 	NSString *partialString    = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
 
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
+	NSArray *matchingCompletions;
+
+	unsigned i, insindex;
+	insindex = 0;
+
+	// Add current table names omitting the first item (it's the table header)
 	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
-	
-	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
-	//NSRange partialRange = NSMakeRange(0, partialLength);
-	
-	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-	
-	NSMutableArray *possibleCompletions = [NSMutableArray arrayWithArray:textViewWords];
-	[possibleCompletions addObjectsFromArray:[self keywords]];
-	[possibleCompletions addObjectsFromArray:tableNames];
-	
+	[possibleCompletions addObjectsFromArray:[tableNames objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [tableNames count]-1)]]];
+
 	// Add column names to completions list for currently selected table
 	if ([[[self window] delegate] table] != nil) {
 		id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
 		[possibleCompletions addObjectsFromArray:columnNames];
 	}
 
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
-	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+	// Add all database names
+	MCPResult *queryResult = [[[[self window] delegate] valueForKeyPath:@"mySQLConnection"] valueForKey:@"listDBs"];
+	if ([queryResult numOfRows])
+		[queryResult dataSeek:0];
+	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+	{
+		[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+	}
 
-	unsigned i, insindex;
+	// If caret is not inside backticks add keywords and all words coming from the view.
+	if(!sqlStringIsTooLarge && ![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
+	{
+		NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
+		NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+
+		[possibleCompletions addObjectsFromArray:textViewWords];
+		[possibleCompletions addObjectsFromArray:[self keywords]];
+	}
 	
-	insindex = 0;
+	// Check for possible completions
+	matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+
 	for (i = 0; i < [matchingCompletions count]; i++)
 	{
 		NSString* obj = [matchingCompletions objectAtIndex:i];
@@ -1734,6 +1761,13 @@ SYNTAX HIGHLIGHTING!
 	autouppercaseKeywordsEnabled = YES;
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
+	
+	// commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
+	// quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
+	// keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
+	// backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
+	// numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
+	// variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -1761,32 +1795,15 @@ SYNTAX HIGHLIGHTING!
 	
 }
 
-- (void)textStorageDidProcessEditing:(NSNotification *)notification
-/*
- *  Performs syntax highlighting.
- *  This method recolors the entire text on every keypress. For performance reasons, this function does
- *  nothing if the text is more than 20 KB.
- *  
- *  The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
- *  
- *  Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
- */
+- (void)doSyntaxHighlighting:(NSTextStorage*)textStore
 {
-
-
-	NSTextStorage *textStore = [notification object];
-
-	//make sure that the notification is from the correct textStorage object
-	if (textStore!=[self textStorage]) return;
-
+	NSColor *tokenColor;
 	NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
 	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
 	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
 	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
 	NSColor *numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
 	NSColor *variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
-
-	NSColor *tokenColor;
 
 	int token;
 	NSRange textRange, tokenRange;
@@ -1885,11 +1902,37 @@ SYNTAX HIGHLIGHTING!
 							  range: tokenRange ];
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
-		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT || SPT_BACKTICK_QUOTED_TEXT)
+		else if(token < 4)
 			[textStore addAttribute: kQuote
-							  value: kValue
+							  value: kQuoteValue
+							  range: tokenRange ];
+		else if(token == SPT_BACKTICK_QUOTED_TEXT)
+			[textStore addAttribute: kBTQuote
+							  value: kBTQuoteValue
 							  range: tokenRange ];
 	}
+
+}
+
+/*
+ *  Performs syntax highlighting.
+ *  This method recolors the entire text on every keypress. For performance reasons, this function does
+ *  nothing if the text is more than 20 KB.
+ *  
+ *  The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
+ *  
+ *  Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
+ */
+- (void)textStorageDidProcessEditing:(NSNotification *)notification
+{
+
+
+	NSTextStorage *textStore = [notification object];
+
+	//make sure that the notification is from the correct textStorage object
+	if (textStore!=[self textStorage]) return;
+
+	[self doSyntaxHighlighting:textStore];
 	
 }
 

@@ -23,6 +23,12 @@
 
 #import <Cocoa/Cocoa.h>
 #import "NoodleLineNumberView.h"
+#import <MCPKit_bundled/MCPKit_bundled.h>
+#import "CMCopyTable.h"
+#import "CMTextView.h"
+#import "CMMCPConnection.h"
+#import "CMMCPResult.h"
+
 
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
@@ -38,7 +44,7 @@
 	BOOL sqlStringIsTooLarge;
 	
 	IBOutlet NSScrollView *scrollView;
-	
+
 }
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
@@ -63,5 +69,6 @@
 - (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
 - (void) autoHelp;
+- (void) doSyntaxHighlighting:(NSTextStorage*)textStore;
 
 @end
