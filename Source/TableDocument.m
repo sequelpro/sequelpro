@@ -160,11 +160,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[connection setValue:versionForPrint forKey:@"version"];
 	
 	NSArray *columns, *rows;
-	columns = rows = [[NSArray alloc] init];
+	columns = rows = nil;
+	columns = [self columnNames];
 
 	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 ){
-		if([[tableSourceInstance tableStructureForPrint] count] > 0)
-			columns = [[NSArray alloc] initWithArray:[[tableSourceInstance tableStructureForPrint] objectAtIndex:0] copyItems:YES];
 		if([[tableSourceInstance tableStructureForPrint] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
 					[[tableSourceInstance tableStructureForPrint] objectsAtIndexes:
@@ -173,8 +172,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 					];
 	}
 	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1 ){
-		if([[tableContentInstance currentResult] count] > 0)
-			columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
 		if([[tableContentInstance currentResult] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
 					[[tableContentInstance currentResult] objectsAtIndexes:
@@ -184,8 +181,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
 	}
 	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2 ){
-		if([[customQueryInstance currentResult] count] > 0)
-			columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
 		if([[customQueryInstance currentResult] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
 					[[customQueryInstance currentResult] objectsAtIndexes:
@@ -982,6 +977,45 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
                                               notificationName:@"Table Syntax Copied"];
 }
 
+- (IBAction)copyColumnNames:(id)sender
+{
+	//NSArray *columns;
+	NSString *columnNames;	
+	//columns = ;
+	if ([self columnNames]) {
+		columnNames = [NSString stringWithFormat:@"`%@`", [[self columnNames] componentsJoinedByString:@"`, `"]];
+	}
+	
+	if([columnNames length]){
+		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+		// Copy the string to the pasteboard
+		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pasteBoard setString:columnNames forType:NSStringPboardType];
+	}
+}
+
+- (NSArray *)columnNames
+{
+	NSArray *columns = nil;
+	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& [[tableSourceInstance tableStructureForPrint] count] > 0 ){
+		columns = [[NSArray alloc] initWithArray:[[tableSourceInstance tableStructureForPrint] objectAtIndex:0] copyItems:YES];
+	}
+	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& [[tableContentInstance currentResult] count] > 0 ){
+		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
+	}
+	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
+		&& [[customQueryInstance currentResult] count] > 0 ){
+		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
+	}
+	
+	if(columns) {
+		[columns autorelease];
+	}
+	return columns;
+}
+
 /**
  * Performs a MySQL check table on the selected table and presents the result to the user via an alert sheet.
  */
@@ -1473,6 +1507,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:) ||
+		[menuItem action] == @selector(copyColumnNames:) ||
 		[menuItem action] == @selector(checkTable:) || 
 		[menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 

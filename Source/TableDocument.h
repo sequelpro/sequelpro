@@ -150,6 +150,8 @@
 //table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntax:(id)sender;
+- (IBAction)copyColumnNames:(id)sender;
+- (NSArray *)columnNames;
 - (IBAction)checkTable:(id)sender;
 - (IBAction)analyzeTable:(id)sender;
 - (IBAction)optimizeTable:(id)sender;
