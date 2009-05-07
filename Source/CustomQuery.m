@@ -190,7 +190,6 @@ closes the sheet
 	[NSApp stopModal];
 }
 
-
 /*
  * Perform simple actions (which don't require their own method), triggered by selecting the appropriate menu item
  * in the "gear" action menu displayed beneath the cusotm query view.
@@ -228,7 +227,7 @@ closes the sheet
 
 	// "Indent new lines" toggle
 	if (sender == autoindentMenuItem) {
-		BOOL enableAutoindent = ([autoindentMenuItem state] == NSOffState);
+		BOOL enableAutoindent = !([autoindentMenuItem state] == NSOffState);
 		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoindent"];
 		[prefs synchronize];
 		[autoindentMenuItem setState:enableAutoindent?NSOnState:NSOffState];
@@ -237,7 +236,7 @@ closes the sheet
 
 	// "Auto-pair characters" toggle
 	if (sender == autopairMenuItem) {
-		BOOL enableAutopair = ([autopairMenuItem state] == NSOffState);
+		BOOL enableAutopair = !([autopairMenuItem state] == NSOffState);
 		[prefs setBool:enableAutopair forKey:@"CustomQueryAutopair"];
 		[prefs synchronize];
 		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
@@ -246,7 +245,7 @@ closes the sheet
 
 	// "Auto-help" toggle
 	if (sender == autohelpMenuItem) {
-		BOOL enableAutohelp = ([autohelpMenuItem state] == NSOffState);
+		BOOL enableAutohelp = !([autohelpMenuItem state] == NSOffState);
 		[prefs setBool:enableAutohelp forKey:@"CustomQueryAutohelp"];
 		[prefs synchronize];
 		[autohelpMenuItem setState:enableAutohelp?NSOnState:NSOffState];
@@ -255,7 +254,7 @@ closes the sheet
 
 	// "Auto-uppercase keywords" toggle
 	if (sender == autouppercaseKeywordsMenuItem) {
-		BOOL enableAutouppercaseKeywords = ([autouppercaseKeywordsMenuItem state] == NSOffState);
+		BOOL enableAutouppercaseKeywords = !([autouppercaseKeywordsMenuItem state] == NSOffState);
 		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutouppercaseKeywords"];
 		[prefs synchronize];
 		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
@@ -910,8 +909,20 @@ sets the connection (received from TableDocument) and makes things that have to 
 	}
 
 	// Set up the interface
-	[customQueryView setVerticalMotionCanBeginDrag:NO];
+	// Bind backgroundColor
+	[textView setAllowsDocumentBackgroundColorChange:YES];
+	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
+	[bindingOptions setObject:NSUnarchiveFromDataTransformerName
+		forKey:@"NSValueTransformerName"];
+	[textView bind: @"backgroundColor"
+		toObject: [NSUserDefaultsController sharedUserDefaultsController]
+		withKeyPath:@"values.CustomQueryEditorBackgroundColor"
+		options:bindingOptions];
 	[textView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
+	[textView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBackgroundColor"]]];
+	[textView setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]]];
+
+	[customQueryView setVerticalMotionCanBeginDrag:NO];
 	[textView setContinuousSpellCheckingEnabled:NO];
 	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoindent"]?NSOnState:NSOffState)];
 	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
@@ -1343,22 +1354,8 @@ traps enter key and
 		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
 		[runSelectionMenuItem setEnabled:YES];
 	}
+
 }
-
-
-/*
- * Save the custom query editor font if it is changed.
- */
-- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
-{
-
-	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
-	if (prefs) {
-		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
-	}
-}
-
-
 
 #pragma mark -
 #pragma mark TableView notifications
@@ -1377,6 +1374,16 @@ traps enter key and
 	}
 }
 
+/*
+ * Save the custom query editor font if it is changed.
+ */
+- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
+{
+
+	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
+	if (prefs)
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+}
 
 
 #pragma mark -
@@ -1403,6 +1410,7 @@ traps enter key and
  */
 - (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory
 {
+	
 	NSString * helpString = [self getHTMLformattedMySQLHelpFor:searchString];
 
 	// Order out resp. init the Help window if not visible

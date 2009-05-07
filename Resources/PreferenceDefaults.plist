@@ -36,6 +36,22 @@
 	<integer>60</integer>
 	<key>CustomQueryEditorFont</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
+	<key>CustomQueryEditorBackgroundColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAQEBAYY=</data>
+	<key>CustomQueryEditorBacktickColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAACDqagoPwGG</data>
+	<key>CustomQueryEditorCommentColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAIPp6Og+AAGG</data>
+	<key>CustomQueryEditorNumericColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg4GAAD+Dh4aGPgABhg==</data>
+	<key>CustomQueryEditorQuoteColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg8bFRT+DnXPOPYNba609AYY=</data>
+	<key>CustomQueryEditorSQLKeywordColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg83MTD6DnXPOPQEBhg==</data>
+	<key>CustomQueryEditorTextColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAAAAAYY=</data>
+	<key>CustomQueryEditorVariableColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg3zv/T6DfO/9PoN87/0+AYY=</data>
 	<key>CustomQueryAutoindent</key>
 	<true/>
 	<key>CustomQueryAutopair</key>
@@ -44,6 +60,8 @@
 	<false/>
 	<key>CustomQueryAutohelp</key>
 	<false/>
+	<key>CustomQueryAutohelpDelay</key>
+	<real>1.0</real>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>
 	<key>LastFavoriteIndex</key>

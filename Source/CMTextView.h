@@ -29,6 +29,7 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 
+#define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
@@ -41,15 +42,15 @@
 	
 	NSString *showMySQLHelpFor;
 	
-	BOOL sqlStringIsTooLarge;
-	
 	IBOutlet NSScrollView *scrollView;
+	
+	NSUserDefaults *prefs;
 
 }
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
-- (BOOL) isNextCharMarkedBy:(id)attribute;
+- (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue;
 - (BOOL) areAdjacentCharsLinked;
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
@@ -69,6 +70,6 @@
 - (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
 - (void) autoHelp;
-- (void) doSyntaxHighlighting:(NSTextStorage*)textStore;
+- (void) doSyntaxHighlighting;
 
 @end

@@ -37,17 +37,20 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
 
-#define kAPlinked   @"Linked" // attribute for a via auto-pair inserted char
-#define kAPval      @"linked"
-#define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
-#define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
-#define kQuote      @"Quote"
-#define kQuoteValue @"isQuoted"
-#define kValue      @"dummy"
-#define kBTQuote    @"BTQuote"
-#define kBTQuoteValue @"isBTQuoted"
+#define kAPlinked      @"Linked" // attribute for a via auto-pair inserted char
+#define kAPval         @"linked"
+#define kLEXToken      @"Quoted" // set via lex to indicate a quoted string
+#define kLEXTokenValue @"isMarked"
+#define kSQLkeyword    @"SQLkw"  // attribute for found SQL keywords
+#define kQuote         @"Quote"
+#define kQuoteValue    @"isQuoted"
+#define kValue         @"dummy"
+#define kBTQuote       @"BTQuote"
+#define kBTQuoteValue  @"isBTQuoted"
 
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
+
+#define SP_SYNTAX_HILITE_BIAS 2000
 
 
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
@@ -115,7 +118,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 /*
  * Checks if the char after the current caret position/selection matches a supplied attribute
  */
-- (BOOL) isNextCharMarkedBy:(id)attribute
+- (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue
 {
 	unsigned int caretPosition = [self selectedRange].location;
 
@@ -123,7 +126,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	if (caretPosition >= [[self string] length]) return NO;
 	
 	// Perform the check
-	if ([[self textStorage] attribute:attribute atIndex:caretPosition effectiveRange:nil])
+	if ([[[self textStorage] attribute:attribute atIndex:caretPosition effectiveRange:nil] isEqualToString:aValue])
 		return YES;
 
 	return NO;
@@ -154,7 +157,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Check that the pairing character exists after the caret, and is tagged with the link attribute
 	if (matchingChar == [[self string] characterAtIndex:caretPosition]
-		&& [[self textStorage] attribute:kAPlinked atIndex:caretPosition effectiveRange:nil]) {
+		&& [[[self textStorage] attribute:kAPlinked atIndex:caretPosition effectiveRange:nil] isEqualToString:kAPval]) {
 		return YES;
 	}
 
@@ -233,6 +236,25 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[self scrollRangeToVisible:selRange];
 }
 
+/*
+ * Used for autoHelp update if the user changed the caret position by using the mouse.
+ */
+- (void) mouseDown:(NSEvent *)theEvent
+{
+	
+	// Cancel autoHelp timer
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+	[super mouseDown:theEvent];
+
+	// Start autoHelp timer
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+	
+}
 
 /*
  * Handle some keyDown events in order to provide autopairing functionality (if enabled).
@@ -240,7 +262,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) keyDown:(NSEvent *)theEvent
 {
 
-	if(autohelpEnabled) // cancel autoHelp request
+	if([prefs boolForKey:@"CustomQueryAutohelp"]) // cancel autoHelp request
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
@@ -262,7 +284,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 	
-
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
 	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
 		if(curFlags==(NSControlKeyMask))
@@ -279,7 +300,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
-	if (autopairEnabled && characters && [characters length] == 1) {
+	if ([prefs boolForKey:@"CustomQueryAutopair"] && characters && [characters length] == 1) {
 
 		delBackwardsWasPressed = NO;
 
@@ -295,10 +316,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			(insertedCharacter == '\'' || insertedCharacter == '"' || insertedCharacter == '`')
 
 			// And if the next char marked as linked auto-pair
-			&& [self isNextCharMarkedBy:kAPlinked]
+			&& [self isNextCharMarkedBy:kAPlinked withValue:kAPval]
 
 			// And we are inside a quoted string
-			&& [self isNextCharMarkedBy:kWQquoted]
+			&& [self isNextCharMarkedBy:kLEXToken withValue:kLEXTokenValue]
 
 			// And there is no selection, just the text caret
 			&& ![self selectedRange].length
@@ -320,7 +341,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		// There is one exception to this - if the caret is before a linked pair character,
 		// processing continues in order to check whether the next character should be jumped
 		// over; e.g. [| := caret]: "foo|" and press " => only caret will be moved "foo"|
-		if(![self isNextCharMarkedBy:kAPlinked] && [self isNextCharMarkedBy:kWQquoted] && ![self selectedRange].length) {
+		if(![self isNextCharMarkedBy:kAPlinked withValue:kAPval] && [self isNextCharMarkedBy:kLEXToken withValue:kLEXTokenValue] && ![self selectedRange].length) {
 			[super keyDown:theEvent];
 			return;
 		}
@@ -360,7 +381,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if (skipTypedLinkedCharacter) {
 			currentRange = [self selectedRange];
 			if (currentRange.location != NSNotFound && currentRange.length == 0) {
-				if ([self isNextCharMarkedBy:kAPlinked]) {
+				if ([self isNextCharMarkedBy:kAPlinked withValue:kAPval]) {
 					if ([[[self textStorage] string] characterAtIndex:currentRange.location] == insertedCharacter) {
 						currentRange.length = 1;
 						[self setSelectedRange:currentRange];
@@ -405,28 +426,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-	if(autohelpEnabled)
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:1];
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
 
 }
 
-
-/*
- * Notify autoHelp if user changed the insertion point
- */
-- (void)mouseDown:(NSEvent *)theEvent
-{
-
-	if(autohelpEnabled) // cancel autoHelp request
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-									selector:@selector(autoHelp) 
-									object:nil];
-
-	[super mouseDown:theEvent];
-	if(autohelpEnabled)
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:1];
-
-}
 
 - (void) deleteBackward:(id)sender
 {
@@ -456,7 +460,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
     if (aSelector == @selector(insertNewline:)
-		&& autoindentEnabled
+		&& [prefs boolForKey:@"CustomQueryAutoindent"]
 		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
 	{
 		NSString *textViewString = [[self textStorage] string];
@@ -629,7 +633,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
-	if(!sqlStringIsTooLarge && [[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
+	if([[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
 
 
@@ -665,12 +669,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	}
 
 	// If caret is not inside backticks add keywords and all words coming from the view.
-	if(!sqlStringIsTooLarge && ![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
+	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
-		NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
-		NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
-
-		[possibleCompletions addObjectsFromArray:textViewWords];
+		// Only parse for words if text size is less than 6MB
+		if([[self string] length]<6000000)
+		{
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
+			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+			[possibleCompletions addObjectsFromArray:textViewWords];
+		}
 		[possibleCompletions addObjectsFromArray:[self keywords]];
 	}
 	
@@ -1762,32 +1769,58 @@ SYNTAX HIGHLIGHTING!
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	
-	// commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
-	// quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
-	// keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
-	// backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
-	// numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
-	// variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
-
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
 	[scrollView setHasHorizontalRuler:NO];
 	[scrollView setHasVerticalRuler:YES];
 	[scrollView setRulersVisible:YES];
+	
+	// disabled to get the current text range in textView safer
+	[[self layoutManager] setBackgroundLayoutEnabled:NO];
+
+	// add NSViewBoundsDidChangeNotification to scrollView
+	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
+	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
+	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
 }
 
+/*
+ * Scrollview delegate after the textView's view port was changed.
+ * Manily used to update the syntax highlighting for a large text size.
+ */
+- (void) boundsDidChangeNotification:(NSNotification *)notification
+{
+	// Invoke syntax highlighting if text view port was changed for large text
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	{
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
+		
+		if(![[self textStorage] changeInLength])
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
+	}
 
+}
+
+/*
+ * If enabled it shows the MySQL Help for the current word (not inside quotes) or for the selection
+ * after an adjustable delay if the textView is idle, i.e. no user interaction.
+ */
 - (void)autoHelp
 {
-	if(!autohelpEnabled) return;
+	if(![prefs boolForKey:@"CustomQueryAutohelp"]) return;
 	
+	// If selection show Help for it
 	if([self selectedRange].length)
 	{
 		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
 		return;
 	}
-	
+	// Otherwise show Help if caret is not inside quotes
 	long cursorPosition = [self selectedRange].location;
 	if (cursorPosition >= [[self string] length]) cursorPosition--;
 	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
@@ -1795,33 +1828,102 @@ SYNTAX HIGHLIGHTING!
 	
 }
 
-- (void)doSyntaxHighlighting:(NSTextStorage*)textStore
+/*
+ * Syntax Highlighting.
+ *  
+ * (The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!)
+ * Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
+ */
+- (void)doSyntaxHighlighting
 {
+
+	NSTextStorage *textStore = [self textStorage];
+	NSRange textRange;
+	
+	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
+	// do highlighting partly (max SP_SYNTAX_HILITE_BIAS*2).
+	// The approach is to take the middle position of the current view port
+	// and highlight only ±SP_SYNTAX_HILITE_BIAS of that middle position
+	// considering of line starts resp. ends
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	{
+
+		// Cancel all doSyntaxHighlighting requests
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
+
+		// Get the text range currently displayed in the view port
+		NSRect visibleRect = [[[self enclosingScrollView] contentView] documentVisibleRect];
+		NSRange visibleRange = [[self layoutManager] glyphRangeForBoundingRectWithoutAdditionalLayout:visibleRect inTextContainer:[self textContainer]];
+		if(!visibleRange.length) return;
+
+		// Take roughly the middle position in the current view port
+		int curPos = visibleRange.location+(int)(visibleRange.length/2);
+
+		int strlength = [[self string] length];
+
+		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
+		int end = curPos + SP_SYNTAX_HILITE_BIAS;
+		if (end > strlength )
+		{
+			end = strlength;
+		} else {
+			while(end < strlength)
+			{
+				if([[self string] characterAtIndex:end]=='\n')
+					break;
+				end++;
+			}
+		}
+
+		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
+		int start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		if (start > 0)
+			while(start>-1)
+			{
+				if([[self string] characterAtIndex:start]=='\n')
+					break;
+				start--;
+			}
+		else
+			start = 0;
+
+	
+		textRange = NSMakeRange(start, end-start);
+		// only to be sure that nothing went wrongly
+		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
+		if (!textRange.length)
+			return;
+	} else {
+		// If text size is less SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
+		// process syntax highlighting for the entire text view buffer
+		textRange = NSMakeRange(0,[[self string] length]);
+	}
+	
 	NSColor *tokenColor;
-	NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
-	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
-	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
-	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
-	NSColor *numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
-	NSColor *variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
+	
+	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCommentColor"]] retain];//[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
+	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorQuoteColor"]] retain];//[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
+	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorSQLKeywordColor"]] retain];//[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
+	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBacktickColor"]] retain];//[NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
+	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorNumericColor"]] retain];//[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
+	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorVariableColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
+	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
 
-	int token;
-	NSRange textRange, tokenRange;
+	BOOL autouppercaseKeywords = [prefs boolForKey:@"CustomQueryAutouppercaseKeywords"];
 
-	textRange = NSMakeRange(0, [textStore length]);
+	unsigned long tokenEnd, token;
+	NSRange tokenRange;
 
 	//first remove the old colors and kQuote
 	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
 	[textStore removeAttribute:kQuote range:textRange];
-
-	//don't color texts longer than about 20KB. would be too slow
-	sqlStringIsTooLarge = (textRange.length > 20000);
-	if(sqlStringIsTooLarge) return;
-
+	[textStore removeAttribute:kLEXToken range:textRange];
 
 	//initialise flex
-	yyuoffset = 0; yyuleng = 0;
-	yy_switch_to_buffer(yy_scan_string([[textStore string] UTF8String]));
+	yyuoffset = textRange.location; yyuleng = 0;
+	yy_switch_to_buffer(yy_scan_string([[[self string] substringWithRange:textRange] UTF8String]));
 
 	//now loop through all the tokens
 	while (token=yylex()){
@@ -1845,8 +1947,11 @@ SYNTAX HIGHLIGHTING!
 			case SPT_VARIABLE:
 			    tokenColor = variableColor;
 			    break;
-			default:
+			case SPT_WHITESPACE:
 			    tokenColor = nil;
+			    break;
+			default:
+			    tokenColor = textColor;
 		}
 
 		if (!tokenColor) continue;
@@ -1859,19 +1964,20 @@ SYNTAX HIGHLIGHTING!
 		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
-		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; 
+		tokenEnd = tokenRange.location+tokenRange.length-1; 
 		// Check the end of the token
-		if (autouppercaseKeywordsEnabled && !delBackwardsWasPressed
+		if (autouppercaseKeywords && !delBackwardsWasPressed
 			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
 			{
+
 				NSString* curTokenString = [[self string] substringWithRange:tokenRange];
 				BOOL doIt = NO;
 				@try
 				{
-						doIt = ![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil];
+					doIt = ![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil];
 				} @catch(id ae) { doIt = YES;  }
 
 				if(doIt && ![[curTokenString uppercaseString] isEqualToString:curTokenString])
@@ -1889,10 +1995,11 @@ SYNTAX HIGHLIGHTING!
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
-		[textStore addAttribute: kWQquoted 
-						  value: kValue 
+		if(token < 6)
+		[textStore addAttribute: kLEXToken 
+						  value: kLEXTokenValue 
 						  range: tokenRange ];
-
+		
 
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
@@ -1906,34 +2013,44 @@ SYNTAX HIGHLIGHTING!
 			[textStore addAttribute: kQuote
 							  value: kQuoteValue
 							  range: tokenRange ];
+		//distinguish backtick quoted word for completion
 		else if(token == SPT_BACKTICK_QUOTED_TEXT)
 			[textStore addAttribute: kBTQuote
 							  value: kBTQuoteValue
 							  range: tokenRange ];
+
 	}
 
 }
 
 /*
- *  Performs syntax highlighting.
- *  This method recolors the entire text on every keypress. For performance reasons, this function does
- *  nothing if the text is more than 20 KB.
- *  
- *  The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
- *  
- *  Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
+ *  Performs syntax highlighting after a text change.
  */
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
 {
-
 
 	NSTextStorage *textStore = [notification object];
 
 	//make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
-	[self doSyntaxHighlighting:textStore];
-	
+	[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doSyntaxHighlighting) 
+								object:nil];
+
+	[self doSyntaxHighlighting];
+
 }
 
+/*
+ * Show only setable modes in the font panel
+ */
+- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+{
+   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+}
+
+
+
 @end
+

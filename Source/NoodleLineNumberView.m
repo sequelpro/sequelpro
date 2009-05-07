@@ -240,6 +240,14 @@
         
         text = [view string];
         stringLength = [text length];
+        // Switch off line numbering if text larger than 6MB
+        // for performance reasons.
+        // TODO improve performance maybe via threading
+        if(stringLength>6000000)
+        {
+                NSLog(@"Line Numbering switched off. Text length larger than 6MB.");
+                return;
+        }
         [lineIndices release];
         lineIndices = [[NSMutableArray alloc] init];
         
