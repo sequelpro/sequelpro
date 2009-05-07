@@ -9,11 +9,11 @@
 
 #define SPT_DOUBLE_QUOTED_TEXT   1
 #define SPT_SINGLE_QUOTED_TEXT   2
-#define SPT_BACKTICK_QUOTED_TEXT 3
-#define SPT_RESERVED_WORD        4
-#define SPT_COMMENT              5
+#define SPT_COMMENT              3
+#define SPT_BACKTICK_QUOTED_TEXT 4
+#define SPT_RESERVED_WORD        5
 #define SPT_WHITESPACE           6
-#define SPT_WORD                 7
-#define SPT_OTHER                8
-#define SPT_NUMERIC              9
-#define SPT_VARIABLE            10
+#define SPT_NUMERIC              7
+#define SPT_VARIABLE             8
+#define SPT_WORD                 9
+#define SPT_OTHER               10

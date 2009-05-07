@@ -134,6 +134,7 @@
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)closeDatabaseSheet:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
+- (IBAction)showMySQLHelp:(id)sender;
 
 //encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
@@ -149,6 +150,8 @@
 //table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntax:(id)sender;
+- (IBAction)copyColumnNames:(id)sender;
+- (NSArray *)columnNames;
 - (IBAction)checkTable:(id)sender;
 - (IBAction)analyzeTable:(id)sender;
 - (IBAction)optimizeTable:(id)sender;

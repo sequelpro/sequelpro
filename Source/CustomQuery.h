@@ -31,6 +31,8 @@
 #import "CMMCPResult.h"
 #import "RegexKitLite.h"
 
+#define SP_HELP_TOC_SEARCH_STRING @"contents"
+
 @interface CustomQuery : NSObject {
 
 	IBOutlet id tableWindow;
@@ -123,6 +125,8 @@
 - (void)showHelpFor:(NSString *)aString addToHistory:(BOOL)addToHistory;
 - (void)helpTargetValidation;
 - (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
+- (NSWindow *)helpWebViewWindow;
+- (void)setMySQLversion:(NSString *)theVersion;
 
 
 // Other

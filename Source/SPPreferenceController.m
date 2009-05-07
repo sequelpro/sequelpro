@@ -25,6 +25,7 @@
 #import "SPWindowAdditions.h"
 #import "SPFavoriteTextFieldCell.h"
 #import "KeyChain.h"
+#import "TableDocument.h"
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
@@ -34,6 +35,7 @@
 #define PREFERENCE_TOOLBAR_NOTIFICATIONS	@"Preference Toolbar Notifications"
 #define PREFERENCE_TOOLBAR_AUTOUPDATE		@"Preference Toolbar Auto Update"
 #define PREFERENCE_TOOLBAR_NETWORK			@"Preference Toolbar Network"
+#define PREFERENCE_TOOLBAR_EDITOR			@"Preference Toolbar Editor"
 
 #pragma mark -
 
@@ -57,6 +59,7 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		[self applyRevisionChanges];
 	}
+
 	return self;
 }
 
@@ -82,6 +85,8 @@
 	[favoritesTableView reloadData];
 	
 	[self updateDefaultFavoritePopup];
+	
+	[prefs synchronize];
 }
 
 #pragma mark -
@@ -355,6 +360,17 @@
 }
 
 // -------------------------------------------------------------------------------
+// displayEditorPreferences:
+// -------------------------------------------------------------------------------
+- (IBAction)displayEditorPreferences:(id)sender
+{
+	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
+	NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]];
+	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+	[self _resizeWindowForContentView:editorView];
+}
+
+// -------------------------------------------------------------------------------
 // displayFavoritePreferences:
 // -------------------------------------------------------------------------------
 - (IBAction)displayFavoritePreferences:(id)sender
@@ -567,6 +583,9 @@
 	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_NETWORK]) {
 		return networkItem;
 	}
+	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_EDITOR]) {
+		return editorItem;
+	}
 	
     return [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
 }
@@ -576,7 +595,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -584,7 +603,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -592,7 +611,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
+	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
 }
 
 #pragma mark -
@@ -683,6 +702,7 @@
 	// Mark the currently selected field in the window as having finished editing, to trigger saves.
 	if ([preferencesWindow firstResponder])
 		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
+
 }
 
 #pragma mark -
@@ -729,6 +749,43 @@
 }
 
 // -------------------------------------------------------------------------------
+// query editor font selection
+//
+// -------------------------------------------------------------------------------
+// show the font panel
+- (IBAction)showCustomQueryFontPanel:(id)sender
+{
+	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]] isMultiple:NO];
+	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
+}
+// reset syntax highlighting colors
+- (IBAction)setDefaultColors:(id)sender
+{
+
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:@"CustomQueryEditorCommentColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:@"CustomQueryEditorQuoteColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:@"CustomQueryEditorSQLKeywordColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.000 blue:0.658 alpha:1.000]] forKey:@"CustomQueryEditorBacktickColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.000 alpha:1.000]] forKey:@"CustomQueryEditorNumericColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.500 green:0.500 blue:0.500 alpha:1.000]] forKey:@"CustomQueryEditorVariableColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorTextColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:@"CustomQueryEditorBackgroundColor"];
+
+}
+// set font panel's valid modes
+- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+{
+   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+}
+// Action receiver for a font change in the font panel
+- (void)changeFont:(id)sender
+{
+	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:@"CustomQueryEditorFont"];
+	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+}
+
+// -------------------------------------------------------------------------------
 // dealloc
 // -------------------------------------------------------------------------------
 - (void)dealloc
@@ -752,62 +809,71 @@
 - (void)_setupToolbar
 {
 	toolbar = [[[NSToolbar alloc] initWithIdentifier:@"Preference Toolbar"] autorelease];
-	
+
 	// General preferences
 	generalItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
-    
+
 	[generalItem setLabel:NSLocalizedString(@"General", @"")];
-    [generalItem setImage:[NSImage imageNamed:@"toolbar-preferences-general"]];
-    [generalItem setTarget:self];
-    [generalItem setAction:@selector(displayGeneralPreferences:)];
-	
+	[generalItem setImage:[NSImage imageNamed:@"toolbar-preferences-general"]];
+	[generalItem setTarget:self];
+	[generalItem setAction:@selector(displayGeneralPreferences:)];
+
 	// Table preferences
 	tablesItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_TABLES];
-	
+
 	[tablesItem setLabel:NSLocalizedString(@"Tables", @"")];
 	[tablesItem setImage:[NSImage imageNamed:@"toolbar-preferences-tables"]];
 	[tablesItem setTarget:self];
 	[tablesItem setAction:@selector(displayTablePreferences:)];
-	
+
 	// Favorite preferences
 	favoritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
-	
+
 	[favoritesItem setLabel:NSLocalizedString(@"Favorites", @"")];
-    [favoritesItem setImage:[NSImage imageNamed:@"toolbar-preferences-favorites"]];
-    [favoritesItem setTarget:self];
-    [favoritesItem setAction:@selector(displayFavoritePreferences:)];
-	
+	[favoritesItem setImage:[NSImage imageNamed:@"toolbar-preferences-favorites"]];
+	[favoritesItem setTarget:self];
+	[favoritesItem setAction:@selector(displayFavoritePreferences:)];
+
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
-	
+
 	[notificationsItem setLabel:NSLocalizedString(@"Notifications", @"")];
-    [notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
-    [notificationsItem setTarget:self];
-    [notificationsItem setAction:@selector(displayNotificationPreferences:)];
+	[notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
+	[notificationsItem setTarget:self];
+	[notificationsItem setAction:@selector(displayNotificationPreferences:)];
 
 	// AutoUpdate preferences
 	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
-	
+
 	[autoUpdateItem setLabel:NSLocalizedString(@"Auto Update", @"")];
-    [autoUpdateItem setImage:[NSImage imageNamed:@"toolbar-preferences-autoupdate"]];
-    [autoUpdateItem setTarget:self];
-    [autoUpdateItem setAction:@selector(displayAutoUpdatePreferences:)];
-	
+	[autoUpdateItem setImage:[NSImage imageNamed:@"toolbar-preferences-autoupdate"]];
+	[autoUpdateItem setTarget:self];
+	[autoUpdateItem setAction:@selector(displayAutoUpdatePreferences:)];
+
 	// Network preferences
 	networkItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NETWORK];
-	
+
 	[networkItem setLabel:NSLocalizedString(@"Network", @"")];
-    [networkItem setImage:[NSImage imageNamed:@"toolbar-preferences-network"]];
-    [networkItem setTarget:self];
-    [networkItem setAction:@selector(displayNetworkPreferences:)];
-    
+	[networkItem setImage:[NSImage imageNamed:@"toolbar-preferences-network"]];
+	[networkItem setTarget:self];
+	[networkItem setAction:@selector(displayNetworkPreferences:)];
+
+	// Editor preferences
+	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
+
+	[editorItem setLabel:NSLocalizedString(@"Query Editor", @"")];
+	[editorItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
+	[editorItem setTarget:self];
+	[editorItem setAction:@selector(displayEditorPreferences:)];
+
+
 	[toolbar setDelegate:self];
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
 	[toolbar setAllowsUserCustomization:NO];
-	
+
 	[preferencesWindow setToolbar:toolbar];
 	[preferencesWindow setShowsToolbarButton:NO];
-	
+
 	[self displayGeneralPreferences:nil];
 }
 
