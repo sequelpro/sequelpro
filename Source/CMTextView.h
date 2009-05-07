@@ -23,7 +23,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "NoodleLineNumberView.h"
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 #import "CMCopyTable.h"
 #import "CMTextView.h"
 #import "CMMCPConnection.h"
