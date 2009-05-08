@@ -57,6 +57,38 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 @implementation CMTextView
 
+- (void) awakeFromNib
+{
+	// Set self as delegate for the textView's textStorage to enable syntax highlighting,
+	[[self textStorage] setDelegate:self];
+
+	// Set defaults for general usage
+	autoindentEnabled = YES;
+	autopairEnabled = YES;
+	autoindentIgnoresEnter = NO;
+	autouppercaseKeywordsEnabled = YES;
+	autohelpEnabled = NO;
+	delBackwardsWasPressed = NO;
+	
+	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
+	[scrollView setVerticalRulerView:lineNumberView];
+	[scrollView setHasHorizontalRuler:NO];
+	[scrollView setHasVerticalRuler:YES];
+	[scrollView setRulersVisible:YES];
+	
+	// disabled to get the current text range in textView safer
+	[[self layoutManager] setBackgroundLayoutEnabled:NO];
+
+	// add NSViewBoundsDidChangeNotification to scrollView
+	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
+	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
+	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+
+}
+
+
 /*
  * Returns the associated line number for a character position inside of the CMTextView
  */
@@ -65,52 +97,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
 }
 
-/*
- * Add a menu item to context menu for looking up mysql documentation.
- */
-- (NSMenu *)menuForEvent:(NSEvent *)event 
-{	
-	// Set title of the menu item
-	if([self selectedRange].length)
-		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection");
-	else
-		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word");
-	
-	// Add the menu item if it doesn't yet exist
-	NSMenu *menu = [[self class] defaultMenu];
-	
-	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
-	{
-		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
-		NSMenuItem *showMySQLHelpForMenuItem = [[NSMenuItem alloc] initWithTitle:showMySQLHelpFor action:@selector(showMySQLHelpForCurrentWord:) keyEquivalent:@"h"];
-		[showMySQLHelpForMenuItem setTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG];
-		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
-		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
-	} else {
-		[[menu itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] setTitle:showMySQLHelpFor];
-	}
-    return menu;
-}
-
-/*
- * Disable the search in the MySQL help function when getRangeForCurrentWord returns zero length. 
- */
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
-{	
-	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
-	// selection and whether it is a reasonable length.
-	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
-		long stringSize = [self getRangeForCurrentWord].length;
-		return (stringSize || stringSize > 64);
-	}
-	
-	return YES;
-}
 
 /*
  * Search for the current selection or current word in the MySQL Help 
  */
-- (IBAction)showMySQLHelpForCurrentWord:(id)sender
+- (IBAction) showMySQLHelpForCurrentWord:(id)sender
 {	
 	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
 }
@@ -189,7 +180,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 /*
  * Copy selected text chunk as RTF to preserve syntax highlighting
  */
-- (void)copyAsRTF
+- (void) copyAsRTF
 {
 
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -1363,6 +1354,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"YEAR",
 	@"YEAR_MONTH",
 	@"ZEROFILL",
+
 	//functions
 	
 	@"ABS",
@@ -1711,6 +1703,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
+ * Retrieve whether this text view automatically creates the matching closing char for ", ', ` and ( chars.
+ */
+- (BOOL)autopair
+{
+	return autopairEnabled;
+}
+
+/*
  * Set whether MySQL Help should be automatically invoked while typing.
  */
 - (void)setAutohelp:(BOOL)enableAutohelp
@@ -1719,11 +1719,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
- * Retrieve whether this text view automatically creates the matching closing char for ", ', ` and ( chars.
+ * Retrieve whether MySQL Help should be automatically invoked while typing.
  */
-- (BOOL)autopair
+- (BOOL)autohelp
 {
-	return autopairEnabled;
+	return autohelpEnabled;
 }
 
 /*
@@ -1742,69 +1742,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	return autouppercaseKeywordsEnabled;
 }
 
-/*
- * Retrieve whether MySQL Help should be automatically invoked while typing.
- */
-- (BOOL)autohelp
-{
-	return autohelpEnabled;
-}
-
-
-/*******************
-SYNTAX HIGHLIGHTING!
-*******************/
-- (void)awakeFromNib
-/*
- * Sets self as delegate for the textView's textStorage to enable syntax highlighting,
- * and set defaults for general usage
- */
-{
-    [[self textStorage] setDelegate:self];
-
-	autoindentEnabled = YES;
-	autopairEnabled = YES;
-	autoindentIgnoresEnter = NO;
-	autouppercaseKeywordsEnabled = YES;
-	autohelpEnabled = NO;
-	delBackwardsWasPressed = NO;
-	
-	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
-	[scrollView setVerticalRulerView:lineNumberView];
-	[scrollView setHasHorizontalRuler:NO];
-	[scrollView setHasVerticalRuler:YES];
-	[scrollView setRulersVisible:YES];
-	
-	// disabled to get the current text range in textView safer
-	[[self layoutManager] setBackgroundLayoutEnabled:NO];
-
-	// add NSViewBoundsDidChangeNotification to scrollView
-	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
-	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
-	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
-
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-
-}
-
-/*
- * Scrollview delegate after the textView's view port was changed.
- * Manily used to update the syntax highlighting for a large text size.
- */
-- (void) boundsDidChangeNotification:(NSNotification *)notification
-{
-	// Invoke syntax highlighting if text view port was changed for large text
-	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
-	{
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-									selector:@selector(doSyntaxHighlighting) 
-									object:nil];
-		
-		if(![[self textStorage] changeInLength])
-			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
-	}
-
-}
 
 /*
  * If enabled it shows the MySQL Help for the current word (not inside quotes) or for the selection
@@ -2023,6 +1960,74 @@ SYNTAX HIGHLIGHTING!
 
 }
 
+#pragma mark -
+#pragma mark context menu
+
+/*
+ * Add a menu item to context menu for looking up mysql documentation.
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event 
+{	
+	// Set title of the menu item
+	if([self selectedRange].length)
+		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection");
+	else
+		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word");
+	
+	// Add the menu item if it doesn't yet exist
+	NSMenu *menu = [[self class] defaultMenu];
+	
+	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
+	{
+		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
+		NSMenuItem *showMySQLHelpForMenuItem = [[NSMenuItem alloc] initWithTitle:showMySQLHelpFor action:@selector(showMySQLHelpForCurrentWord:) keyEquivalent:@"h"];
+		[showMySQLHelpForMenuItem setTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG];
+		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
+	} else {
+		[[menu itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] setTitle:showMySQLHelpFor];
+	}
+    return menu;
+}
+
+/*
+ * Disable the search in the MySQL help function when getRangeForCurrentWord returns zero length. 
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
+{	
+	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
+	// selection and whether it is a reasonable length.
+	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
+		long stringSize = [self getRangeForCurrentWord].length;
+		return (stringSize || stringSize > 64);
+	}
+	
+	return YES;
+}
+
+
+#pragma mark -
+#pragma mark delegates
+
+/*
+ * Scrollview delegate after the textView's view port was changed.
+ * Manily used to update the syntax highlighting for a large text size.
+ */
+- (void) boundsDidChangeNotification:(NSNotification *)notification
+{
+	// Invoke syntax highlighting if text view port was changed for large text
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	{
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
+		
+		if(![[self textStorage] changeInLength])
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
+	}
+
+}
+
 /*
  *  Performs syntax highlighting after a text change.
  */
@@ -2048,6 +2053,186 @@ SYNTAX HIGHLIGHTING!
 - (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
    return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+}
+
+#pragma mark -
+#pragma mark drag&drop
+
+///////////////////////////
+// Dragging methods
+///////////////////////////
+
+/*
+ * Insert the content of a dragged file path or if ⌘ is pressed
+ * while dragging insert the file path
+ */
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+	NSPasteboard *pboard = [sender draggingPasteboard];
+
+	if ( [[pboard types] containsObject:NSFilenamesPboardType] ) {
+		NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
+
+		// Only one file path is allowed
+		if([files count] > 1) {
+			NSLog(@"%@", NSLocalizedString(@"Only one dragged item allowed.",@"Only one dragged item allowed."));
+			NSBeep();
+			return YES;
+		}
+
+		NSString *filepath = [[pboard propertyListForType:NSFilenamesPboardType] objectAtIndex:0];
+
+		// Set the new insertion point
+		NSPoint draggingLocation = [sender draggingLocation];
+		draggingLocation = [self convertPoint:draggingLocation fromView:nil];
+		unsigned int characterIndex = [self characterIndexOfPoint:draggingLocation];
+		[self setSelectedRange:NSMakeRange(characterIndex,0)];
+
+		// Check if user pressed  ⌘ while dragging for inserting only the file path
+		if([sender draggingSourceOperationMask] == 4)
+		{
+			[self insertText:filepath];
+			return YES;
+		}
+
+		// Check size and NSFileType
+		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
+		if(attr)
+		{
+			NSNumber *filesize = [attr objectForKey:NSFileSize];
+			NSString *filetype = [attr objectForKey:NSFileType];
+			if(filetype == NSFileTypeRegular && filesize)
+			{
+				// Ask for confirmation if file content is larger than 1MB
+				if([filesize unsignedLongValue] > 1000000)
+				{
+					NSAlert *alert = [[NSAlert alloc] init];
+					[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+					[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+					[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to proceed with %.1f MB of data?", @"message of panel asking for confirmation for inserting large text from dragging action"),
+						 [filesize unsignedLongValue]/1048576.0]];
+					[alert setHelpAnchor:filepath];
+					[alert setMessageText:NSLocalizedString(@"Warning",@"Warning")];
+					[alert setAlertStyle:NSWarningAlertStyle];
+					[alert beginSheetModalForWindow:[self window] 
+						modalDelegate:self 
+						didEndSelector:@selector(dragAlertSheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:nil];
+					
+				} else
+					[self insertFileContentOfFile:filepath];
+			}
+		}
+		return YES;
+	} 
+
+	return [super performDragOperation:sender];
+}
+
+/*
+ * Confirmation sheetDidEnd method
+ */
+- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+
+	if ( returnCode == NSAlertFirstButtonReturn )
+		[self insertFileContentOfFile:[sheet helpAnchor]];
+
+}
+/*
+ * Convert a NSPoint, usually the mouse location, to
+ * a character index of the text view.
+ */
+- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint
+{
+	unsigned int glyphIndex;
+	NSLayoutManager *layoutManager = [self layoutManager];
+	float fraction;
+	NSRange range;
+
+	range = [layoutManager glyphRangeForTextContainer:[self textContainer]];
+	glyphIndex = [layoutManager glyphIndexForPoint:aPoint
+		inTextContainer:[self textContainer]
+		fractionOfDistanceThroughGlyph:&fraction];
+	if( fraction > 0.5 ) glyphIndex++;
+
+	if( glyphIndex == NSMaxRange(range) )
+		return  [[self textStorage] length];
+	else
+		return [layoutManager characterIndexForGlyphAtIndex:glyphIndex];
+
+}
+
+/*
+ * Insert content of a plain text file for a given path.
+ * In addition it tries to figure out the file's text encoding heuristically.
+ */
+- (void)insertFileContentOfFile:(NSString *)aPath
+{
+	
+	NSError *err = nil;
+	NSStringEncoding enc;
+	NSString *content = nil;
+
+	// Make usage of the UNIX command "file" to get an info
+	// about file type and encoding.
+	NSTask *task=[[NSTask alloc] init];
+	NSPipe *pipe=[[NSPipe alloc] init];
+	NSFileHandle *handle;
+	NSString *result;
+	[task setLaunchPath:@"/usr/bin/file"];
+	[task setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
+	[task setStandardOutput:pipe];
+	handle=[pipe fileHandleForReading];
+	[task launch];
+	result=[[NSString alloc] initWithData:[handle readDataToEndOfFile]
+		encoding:NSASCIIStringEncoding];
+
+	[pipe release];
+	[task release];
+
+	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
+	if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result hasPrefix:@"text/plain"])
+	{
+		// if UTF16/32 cocoa will try to find the correct encoding
+		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)
+			enc = 0;
+		else if([result rangeOfString:@"utf-8"].length)
+			enc = NSUTF8StringEncoding;
+		else if([result rangeOfString:@"iso-8859-1"].length)
+			enc = NSISOLatin1StringEncoding;
+		else if([result rangeOfString:@"us-ascii"].length)
+			enc = NSASCIIStringEncoding;
+		else 
+			enc = 0;
+
+		if(enc == 0) // cocoa tries to detect the encoding
+			content = [NSString stringWithContentsOfFile:aPath usedEncoding:&enc error:&err];
+		else
+			content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
+
+		if(content)
+		{
+			[self insertText:content];
+			[result release];
+			[self insertText:@""]; // Invoke keyword uppercasing
+			return;
+		}
+		// If UNIX "file" failed try cocoa's encoding detection
+		content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
+		if(content)
+		{
+			[self insertText:content];
+			[result release];
+			[self insertText:@""]; // Invoke keyword uppercasing
+			return;
+		}
+	}
+	
+	[result release];
+
+	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
+	NSBeep();
 }
 
 
