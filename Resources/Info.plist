@@ -79,7 +79,7 @@
 		</dict>
 	</array>
 	<key>SUFeedURL</key>
-	<string>http://sequelpro.com/appcast/app-releases.xml</string>
+	<string>http://www.sequelpro.com/appcast/app-releases.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle-public-key.pem</string>
 </dict>
