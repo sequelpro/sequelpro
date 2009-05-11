@@ -236,8 +236,8 @@ adds an empty row to the tableSource-array and goes into edit mode
 	if ( ![self saveRowOnDeselect] ) return;
 
 	[tableFields addObject:[NSMutableDictionary
-		dictionaryWithObjects:[NSArray arrayWithObjects:@"",@"int",@"",@"0",@"0",@"0",@"YES",@"",[prefs stringForKey:@"NullValue"],@"None",nil]
-		forKeys:[NSArray arrayWithObjects:@"Field",@"Type",@"Length",@"unsigned",@"zerofill",@"binary",@"Null",@"Key",@"Default",@"Extra",nil]]];
+							dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+										  forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]];
 
 	[tableSourceView reloadData];
 	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
