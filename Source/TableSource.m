@@ -227,17 +227,17 @@ reloads the table (performing a new mysql-query)
 
 #pragma mark Edit methods
 
-/*
-adds an empty row to the tableSource-array and goes into edit mode
-*/
+/**
+ * Adds an empty row to the tableSource-array and goes into edit mode
+ */
 - (IBAction)addField:(id)sender
 {
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
 	[tableFields addObject:[NSMutableDictionary
-		dictionaryWithObjects:[NSArray arrayWithObjects:@"",@"int",@"",@"0",@"0",@"0",@"YES",@"",[prefs stringForKey:@"NullValue"],@"None",nil]
-		forKeys:[NSArray arrayWithObjects:@"Field",@"Type",@"Length",@"unsigned",@"zerofill",@"binary",@"Null",@"Key",@"Default",@"Extra",nil]]];
+							dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+										  forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]];
 
 	[tableSourceView reloadData];
 	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
@@ -247,9 +247,9 @@ adds an empty row to the tableSource-array and goes into edit mode
 	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-/*
-copies a field and goes in edit mode for the new field
-*/
+/**
+ * Copies a field and goes in edit mode for the new field
+ */
 - (IBAction)copyField:(id)sender
 {
 	NSMutableDictionary *tempRow;
@@ -274,9 +274,9 @@ copies a field and goes in edit mode for the new field
 	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-/*
-adds the index to the mysql-db and stops modal session with code 1 when success, 0 when error and -1 when no columns specified
-*/
+/**
+ * adds the index to the mysql-db and stops modal session with code 1 when success, 0 when error and -1 when no columns specified
+ */
 - (IBAction)addIndex:(id)sender
 {
 	NSString *indexName;
@@ -315,12 +315,6 @@ adds the index to the mysql-db and stops modal session with code 1 when success,
 				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
 				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 
-/*
-NSLog([NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
-				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
-				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]);
-*/
-
 		if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			[self loadTable:selectedTable];
 			[NSApp stopModalWithCode:1];
@@ -330,36 +324,52 @@ NSLog([NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
 	}
 }
 
-/*
-opens alertsheet and asks for confirmation
-*/
+/**
+ * Ask the user to confirm that they really want to remove the selected field.
+ */
 - (IBAction)removeField:(id)sender
 {
-	if ( ![tableSourceView numberOfSelectedRows] )
+	if (![tableSourceView numberOfSelectedRows])
 		return;
 
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if (![self saveRowOnDeselect]) 
+		return;
 
-	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-			nil, @"removefield", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the field %@?", @"message of panel asking for confirmation for deleting field"),
-										[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]] );
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete field?", @"delete field message")
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									   otherButton:nil 
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"),
+																			  [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removefield"];
 }
 
-/*
-opens alertsheet and asks for confirmation
-*/
+/**
+ *  Ask the user to confirm that they really want to remove the selected index.
+ */
 - (IBAction)removeIndex:(id)sender
 {
-	if ( ![indexView numberOfSelectedRows] )
+	if (![indexView numberOfSelectedRows])
 		return;
 
 	// Check whether a save of the current fields row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if (![self saveRowOnDeselect]) 
+		return;
 
-	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-			nil, @"removeindex", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the index %@?", @"message of panel asking for confirmation for deleting index"),
-										[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"]] );
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete Index?", @"delete index message")
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									   otherButton:nil 
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"),
+																			  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"]]];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeindex"];
 }
 
 - (IBAction)typeChanged:(id)sender
@@ -724,10 +734,10 @@ returns YES if no row is beeing edited and nothing has to be written to db
 	 if contextInfo == removefield: removes row from mysql-db if user hits ok
 	 if contextInfo == removeindex: removes index from mysql-db if user hits ok
 	 */
-	
-	[sheet orderOut:self];
 
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
+		[sheet orderOut:self];
+		
 		alertSheetOpened = NO;
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//problem: reentering edit mode for first cell doesn't function

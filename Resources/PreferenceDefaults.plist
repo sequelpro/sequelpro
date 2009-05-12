@@ -18,6 +18,8 @@
 	<false/>
 	<key>FetchCorrectRowCount</key>
 	<true/>
+	<key>NewFieldsAllowNulls</key>
+	<true/>
 	<key>LimitResults</key>
 	<true/>
 	<key>LimitResultsValue</key>

@@ -71,5 +71,7 @@
 - (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
+- (void) insertFileContentOfFile:(NSString *)aPath;
+- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
 
 @end
