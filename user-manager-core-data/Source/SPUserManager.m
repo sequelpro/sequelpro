@@ -67,7 +67,7 @@
 	selectedPrivs = [[NSMutableArray alloc] init];
 	
 	// Initializing could take a while so run in a separate thread
-	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
+	//[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
 }
 
 - (void)_initializeDatabaseList
@@ -123,6 +123,7 @@
 	{
 		NSString *username = [[items objectAtIndex:i] valueForKey:@"User"];
 
+		
 		if ([[users valueForKey:@"username"] containsObject:username])
 		{
 			int parentIndex = [[users valueForKey:@"username"] indexOfObject:username];
@@ -358,7 +359,7 @@
 // General Action Methods 
 - (IBAction)doCancel:(id)sender
 {
-	[self close];
+	[window close];
 }
 
 - (IBAction)doApply:(id)sender

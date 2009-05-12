@@ -24,6 +24,8 @@
 
 @interface NSTextView (SPTextViewAdditions)
 
+- (NSRange)getRangeForCurrentWord;
+
 - (IBAction)selectCurrentWord:(id)sender;
 - (IBAction)selectCurrentLine:(id)sender;
 - (IBAction)doSelectionUpperCase:(id)sender;

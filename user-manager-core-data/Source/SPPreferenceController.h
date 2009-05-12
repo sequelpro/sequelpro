@@ -35,15 +35,24 @@
 	IBOutlet NSView *favoritesView;
 	IBOutlet NSView *autoUpdateView;
 	IBOutlet NSView *networkView;
+	IBOutlet NSView *editorView;
+	
+	
 	
 	IBOutlet NSPopUpButton *defaultFavoritePopup;
 	
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSArrayController *favoritesController;
 	
+	IBOutlet NSTextField *nameField;
+	IBOutlet NSTextField *hostField;
+	IBOutlet NSTextField *userField;
+	IBOutlet NSTextField *databaseField;
 	IBOutlet NSSecureTextField *passwordField;
 	KeyChain *keychain;
-	
+
+	IBOutlet NSTextField *editorFontName;
+
 	NSToolbar *toolbar;
 	
 	NSToolbarItem *generalItem;
@@ -52,9 +61,12 @@
 	NSToolbarItem *favoritesItem;
 	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *networkItem;
+	NSToolbarItem *editorItem;
 
 	NSUserDefaults *prefs;
 }
+
+- (void)applyRevisionChanges;
 
 // IBAction methods
 - (IBAction)addFavorite:(id)sender;
@@ -62,6 +74,8 @@
 - (IBAction)duplicateFavorite:(id)sender;
 - (IBAction)saveFavorite:(id)sender;
 - (IBAction)updateDefaultFavorite:(id)sender;
+- (IBAction)showCustomQueryFontPanel:(id)sender;
+- (IBAction)setDefaultColors:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;
@@ -70,5 +84,11 @@
 - (IBAction)displayNotificationPreferences:(id)sender;
 - (IBAction)displayAutoUpdatePreferences:(id)sender;
 - (IBAction)displayNetworkPreferences:(id)sender;
+- (IBAction)displayEditorPreferences:(id)sender;
+
+// Other
+- (void)updateDefaultFavoritePopup;
+- (void)selectFavorites:(NSArray *)favorite;
+- (void)changeFont:(id)sender;
 
 @end

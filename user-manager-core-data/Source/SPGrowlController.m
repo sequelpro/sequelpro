@@ -81,14 +81,13 @@ static SPGrowlController *sharedGrowlController = nil;
  */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name
 {
-    // Post notification
-    [GrowlApplicationBridge notifyWithTitle:title
-                                description:description
-                           notificationName:name
-                                   iconData:nil
-                                   priority:0
-                                   isSticky:NO
-                               clickContext:nil];
+	[self notifyWithTitle:title
+			  description:description
+		notificationName:name
+				iconData:nil
+				priority:0
+				isSticky:NO
+			clickContext:nil];
 }
      
 /*
@@ -96,14 +95,16 @@ static SPGrowlController *sharedGrowlController = nil;
  */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
 {
-    // Post notification
-    [GrowlApplicationBridge notifyWithTitle:title
-                                description:description
-                           notificationName:name
-                                   iconData:data
-                                   priority:priority
-                                   isSticky:sticky
-                               clickContext:clickContext];
+    // Post notification only if preference is set
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"GrowlEnabled"]) {
+		[GrowlApplicationBridge notifyWithTitle:title
+									description:description
+							   notificationName:name
+									   iconData:data
+									   priority:priority
+									   isSticky:sticky
+								   clickContext:clickContext];
+	}
 }
 
 @end

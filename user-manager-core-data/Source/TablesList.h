@@ -47,12 +47,16 @@ enum sp_table_types
 	IBOutlet id copyTableSheet;
 	IBOutlet id tablesListView;
 	IBOutlet id copyTableNameField;
+	IBOutlet id copyTableMessageField;
 	IBOutlet id copyTableContentSwitch;
 	IBOutlet id tabView;
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
 	IBOutlet id addTableButton;
+	
+	IBOutlet NSMenuItem *removeTableMenuItem;
+	IBOutlet NSMenuItem *duplicateTableMenuItem;
 
 	CMMCPConnection *mySQLConnection;
 	

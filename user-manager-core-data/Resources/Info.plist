@@ -42,13 +42,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.9.4</string>
+	<string>0.9.5</string>
 	<key>CFBundleVersion</key>
 	<string></string>
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>0.9.4 (387)</string>
+	<string>0.9.5 (608)</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.5.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -77,7 +79,7 @@
 		</dict>
 	</array>
 	<key>SUFeedURL</key>
-	<string>http://sequelpro.com/appcast/app-releases.xml</string>
+	<string>http://www.sequelpro.com/appcast/app-releases.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle-public-key.pem</string>
 </dict>

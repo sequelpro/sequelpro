@@ -29,9 +29,14 @@
 	IBOutlet NSSearchField *consoleSearchField;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSButton *includeTimeStampsButton, *saveConsoleButton, *clearConsoleButton;
+	IBOutlet NSMenuItem *showTimeStampsMenuItem, *showSelectShowStatementsMenuItem, *showHelpMenuItem;
 	
 	NSFont *consoleFont;
-	NSMutableArray *messages, *messagesActiveSet, *messagesFilterSet, *messagesSubset;
+	NSMutableArray *messagesFullSet, *messagesFilteredSet, *messagesVisibleSet;
+	BOOL showSelectStatementsAreDisabled;
+	BOOL showHelpStatementsAreDisabled;
+	BOOL filterIsActive;
+	NSMutableString *activeFilterString;
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
@@ -43,6 +48,8 @@
 - (IBAction)saveConsoleAs:(id)sender;
 - (IBAction)toggleShowTimeStamps:(id)sender;
 - (IBAction)toggleShowSelectShowStatements:(id)sender;
+- (IBAction)toggleShowHelpStatements:(id)sender;
+
 
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;

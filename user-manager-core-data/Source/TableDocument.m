@@ -42,9 +42,14 @@
 #import "SPQueryConsole.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "MainController.h"
+#import "SPPreferenceController.h"
+
+//used for printing
+#import "MGTemplateEngine.h"
+#import "ICUTemplateMatcher.h"
 
 NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocumentFavoritesControllerSelectionIndexDidChange";
-NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocumentFavoritesControllerFavoritesDidChange";
 
 @interface TableDocument (PrivateAPI)
 
@@ -61,7 +66,8 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
 	}
-		
+	printWebView = [[WebView alloc] init];
+	[printWebView setFrameLoadDelegate:self];	
 	return self;
 }
 
@@ -70,11 +76,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	// register selection did change handler for favorites controller (used in connect sheet)
 	[favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
 	
-	// register value change handler for favourites, so we can save them to preferences
-	[self addObserver:self forKeyPath:@"favorites" options:0 context:TableDocumentFavoritesControllerFavoritesDidChange];
-	
 	// register double click for the favorites view (double click favorite to connect)
 	[connectFavoritesTableView setTarget:self];
+	[connectFavoritesTableView setDoubleAction:@selector(connect:)];
 	
 	// find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
@@ -89,23 +93,115 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		[self chooseFavorite:self];
 		return;
 	}
-	
-	if (context == TableDocumentFavoritesControllerFavoritesDidChange) {
-		[prefs setObject:[self favorites] forKey:@"favorites"];
-		return;
-	}
-	
+
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-- (NSPrintOperation *)printOperationWithSettings:(NSDictionary *)ps error:(NSError **)e
-{
+- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame 
+{	
+	//because I need the webFrame loaded (for preview), I've moved the actuall printing here.
 	NSPrintInfo *printInfo = [self printInfo];
 	[printInfo setHorizontalPagination:NSFitPagination];
 	[printInfo setVerticalPagination:NSAutoPagination];
-	NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:[[tableTabView selectedTabViewItem] view] printInfo:printInfo];
-	return printOp;
+	[printInfo setVerticallyCentered:NO];
+	[printInfo setTopMargin:30];
+	[printInfo setBottomMargin:30];
+	[printInfo setLeftMargin:10];
+	[printInfo setRightMargin:10];
+	
+	NSPrintOperation *op = [NSPrintOperation
+							printOperationWithView:[[[printWebView mainFrame] frameView] documentView]
+							printInfo:printInfo];
+	
+	//add ability to select orientation to print panel
+	NSPrintPanel *printPanel = [op printPanel];
+	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling];
+	[op setPrintPanel:printPanel];
+	
+    [op runOperationModalForWindow:tableWindow
+						  delegate:self
+					didRunSelector:
+	 @selector(printOperationDidRun:success:contextInfo:)
+					   contextInfo:NULL];
 
+}
+
+- (IBAction)printDocument:(id)sender
+{
+	//here load the printing document. The actual printing is done in the doneLoading delegate.
+	[[printWebView mainFrame] loadHTMLString:[self getHTMLforPrint] baseURL:nil];
+}
+
+- (void)printOperationDidRun:(NSPrintOperation *)printOperation
+					 success:(BOOL)success
+				 contextInfo:(void *)info
+{
+	//selector for print... maybe we can get rid of this?
+}
+
+- (NSString *)getHTMLforPrint
+{
+	// Set up template engine with your chosen matcher.
+	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
+	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
+	
+	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (build %@)",
+		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"],
+		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
+		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
+	];
+	
+	NSMutableDictionary *connection = [[NSMutableDictionary alloc] init];
+	if([[self user] length])
+		[connection setValue:[self user] forKey:@"username"];
+	[connection setValue:[self host] forKey:@"hostname"];
+	if([[portField stringValue] length])
+		[connection setValue:[portField stringValue] forKey:@"port"];
+	[connection setValue:selectedDatabase forKey:@"database"];
+	[connection setValue:versionForPrint forKey:@"version"];
+	
+	NSArray *columns, *rows;
+	columns = rows = nil;
+	columns = [self columnNames];
+
+	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 ){
+		if([[tableSourceInstance tableStructureForPrint] count] > 1)
+			rows = [[NSArray alloc] initWithArray:
+					[[tableSourceInstance tableStructureForPrint] objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSourceInstance tableStructureForPrint] count]-1)]
+					 ]
+					];
+	}
+	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1 ){
+		if([[tableContentInstance currentResult] count] > 1)
+			rows = [[NSArray alloc] initWithArray:
+					[[tableContentInstance currentResult] objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count]-1)]
+					 ]
+					];
+		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
+	}
+	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2 ){
+		if([[customQueryInstance currentResult] count] > 1)
+			rows = [[NSArray alloc] initWithArray:
+					[[customQueryInstance currentResult] objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count]-1)]
+					 ]
+					];
+		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
+	}
+	
+	[engine setObject:connection forKey:@"c"];
+	// Get path to template.
+	NSString *templatePath = [[NSBundle mainBundle] pathForResource:@"sequel-pro-print-template" ofType:@"html"];
+	NSDictionary *print_data = [NSDictionary dictionaryWithObjectsAndKeys: 
+			columns, @"columns",
+			rows, @"rows",
+			nil];
+
+	// Process the template and display the results.
+	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
+	return result;
 }
 
 - (CMMCPConnection *)sharedConnection
@@ -143,6 +239,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	// Connect automatically to the last used or default favourite
 	// connectSheet must open first.
 	if (_shouldOpenConnectionAutomatically) {
+		_shouldOpenConnectionAutomatically = false;
 		[self connect:self];
 	}
 }
@@ -159,10 +256,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 - (IBAction)connect:(id)sender
 {
 	int code;
-
-	// Save the favourites - commits any unsaved changes ie favourite renames
-	[prefs setObject:[self favorites] forKey:@"favorites"];
-	[prefs synchronize];
 	
 	[connectProgressBar startAnimation:self];
 	[connectProgressStatusText setHidden:NO];
@@ -242,14 +335,14 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		[tableSourceInstance setConnection:mySQLConnection];
 		[tableContentInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
+		[customQueryInstance setMySQLversion:mySQLVersion];
 		[tableDumpInstance setConnection:mySQLConnection];
 		[spExportControllerInstance setConnection:mySQLConnection];
 		[tableStatusInstance setConnection:mySQLConnection];
 		[tableDataInstance setConnection:mySQLConnection];
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
 						   [hostField stringValue], [databaseField stringValue]]];
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue],
-							   [hostField stringValue], [databaseField stringValue]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [databaseField stringValue]]];
 		
 		// Connected Growl notification		
         [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
@@ -298,6 +391,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	if (![self selectedFavorite])
 		return;
 	
+	[nameField setStringValue:[self valueForKeyPath:@"selectedFavorite.name"]];
 	[hostField setStringValue:[self valueForKeyPath:@"selectedFavorite.host"]];
 	[socketField setStringValue:[self valueForKeyPath:@"selectedFavorite.socket"]];
 	[userField setStringValue:[self valueForKeyPath:@"selectedFavorite.user"]];
@@ -309,46 +403,16 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 }
 
 /**
- * Remove the selected favourite. Instead of calling the remove: method of the Favorites NSArrayController
- * directly in the XIB we do it here because we also need to remove the keychain password.
+ * Opens the preferences window, or brings it to the front, and switch to the favorites tab.
+ * If a favorite is selected in the connection sheet, it is also select in the prefs window.
  */
-- (IBAction)removeFavorite:(id)sender
+- (IBAction)editFavorites:(id)sender
 {
-	if (![self selectedFavorite]) {
-		return;
-	}
+	SPPreferenceController *prefsController = [[NSApp delegate] preferenceController];
 	
-	NSString *name     = [self valueForKeyPath:@"selectedFavorite.name"];
-	NSString *user     = [self valueForKeyPath:@"selectedFavorite.user"];
-	NSString *host     = [self valueForKeyPath:@"selectedFavorite.host"];
-	NSString *database = [self valueForKeyPath:@"selectedFavorite.database"];
-	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", name]
-									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@", name]
-									account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-	
-	// Remove from favorites array controller
-	[favoritesController remove:[self selectedFavorite]];
-
-}
-
-/**
- * Return the favorites array.
- */
-- (NSMutableArray *)favorites
-{
-	// if no favorites, load from user defaults
-	if (!favorites) {
-		favorites = [[NSMutableArray alloc] initWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"favorites"]];
-	}
-	
-	// if no favorites in user defaults, load empty ones
-	if (!favorites) {
-		favorites = [[NSMutableArray array] retain];
-	}
-	
-	return favorites;
+	[prefsController showWindow:self];
+	[prefsController displayFavoritePreferences:self];
+	[prefsController selectFavorites:[favoritesController selectedObjects]];	
 }
 
 /**
@@ -372,7 +436,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	if (![self selectedFavorite])
 		return nil;
 	
-	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [self valueForKeyPath:@"selectedFavorite.name"]];
+	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [self valueForKeyPath:@"selectedFavorite.name"], [[self valueForKeyPath:@"selectedFavorite.id"] intValue]];
 	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 								 [self valueForKeyPath:@"selectedFavorite.user"],
 								 [self valueForKeyPath:@"selectedFavorite.host"],
@@ -383,23 +447,24 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 
 - (void)connectSheetAddToFavorites:(id)sender
 {
-	[self addToFavoritesHost:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
+	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
 }
 
 /**
  * add actual connection to favorites
  */
-- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
-					  user:(NSString *)user password:(NSString *)password
-					  port:(NSString *)port database:(NSString *)database
-					useSSH:(BOOL)useSSH // no-longer in use
-				   sshHost:(NSString *)sshHost // no-longer in use
-				   sshUser:(NSString *)sshUser // no-longer in use
-			   sshPassword:(NSString *)sshPassword // no-longer in use
-				   sshPort:(NSString *)sshPort // no-longer in use
+- (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
+					 user:(NSString *)user password:(NSString *)password
+					 port:(NSString *)port database:(NSString *)database
+				   useSSH:(BOOL)useSSH // no-longer in use
+				  sshHost:(NSString *)sshHost // no-longer in use
+				  sshUser:(NSString *)sshUser // no-longer in use
+			  sshPassword:(NSString *)sshPassword // no-longer in use
+				  sshPort:(NSString *)sshPort // no-longer in use
 {
-	NSString *favoriteName = [NSString stringWithFormat:@"%@@%@", user, host];
-	if (![database isEqualToString:@""])
+	NSString *favoriteName = [name length]?name:[NSString stringWithFormat:@"%@@%@", user, host];
+	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	if (![name length] && ![database isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", database, favoriteName];
 	
 	// test if host and socket are not nil
@@ -408,21 +473,18 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		return;
 	}
 	
-	[self willChangeValueForKey:@"favorites"];
-	
 	// write favorites and password
-	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	nil]
-															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", nil]];
-	[favorites addObject:newFavorite];
-	
+	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	favoriteid, nil]
+															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
 	if (![password isEqualToString:@""]) {
 		[keyChainInstance addPassword:password
-							  forName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteName]
+							  forName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteName, [favoriteid intValue]]
 							  account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 	}
 	
-	[self didChangeValueForKey:@"favorites"];
+	[favoritesController addObject:newFavorite];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:newFavorite]];
+	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
 }
 
 /**
@@ -432,10 +494,9 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  * if contextInfo == removedatabase -> tries to remove the selected database
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-{
-	[sheet orderOut:self];
-	
+{	
 	if ([contextInfo isEqualToString:@"connect"]) {
+		[sheet orderOut:self];
 		[self connectToDB:nil];
 		return;
 	}
@@ -456,7 +517,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		[self setDatabases:self];
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/", mySQLVersion, [userField stringValue], [hostField stringValue]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/", mySQLVersion, [self name]]];
 	}
 }
 
@@ -528,7 +589,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	selectedDatabase = [[chooseDatabaseButton titleOfSelectedItem] retain];
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue], [hostField stringValue], [self database]]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
 }
 
 /**
@@ -597,7 +658,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	[self setDatabases:self];
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", mySQLVersion, [userField stringValue], [hostField stringValue], selectedDatabase]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], selectedDatabase]];
 }
 
 /**
@@ -615,10 +676,19 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 {
 	if ([chooseDatabaseButton indexOfSelectedItem] == 0)
 		return;
+	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil])
 		return;
 	
-	NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"removedatabase", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the database %@?", @"message of panel asking for confirmation for deleting db"), [self database]]);
+	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete database '%@'?", @"delete database message"), [self database]]
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									  otherButton:nil 
+						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
 }
 
 #pragma mark Console methods
@@ -863,8 +933,12 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-	
-	[syntaxViewContent setString:tableSyntax];
+
+	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
+		[syntaxViewContent setString:[tableSyntax createViewSyntaxPrettifier]];
+	else
+		[syntaxViewContent setString:tableSyntax];
+
 	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
@@ -893,12 +967,54 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-	[pb setString:tableSyntax forType:NSStringPboardType];
-    
-    // Table syntax copied Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
+	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
+		[pb setString:[tableSyntax createViewSyntaxPrettifier] forType:NSStringPboardType];
+	else
+		[pb setString:tableSyntax forType:NSStringPboardType];
+
+	// Table syntax copied Growl notification
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
                                               notificationName:@"Table Syntax Copied"];
+}
+
+- (IBAction)copyColumnNames:(id)sender
+{
+	//NSArray *columns;
+	NSString *columnNames;	
+	//columns = ;
+	if ([self columnNames]) {
+		columnNames = [NSString stringWithFormat:@"`%@`", [[self columnNames] componentsJoinedByString:@"`, `"]];
+	}
+	
+	if([columnNames length]){
+		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+		// Copy the string to the pasteboard
+		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pasteBoard setString:columnNames forType:NSStringPboardType];
+	}
+}
+
+- (NSArray *)columnNames
+{
+	NSArray *columns = nil;
+	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& [[tableSourceInstance tableStructureForPrint] count] > 0 ){
+		columns = [[NSArray alloc] initWithArray:[[tableSourceInstance tableStructureForPrint] objectAtIndex:0] copyItems:YES];
+	}
+	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& [[tableContentInstance currentResult] count] > 0 ){
+		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
+	}
+	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
+		&& [[customQueryInstance currentResult] count] > 0 ){
+		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
+	}
+	
+	if(columns) {
+		[columns autorelease];
+	}
+	return columns;
 }
 
 /**
@@ -1166,6 +1282,17 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 }
 
 /**
+ * Returns the name
+ */
+- (NSString *)name
+{
+	if ([[nameField stringValue] length]) {
+		return [nameField stringValue];
+	}
+		return [NSString stringWithFormat:@"%@@%@", [userField stringValue], [hostField stringValue]];
+}
+
+/**
  * Passes query to tablesListInstance
  */
 - (void)doPerformQueryService:(NSString *)query
@@ -1345,11 +1472,22 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	return [self export:sender];
 }
 
+/*
+ * Show the MySQL Help TOC of the current MySQL connection
+ * Invoked by the MainMenu > Help > MySQL Help
+ */
+- (IBAction)showMySQLHelp:(id)sender
+{
+	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
+	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
+}
+
+
 /**
  * Menu validation
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{	
+{
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
@@ -1370,6 +1508,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:) ||
+		[menuItem action] == @selector(copyColumnNames:) ||
 		[menuItem action] == @selector(checkTable:) || 
 		[menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 
@@ -1534,10 +1673,10 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
 		
 		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
-			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"toolbar item for hide console")];
+			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"Hide Console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		} else {
-			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"toolbar item for showconsole")];
+			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"Show Console")];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		}
 		
@@ -1731,7 +1870,7 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	
 	//set up toolbar
 	[self setupToolbar];
-	//	[self connectToDB:nil];
+	// [self connectToDB:nil];
 	[self performSelector:@selector(connectToDB:) withObject:tableWindow afterDelay:0.0f];
 	
 	if([prefs boolForKey:@"SelectLastFavoriteUsed"] == YES){
@@ -1747,12 +1886,11 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  * Invoked when the document window is about to close
  */
 - (void)windowWillClose:(NSNotification *)aNotification
-{
-	//reset print settings, so we're not prompted about saving them
-	[self setPrintInfo:[NSPrintInfo sharedPrintInfo]];
-	
+{	
 	if ([mySQLConnection isConnected]) [self closeConnection];
 	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
+	[[customQueryInstance helpWebViewWindow] release];
+	[createTableSyntaxWindow release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -1793,12 +1931,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  * When a favorite is selected, and the connection details are edited, deselect the favorite;
  * this is clearer and also prevents a failed connection from being repopulated with the
  * favorite's details instead of the last used details.
- * This method allows the password to be changed without altering the selection.
  */
 - (void) controlTextDidChange:(NSNotification *)aNotification
 {
-	if ([aNotification object] == hostField || [aNotification object] == userField || [aNotification object] == databaseField
-		|| [aNotification object] == socketField || [aNotification object] == portField) {
+	if ([aNotification object] == nameField || [aNotification object] == hostField
+		|| [aNotification object] == userField || [aNotification object] == passwordField
+		|| [aNotification object] == databaseField || [aNotification object] == socketField
+		|| [aNotification object] == portField) {
 		[favoritesController setSelectionIndexes:[NSIndexSet indexSet]];
 	}
 	else if ([aNotification object] == databaseNameField) {
@@ -1893,43 +2032,13 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	return theValue;
 }
 
-/**
- * Although the connection sheet tableview uses bindings to display the favourites we implement this method in
- * order to update the keychain associated with favourites that are renamed. Its not the best approach, but it works.
- */
-- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	NSDictionary *favorite = [favorites objectAtIndex:rowIndex];
-	
-	[keyChainInstance deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@", favoriteNameBeingChanged]
-									account:[NSString stringWithFormat:@"%@@%@/%@", [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
-	
-	[keyChainInstance addPassword:[passwordField stringValue]
-						  forName:[NSString stringWithFormat:@"Sequel Pro : %@", object]
-						  account:[NSString stringWithFormat:@"%@@%@/%@",  [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]]];
-	
-	favoriteNameBeingChanged = nil;
-}
-
-/**
- * We implement this method so we can get the name of the favourtie before its renamed. We need the name so we
- * look it up in the keychain and update its name, which is done in the above method. This is obviously not the
- * best approach to doing this as it means we need an ivar just to track the favourite that is about to be renamed. 
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	favoriteNameBeingChanged = [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
-	
-	return YES;
-}
-
 - (IBAction)terminate:(id)sender
 {
 	[[NSApp orderedDocuments] makeObjectsPerformSelector:@selector(cancelConnectSheet:) withObject:nil];
 	[NSApp terminate:sender];
 }
 
-- (IBAction)openUserManager:(id)sender
+- (IBAction)showUserManager:(id)sender
 {
 	if (userManagerInstance == nil) 
 	{
@@ -1948,7 +2057,6 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
 	}
 	[chooseDatabaseButton release];
 	[mySQLConnection release];
-	[favorites release];
 	[variables release];
 	[selectedDatabase release];
 	[mySQLVersion release];
@@ -1965,14 +2073,20 @@ NSString *TableDocumentFavoritesControllerFavoritesDidChange      = @"TableDocum
  * Checks to see if a favorite with the supplied details already exists.
  */
 - (BOOL)_favoriteAlreadyExists:(NSString *)database host:(NSString *)host user:(NSString *)user
-{	
+{
+	NSArray *favorites = [favoritesController arrangedObjects];
+
+	// Ensure database, host, and user match prefs format
+	if (!database) database = @"";
+	if (!host) host = @"";
+	if (!user) user = @"";
+
 	// Loop the favorites and check their details
-	for (NSDictionary *favorite in favorites) 
-	{		
+	for (NSDictionary *favorite in favorites)
+	{
 		if ([[favorite objectForKey:@"database"] isEqualToString:database] &&
 			[[favorite objectForKey:@"host"] isEqualToString:host] &&
 			[[favorite objectForKey:@"user"] isEqualToString:user]) {
-			
 			return YES;
 		}
 	}

@@ -236,8 +236,8 @@ adds an empty row to the tableSource-array and goes into edit mode
 	if ( ![self saveRowOnDeselect] ) return;
 
 	[tableFields addObject:[NSMutableDictionary
-		dictionaryWithObjects:[NSArray arrayWithObjects:@"",@"int",@"",@"0",@"0",@"0",@"YES",@"",[prefs stringForKey:@"NullValue"],@"None",nil]
-		forKeys:[NSArray arrayWithObjects:@"Field",@"Type",@"Length",@"unsigned",@"zerofill",@"binary",@"Null",@"Key",@"Default",@"Extra",nil]]];
+							dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+										  forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]];
 
 	[tableSourceView reloadData];
 	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
@@ -830,6 +830,23 @@ returns a dictionary containing enum/set field names as key and possible values 
 - (NSDictionary *)enumFields
 {
 	return [NSDictionary dictionaryWithDictionary:enumFields];
+}
+
+- (NSArray *)tableStructureForPrint
+{
+	CMMCPResult *queryResult;
+	NSMutableArray *tempResult = [NSMutableArray array];
+	int i;
+	
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	[tempResult addObject:[queryResult fetchFieldNames]];
+	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+		[tempResult addObject:[queryResult fetchRowAsArray]];
+	}
+	
+	return tempResult;
 }
 
 #pragma mark TableView datasource methods

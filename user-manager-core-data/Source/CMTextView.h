@@ -22,6 +22,14 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import "NoodleLineNumberView.h"
+#import <MCPKit_bundled/MCPKit_bundled.h>
+#import "CMCopyTable.h"
+#import "CMTextView.h"
+#import "CMMCPConnection.h"
+#import "CMMCPResult.h"
+
+#define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
@@ -29,9 +37,20 @@
 	BOOL autoindentIgnoresEnter;
 	BOOL autouppercaseKeywordsEnabled;
 	BOOL delBackwardsWasPressed;
+	BOOL autohelpEnabled;
+	NoodleLineNumberView *lineNumberView;
+	
+	NSString *showMySQLHelpFor;
+	
+	IBOutlet NSScrollView *scrollView;
+	
+	NSUserDefaults *prefs;
+
 }
 
-- (BOOL) isNextCharMarkedBy:(id)attribute;
+- (IBAction)showMySQLHelpForCurrentWord:(id)sender;
+
+- (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue;
 - (BOOL) areAdjacentCharsLinked;
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
@@ -46,5 +65,13 @@
 - (BOOL) autopair;
 - (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
 - (BOOL) autouppercaseKeywords;
+- (void) setAutohelp:(BOOL)enableAutohelp;
+- (BOOL) autohelp;
+- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
+- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
+- (void) autoHelp;
+- (void) doSyntaxHighlighting;
+- (void) insertFileContentOfFile:(NSString *)aPath;
+- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
 
 @end

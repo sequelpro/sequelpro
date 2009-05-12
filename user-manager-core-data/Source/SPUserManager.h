@@ -10,8 +10,8 @@
 
 @class CMMCPConnection;
 
-@interface SPUserManager : NSWindowController {
-
+@interface SPUserManager : NSObject {
+	
 	NSPersistentStoreCoordinator *persistentStoreCoordinator;
     NSManagedObjectModel *managedObjectModel;
     NSManagedObjectContext *managedObjectContext;

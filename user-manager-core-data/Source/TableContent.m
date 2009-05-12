@@ -50,6 +50,7 @@
 	sortField = nil;
 	areShowingAllRows = false;
 	currentlyEditingRow = -1;
+	usedQuery = [[NSString stringWithString:@""] retain];
 		
 	return self;
 }
@@ -297,6 +298,8 @@
 						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 	}
 
+	[self setUsedQuery:query];
+	
 	queryResult = [mySQLConnection queryString:query];
 	if ( queryResult == nil ) {
 		NSLog(@"Loading table data for %@ failed, query string was: %@", aTable, query);
@@ -393,6 +396,9 @@
 						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 		[limitRowsField selectText:self];
 	}
+	
+	[self setUsedQuery:queryString];
+	
 	queryResult = [mySQLConnection queryString:queryString];
 	//	[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
 	[fullResult setArray:[self fetchResultAsArray:queryResult]];
@@ -605,6 +611,8 @@
 						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
 	}
 
+	[self setUsedQuery:queryString];
+	
 	theResult = [mySQLConnection queryString:queryString];
 	[filteredResult setArray:[self fetchResultAsArray:theResult]];
 	
@@ -654,6 +662,18 @@
 	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
 }
 
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
+
+- (void)setUsedQuery:(NSString *)query
+{
+	if(usedQuery)
+		[usedQuery release];
+	usedQuery = [[NSString stringWithString:query] retain];
+}
+
 
 #pragma mark Edit methods
 
@@ -672,7 +692,7 @@
 	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
 	for ( i = 0 ; i < [columns count] ; i++ ) {
 		column = [columns objectAtIndex:i];
-		if ([column objectForKey:@"default"] == nil) {
+		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
 			[newRow setObject:[prefs stringForKey:@"NullValue"] forKey:[column objectForKey:@"name"]];
 		} else {
 			[newRow setObject:[column objectForKey:@"default"] forKey:[column objectForKey:@"name"]];
@@ -754,36 +774,48 @@
 		[tableContentView editColumn:0 row:[tableContentView selectedRow] withEvent:nil select:YES];
 }
 
-- (IBAction)removeRow:(id)sender
-/*
- asks user if he really wants to delete the selected rows
+/**
+ * Asks the user if they really want to delete the selected rows
  */
+- (IBAction)removeRow:(id)sender
 {
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
-
-	if ( ![tableContentView numberOfSelectedRows] )
+	if (![self saveRowOnDeselect]) 
 		return;
-	/*
-	 if ( ([tableContentView numberOfSelectedRows] == [self numberOfRowsInTableView:tableContentView]) &&
-	 areShowingAllRows &&
-	 (![prefs boolForKey:@"LimitResults"] || ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"LimitResultsValue"])) ) {
-	 */
-	if ( ([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && 
-		(([prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self fetchNumberOfRows]) ||
-		 (![prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self getNumberOfRows])) ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-						  nil, @"removeallrows", NSLocalizedString(@"Do you really want to delete all rows?", @"message of panel asking for confirmation for deleting all rows"));
-	} else if ( [tableContentView numberOfSelectedRows] == 1 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-						  nil, @"removerow", NSLocalizedString(@"Do you really want to delete the selected row?", @"message of panel asking for confirmation for deleting the selected row"));
-	} else {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-						  nil, @"removerow",
-						  [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the selected %d rows?", @"message of panel asking for confirmation for deleting the selected rows"), [tableContentView numberOfSelectedRows]]);
-	}
-}
 
+	if (![tableContentView numberOfSelectedRows])
+		return;
+	
+	NSAlert *alert = [NSAlert alertWithMessageText:@""
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									   otherButton:nil 
+						 informativeTextWithFormat:@""];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSString *contextInfo = @"removerow";
+	
+	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && 
+		(([prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self fetchNumberOfRows]) ||
+		 (![prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self getNumberOfRows]))) {
+		
+		contextInfo = @"removeallrows";
+		
+		[alert setMessageText:NSLocalizedString(@"Delete all rows?", @"delete all rows message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete all the rows from this table. This action cannot be undone.", @"delete all rows informative message")];
+	} 
+	else if ([tableContentView numberOfSelectedRows] == 1) {
+		[alert setMessageText:NSLocalizedString(@"Delete selected row?", @"delete selected row message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected row from this table. This action cannot be undone.", @"delete selected row informative message")];
+	} 
+	else {
+		[alert setMessageText:NSLocalizedString(@"Delete rows?", @"delete rows message")];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %d rows from this table. This action cannot be undone.", @"delete rows informative message"), [tableContentView numberOfSelectedRows]]];
+	}
+	
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+}
 
 //editSheet methods
 - (IBAction)closeEditSheet:(id)sender
@@ -1567,9 +1599,9 @@
 	CMMCPResult *queryResult;
 	int i, errors;
 	
-	[sheet orderOut:self];
-	
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
+		[sheet orderOut:self];
+		
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//problem: reenter edit mode doesn't function
 			[tableContentView editColumn:0 row:[tableContentView selectedRow] withEvent:nil select:YES];
@@ -1659,6 +1691,7 @@
 										[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
 					}
 					
+					[self setUsedQuery:queryString];
 					queryResult = [mySQLConnection queryString:queryString];
 					//						[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
 					[fullResult setArray:[self fetchResultAsArray:queryResult]];
@@ -2189,6 +2222,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[compareType release];
 	if (sortField) [sortField release];
 	[prefs release];
+	[usedQuery release];
 	
 	[super dealloc];
 }

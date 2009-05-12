@@ -22,7 +22,10 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import "CMTextView.h"
+#import "CustomQuery.h"
+#import "TableDocument.h"
 #import "SPStringAdditions.h"
+#import "SPTextViewAdditions.h"
 
 /*
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
@@ -34,20 +37,79 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
 
-#define kAPlinked   @"Linked" // attribute for a via auto-pair inserted char
-#define kAPval      @"linked"
-#define kWQquoted   @"Quoted" // set via lex to indicate a quoted string
-#define kWQval      @"quoted"
-#define kSQLkeyword @"SQLkw"  // attribute for found SQL keywords
-#define kQuote      @"Quote"
+#define kAPlinked      @"Linked" // attribute for a via auto-pair inserted char
+#define kAPval         @"linked"
+#define kLEXToken      @"Quoted" // set via lex to indicate a quoted string
+#define kLEXTokenValue @"isMarked"
+#define kSQLkeyword    @"SQLkw"  // attribute for found SQL keywords
+#define kQuote         @"Quote"
+#define kQuoteValue    @"isQuoted"
+#define kValue         @"dummy"
+#define kBTQuote       @"BTQuote"
+#define kBTQuoteValue  @"isBTQuoted"
 
+#define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
+
+#define SP_SYNTAX_HILITE_BIAS 2000
+
+
+#define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
 @implementation CMTextView
+
+- (void) awakeFromNib
+{
+	// Set self as delegate for the textView's textStorage to enable syntax highlighting,
+	[[self textStorage] setDelegate:self];
+
+	// Set defaults for general usage
+	autoindentEnabled = YES;
+	autopairEnabled = YES;
+	autoindentIgnoresEnter = NO;
+	autouppercaseKeywordsEnabled = YES;
+	autohelpEnabled = NO;
+	delBackwardsWasPressed = NO;
+	
+	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
+	[scrollView setVerticalRulerView:lineNumberView];
+	[scrollView setHasHorizontalRuler:NO];
+	[scrollView setHasVerticalRuler:YES];
+	[scrollView setRulersVisible:YES];
+	
+	// disabled to get the current text range in textView safer
+	[[self layoutManager] setBackgroundLayoutEnabled:NO];
+
+	// add NSViewBoundsDidChangeNotification to scrollView
+	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
+	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
+	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+
+}
+
+
+/*
+ * Returns the associated line number for a character position inside of the CMTextView
+ */
+- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex
+{
+	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
+}
+
+
+/*
+ * Search for the current selection or current word in the MySQL Help 
+ */
+- (IBAction) showMySQLHelpForCurrentWord:(id)sender
+{	
+	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
+}
 
 /*
  * Checks if the char after the current caret position/selection matches a supplied attribute
  */
-- (BOOL) isNextCharMarkedBy:(id)attribute
+- (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue
 {
 	unsigned int caretPosition = [self selectedRange].location;
 
@@ -55,12 +117,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	if (caretPosition >= [[self string] length]) return NO;
 	
 	// Perform the check
-	if ([[self textStorage] attribute:attribute atIndex:caretPosition effectiveRange:nil])
+	if ([[[self textStorage] attribute:attribute atIndex:caretPosition effectiveRange:nil] isEqualToString:aValue])
 		return YES;
 
 	return NO;
 }
-
 
 /*
  * Checks if the caret is wrapped by auto-paired characters.
@@ -87,13 +148,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Check that the pairing character exists after the caret, and is tagged with the link attribute
 	if (matchingChar == [[self string] characterAtIndex:caretPosition]
-		&& [[self textStorage] attribute:kAPlinked atIndex:caretPosition effectiveRange:nil]) {
+		&& [[[self textStorage] attribute:kAPlinked atIndex:caretPosition effectiveRange:nil] isEqualToString:kAPval]) {
 		return YES;
 	}
 
 	return NO;
 }
-
 
 /*
  * If the textview has a selection, wrap it with the supplied prefix and suffix strings;
@@ -120,7 +180,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 /*
  * Copy selected text chunk as RTF to preserve syntax highlighting
  */
-- (void)copyAsRTF
+- (void) copyAsRTF
 {
 
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -133,15 +193,70 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
 		[pb setData:rtf forType:NSRTFPboardType];
 	}
-
 }
 
+
+/*
+ * Selects the line lineNumber relatively to a selection (if given) and scrolls to it
+ */
+- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines
+{
+	NSRange selRange;
+	NSArray *lineRanges;
+	if([self selectedRange].length)
+		lineRanges = [[[self string] substringWithRange:[self selectedRange]] lineRangesForRange:NSMakeRange(0, [self selectedRange].length)];
+	else
+		lineRanges = [[self string] lineRangesForRange:NSMakeRange(0, [[self string] length])];
+	int offset = 0;
+	if(ignLeadingNewLines) // ignore leading empty lines
+	{
+		int arrayCount = [lineRanges count];
+		int i;
+		for (i = 0; i < arrayCount; i++) {
+			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
+				break;
+			offset++;
+		}
+	}
+	selRange = NSRangeFromString([lineRanges objectAtIndex:lineNumber-1+offset]);
+
+	// adjust selRange if a selection was given
+	if([self selectedRange].length)
+		selRange.location += [self selectedRange].location;
+	[self setSelectedRange:selRange];
+	[self scrollRangeToVisible:selRange];
+}
+
+/*
+ * Used for autoHelp update if the user changed the caret position by using the mouse.
+ */
+- (void) mouseDown:(NSEvent *)theEvent
+{
+	
+	// Cancel autoHelp timer
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+	[super mouseDown:theEvent];
+
+	// Start autoHelp timer
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+	
+}
 
 /*
  * Handle some keyDown events in order to provide autopairing functionality (if enabled).
  */
 - (void) keyDown:(NSEvent *)theEvent
 {
+
+	if([prefs boolForKey:@"CustomQueryAutohelp"]) // cancel autoHelp request
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
 	
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
@@ -160,7 +275,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 	
-
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
 	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
 		if(curFlags==(NSControlKeyMask))
@@ -168,9 +282,16 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			[self copyAsRTF];
 			return;
 		}
+	if([charactersIgnMod isEqualToString:@"h"]) // ^C copy as RTF
+		if(curFlags==(NSControlKeyMask))
+		{
+			
+			[self showMySQLHelpForCurrentWord:self];
+			return;
+		}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
-	if (autopairEnabled && characters && [characters length] == 1) {
+	if ([prefs boolForKey:@"CustomQueryAutopair"] && characters && [characters length] == 1) {
 
 		delBackwardsWasPressed = NO;
 
@@ -186,10 +307,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			(insertedCharacter == '\'' || insertedCharacter == '"' || insertedCharacter == '`')
 
 			// And if the next char marked as linked auto-pair
-			&& [self isNextCharMarkedBy:kAPlinked]
+			&& [self isNextCharMarkedBy:kAPlinked withValue:kAPval]
 
 			// And we are inside a quoted string
-			&& [self isNextCharMarkedBy:kWQquoted]
+			&& [self isNextCharMarkedBy:kLEXToken withValue:kLEXTokenValue]
 
 			// And there is no selection, just the text caret
 			&& ![self selectedRange].length
@@ -211,7 +332,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		// There is one exception to this - if the caret is before a linked pair character,
 		// processing continues in order to check whether the next character should be jumped
 		// over; e.g. [| := caret]: "foo|" and press " => only caret will be moved "foo"|
-		if(![self isNextCharMarkedBy:kAPlinked] && [self isNextCharMarkedBy:kWQquoted] && ![self selectedRange].length) {
+		if(![self isNextCharMarkedBy:kAPlinked withValue:kAPval] && [self isNextCharMarkedBy:kLEXToken withValue:kLEXTokenValue] && ![self selectedRange].length) {
 			[super keyDown:theEvent];
 			return;
 		}
@@ -251,7 +372,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if (skipTypedLinkedCharacter) {
 			currentRange = [self selectedRange];
 			if (currentRange.location != NSNotFound && currentRange.length == 0) {
-				if ([self isNextCharMarkedBy:kAPlinked]) {
+				if ([self isNextCharMarkedBy:kAPlinked withValue:kAPval]) {
 					if ([[[self textStorage] string] characterAtIndex:currentRange.location] == insertedCharacter) {
 						currentRange.length = 1;
 						[self setSelectedRange:currentRange];
@@ -296,7 +417,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-	
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+
 }
 
 
@@ -328,17 +451,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
     if (aSelector == @selector(insertNewline:)
-		&& autoindentEnabled
+		&& [prefs boolForKey:@"CustomQueryAutoindent"]
 		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
 	{
 		NSString *textViewString = [[self textStorage] string];
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
 		NSRange currentLineRange;
+		int lineCursorLocation;
 
 		// Extract the current line based on the text caret or selection start position
 		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
 		currentLine = [[NSString alloc] initWithString:[textViewString substringWithRange:currentLineRange]];
+		lineCursorLocation = [self selectedRange].location - currentLineRange.location;
 
 		// Scan all indentation characters on the line into a string
 		whitespaceScanner = [[NSScanner alloc] initWithString:currentLine];
@@ -351,7 +476,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[self insertNewline:self];
 
 		// Replicate the indentation on the previous line if one was found.
-		if (indentString) [self insertText:indentString];
+		if (indentString) {
+			if (lineCursorLocation < [indentString length]) {
+				[self insertText:[indentString substringWithRange:NSMakeRange(0, lineCursorLocation)]];
+			} else {
+				[self insertText:indentString];
+			}
+		}
 
 		// Return to avoid the original implementation, preventing double linebreaks
 		return;
@@ -489,39 +620,61 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
 {
 
+	if (!charRange.length) return nil;
+	
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
-	if([[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil])
+	if([[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
 
-	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!"];
-	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+
+	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
+	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
+
 	NSString *partialString    = [[self string] substringWithRange:charRange];
 	unsigned int partialLength = [partialString length];
 
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
+	NSArray *matchingCompletions;
+
+	unsigned i, insindex;
+	insindex = 0;
+
+	// Add current table names omitting the first item (it's the table header)
 	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
-	
-	//unsigned int options = NSCaseInsensitiveSearch | NSAnchoredSearch;
-	//NSRange partialRange = NSMakeRange(0, partialLength);
-	
-	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-	
-	NSMutableArray *possibleCompletions = [NSMutableArray arrayWithArray:textViewWords];
-	[possibleCompletions addObjectsFromArray:[self keywords]];
-	[possibleCompletions addObjectsFromArray:tableNames];
-	
+	[possibleCompletions addObjectsFromArray:[tableNames objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [tableNames count]-1)]]];
+
 	// Add column names to completions list for currently selected table
 	if ([[[self window] delegate] table] != nil) {
 		id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
 		[possibleCompletions addObjectsFromArray:columnNames];
 	}
 
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
-	NSArray *matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+	// Add all database names
+	MCPResult *queryResult = [[[[self window] delegate] valueForKeyPath:@"mySQLConnection"] valueForKey:@"listDBs"];
+	if ([queryResult numOfRows])
+		[queryResult dataSeek:0];
+	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+	{
+		[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+	}
 
-	unsigned i, insindex;
+	// If caret is not inside backticks add keywords and all words coming from the view.
+	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
+	{
+		// Only parse for words if text size is less than 6MB
+		if([[self string] length]<6000000)
+		{
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
+			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+			[possibleCompletions addObjectsFromArray:textViewWords];
+		}
+		[possibleCompletions addObjectsFromArray:[self keywords]];
+	}
 	
-	insindex = 0;
+	// Check for possible completions
+	matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
+
 	for (i = 0; i < [matchingCompletions count]; i++)
 	{
 		NSString* obj = [matchingCompletions objectAtIndex:i];
@@ -566,15 +719,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"ALGORITHM",
 	@"ALL",
 	@"ALTER",
-	@"ALTER TABLE",
-	@"ALTER VIEW",
-	@"ALTER SCHEMA",
-	@"ALTER SCHEMA",
-	@"ALTER FUNCTION",
 	@"ALTER COLUMN",
 	@"ALTER DATABASE",
+	@"ALTER EVENT",
+	@"ALTER FUNCTION",
+	@"ALTER LOGFILE GROUP",
 	@"ALTER PROCEDURE",
+	@"ALTER SCHEMA",
+	@"ALTER SERVER",
+	@"ALTER TABLE",
+	@"ALTER TABLESPACE",
+	@"ALTER VIEW",
 	@"ANALYZE",
+	@"ANALYZE TABLE",
 	@"AND",
 	@"ANY",
 	@"AS",
@@ -588,6 +745,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"AVG",
 	@"AVG_ROW_LENGTH",
 	@"BACKUP",
+	@"BACKUP TABLE",
 	@"BEFORE",
 	@"BEGIN",
 	@"BETWEEN",
@@ -603,6 +761,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"BY",
 	@"BYTE",
 	@"CACHE",
+	@"CACHE INDEX",
 	@"CALL",
 	@"CASCADE",
 	@"CASCADED",
@@ -612,9 +771,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"CHANGED",
 	@"CHAR",
 	@"CHARACTER",
+	@"CHARACTER SET",
 	@"CHARSET",
 	@"CHECK",
+	@"CHECK TABLE",
 	@"CHECKSUM",
+	@"CHECKSUM TABLE",
 	@"CIPHER",
 	@"CLIENT",
 	@"CLOSE",
@@ -624,6 +786,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"COLLATION",
 	@"COLUMN",
 	@"COLUMNS",
+	@"COLUMN_FORMAT"
 	@"COMMENT",
 	@"COMMIT",
 	@"COMMITTED",
@@ -640,15 +803,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"CONTRIBUTORS",
 	@"CONVERT",
 	@"CREATE",
-	@"CREATE VIEW",
-	@"CREATE INDEX",
-	@"CREATE FUNCTION",
 	@"CREATE DATABASE",
+	@"CREATE EVENT",
+	@"CREATE FUNCTION",
+	@"CREATE INDEX",
+	@"CREATE LOGFILE GROUP",
 	@"CREATE PROCEDURE",
 	@"CREATE SCHEMA",
-	@"CREATE TRIGGER",
 	@"CREATE TABLE",
+	@"CREATE TABLESPACE",
+	@"CREATE TRIGGER",
 	@"CREATE USER",
+	@"CREATE VIEW",
 	@"CROSS",
 	@"CUBE",
 	@"CURRENT_DATE",
@@ -668,6 +834,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"DAY_MINUTE",
 	@"DAY_SECOND",
 	@"DEALLOCATE",
+	@"DEALLOCATE PREPARE",
 	@"DEC",
 	@"DECIMAL",
 	@"DECLARE",
@@ -690,18 +857,23 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"DO",
 	@"DOUBLE",
 	@"DROP",
-	@"DROP TABLE",
-	@"DROP TRIGGER",
-	@"DROP VIEW",
-	@"DROP SCHEMA",
-	@"DROP USER",
-	@"DROP PROCEDURE",
-	@"DROP FUNCTION",
+	@"DROP DATABASE",
+	@"DROP EVENT",
 	@"DROP FOREIGN KEY",
+	@"DROP FUNCTION",
 	@"DROP INDEX",
+	@"DROP LOGFILE GROUP",
 	@"DROP PREPARE",
 	@"DROP PRIMARY KEY",
-	@"DROP DATABASE",
+	@"DROP PREPARE",
+	@"DROP PROCEDURE",
+	@"DROP SCHEMA",
+	@"DROP SERVER",
+	@"DROP TABLE",
+	@"DROP TABLESPACE",
+	@"DROP TRIGGER",
+	@"DROP USER",
+	@"DROP VIEW",
 	@"DUAL",
 	@"DUMPFILE",
 	@"DUPLICATE",
@@ -742,8 +914,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"FLUSH",
 	@"FOR",
 	@"FORCE",
-	@"FOREIGN",
 	@"FOREIGN KEY",
+	@"FOREIGN",
 	@"FOUND",
 	@"FRAC_SECOND",
 	@"FROM",
@@ -784,6 +956,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"INSERT",
 	@"INSERT_METHOD",
 	@"INSTALL",
+	@"INSTALL PLUGIN",
 	@"INT",
 	@"INT1",
 	@"INT2",
@@ -819,10 +992,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"LINESTRING",
 	@"LIST",
 	@"LOAD DATA",
+	@"LOAD INDEX INTO CACHE",
 	@"LOCAL",
 	@"LOCALTIME",
 	@"LOCALTIMESTAMP",
 	@"LOCK",
+	@"LOCK TABLES",
 	@"LOCKS",
 	@"LOGFILE",
 	@"LOGS",
@@ -901,8 +1076,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"ONE_SHOT",
 	@"OPEN",
 	@"OPTIMIZE",
+	@"OPTIMIZE TABLE",
 	@"OPTION",
 	@"OPTIONALLY",
+	@"OPTIONS",
 	@"OR",
 	@"ORDER",
 	@"OUT",
@@ -927,6 +1104,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"PRIMARY",
 	@"PRIVILEGES",
 	@"PROCEDURE",
+	@"PROCEDURE ANALYSE",
 	@"PROCESS",
 	@"PROCESSLIST",
 	@"PURGE",
@@ -953,15 +1131,20 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"RELOAD",
 	@"REMOVE",
 	@"RENAME",
+	@"RENAME DATABASE",
+	@"RENAME TABLE",
 	@"REORGANIZE",
 	@"REPAIR",
+	@"REPAIR TABLE",
 	@"REPEAT",
 	@"REPEATABLE",
 	@"REPLACE",
 	@"REPLICATION",
 	@"REQUIRE",
 	@"RESET",
+	@"RESET MASTER",
 	@"RESTORE",
+	@"RESTORE TABLE",
 	@"RESTRICT",
 	@"RESUME",
 	@"RETURN",
@@ -991,47 +1174,57 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"SERIALIZABLE",
 	@"SESSION",
 	@"SET",
+	@"SET PASSWORD",
 	@"SHARE",
 	@"SHOW",
-	@"SHOW PROCEDURE STATUS",
-	@"SHOW PROCESSLIST",
-	@"SHOW SCHEMAS",
-	@"SHOW SLAVE HOSTS",
-	@"SHOW PRIVILEGES",
-	@"SHOW OPEN TABLES",
-	@"SHOW MASTER STATUS",
-	@"SHOW SLAVE STATUS",
-	@"SHOW PLUGIN",
-	@"SHOW STORAGE ENGINES",
-	@"SHOW VARIABLES",
-	@"SHOW WARNINGS",
-	@"SHOW TRIGGERS",
-	@"SHOW TABLES",
-	@"SHOW MASTER LOGS",
-	@"SHOW TABLE STATUS",
-	@"SHOW TABLE TYPES",
-	@"SHOW STATUS",
-	@"SHOW INNODB STATUS",
-	@"SHOW CREATE DATABASE",
-	@"SHOW CREATE FUNCTION",
-	@"SHOW CREATE PROCEDURE",
-	@"SHOW CREATE SCHEMA",
-	@"SHOW COLUMNS",
-	@"SHOW COLLATION",
 	@"SHOW BINARY LOGS",
 	@"SHOW BINLOG EVENTS",
 	@"SHOW CHARACTER SET",
+	@"SHOW COLLATION",
+	@"SHOW COLUMNS",
+	@"SHOW CONTRIBUTORS",
+	@"SHOW CREATE DATABASE",
+	@"SHOW CREATE EVENT",
+	@"SHOW CREATE FUNCTION",
+	@"SHOW CREATE PROCEDURE",
+	@"SHOW CREATE SCHEMA",
 	@"SHOW CREATE TABLE",
+	@"SHOW CREATE TRIGGERS",
 	@"SHOW CREATE VIEW",
-	@"SHOW FUNCTION STATUS",
-	@"SHOW GRANTS",
-	@"SHOW INDEX",
-	@"SHOW FIELDS",
-	@"SHOW ERRORS",
 	@"SHOW DATABASES",
 	@"SHOW ENGINE",
 	@"SHOW ENGINES",
+	@"SHOW ERRORS",
+	@"SHOW EVENTS",
+	@"SHOW FIELDS",
+	@"SHOW FUNCTION CODE",
+	@"SHOW FUNCTION STATUS",
+	@"SHOW GRANTS",
+	@"SHOW INDEX",
+	@"SHOW INNODB STATUS",
 	@"SHOW KEYS",
+	@"SHOW MASTER LOGS",
+	@"SHOW MASTER STATUS",
+	@"SHOW OPEN TABLES",
+	@"SHOW PLUGINS",
+	@"SHOW PRIVILEGES",
+	@"SHOW PROCEDURE CODE",
+	@"SHOW PROCEDURE STATUS",
+	@"SHOW PROFILE",
+	@"SHOW PROFILES",
+	@"SHOW PROCESSLIST",
+	@"SHOW SCHEDULER STATUS",
+	@"SHOW SCHEMAS",
+	@"SHOW SLAVE HOSTS",
+	@"SHOW SLAVE STATUS",
+	@"SHOW STATUS",
+	@"SHOW STORAGE ENGINES",
+	@"SHOW TABLE STATUS",
+	@"SHOW TABLE TYPES",
+	@"SHOW TABLES",
+	@"SHOW TRIGGERS",
+	@"SHOW VARIABLES",
+	@"SHOW WARNINGS",
 	@"SHUTDOWN",
 	@"SIGNED",
 	@"SIMPLE",
@@ -1043,15 +1236,23 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"SOUNDS",
 	@"SPATIAL",
 	@"SPECIFIC",
-	@"SQL",
-	@"SQLEXCEPTION",
-	@"SQLSTATE",
-	@"SQLWARNING",
+	@"SQL_AUTO_IS_NULL",
 	@"SQL_BIG_RESULT",
+	@"SQL_BIG_SELECTS",
+	@"SQL_BIG_TABLES",
 	@"SQL_BUFFER_RESULT",
 	@"SQL_CACHE",
 	@"SQL_CALC_FOUND_ROWS",
+	@"SQL_LOG_BIN",
+	@"SQL_LOG_OFF",
+	@"SQL_LOG_UPDATE",
+	@"SQL_LOW_PRIORITY_UPDATES",
+	@"SQL_MAX_JOIN_SIZE",
 	@"SQL_NO_CACHE",
+	@"SQL_QUOTE_SHOW_CREATE",
+	@"SQL_SAFE_UPDATES",
+	@"SQL_SELECT_LIMIT",
+	@"SQL_SLAVE_SKIP_COUNTER",
 	@"SQL_SMALL_RESULT",
 	@"SQL_THREAD",
 	@"SQL_TSI_DAY",
@@ -1063,8 +1264,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"SQL_TSI_SECOND",
 	@"SQL_TSI_WEEK",
 	@"SQL_TSI_YEAR",
+	@"SQL_WARNINGS",
 	@"SSL",
 	@"START",
+	@"START TRANSACTION",
 	@"STARTING",
 	@"STARTS",
 	@"STATUS",
@@ -1109,10 +1312,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"UNDO_BUFFER_SIZE",
 	@"UNICODE",
 	@"UNINSTALL",
+	@"UNINSTALL PLUGIN",
 	@"UNION",
 	@"UNIQUE",
 	@"UNKNOWN",
 	@"UNLOCK",
+	@"UNLOCK TABLES",
 	@"UNSIGNED",
 	@"UNTIL",
 	@"UPDATE",
@@ -1149,6 +1354,309 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	@"YEAR",
 	@"YEAR_MONTH",
 	@"ZEROFILL",
+
+	//functions
+	
+	@"ABS",
+	@"ACOS",
+	@"ADDDATE",
+	@"ADDTIME",
+	@"AES_DECRYPT",
+	@"AES_ENCRYPT",
+	@"AREA",
+	@"ASBINARY",
+	@"ASCII",
+	@"ASIN",
+	@"ASTEXT",
+	@"ATAN",
+	@"ATAN2",
+	@"AVG",
+	@"BDMPOLYFROMTEXT",
+	@"BDMPOLYFROMWKB",
+	@"BDPOLYFROMTEXT",
+	@"BDPOLYFROMWKB",
+	@"BENCHMARK",
+	@"BIN",
+	@"BIT_AND",
+	@"BIT_COUNT",
+	@"BIT_LENGTH",
+	@"BIT_OR",
+	@"BIT_XOR",
+	@"BOUNDARY",
+	@"BUFFER",
+	@"CAST",
+	@"CEIL",
+	@"CEILING",
+	@"CENTROID",
+	@"CHAR",
+	@"CHARACTER_LENGTH",
+	@"CHARSET",
+	@"CHAR_LENGTH",
+	@"COALESCE",
+	@"COERCIBILITY",
+	@"COLLATION",
+	@"COMPRESS",
+	@"CONCAT",
+	@"CONCAT_WS",
+	@"CONNECTION_ID",
+	@"CONTAINS",
+	@"CONV",
+	@"CONVERT",
+	@"CONVERT_TZ",
+	@"CONVEXHULL",
+	@"COS",
+	@"COT",
+	@"COUNT",
+	@"COUNT(*)",
+	@"CRC32",
+	@"CROSSES",
+	@"CURDATE",
+	@"CURRENT_DATE",
+	@"CURRENT_TIME",
+	@"CURRENT_TIMESTAMP",
+	@"CURRENT_USER",
+	@"CURTIME",
+	@"DATABASE",
+	@"DATE",
+	@"DATEDIFF",
+	@"DATE_ADD",
+	@"DATE_DIFF",
+	@"DATE_FORMAT",
+	@"DATE_SUB",
+	@"DAY",
+	@"DAYNAME",
+	@"DAYOFMONTH",
+	@"DAYOFWEEK",
+	@"DAYOFYEAR",
+	@"DECODE",
+	@"DEFAULT",
+	@"DEGREES",
+	@"DES_DECRYPT",
+	@"DES_ENCRYPT",
+	@"DIFFERENCE",
+	@"DIMENSION",
+	@"DISJOINT",
+	@"DISTANCE",
+	@"ELT",
+	@"ENCODE",
+	@"ENCRYPT",
+	@"ENDPOINT",
+	@"ENVELOPE",
+	@"EQUALS",
+	@"EXP",
+	@"EXPORT_SET",
+	@"EXTERIORRING",
+	@"EXTRACT",
+	@"EXTRACTVALUE",
+	@"FIELD",
+	@"FIND_IN_SET",
+	@"FLOOR",
+	@"FORMAT",
+	@"FOUND_ROWS",
+	@"FROM_DAYS",
+	@"FROM_UNIXTIME",
+	@"GEOMCOLLFROMTEXT",
+	@"GEOMCOLLFROMWKB",
+	@"GEOMETRYCOLLECTION",
+	@"GEOMETRYCOLLECTIONFROMTEXT",
+	@"GEOMETRYCOLLECTIONFROMWKB",
+	@"GEOMETRYFROMTEXT",
+	@"GEOMETRYFROMWKB",
+	@"GEOMETRYN",
+	@"GEOMETRYTYPE",
+	@"GEOMFROMTEXT",
+	@"GEOMFROMWKB",
+	@"GET_FORMAT",
+	@"GET_LOCK",
+	@"GLENGTH",
+	@"GREATEST",
+	@"GROUP_CONCAT",
+	@"GROUP_UNIQUE_USERS",
+	@"HEX",
+	@"HOUR",
+	@"IF",
+	@"IFNULL",
+	@"INET_ATON",
+	@"INET_NTOA",
+	@"INSERT",
+	@"INSERT_ID",
+	@"INSTR",
+	@"INTERIORRINGN",
+	@"INTERSECTION",
+	@"INTERSECTS",
+	@"INTERVAL",
+	@"ISCLOSED",
+	@"ISEMPTY",
+	@"ISNULL",
+	@"ISRING",
+	@"ISSIMPLE",
+	@"IS_FREE_LOCK",
+	@"IS_USED_LOCK",
+	@"LAST_DAY",
+	@"LAST_INSERT_ID",
+	@"LCASE",
+	@"LEAST",
+	@"LEFT",
+	@"LENGTH",
+	@"LINEFROMTEXT",
+	@"LINEFROMWKB",
+	@"LINESTRING",
+	@"LINESTRINGFROMTEXT",
+	@"LINESTRINGFROMWKB",
+	@"LN",
+	@"LOAD_FILE",
+	@"LOCALTIME",
+	@"LOCALTIMESTAMP",
+	@"LOCATE",
+	@"LOG",
+	@"LOG10",
+	@"LOG2",
+	@"LOWER",
+	@"LPAD",
+	@"LTRIM",
+	@"MAKEDATE",
+	@"MAKETIME",
+	@"MAKE_SET",
+	@"MASTER_POS_WAIT",
+	@"MAX",
+	@"MBRCONTAINS",
+	@"MBRDISJOINT",
+	@"MBREQUAL",
+	@"MBRINTERSECTS",
+	@"MBROVERLAPS",
+	@"MBRTOUCHES",
+	@"MBRWITHIN",
+	@"MD5",
+	@"MICROSECOND",
+	@"MID",
+	@"MIN",
+	@"MINUTE",
+	@"MLINEFROMTEXT",
+	@"MLINEFROMWKB",
+	@"MOD",
+	@"MONTH",
+	@"MONTHNAME",
+	@"NOW",
+	@"MPOINTFROMTEXT",
+	@"MPOINTFROMWKB",
+	@"MPOLYFROMTEXT",
+	@"MPOLYFROMWKB",
+	@"MULTILINESTRING",
+	@"MULTILINESTRINGFROMTEXT",
+	@"MULTILINESTRINGFROMWKB",
+	@"MULTIPOINT",
+	@"MULTIPOINTFROMTEXT",
+	@"MULTIPOINTFROMWKB",
+	@"MULTIPOLYGON",
+	@"MULTIPOLYGONFROMTEXT",
+	@"MULTIPOLYGONFROMWKB",
+	@"NAME_CONST",
+	@"NOW",
+	@"NULLIF",
+	@"NUMGEOMETRIES",
+	@"NUMINTERIORRINGS",
+	@"NUMPOINTS",
+	@"OCT",
+	@"OCTET_LENGTH",
+	@"OLD_PASSWORD",
+	@"ORD",
+	@"OVERLAPS",
+	@"PASSWORD",
+	@"PERIOD_ADD",
+	@"PERIOD_DIFF",
+	@"PI",
+	@"POINT",
+	@"POINTFROMTEXT",
+	@"POINTFROMWKB",
+	@"POINTN",
+	@"POINTONSURFACE",
+	@"POLYFROMTEXT",
+	@"POLYFROMWKB",
+	@"POLYGON",
+	@"POLYGONFROMTEXT",
+	@"POLYGONFROMWKB",
+	@"POSITION",
+	@"POW",
+	@"POWER",
+	@"QUARTER",
+	@"QUOTE",
+	@"RADIANS",
+	@"RAND",
+	@"RELATED",
+	@"RELEASE_LOCK",
+	@"REPEAT",
+	@"REPLACE",
+	@"REVERSE",
+	@"RIGHT",
+	@"ROUND",
+	@"ROW_COUNT",
+	@"RPAD",
+	@"RTRIM",
+	@"SCHEMA",
+	@"SECOND",
+	@"SEC_TO_TIME",
+	@"SESSION_USER",
+	@"SHA",
+	@"SHA1",
+	@"SIGN",
+	@"SIN",
+	@"SLEEP",
+	@"SOUNDEX",
+	@"SPACE",
+	@"SQRT",
+	@"SRID",
+	@"STARTPOINT",
+	@"STD",
+	@"STDDEV",
+	@"STDDEV_POP",
+	@"STDDEV_SAMP",
+	@"STRCMP",
+	@"STR_TO_DATE",
+	@"SUBDATE",
+	@"SUBSTR",
+	@"SUBSTRING",
+	@"SUBSTRING_INDEX",
+	@"SUBTIME",
+	@"SUM",
+	@"SYMDIFFERENCE",
+	@"SYSDATE",
+	@"SYSTEM_USER",
+	@"TAN",
+	@"TIME",
+	@"TIMEDIFF",
+	@"TIMESTAMP",
+	@"TIMESTAMPADD",
+	@"TIMESTAMPDIFF",
+	@"TIME_FORMAT",
+	@"TIME_TO_SEC",
+	@"TOUCHES",
+	@"TO_DAYS",
+	@"TRIM",
+	@"TRUNCATE",
+	@"UCASE",
+	@"UNCOMPRESS",
+	@"UNCOMPRESSED_LENGTH",
+	@"UNHEX",
+	@"UNIQUE_USERS",
+	@"UNIX_TIMESTAMP",
+	@"UPDATEXML",
+	@"UPPER",
+	@"USER",
+	@"UTC_DATE",
+	@"UTC_TIME",
+	@"UTC_TIMESTAMP",
+	@"UUID",
+	@"VARIANCE",
+	@"VAR_POP",
+	@"VAR_SAMP",
+	@"VERSION",
+	@"WEEK",
+	@"WEEKDAY",
+	@"WEEKOFYEAR",
+	@"WITHIN",
+	@"YEAR",
+	@"YEARWEEK",
+
 	nil];
 }
 
@@ -1203,6 +1711,22 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
+ * Set whether MySQL Help should be automatically invoked while typing.
+ */
+- (void)setAutohelp:(BOOL)enableAutohelp
+{
+	autohelpEnabled = enableAutohelp;
+}
+
+/*
+ * Retrieve whether MySQL Help should be automatically invoked while typing.
+ */
+- (BOOL)autohelp
+{
+	return autohelpEnabled;
+}
+
+/*
  * Set whether SQL keywords should be automatically uppercased.
  */
 - (void)setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords
@@ -1211,7 +1735,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
- * Retrieve whether SQL keywords should be automaticallyuppercased.
+ * Retrieve whether SQL keywords should be automatically uppercased.
  */
 - (BOOL)autouppercaseKeywords
 {
@@ -1219,65 +1743,124 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 
-/*******************
-SYNTAX HIGHLIGHTING!
-*******************/
-- (void)awakeFromNib
 /*
- * Sets self as delegate for the textView's textStorage to enable syntax highlighting,
- * and set defaults for general usage
+ * If enabled it shows the MySQL Help for the current word (not inside quotes) or for the selection
+ * after an adjustable delay if the textView is idle, i.e. no user interaction.
  */
+- (void)autoHelp
 {
-    [[self textStorage] setDelegate:self];
-
-	autoindentEnabled = YES;
-	autopairEnabled = YES;
-	autoindentIgnoresEnter = NO;
-	autouppercaseKeywordsEnabled = YES;
-	delBackwardsWasPressed = NO;
+	if(![prefs boolForKey:@"CustomQueryAutohelp"]) return;
+	
+	// If selection show Help for it
+	if([self selectedRange].length)
+	{
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
+		return;
+	}
+	// Otherwise show Help if caret is not inside quotes
+	long cursorPosition = [self selectedRange].location;
+	if (cursorPosition >= [[self string] length]) cursorPosition--;
+	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
+	
 }
 
-- (void)textStorageDidProcessEditing:(NSNotification *)notification
 /*
- *  Performs syntax highlighting.
- *  This method recolors the entire text on every keypress. For performance reasons, this function does
- *  nothing if the text is more than 20 KB.
+ * Syntax Highlighting.
  *  
- *  The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!
- *  
- *  Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
+ * (The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!)
+ * Some sample code from Andrew Choi ( http://members.shaw.ca/akochoi-old/blog/2003/11-09/index.html#3 ) has been reused.
  */
+- (void)doSyntaxHighlighting
 {
-	NSTextStorage *textStore = [notification object];
 
-	//make sure that the notification is from the correct textStorage object
-	if (textStore!=[self textStorage]) return;
+	NSTextStorage *textStore = [self textStorage];
+	NSRange textRange;
+	
+	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
+	// do highlighting partly (max SP_SYNTAX_HILITE_BIAS*2).
+	// The approach is to take the middle position of the current view port
+	// and highlight only ±SP_SYNTAX_HILITE_BIAS of that middle position
+	// considering of line starts resp. ends
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	{
 
+		// Cancel all doSyntaxHighlighting requests
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
 
-	NSColor *commentColor   = [NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
-	NSColor *quoteColor     = [NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
-	NSColor *keywordColor   = [NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
-	NSColor *backtickColor  = [NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
-	NSColor *numericColor   = [NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
-	NSColor *variableColor  = [NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
+		// Get the text range currently displayed in the view port
+		NSRect visibleRect = [[[self enclosingScrollView] contentView] documentVisibleRect];
+		NSRange visibleRange = [[self layoutManager] glyphRangeForBoundingRectWithoutAdditionalLayout:visibleRect inTextContainer:[self textContainer]];
+		if(!visibleRange.length) return;
 
+		// Take roughly the middle position in the current view port
+		int curPos = visibleRange.location+(int)(visibleRange.length/2);
+
+		int strlength = [[self string] length];
+
+		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
+		int end = curPos + SP_SYNTAX_HILITE_BIAS;
+		if (end > strlength )
+		{
+			end = strlength;
+		} else {
+			while(end < strlength)
+			{
+				if([[self string] characterAtIndex:end]=='\n')
+					break;
+				end++;
+			}
+		}
+
+		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
+		int start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		if (start > 0)
+			while(start>-1)
+			{
+				if([[self string] characterAtIndex:start]=='\n')
+					break;
+				start--;
+			}
+		else
+			start = 0;
+
+	
+		textRange = NSMakeRange(start, end-start);
+		// only to be sure that nothing went wrongly
+		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
+		if (!textRange.length)
+			return;
+	} else {
+		// If text size is less SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
+		// process syntax highlighting for the entire text view buffer
+		textRange = NSMakeRange(0,[[self string] length]);
+	}
+	
 	NSColor *tokenColor;
+	
+	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCommentColor"]] retain];//[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
+	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorQuoteColor"]] retain];//[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
+	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorSQLKeywordColor"]] retain];//[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
+	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBacktickColor"]] retain];//[NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
+	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorNumericColor"]] retain];//[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
+	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorVariableColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
+	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
 
-	int token;
-	NSRange textRange, tokenRange;
+	BOOL autouppercaseKeywords = [prefs boolForKey:@"CustomQueryAutouppercaseKeywords"];
 
-	textRange = NSMakeRange(0, [textStore length]);
+	unsigned long tokenEnd, token;
+	NSRange tokenRange;
 
-	//don't color texts longer than about 20KB. would be too slow
-	if (textRange.length > 20000) return; 
-
-	//first remove the old colors
+	//first remove the old colors and kQuote
 	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
-
+	[textStore removeAttribute:kQuote range:textRange];
+	[textStore removeAttribute:kLEXToken range:textRange];
 
 	//initialise flex
-	yyuoffset = 0; yyuleng = 0;
-	yy_switch_to_buffer(yy_scan_string([[textStore string] UTF8String]));
+	yyuoffset = textRange.location; yyuleng = 0;
+	yy_switch_to_buffer(yy_scan_string([[[self string] substringWithRange:textRange] UTF8String]));
 
 	//now loop through all the tokens
 	while (token=yylex()){
@@ -1301,8 +1884,11 @@ SYNTAX HIGHLIGHTING!
 			case SPT_VARIABLE:
 			    tokenColor = variableColor;
 			    break;
-			default:
+			case SPT_WHITESPACE:
 			    tokenColor = nil;
+			    break;
+			default:
+			    tokenColor = textColor;
 		}
 
 		if (!tokenColor) continue;
@@ -1315,19 +1901,20 @@ SYNTAX HIGHLIGHTING!
 		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
-		unsigned long tokenEnd = tokenRange.location+tokenRange.length-1; 
+		tokenEnd = tokenRange.location+tokenRange.length-1; 
 		// Check the end of the token
-		if (autouppercaseKeywordsEnabled && !delBackwardsWasPressed
+		if (autouppercaseKeywords && !delBackwardsWasPressed
 			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
 			{
+
 				NSString* curTokenString = [[self string] substringWithRange:tokenRange];
 				BOOL doIt = NO;
 				@try
 				{
-						doIt = ![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil];
+					doIt = ![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil];
 				} @catch(id ae) { doIt = YES;  }
 
 				if(doIt && ![[curTokenString uppercaseString] isEqualToString:curTokenString])
@@ -1345,25 +1932,310 @@ SYNTAX HIGHLIGHTING!
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
-		[textStore addAttribute: kWQquoted 
-						  value: kWQval 
+		if(token < 6)
+		[textStore addAttribute: kLEXToken 
+						  value: kLEXTokenValue 
 						  range: tokenRange ];
-
+		
 
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			[textStore addAttribute: kSQLkeyword
-							  value: kWQval
+							  value: kValue
 							  range: tokenRange ];
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
-		if(token == SPT_DOUBLE_QUOTED_TEXT || token == SPT_SINGLE_QUOTED_TEXT)
+		else if(token < 4)
 			[textStore addAttribute: kQuote
-							  value: kWQval
+							  value: kQuoteValue
 							  range: tokenRange ];
+		//distinguish backtick quoted word for completion
+		else if(token == SPT_BACKTICK_QUOTED_TEXT)
+			[textStore addAttribute: kBTQuote
+							  value: kBTQuoteValue
+							  range: tokenRange ];
+
 	}
 
 }
 
+#pragma mark -
+#pragma mark context menu
+
+/*
+ * Add a menu item to context menu for looking up mysql documentation.
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event 
+{	
+	// Set title of the menu item
+	if([self selectedRange].length)
+		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection");
+	else
+		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word");
+	
+	// Add the menu item if it doesn't yet exist
+	NSMenu *menu = [[self class] defaultMenu];
+	
+	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
+	{
+		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
+		NSMenuItem *showMySQLHelpForMenuItem = [[NSMenuItem alloc] initWithTitle:showMySQLHelpFor action:@selector(showMySQLHelpForCurrentWord:) keyEquivalent:@"h"];
+		[showMySQLHelpForMenuItem setTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG];
+		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
+	} else {
+		[[menu itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] setTitle:showMySQLHelpFor];
+	}
+    return menu;
+}
+
+/*
+ * Disable the search in the MySQL help function when getRangeForCurrentWord returns zero length. 
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
+{	
+	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
+	// selection and whether it is a reasonable length.
+	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
+		long stringSize = [self getRangeForCurrentWord].length;
+		return (stringSize || stringSize > 64);
+	}
+	
+	return YES;
+}
+
+
+#pragma mark -
+#pragma mark delegates
+
+/*
+ * Scrollview delegate after the textView's view port was changed.
+ * Manily used to update the syntax highlighting for a large text size.
+ */
+- (void) boundsDidChangeNotification:(NSNotification *)notification
+{
+	// Invoke syntax highlighting if text view port was changed for large text
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	{
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
+		
+		if(![[self textStorage] changeInLength])
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
+	}
+
+}
+
+/*
+ *  Performs syntax highlighting after a text change.
+ */
+- (void)textStorageDidProcessEditing:(NSNotification *)notification
+{
+
+	NSTextStorage *textStore = [notification object];
+
+	//make sure that the notification is from the correct textStorage object
+	if (textStore!=[self textStorage]) return;
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doSyntaxHighlighting) 
+								object:nil];
+
+	[self doSyntaxHighlighting];
+
+}
+
+/*
+ * Show only setable modes in the font panel
+ */
+- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+{
+   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+}
+
+#pragma mark -
+#pragma mark drag&drop
+
+///////////////////////////
+// Dragging methods
+///////////////////////////
+
+/*
+ * Insert the content of a dragged file path or if ⌘ is pressed
+ * while dragging insert the file path
+ */
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+	NSPasteboard *pboard = [sender draggingPasteboard];
+
+	if ( [[pboard types] containsObject:NSFilenamesPboardType] ) {
+		NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
+
+		// Only one file path is allowed
+		if([files count] > 1) {
+			NSLog(@"%@", NSLocalizedString(@"Only one dragged item allowed.",@"Only one dragged item allowed."));
+			NSBeep();
+			return YES;
+		}
+
+		NSString *filepath = [[pboard propertyListForType:NSFilenamesPboardType] objectAtIndex:0];
+
+		// Set the new insertion point
+		NSPoint draggingLocation = [sender draggingLocation];
+		draggingLocation = [self convertPoint:draggingLocation fromView:nil];
+		unsigned int characterIndex = [self characterIndexOfPoint:draggingLocation];
+		[self setSelectedRange:NSMakeRange(characterIndex,0)];
+
+		// Check if user pressed  ⌘ while dragging for inserting only the file path
+		if([sender draggingSourceOperationMask] == 4)
+		{
+			[self insertText:filepath];
+			return YES;
+		}
+
+		// Check size and NSFileType
+		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
+		if(attr)
+		{
+			NSNumber *filesize = [attr objectForKey:NSFileSize];
+			NSString *filetype = [attr objectForKey:NSFileType];
+			if(filetype == NSFileTypeRegular && filesize)
+			{
+				// Ask for confirmation if file content is larger than 1MB
+				if([filesize unsignedLongValue] > 1000000)
+				{
+					NSAlert *alert = [[NSAlert alloc] init];
+					[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+					[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+					[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to proceed with %.1f MB of data?", @"message of panel asking for confirmation for inserting large text from dragging action"),
+						 [filesize unsignedLongValue]/1048576.0]];
+					[alert setHelpAnchor:filepath];
+					[alert setMessageText:NSLocalizedString(@"Warning",@"Warning")];
+					[alert setAlertStyle:NSWarningAlertStyle];
+					[alert beginSheetModalForWindow:[self window] 
+						modalDelegate:self 
+						didEndSelector:@selector(dragAlertSheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:nil];
+					
+				} else
+					[self insertFileContentOfFile:filepath];
+			}
+		}
+		return YES;
+	} 
+
+	return [super performDragOperation:sender];
+}
+
+/*
+ * Confirmation sheetDidEnd method
+ */
+- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+
+	if ( returnCode == NSAlertFirstButtonReturn )
+		[self insertFileContentOfFile:[sheet helpAnchor]];
+
+}
+/*
+ * Convert a NSPoint, usually the mouse location, to
+ * a character index of the text view.
+ */
+- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint
+{
+	unsigned int glyphIndex;
+	NSLayoutManager *layoutManager = [self layoutManager];
+	float fraction;
+	NSRange range;
+
+	range = [layoutManager glyphRangeForTextContainer:[self textContainer]];
+	glyphIndex = [layoutManager glyphIndexForPoint:aPoint
+		inTextContainer:[self textContainer]
+		fractionOfDistanceThroughGlyph:&fraction];
+	if( fraction > 0.5 ) glyphIndex++;
+
+	if( glyphIndex == NSMaxRange(range) )
+		return  [[self textStorage] length];
+	else
+		return [layoutManager characterIndexForGlyphAtIndex:glyphIndex];
+
+}
+
+/*
+ * Insert content of a plain text file for a given path.
+ * In addition it tries to figure out the file's text encoding heuristically.
+ */
+- (void)insertFileContentOfFile:(NSString *)aPath
+{
+	
+	NSError *err = nil;
+	NSStringEncoding enc;
+	NSString *content = nil;
+
+	// Make usage of the UNIX command "file" to get an info
+	// about file type and encoding.
+	NSTask *task=[[NSTask alloc] init];
+	NSPipe *pipe=[[NSPipe alloc] init];
+	NSFileHandle *handle;
+	NSString *result;
+	[task setLaunchPath:@"/usr/bin/file"];
+	[task setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
+	[task setStandardOutput:pipe];
+	handle=[pipe fileHandleForReading];
+	[task launch];
+	result=[[NSString alloc] initWithData:[handle readDataToEndOfFile]
+		encoding:NSASCIIStringEncoding];
+
+	[pipe release];
+	[task release];
+
+	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
+	if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result hasPrefix:@"text/plain"])
+	{
+		// if UTF16/32 cocoa will try to find the correct encoding
+		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)
+			enc = 0;
+		else if([result rangeOfString:@"utf-8"].length)
+			enc = NSUTF8StringEncoding;
+		else if([result rangeOfString:@"iso-8859-1"].length)
+			enc = NSISOLatin1StringEncoding;
+		else if([result rangeOfString:@"us-ascii"].length)
+			enc = NSASCIIStringEncoding;
+		else 
+			enc = 0;
+
+		if(enc == 0) // cocoa tries to detect the encoding
+			content = [NSString stringWithContentsOfFile:aPath usedEncoding:&enc error:&err];
+		else
+			content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
+
+		if(content)
+		{
+			[self insertText:content];
+			[result release];
+			[self insertText:@""]; // Invoke keyword uppercasing
+			return;
+		}
+		// If UNIX "file" failed try cocoa's encoding detection
+		content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
+		if(content)
+		{
+			[self insertText:content];
+			[result release];
+			[self insertText:@""]; // Invoke keyword uppercasing
+			return;
+		}
+	}
+	
+	[result release];
+
+	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
+	NSBeep();
+}
+
+
+
 @end
+

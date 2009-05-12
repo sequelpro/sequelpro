@@ -118,13 +118,13 @@
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	[savePanel setAllowsOtherFileTypes:YES];
 	[savePanel setExtensionHidden:NO];
-	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%d.%m.%Y" timeZone:nil locale:nil];
+	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil];
 	
 	switch ( tag ) {
 		case 5:
 			// export dump
 			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@_dump %@.sql", [tableDocumentInstance database], currentDate];
+			file = [NSString stringWithFormat:@"%@_%@.sql", [tableDocumentInstance database], currentDate];
 			[savePanel setRequiredFileType:@"sql"];
 			[savePanel setAccessoryView:exportDumpView];
 			contextInfo = @"exportDump";
@@ -193,7 +193,7 @@
 			contextInfo = @"exportMultipleTablesAsXML";
 			break;
 		default:
-			NSLog(@"ERROR: unknown export item with tag %d", tag);
+			ALog(@"ERROR: unknown export item with tag %d", tag);
 			return;
 			break;
 	}
@@ -312,7 +312,7 @@
 		
 		// Unknown operation
 	} else {
-		NSLog(@"Unknown export operation: %@", [contextInfo description]);
+		ALog(@"Unknown export operation: %@", [contextInfo description]);
 		return;
 	}
 	
@@ -391,11 +391,14 @@
 
 	// Load file into string.  For SQL imports, try UTF8 file encoding before the current encoding.
 	if ([fileType isEqualToString:@"SQL"]) {
-		NSLog(@"Reading as utf8");
+		DLog(@"Attempting to read as utf8");
 		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 											 encoding:NSUTF8StringEncoding
 												error:&errorStr];
-												NSLog(dumpFile);
+
+		// This will crash if dumpFile is big.
+		DLog(dumpFile);
+	
 		if (errorStr) {
 			importSQLAsUTF8 = NO;
 			errorStr = nil;
@@ -404,13 +407,14 @@
 
 	// If the SQL-as-UTF8 read failed, and for CSVs, use the current connection encoding.
 	if (!importSQLAsUTF8 || [fileType isEqualToString:@"CSV"]) {
+		DLog(@"Reading using connection encoding");
 		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
 											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 												error:&errorStr];
 	}
 
 	if (errorStr) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
@@ -501,8 +505,6 @@
 		////////////////
 		
 	} else if ( [fileType isEqualToString:@"CSV"] ) {
-		//NSLog(@"CSV Import...");
-		//import csv file
 		int code;
 		NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
 		
@@ -536,7 +538,7 @@
 		[singleProgressBar setIndeterminate:NO];
 		
 		if([importArray count] == 0){
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Title of error alert"),
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil,
 							  tableWindow, self,
@@ -878,7 +880,7 @@
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {
-				createTableSyntax = [[[tableDetails objectForKey:@"Create View"] copy] autorelease];
+				createTableSyntax = [[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier];
 				tableType = SP_TABLETYPE_VIEW;
 			} else {
 				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
@@ -1305,10 +1307,7 @@
 /*
  loads a csv string into an array
  */
-{
-
-	//NSLog(@"In arrayForCSV...");
-	
+{	
 	NSMutableString *tempTerminated, *tempLineEnds;
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempRowArray = [NSMutableArray array];
@@ -1440,7 +1439,6 @@
 		}
 		//add row to tempArray
 		[tempArray addObject:[NSArray arrayWithArray:tempRowArray]];
-		//NSLog(@"tempArray count: %d", [tempArray count]);
 	}
 	
 	return [NSArray arrayWithArray:tempArray];
@@ -1867,7 +1865,6 @@
 				}
 			} else {
 				//add object to array
-				//NSLog([string substringWithRange:NSMakeRange(start,(i-start))]);
 				[tempArray addObject:[string substringWithRange:NSMakeRange(start,(i-start))]];
 				start = i + 1;
 			}
@@ -2038,9 +2035,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 }
 
 - (void)dealloc
-{
-	//	NSLog(@"TableDump dealloc");
-	
+{	
 	[tables release];
 	[importArray release];
 	[fieldMappingButtonOptions release];

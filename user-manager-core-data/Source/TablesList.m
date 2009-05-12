@@ -179,8 +179,8 @@
 		}
 		
 		// Set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-							  [tableDocumentInstance host], [tableDocumentInstance database], tableName]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+							  [tableDocumentInstance name], [tableDocumentInstance database], tableName]];
 	} 
 	else {
 		// Error while creating new table
@@ -213,25 +213,51 @@
  */
 - (IBAction)removeTable:(id)sender
 {
-	if ( ![tablesListView numberOfSelectedRows] )
+	if (![tablesListView numberOfSelectedRows])
 		return;
+	
 	[tableWindow endEditingFor:nil];
+	
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self,
-			@selector(sheetDidEnd:returnCode:contextInfo:), nil,
-			@"removeRow", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the table %@?", @"message of panel asking for confirmation for deleting table"),
-				[tables objectAtIndex:[tablesListView selectedRow]]]);
-	} else {
-		NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"Delete", @"delete button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self,
-			@selector(sheetDidEnd:returnCode:contextInfo:), nil,
-			@"removeRow", [NSString stringWithFormat:NSLocalizedString(@"Do you really want to delete the selected tables?", @"message of panel asking for confirmation for deleting tables"),
-				[tables objectAtIndex:[tablesListView selectedRow]]]);
+	[alert setAlertStyle:NSCriticalAlertStyle];
+
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	NSString *tblTypes;
+	unsigned currentIndex = [indexes lastIndex];
+	
+	if ([tablesListView numberOfSelectedRows] == 1) {
+		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
+			tblTypes = NSLocalizedString(@"view", @"view");
+		else
+			tblTypes = NSLocalizedString(@"table", @"table");
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete %@ '%@'?", @"delete table/view message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'. This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
+	} 
+	else {
+		int tblTypesChecksum = 0;
+		while (currentIndex != NSNotFound)
+		{
+			tblTypesChecksum += [[tableTypes objectAtIndex:currentIndex] intValue];
+			currentIndex = [indexes indexLessThanIndex:currentIndex];
+		}
+
+		if(tblTypesChecksum == 0)
+			tblTypes = NSLocalizedString(@"tables", @"tables");
+		else if(tblTypesChecksum == [indexes count])
+			tblTypes = NSLocalizedString(@"views", @"views");
+		else
+			tblTypes = NSLocalizedString(@"tables/views", @"tables/views");
+
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete selected %@?", @"delete tables/views message"), tblTypes]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@. This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
 	}
+		
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
 }
 
 /**
- * Copies a table, if desired with content
+ * Copies a table, if desired with content, or view
  */
 - (IBAction)copyTable:(id)sender
 {
@@ -241,6 +267,8 @@
 //	NSMutableString *rowValue = [NSMutableString string];
 //	NSMutableArray *fieldValues;
 	int code;
+	BOOL isView;
+	NSString *tblType;
 //	int rowCount, i, j;
 //	BOOL errors = NO;
 
@@ -251,9 +279,24 @@
 	}
 	[tableWindow endEditingFor:nil];
 
+	// Detect table type: table or view
+	isView = [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW;
+
 	//open copyTableSheet
 	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@Copy", [tables objectAtIndex:[tablesListView selectedRow]]]];
 	[copyTableContentSwitch setState:NSOffState];
+	// Hide if selected item is a view
+	[copyTableContentSwitch setEnabled:!isView];
+	// Set message according to table type and the table type string
+	if(isView) {
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate view to", @"duplicate view message")];
+		tblType = @"VIEW";
+	} else {
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate table to", @"duplicate table message")];
+		tblType = @"TABLE";
+	}
+
+
 	[NSApp beginSheet:copyTableSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
@@ -273,30 +316,38 @@
 	}
 
 	//get table structure
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@",
+	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
+					tblType,
 					[[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 					]];
 	
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-        NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't get table information.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't get table information.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 
     } else {
 		//insert new table name in create syntax and create new table
 		NSScanner *scanner = [NSScanner alloc];
 		NSString *scanString;
 
-        [scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
-        [scanner scanUpToString:@"(" intoString:nil];
-        [scanner scanUpToString:@"" intoString:&scanString];
-        [mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+		if(isView){
+			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
+			[scanner scanUpToString:@"AS" intoString:nil];
+			[scanner scanUpToString:@"" intoString:&scanString];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+		} else {
+			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
+			[scanner scanUpToString:@"(" intoString:nil];
+			[scanner scanUpToString:@"" intoString:&scanString];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+		}
 		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table
-            NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-                    [NSString stringWithFormat:NSLocalizedString(@"Couldn't create table.\nMySQL said: %@", @"message of panel when table cannot be created"), [mySQLConnection getLastErrorMessage]]);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't create table.\nMySQL said: %@", @"message of panel when table cannot be created"), [mySQLConnection getLastErrorMessage]]);
         } else {
 			
             if ( [copyTableContentSwitch state] == NSOnState ) {
@@ -323,13 +374,14 @@
                 }
             }
 			
-            [tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
-			[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
-            [tablesListView reloadData];
-            [tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
-            [tablesListView scrollRowToVisible:[tablesListView selectedRow]];
-        }
-    }
+			[tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
+			[tableTypes insertObject:[NSNumber numberWithInt:(isView)?SP_TABLETYPE_VIEW : SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
+			[tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
+			[self updateTables:self];
+			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+
+		}
+	}
 }
 
 #pragma mark Alert sheet methods
@@ -343,7 +395,6 @@
 		alertSheetOpened = NO;
 	} else if ( [contextInfo isEqualToString:@"removeRow"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-			[sheet orderOut:self];
 			[self removeTable];
 		}
 	}
@@ -360,7 +411,7 @@
 #pragma mark Additional methods
 
 /**
- * Removes selected table(s) from mysql-db and tableView
+ * Removes selected table(s) or view(s) from mysql-db and tableView
  */
 - (void)removeTable
 {
@@ -372,10 +423,17 @@
 	unsigned currentIndex = [indexes lastIndex];
 	while (currentIndex != NSNotFound)
 	{
-		[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
-																  [[tables objectAtIndex:currentIndex] backtickQuotedString]
-																]];
-		
+
+		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
+		{
+			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
+																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
+																	]];
+		} else {
+			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
+																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
+																	]];
+		}
 		if ( [[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 			//dropped table with success
 			[tables removeObjectAtIndex:currentIndex];
@@ -397,8 +455,8 @@
 	[tablesListView reloadData];
 	
 	// set window title
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-								[tableDocumentInstance host], [tableDocumentInstance database]]];
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
+								[tableDocumentInstance name], [tableDocumentInstance database]]];
 	if ( error )
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
@@ -579,8 +637,8 @@
 			}
 			
 			// Set window title
-			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-								  [tableDocumentInstance host], [tableDocumentInstance database], anObject]];
+			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+								  [tableDocumentInstance name], [tableDocumentInstance database], anObject]];
 		} 
 		else {
 			// Error while renaming
@@ -666,7 +724,7 @@
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = YES;
-			contentLoaded = NO;   
+			contentLoaded = NO;
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
 			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
@@ -676,17 +734,47 @@
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
 			[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			structureLoaded = NO;
-			contentLoaded = NO;	 		
+			contentLoaded = NO;
 			statusLoaded = YES;
 		} else {
 			structureLoaded = NO;
 			contentLoaded = NO;
 			statusLoaded = NO;
 		}
-		 
+
+		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
+		// according to the table types
+		if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW)
+		{
+			// Change mainMenu > Table > ... according to table type
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:YES]; // repair
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:YES]; // analyse
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:YES]; // optimize
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:11] setHidden:YES]; // checksum
+
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
+		} else {
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:11] setHidden:NO];
+
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
+		}
+
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-									[tableDocumentInstance host], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+									[tableDocumentInstance name], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -694,10 +782,26 @@
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
-		
+
+		// Set gear menu items Remove/Duplicate table/view according to the table types
+		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+		unsigned currentIndex = [indexes lastIndex];
+		int tblTypesChecksum = 0;
+		while (currentIndex != NSNotFound)
+		{
+			tblTypesChecksum += [[tableTypes objectAtIndex:currentIndex] intValue];
+			currentIndex = [indexes indexLessThanIndex:currentIndex];
+		}
+		if(tblTypesChecksum == 0)
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables", @"remove tables menu title")];
+		else if(tblTypesChecksum == [indexes count])
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove views", @"remove views menu title")];
+		else
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables/views", @"remove tables/views menu title")];
+
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@@%@/%@", [tableDocumentInstance mySQLVersion], [tableDocumentInstance user],
-									[tableDocumentInstance host], [tableDocumentInstance database]]];
+		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
+									[tableDocumentInstance name], [tableDocumentInstance database]]];
 	}	
 }
 
@@ -777,8 +881,11 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	// popup button below table list
-	if ([menuItem action] == @selector(copyTable:) ||
-		[menuItem action] == @selector(removeTable:))
+	if ([menuItem action] == @selector(copyTable:))
+	{
+		return [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
+	}
+	if ([menuItem action] == @selector(removeTable:))
 	{
 		return [tablesListView numberOfSelectedRows] > 0;
 	}
