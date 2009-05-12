@@ -69,6 +69,7 @@
 		4D52625D0FB92C49001F9C6A /* SPUserItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D52625A0FB92C49001F9C6A /* SPUserItem.m */; };
 		4D52625E0FB92C49001F9C6A /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D52625B0FB92C49001F9C6A /* SPUserManager.xcdatamodel */; };
 		4D5262710FB92D28001F9C6A /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D5262700FB92D28001F9C6A /* SPUserManager.m */; };
+		4D5262920FB935BD001F9C6A /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D5262900FB935BD001F9C6A /* UserManagerView.xib */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
@@ -270,6 +271,7 @@
 		4D52625B0FB92C49001F9C6A /* SPUserManager.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = SPUserManager.xcdatamodel; sourceTree = "<group>"; };
 		4D52626F0FB92D28001F9C6A /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
 		4D5262700FB92D28001F9C6A /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
+		4D5262910FB935BD001F9C6A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
@@ -640,6 +642,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				4D5262900FB935BD001F9C6A /* UserManagerView.xib */,
 				17E642060EF020CB001BC333 /* DBView.xib */,
 				B52460D90F8EF93B00171639 /* Console.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
@@ -839,6 +842,7 @@
 				B508B5DA0F9837A200E03A69 /* button_edit.tiff in Resources */,
 				B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */,
 				BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */,
+				4D5262920FB935BD001F9C6A /* UserManagerView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -947,6 +951,14 @@
 				17E6423D0EF0218B001BC333 /* English */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		4D5262900FB935BD001F9C6A /* UserManagerView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4D5262910FB935BD001F9C6A /* English */,
+			);
+			name = UserManagerView.xib;
 			sourceTree = "<group>";
 		};
 		58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */ = {
