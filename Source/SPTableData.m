@@ -214,11 +214,15 @@
  */
 - (BOOL) updateInformationForCurrentTable
 {
-	NSDictionary *tableData = [self informationForTable:[tableListInstance tableName]];
+	NSDictionary *tableData = nil;
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
 
-	if (tableData == nil) {
+	if( [tableListInstance tableType] == SP_TABLETYPE_TABLE || [tableListInstance tableType] == SP_TABLETYPE_VIEW ) {
+		tableData = [self informationForTable:[tableListInstance tableName]];
+	}
+	
+	if (tableData == nil ) {
 		[columns removeAllObjects];
 		[columnNames removeAllObjects];
 		return FALSE;

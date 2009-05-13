@@ -57,7 +57,7 @@
 	[tablesListView deselectAll:self];
 	[tables removeAllObjects];
 	[tableTypes removeAllObjects];
-	[tableTypes addObject:[NSNumber numberWithInt:-1]];
+	[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
 
 	if ([tableDocumentInstance database]) {
 
@@ -85,6 +85,96 @@
 				}
 			}		
 		}
+
+		/* grab the procedures and functions
+		 *
+		 * using information_schema gives us more info (for information window perhaps?) but breaks
+		 * backward compatibility with pre 4 I believe. I left the other methods below, in case.
+		 */
+		NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
+		theResult = [mySQLConnection queryString:pQuery];
+		
+		if( [theResult numOfRows] ) {
+			// add the header row
+			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
+			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+			[theResult dataSeek:0];
+			
+			if( [theResult numOfFields] == 1 ) {
+				for( i = 0; i < [theResult numOfRows]; i++ ) {
+					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:3]];
+					if( [[[theResult fetchRowAsArray] objectAtIndex:4] isEqualToString:@"PROCEDURE"]) {
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];						
+					} else {
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];						
+					}
+				}
+			} else {
+				for( i = 0; i < [theResult numOfRows]; i++ ) {
+					resultRow = [theResult fetchRowAsArray];
+					[tables addObject:[resultRow objectAtIndex:3]];
+					if( [[resultRow objectAtIndex:4] isEqualToString:@"PROCEDURE"] ) {
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];						
+					} else {
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];						
+					}
+				}	
+			}
+		}
+		
+		/*
+		BOOL addedPFHeader = FALSE;
+		NSString *pQuery = [NSString stringWithFormat:@"SHOW PROCEDURE STATUS WHERE db = '%@'",[tableDocumentInstance database]];
+		theResult = [mySQLConnection queryString:pQuery];
+		
+		if( [theResult numOfRows] ) {
+			// add the header row
+			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
+			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+			addedPFHeader = TRUE;
+			[theResult dataSeek:0];
+			
+			if( [theResult numOfFields] == 1 ) {
+				for( i = 0; i < [theResult numOfRows]; i++ ) {
+					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:1]];
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
+				}
+			} else {
+				for( i = 0; i < [theResult numOfRows]; i++ ) {
+					resultRow = [theResult fetchRowAsArray];
+					[tables addObject:[resultRow objectAtIndex:1]];
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
+				}	
+			}
+		}
+		
+		pQuery = [NSString stringWithFormat:@"SHOW FUNCTION STATUS WHERE db = '%@'",[tableDocumentInstance database]];
+		theResult = [mySQLConnection queryString:pQuery];
+		
+		if( [theResult numOfRows] ) {
+			if( !addedPFHeader ) {
+				// add the header row			
+				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
+				[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+			}
+			[theResult dataSeek:0];
+			
+			if( [theResult numOfFields] == 1 ) {
+				for( i = 0; i < [theResult numOfRows]; i++ ) {
+					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:1]];
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+				}
+			} else {
+				for( i = 0; i < [theResult numOfRows]; i++ ) {
+					resultRow = [theResult fetchRowAsArray];
+					[tables addObject:[resultRow objectAtIndex:1]];
+					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+				}	
+			}
+		}
+		*/		
+		// Notify listeners that the query has finished
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 	}
 
 	if (containsViews) {
@@ -92,9 +182,6 @@
 	} else {
 		[tables insertObject:NSLocalizedString(@"TABLES",@"header for table list") atIndex:0];
 	}
-
-	// Notify listeners that the query has finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
 	[tablesListView reloadData];
 	
@@ -145,12 +232,11 @@
 	[mySQLConnection queryString:createStatement];
 	
 	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		
 		// Table creation was successful
-		[tables addObject:tableName];
-		[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+		[tables insertObject:tableName atIndex:1];
+		[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:1];
 		[tablesListView reloadData];
-		[tablesListView selectRow:([tables count] - 1) byExtendingSelection:NO];
+		[tablesListView selectRow:1 byExtendingSelection:NO];
 		
 		NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
 		
@@ -229,8 +315,13 @@
 	if ([tablesListView numberOfSelectedRows] == 1) {
 		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
 			tblTypes = NSLocalizedString(@"view", @"view");
-		else
+		else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_TABLE)
 			tblTypes = NSLocalizedString(@"table", @"table");
+		else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_PROC)
+			tblTypes = NSLocalizedString(@"procedure", @"procedure");
+		else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_FUNC)
+			tblTypes = NSLocalizedString(@"function", @"function");
+		
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete %@ '%@'?", @"delete table/view message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'. This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
@@ -272,8 +363,14 @@
 //	int rowCount, i, j;
 //	BOOL errors = NO;
 
-	if ( [tablesListView numberOfSelectedRows] != 1 )
+	if ( [tablesListView numberOfSelectedRows] != 1 ||
+		[[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_PROC ||
+		[[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_FUNC ) {
+		
 		return;
+	}
+	
+	
 	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
 		return;
 	}
@@ -429,11 +526,20 @@
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
 																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
 																	]];
-		} else {
+		} else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_TABLE) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
-																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
-																	]];
-		}
+										   [[tables objectAtIndex:currentIndex] backtickQuotedString]
+										   ]];			
+		} else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_PROC) {
+			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP PROCEDURE %@",
+										   [[tables objectAtIndex:currentIndex] backtickQuotedString]
+										   ]];			
+		} else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_FUNC) {
+			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP FUNCTION %@",
+										   [[tables objectAtIndex:currentIndex] backtickQuotedString]
+										   ]];			
+		} 
+	
 		if ( [[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
 			//dropped table with success
 			[tables removeObjectAtIndex:currentIndex];
@@ -712,36 +818,47 @@
 		// Reset the table information caches
 		[tableDataInstance resetAllData];
 
-		// If encoding is set to Autodetect, update the connection character set encoding
-		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
-			if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
-				[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
-				[tableDataInstance resetAllData];
+		if( [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW ||
+		   [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
+			// If encoding is set to Autodetect, update the connection character set encoding
+			// based on the newly selected table's encoding - but only if it differs from the current encoding.
+			if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
+				if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+					[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
+					[tableDataInstance resetAllData];
+				}
 			}
-		}
-
-		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			structureLoaded = YES;
-			contentLoaded = NO;
-			statusLoaded = NO;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-			[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			structureLoaded = NO;
-			contentLoaded = YES;
-			statusLoaded = NO;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-			[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = YES;
+		
+			if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
+				[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				structureLoaded = YES;
+				contentLoaded = NO;
+				statusLoaded = NO;
+			} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
+				[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				structureLoaded = NO;
+				contentLoaded = YES;
+				statusLoaded = NO;
+			} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+				[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				structureLoaded = NO;
+				contentLoaded = NO;
+				statusLoaded = YES;
+			} else {
+				structureLoaded = NO;
+				contentLoaded = NO;
+				statusLoaded = NO;
+			}
 		} else {
+			// if we are not looking at a table or view, clear these
+			[tableSourceInstance loadTable:nil];
+			[tableContentInstance loadTable:nil];
+			[tableStatusInstance loadTable:nil];
 			structureLoaded = NO;
 			contentLoaded = NO;
-			statusLoaded = NO;
+			statusLoaded = NO;			
 		}
-
+			
 		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 		// according to the table types
 		if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW)
@@ -749,8 +866,12 @@
 			// Change mainMenu > Table > ... according to table type
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:2] setHidden:NO]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:3] setHidden:NO]; // copy columns
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:4] setHidden:NO]; // divider
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:YES]; // repair
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:7] setHidden:YES]; // divider
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:YES]; // analyse
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:YES]; // optimize
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
@@ -758,11 +879,16 @@
 
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
-		} else {
+		} 
+		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:2] setHidden:NO]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:3] setHidden:NO]; // copy columns
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:4] setHidden:NO]; // divider
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:NO];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:7] setHidden:NO]; // divider
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:NO];
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:NO];
 			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
@@ -770,8 +896,41 @@
 
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
+		} 
+		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_PROC) {
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:2] setHidden:YES]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:3] setHidden:YES]; // copy columns
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:4] setHidden:YES]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:7] setHidden:YES]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:11] setHidden:YES];
+			
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedure", @"remove proc menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate procedure", @"duplicate proc menu title")];
 		}
-
+		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_FUNC) {
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:2] setHidden:YES]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:3] setHidden:YES]; // copy columns
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:4] setHidden:YES]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:7] setHidden:YES]; // divider
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setHidden:YES];
+			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:11] setHidden:YES];
+			
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove function", @"remove func menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate function", @"duplicate func menu title")];
+		}
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
@@ -810,15 +969,21 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
-	return (rowIndex != 0);
+	//return (rowIndex != 0);
+	if( [tableTypes count] == 0 )
+		return (rowIndex != 0 );
+	return ([[tableTypes objectAtIndex:rowIndex] intValue] != SP_TABLETYPE_NONE );
 }
 
 /**
  * Table view delegate method
  */
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
+- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)rowIndex
 {
-	return (row == 0);	
+	//return (row == 0);	
+	if( [tableTypes count] == 0 )
+		return (rowIndex == 0 );
+	return ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE );
 }
 
 /**
@@ -829,12 +994,21 @@
 	if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"tables"]) {
 		if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_VIEW) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
-		} else {
+		} else if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_TABLE) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
+		} else if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_PROC) { 
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"proc-small"]];
+		} else if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_FUNC) { 
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"func-small"]];
 		}
-		
-		[(ImageAndTextCell*)aCell setIndentationLevel:1];
-		[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	
+		if ([[tableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE) {
+			[(ImageAndTextCell*)aCell setImage:nil];
+			[(ImageAndTextCell*)aCell setIndentationLevel:0];
+		} else {
+			[(ImageAndTextCell*)aCell setIndentationLevel:1];
+			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];			
+		}
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];
@@ -856,7 +1030,8 @@
  */
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	if ( [tablesListView numberOfSelectedRows] == 1 ) {
+	if ( [tablesListView numberOfSelectedRows] == 1  && 
+		([tablesListView tableType] == SP_TABLETYPE_TABLE || [tablesListView tableType] == SP_TABLETYPE_VIEW) ) {
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
@@ -873,6 +1048,10 @@
 			statusLoaded = YES;
 		}
 	}
+	else {
+		[tableSourceInstance loadTable:nil];		
+		[tableContentInstance loadTable:nil];		
+	}
 }
 
 /**
@@ -883,6 +1062,8 @@
 	// popup button below table list
 	if ([menuItem action] == @selector(copyTable:))
 	{
+		if( [self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC )
+			return NO;
 		return [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
 	}
 	if ([menuItem action] == @selector(removeTable:))

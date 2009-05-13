@@ -61,7 +61,7 @@
 
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-	queries = [queryParser splitStringByCharacter:';'];
+	queries = [queryParser parseQueries];
 	[queryParser release];
 
 	NSRange curRange = [textView selectedRange];
@@ -110,7 +110,7 @@
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
-		queries = [queryParser splitStringByCharacter:';'];
+		queries = [queryParser parseQueries];
 		[queryParser release];
 	}
 	

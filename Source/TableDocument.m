@@ -917,7 +917,32 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
-	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+	NSString *query = nil;
+	NSString *createWindowTitle;
+	int colOffs = 1;
+	
+	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create Table Syntax";
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create View Syntax";
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create Procedure Syntax";
+		colOffs = 2;
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create Function Syntax";
+		colOffs = 2;
+	}
+
+	if( query == nil )
+		return;
+	
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
@@ -928,7 +953,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		return;
 	}
 	
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
@@ -938,6 +963,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	else
 		[syntaxViewContent setString:tableSyntax];
 
+	[createTableSyntaxWindow setTitle:createWindowTitle];
 	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
@@ -946,8 +972,28 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
-	// Create the query and get results
-	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+	// Create the query and get results	
+	NSString *query = nil;
+	int colOffs = 1;
+	
+	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
+		colOffs = 2;
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
+		colOffs = 2;
+	}
+	
+	if( query == nil )
+		return;	
+	
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
@@ -958,7 +1004,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		return;
 	}
 	
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
@@ -972,9 +1018,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[pb setString:tableSyntax forType:NSStringPboardType];
 
 	// Table syntax copied Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
-                                              notificationName:@"Table Syntax Copied"];
+                                              notificationName:@"Syntax Copied"];
 }
 
 - (IBAction)copyColumnNames:(id)sender

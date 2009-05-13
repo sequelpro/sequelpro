@@ -30,6 +30,53 @@
 @implementation SPSQLParser : NSMutableString
 
 
+/*
+ * return an array of queries
+ */
+- (NSArray *) parseQueries
+{	
+	[self deleteComments];
+	
+	/* this is a hack so I could test the funcs and procs viewing, needed a way to get those in.
+	 * all this does is look for 'delimiter' in the text to trigger this parser. basically
+	 * it runs through the query, line by line, and sets the delimiter accordingly to break
+	 * out the individual queries. this is not very rebust but works for testing purposes.
+	 * I believe Hans is currently working on a more robust parser. :mtv
+	 */
+	if( [string rangeOfString:@"delimiter" options:NSCaseInsensitiveSearch].location != NSNotFound ) {
+		NSString *delim = @";";
+		NSString *thisLine = @"";
+		NSMutableArray *nq = [[NSMutableArray alloc] init];
+		NSArray *lines = [self splitStringByCharacter:'\n'];
+		for( NSString *line in lines ) {
+			line = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			if( [line hasPrefix:@"delimiter"] ) {
+				delim = [line substringFromIndex:9];
+				delim = [delim stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+				NSLog( @"delimiter now [%@]", delim );
+				continue;
+			}
+			if( [line hasSuffix:delim] ) {
+				thisLine = [thisLine stringByAppendingString:line];
+				[nq addObject:[thisLine substringWithRange:NSMakeRange(0,[thisLine length]-[delim length])]];
+				NSLog( @"query: [%@]", [thisLine substringWithRange:NSMakeRange(0,[thisLine length]-[delim length])] );
+				thisLine = @"";
+			}
+			else {
+				thisLine = [thisLine stringByAppendingString:line];
+				thisLine = [thisLine stringByAppendingString:@"\n"];
+			}
+		}
+		if( thisLine != @"" ) {
+			[nq addObject:thisLine];			
+			NSLog( @"query: [%@]", thisLine );
+		}
+		return nq;
+	} else {
+		// just split as normal
+		return  [self splitStringByCharacter:';'];		
+	}
+}
 
 /*
  * Removes comments within the current string, trimming "#", "--[/s]", and "/* * /" style strings.

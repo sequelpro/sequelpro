@@ -227,7 +227,10 @@ typedef enum _SPCommentTypes {
 - (void) deleteCharactersInRange:(NSRange)aRange;
 - (void) insertString:(NSString *)aString atIndex:(NSUInteger)anIndex;
 
-
+/*
+ * return an array of queries
+ */
+- (NSArray *) parseQueries;
 
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -
