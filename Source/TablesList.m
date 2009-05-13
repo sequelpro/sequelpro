@@ -1031,7 +1031,7 @@
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ( [tablesListView numberOfSelectedRows] == 1  && 
-		([tablesListView tableType] == SP_TABLETYPE_TABLE || [tablesListView tableType] == SP_TABLETYPE_VIEW) ) {
+		([self tableType] == SP_TABLETYPE_TABLE || [self tableType] == SP_TABLETYPE_VIEW) ) {
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
 			[tableSourceInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
@@ -1049,8 +1049,8 @@
 		}
 	}
 	else {
-		[tableSourceInstance loadTable:nil];		
-		[tableContentInstance loadTable:nil];		
+		[tableSourceInstance loadTable:nil];
+		[tableContentInstance loadTable:nil];
 	}
 }
 
