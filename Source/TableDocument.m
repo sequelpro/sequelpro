@@ -390,13 +390,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if (![self selectedFavorite])
 		return;
 	
-	[nameField setStringValue:[self valueForKeyPath:@"selectedFavorite.name"]];
-	[hostField setStringValue:[self valueForKeyPath:@"selectedFavorite.host"]];
-	[socketField setStringValue:[self valueForKeyPath:@"selectedFavorite.socket"]];
-	[userField setStringValue:[self valueForKeyPath:@"selectedFavorite.user"]];
-	[portField setStringValue:[self valueForKeyPath:@"selectedFavorite.port"]];
-	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
-	[passwordField setStringValue:[self selectedFavoritePassword]];
+	[nameField		setStringValue:([self valueForKeyPath:@"selectedFavorite.name"]		? [self valueForKeyPath:@"selectedFavorite.name"]		: @"")];
+	[hostField		setStringValue:([self valueForKeyPath:@"selectedFavorite.host"]		? [self valueForKeyPath:@"selectedFavorite.host"]		: @"")];
+	[userField		setStringValue:([self valueForKeyPath:@"selectedFavorite.user"]		? [self valueForKeyPath:@"selectedFavorite.user"]		: @"")];
+	[passwordField	setStringValue:([self selectedFavoritePassword]						? [self selectedFavoritePassword]						: @"")];
+	[databaseField	setStringValue:([self valueForKeyPath:@"selectedFavorite.database"]	? [self valueForKeyPath:@"selectedFavorite.database"]	: @"")];
+	[socketField	setStringValue:([self valueForKeyPath:@"selectedFavorite.socket"]	? [self valueForKeyPath:@"selectedFavorite.socket"]		: @"")];
+	[portField		setStringValue:([self valueForKeyPath:@"selectedFavorite.port"]		? [self valueForKeyPath:@"selectedFavorite.port"]		: @"")];
 	
 	[prefs setInteger:[favoritesController selectionIndex] forKey:@"LastFavoriteIndex"];
 }
