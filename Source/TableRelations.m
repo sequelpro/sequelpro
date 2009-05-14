@@ -1,9 +1,25 @@
 //
-//  TableRelations.m
+//  TableRelations.h
 //  sequel-pro
 //
 //  Created by J Knight on 13/05/09.
-//  Copyright 2009 TalonEdge Ltd.. All rights reserved.
+//  Copyright 2009 J Knight. All rights reserved.
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 //
 
 #import "TableRelations.h"
@@ -15,6 +31,9 @@
 
 @implementation TableRelations
 
+/*
+ * init
+ */
 - (id)init
 {
 	if (![super init])
@@ -25,6 +44,9 @@
 	return self;
 }
 
+/*
+ * dealloc
+ */
 - (void)dealloc
 {	
 	[relData release], relData = nil;
@@ -32,6 +54,9 @@
 	[super dealloc];
 }
 
+/*
+ * awakeFromNib
+ */
 - (void)awakeFromNib
 {
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -40,22 +65,68 @@
 											   object:tableList];
 }
 
+/*
+ * setConnection
+ * set the database connection
+ */
 - (void)setConnection:(CMMCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;			
 }
 
+/*
+ * closeRelationSheet
+ * happens if the user hits cancel
+ */
 - (IBAction)closeRelationSheet:(id)sender
 {
-	[NSApp stopModalWithCode:1];
+	[NSApp stopModalWithCode:0];
 }
 
+/*
+ * addRelation
+ * attempt to add the relations from the relationSheet data
+ */
 - (IBAction)addRelation:(id)sender
 {
-	[NSApp stopModalWithCode:0];	
+	// 0 = success,
+	int retCode = 0;
+	NSString *thisTable = [tablesListInstance tableName];
+	NSString *thisColumn = [columnSelect titleOfSelectedItem];
+	NSString *thatTable = [refTableSelect titleOfSelectedItem];
+	NSString *thatColumn = [refColumnSelect titleOfSelectedItem];
+	NSString *onUpdate = [onUpdateSelect titleOfSelectedItem];
+	NSString *onDelete = [onDeleteSelect titleOfSelectedItem];
+	NSString *query = [NSString stringWithFormat:
+					   @"ALTER TABLE `%@` ADD FOREIGN KEY (`%@`) REFERENCES `%@` (`%@`)", 
+					   thisTable,
+					   thisColumn,
+					   thatTable,
+					   thatColumn];
+	
+	if( [onDelete length] ) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", onDelete]];
+	}
+	if( [onUpdate length] ) {
+			query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", onUpdate]];
+	}
+	
+	NSLog( query );
+
+	[mySQLConnection queryString:query];
+	
+	if ( ! [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		NSLog(@"error: %@", [mySQLConnection getLastErrorMessage]);
+		retCode = 1;
+	} 
+		
+	[NSApp stopModalWithCode:retCode];	
 }
 
-// user choose a reference table
+/*
+ * chooseRefTable
+ * update the columns select when the user chooses a reference table
+ */
 - (IBAction)chooseRefTable:(id)sender
 {
 	NSString *table = [refTableSelect titleOfSelectedItem];
@@ -72,6 +143,10 @@
 	[colNames release];
 }
 
+/*
+ * addRow
+ * called when the user indicated they want to add a relation
+ */
 - (IBAction)addRow:(id)sender
 {
 	// set up the controls
@@ -84,7 +159,6 @@
 	NSArray *types = [tablesListInstance tableTypes];
 	NSMutableArray *validTables = [[NSMutableArray alloc] init];
 	for( int i = 0; i < [tables count]; i++ ) {
-		NSLog( @"%@ %@", [tables objectAtIndex:i], [types objectAtIndex:i] );
 		if( [[types objectAtIndex:i] intValue] == SP_TABLETYPE_TABLE ) {
 			[validTables addObject:[tables objectAtIndex:i]];
 		}
@@ -100,31 +174,66 @@
 		  contextInfo:nil];
 	
 	
-	[NSApp runModalForWindow:relationSheet];
+	int code = [NSApp runModalForWindow:relationSheet];
 	
 	[NSApp endSheet:relationSheet];
 	[relationSheet orderOut:nil];
+
+	// 0 indicates success
+	if( code ) {
+		NSRunAlertPanel(@"Error Adding Relation",
+						[NSString stringWithFormat:@"There was a problem adding the relation.\n%@",[mySQLConnection getLastErrorMessage]],
+						@"Dang!", nil, nil );		
+	} else {
+		[self refresh:nil];		
+	}
 }
 
+/*
+ * removeRow
+ * called when rows are selected and the user wants to remove those relations
+ */
 - (IBAction)removeRow:(id)sender
 {
 	if ( [relationsView numberOfSelectedRows] ) {
 		int resp = NSRunAlertPanel(@"Remove Relations",
-		@"Are you sure you want to remove the selected relations?",
+								   @"Are you sure you want to remove the selected relations?",
 								   @"OK", @"Cancel", nil );
 		if( resp == NSAlertDefaultReturn ) {
-			
+			NSString *thisTable = [tablesListInstance tableName];
+			NSIndexSet *selectedSet = [relationsView selectedRowIndexes];
+			unsigned int row = [selectedSet lastIndex];
+			while( row != NSNotFound ) {
+				NSArray *relName = [[relData objectAtIndex:row] objectForKey:@"name"];
+				NSString *query = [NSString stringWithFormat:@"ALTER TABLE `%@` DROP FOREIGN KEY `%@`",
+								   thisTable, relName];
+				//NSLog( query );
+				
+				[mySQLConnection queryString:query];
+				
+				if ( ! [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+					NSLog(@"error: %@", [mySQLConnection getLastErrorMessage]);
+				} 
+				row = [selectedSet indexLessThanIndex:row];
+			}
+			[self refresh:nil];
 		}
 	}
 }
 
+/*
+ * refresh
+ * called to refesh the relations list
+ */
 - (IBAction)refresh:(id)sender
 {
 
 	[relData removeAllObjects];
 	
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+		// update the top label
 		[labelText setStringValue:[NSString stringWithFormat:@"Relations for table: %@",[tablesListInstance tableName]]];			
+		
 		[tableDataInstance updateInformationForCurrentTable];
 		NSArray *constraints = [tableDataInstance getConstraints];
 		for( int i = 0; i < [constraints count]; i++ ) {
@@ -140,6 +249,7 @@
 			
 		}
 	} else {
+		// update the top label
 		[labelText setStringValue:@""];		
 	}
 	
@@ -147,6 +257,10 @@
 
 }
 
+/*
+ * tableChanged
+ * notification from the tableList when the users click a table
+ */
 - (void)tableChanged:(NSNotification *)notification
 {
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {

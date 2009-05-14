@@ -441,13 +441,15 @@
 			}
 			// primary key
 			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {
-				NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
 			}
 			// key
 			else if( [[parts objectAtIndex:0] hasPrefix:@"KEY"] ) {
+				/*
 				NSLog( @"key %@.%@", 
 					  [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
 					  [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+				 */
 			}
 			// who knows
 			else {
