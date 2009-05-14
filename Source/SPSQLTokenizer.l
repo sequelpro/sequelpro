@@ -36,41 +36,42 @@ int yyuoffset, yyuleng;
 %option noyywrap
 %option case-insensitive
 
-s		[ \t\n\r]
-dkey	"delimiter"
-scol    ";"
-dval	[!-ﾟ]
-compound	"create"(.|\n|\r)+?"begin"(.|\n|\r)+?{s}+"end"{s}*?{scol}
+s			[ \t\n\r]
+dkey		"delimiter"
+scol		";"
+dval		[!-ﾟ]
+compstart	"begin"{s}
+compend		{s}"end"
 %x comment
 %x delim
 %x delimbody
+%x comp
+%x compbody
 
 %%
 
-\"([^"\\]|\\(.|[\n\r]))*\"?		{ return SP_SQL_TOKEN_DOUBLE_QUOTED_TEXT;   }
-'([^'\\]|\\(.|[\n\r]))*'?		{ return SP_SQL_TOKEN_SINGLE_QUOTED_TEXT;   }
-`[^`]*`?						{ return SP_SQL_TOKEN_BACKTICK_QUOTED_TEXT; }
+\"([^"\\]|\\(.|[\n\r]))*\"?			{ return SP_SQL_TOKEN_IGNORE; }
+'([^'\\]|\\(.|[\n\r]))*'?			{ return SP_SQL_TOKEN_IGNORE; }
+`[^`]*`?							{ return SP_SQL_TOKEN_IGNORE; }
 
-"/*"							{ BEGIN(comment); return SP_SQL_TOKEN_COMMENT; }
-<comment>[^*]* 				    { return SP_SQL_TOKEN_COMMENT; }
-<comment>"*"+                   { return SP_SQL_TOKEN_COMMENT; }
-<comment>"*"+"/" 				{ BEGIN(INITIAL); return SP_SQL_TOKEN_COMMENT; } 
+"/*"								{ BEGIN(comment); return SP_SQL_TOKEN_IGNORE; }
+<comment>[^*]* 						{ return SP_SQL_TOKEN_IGNORE; }
+<comment>"*"+						{ return SP_SQL_TOKEN_IGNORE; }
+<comment>"*"+"/" 					{ BEGIN(INITIAL); return SP_SQL_TOKEN_IGNORE; }
 #[^\n\r]*(\n|\r)?			|
---[ \t][^\n\r]*(\n|\r)?			{ return SP_SQL_TOKEN_COMMENT; }
+--[ \t][^\n\r]*(\n|\r)?				{ return SP_SQL_TOKEN_IGNORE; }
 
-{s}+							{ return SP_SQL_TOKEN_WHITESPACE; }
+{s}+								{ return SP_SQL_TOKEN_IGNORE; }
 
-{dkey}{s}+						{ BEGIN(delim); return SP_SQL_TOKEN_DELIM_START; }
-<delim>{dval}+					{ BEGIN(delimbody); return SP_SQL_TOKEN_DELIM_VALUE; }
-<delimbody>{s}+{dkey}{s}+{scol}	{ BEGIN(INITIAL); return SP_SQL_TOKEN_DELIM_END; }
+{s}*{dkey}{s}+						{ BEGIN(delim); return SP_SQL_TOKEN_IGNORE; }
+<delim>{dval}+						{ BEGIN(delimbody); return SP_SQL_TOKEN_DELIM_VALUE; }
+<delimbody>{s}+{dkey}{s}+{scol}{s}*	{ BEGIN(INITIAL); return SP_SQL_TOKEN_DELIM_END; }
+{compstart}							{ BEGIN(comp); return SP_SQL_TOKEN_IGNORE; }
+<comp>{dval}+						{ BEGIN(compbody); return SP_SQL_TOKEN_IGNORE; }
+<compbody>{compend}{s}*{scol}		{ BEGIN(INITIAL); return SP_SQL_TOKEN_COMPOUND_END; }
 
-{compound}						{ return SP_SQL_TOKEN_COMPOUND; }
-
-{scol}							{ return SP_SQL_TOKEN_SEMICOLON; }
-[.\r\n]							{ return SP_SQL_TOKEN_WHITESPACE; }
-
-
-
+{scol}{s}*							{ return SP_SQL_TOKEN_SEMICOLON; }
+[.\r\n]+							{ return SP_SQL_TOKEN_IGNORE; }
 
 
 <<EOF>>   						{

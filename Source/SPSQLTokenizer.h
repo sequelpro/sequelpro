@@ -20,13 +20,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#define SP_SQL_TOKEN_DOUBLE_QUOTED_TEXT   1
-#define SP_SQL_TOKEN_SINGLE_QUOTED_TEXT   2
-#define SP_SQL_TOKEN_COMMENT              3
-#define SP_SQL_TOKEN_BACKTICK_QUOTED_TEXT 4
-#define SP_SQL_TOKEN_DELIM_START          5
-#define SP_SQL_TOKEN_DELIM_VALUE          6
-#define SP_SQL_TOKEN_DELIM_END            7
-#define SP_SQL_TOKEN_WHITESPACE           8
-#define SP_SQL_TOKEN_SEMICOLON            9
-#define SP_SQL_TOKEN_COMPOUND            10
+#define SP_SQL_TOKEN_DELIM_VALUE          1
+#define SP_SQL_TOKEN_DELIM_END            2
+#define SP_SQL_TOKEN_SEMICOLON            3
+#define SP_SQL_TOKEN_COMPOUND_END         4
+#define SP_SQL_TOKEN_IGNORE               5
