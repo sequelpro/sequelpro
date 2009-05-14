@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9G55</string>
+		<string key="IBDocument.SystemVersion">9J61</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.43</string>
+		<string key="IBDocument.AppKitVersion">949.46</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="31"/>
+			<integer value="193"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -228,7 +228,7 @@
 										<object class="NSButton" id="683942346">
 											<reference key="NSNextResponder" ref="490248567"/>
 											<int key="NSvFlags">289</int>
-											<string key="NSFrame">{{20, 9}, {18, 25}}</string>
+											<string key="NSFrame">{{20, 7}, {18, 25}}</string>
 											<reference key="NSSuperview" ref="490248567"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="703031625">
@@ -252,7 +252,7 @@
 										<object class="NSButton" id="921596026">
 											<reference key="NSNextResponder" ref="490248567"/>
 											<int key="NSvFlags">289</int>
-											<string key="NSFrame">{{38, 9}, {18, 25}}</string>
+											<string key="NSFrame">{{38, 7}, {18, 25}}</string>
 											<reference key="NSSuperview" ref="490248567"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="329603719">
@@ -276,7 +276,7 @@
 										<object class="NSPopUpButton" id="729906516">
 											<reference key="NSNextResponder" ref="490248567"/>
 											<int key="NSvFlags">289</int>
-											<string key="NSFrame">{{56, 9}, {54, 25}}</string>
+											<string key="NSFrame">{{55, 7}, {54, 25}}</string>
 											<reference key="NSSuperview" ref="490248567"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSPopUpButtonCell" key="NSCell" id="432562312">
@@ -368,7 +368,7 @@
 												<object class="NSTabViewItem" id="820796939">
 													<string key="NSIdentifier">1</string>
 													<object class="NSView" key="NSView" id="143215913">
-														<reference key="NSNextResponder" ref="716372522"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -494,7 +494,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {481, 273}}</string>
-														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">General</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -503,7 +502,7 @@
 												<object class="NSTabViewItem" id="1024639412">
 													<string key="NSIdentifier">Item 3</string>
 													<object class="NSView" key="NSView" id="202198269">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="716372522"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1163,6 +1162,7 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {481, 273}}</string>
+														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Global Privileges</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -1687,7 +1687,7 @@
 																		</object>
 																	</object>
 																	<object class="NSFormCell" id="62674029">
-																		<int key="NSCellFlags">343014977</int>
+																		<int key="NSCellFlags">-1804468671</int>
 																		<int key="NSCellFlags2">205521920</int>
 																		<string key="NSContents"/>
 																		<reference key="NSSupport" ref="746597359"/>
@@ -1747,13 +1747,13 @@
 													<reference key="NSTabView" ref="716372522"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="820796939"/>
+											<reference key="NSSelectedTabViewItem" ref="1024639412"/>
 											<reference key="NSFont" ref="746597359"/>
 											<int key="NSTvFlags">0</int>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="143215913"/>
+												<reference ref="202198269"/>
 											</object>
 										</object>
 										<object class="NSButton" id="445730006">
@@ -1857,6 +1857,16 @@
 					<string>hosts.Select_priv</string>
 					<string>hosts.Insert_priv</string>
 					<string>displayName</string>
+					<string>create_priv</string>
+					<string>delete_priv</string>
+					<string>drop_priv</string>
+					<string>insert_priv</string>
+					<string>reload_priv</string>
+					<string>select_priv</string>
+					<string>update_priv</string>
+					<string>maxUserConnections</string>
+					<string>maxConnections</string>
+					<string>maxQuestions</string>
 				</object>
 				<string key="NSObjectClassName">SPUserItem</string>
 				<bool key="NSEditable">YES</bool>
@@ -2449,6 +2459,198 @@
 					</object>
 					<int key="connectionID">374</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.password</string>
+						<reference key="source" ref="926329636"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="926329636"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.password</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.password</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">377</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.create_priv</string>
+						<reference key="source" ref="127801287"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="127801287"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.create_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.create_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">380</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.delete_priv</string>
+						<reference key="source" ref="843046161"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="843046161"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.delete_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.delete_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">381</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.drop_priv</string>
+						<reference key="source" ref="771058583"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="771058583"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.drop_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.drop_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">382</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.insert_priv</string>
+						<reference key="source" ref="873446629"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="873446629"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.insert_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.insert_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">383</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.reload_priv</string>
+						<reference key="source" ref="1019914915"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1019914915"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.reload_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.reload_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">384</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.select_priv</string>
+						<reference key="source" ref="1019377923"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1019377923"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.select_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.select_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">385</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.update_priv</string>
+						<reference key="source" ref="771171106"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="771171106"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.update_priv</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.update_priv</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">386</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.username</string>
+						<reference key="source" ref="1021720165"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1021720165"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.username</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.username</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">387</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.maxUserConnections</string>
+						<reference key="source" ref="892380277"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="892380277"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.maxUserConnections</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.maxUserConnections</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">388</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.maxConnections</string>
+						<reference key="source" ref="62674029"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="62674029"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.maxConnections</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.maxConnections</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">389</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.maxQuestions</string>
+						<reference key="source" ref="433998913"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="433998913"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.maxQuestions</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.maxQuestions</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">390</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2514,8 +2716,8 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="848314643"/>
-							<reference ref="921596026"/>
 							<reference ref="729906516"/>
+							<reference ref="921596026"/>
 							<reference ref="683942346"/>
 						</object>
 						<reference key="parent" ref="138392961"/>
@@ -3855,7 +4057,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">374</int>
+			<int key="maxID">390</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
