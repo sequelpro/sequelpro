@@ -30,6 +30,7 @@
 
 	NSMutableArray *columns;
 	NSMutableArray *columnNames;
+	NSMutableArray *constraints;
 	NSMutableDictionary *status;
 	NSString *tableEncoding;
 
@@ -42,6 +43,7 @@
 - (NSDictionary *) columnWithName:(NSString *)colName;
 - (NSArray *) columnNames;
 - (NSDictionary *) columnAtIndex:(int)index;
+- (NSArray *) getConstraints;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
 - (NSDictionary *) statusValues;

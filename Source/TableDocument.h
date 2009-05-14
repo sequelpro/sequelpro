@@ -39,6 +39,7 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
+	IBOutlet id tableRelationsInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
@@ -188,6 +189,7 @@
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
+- (IBAction)viewRelations:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
 
 //toolbar methods

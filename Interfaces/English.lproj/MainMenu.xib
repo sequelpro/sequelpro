@@ -1,27 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
+<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.02">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9J61</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">672</string>
 		<string key="IBDocument.AppKitVersion">949.46</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-		</object>
-		<object class="NSMutableDictionary" key="IBDocument.Metadata">
-			<bool key="EncodedWithXMLCoder">YES</bool>
-			<object class="NSArray" key="dict.sortedKeys">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-			</object>
-			<object class="NSMutableArray" key="dict.values">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="549353383">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -952,6 +943,15 @@
 									<reference key="NSMenu" ref="466354362"/>
 									<string key="NSTitle">Table Status</string>
 									<string key="NSKeyEquiv">4</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="998300902">
+									<reference key="NSMenu" ref="466354362"/>
+									<string key="NSTitle">Table Relations</string>
+									<string key="NSKeyEquiv">5</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
@@ -2372,6 +2372,14 @@
 					</object>
 					<int key="connectionID">927</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">viewRelations:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="998300902"/>
+					</object>
+					<int key="connectionID">929</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2804,6 +2812,7 @@
 							<reference ref="761247690"/>
 							<reference ref="173454563"/>
 							<reference ref="358795349"/>
+							<reference ref="998300902"/>
 						</object>
 						<reference key="parent" ref="401969940"/>
 					</object>
@@ -3541,6 +3550,11 @@
 						<reference key="object" ref="609933882"/>
 						<reference key="parent" ref="71086556"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">928</int>
+						<reference key="object" ref="998300902"/>
+						<reference key="parent" ref="466354362"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -3874,6 +3888,7 @@
 					<string>92.ImportedFromIB2</string>
 					<string>926.IBPluginDependency</string>
 					<string>926.ImportedFromIB2</string>
+					<string>928.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3967,7 +3982,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{328, 730}, {511, 20}}</string>
+					<string>{{75, 827}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4020,7 +4035,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{845, 572}, {235, 183}}</string>
+					<string>{{267, 624}, {235, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4247,6 +4262,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -4269,7 +4285,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">927</int>
+			<int key="maxID">929</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4536,7 +4552,6 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>connect:</string>
 							<string>connectSheetAddToFavorites:</string>
 							<string>connectToDB:</string>
-							<string>copyColumnNames:</string>
 							<string>copyCreateTableSyntax:</string>
 							<string>editFavorites:</string>
 							<string>export:</string>
@@ -4554,6 +4569,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>showVariables:</string>
 							<string>viewContent:</string>
 							<string>viewQuery:</string>
+							<string>viewRelations:</string>
 							<string>viewStatus:</string>
 							<string>viewStructure:</string>
 						</object>
@@ -4629,6 +4645,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
 							<string>tableDumpInstance</string>
+							<string>tableRelationsInstance</string>
 							<string>tableSourceInstance</string>
 							<string>tableStatusInstance</string>
 							<string>tableTabView</string>
@@ -4656,6 +4673,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSArrayController</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

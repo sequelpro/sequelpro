@@ -39,6 +39,7 @@
 	if ((self = [super init])) {
 		columns = [[NSMutableArray alloc] init];
 		columnNames = [[NSMutableArray alloc] init];
+		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
 		tableEncoding = nil;
 		mySQLConnection = nil;
@@ -89,6 +90,10 @@
 	return columns;
 }
 
+- (NSArray *) getConstraints
+{
+	return constraints;
+}
 
 /*
  * Retrieve a column with a specified name, using or refreshing the cache as appropriate.
@@ -225,6 +230,7 @@
 	if (tableData == nil ) {
 		[columns removeAllObjects];
 		[columnNames removeAllObjects];
+		[constraints removeAllObjects];
 		return FALSE;
 	}
 
@@ -260,6 +266,8 @@
 	NSString *encodingString;
 	unsigned i, stringStart;
 
+	[constraints removeAllObjects];
+	
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
@@ -342,7 +350,109 @@
 
 		// TODO: Otherwise it's a key definition, constraint, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
-
+			NSArray *parts = [fieldsParser splitStringByCharacter:' ' skippingBrackets:YES ignoringQuotedStrings:YES];
+			NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:@"`()"];
+			// constraints
+			if( [[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"] ) {
+				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
+				/*
+				NSLog( @"constraint %@ on %@ ref %@.%@", 
+					  [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
+					  [[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk], 
+					  [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk], 
+					  [[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk] );
+				*/
+				[constraintDetails setObject:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk]
+									  forKey:@"name"];
+				[constraintDetails setObject:[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk]
+									  forKey:@"columns"];
+				[constraintDetails setObject:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk]
+									  forKey:@"ref_table"];
+				[constraintDetails setObject:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk]
+									  forKey:@"ref_columns"];
+				
+				int nextOffs = 12;
+				if( [parts count] > 8 ) {
+					// NOTE: this won't get SET NULL | NO ACTION
+					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
+						//NSLog( @"update: %@", [parts objectAtIndex:10] );
+						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"update"];
+							nextOffs = 13;
+						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"update"];
+							nextOffs = 13;
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:10]
+												  forKey:@"update"];							
+						}
+					} 
+					else if( [[parts objectAtIndex:9] hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:10] );						
+						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"delete"];
+							nextOffs = 13;
+						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"delete"];
+							nextOffs = 13;
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:10]
+												  forKey:@"delete"];							
+						}
+					}
+				}
+				if( [parts count] > nextOffs - 1 ) {
+					if( [[parts objectAtIndex:nextOffs] hasPrefix:@"UPDATE"] ) {
+						//NSLog( @"update: %@", [parts objectAtIndex:13] );
+						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"update"];
+							nextOffs = 13;
+						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"update"];
+							nextOffs = 13;
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
+												  forKey:@"update"];							
+						}
+					} 
+					else if( [[parts objectAtIndex:nextOffs] hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:13] );						
+						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"delete"];
+							nextOffs = 13;
+						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"delete"];
+							nextOffs = 13;
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
+												  forKey:@"delete"];							
+						}
+					}
+				}
+				[constraints addObject:constraintDetails];
+			}
+			// primary key
+			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {
+				NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+			}
+			// key
+			else if( [[parts objectAtIndex:0] hasPrefix:@"KEY"] ) {
+				NSLog( @"key %@.%@", 
+					  [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
+					  [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+			}
+			// who knows
+			else {
+				NSLog( @"not parsed: %@", [parts objectAtIndex:0] );
+			}
 		}
 	}
 	[fieldStrings release];
@@ -400,6 +510,7 @@
 	if (viewData == nil) {
 		[columns removeAllObjects];
 		[columnNames removeAllObjects];
+		[constraints removeAllObjects];
 		return FALSE;
 	}
 
@@ -718,6 +829,7 @@
 {
 	[columns release];
 	[columnNames release];
+	[constraints release];
 	[status release];
 	if (tableEncoding != nil) [tableEncoding release];
 
