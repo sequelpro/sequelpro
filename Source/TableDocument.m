@@ -1023,23 +1023,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
                                               notificationName:@"Syntax Copied"];
 }
 
-- (IBAction)copyColumnNames:(id)sender
-{
-	//NSArray *columns;
-	NSString *columnNames;	
-	//columns = ;
-	if ([self columnNames]) {
-		columnNames = [NSString stringWithFormat:@"`%@`", [[self columnNames] componentsJoinedByString:@"`, `"]];
-	}
-	
-	if([columnNames length]){
-		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-		// Copy the string to the pasteboard
-		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
-		[pasteBoard setString:columnNames forType:NSStringPboardType];
-	}
-}
-
 - (NSArray *)columnNames
 {
 	NSArray *columns = nil;
@@ -1553,7 +1536,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:) ||
-		[menuItem action] == @selector(copyColumnNames:) ||
 		[menuItem action] == @selector(checkTable:) || 
 		[menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 

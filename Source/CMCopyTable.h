@@ -68,7 +68,7 @@
 - (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 /*!
-	@method	 selectedRowsAsTabString
+	@method	 selectedRowsAsTabStringWithHeaders
 	@abstract   getter of the selected rows of the table for copy
 	@discussion For the selected rows returns a single string with each row
 	   separated by a newline and then for each column value separated by a 
@@ -76,7 +76,7 @@
 	   returns something meaningful. 
 	@result	 The above described string, or nil if nothing selected
 */
-- (NSString *)selectedRowsAsTabString;
+- (NSString *)selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders;
 
 /*!
 	@method	 draggedRowsAsTabString:
