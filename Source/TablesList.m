@@ -521,11 +521,10 @@
 	while (currentIndex != NSNotFound)
 	{
 
-		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
-		{
+		if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
-																	  [[tables objectAtIndex:currentIndex] backtickQuotedString]
-																	]];
+											[[tables objectAtIndex:currentIndex] backtickQuotedString]
+											]];
 		} else if([[tableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_TABLE) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
 										   [[tables objectAtIndex:currentIndex] backtickQuotedString]
@@ -563,9 +562,17 @@
 	// set window title
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
 								[tableDocumentInstance name], [tableDocumentInstance database]]];
-	if ( error )
+	
+	if ( error ) {
+		/* the first sheet is not closed and we try and run this
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
+		*/
+		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"),
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText],
+						NSLocalizedString(@"OK", @"OK button"), nil, nil, nil );
+	}
+	 
 }
 
 /**

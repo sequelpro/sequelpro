@@ -364,11 +364,11 @@
 				*/
 				[constraintDetails setObject:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk]
 									  forKey:@"name"];
-				[constraintDetails setObject:[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk]
+				[constraintDetails setObject:[[parts objectAtIndex:4] stringByRemovingCharactersInSet:junk]
 									  forKey:@"columns"];
 				[constraintDetails setObject:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk]
 									  forKey:@"ref_table"];
-				[constraintDetails setObject:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk]
+				[constraintDetails setObject:[[parts objectAtIndex:7] stringByRemovingCharactersInSet:junk]
 									  forKey:@"ref_columns"];
 				
 				int nextOffs = 12;
