@@ -61,7 +61,7 @@
 
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-	queries = [queryParser splitStringByCharacter:';'];
+	queries = [queryParser parseQueries];
 	[queryParser release];
 
 	NSRange curRange = [textView selectedRange];
@@ -110,7 +110,7 @@
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
-		queries = [queryParser splitStringByCharacter:';'];
+		queries = [queryParser parseQueries];
 		[queryParser release];
 	}
 	
@@ -136,14 +136,14 @@ insert the choosen favorite query in the query textView or save query to favorit
 		id favorite;
 		while ( (favorite = [enumerator nextObject]) ) {
 			if ( [favorite isEqualToString:[textView string]] ) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						NSLocalizedString(@"Query already exists in favorites.", @"message of panel when trying to save query which already exists in favorites"));
+				NSBeginAlertSheet(NSLocalizedString(@"Query already exists", @"query already exists message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+								  NSLocalizedString(@"The query you are adding to your favorites already exists.", @"query already exists informative message"));
 				return;
 			}
 		}
 		if ( [[textView string] isEqualToString:@""] ) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						NSLocalizedString(@"Query can't be empty.", @"message of panel when trying to save empty query"));
+				NSBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+								  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
 				return;
 		}
 		[queryFavorites addObject:[NSString stringWithString:[textView string]]];
@@ -1047,7 +1047,8 @@ inserts the query in the textView and performs query
 
 		while ( (favorite = [enumerator nextObject]) ) {
 			if ( [favorite isEqualToString:anObject] && i != rowIndex) {
-				NSRunAlertPanel(@"Error", @"Query already exists in favorites.", @"OK", nil, nil);
+				NSRunAlertPanel(@"Query already exists", @"The query you are adding to your favorites already exists.", @"OK", nil, nil);
+				
 				//remove row if it was a (blank) new row or a copied row
 				if ( [[queryFavorites objectAtIndex:rowIndex] isEqualToString:@""] ||
 						[[queryFavorites objectAtIndex:rowIndex] isEqualToString:anObject] ) {

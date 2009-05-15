@@ -1,9 +1,8 @@
 //
-//  SPStringAdditions.h
+//  SPSQLTokenizer.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Hans-J. Bibiko on May 14, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -21,22 +20,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
-@interface NSString (SPStringAdditions)
-
-+ (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
-
-- (NSString *)backtickQuotedString;
-- (NSArray *)lineRangesForRange:(NSRange)aRange;
-- (NSString *)createViewSyntaxPrettifier;
-
-- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask;
-- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;
-#endif
-
-@end
+#define SP_SQL_TOKEN_DELIM_VALUE          1
+#define SP_SQL_TOKEN_DELIM_END            2
+#define SP_SQL_TOKEN_SEMICOLON            3
+#define SP_SQL_TOKEN_COMPOUND_END         4
+#define SP_SQL_TOKEN_IGNORE               5

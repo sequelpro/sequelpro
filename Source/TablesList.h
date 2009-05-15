@@ -27,8 +27,11 @@
 
 enum sp_table_types
 {
+	SP_TABLETYPE_NONE = -1,
 	SP_TABLETYPE_TABLE = 0,
-	SP_TABLETYPE_VIEW = 1
+	SP_TABLETYPE_VIEW = 1,
+	SP_TABLETYPE_PROC = 2,
+	SP_TABLETYPE_FUNC = 3
 };
 
 @class CMMCResult, CMMCPConnection;

@@ -599,17 +599,16 @@ fetches the result as an array with a dictionary for each row in it
 	return NO;
 }
 
-
+/**
+ * tries to write row to mysql-db
+ * returns YES if row written to db, otherwies NO
+ * returns YES if no row is beeing edited and nothing has to be written to db
+ */
 - (BOOL)addRowToDB;
-/*
-tries to write row to mysql-db
-returns YES if row written to db, otherwies NO
-returns YES if no row is beeing edited and nothing has to be written to db
-*/
 {
+	int code;
 	NSDictionary *theRow;
 	NSMutableString *queryString;
-	int code;
 
 	if ( !isEditingRow || currentlyEditingRow == -1 )
 		return YES;
@@ -618,26 +617,50 @@ returns YES if no row is beeing edited and nothing has to be written to db
 
 	theRow = [tableFields objectAtIndex:currentlyEditingRow];
 
-	if ( isEditingNewRow ) {
-		//ADD syntax
-		if ( [[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"] ) {
+	if (isEditingNewRow) {
+		// ADD syntax
+		if ([[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"]) {
+			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
-						[selectedTable backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString], [theRow objectForKey:@"Type"]];
-		} else {
+															[selectedTable backtickQuotedString], 
+															[[theRow objectForKey:@"Field"] backtickQuotedString], 
+															[theRow objectForKey:@"Type"]];
+		} 
+		else {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@(%@)",
-						[selectedTable backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString], [theRow objectForKey:@"Type"],
-						[theRow objectForKey:@"Length"]];
+															[selectedTable backtickQuotedString], 
+															[[theRow objectForKey:@"Field"] backtickQuotedString], 
+															[theRow objectForKey:@"Type"],
+															[theRow objectForKey:@"Length"]];
 		}
-	} else {
-		//CHANGE syntax
+	} 
+	else {
+		// CHANGE syntax
 		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
+			
+			// If the old row and new row dictionaries are equel then the user didn't actually change anything so don't continue 
+			if ([oldRow isEqualToDictionary:theRow]) {
+				return YES;
+			}
+			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
-					[selectedTable backtickQuotedString], [[oldRow objectForKey:@"Field"] backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString],
-					[theRow objectForKey:@"Type"]];
-		} else {
+															[selectedTable backtickQuotedString], 
+															[[oldRow objectForKey:@"Field"] backtickQuotedString], 
+															[[theRow objectForKey:@"Field"] backtickQuotedString],
+															[theRow objectForKey:@"Type"]];
+		} 
+		else {
+			// If the old row and new row dictionaries are equel then the user didn't actually change anything so don't continue 
+			if ([oldRow isEqualToDictionary:theRow]) {
+				return YES;
+			}
+			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@(%@)",
-					[selectedTable backtickQuotedString], [[oldRow objectForKey:@"Field"] backtickQuotedString], [[theRow objectForKey:@"Field"] backtickQuotedString],
-					[theRow objectForKey:@"Type"], [theRow objectForKey:@"Length"]];
+															[selectedTable backtickQuotedString], 
+															[[oldRow objectForKey:@"Field"] backtickQuotedString], 
+															[[theRow objectForKey:@"Field"] backtickQuotedString],
+															[theRow objectForKey:@"Type"], 
+															[theRow objectForKey:@"Length"]];
 		}
 	}
 	
@@ -690,15 +713,12 @@ returns YES if no row is beeing edited and nothing has to be written to db
 			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
 				[queryString appendString:@" PRIMARY KEY"];
 			} else {
-				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)",
-						[chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
+				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
 	}
-	
+		
 	[mySQLConnection queryString:queryString];
-
-	//NSLog(queryString);
 
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		isEditingRow = NO;
@@ -723,6 +743,7 @@ returns YES if no row is beeing edited and nothing has to be written to db
 					nil, @"addrow", [NSString stringWithFormat:NSLocalizedString(@"Couldn't change field %@.\nMySQL said: %@", @"message of panel when field cannot be changed"),
 						[theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		}
+		
 		return NO;
 	}
 }

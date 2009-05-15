@@ -333,6 +333,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableSourceInstance setConnection:mySQLConnection];
 		[tableContentInstance setConnection:mySQLConnection];
+		[tableRelationsInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
 		[customQueryInstance setMySQLversion:mySQLVersion];
 		[tableDumpInstance setConnection:mySQLConnection];
@@ -360,8 +361,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 						  [NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]);
 	} else if (code == 4) {
 		//no host is given
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"));
+		NSBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message"));
 	}
 	
 }
@@ -390,13 +391,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if (![self selectedFavorite])
 		return;
 	
-	[nameField setStringValue:[self valueForKeyPath:@"selectedFavorite.name"]];
-	[hostField setStringValue:[self valueForKeyPath:@"selectedFavorite.host"]];
-	[socketField setStringValue:[self valueForKeyPath:@"selectedFavorite.socket"]];
-	[userField setStringValue:[self valueForKeyPath:@"selectedFavorite.user"]];
-	[portField setStringValue:[self valueForKeyPath:@"selectedFavorite.port"]];
-	[databaseField setStringValue:[self valueForKeyPath:@"selectedFavorite.database"]];
-	[passwordField setStringValue:[self selectedFavoritePassword]];
+	[nameField		setStringValue:([self valueForKeyPath:@"selectedFavorite.name"]		? [self valueForKeyPath:@"selectedFavorite.name"]		: @"")];
+	[hostField		setStringValue:([self valueForKeyPath:@"selectedFavorite.host"]		? [self valueForKeyPath:@"selectedFavorite.host"]		: @"")];
+	[userField		setStringValue:([self valueForKeyPath:@"selectedFavorite.user"]		? [self valueForKeyPath:@"selectedFavorite.user"]		: @"")];
+	[passwordField	setStringValue:([self selectedFavoritePassword]						? [self selectedFavoritePassword]						: @"")];
+	[databaseField	setStringValue:([self valueForKeyPath:@"selectedFavorite.database"]	? [self valueForKeyPath:@"selectedFavorite.database"]	: @"")];
+	[socketField	setStringValue:([self valueForKeyPath:@"selectedFavorite.socket"]	? [self valueForKeyPath:@"selectedFavorite.socket"]		: @"")];
+	[portField		setStringValue:([self valueForKeyPath:@"selectedFavorite.port"]		? [self valueForKeyPath:@"selectedFavorite.port"]		: @"")];
 	
 	[prefs setInteger:[favoritesController selectionIndex] forKey:@"LastFavoriteIndex"];
 }
@@ -468,7 +469,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	// test if host and socket are not nil
 	if ([host isEqualToString:@""] && [socket isEqualToString:@""]) {
-		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"Please enter at least a host or socket.", @"message of panel when host/socket are missing"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+		
 		return;
 	}
 	
@@ -917,7 +919,32 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
-	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+	NSString *query = nil;
+	NSString *createWindowTitle;
+	int colOffs = 1;
+	
+	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create Table Syntax";
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create View Syntax";
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create Procedure Syntax";
+		colOffs = 2;
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
+		createWindowTitle = @"Create Function Syntax";
+		colOffs = 2;
+	}
+
+	if( query == nil )
+		return;
+	
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
@@ -928,7 +955,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		return;
 	}
 	
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
@@ -938,6 +965,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	else
 		[syntaxViewContent setString:tableSyntax];
 
+	[createTableSyntaxWindow setTitle:createWindowTitle];
 	[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
@@ -946,8 +974,28 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
-	// Create the query and get results
-	NSString *query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+	// Create the query and get results	
+	NSString *query = nil;
+	int colOffs = 1;
+	
+	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
+		colOffs = 2;
+	}
+	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
+		colOffs = 2;
+	}
+	
+	if( query == nil )
+		return;	
+	
 	CMMCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
@@ -958,7 +1006,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		return;
 	}
 	
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:1];
+	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
@@ -972,26 +1020,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[pb setString:tableSyntax forType:NSStringPboardType];
 
 	// Table syntax copied Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Table Syntax Copied"
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
-                                              notificationName:@"Table Syntax Copied"];
-}
-
-- (IBAction)copyColumnNames:(id)sender
-{
-	//NSArray *columns;
-	NSString *columnNames;	
-	//columns = ;
-	if ([self columnNames]) {
-		columnNames = [NSString stringWithFormat:@"`%@`", [[self columnNames] componentsJoinedByString:@"`, `"]];
-	}
-	
-	if([columnNames length]){
-		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-		// Copy the string to the pasteboard
-		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
-		[pasteBoard setString:columnNames forType:NSStringPboardType];
-	}
+                                              notificationName:@"Syntax Copied"];
 }
 
 - (NSArray *)columnNames
@@ -1507,7 +1538,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:) ||
-		[menuItem action] == @selector(copyColumnNames:) ||
 		[menuItem action] == @selector(checkTable:) || 
 		[menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 
@@ -1593,6 +1623,27 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStatusToolbarItemIdentifier"];
 }
+
+- (IBAction)viewRelations:(id)sender
+{
+	// Cancel the selection if currently editing structure/a field and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& ![tableSourceInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
+		return;
+	}
+	
+	// Cancel the selection if currently editing a content row and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& ![tableContentInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
+		return;
+	}
+	
+	[tableTabView selectTabViewItemAtIndex:4];
+	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStatusToolbarItemIdentifier"];
+}
+
 
 /**
  * Adds the current database connection details to the user's favorites if it doesn't already exist.

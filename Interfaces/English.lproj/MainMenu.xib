@@ -1,27 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
+<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.02">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9G55</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.43</string>
+		<string key="IBDocument.SystemVersion">9J61</string>
+		<string key="IBDocument.InterfaceBuilderVersion">672</string>
+		<string key="IBDocument.AppKitVersion">949.46</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="924"/>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-		</object>
-		<object class="NSMutableDictionary" key="IBDocument.Metadata">
-			<bool key="EncodedWithXMLCoder">YES</bool>
-			<object class="NSArray" key="dict.sortedKeys">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-			</object>
-			<object class="NSMutableArray" key="dict.values">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="549353383">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -575,6 +566,15 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
+								<object class="NSMenuItem" id="609933882">
+									<reference key="NSMenu" ref="71086556"/>
+									<string key="NSTitle">Copy with Column Names</string>
+									<string key="NSKeyEquiv">c</string>
+									<int key="NSKeyEquivModMask">1572864</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
 								<object class="NSMenuItem" id="892596559">
 									<reference key="NSMenu" ref="71086556"/>
 									<string key="NSTitle">Paste</string>
@@ -943,6 +943,15 @@
 									<reference key="NSMenu" ref="466354362"/>
 									<string key="NSTitle">Table Status</string>
 									<string key="NSKeyEquiv">4</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="998300902">
+									<reference key="NSMenu" ref="466354362"/>
+									<string key="NSTitle">Table Relations</string>
+									<string key="NSKeyEquiv">5</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
@@ -1395,25 +1404,6 @@
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
 								<object class="NSMenuItem" id="336993056">
-									<reference key="NSMenu" ref="1056168652"/>
-									<bool key="NSIsDisabled">YES</bool>
-									<bool key="NSIsSeparator">YES</bool>
-									<string key="NSTitle"/>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-								<object class="NSMenuItem" id="17386715">
-									<reference key="NSMenu" ref="1056168652"/>
-									<string key="NSTitle">Copy Column Names</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-								<object class="NSMenuItem" id="477591318">
 									<reference key="NSMenu" ref="1056168652"/>
 									<bool key="NSIsDisabled">YES</bool>
 									<bool key="NSIsSeparator">YES</bool>
@@ -2376,11 +2366,19 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">copyColumnNames:</string>
+						<string key="label">copy:</string>
 						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="17386715"/>
+						<reference key="destination" ref="609933882"/>
 					</object>
-					<int key="connectionID">925</int>
+					<int key="connectionID">927</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">viewRelations:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="998300902"/>
+					</object>
+					<int key="connectionID">929</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2814,6 +2812,7 @@
 							<reference ref="761247690"/>
 							<reference ref="173454563"/>
 							<reference ref="358795349"/>
+							<reference ref="998300902"/>
 						</object>
 						<reference key="parent" ref="401969940"/>
 					</object>
@@ -3190,6 +3189,7 @@
 							<reference ref="287358431"/>
 							<reference ref="465877627"/>
 							<reference ref="1946"/>
+							<reference ref="609933882"/>
 						</object>
 						<reference key="parent" ref="119995921"/>
 					</object>
@@ -3467,8 +3467,6 @@
 							<reference ref="587676764"/>
 							<reference ref="785987636"/>
 							<reference ref="449401330"/>
-							<reference ref="477591318"/>
-							<reference ref="17386715"/>
 						</object>
 						<reference key="parent" ref="228261277"/>
 					</object>
@@ -3548,14 +3546,14 @@
 						<reference key="parent" ref="302471527"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">923</int>
-						<reference key="object" ref="477591318"/>
-						<reference key="parent" ref="1056168652"/>
+						<int key="objectID">926</int>
+						<reference key="object" ref="609933882"/>
+						<reference key="parent" ref="71086556"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">924</int>
-						<reference key="object" ref="17386715"/>
-						<reference key="parent" ref="1056168652"/>
+						<int key="objectID">928</int>
+						<reference key="object" ref="998300902"/>
+						<reference key="parent" ref="466354362"/>
 					</object>
 				</object>
 			</object>
@@ -3888,8 +3886,9 @@
 					<string>914.IBPluginDependency</string>
 					<string>92.IBPluginDependency</string>
 					<string>92.ImportedFromIB2</string>
-					<string>923.IBPluginDependency</string>
-					<string>924.IBPluginDependency</string>
+					<string>926.IBPluginDependency</string>
+					<string>926.ImportedFromIB2</string>
+					<string>928.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3950,7 +3949,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{476, 517}, {146, 213}}</string>
+					<string>{{476, 497}, {268, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -3983,7 +3982,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{328, 730}, {511, 20}}</string>
+					<string>{{75, 827}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4036,7 +4035,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{845, 572}, {235, 183}}</string>
+					<string>{{267, 624}, {235, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4160,7 +4159,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{446, 257}, {209, 193}}</string>
+					<string>{{434, 537}, {209, 193}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -4262,6 +4261,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
@@ -4285,7 +4285,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">925</int>
+			<int key="maxID">929</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4552,7 +4552,6 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>connect:</string>
 							<string>connectSheetAddToFavorites:</string>
 							<string>connectToDB:</string>
-							<string>copyColumnNames:</string>
 							<string>copyCreateTableSyntax:</string>
 							<string>editFavorites:</string>
 							<string>export:</string>
@@ -4570,6 +4569,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>showVariables:</string>
 							<string>viewContent:</string>
 							<string>viewQuery:</string>
+							<string>viewRelations:</string>
 							<string>viewStatus:</string>
 							<string>viewStructure:</string>
 						</object>
@@ -4645,6 +4645,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
 							<string>tableDumpInstance</string>
+							<string>tableRelationsInstance</string>
 							<string>tableSourceInstance</string>
 							<string>tableStatusInstance</string>
 							<string>tableTabView</string>
@@ -4672,6 +4673,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSArrayController</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

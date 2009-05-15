@@ -82,6 +82,20 @@
 		return;
 	}
 
+	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
+		[info addObject:@"PROCEDURE INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+
+	if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+		[info addObject:@"FUNCTION INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+	
 	[info addObject:@"TABLE INFORMATION"];
 		
 	if ([tableListInstance tableName]) {
