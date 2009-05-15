@@ -266,6 +266,8 @@
 	NSString *encodingString;
 	unsigned i, stringStart;
 
+	[columns removeAllObjects];
+	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
 	
 	// Catch unselected tables and return nil
@@ -356,12 +358,12 @@
 			if( [[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"] ) {
 				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
 				/*
-				NSLog( @"constraint %@ on %@ ref %@.%@", 
-					  [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
-					  [[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk], 
-					  [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk], 
-					  [[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk] );
-				*/
+				 NSLog( @"constraint %@ on %@ ref %@.%@", 
+				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
+				 [[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk], 
+				 [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk], 
+				 [[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk] );
+				 */
 				[constraintDetails setObject:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk]
 									  forKey:@"name"];
 				[constraintDetails setObject:[[parts objectAtIndex:4] stringByRemovingCharactersInSet:junk]
@@ -446,9 +448,9 @@
 			// key
 			else if( [[parts objectAtIndex:0] hasPrefix:@"KEY"] ) {
 				/*
-				NSLog( @"key %@.%@", 
-					  [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
-					  [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+				 NSLog( @"key %@.%@", 
+				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
+				 [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
 				 */
 			}
 			// who knows
