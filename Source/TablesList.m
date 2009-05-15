@@ -309,6 +309,7 @@
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
 	NSString *tblTypes;
 	unsigned currentIndex = [indexes lastIndex];
 	
@@ -326,19 +327,37 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'. This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
 	else {
-		int tblTypesChecksum = 0;
+
+		BOOL areTableTypeEqual = YES;
+		int lastType = [[tableTypes objectAtIndex:currentIndex] intValue];
 		while (currentIndex != NSNotFound)
 		{
-			tblTypesChecksum += [[tableTypes objectAtIndex:currentIndex] intValue];
+			if([[tableTypes objectAtIndex:currentIndex] intValue]!=lastType)
+			{
+				areTableTypeEqual = NO;
+				break;
+			}
 			currentIndex = [indexes indexLessThanIndex:currentIndex];
 		}
-
-		if(tblTypesChecksum == 0)
-			tblTypes = NSLocalizedString(@"tables", @"tables");
-		else if(tblTypesChecksum == [indexes count])
-			tblTypes = NSLocalizedString(@"views", @"views");
-		else
-			tblTypes = NSLocalizedString(@"tables/views", @"tables/views");
+		if(areTableTypeEqual)
+		{
+			switch(lastType) {
+				case SP_TABLETYPE_TABLE:
+				tblTypes = NSLocalizedString(@"tables", @"tables");
+				break;
+				case SP_TABLETYPE_VIEW:
+				tblTypes = NSLocalizedString(@"views", @"views");
+				break;
+				case SP_TABLETYPE_PROC:
+				tblTypes = NSLocalizedString(@"procedures", @"procedures");
+				break;
+				case SP_TABLETYPE_FUNC:
+				tblTypes = NSLocalizedString(@"functions", @"functions");
+				break;
+			}
+			
+		} else
+			tblTypes = NSLocalizedString(@"items", @"items");
 
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete selected %@?", @"delete tables/views message"), tblTypes]];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@. This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
@@ -948,18 +967,36 @@
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 		unsigned currentIndex = [indexes lastIndex];
-		int tblTypesChecksum = 0;
+		BOOL areTableTypeEqual = YES;
+		int lastType = [[tableTypes objectAtIndex:currentIndex] intValue];
 		while (currentIndex != NSNotFound)
 		{
-			tblTypesChecksum += [[tableTypes objectAtIndex:currentIndex] intValue];
+			if([[tableTypes objectAtIndex:currentIndex] intValue]!=lastType)
+			{
+				areTableTypeEqual = NO;
+				break;
+			}
 			currentIndex = [indexes indexLessThanIndex:currentIndex];
 		}
-		if(tblTypesChecksum == 0)
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables", @"remove tables menu title")];
-		else if(tblTypesChecksum == [indexes count])
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove views", @"remove views menu title")];
-		else
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables/views", @"remove tables/views menu title")];
+		if(areTableTypeEqual)
+		{
+			switch(lastType) {
+				case SP_TABLETYPE_TABLE:
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables", @"remove tables menu title")];
+				break;
+				case SP_TABLETYPE_VIEW:
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove views", @"remove views menu title")];
+				break;
+				case SP_TABLETYPE_PROC:
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedures", @"remove procedures menu title")];
+				break;
+				case SP_TABLETYPE_FUNC:
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove functions", @"remove functions menu title")];
+				break;
+			}
+			
+		} else
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove items", @"remove items menu title")];
 
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
