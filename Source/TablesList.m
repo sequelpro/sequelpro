@@ -505,11 +505,13 @@
 /**
  * Method for alert sheets. Invoked when user wants to delete a table.
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
+	
 	if ( [contextInfo isEqualToString:@"addRow"] ) {
 		alertSheetOpened = NO;
 	} else if ( [contextInfo isEqualToString:@"removeRow"] ) {
+		[[sheet window] orderOut:nil];
 		if ( returnCode == NSAlertDefaultReturn ) {
 			[self removeTable];
 		}
@@ -572,7 +574,8 @@
 		currentIndex = [indexes indexLessThanIndex:currentIndex];
 	}
 	
-	[tablesListView deselectAll:self];
+	//[tablesListView deselectAll:self];
+	
 	//[tableSourceInstance loadTable:nil];
 	//[tableContentInstance loadTable:nil];
 	//[tableStatusInstance loadTable:nil];
@@ -583,15 +586,17 @@
 								[tableDocumentInstance name], [tableDocumentInstance database]]];
 	
 	if ( error ) {
-		/* the first sheet is not closed and we try and run this
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
-		*/
+		 
+		/*
 		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"),
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText],
 						NSLocalizedString(@"OK", @"OK button"), nil, nil, nil );
+		 */
 	}
-	 
+	
+	[tablesListView deselectAll:self];
 }
 
 /**

@@ -112,7 +112,7 @@
 			query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", onUpdate]];
 	}
 	
-	NSLog( query );
+	//NSLog( query );
 
 	[mySQLConnection queryString:query];
 	
@@ -187,9 +187,9 @@
 
 	// 0 indicates success
 	if( code ) {
-		NSRunAlertPanel(@"Error Adding Relation",
-						[NSString stringWithFormat:@"There was a problem adding the relation.\n%@",[mySQLConnection getLastErrorMessage]],
-						@"Dang!", nil, nil );		
+		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), //@"Error Adding Relation",
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't add relation.\nMySQL said: %@",@"message of panel when relation cannot be created"),[mySQLConnection getLastErrorMessage]],
+						NSLocalizedString(@"OK", @"OK button"), nil, nil );		
 	} else {
 		[self refresh:nil];		
 	}
@@ -202,9 +202,10 @@
 - (IBAction)removeRow:(id)sender
 {
 	if ( [relationsView numberOfSelectedRows] ) {
-		int resp = NSRunAlertPanel(@"Remove Relations",
-								   @"Are you sure you want to remove the selected relations?",
-								   @"OK", @"Cancel", nil );
+		int resp = NSRunAlertPanel(NSLocalizedString(@"Delete relation",@"delete relation message"),
+								   NSLocalizedString(@"Are you sure you want to delete the selected relations?\nThis action cannot be undone!",@"delete selected relation informative message"),
+								   NSLocalizedString(@"Delete", @"delete button"), 
+								   NSLocalizedString(@"Cancel", @"cancel button"), nil );
 		if( resp == NSAlertDefaultReturn ) {
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsView selectedRowIndexes];
@@ -219,6 +220,11 @@
 				
 				if ( ! [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					NSLog(@"error: %@", [mySQLConnection getLastErrorMessage]);
+					NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), 
+									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove relation.\nMySQL said: %@",@"message of panel when relation cannot be removed"),[mySQLConnection getLastErrorMessage]],
+									NSLocalizedString(@"OK", @"OK button"), nil, nil );		
+					// abort loop
+					break;
 				} 
 				row = [selectedSet indexLessThanIndex:row];
 			}

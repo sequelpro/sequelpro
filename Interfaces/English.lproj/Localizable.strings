@@ -67,6 +67,9 @@
 /* delete rows informative message */
 "Are you sure you want to delete the selected %d rows from this table. This action cannot be undone." = "Are you sure you want to delete the selected %d rows from this table. This action cannot be undone.";
 
+/* delete selected relation informative message */
+"Are you sure you want to delete the selected relations?\nThis action cannot be undone!" = "Are you sure you want to delete the selected relations?\nThis action cannot be undone!";
+
 /* delete selected row informative message */
 "Are you sure you want to delete the selected row from this table. This action cannot be undone." = "Are you sure you want to delete the selected row from this table. This action cannot be undone.";
 
@@ -130,6 +133,9 @@
 /* message of panel when index cannot be created */
 "Couldn't add index.\nMySQL said: %@" = "Couldn't add index.\nMySQL said: %@";
 
+/* message of panel when relation cannot be created */
+"Couldn't add relation.\nMySQL said: %@" = "Couldn't add relation.\nMySQL said: %@";
+
 /* message of panel when table cannot be created with the given name */
 "Couldn't add table %@.\nMySQL said: %@" = "Couldn't add table %1$@.\nMySQL said: %2$@";
 
@@ -168,6 +174,9 @@
 
 /* message of panel when index cannot be removed */
 "Couldn't remove index.\nMySQL said: %@" = "Couldn't remove index.\nMySQL said: %@";
+
+/* message of panel when relation cannot be removed */
+"Couldn't remove relation.\nMySQL said: %@" = "Couldn't remove relation.\nMySQL said: %@";
 
 /* message of panel when field cannot be removed */
 "Couldn't remove rows.\nMySQL said: %@" = "Couldn't remove rows.\nMySQL said: %@";
@@ -210,6 +219,9 @@
 
 /* delete index message */
 "Delete Index?" = "Delete Index?";
+
+/* delete relation message */
+"Delete relation?" = "Delete relation?";
 
 /* delete rows message */
 "Delete rows?" = "Delete rows?";
