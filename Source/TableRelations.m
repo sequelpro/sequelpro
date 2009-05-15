@@ -80,6 +80,7 @@
  */
 - (IBAction)closeRelationSheet:(id)sender
 {
+	// 0 = success,
 	[NSApp stopModalWithCode:0];
 }
 
@@ -136,6 +137,8 @@
 	NSDictionary *info = [tableDataInstance informationForTable:table];
 	NSArray *cols = [info objectForKey:@"columns"];
 	NSMutableArray *colNames = [[NSMutableArray alloc] init];
+	// TODO depending on the selected column type, it would be smart to only
+	// show columns that are valid to linkage. this.int -> ints only
 	for( int i = 0; i < [cols count]; i++ ) {
 		[colNames addObject:[[cols objectAtIndex:i] objectForKey:@"name"]];
 	}
@@ -149,12 +152,15 @@
  */
 - (IBAction)addRow:(id)sender
 {
+	// TODO check that this is an INNO table 
+	
 	// set up the controls
 	[tableBox setTitle:[NSString stringWithFormat:@"Table: %@",[tablesListInstance tableName] ]];
 	[columnSelect removeAllItems];
 	[columnSelect addItemsWithTitles:[tableDataInstance columnNames]];
 	[refTableSelect removeAllItems];
 	// grab only real tables
+	// TODO filter this so it only shows INNO tables
 	NSArray *tables = [tablesListInstance tables];
 	NSArray *types = [tablesListInstance tableTypes];
 	NSMutableArray *validTables = [[NSMutableArray alloc] init];
