@@ -9,6 +9,7 @@
 #import "SPUserManager.h"
 #import "CMMCPConnection.h"
 #import "SPUserItem.h"
+#import "SPUserMO.h"
 #import "CMMCPResult.h"
 #import "ImageAndTextCell.h"
 
@@ -314,7 +315,7 @@
 {
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
 	{
-		if ([(SPUserItem *)[item  representedObject] host] != nil)
+		if ([(NSManagedObject *)[item  representedObject] parent] != nil)
 		{
 			NSImage *image1 = [[NSImage imageNamed:NSImageNameNetwork] retain];
 			[image1 setScalesWhenResized:YES];
@@ -364,7 +365,8 @@
 
 - (IBAction)doApply:(id)sender
 {
-	
+	[managedObjectContext save:nil];
+	[window close];
 }
 
 // Schema Privileges Actions
@@ -388,18 +390,13 @@
 		{
 			[self _selectParentFromSelection];
 		}
-		
-		NSIndexPath *indexPath;
-		indexPath = [NSIndexPath indexPathWithIndex:[users count]];
-		SPUserItem *newItem = [[SPUserItem alloc] init];
-		[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
-		if (addedUsers == nil)
-		{
-			addedUsers = [[NSMutableArray alloc] init];
-		}
-		[addedUsers addObject:newItem];
-		[newItem release];
-	}
+	}	
+	NSIndexPath *indexPath;
+	indexPath = [NSIndexPath indexPathWithIndex:[users count]];
+	NSManagedObject *newItem = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
+															 inManagedObjectContext:[self managedObjectContext]];
+	[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
+	
 }
 
 - (IBAction)removeUser:(id)sender

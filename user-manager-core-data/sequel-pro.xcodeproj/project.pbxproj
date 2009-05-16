@@ -65,11 +65,12 @@
 		296DC8BC0F909194002A3258 /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */; };
 		296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		296DC8D20F90950C002A3258 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */; };
-		4D52625C0FB92C49001F9C6A /* SPUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D5262580FB92C49001F9C6A /* SPUser.m */; };
 		4D52625D0FB92C49001F9C6A /* SPUserItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D52625A0FB92C49001F9C6A /* SPUserItem.m */; };
 		4D52625E0FB92C49001F9C6A /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D52625B0FB92C49001F9C6A /* SPUserManager.xcdatamodel */; };
 		4D5262710FB92D28001F9C6A /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D5262700FB92D28001F9C6A /* SPUserManager.m */; };
 		4D5262920FB935BD001F9C6A /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D5262900FB935BD001F9C6A /* UserManagerView.xib */; };
+		4D55F79B0FBE6C3C00F9B31C /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D55F7990FBE6C3C00F9B31C /* SPUserMO.m */; };
+		4DBD377E0FBC972600CF552D /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DBD377D0FBC972600CF552D /* CoreData.framework */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
@@ -264,14 +265,15 @@
 		296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-print-template.html"; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		4D5262570FB92C49001F9C6A /* SPUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUser.h; sourceTree = "<group>"; };
-		4D5262580FB92C49001F9C6A /* SPUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUser.m; sourceTree = "<group>"; };
 		4D5262590FB92C49001F9C6A /* SPUserItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserItem.h; sourceTree = "<group>"; };
 		4D52625A0FB92C49001F9C6A /* SPUserItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserItem.m; sourceTree = "<group>"; };
 		4D52625B0FB92C49001F9C6A /* SPUserManager.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = SPUserManager.xcdatamodel; sourceTree = "<group>"; };
 		4D52626F0FB92D28001F9C6A /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
 		4D5262700FB92D28001F9C6A /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
 		4D5262910FB935BD001F9C6A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
+		4D55F7990FBE6C3C00F9B31C /* SPUserMO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserMO.m; sourceTree = "<group>"; };
+		4D55F79A0FBE6C3C00F9B31C /* SPUserMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserMO.h; sourceTree = "<group>"; };
+		4DBD377D0FBC972600CF552D /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
@@ -351,6 +353,7 @@
 				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
+				4DBD377E0FBC972600CF552D /* CoreData.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +363,7 @@
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4DBD377D0FBC972600CF552D /* CoreData.framework */,
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
 				4DECC3320EC2A170008D359E /* Sparkle.framework */,
@@ -494,8 +498,8 @@
 		17E6415D0EF01EF9001BC333 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				4D5262570FB92C49001F9C6A /* SPUser.h */,
-				4D5262580FB92C49001F9C6A /* SPUser.m */,
+				4D55F7990FBE6C3C00F9B31C /* SPUserMO.m */,
+				4D55F79A0FBE6C3C00F9B31C /* SPUserMO.h */,
 				4D5262590FB92C49001F9C6A /* SPUserItem.h */,
 				4D52625A0FB92C49001F9C6A /* SPUserItem.m */,
 				4D52625B0FB92C49001F9C6A /* SPUserManager.xcdatamodel */,
@@ -911,10 +915,10 @@
 				296DC8BB0F909194002A3258 /* NSDictionary_DeepMutableCopy.m in Sources */,
 				296DC8BC0F909194002A3258 /* MGTemplateStandardFilters.m in Sources */,
 				5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */,
-				4D52625C0FB92C49001F9C6A /* SPUser.m in Sources */,
 				4D52625D0FB92C49001F9C6A /* SPUserItem.m in Sources */,
 				4D52625E0FB92C49001F9C6A /* SPUserManager.xcdatamodel in Sources */,
 				4D5262710FB92D28001F9C6A /* SPUserManager.m in Sources */,
+				4D55F79B0FBE6C3C00F9B31C /* SPUserMO.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

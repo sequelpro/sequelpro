@@ -742,31 +742,33 @@
 			statusLoaded = NO;
 		}
 
+		NSString *tableMenuTitle = @"Table";
+		
 		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 		// according to the table types
 		if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW)
 		{
 			// Change mainMenu > Table > ... according to table type
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:YES]; // repair
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:YES]; // analyse
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:YES]; // optimize
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:11] setHidden:YES]; // checksum
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:6] setHidden:YES]; // repair
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:8] setHidden:YES]; // analyse
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:9] setHidden:YES]; // optimize
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:11] setHidden:YES]; // checksum
 
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
 		} else {
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:6] setHidden:NO];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:8] setHidden:NO];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:9] setHidden:NO];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
-			[[[[[NSApp mainMenu] itemAtIndex:5] submenu] itemAtIndex:11] setHidden:NO];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:5] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:6] setHidden:NO];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:8] setHidden:NO];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:9] setHidden:NO];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:10] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+			[[[[[NSApp mainMenu] itemWithTitle:tableMenuTitle] submenu] itemAtIndex:11] setHidden:NO];
 
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
