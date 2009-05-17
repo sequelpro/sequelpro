@@ -239,15 +239,16 @@
  */
 - (IBAction)refresh:(id)sender
 {
-
 	[relData removeAllObjects];
 	
-	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+	if([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
 		// update the top label
 		[labelText setStringValue:[NSString stringWithFormat:@"Relations for table: %@",[tablesListInstance tableName]]];			
 		
 		[tableDataInstance updateInformationForCurrentTable];
+				
 		NSArray *constraints = [tableDataInstance getConstraints];
+		
 		for( int i = 0; i < [constraints count]; i++ ) {
 			[relData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 								[tablesListInstance tableName], @"table",
@@ -260,13 +261,9 @@
 								nil]];
 			
 		}
-	} else {
-		// update the top label
-		[labelText setStringValue:@""];		
-	}
+	} 
 	
 	[relationsView reloadData];
-
 }
 
 /*
@@ -275,15 +272,25 @@
  */
 - (void)tableChanged:(NSNotification *)notification
 {
-	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+	// To begin enable all interface elements
+	[addButton setEnabled:YES];		
+	[refreshButton setEnabled:YES];
+	
+	// Get the current table's storage engine
+	NSString *engine = [tableDataInstance statusValueForKey:@"Engine"];
+	
+	if (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
 		[addButton setEnabled:YES];
+		[refreshButton setEnabled:YES];
+		
+		[self refresh:self];
 	} else {
 		[addButton setEnabled:NO];		
+		[refreshButton setEnabled:NO];	
+		
+		[labelText setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
 	}	
-	
-	[self refresh:nil];
 }
-
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
@@ -340,6 +347,5 @@
 {
 	return FALSE;
 }
-
 
 @end

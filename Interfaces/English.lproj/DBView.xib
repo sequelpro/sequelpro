@@ -387,10 +387,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<object class="NSCustomResource" key="NSImage" id="704280970">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_action</string>
-													</object>
+													<reference key="NSImage" ref="1071832453"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="753352469"/>
 												</object>
@@ -2943,7 +2940,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="704280970"/>
+																						<reference key="NSImage" ref="1071832453"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -14731,6 +14728,14 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<int key="connectionID">5668</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">refreshButton</string>
+						<reference key="source" ref="885866030"/>
+						<reference key="destination" ref="962247647"/>
+					</object>
+					<int key="connectionID">5669</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -23501,8 +23506,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{61, 288}, {944, 550}}</string>
-					<string>{{61, 288}, {944, 550}}</string>
+					<string>{{140, 343}, {944, 550}}</string>
+					<string>{{140, 343}, {944, 550}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{62, 352}, {845, 504}}</string>
@@ -24231,7 +24236,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5668</int>
+			<int key="maxID">5669</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -25182,6 +25187,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>onUpdateSelect</string>
 							<string>refColumnSelect</string>
 							<string>refTableSelect</string>
+							<string>refreshButton</string>
 							<string>relationSheet</string>
 							<string>relationsView</string>
 							<string>removeButton</string>
@@ -25194,6 +25200,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
