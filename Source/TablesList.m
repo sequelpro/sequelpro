@@ -287,9 +287,9 @@
 }
 
 /**
- * Closes the add table sheet and stops the modal session
+ * Closes the current sheet and stops the modal session
  */
-- (IBAction)closeTableSheet:(id)sender
+- (IBAction)closeSheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
 }
@@ -500,6 +500,52 @@
 	}
 }
 
+/**
+ * Renames the currently selected table.
+ */
+- (IBAction)renameTable:(id)sender
+{
+	if ((![tableSourceInstance saveRowOnDeselect]) || (![tableContentInstance saveRowOnDeselect]) || (![tableDocumentInstance database])) {
+		return;
+	}
+	
+	[tableWindow endEditingFor:nil];
+	
+	[tableRenameText setStringValue:[NSString stringWithFormat:@"Rename table %@ to:", [self tableName]]];
+	
+	[NSApp beginSheet:tableRenameSheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+	
+	NSInteger returnCode = [NSApp runModalForWindow:tableRenameSheet];
+	
+	[NSApp endSheet:tableRenameSheet];
+	[tableRenameSheet orderOut:nil];
+	
+	if (!returnCode) {
+		// Clear table name
+		[tableRenameField setStringValue:@""];
+		
+		return;
+	}
+	
+	[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[self tableName] backtickQuotedString], [[tableRenameField stringValue] backtickQuotedString]]];
+	
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSBeginAlertSheet(NSLocalizedString(@"Unable to rename table", @"rename table error message"), 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The table '%@' was unable to be renamed because an error occurred.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
+	}
+	else {
+		// If there was no error, rename the table in our list and reload the table view's data
+		[tables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
+		
+		[tablesListView reloadData];
+	}
+}
+
 #pragma mark Alert sheet methods
 
 /**
@@ -622,8 +668,14 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-	if ([notification object] == tableNameField) {
+	id object = [notification object];
+	
+	if (object == tableNameField) {
 		[addTableButton setEnabled:([[tableNameField stringValue] length] > 0)]; 
+	}
+	
+	if (object == tableRenameField) {
+		[renameTableButton setEnabled:([[tableRenameField stringValue] length] > 0)];
 	}
 }
 
@@ -1108,15 +1160,23 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	// popup button below table list
-	if ([menuItem action] == @selector(copyTable:))
-	{
-		if( [self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC )
+	if ([menuItem action] == @selector(copyTable:)) {
+		if ([self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC)
 			return NO;
-		return [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
+		
+		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
 	}
-	if ([menuItem action] == @selector(removeTable:))
-	{
+	
+	if ([menuItem action] == @selector(removeTable:) ) {
 		return [tablesListView numberOfSelectedRows] > 0;
+	}
+	
+	if ([menuItem action] == @selector(renameTable:)) {
+		if ([self tableType] == SP_TABLETYPE_VIEW) {
+			return NO;
+		}
+		
+		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length];
 	}
 	
 	return [super validateMenuItem:menuItem];
