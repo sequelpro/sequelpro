@@ -29,8 +29,25 @@
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
 
-@implementation CMMCPConnection
+@interface CMMCPConnection(hidden)
+- (void)getServerVersionString;
+@end
 
+@implementation CMMCPConnection(hidden)
+- (void)getServerVersionString
+{
+	if( mConnected ) {
+		CMMCPResult *theResult;
+		theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
+		if ([theResult numOfRows]) 
+			[theResult dataSeek:0];	
+		serverVersionString = [NSString stringWithString:[[theResult fetchRowAsDictionary] objectForKey:@"Value"]];	
+	}
+}
+@end
+
+
+@implementation CMMCPConnection
 
 /*
  * Override the normal init methods, extending them to also init additional details.
@@ -39,6 +56,7 @@ static void forcePingTimeout(int signalNumber);
 {
 	[self initSPExtensions];
 	self = [super init];
+	serverVersionString = nil;
 	return self;
 }
 - (id) initToHost:(NSString *) host withLogin:(NSString *) login password:(NSString *) pass usingPort:(int) port
@@ -123,7 +141,62 @@ static void forcePingTimeout(int signalNumber);
 	if (connectionSocket) [connectionSocket release];
 	connectionSocket = nil;
 	
+	if( serverVersionString != nil ) {
+		serverVersionString = nil;
+	}
+	
 	[self stopKeepAliveTimer];
+}
+
+/*
+ * return the server major version or -1 on fail
+ */
+- (int)serverMajorVersion
+{
+
+	if( mConnected ) {
+		if( serverVersionString == nil ) {
+			[self getServerVersionString];
+		}
+		if( serverVersionString != nil ) {
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
+		} 
+	} 
+	return -1;
+}
+
+/*
+ * return the server minor version or -1 on fail
+ */
+- (int)serverMinorVersion
+{
+	
+	if( mConnected ) {
+		if( serverVersionString == nil ) {
+			[self getServerVersionString];
+		}
+		if( serverVersionString != nil ) {
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] intValue];
+		}
+	}
+	return -1;
+}
+
+/*
+ * return the server release version or -1 on fail
+ */
+- (int)serverReleaseVersion
+{
+	if( mConnected ) {
+		if( serverVersionString == nil ) {
+			[self getServerVersionString];
+		}
+		if( serverVersionString != nil ) {
+			NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
+			return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] intValue];
+		}
+	}
+	return -1;
 }
 
 

@@ -50,6 +50,8 @@
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
+	NSString *serverVersionString;
+	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
 }
@@ -78,5 +80,12 @@
 - (void) keepAlive:(NSTimer *)theTimer;
 - (void) threadedKeepAlive;
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding;
+
+/* return server major version number or -1 on fail */
+- (int)serverMajorVersion;
+/* return server minor version number or -1 on fail */
+- (int)serverMinorVersion;
+/* return server release version number or -1 on fail */
+- (int)serverReleaseVersion;
 
 @end

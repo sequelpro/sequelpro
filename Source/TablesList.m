@@ -49,11 +49,13 @@
 	NSString *selectedTable = nil;
 	NSInteger selectedRowIndex;
 	
+	NSLog( @"%d %d %d", [mySQLConnection serverMajorVersion], [mySQLConnection serverMinorVersion], [mySQLConnection serverReleaseVersion] );
+
 	selectedRowIndex = [tablesListView selectedRow];	
 	if(selectedRowIndex > 0 && [tables count]){
 		selectedTable = [NSString stringWithString:[tables objectAtIndex:selectedRowIndex]];
 	}
-
+	
 	[tablesListView deselectAll:self];
 	[tables removeAllObjects];
 	[tableTypes removeAllObjects];
@@ -961,7 +963,8 @@
 			[[tableSubMenu itemAtIndex:8] setHidden:NO];
 			[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
 			[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
-
+			
+			[renameTableMenuItem setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
 		} 
@@ -979,6 +982,7 @@
 			[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
 			[[tableSubMenu itemAtIndex:9] setHidden:NO];
 
+			[renameTableMenuItem setHidden:NO];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
 		} 
@@ -994,6 +998,7 @@
 			[[tableSubMenu itemAtIndex:8] setHidden:YES];
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];
 			
+			[renameTableMenuItem setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedure", @"remove proc menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate procedure", @"duplicate proc menu title")];
 		}
@@ -1009,6 +1014,7 @@
 			[[tableSubMenu itemAtIndex:8] setHidden:YES];
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];	
 			
+			[renameTableMenuItem setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove function", @"remove func menu title")];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate function", @"duplicate func menu title")];
 		}

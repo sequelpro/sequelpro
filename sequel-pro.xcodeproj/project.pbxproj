@@ -68,6 +68,7 @@
 		380F4EF50FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */; };
 		380F4F250FC0C3D300B0BFD7 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */; };
 		380F4F270FC0C51C00B0BFD7 /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
+		380F4FE30FC109E400B0BFD7 /* SPScriptEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4FE20FC109E400B0BFD7 /* SPScriptEngine.m */; };
 		384582BE0FB95C9100DDACB6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 384582BC0FB95C9100DDACB6 /* Localizable.strings */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
@@ -283,6 +284,8 @@
 		380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = stringCategoryAdditionsTest.m; sourceTree = "<group>"; };
 		380F4F230FC0C3D300B0BFD7 /* mcpKitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mcpKitTest.h; sourceTree = "<group>"; };
 		380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mcpKitTest.m; sourceTree = "<group>"; };
+		380F4FE10FC109E400B0BFD7 /* SPScriptEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPScriptEngine.h; sourceTree = "<group>"; };
+		380F4FE20FC109E400B0BFD7 /* SPScriptEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPScriptEngine.m; sourceTree = "<group>"; };
 		384582BD0FB95C9100DDACB6 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = Interfaces/English.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
@@ -556,6 +559,8 @@
 				17E641710EF01F5C001BC333 /* GUI */,
 				17E641720EF01F6B001BC333 /* SSHTunnel */,
 				B57747D60F7A8990003B34F9 /* Category Additions */,
+				380F4FE10FC109E400B0BFD7 /* SPScriptEngine.h */,
+				380F4FE20FC109E400B0BFD7 /* SPScriptEngine.m */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -1003,6 +1008,7 @@
 				5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */,
 				BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */,
 				387BBBA80FBCB6CB00B31746 /* TableRelations.m in Sources */,
+				380F4FE30FC109E400B0BFD7 /* SPScriptEngine.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
