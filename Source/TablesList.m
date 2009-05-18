@@ -32,6 +32,7 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "SPStringAdditions.h"
+#import "RegexKitLite.h"
 
 @implementation TablesList
 
@@ -367,7 +368,7 @@
 }
 
 /**
- * Copies a table, if desired with content, or view
+ * Copies a table/view/proc/func, if desired with content
  */
 - (IBAction)copyTable:(id)sender
 {
@@ -377,18 +378,14 @@
 //	NSMutableString *rowValue = [NSMutableString string];
 //	NSMutableArray *fieldValues;
 	int code;
-	BOOL isView;
-	NSString *tblType;
+	NSString *tableType;
+	int tblType;
 //	int rowCount, i, j;
 //	BOOL errors = NO;
 
-	if ( [tablesListView numberOfSelectedRows] != 1 ||
-		[[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_PROC ||
-		[[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_FUNC ) {
-		
+	if ( [tablesListView numberOfSelectedRows] != 1 ) {
 		return;
 	}
-	
 	
 	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
 		return;
@@ -396,23 +393,35 @@
 	[tableWindow endEditingFor:nil];
 
 	// Detect table type: table or view
-	isView = [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW;
+	tblType = [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	switch(tblType){
+		case SP_TABLETYPE_TABLE:
+		tableType = NSLocalizedString(@"table",@"table");
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate table to", @"duplicate table message")];
+		[copyTableContentSwitch setEnabled:YES];
+		break;
+		case SP_TABLETYPE_VIEW:
+		tableType = NSLocalizedString(@"view",@"view");
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate view to", @"duplicate view message")];
+		[copyTableContentSwitch setEnabled:NO];
+		break;
+		case SP_TABLETYPE_PROC:
+		tableType = NSLocalizedString(@"procedure",@"procedure");
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate procedure to", @"duplicate procedure message")];
+		[copyTableContentSwitch setEnabled:NO];
+		break;
+		case SP_TABLETYPE_FUNC:
+		tableType = NSLocalizedString(@"function",@"function");
+		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate function to", @"duplicate function message")];
+		[copyTableContentSwitch setEnabled:NO];
+		break;
+	}
+	
 
 	//open copyTableSheet
 	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@Copy", [tables objectAtIndex:[tablesListView selectedRow]]]];
 	[copyTableContentSwitch setState:NSOffState];
-	// Hide if selected item is a view
-	[copyTableContentSwitch setEnabled:!isView];
-	// Set message according to table type and the table type string
-	if(isView) {
-		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate view to", @"duplicate view message")];
-		tblType = @"VIEW";
-	} else {
-		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate table to", @"duplicate table message")];
-		tblType = @"TABLE";
-	}
-
-
+	
 	[NSApp beginSheet:copyTableSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
@@ -431,39 +440,73 @@
 		return;
 	}
 
-	//get table structure
+	//get table/view structure
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
-					tblType,
+					[tableType uppercaseString],
 					[[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 					]];
 	
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-			[NSString stringWithFormat:NSLocalizedString(@"Couldn't get table information.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 
     } else {
 		//insert new table name in create syntax and create new table
 		NSScanner *scanner = [NSScanner alloc];
 		NSString *scanString;
 
-		if(isView){
+		if(tblType == SP_TABLETYPE_VIEW){
 			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
-		} else {
+			[scanner release];
+		} 
+		else if(tblType == SP_TABLETYPE_TABLE){
 			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+			[scanner release];
 		}
-		[scanner release];
-		
+		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
+		{
+			// get the create syntax
+			CMMCPResult *theResult;
+			if([self tableType] == SP_TABLETYPE_PROC)
+				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]]];
+			else if([self tableType] == SP_TABLETYPE_FUNC)
+				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]]];
+			else
+				return;
+
+			// Check for errors, only displaying if the connection hasn't been terminated
+			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				if ([mySQLConnection isConnected]) {
+					NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+				}
+				return;
+			}
+
+			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+
+			if ([tableSyntax isKindOfClass:[NSData class]])
+				tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+
+			// replace the old name by the new one and drop the old one
+			theResult = [mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
+			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
+			}
+
+		}
+
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"Couldn't create table.\nMySQL said: %@", @"message of panel when table cannot be created"), [mySQLConnection getLastErrorMessage]]);
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
             if ( [copyTableContentSwitch state] == NSOnState ) {
@@ -491,7 +534,7 @@
             }
 			
 			[tables insertObject:[copyTableNameField stringValue] atIndex:[tablesListView selectedRow]+1];
-			[tableTypes insertObject:[NSNumber numberWithInt:(isView)?SP_TABLETYPE_VIEW : SP_TABLETYPE_TABLE] atIndex:[tablesListView selectedRow]+1];
+			[tableTypes insertObject:[NSNumber numberWithInt:tblType] atIndex:[tablesListView selectedRow]+1];
 			[tablesListView selectRow:[tablesListView selectedRow]+1 byExtendingSelection:NO];
 			[self updateTables:self];
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
@@ -515,20 +558,19 @@
 	NSString *tableType;
 	switch([self tableType]){
 		case SP_TABLETYPE_TABLE:
-		tableType = @"table";
+		tableType = NSLocalizedString(@"table",@"table");
 		break;
 		case SP_TABLETYPE_VIEW:
-		tableType = @"view";
+		tableType = NSLocalizedString(@"view",@"view");
 		break;
 		case SP_TABLETYPE_PROC:
-		tableType = @"procedure";
+		tableType = NSLocalizedString(@"procedure",@"procedure");
 		break;
 		case SP_TABLETYPE_FUNC:
-		tableType = @"function";
+		tableType = NSLocalizedString(@"function",@"function");
 		break;
-		
 	}
-	[tableRenameText setStringValue:[NSString stringWithFormat:@"Rename %@ `%@` to:", tableType, [self tableName]]];
+	[tableRenameText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename %@ '%@' to:",@"rename item name to:"), tableType, [self tableName]]];
 	
 	[NSApp beginSheet:tableRenameSheet
 	   modalForWindow:tableWindow
@@ -548,19 +590,62 @@
 		return;
 	}
 	
-	[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[self tableName] backtickQuotedString], [[tableRenameField stringValue] backtickQuotedString]]];
+	if([self tableType] == SP_TABLETYPE_VIEW || [self tableType] == SP_TABLETYPE_TABLE) {
+		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[self tableName] backtickQuotedString], [[tableRenameField stringValue] backtickQuotedString]]];
 	
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Unable to rename table", @"rename table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The table '%@' was unable to be renamed because an error occurred.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
-	}
-	else {
-		// If there was no error, rename the table in our list and reload the table view's data
-		[tables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
+		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			NSBeginAlertSheet(NSLocalizedString(@"Unable to rename table", @"rename table error message"), 
+							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"The table '%@' was unable to be renamed because an error occurred.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
+		}
+		else {
+			// If there was no error, rename the table in our list and reload the table view's data
+			[tables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
 		
-		[tablesListView reloadData];
+			[tablesListView reloadData];
+		}
+	} else {
+		// procedures and functions can only be renamed if one creates the new one and delete the old one
+		// get the create syntax
+		CMMCPResult *theResult;
+		if([self tableType] == SP_TABLETYPE_PROC)
+			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self tableName] backtickQuotedString]]];
+		else if([self tableType] == SP_TABLETYPE_FUNC)
+			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self tableName] backtickQuotedString]]];
+		else
+			return;
+
+		// Check for errors, only displaying if the connection hasn't been terminated
+		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			if ([mySQLConnection isConnected]) {
+				NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			}
+			return;
+		}
+
+		id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+
+		if ([tableSyntax isKindOfClass:[NSData class]])
+			tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+
+		// replace the old name by the new one and drop the old one
+		theResult = [mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[tableRenameField stringValue] backtickQuotedString]]];
+		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			if ([mySQLConnection isConnected]) {
+				[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[self tableName] backtickQuotedString]]];
+			}
+		}
+		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [self tableName], [mySQLConnection getLastErrorMessage]]);
+		} else {
+			[tables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
+			[tablesListView reloadData];
+		}
 	}
+	// set window title
+	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
+						  [tableDocumentInstance name], [tableDocumentInstance database], [tableRenameField stringValue]]];
 }
 
 #pragma mark Alert sheet methods
@@ -650,7 +735,7 @@
 	
 	if ( error ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove '%@'.\nMySQL said: %@", @"message of panel when an item cannot be removed"), [tables objectAtIndex:currentIndex], errorText]);
 		 
 		/*
 		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"),
@@ -814,15 +899,61 @@
 		// Table has no name
 		alertSheetOpened = YES;
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Empty names are not allowed.", @"message of panel when no name is given for an item"));
 	} 
 	else {
-		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[tables objectAtIndex:rowIndex] backtickQuotedString], [anObject backtickQuotedString]]];
+		if([self tableType] == SP_TABLETYPE_VIEW || [self tableType] == SP_TABLETYPE_TABLE)
+		{
+			[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[tables objectAtIndex:rowIndex] backtickQuotedString], [anObject backtickQuotedString]]];
+		} 
+		else
+		{
+			// procedures and functions can only be renamed if one creates the new one and delete the old one
+			// get the create syntax
+			NSString *tableType;
+			switch([self tableType]){
+				case SP_TABLETYPE_PROC:
+				tableType = @"PROCEDURE";
+				break;
+				case SP_TABLETYPE_FUNC:
+				tableType = @"FUNCTION";
+				break;
+			}
+			CMMCPResult *theResult;
+			if([self tableType] == SP_TABLETYPE_PROC)
+				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[tables objectAtIndex:rowIndex] backtickQuotedString]]];
+			else if([self tableType] == SP_TABLETYPE_FUNC)
+				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[tables objectAtIndex:rowIndex] backtickQuotedString]]];
+			else
+				return;
+
+			// Check for errors, only displaying if the connection hasn't been terminated
+			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				if ([mySQLConnection isConnected]) {
+					NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+				}
+				return;
+			}
+
+			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+
+			if ([tableSyntax isKindOfClass:[NSData class]])
+				tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+
+			// replace the old name by the new one and drop the old one
+			theResult = [mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", tableType] withString:[anObject backtickQuotedString]]];
+			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				if ([mySQLConnection isConnected]) {
+					[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[tables objectAtIndex:rowIndex] backtickQuotedString]]];
+				}
+			}
+		}
 		
 		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			// Renamed with success
 			[tables replaceObjectAtIndex:rowIndex withObject:anObject];
-			
+			if([self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC)
+				return;
 			NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
 			
 			if (selectedIndex == 0) {
@@ -840,7 +971,7 @@
 			else if (selectedIndex == 3) {
 				[tableStatusInstance loadTable:anObject];
 				structureLoaded = NO;
-				contentLoaded = NO; 			
+				contentLoaded = NO;
 				statusLoaded = YES;
 			} 
 			else {
@@ -858,8 +989,8 @@
 			alertSheetOpened = YES;
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 							  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename table.\nMySQL said: %@", @"message of panel when table cannot be renamed"),
-							  [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when item cannot be renamed"),
+							  anObject, [mySQLConnection getLastErrorMessage]]);
 		}
 	}
 }
@@ -1204,20 +1335,14 @@
 {
 	// popup button below table list
 	if ([menuItem action] == @selector(copyTable:)) {
-		if ([self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC)
-			return NO;
-		
 		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
 	}
 	
 	if ([menuItem action] == @selector(removeTable:) ) {
 		return [tablesListView numberOfSelectedRows] > 0;
 	}
-	
-	if ([menuItem action] == @selector(renameTable:)) {
-		if ([self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC)
-			return NO;
 
+	if ([menuItem action] == @selector(renameTable:)) {
 		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length];
 	}
 	
