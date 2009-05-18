@@ -1,5 +1,5 @@
 //
-//  TableRelations.h
+//  SPTableRelations.h
 //  sequel-pro
 //
 //  Created by J Knight on 13/05/09.
@@ -22,14 +22,14 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 //
 
-#import "TableRelations.h"
+#import "SPTableRelations.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "SPTableData.h"
 
-@implementation TableRelations
+@implementation SPTableRelations
 
 /*
  * init
@@ -73,6 +73,9 @@
 {
 	mySQLConnection = theConnection;			
 }
+
+#pragma mark -
+#pragma mark IB action methods
 
 /*
  * closeRelationSheet
@@ -292,7 +295,9 @@
 	}	
 }
 
-//tableView datasource methods
+#pragma mark -
+#pragma mark Tableview datasource methods
+
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [relData count];
@@ -301,7 +306,6 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-	//NSNumber *theIdentifier = [aTableColumn identifier];
 	NSDictionary *theRow = [relData objectAtIndex:rowIndex];
 	return [theRow objectForKey:[aTableColumn identifier]];
 }
@@ -314,11 +318,14 @@
 	
 }
 
-//tableView delegate methods
+#pragma mark -
+#pragma mark Tableview delegate methods
+
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
 	
 }
+
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
 	if ( [relationsView numberOfSelectedRows] ) {
@@ -327,25 +334,30 @@
 		[removeButton setEnabled:NO];		
 	}
 }
+
 - (void)tableViewSelectionIsChanging:(NSNotification *)aNotification
 {
 	
 }
+
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
 {
 	
 }
+
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	return NO;
 }
+
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {
-	return FALSE;
+	return NO;
 }
+
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-	return FALSE;
+	return NO;
 }
 
 @end
