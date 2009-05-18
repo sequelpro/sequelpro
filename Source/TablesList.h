@@ -65,6 +65,7 @@ enum sp_table_types
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
+	IBOutlet NSMenuItem *separatorTableMenuItem;
 
 	CMMCPConnection *mySQLConnection;
 	

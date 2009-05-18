@@ -512,8 +512,25 @@
 	}
 	
 	[tableWindow endEditingFor:nil];
-	
-	[tableRenameText setStringValue:[NSString stringWithFormat:@"Rename table %@ to:", [self tableName]]];
+	[tableRenameField setStringValue:[self tableName]];
+	[renameTableButton setEnabled:NO];
+	NSString *tableType;
+	switch([self tableType]){
+		case SP_TABLETYPE_TABLE:
+		tableType = @"table";
+		break;
+		case SP_TABLETYPE_VIEW:
+		tableType = @"view";
+		break;
+		case SP_TABLETYPE_PROC:
+		tableType = @"procedure";
+		break;
+		case SP_TABLETYPE_FUNC:
+		tableType = @"function";
+		break;
+		
+	}
+	[tableRenameText setStringValue:[NSString stringWithFormat:@"Rename %@ `%@` to:", tableType, [self tableName]]];
 	
 	[NSApp beginSheet:tableRenameSheet
 	   modalForWindow:tableWindow
@@ -677,10 +694,17 @@
 	}
 	
 	if (object == tableRenameField) {
-		[renameTableButton setEnabled:([[tableRenameField stringValue] length] > 0)];
+		[renameTableButton setEnabled:([[tableRenameField stringValue] length] > 0 && ![[self tableName] isEqualToString:[tableRenameField stringValue]])];
 	}
 }
-
+- (void)controlTextDidEndEditing:(NSNotification *)notification
+{
+	id object = [notification object];
+	
+	if (object == tableRenameField) {
+		[renameTableButton performClick:object];
+	}
+}
 #pragma mark Getter methods
 
 /**
@@ -904,6 +928,8 @@
 		// Reset the table information caches
 		[tableDataInstance resetAllData];
 
+		[separatorTableMenuItem setHidden:NO];
+
 		if( [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW ||
 		   [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
 			// If encoding is set to Autodetect, update the connection character set encoding
@@ -963,10 +989,12 @@
 			[[tableSubMenu itemAtIndex:8] setHidden:NO];
 			[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
 			[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
-			
-			[renameTableMenuItem setHidden:YES];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
+
+			[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename view", @"rename view menu title")];
+			[duplicateTableMenuItem setHidden:NO];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
 		} 
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
@@ -983,8 +1011,10 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:NO];
 
 			[renameTableMenuItem setHidden:NO];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename table", @"rename table menu title")];
+			[duplicateTableMenuItem setHidden:NO];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
 		} 
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_PROC) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
@@ -998,9 +1028,11 @@
 			[[tableSubMenu itemAtIndex:8] setHidden:YES];
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];
 			
-			[renameTableMenuItem setHidden:YES];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedure", @"remove proc menu title")];
+			[renameTableMenuItem setHidden:NO];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename procedure", @"rename proc menu title")];
+			[duplicateTableMenuItem setHidden:NO];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate procedure", @"duplicate proc menu title")];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedure", @"remove proc menu title")];
 		}
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_FUNC) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
@@ -1014,9 +1046,11 @@
 			[[tableSubMenu itemAtIndex:8] setHidden:YES];
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];	
 			
-			[renameTableMenuItem setHidden:YES];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove function", @"remove func menu title")];
+			[renameTableMenuItem setHidden:NO];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename function", @"rename func menu title")];
+			[duplicateTableMenuItem setHidden:NO];
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate function", @"duplicate func menu title")];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove function", @"remove func menu title")];
 		}
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
@@ -1062,9 +1096,13 @@
 					break;
 				}
 			
-			} else
+			} else {
 				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove items", @"remove items menu title")];
+			}
 		}
+		[renameTableMenuItem setHidden:YES];
+		[duplicateTableMenuItem setHidden:YES];
+		[separatorTableMenuItem setHidden:YES];
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database]]];
@@ -1179,10 +1217,9 @@
 	}
 	
 	if ([menuItem action] == @selector(renameTable:)) {
-		if ([self tableType] == SP_TABLETYPE_VIEW) {
+		if ([self tableType] == SP_TABLETYPE_FUNC || [self tableType] == SP_TABLETYPE_PROC)
 			return NO;
-		}
-		
+
 		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length];
 	}
 	
