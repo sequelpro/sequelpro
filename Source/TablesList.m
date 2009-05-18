@@ -896,6 +896,7 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
+	
 	if ( [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] ) {
 		
 		// Reset the table information caches

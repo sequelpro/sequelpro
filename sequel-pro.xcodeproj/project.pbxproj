@@ -65,6 +65,9 @@
 		296DC8BC0F909194002A3258 /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */; };
 		296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		296DC8D20F90950C002A3258 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */; };
+		380F4EF50FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */; };
+		380F4F250FC0C3D300B0BFD7 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */; };
+		380F4F270FC0C51C00B0BFD7 /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		384582BE0FB95C9100DDACB6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 384582BC0FB95C9100DDACB6 /* Localizable.strings */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
@@ -128,6 +131,16 @@
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		380F4EDF0FC0B51D00B0BFD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D15AC270486D014006FF6A4;
+			remoteInfo = "Sequel Pro";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		4DECC4940EC2B447008D359E /* CopyFiles */ = {
@@ -264,6 +277,12 @@
 		296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-print-template.html"; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		380F4EDA0FC0B50500B0BFD7 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
+		380F4EF30FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stringCategoryAdditionsTest.h; sourceTree = "<group>"; };
+		380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = stringCategoryAdditionsTest.m; sourceTree = "<group>"; };
+		380F4F230FC0C3D300B0BFD7 /* mcpKitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mcpKitTest.h; sourceTree = "<group>"; };
+		380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mcpKitTest.m; sourceTree = "<group>"; };
 		384582BD0FB95C9100DDACB6 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = Interfaces/English.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
@@ -339,6 +358,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		380F4ED60FC0B50500B0BFD7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				380F4F270FC0C51C00B0BFD7 /* MCPKit_bundled.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D15AC330486D014006FF6A4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -653,6 +680,7 @@
 			isa = PBXGroup;
 			children = (
 				8D15AC370486D014006FF6A4 /* Sequel Pro.app */,
+				380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -685,11 +713,13 @@
 			isa = PBXGroup;
 			children = (
 				17E641420EF01E8A001BC333 /* Source */,
+				380F4EF20FC0B67A00B0BFD7 /* Unit Tests */,
 				17E642050EF020A3001BC333 /* Interfaces */,
 				17E641430EF01E90001BC333 /* Resources */,
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
+				380F4EDA0FC0B50500B0BFD7 /* Unit Tests-Info.plist */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -701,6 +731,17 @@
 				1058C7A8FEA54F5311CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
+			isa = PBXGroup;
+			children = (
+				380F4EF30FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.h */,
+				380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */,
+				380F4F230FC0C3D300B0BFD7 /* mcpKitTest.h */,
+				380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */,
+			);
+			path = "Unit Tests";
 			sourceTree = "<group>";
 		};
 		58FEF15E0F23D60A00518E8E /* Parsing */ = {
@@ -734,6 +775,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		380F4ED80FC0B50500B0BFD7 /* Unit Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */;
+			buildPhases = (
+				380F4ED40FC0B50500B0BFD7 /* Resources */,
+				380F4ED50FC0B50500B0BFD7 /* Sources */,
+				380F4ED60FC0B50500B0BFD7 /* Frameworks */,
+				380F4ED70FC0B50500B0BFD7 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				380F4EE00FC0B51D00B0BFD7 /* PBXTargetDependency */,
+			);
+			name = "Unit Tests";
+			productName = "Unit Tests";
+			productReference = 380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
 		8D15AC270486D014006FF6A4 /* Sequel Pro */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */;
@@ -767,11 +827,19 @@
 			projectRoot = "";
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
+				380F4ED80FC0B50500B0BFD7 /* Unit Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		380F4ED40FC0B50500B0BFD7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D15AC2B0486D014006FF6A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -863,9 +931,31 @@
 			shellPath = /bin/sh;
 			shellScript = "# Add build/bundle version\n\"${SRCROOT}/Scripts/build-version.pl\"\n\n# Trim application if release or dist build\nif test \"$CONFIGURATION\" == 'Release' || test \"$CONFIGURATION\" == 'Distribution'\nthen\n\t\"${SRCROOT}/Scripts/trim-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\" -a\nfi\n\n# Perform distribution tasks on a dist build\nif [ \"$CONFIGURATION\" == 'Distribution' ]\nthen\n\t\"${SRCROOT}/Scripts/package-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\"\nfi";
 		};
+		380F4ED70FC0B50500B0BFD7 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		380F4ED50FC0B50500B0BFD7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				380F4EF50FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m in Sources */,
+				380F4F250FC0C3D300B0BFD7 /* mcpKitTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D15AC300486D014006FF6A4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -917,6 +1007,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		380F4EE00FC0B51D00B0BFD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
+			targetProxy = 380F4EDF0FC0B51D00B0BFD7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		1761FD460EF03A6F00331368 /* MainMenu.xib */ = {
@@ -995,6 +1093,95 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		380F4EDB0FC0B50600B0BFD7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+					"\"$(SRCROOT)/Frameworks\"",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "Unit Tests-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Unit Tests";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		380F4EDC0FC0B50600B0BFD7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+					"\"$(SRCROOT)/Frameworks\"",
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "Unit Tests-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Unit Tests";
+				WRAPPER_EXTENSION = octest;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		380F4EDD0FC0B50600B0BFD7 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+					"\"$(SRCROOT)/Frameworks\"",
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "Unit Tests-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Unit Tests";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Distribution;
+		};
 		588593F00F7AEB6900ED0E67 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1103,6 +1290,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				380F4EDB0FC0B50600B0BFD7 /* Debug */,
+				380F4EDC0FC0B50600B0BFD7 /* Release */,
+				380F4EDD0FC0B50600B0BFD7 /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
