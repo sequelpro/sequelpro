@@ -36,6 +36,7 @@
 	IBOutlet id tableDataInstance;
 	IBOutlet id addButton;
 	IBOutlet id removeButton;	
+	IBOutlet id refreshButton;
 	IBOutlet id labelText;		
 	IBOutlet id relationsView;
 	IBOutlet id relationSheet;
@@ -46,7 +47,6 @@
 	IBOutlet id refColumnSelect;
 	IBOutlet id onUpdateSelect;
 	IBOutlet id onDeleteSelect;
-	
 		
 	CMMCPConnection *mySQLConnection;
 

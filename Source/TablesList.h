@@ -57,9 +57,14 @@ enum sp_table_types
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
 	IBOutlet id addTableButton;
+	IBOutlet id tableRenameSheet;
+	IBOutlet id tableRenameField;
+	IBOutlet id tableRenameText;
+	IBOutlet id renameTableButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
+	IBOutlet NSMenuItem *renameTableMenuItem;
 
 	CMMCPConnection *mySQLConnection;
 	
@@ -72,9 +77,10 @@ enum sp_table_types
 // IBAction methods
 - (IBAction)updateTables:(id)sender;
 - (IBAction)addTable:(id)sender;
-- (IBAction)closeTableSheet:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
 - (IBAction)copyTable:(id)sender;
+- (IBAction)renameTable:(id)sender;
 
 // copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;

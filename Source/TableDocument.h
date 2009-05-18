@@ -123,9 +123,6 @@
 
 - (NSString *)getHTMLforPrint;
 
-//alert sheets method
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
-
 //connection getter
 - (CMMCPConnection *)sharedConnection;
 
@@ -136,6 +133,7 @@
 - (IBAction)closeDatabaseSheet:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
+- (IBAction)saveServerVariables:(id)sender;
 
 //encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;

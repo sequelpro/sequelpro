@@ -1512,6 +1512,21 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
 }
 
+/**
+ * Saves the server variables to the selected file.
+ */
+- (IBAction)saveServerVariables:(id)sender
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:@"cnf"];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:YES];
+	[panel setCanSelectHiddenExtension:YES];
+	
+	[panel beginSheetForDirectory:nil file:@"Variables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+}
 
 /**
  * Menu validation
@@ -1659,6 +1674,25 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	// Add current connection to favorites using the same method as used on the connection sheet to provide consistency.
 	[self connectSheetAddToFavorites:self];
+}
+
+/**
+ * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
+ */
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode == NSOKButton) {
+		if (variables) {
+			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
+			
+			for (NSDictionary *variable in variables) 
+			{
+				[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
+			}
+			
+			[variablesString writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+		}
+	}
 }
 
 #pragma mark Toolbar Methods
