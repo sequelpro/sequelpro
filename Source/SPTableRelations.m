@@ -244,9 +244,7 @@
 {
 	[relData removeAllObjects];
 	
-	if([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
-		// update the top label
-		[labelText setStringValue:[NSString stringWithFormat:@"Relations for table: %@",[tablesListInstance tableName]]];			
+	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
 		
 		[tableDataInstance updateInformationForCurrentTable];
 				
@@ -283,16 +281,21 @@
 	NSString *engine = [tableDataInstance statusValueForKey:@"Engine"];
 	
 	if (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
+		
+		// Update the text label
+		[labelText setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
+		
 		[addButton setEnabled:YES];
 		[refreshButton setEnabled:YES];
-		
-		[self refresh:self];
-	} else {
+	} 
+	else {
 		[addButton setEnabled:NO];		
 		[refreshButton setEnabled:NO];	
 		
 		[labelText setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
 	}	
+	
+	[self refresh:self];
 }
 
 #pragma mark -
