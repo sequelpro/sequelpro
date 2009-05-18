@@ -721,7 +721,7 @@
 		);
 	}
 	
-	[prefs setBool:[NSNumber numberWithBool:value] forKey:@"GrowlEnabled"];
+	[prefs setBool:value forKey:@"GrowlEnabled"];
 }
 
 - (BOOL)growlEnabled
