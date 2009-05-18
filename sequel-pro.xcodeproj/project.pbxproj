@@ -191,6 +191,7 @@
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
+		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
@@ -278,7 +279,6 @@
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		380F4EDA0FC0B50500B0BFD7 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		380F4EF30FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stringCategoryAdditionsTest.h; sourceTree = "<group>"; };
 		380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = stringCategoryAdditionsTest.m; sourceTree = "<group>"; };
 		380F4F230FC0C3D300B0BFD7 /* mcpKitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mcpKitTest.h; sourceTree = "<group>"; };
@@ -469,9 +469,10 @@
 		17E641430EF01E90001BC333 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				384582BC0FB95C9100DDACB6 /* Localizable.strings */,
 				17E6418B0EF01FF7001BC333 /* Images */,
 				1703EF2A0F0B0742005BBE7E /* english_help */,
+				17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */,
+				384582BC0FB95C9100DDACB6 /* Localizable.strings */,
 				296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */,
 				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
 				17E641F60EF02088001BC333 /* Info.plist */,
@@ -713,13 +714,12 @@
 			isa = PBXGroup;
 			children = (
 				17E641420EF01E8A001BC333 /* Source */,
-				380F4EF20FC0B67A00B0BFD7 /* Unit Tests */,
+				380F4EF20FC0B67A00B0BFD7 /* UnitTests */,
 				17E642050EF020A3001BC333 /* Interfaces */,
 				17E641430EF01E90001BC333 /* Resources */,
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
-				380F4EDA0FC0B50500B0BFD7 /* Unit Tests-Info.plist */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -733,7 +733,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
+		380F4EF20FC0B67A00B0BFD7 /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
 				380F4EF30FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.h */,
@@ -741,7 +741,7 @@
 				380F4F230FC0C3D300B0BFD7 /* mcpKitTest.h */,
 				380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */,
 			);
-			path = "Unit Tests";
+			path = UnitTests;
 			sourceTree = "<group>";
 		};
 		58FEF15E0F23D60A00518E8E /* Parsing */ = {
