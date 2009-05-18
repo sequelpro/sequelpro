@@ -49,9 +49,7 @@
 	NSString *selectedTable = nil;
 	NSInteger selectedRowIndex;
 	
-	NSLog( @"%d %d %d", [mySQLConnection serverMajorVersion], [mySQLConnection serverMinorVersion], [mySQLConnection serverReleaseVersion] );
-
-	selectedRowIndex = [tablesListView selectedRow];	
+	selectedRowIndex = [tablesListView selectedRow];
 	if(selectedRowIndex > 0 && [tables count]){
 		selectedTable = [NSString stringWithString:[tables objectAtIndex:selectedRowIndex]];
 	}
