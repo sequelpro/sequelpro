@@ -708,6 +708,28 @@
 #pragma mark -
 #pragma mark Other
 
+
+- (void)setGrowlEnabled:(BOOL)value
+{
+	if (value) {
+		NSRunInformationalAlertPanel(
+			NSLocalizedString(@"growl_prefs_title", "Title for Growl Notifications Alert Dialog"),
+			NSLocalizedString(@"growl_prefs_msg", @"Message for Growl Notifications Alert Dialog"),
+			nil,
+			nil,
+			nil
+		);
+	}
+	
+	[prefs setBool:[NSNumber numberWithBool:value] forKey:@"GrowlEnabled"];
+}
+
+- (BOOL)growlEnabled
+{
+	return [prefs boolForKey:@"GrowlEnabled"];
+}
+
+
 // -------------------------------------------------------------------------------
 // updateDefaultFavoritePopup:
 //
