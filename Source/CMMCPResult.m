@@ -24,7 +24,6 @@
 
 #import "CMMCPResult.h"
 
-
 @implementation CMMCPResult
 
 /*

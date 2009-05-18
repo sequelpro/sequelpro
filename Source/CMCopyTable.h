@@ -1,14 +1,11 @@
-/*!
- @header CMCopyTable.h
- @abstract   sequel-pro
- @discussion <pre>
- $Id:$
- Created by Stuart Glenn on Wed Apr 21 2004.
- Changed by Lorenz Textor on Sat Nov 13 2004
- Copyright (c) 2004 Stuart Glenn. All rights reserved.
-</pre>
-*/
-
+//
+//  CMCopyTable.h
+//  sequel-pro
+//
+//  Created by Stuart Glenn on Wed Apr 21 2004.
+//  Changed by Lorenz Textor on Sat Nov 13 2004
+//  Copyright (c) 2004 Stuart Glenn. All rights reserved.
+//
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation; either version 2 of the License, or
@@ -24,7 +21,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #import <AppKit/AppKit.h>
-
 
 /*!
 	@class copyTable

@@ -1,5 +1,5 @@
 //
-//  TableContent.h
+//  TableStatus.h
 //  sequel-pro
 //
 //  Created by Jason Hallford (jason.hallford@byu.edu) on Th July 08 2004.

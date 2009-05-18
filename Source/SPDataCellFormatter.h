@@ -23,7 +23,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @interface SPDataCellFormatter : NSFormatter {
 	int textLimit;
 }

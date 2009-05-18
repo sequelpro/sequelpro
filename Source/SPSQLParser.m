@@ -767,4 +767,5 @@
 	if (charCacheEnd != -1) free(stringCharCache);
 	[super dealloc];
 }
+
 @end

@@ -251,4 +251,5 @@ typedef enum _SPCommentTypes {
 - (void) setString:(NSString *)string;
 - (void) replaceCharactersInRange:(NSRange)range withString:(NSString *)string;
 - (void) dealloc;
+
 @end
