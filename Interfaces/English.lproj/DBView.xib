@@ -448,7 +448,7 @@
 														</object>
 													</object>
 												</object>
-												<int key="NSSelectedIndex">3</int>
+												<int key="NSSelectedIndex">4</int>
 												<bool key="NSPullDown">YES</bool>
 												<int key="NSPreferredEdge">1</int>
 												<bool key="NSUsesItemFromMenu">YES</bool>
@@ -4625,6 +4625,7 @@
 																	</object>
 																	<string key="NSFrame">{{0, 17}, {215, 164}}</string>
 																	<reference key="NSSuperview" ref="112292194"/>
+																	<reference key="NSNextKeyView" ref="158332213"/>
 																	<reference key="NSDocView" ref="158332213"/>
 																	<reference key="NSBGColor" ref="1024678221"/>
 																	<int key="NScvFlags">2</int>
@@ -4657,6 +4658,7 @@
 																	</object>
 																	<string key="NSFrameSize">{215, 17}</string>
 																	<reference key="NSSuperview" ref="112292194"/>
+																	<reference key="NSNextKeyView" ref="975843240"/>
 																	<reference key="NSDocView" ref="975843240"/>
 																	<reference key="NSBGColor" ref="1024678221"/>
 																	<int key="NScvFlags">4</int>
@@ -4665,6 +4667,7 @@
 															</object>
 															<string key="NSFrame">{{-1, 22}, {215, 181}}</string>
 															<reference key="NSSuperview" ref="1043550915"/>
+															<reference key="NSNextKeyView" ref="131927425"/>
 															<int key="NSsFlags">528</int>
 															<reference key="NSVScroller" ref="785468991"/>
 															<reference key="NSHScroller" ref="710690013"/>
@@ -22490,6 +22493,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>5660.IBPluginDependency</string>
 					<string>5670.IBPluginDependency</string>
 					<string>5671.IBPluginDependency</string>
+					<string>5673.IBAttributePlaceholdersKey</string>
 					<string>5673.IBPluginDependency</string>
 					<string>5675.IBEditorWindowLastContentRect</string>
 					<string>5675.IBWindowTemplateEditedContentRect</string>
@@ -23832,7 +23836,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="831803264"/>
-							<string key="toolTip">Remove the selected table(s) or view(s)</string>
+							<string key="toolTip">Remove the selected item(s)</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23841,7 +23845,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="924446696"/>
-							<string key="toolTip">Duplicate the selected table</string>
+							<string key="toolTip">Duplicate the selected item</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24316,6 +24320,14 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="938900701"/>
+							<string key="toolTip">Rename the selected item</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{366, 378}, {269, 112}}</string>
 					<string>{{366, 378}, {269, 112}}</string>
