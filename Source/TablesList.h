@@ -49,6 +49,7 @@ enum sp_table_types
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;
 	IBOutlet id tablesListView;
+	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
 	IBOutlet id copyTableContentSwitch;

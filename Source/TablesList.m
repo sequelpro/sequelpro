@@ -390,36 +390,35 @@
 	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
 		return;
 	}
+	
 	[tableWindow endEditingFor:nil];
 
 	// Detect table type: table or view
 	tblType = [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
-	switch(tblType){
-		case SP_TABLETYPE_TABLE:
-		tableType = NSLocalizedString(@"table",@"table");
-		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate table to", @"duplicate table message")];
-		[copyTableContentSwitch setEnabled:YES];
-		break;
-		case SP_TABLETYPE_VIEW:
-		tableType = NSLocalizedString(@"view",@"view");
-		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate view to", @"duplicate view message")];
-		[copyTableContentSwitch setEnabled:NO];
-		break;
-		case SP_TABLETYPE_PROC:
-		tableType = NSLocalizedString(@"procedure",@"procedure");
-		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate procedure to", @"duplicate procedure message")];
-		[copyTableContentSwitch setEnabled:NO];
-		break;
-		case SP_TABLETYPE_FUNC:
-		tableType = NSLocalizedString(@"function",@"function");
-		[copyTableMessageField setStringValue:NSLocalizedString(@"Duplicate function to", @"duplicate function message")];
-		[copyTableContentSwitch setEnabled:NO];
-		break;
-	}
 	
+	switch (tblType){
+		case SP_TABLETYPE_TABLE:
+			tableType = NSLocalizedString(@"table",@"table");
+			[copyTableContentSwitch setEnabled:YES];
+			break;
+		case SP_TABLETYPE_VIEW:
+			tableType = NSLocalizedString(@"view",@"view");
+			[copyTableContentSwitch setEnabled:NO];
+			break;
+		case SP_TABLETYPE_PROC:
+			tableType = NSLocalizedString(@"procedure",@"procedure");
+			[copyTableContentSwitch setEnabled:NO];
+			break;
+		case SP_TABLETYPE_FUNC:
+			tableType = NSLocalizedString(@"function",@"function");
+			[copyTableContentSwitch setEnabled:NO];
+			break;
+	}
+		
+	[copyTableMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate %@ '%@' to:", @"duplicate object message"), tableType, [self tableName]]];
 
 	//open copyTableSheet
-	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@Copy", [tables objectAtIndex:[tablesListView selectedRow]]]];
+	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@_copy", [tables objectAtIndex:[tablesListView selectedRow]]]];
 	[copyTableContentSwitch setState:NSOffState];
 	
 	[NSApp beginSheet:copyTableSheet
@@ -570,6 +569,7 @@
 		tableType = NSLocalizedString(@"function",@"function");
 		break;
 	}
+	
 	[tableRenameText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename %@ '%@' to:",@"rename item name to:"), tableType, [self tableName]]];
 	
 	[NSApp beginSheet:tableRenameSheet
@@ -776,10 +776,15 @@
 		[addTableButton setEnabled:([[tableNameField stringValue] length] > 0)]; 
 	}
 	
+	if (object == copyTableNameField) {
+		([copyTableButton setEnabled:([[copyTableNameField stringValue] length] > 0) && (![[self tableName] isEqualToString:[copyTableNameField stringValue]])]);
+	}
+	
 	if (object == tableRenameField) {
-		[renameTableButton setEnabled:([[tableRenameField stringValue] length] > 0 && ![[self tableName] isEqualToString:[tableRenameField stringValue]])];
+		([renameTableButton setEnabled:([[tableRenameField stringValue] length] > 0) && (![[self tableName] isEqualToString:[tableRenameField stringValue]])]);
 	}
 }
+
 - (void)controlTextDidEndEditing:(NSNotification *)notification
 {
 	id object = [notification object];
@@ -788,6 +793,7 @@
 		[renameTableButton performClick:object];
 	}
 }
+
 #pragma mark Getter methods
 
 /**
@@ -989,7 +995,7 @@
 			alertSheetOpened = YES;
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 							  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when item cannot be renamed"),
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"),
 							  anObject, [mySQLConnection getLastErrorMessage]]);
 		}
 	}
