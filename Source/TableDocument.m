@@ -522,6 +522,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 }
 
+- (IBAction)connectSheetShowHelp:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/docs/Getting_Connected"]];
+}
+
 
 #pragma mark database methods
 

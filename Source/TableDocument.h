@@ -120,6 +120,7 @@
 				   sshUser:(NSString *)sshUser // no-longer in use
 			   sshPassword:(NSString *)sshPassword // no-longer in use
 				   sshPort:(NSString *)sshPort; // no-longer in use
+- (IBAction)connectSheetShowHelp:(id)sender;
 
 - (NSString *)getHTMLforPrint;
 
