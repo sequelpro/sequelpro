@@ -328,11 +328,7 @@
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	if ( [relationsView numberOfSelectedRows] ) {
-		[removeButton setEnabled:YES];
-	} else {
-		[removeButton setEnabled:NO];		
-	}
+	[removeButton setEnabled:([relationsView numberOfSelectedRows] > 0)];
 }
 
 - (void)tableViewSelectionIsChanging:(NSNotification *)aNotification
