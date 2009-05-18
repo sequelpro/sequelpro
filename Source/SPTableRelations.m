@@ -71,6 +71,7 @@
  */
 - (void)setConnection:(CMMCPConnection *)theConnection
 {
+	// Weak reference
 	mySQLConnection = theConnection;			
 }
 
@@ -83,7 +84,7 @@
  */
 - (IBAction)closeRelationSheet:(id)sender
 {
-	// 0 = success,
+	// 0 = success
 	[NSApp stopModalWithCode:0];
 }
 
@@ -93,7 +94,7 @@
  */
 - (IBAction)addRelation:(id)sender
 {
-	// 0 = success,
+	// 0 = success
 	int retCode = 0;
 	NSString *thisTable = [tablesListInstance tableName];
 	NSString *thisColumn = [columnSelect titleOfSelectedItem];
@@ -115,8 +116,6 @@
 			query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", onUpdate]];
 	}
 	
-	//NSLog( query );
-
 	[mySQLConnection queryString:query];
 	
 	if ( ! [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -190,9 +189,10 @@
 
 	// 0 indicates success
 	if( code ) {
-		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), //@"Error Adding Relation",
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't add relation.\nMySQL said: %@",@"message of panel when relation cannot be created"),[mySQLConnection getLastErrorMessage]],
-						NSLocalizedString(@"OK", @"OK button"), nil, nil );		
+		NSBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [mySQLConnection getLastErrorMessage]]);		
 	} else {
 		[self refresh:nil];		
 	}
@@ -205,27 +205,28 @@
 - (IBAction)removeRow:(id)sender
 {
 	if ( [relationsView numberOfSelectedRows] ) {
-		int resp = NSRunAlertPanel(NSLocalizedString(@"Delete relation",@"delete relation message"),
-								   NSLocalizedString(@"Are you sure you want to delete the selected relations?\nThis action cannot be undone!",@"delete selected relation informative message"),
+		int resp = NSRunAlertPanel(NSLocalizedString(@"Delete relation", @"delete relation message"),
+								   NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone", @"delete selected relation informative message"),
 								   NSLocalizedString(@"Delete", @"delete button"), 
 								   NSLocalizedString(@"Cancel", @"cancel button"), nil );
+		
 		if( resp == NSAlertDefaultReturn ) {
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsView selectedRowIndexes];
 			unsigned int row = [selectedSet lastIndex];
-			while( row != NSNotFound ) {
+			while( row != NSNotFound ) 
+			{
 				NSArray *relName = [[relData objectAtIndex:row] objectForKey:@"name"];
-				NSString *query = [NSString stringWithFormat:@"ALTER TABLE `%@` DROP FOREIGN KEY `%@`",
-								   thisTable, relName];
-				//NSLog( query );
+				NSString *query = [NSString stringWithFormat:@"ALTER TABLE `%@` DROP FOREIGN KEY `%@`", thisTable, relName];
 				
 				[mySQLConnection queryString:query];
 				
-				if ( ! [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-					NSLog(@"error: %@", [mySQLConnection getLastErrorMessage]);
-					NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), 
-									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove relation.\nMySQL said: %@",@"message of panel when relation cannot be removed"),[mySQLConnection getLastErrorMessage]],
-									NSLocalizedString(@"OK", @"OK button"), nil, nil );		
+				if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+					
+					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+									  NSLocalizedString(@"OK", @"OK button"),
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [mySQLConnection getLastErrorMessage]]);	
 					// abort loop
 					break;
 				} 
@@ -309,14 +310,10 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-	NSDictionary *theRow = [relData objectAtIndex:rowIndex];
-	return [theRow objectForKey:[aTableColumn identifier]];
+	return [[relData objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
 
-- (void)tableView:(NSTableView *)aTableView
-   setObjectValue:(id)anObject
-   forTableColumn:(NSTableColumn *)aTableColumn
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	
 }
