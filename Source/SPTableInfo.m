@@ -82,6 +82,20 @@
 		return;
 	}
 
+	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
+		[info addObject:@"PROCEDURE INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+
+	if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+		[info addObject:@"FUNCTION INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+	
 	[info addObject:@"TABLE INFORMATION"];
 		
 	if ([tableListInstance tableName]) {
@@ -155,7 +169,7 @@
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"TablePropertyIcon"]];
+		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];

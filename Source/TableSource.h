@@ -59,7 +59,8 @@
 	NSMutableArray *tableFields, *indexes;
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
-	BOOL isEditingRow, isEditingNewRow, alertSheetOpened;
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
+	int currentlyEditingRow;
 	NSUserDefaults *prefs;
 }
 
@@ -87,6 +88,7 @@
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
@@ -94,6 +96,7 @@
 - (NSString *)defaultValueForField:(NSString *)field;
 - (NSArray *)fieldNames;
 - (NSDictionary *)enumFields;
+- (NSArray *)tableStructureForPrint;
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
@@ -112,7 +115,7 @@
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
 
 //tableView delegate methods
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 

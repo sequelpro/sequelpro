@@ -9,11 +9,10 @@
 #ifndef SUAPPCASTITEM_H
 #define SUAPPCASTITEM_H
 
-
 @interface SUAppcastItem : NSObject {
 	NSString *title;
 	NSDate *date;
-	NSString *description;
+	NSString *itemDescription;
 	
 	NSURL *releaseNotesURL;
 	
@@ -34,7 +33,7 @@
 - (NSString *)versionString;
 - (NSString *)displayVersionString;
 - (NSDate *)date;
-- (NSString *)description;
+- (NSString *)itemDescription;
 - (NSURL *)releaseNotesURL;
 - (NSURL *)fileURL;
 - (NSString *)DSASignature;

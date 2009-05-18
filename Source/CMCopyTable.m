@@ -27,8 +27,14 @@
 
 - (void)copy:(id)sender
 {
-	NSString *tmp = [self selectedRowsAsTabString];
+	NSString *tmp = nil;
+
+	BOOL withHeaders = NO;
+	if([[sender title] isEqualToString:@"Copy with Column Names"]) {
+		withHeaders = YES;
+	}
 	
+	tmp = [self selectedRowsAsTabStringWithHeaders:withHeaders];		
 	if ( nil != tmp )
 	{
 		NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -52,7 +58,7 @@
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem 
 {	
 	int row = [self selectedRow];
-	if ([[anItem title] isEqualToString:@"Copy"] )
+	if ( [[anItem title] isEqualToString:@"Copy"] || [[anItem title] isEqualToString:@"Copy with Column Names"] )
 	{
 		if (row < 0 )
 		{
@@ -64,7 +70,7 @@
 
 //get selected rows a string of newline separated lines of tab separated fields
 //the value in each field is from the objects description method
-- (NSString *)selectedRowsAsTabString
+- (NSString *)selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders
 {
 	if ( [self numberOfSelectedRows] > 0 )
 	{
@@ -73,7 +79,15 @@
 		id dataSource = [self dataSource];
 		
 		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
-
+		
+		if(withHeaders) {
+			int i;
+			for( i = 0; i < numColumns; i++ ){
+				[result appendString:[NSString stringWithFormat:@"%@\t", [[[columns objectAtIndex:i] headerCell] stringValue]]];
+			}
+			[result appendString:[NSString stringWithFormat:@"\n"]];
+		}
+		
 		//this is really deprecated in 10.3, but the new method is really weird
 		NSEnumerator *enumerator = [self selectedRowEnumerator]; 
 		

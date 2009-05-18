@@ -25,20 +25,19 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMCopyTable.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+
+@class CMMCPConnection, CMMCPResult, CMCopyTable;
 
 @interface TableContent : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id queryConsoleInstance;
 	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
 	IBOutlet id editSheet;
+	IBOutlet id editSheetTabView;
 	IBOutlet id editImage;
 	IBOutlet id editTextView;
 	IBOutlet id hexTextView;
@@ -59,13 +58,13 @@
 	CMMCPConnection *mySQLConnection;
 	
 	id editData;
-	NSString *selectedTable;
+	NSString *selectedTable, *usedQuery;
 	NSMutableArray *fullResult, *filteredResult, *keys;
 	NSMutableDictionary *oldRow;
 	NSString *compareType, *sortField;
-	BOOL isEditingRow, isEditingNewRow, isDesc, setLimit;
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
-	int numRows;
+	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
 }
 
@@ -76,6 +75,8 @@
 - (IBAction)filterTable:(id)sender;
 - (IBAction)showAll:(id)sender;
 - (IBAction)toggleFilterField:(id)sender;
+- (NSString *)usedQuery;
+- (void)setUsedQuery:(NSString *)query;
 
 //edit methods
 - (IBAction)addRow:(id)sender;
@@ -86,6 +87,7 @@
 - (IBAction)closeEditSheet:(id)sender;
 - (IBAction)openEditSheet:(id)sender;
 - (IBAction)saveEditSheet:(id)sender;
+- (void)processUpdatedImageData:(NSData *)data;
 - (IBAction)dropImage:(id)sender;
 - (void)textDidChange:(NSNotification *)notification;
 - (NSString *)dataToHex:(NSData *)data;
@@ -105,6 +107,7 @@
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 - (int)getNumberOfRows;
 - (int)fetchNumberOfRows;
+- (BOOL)saveRowOnDeselect;
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
@@ -118,7 +121,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 - (void)tableViewSelectionIsChanging:(NSNotification *)aNotification;
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification;

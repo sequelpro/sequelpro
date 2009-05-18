@@ -2,29 +2,77 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>limitRows</key>
-	<true/>
-	<key>limitRowsValue</key>
-	<integer>1000</integer>
-	<key>reloadAfterAdding</key>
-	<true/>
-	<key>reloadAfterEditing</key>
-	<true/>
-	<key>reloadAfterRemoving</key>
-	<false/>
-	<key>nullValue</key>
-	<string>NULL</string>
-	<key>showError</key>
-	<true/>
-	<key>dontShowBlob</key>
-	<false/>
-	<key>encoding</key>
+	<key>DefaultEncoding</key>
 	<string>Autodetect</string>
-	<key>useMonospacedFonts</key>
+	<key>UseMonospacedFonts</key>
 	<false/>
-	<key>fetchRowCount</key>
+	<key>CustomQueryMaxHistoryItems</key>
+	<integer>20</integer>
+	<key>ReloadAfterAddingRow</key>
 	<true/>
-	<key>growlNotifications</key>
+	<key>ReloadAfterEditingRow</key>
+	<true/>
+	<key>ReloadAfterRemovingRow</key>
+	<false/>
+	<key>LoadBlobsAsNeeded</key>
+	<false/>
+	<key>FetchCorrectRowCount</key>
+	<true/>
+	<key>NewFieldsAllowNulls</key>
+	<true/>
+	<key>LimitResults</key>
+	<true/>
+	<key>LimitResultsValue</key>
+	<integer>1000</integer>
+	<key>NullValue</key>
+	<string>NULL</string>
+	<key>ShowNoAffectedRowsError</key>
+	<true/>
+	<key>GrowlEnabled</key>
+	<true/>
+	<key>ConnectionTimeoutValue</key>
+	<integer>10</integer>
+	<key>UseKeepAlive</key>
+	<true/>
+	<key>KeepAliveInterval</key>
+	<integer>60</integer>
+	<key>CustomQueryEditorFont</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
+	<key>CustomQueryEditorBackgroundColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAQEBAYY=</data>
+	<key>CustomQueryEditorBacktickColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAACDqagoPwGG</data>
+	<key>CustomQueryEditorCommentColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAIPp6Og+AAGG</data>
+	<key>CustomQueryEditorNumericColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg4GAAD+Dh4aGPgABhg==</data>
+	<key>CustomQueryEditorQuoteColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg8bFRT+DnXPOPYNba609AYY=</data>
+	<key>CustomQueryEditorSQLKeywordColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg83MTD6DnXPOPQEBhg==</data>
+	<key>CustomQueryEditorTextColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAAAAAYY=</data>
+	<key>CustomQueryEditorVariableColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg3zv/T6DfO/9PoN87/0+AYY=</data>
+	<key>CustomQueryAutoindent</key>
+	<true/>
+	<key>CustomQueryAutopair</key>
+	<true/>
+	<key>CustomQueryAutouppercaseKeywords</key>
+	<false/>
+	<key>CustomQueryAutohelp</key>
+	<false/>
+	<key>CustomQueryAutohelpDelay</key>
+	<real>1.0</real>
+	<key>SelectLastFavoriteUsed</key>
+	<true/>
+	<key>LastFavoriteIndex</key>
+	<integer>0</integer>
+	<key>ConsoleShowTimestamps</key>
+	<true/>
+	<key>ConsoleShowSelectsAndShows</key>
+	<true/>
+	<key>ConsoleShowHelps</key>
 	<true/>
 </dict>
 </plist>

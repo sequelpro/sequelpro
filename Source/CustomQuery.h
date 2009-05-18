@@ -23,18 +23,22 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import <WebKit/WebKit.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMCopyTable.h"
+#import "CMTextView.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
+#import "RegexKitLite.h"
 
+#define SP_HELP_TOC_SEARCH_STRING @"contents"
 
 @interface CustomQuery : NSObject {
 
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;
-	IBOutlet id textView;
+	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet id errorText;
 	IBOutlet id affectedRowsText;
@@ -42,62 +46,94 @@
 	IBOutlet id valueTextField;
 	IBOutlet id queryFavoritesSheet;
 	IBOutlet id queryFavoritesView;
+	IBOutlet id removeQueryFavoriteButton;
+	IBOutlet id copyQueryFavoriteButton;
+	IBOutlet id runSelectionButton;
+	IBOutlet id runAllButton;
 
-	CMMCPConnection *mySQLConnection;
+	IBOutlet NSMenuItem *runSelectionMenuItem;
+	IBOutlet NSMenuItem *clearHistoryMenuItem;
+	IBOutlet NSMenuItem *shiftLeftMenuItem;
+	IBOutlet NSMenuItem *shiftRightMenuItem;
+	IBOutlet NSMenuItem *completionListMenuItem;
+	IBOutlet NSMenuItem *editorFontMenuItem;
+	IBOutlet NSMenuItem *autoindentMenuItem;
+	IBOutlet NSMenuItem *autopairMenuItem;
+	IBOutlet NSMenuItem *autohelpMenuItem;
+	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
+
+	IBOutlet NSWindow *helpWebViewWindow;
+	IBOutlet WebView *helpWebView;
+	IBOutlet NSSearchField *helpSearchField;
+	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
+	IBOutlet NSSegmentedControl *helpNavigator;
+	IBOutlet NSSegmentedControl *helpTargetSelector;
+
+
 	NSArray *queryResult;
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
+	
+	CMMCPConnection *mySQLConnection;
+	
+	NSString *usedQuery;
+	NSString *mySQLversion;
+		
+	int queryStartPosition;
+	
+	int helpTarget;
+	WebHistory *helpHistory;
+	NSString *helpHTMLTemplate;
+		
 }
 
-//IBAction methods
-- (IBAction)performQuery:(id)sender;
+// IBAction methods
+- (IBAction)runAllQueries:(id)sender;
+- (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)gearMenuItemSelected:(id)sender;
+- (IBAction)showHelpForCurrentWord:(id)sender;
+- (IBAction)showHelpForSearchString:(id)sender;
+- (IBAction)helpSegmentDispatcher:(id)sender;
+- (IBAction)helpTargetDispatcher:(id)sender;
+- (IBAction)helpSearchFindNextInPage:(id)sender;
+- (IBAction)helpSearchFindPreviousInPage:(id)sender;
+- (IBAction)helpSelectHelpTargetMySQL:(id)sender;
+- (IBAction)helpSelectHelpTargetPage:(id)sender;
+- (IBAction)helpSelectHelpTargetWeb:(id)sender;
 
-//queryFavoritesSheet methods
+
+// queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;
 - (IBAction)removeQueryFavorite:(id)sender;
 - (IBAction)copyQueryFavorite:(id)sender;
 - (IBAction)closeQueryFavoritesSheet:(id)sender;
 
-//getter methods
+// Query actions
+- (void)performQueries:(NSArray *)queries;
+- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
+
+// Accessors
 - (NSArray *)currentResult;
 
-//additional methods
+// MySQL Help
+- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;
+- (void)showHelpFor:(NSString *)aString addToHistory:(BOOL)addToHistory;
+- (void)helpTargetValidation;
+- (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
+- (NSWindow *)helpWebViewWindow;
+- (void)setMySQLversion:(NSString *)theVersion;
+
+
+// Other
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
+- (NSString *)usedQuery;
 
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-
-//tableView drag&drop datasource methods
-- (BOOL)tableView:(NSTableView *)aTableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
-- (NSDragOperation)tableView:(NSTableView*)aTableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-	proposedDropOperation:(NSTableViewDropOperation)operation;
-- (BOOL)tableView:(NSTableView*)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
-
-//tableView delegate methods
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
-
-//splitView delegate methods
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
-
-//textView delegate methods
-- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

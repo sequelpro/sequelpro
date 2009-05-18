@@ -25,6 +25,14 @@
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(int)byteSize;
++ (NSString *)stringForTimeInterval:(float)timeInterval;
+
+- (NSString *)backtickQuotedString;
+- (NSArray *)lineRangesForRange:(NSRange)aRange;
+- (NSString *)createViewSyntaxPrettifier;
+
+- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask;
+- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;

@@ -24,13 +24,18 @@
 
 #import <Cocoa/Cocoa.h>
 
+@interface NSObject (CMImageViewDelegate)
+
+- (void)processUpdatedImageData:(NSData *)data;
+
+@end
 
 @interface CMImageView : NSImageView {
-	
-	NSString *draggedFilePath;
-	
+
+	IBOutlet id delegate;
+
 }
 
-- (NSString *)draggedFilePath;
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
 
 @end

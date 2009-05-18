@@ -25,8 +25,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+#import <WebKit/WebKit.h>
+
+@class CMMCPConnection, CMMCPResult;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -38,11 +39,12 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
+	IBOutlet id tableRelationsInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableStatusInstance;
-	IBOutlet id queryConsoleInstance;
+	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id connectSheet;
@@ -53,6 +55,7 @@
 	IBOutlet id favoritesButton;
 	IBOutlet NSTableView *connectFavoritesTableView;
 	IBOutlet NSArrayController *favoritesController;
+	IBOutlet id nameField;
 	IBOutlet id hostField;
 	IBOutlet id socketField;
 	IBOutlet id userField;
@@ -61,7 +64,7 @@
 	IBOutlet id databaseField;
 
 	IBOutlet id connectProgressBar;
-	IBOutlet id connectProgressStatusText;
+	IBOutlet NSTextField *connectProgressStatusText;
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;
@@ -71,6 +74,8 @@
 	
 	IBOutlet id sidebarGrabber;
 	
+	IBOutlet NSTextView *customQueryTextView;
+	
 	IBOutlet NSTableView *dbTablesTableView;
 
 	IBOutlet id syntaxView;
@@ -79,7 +84,6 @@
 
 	CMMCPConnection *mySQLConnection;
 
-	NSMutableArray *favorites;
 	NSArray *variables;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
@@ -88,22 +92,27 @@
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
+	BOOL _encodingViaLatin1;
+	BOOL _shouldOpenConnectionAutomatically;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
+	
+	WebView *printWebView;
 }
 
 //start sheet
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (IBAction)connectToDB:(id)sender;
 - (IBAction)connect:(id)sender;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
-- (IBAction)removeFavorite:(id)sender;
+- (IBAction)editFavorites:(id)sender;
 - (id)selectedFavorite;
 - (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;
-- (void)addToFavoritesHost:(NSString *)host socket:(NSString *)socket 
+- (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password
 					  port:(NSString *)port database:(NSString *)database
 					useSSH:(BOOL)useSSH // no-longer in use
@@ -111,7 +120,8 @@
 				   sshUser:(NSString *)sshUser // no-longer in use
 			   sshPassword:(NSString *)sshPassword // no-longer in use
 				   sshPort:(NSString *)sshPort; // no-longer in use
-- (NSMutableArray *)favorites;
+
+- (NSString *)getHTMLforPrint;
 
 //connection getter
 - (CMMCPConnection *)sharedConnection;
@@ -122,11 +132,14 @@
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)closeDatabaseSheet:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
+- (IBAction)showMySQLHelp:(id)sender;
+- (IBAction)saveServerVariables:(id)sender;
 
 //encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
 - (NSString *)connectionEncoding;
+- (BOOL)connectionEncodingViaLatin1;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;
@@ -136,6 +149,7 @@
 //table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntax:(id)sender;
+- (NSArray *)columnNames;
 - (IBAction)checkTable:(id)sender;
 - (IBAction)analyzeTable:(id)sender;
 - (IBAction)optimizeTable:(id)sender;
@@ -151,6 +165,7 @@
 - (void)closeConnection;
 
 //getter methods
+- (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
 - (NSString *)mySQLVersion;
@@ -172,9 +187,14 @@
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
+- (IBAction)viewRelations:(id)sender;
+- (IBAction)addConnectionToFavorites:(id)sender;
 
 //toolbar methods
 - (void)setupToolbar;
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar;
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar;
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 - (void)updateChooseDatabaseToolbarItemWidth;
 

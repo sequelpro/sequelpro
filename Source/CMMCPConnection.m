@@ -67,8 +67,16 @@ static void forcePingTimeout(int signalNumber);
 	connectionPort = 0;
 	connectionSocket = nil;
 	keepAliveTimer = nil;
+	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
+	if (!connectionTimeout) connectionTimeout = 10;
+	useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
+	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
+	if (!keepAliveInterval) keepAliveInterval = 0;
 	lastKeepAliveSuccess = nil;
-	[NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self];
+	lastQueryExecutionTime = 0;
+	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
+		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+	}
 }
 
 
@@ -90,7 +98,6 @@ static void forcePingTimeout(int signalNumber);
 	if (socket) connectionSocket = [[NSString alloc] initWithString:socket];
 
 	if (mConnection != NULL) {
-		unsigned int connectionTimeout = SP_CONNECTION_TIMEOUT;
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 	}
 
@@ -130,6 +137,7 @@ static void forcePingTimeout(int signalNumber);
 - (BOOL) reconnect
 {
 	NSString *currentEncoding = nil;
+	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
 
 	// Store the current database and encoding so they can be re-set if reconnection was successful
@@ -138,6 +146,9 @@ static void forcePingTimeout(int signalNumber);
 	}
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	}
+	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1];
 	}
 
 	// Close the connection if it exists.
@@ -155,7 +166,6 @@ static void forcePingTimeout(int signalNumber);
 	if (mConnection != NULL) {
 
 		// Set a connection timeout for the new connection
-		unsigned int connectionTimeout = SP_CONNECTION_TIMEOUT;
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 
 		// Attempt to reestablish the connection - using own method so everything gets set up as standard.
@@ -169,8 +179,11 @@ static void forcePingTimeout(int signalNumber);
 			[self selectDB:currentDatabase];
 		}
 		if (currentEncoding) {
-			[self queryString:[NSString stringWithFormat:@"SET NAMES '%@'", currentEncoding]];
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
 			[self setEncoding:[CMMCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
+			if (currentEncodingUsesLatin1Transport) {
+				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+			}
 		}
 	} else if (parentWindow) {
 
@@ -214,23 +227,26 @@ static void forcePingTimeout(int signalNumber);
 }
 
 /*
-Gets a proper NSStringEncoding according to the given MySQL charset.
-
-MySQL 4.0 offers this charsets:
-big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1 greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis swe7 tis620 ujis usa7 win1250 win1251ukr
-
-WARNING : incomplete implementation. Please, send your fixes.
-
+ * Gets a proper NSStringEncoding according to the given MySQL charset.
+ *
+ * MySQL 4.0 offers this charsets:
+ * big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1
+ * greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis
+ * swe7 tis620 ujis usa7 win1250 win1251ukr
+ *
+ * WARNING : incomplete implementation. Please, send your fixes.
+ */
 + (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding
 {
-	// unicode
+	// Unicode encodings:
 	if (!strncmp(mysqlEncoding, "utf8", 4)) {
 		return NSUTF8StringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "ucs2", 4)) {
 		return NSUnicodeStringEncoding;
 	}
-	// west european
+
+	// Roman alphabet encodings:
 	if (!strncmp(mysqlEncoding, "ascii", 5)) {
 		return NSASCIIStringEncoding;
 	}
@@ -240,50 +256,76 @@ WARNING : incomplete implementation. Please, send your fixes.
 	if (!strncmp(mysqlEncoding, "macroman", 8)) {
 		return NSMacOSRomanStringEncoding;
 	}
-	// central european
-	if (!strncmp(mysqlEncoding, "cp1250", 6)) {
-		return NSWindowsCP1250StringEncoding;
-	}
+
+	// Roman alphabet with central/east european additions:
 	if (!strncmp(mysqlEncoding, "latin2", 6)) {
 		return NSISOLatin2StringEncoding;
 	}
-	// south european and middle east
-	if (!strncmp(mysqlEncoding, "cp1256", 6)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
+	if (!strncmp(mysqlEncoding, "cp1250", 6)) {
+		return NSWindowsCP1250StringEncoding;
 	}
-	if (!strncmp(mysqlEncoding, "greek", 5)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinGreek);
+	if (!strncmp(mysqlEncoding, "win1250", 7)) {
+		return NSWindowsCP1250StringEncoding;
 	}
-	if (!strncmp(mysqlEncoding, "hebrew", 6)) {
-		CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinHebrew);
-	}
-	if (!strncmp(mysqlEncoding, "latin5", 6)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin5);
-	}
-	// baltic
 	if (!strncmp(mysqlEncoding, "cp1257", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsBalticRim);
 	}
-	// cyrillic
+
+	// Additions for Turkish:
+	if (!strncmp(mysqlEncoding, "latin5", 6)) {
+		return NSWindowsCP1254StringEncoding;
+	}
+
+	// Greek:
+	if (!strncmp(mysqlEncoding, "greek", 5)) {
+		return NSWindowsCP1253StringEncoding;
+	}
+
+	// Cyrillic:	
+	if (!strncmp(mysqlEncoding, "win1251ukr", 6)) {
+		return NSWindowsCP1251StringEncoding;
+	}
 	if (!strncmp(mysqlEncoding, "cp1251", 6)) {
 		return NSWindowsCP1251StringEncoding;
 	}
-	// asian
-	if (!strncmp(mysqlEncoding, "big5", 4)) {
-		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5);
+	if (!strncmp(mysqlEncoding, "koi8_ru", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingKOI8_R);
 	}
+	if (!strncmp(mysqlEncoding, "koi8_ukr", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingKOI8_R);
+	}
+	 
+	// Arabic:
+	if (!strncmp(mysqlEncoding, "cp1256", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
+	}
+
+	// Hebrew:
+	if (!strncmp(mysqlEncoding, "hebrew", 6)) {
+		CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinHebrew);
+	}
+
+	// Asian:
 	if (!strncmp(mysqlEncoding, "ujis", 4)) {
 		return NSJapaneseEUCStringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "sjis", 4)) {
 		return  NSShiftJISStringEncoding;
 	}
-
-	// default to iso latin 1, even if it is not exact (throw an exception?)
-	NSLog(@"warning: unknown encoding %s! falling back to latin1.", mysqlEncoding);
+	if (!strncmp(mysqlEncoding, "big5", 4)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5);
+	}
+	if (!strncmp(mysqlEncoding, "euc_kr", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
+	}
+	if (!strncmp(mysqlEncoding, "euckr", 5)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
+	}
+	
+	// Default to iso latin 1, even if it is not exact (throw an exception?)    
+	NSLog(@"WARNING : unknown name for MySQL encoding '%s'!\n\t\tFalling back to iso-latin1.", mysqlEncoding);
 	return NSISOLatin1StringEncoding;
 }
-*/
 
 
 /*
@@ -304,21 +346,35 @@ WARNING : incomplete implementation. Please, send your fixes.
 
 
 /*
+ * Override the standard queryString: method to default to the connection encoding, as before,
+ * before pssing on to queryString: usingEncoding:.
+ */
+- (CMMCPResult *)queryString:(NSString *) query
+{
+	return [self queryString:query usingEncoding:mEncoding];
+}
+
+
+/*
  * Modified version of queryString to be used in Sequel Pro.
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either the query has been executed and the result can
  * be returned or the connection and document have been closed.
  */
-- (CMMCPResult *)queryString:(NSString *) query
+- (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult	*theResult;
-	const char	*theCQuery = [self cStringFromString:query];
+	const char	*theCQuery;
 	int			theQueryCode;
+	NSDate		*queryStartDate;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
 
 	[self stopKeepAliveTimer];
+
+	// Generate the cString as appropriate
+	theCQuery = [self cStringFromString:query usingEncoding:encoding];
 
 	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
 	// has been requested - in which case return nil
@@ -328,11 +384,17 @@ WARNING : incomplete implementation. Please, send your fixes.
 	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
 		[delegate willQueryString:query];
 	}
-
-	if (0 == (theQueryCode = mysql_query(mConnection, theCQuery))) {
+	
+	// Run the query, storing run time (note this will include some network and overhead)
+	queryStartDate = [NSDate date];
+	theQueryCode = mysql_query(mConnection, theCQuery);
+	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+	
+	// Retrieve the result or error appropriately.
+	if (0 == theQueryCode) {
 		if (mysql_field_count(mConnection) != 0) {
 
-			// Use CMMCPResult instad of MCPResult
+			// Use CMMCPResult instead of MCPResult
 			theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
 		} else {
 			return nil;
@@ -346,10 +408,20 @@ WARNING : incomplete implementation. Please, send your fixes.
 
 		return nil;
 	}
-
+	
 	[self startKeepAliveTimerResettingState:YES];
 
 	return [theResult autorelease];
+}
+
+
+/*
+ * Return the time taken to execute the last query.  This should be close to the time it took
+ * the server to run the query, but will include network lag and some client library overhead.
+ */
+- (float) lastQueryExecutionTime
+{
+	return lastQueryExecutionTime;
 }
 
 
@@ -373,9 +445,14 @@ WARNING : incomplete implementation. Please, send your fixes.
  */
 - (BOOL)checkConnection
 {
+	unsigned long threadid;
+
 	if (!mConnected) return NO;
 
 	BOOL connectionVerified = FALSE;
+
+	// Get the current thread ID for this connection
+	threadid = mConnection->thread_id;
 
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
@@ -402,6 +479,16 @@ WARNING : incomplete implementation. Please, send your fixes.
 			// "Retry" has been selected - return a recursive call.
 			default:
 				return [self checkConnection];
+		}
+
+	// If a connection exists, check whether the thread id differs; if so, the connection has
+	// probably been reestablished and we need to reset the connection encoding
+	} else if (threadid != mConnection->thread_id) {
+		if (delegate && [delegate valueForKey:@"_encoding"]) {
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+			if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+				if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+			}
 		}
 	}
 
@@ -493,7 +580,7 @@ WARNING : incomplete implementation. Please, send your fixes.
 	sigemptyset(&timeoutAction.sa_mask);
 	timeoutAction.sa_flags = 0;
 	sigaction(SIGALRM, &timeoutAction, NULL);
-	alarm(SP_CONNECTION_TIMEOUT+1);
+	alarm(connectionTimeout+1);
 
 	// Set up a "restore point", returning 0; if longjmp is used later with this reference, execution
 	// jumps back to this point and returns a nonzero value, so this function evaluates to false when initially
@@ -550,14 +637,16 @@ static void forcePingTimeout(int signalNumber)
 		[lastKeepAliveSuccess release];
 		lastKeepAliveSuccess = nil;
 	}
-	
-	keepAliveTimer = [NSTimer
-						scheduledTimerWithTimeInterval:[[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue]
-						target:self
-						selector:@selector(keepAlive:)
-						userInfo:nil
-						repeats:NO];
-	[keepAliveTimer retain];
+
+	if (useKeepAlive && keepAliveInterval) {
+		keepAliveTimer = [NSTimer
+							scheduledTimerWithTimeInterval:keepAliveInterval
+							target:self
+							selector:@selector(keepAlive:)
+							userInfo:nil
+							repeats:NO];
+		[keepAliveTimer retain];
+	}
 }
 
 /*
@@ -583,7 +672,7 @@ static void forcePingTimeout(int signalNumber)
 	// cut but mysql doesn't pick up on the fact - see comment for pingConnection above.  The same
 	// forced-timeout approach cannot be used here on a background thread.
 	// When the connection is disconnected in code, these 5 "hanging" threads are automatically cleaned.
-	if (lastKeepAliveSuccess && [lastKeepAliveSuccess timeIntervalSinceNow] < -5 * [[[NSUserDefaults standardUserDefaults] objectForKey:@"keepAliveInterval"] doubleValue]) return;
+	if (lastKeepAliveSuccess && [lastKeepAliveSuccess timeIntervalSinceNow] < -5 * keepAliveInterval) return;
 
 	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
 	[self startKeepAliveTimerResettingState:NO];
@@ -601,5 +690,24 @@ static void forcePingTimeout(int signalNumber)
 		lastKeepAliveSuccess = nil;
 	}
 	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+}
+
+
+/*
+ * Modified version of the original to support a supplied encoding.
+ * For internal use only. Transforms a NSString to a C type string (ending with \0).
+ * Lossy conversions are enabled.
+ */
+- (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding
+{
+	NSMutableData	*theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	return (const char *)[theData bytes];
 }
 @end

@@ -100,6 +100,10 @@ modified version for use with sequel-pro
                 case FIELD_TYPE_NEWDATE: // Don't know what the format for this type is...
                     theCurrentObj = [self stringWithCString:theData];
                     break;
+
+                case FIELD_TYPE_BIT:
+                    theCurrentObj = [NSString stringWithFormat:@"%u", theData[0]];
+                    break;
 					
                 case FIELD_TYPE_TINY_BLOB:
                 case FIELD_TYPE_BLOB:

@@ -23,6 +23,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+/*
+ * Define the length of the character cache to use when parsing instead of accessing
+ * via characterAtIndex:.  There is a balance here between updating the cache very
+ * often and access penalties; 1500 appears a reasonable compromise.
+ */
+#define CHARACTER_CACHE_LENGTH 1500
 
 /*
  * This class provides a string class intended for SQL parsing.  It extends NSMutableString,
@@ -53,6 +59,9 @@
 @interface SPSQLParser : NSMutableString
 {
 	id string;
+	unichar *stringCharCache;
+	long charCacheStart;
+	long charCacheEnd;
 }
 
 
@@ -210,6 +219,18 @@ typedef enum _SPCommentTypes {
 - (long) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(long)index;
 - (long) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(long)index;
 
+/*
+ * Cacheing methods to enable a faster alternative to characterAtIndex: when walking strings, and overrides to update.
+ */
+- (unichar) charAtIndex:(long)index;
+- (void) clearCharCache;
+- (void) deleteCharactersInRange:(NSRange)aRange;
+- (void) insertString:(NSString *)aString atIndex:(NSUInteger)anIndex;
+
+/*
+ * return an array of queries
+ */
+- (NSArray *) parseQueries;
 
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -

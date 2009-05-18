@@ -28,7 +28,7 @@
 #import "SPPreferenceController.h"
 
 #define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
-#define SEQUEL_PRO_DONATIONS_URL @"http://code.google.com/p/sequel-pro/wiki/Donations"
+#define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
 #define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
 
 @implementation MainController
@@ -70,6 +70,18 @@
 }
 
 #pragma mark -
+#pragma mark Getters
+
+/**
+ * Provide a method to retrieve the prefs controller
+ */
+- (SPPreferenceController *)preferenceController
+{
+	return prefsController;
+}
+
+
+#pragma mark -
 #pragma mark Services menu methods
 
 /**
@@ -78,25 +90,25 @@
 - (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error
 {
 	NSString *pboardString;
-
+	
 	NSArray *types = [pboard types];
-
+	
 	if ((![types containsObject:NSStringPboardType]) || (!(pboardString = [pboard stringForType:NSStringPboardType]))) {
 		*error = @"Pasteboard couldn't give string.";
 		
 		return;
 	}
-
+	
 	// Check if at least one document exists
 	if (![[[NSDocumentController sharedDocumentController] documents] count]) {
 		*error = @"No Documents open!";
 		
 		return;
 	}
-
+	
 	// Pass query to last created document
 	[[[[NSDocumentController sharedDocumentController] documents] objectAtIndex:([[[NSDocumentController sharedDocumentController] documents] count] - 1)] doPerformQueryService:pboardString];
-
+	
 	return;
 }
 
@@ -129,6 +141,28 @@
 
 #pragma mark -
 #pragma mark Other methods
+
+/**
+ * Override the default open-blank-document methods to automatically connect
+ * automatically opened windows.
+ */
+- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
+{
+	TableDocument *firstTableDocument;
+	
+	// Manually open a new document, setting MainController as sender to trigger autoconnection
+	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"]) {
+			[firstTableDocument setShouldAutomaticallyConnect:YES];
+		}
+		[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
+		[firstTableDocument makeWindowControllers];
+		[firstTableDocument showWindows];
+	}
+
+	// Return NO to the automatic opening
+	return NO;
+}
 
 /**
  * What exactly is this for? 

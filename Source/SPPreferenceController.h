@@ -3,6 +3,7 @@
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Dec 10, 2008
+//  Modified by Ben Perry (benperry.com.au) on Mar 28, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -26,44 +27,68 @@
 
 @interface SPPreferenceController : NSWindowController
 {
+	IBOutlet NSWindow *preferencesWindow;
+	
 	IBOutlet NSView *generalView;
 	IBOutlet NSView *notificationsView;
 	IBOutlet NSView *tablesView;
 	IBOutlet NSView *favoritesView;
-	IBOutlet NSView *advancedView;
-	IBOutlet NSView *blankView;
+	IBOutlet NSView *autoUpdateView;
+	IBOutlet NSView *networkView;
+	IBOutlet NSView *editorView;
+	
+	
+	
+	IBOutlet NSPopUpButton *defaultFavoritePopup;
 	
 	IBOutlet NSTableView *favoritesTableView;
-	
 	IBOutlet NSArrayController *favoritesController;
 	
+	IBOutlet NSTextField *nameField;
+	IBOutlet NSTextField *hostField;
+	IBOutlet NSTextField *userField;
+	IBOutlet NSTextField *databaseField;
+	IBOutlet NSSecureTextField *passwordField;
 	KeyChain *keychain;
-	
+
+	IBOutlet NSTextField *editorFontName;
+
 	NSToolbar *toolbar;
 	
 	NSToolbarItem *generalItem;
 	NSToolbarItem *notificationsItem;
 	NSToolbarItem *tablesItem;
 	NSToolbarItem *favoritesItem;
-	NSToolbarItem *advancedItem;
+	NSToolbarItem *autoUpdateItem;
+	NSToolbarItem *networkItem;
+	NSToolbarItem *editorItem;
 
-	NSMutableArray *favorites;
 	NSUserDefaults *prefs;
 }
+
+- (void)applyRevisionChanges;
 
 // IBAction methods
 - (IBAction)addFavorite:(id)sender;
 - (IBAction)removeFavorite:(id)sender;
 - (IBAction)duplicateFavorite:(id)sender;
+- (IBAction)saveFavorite:(id)sender;
+- (IBAction)updateDefaultFavorite:(id)sender;
+- (IBAction)showCustomQueryFontPanel:(id)sender;
+- (IBAction)setDefaultColors:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;
 - (IBAction)displayTablePreferences:(id)sender;
 - (IBAction)displayFavoritePreferences:(id)sender;
 - (IBAction)displayNotificationPreferences:(id)sender;
-- (IBAction)displayAdvancedPreferences:(id)sender;
+- (IBAction)displayAutoUpdatePreferences:(id)sender;
+- (IBAction)displayNetworkPreferences:(id)sender;
+- (IBAction)displayEditorPreferences:(id)sender;
 
-// Favorites accessor
-- (NSMutableArray *)favorites;
+// Other
+- (void)updateDefaultFavoritePopup;
+- (void)selectFavorites:(NSArray *)favorite;
+- (void)changeFont:(id)sender;
 
 @end

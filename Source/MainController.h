@@ -30,8 +30,6 @@
 {
 	BOOL isNewFavorite;
 	
-	NSMutableArray *favorites;
-	
 	SPPreferenceController *prefsController;
 }
 
@@ -45,6 +43,9 @@
 - (IBAction)donate:(id)sender;
 - (IBAction)visitWebsite:(id)sender;
 - (IBAction)visitHelpWebsite:(id)sender;
+
+// Getters
+- (SPPreferenceController *)preferenceController;
 
 // Other
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command;
