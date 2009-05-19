@@ -458,18 +458,21 @@
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
-		
+
+		NSCharacterSet *whitespaceAndNewline = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+		unsigned long queryCount = [queries count];
+
 		//perform all mysql-queries
-		for ( i = 0 ; i < [queries count] ; i++ ) {
-			[singleProgressBar setDoubleValue:((i+1)*100/[queries count])];
+		for ( i = 0 ; i < queryCount ; i++ ) {
+			[singleProgressBar setDoubleValue:((i+1)*100/queryCount)];
 			[singleProgressBar displayIfNeeded];
 			
 			// Skip blank or whitespace-only queries to avoid errors
-			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
+			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline] length] == 0)
 				continue;
 
 			if (importSQLAsUTF8) {
-				[mySQLConnection queryString:[queries objectAtIndex:i] usingEncoding:NSUTF8StringEncoding];			
+				[mySQLConnection queryString:[queries objectAtIndex:i] usingEncoding:NSUTF8StringEncoding];
 			} else {
 				[mySQLConnection queryString:[queries objectAtIndex:i]];
 			}
