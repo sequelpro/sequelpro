@@ -52,6 +52,7 @@
 
 - (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue;
 - (BOOL) areAdjacentCharsLinked;
+- (BOOL) isCaretAdjacentToAlphanumCharWithInsertionOf:(unichar)aChar;
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;

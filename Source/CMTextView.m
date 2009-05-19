@@ -124,6 +124,32 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /*
+ * Checks if the caret adjoins to an alphanumeric char  |word or word| or wo|rd
+ * Exception for word| and char is a “(” to allow e.g. auto-pairing () for functions
+ */
+- (BOOL) isCaretAdjacentToAlphanumCharWithInsertionOf:(unichar)aChar
+{
+	unsigned int caretPosition = [self selectedRange].location;
+	NSCharacterSet *alphanum = [NSCharacterSet alphanumericCharacterSet];
+	BOOL leftIsAlphanum = NO;
+	BOOL rightIsAlphanum = NO;
+	BOOL charIsOpenBracket = (aChar == '(');
+	
+	// Check previous/next character for being alphanum
+	// @try block for bounds checking
+	@try
+	{
+		leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
+	} @catch(id ae) { }
+	@try {
+		rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
+		
+	} @catch(id ae) { }
+
+	return (leftIsAlphanum ^ rightIsAlphanum || leftIsAlphanum && rightIsAlphanum);
+}
+
+/*
  * Checks if the caret is wrapped by auto-paired characters.
  * e.g. [| := caret]: "|" 
  */
@@ -328,11 +354,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			return;
 		}
 
-		// If the caret is inside a text string, without any selection, skip autopairing.
+		// If the caret is inside a text string, without any selection, and not adjoined to an alphanumeric char
+		// (exception for '(' ) skip autopairing.
 		// There is one exception to this - if the caret is before a linked pair character,
 		// processing continues in order to check whether the next character should be jumped
 		// over; e.g. [| := caret]: "foo|" and press " => only caret will be moved "foo"|
-		if(![self isNextCharMarkedBy:kAPlinked withValue:kAPval] && [self isNextCharMarkedBy:kLEXToken withValue:kLEXTokenValue] && ![self selectedRange].length) {
+		if( ([self isCaretAdjacentToAlphanumCharWithInsertionOf:insertedCharacter] && ![self isNextCharMarkedBy:kAPlinked withValue:kAPval] && ![self selectedRange].length) 
+			|| (![self isNextCharMarkedBy:kAPlinked withValue:kAPval] && [self isNextCharMarkedBy:kLEXToken withValue:kLEXTokenValue] && ![self selectedRange].length)) {
 			[super keyDown:theEvent];
 			return;
 		}
