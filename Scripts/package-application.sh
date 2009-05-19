@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# $Id$
+#
 # package-application.sh
 # sequel-pro
 #
@@ -63,3 +65,5 @@ then
 	SIGNATURE=`openssl dgst -sha1 -binary < "${DMG_BUILD_PATH}/${DMG_NAME}.dmg" | openssl dgst -dss1 -sign "$PRIVATE_KEY_LOCATION" | openssl enc -base64`
 	echo "$SIGNATURE" > "${DMG_BUILD_PATH}/${DMG_NAME}.dmg.signature"
 fi
+
+exit 0
