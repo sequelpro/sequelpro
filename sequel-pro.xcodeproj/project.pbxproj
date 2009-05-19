@@ -443,6 +443,35 @@
 			path = topics;
 			sourceTree = "<group>";
 		};
+		1740F8350FC3069700CF3699 /* Templates */ = {
+			isa = PBXGroup;
+			children = (
+				296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */,
+				BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */,
+			);
+			name = Templates;
+			sourceTree = "<group>";
+		};
+		1740F8360FC306AE00CF3699 /* Scripting */ = {
+			isa = PBXGroup;
+			children = (
+				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
+				17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */,
+			);
+			name = Scripting;
+			sourceTree = "<group>";
+		};
+		1740F8370FC306C900CF3699 /* Plists */ = {
+			isa = PBXGroup;
+			children = (
+				17E641F60EF02088001BC333 /* Info.plist */,
+				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
+				17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */,
+				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
+			);
+			name = Plists;
+			sourceTree = "<group>";
+		};
 		1761FD9C0EF0486A00331368 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
@@ -469,21 +498,16 @@
 		17E641430EF01E90001BC333 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1740F8370FC306C900CF3699 /* Plists */,
 				17E6418B0EF01FF7001BC333 /* Images */,
 				1703EF2A0F0B0742005BBE7E /* english_help */,
-				17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */,
+				1740F8360FC306AE00CF3699 /* Scripting */,
+				1740F8350FC3069700CF3699 /* Templates */,
 				384582BC0FB95C9100DDACB6 /* Localizable.strings */,
-				296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */,
-				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
-				17E641F60EF02088001BC333 /* Info.plist */,
-				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
 				17E642390EF0216C001BC333 /* Credits.rtf */,
 				17E641F40EF02088001BC333 /* askForPass.sh */,
-				17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */,
-				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
 				5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */,
-				BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
