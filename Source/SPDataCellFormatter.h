@@ -1,5 +1,7 @@
 //
-//  SPDataCell.h
+//  $Id$
+//
+//  SPDataCellFormatter.h
 //  sequel-pro
 //
 //  Created by Rowan Beentje on 11/02/2009.

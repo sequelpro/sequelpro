@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  CMCopyTable.m
 //  sequel-pro
 //

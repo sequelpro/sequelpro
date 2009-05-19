@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPTextViewAdditions.h
 //  sequel-pro
 //

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPArrayAdditions.h
 //  sequel-pro
 //

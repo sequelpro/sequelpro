@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  CMCopyTable.h
 //  sequel-pro
 //
