@@ -204,6 +204,22 @@
 
 	[tableWindow endEditingFor:nil];
 	
+	// Populate the table type (engine) popup button
+	[tableTypeButton removeAllItems];
+	
+	CMMCPResult *engines = [mySQLConnection queryString:@"SELECT engine FROM information_schema.engines"];
+	
+	[engines dataSeek:0];
+	
+	// Add default menu item
+	[tableTypeButton addItemWithTitle:@"Default"];
+	[[tableTypeButton menu] addItem:[NSMenuItem separatorItem]];
+	
+	for (int i = 0; i < [engines numOfRows]; i++)
+	{
+		[tableTypeButton addItemWithTitle:[[engines fetchRowAsArray] objectAtIndex:0]];
+	}
+	
 	[NSApp beginSheet:tableSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
@@ -228,6 +244,11 @@
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableEncodingButton indexOfSelectedItem] > 0) {
 		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[tableDocumentInstance mysqlEncodingFromDisplayEncoding:[tableEncodingButton title]] backtickQuotedString]];
+	}
+	
+	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
+	if ([tableTypeButton indexOfSelectedItem] > 0) {
+		createStatement = [NSString stringWithFormat:@"%@ ENGINE = %@", createStatement, [[tableTypeButton title] backtickQuotedString]];
 	}
 	
 	// Create the table

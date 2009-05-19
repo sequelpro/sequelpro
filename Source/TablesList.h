@@ -58,6 +58,7 @@ enum sp_table_types
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
+	IBOutlet id tableTypeButton;
 	IBOutlet id addTableButton;
 	IBOutlet id tableRenameSheet;
 	IBOutlet id tableRenameField;
