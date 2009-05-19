@@ -36,6 +36,8 @@
 	<true/>
 	<key>KeepAliveInterval</key>
 	<integer>60</integer>
+	<key>DisplayTableViewVerticalGridlines</key>
+	<false/>
 	<key>CustomQueryEditorFont</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
 	<key>CustomQueryEditorBackgroundColor</key>
@@ -63,7 +65,7 @@
 	<key>CustomQueryAutohelp</key>
 	<false/>
 	<key>CustomQueryAutohelpDelay</key>
-	<real>1.0</real>
+	<real>1</real>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>
 	<key>LastFavoriteIndex</key>

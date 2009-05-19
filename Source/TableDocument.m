@@ -63,28 +63,38 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (id)init
 {
 	if ((self = [super init])) {
+		
 		_encoding = [@"utf8" retain];
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
+		
+		printWebView = [[WebView alloc] init];
+		[printWebView setFrameLoadDelegate:self];
+		
+		prefs = [NSUserDefaults standardUserDefaults];
 	}
-	printWebView = [[WebView alloc] init];
-	[printWebView setFrameLoadDelegate:self];	
+		
 	return self;
 }
 
 - (void)awakeFromNib
 {
-	// register selection did change handler for favorites controller (used in connect sheet)
+	// Register selection did change handler for favorites controller (used in connect sheet)
 	[favoritesController addObserver:self forKeyPath:@"selectionIndex" options:NSKeyValueChangeInsertion context:TableDocumentFavoritesControllerSelectionIndexDidChange];
 	
-	// register double click for the favorites view (double click favorite to connect)
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:tableSourceInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
+	
+	// Register double click for the favorites view (double click favorite to connect)
 	[connectFavoritesTableView setTarget:self];
 	[connectFavoritesTableView setDoubleAction:@selector(connect:)];
 	
-	// find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
+	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
 	
-	// hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
+	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
 }
 
@@ -1927,8 +1937,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
 	NSTableColumn *theCol;
 	
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
 												 name:@"SMySQLQueryWillBePerformed" object:nil];
@@ -2130,7 +2138,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[variables release];
 	[selectedDatabase release];
 	[mySQLVersion release];
-	[prefs release];
 	
 	[super dealloc];
 }

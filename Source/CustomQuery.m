@@ -39,12 +39,9 @@
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
 
-
 @implementation CustomQuery
 
-
 #pragma mark IBAction methods
-
 
 /*
  * Split all the queries in the text view, split them into individual queries,
@@ -912,7 +909,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 
 	mySQLConnection = theConnection;
 
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	if ( [prefs objectForKey:@"queryFavorites"] ) {
 		queryFavorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"queryFavorites"]];
 	} else {
@@ -1802,7 +1798,6 @@ traps enter key and
 	}
 }
 
-
 /*
  * Manage contextual menu in helpWebView
  * Ignore "Reload", "Open Link", "Open Link in new Window", "Download link" etc.
@@ -1872,44 +1867,65 @@ traps enter key and
 
 }
 
+#pragma mark -
+#pragma mark Other
+
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+        [customQueryView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+}
 
 #pragma mark -
 
 // Last but not least
 - (id)init;
 {
-	self = [super init];
-	prefs = nil;
-	usedQuery = [[NSString stringWithString:@""] retain];
-
-	// init helpHTMLTemplate
-	NSError *error;
-	helpHTMLTemplate = [[NSString alloc]
-			initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"]
-			encoding:NSUTF8StringEncoding
-			error:&error];
-	// an error occurred while reading
-	if (helpHTMLTemplate == nil)
-	{
-		NSLog(@"%@", [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]]);
-		NSBeep();
+	if ((self = [super init])) {
+		
+		usedQuery = [[NSString stringWithString:@""] retain];
+		
+		// init helpHTMLTemplate
+		NSError *error;
+		
+		helpHTMLTemplate = [[NSString alloc]
+							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"]
+							encoding:NSUTF8StringEncoding
+							error:&error];
+		
+		// an error occurred while reading
+		if (helpHTMLTemplate == nil) {
+			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]]);
+			NSBeep();
+		}
+		
+		// init search history
+		[helpWebView setMaintainsBackForwardList:YES];
+		[[helpWebView backForwardList] setCapacity:20];
+		
+		prefs = [NSUserDefaults standardUserDefaults];
 	}
 
-	// init search history
-	[helpWebView setMaintainsBackForwardList:YES];
-	[[helpWebView backForwardList] setCapacity:20];
-
 	return self;
+}
+
+- (void)awakeFromNib
+{
+	// Set the structure and index view's vertical gridlines if required
+	[customQueryView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 - (void)dealloc
 {
 	[queryResult release];
-	[prefs release];
 	[queryFavorites release];
 	[usedQuery release];
+	
 	[super dealloc];
-
 }
 	
 @end

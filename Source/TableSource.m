@@ -508,8 +508,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 
 	mySQLConnection = theConnection;
 
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-
 	//set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 
@@ -816,6 +814,16 @@ fetches the result as an array with a dictionary for each row in it
 	}
 }
 
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+        [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+		[indexView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+}
 
 #pragma mark Getter methods
 
@@ -1194,19 +1202,28 @@ traps enter and esc and make/cancel editing without entering next row
 	return [structureGrabber convertRect:[structureGrabber bounds] toView:splitView];
 }
 
-//last but not least
+// Last but not least
 - (id)init
 {
-	self = [super init];
-
-	tableFields = [[NSMutableArray alloc] init];
-	indexes = [[NSMutableArray alloc] init];
-	oldRow = [[NSMutableDictionary alloc] init];
-	enumFields = [[NSMutableDictionary alloc] init];
-
-	currentlyEditingRow = -1;
+	if ((self = [super init])) {
+		tableFields = [[NSMutableArray alloc] init];
+		indexes     = [[NSMutableArray alloc] init];
+		oldRow      = [[NSMutableDictionary alloc] init];
+		enumFields  = [[NSMutableDictionary alloc] init];
+		
+		currentlyEditingRow = -1;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+	}
 
 	return self;
+}
+
+- (void)awakeFromNib
+{
+	// Set the structure and index view's vertical gridlines if required
+	[tableSourceView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[indexView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 - (void)dealloc
@@ -1215,7 +1232,6 @@ traps enter and esc and make/cancel editing without entering next row
 	[indexes release];
 	[oldRow release];
 	[defaultValues release];
-	[prefs release];
 	[enumFields release];
 	
 	[super dealloc];

@@ -40,21 +40,35 @@
 
 @implementation TableContent
 
+/**
+ * Standard init method. Initialize various ivars.
+ */
 - (id)init
 {
-	if (![super init])
-		return nil;
-	
-	fullResult = [[NSMutableArray alloc] init];
-	filteredResult = [[NSMutableArray alloc] init];
-	oldRow = [[NSMutableDictionary alloc] init];
-	selectedTable = nil;
-	sortField = nil;
-	areShowingAllRows = false;
-	currentlyEditingRow = -1;
-	usedQuery = [[NSString stringWithString:@""] retain];
+	if ((self == [super init])) {
 		
+		fullResult     = [[NSMutableArray alloc] init];
+		filteredResult = [[NSMutableArray alloc] init];
+		oldRow         = [[NSMutableDictionary alloc] init];
+		
+		selectedTable = nil;
+		sortField     = nil;
+		
+		areShowingAllRows = false;
+		currentlyEditingRow = -1;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+		
+		usedQuery = [[NSString stringWithString:@""] retain];
+	}
+	
 	return self;
+}
+
+- (void)awakeFromNib
+{
+	// Set the table content view's vertical gridlines if required
+	[tableContentView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 /*
@@ -1084,7 +1098,6 @@
 	
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
 	
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[argumentField setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		[limitRowsField setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
@@ -2191,12 +2204,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 }
 
+// TextView delegate methods
 
-//textView delegate methods
-- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
-/*
- traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return
+/**
+ * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
  */
+- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
 	if ( aTextView == editTextView ) {
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
@@ -2211,9 +2224,17 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return NO;
 }
 
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+        [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+}
 
-//last but not least
-
+// Last but not least
 - (void)dealloc
 {	
 	[editData release];
@@ -2223,7 +2244,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[oldRow release];
 	[compareType release];
 	if (sortField) [sortField release];
-	[prefs release];
 	[usedQuery release];
 	
 	[super dealloc];
