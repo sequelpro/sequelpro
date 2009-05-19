@@ -24,6 +24,17 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPSQLParser.h"
+#import "RegexKitLite.h"
+
+/*
+ * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
+ */
+#import "SPSQLTokenizer.h"
+extern int tolex();
+extern int yyuoffset, yyuleng;
+typedef struct to_buffer_state *TO_BUFFER_STATE;
+void to_switch_to_buffer(TO_BUFFER_STATE);
+TO_BUFFER_STATE to_scan_string (const char *);
 
 /*
  * Please see the header files for a general description of the purpose of this class,
@@ -426,6 +437,77 @@
 	return resultsArray;
 }
 
+/*
+ * As splitStringByCharacter: ..., but allows control over quoting
+ * - it recognises CREATE ... BEGIN ... END statements
+ * - it can detect a SINGLE SQL statement in between
+ *     delimiter foo ... foo delimiter ; 
+ *     ['delimiter ;' MUST be given!]
+ * - it returns an array of ranges (as NSString "{loc, length}").
+ * FromPosition: is needed if a subrange is passed to sync the ranges 
+ * according to the CQ textView ones.
+ */
+- (NSArray *) splitStringIntoRangesOfSQLQueries
+{
+	return [self splitStringIntoRangesOfSQLQueriesFromPosition:0];
+}
+- (NSArray *) splitStringIntoRangesOfSQLQueriesFromPosition:(long)position
+{
+	NSMutableArray *resultsArray = [NSMutableArray array];
+
+	//initialise flex
+	yyuoffset = 0; yyuleng = 0;
+	to_switch_to_buffer(to_scan_string([string UTF8String]));
+
+	unsigned long token;
+	unsigned long lastFoundToken = 0;
+	unsigned long delimLength = 0;
+	unsigned long commentStart = 0;
+	unsigned long commentLength = 0;
+	
+	NSString *delimString;
+
+	//now loop through all queries
+	while (token=tolex()){
+		switch (token) {
+			case SP_SQL_TOKEN_SEMICOLON:
+				[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, yyuoffset-lastFoundToken]];
+				break;
+			case SP_SQL_TOKEN_SINGLE_LINE_COMMENT:
+				commentStart = yyuoffset+position;
+				commentLength = yyuleng;
+				break;
+			case SP_SQL_TOKEN_DELIM_END:
+				[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, yyuoffset-lastFoundToken-delimLength]];
+				delimLength = 0;
+				delimString = nil;
+				break;
+			case SP_SQL_TOKEN_DELIM_VALUE:
+				delimString = [string substringWithRange:NSMakeRange(yyuoffset,yyuleng)];
+				// NSLog(@"del: %@", delimString);
+				delimLength = yyuleng;
+				break;
+			case SP_SQL_TOKEN_COMPOUND_END:
+				[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, yyuoffset+yyuleng-lastFoundToken]];
+				break;
+			default:
+				continue;
+		}
+		if(token<SP_SQL_TOKEN_IGNORE)
+		{
+			lastFoundToken = yyuoffset+yyuleng;
+			// ignore sinlge comment lines at the very beginning of a query
+			if(commentStart == lastFoundToken)
+				lastFoundToken += commentLength;
+		}
+	}
+
+	// add the last text chunk as query
+	if(lastFoundToken+1<[self length])
+		[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, [self length]-lastFoundToken-delimLength]];
+
+	return resultsArray;
+}
 
 /*
  * A method intended for use by the functions above.

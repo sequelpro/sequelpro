@@ -25,6 +25,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPSQLTokenizer.h"
+
 int utf8strlenfortoken(const char * _s);
 int yyuoffset, yyuleng;
 
@@ -32,10 +33,13 @@ int yyuoffset, yyuleng;
 
 //keep track of the current utf-8 character (not byte) offset and token length
 #define YY_USER_ACTION { yyuoffset += yyuleng; yyuleng = utf8strlenfortoken(yytext); }
+//ignore the output of unmatched characters
+#define ECHO {}
 %}
 %option prefix="to"
 %option noyywrap
 %option case-insensitive
+%option nostdinit
 
 s			[ \t\n\r]
 dkey		"delimiter"
@@ -45,34 +49,33 @@ compstart	"begin"{s}
 compend		{s}"end"
 %x comment
 %x delim
-%x delimbody
+%x delimend
 %x comp
 %x compbody
 
 %%
 
-\"([^"\\]|\\(.|[\n\r]))*\"?			{ return SP_SQL_TOKEN_IGNORE; }
-'([^'\\]|\\(.|[\n\r]))*'?			{ return SP_SQL_TOKEN_IGNORE; }
-`[^`]*`?							{ return SP_SQL_TOKEN_IGNORE; }
+\"([^"\\]|\\(.|[\n\r]))*\"?			{ ; }
+'([^'\\]|\\(.|[\n\r]))*'?			{ ; }
+`[^`]*`?							{ ; }
 
-"/*"								{ BEGIN(comment); return SP_SQL_TOKEN_IGNORE; }
-<comment>[^*]* 						{ return SP_SQL_TOKEN_IGNORE; }
-<comment>"*"+						{ return SP_SQL_TOKEN_IGNORE; }
-<comment>"*"+"/" 					{ BEGIN(INITIAL); return SP_SQL_TOKEN_IGNORE; }
+"/*"								{ BEGIN(comment); }
+<comment>[^*]* 						{ ; }
+<comment>"*"+						{ ; }
+<comment>"*"+"/" 					{ BEGIN(INITIAL); }
 #[^\n\r]*(\n|\r)?			|
---[ \t][^\n\r]*(\n|\r)?				{ return SP_SQL_TOKEN_IGNORE; }
+--[ \t][^\n\r]*(\n|\r)?				{ return SP_SQL_TOKEN_SINGLE_LINE_COMMENT; }
 
-{s}+								{ return SP_SQL_TOKEN_IGNORE; }
+{s}+								{ ; }
 
-{s}*{dkey}{s}+						{ BEGIN(delim); return SP_SQL_TOKEN_IGNORE; }
-<delim>{dval}+						{ BEGIN(delimbody); return SP_SQL_TOKEN_DELIM_VALUE; }
-<delimbody>{s}+{dkey}{s}+{scol}{s}*	{ BEGIN(INITIAL); return SP_SQL_TOKEN_DELIM_END; }
-{compstart}							{ BEGIN(comp); return SP_SQL_TOKEN_IGNORE; }
-<comp>{dval}+						{ BEGIN(compbody); return SP_SQL_TOKEN_IGNORE; }
+{s}*{dkey}{s}+						{ BEGIN(delim); }
+<delim>{dval}+						{ BEGIN(delimend); return SP_SQL_TOKEN_DELIM_VALUE; }
+<delimend>{s}+{dkey}{s}+{scol}{s}*	{ BEGIN(INITIAL); return SP_SQL_TOKEN_DELIM_END; }
+{compstart}							{ BEGIN(comp); }
+<comp>{dval}+						{ BEGIN(compbody); }
 <compbody>{compend}{s}*{scol}		{ BEGIN(INITIAL); return SP_SQL_TOKEN_COMPOUND_END; }
 
 {scol}{s}*							{ return SP_SQL_TOKEN_SEMICOLON; }
-[.\r\n]+							{ return SP_SQL_TOKEN_IGNORE; }
 
 
 <<EOF>>   						{

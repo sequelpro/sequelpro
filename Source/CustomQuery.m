@@ -780,6 +780,16 @@ sets the tableView columns corresponding to the mysql-result
 	// Split the current text into queries
 	customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringByCharacter:';']];
+	
+	// ========= test case for SQL splitting into ranges == START
+	// NSArray *qs; int qc;
+	// qs = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesOfSQLQueries]];
+	// NSLog(@"---START---");
+	// for(qc=0;qc<[qs count];qc++) {
+	// 	NSLog(@"%d:", qc);
+	// 	NSLog(@"%@", [[textView string] substringWithRange:NSRangeFromString([qs objectAtIndex:qc])]);
+	// }
+	// ========= test case for SQL splitting into ranges == END
 	[customQueryParser release];
 
 	// Walk along the array of queries to identify the current query - taking into account

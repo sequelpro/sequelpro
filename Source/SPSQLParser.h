@@ -213,6 +213,19 @@ typedef enum _SPCommentTypes {
 - (NSArray *) splitStringByCharacter:(unichar)character skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
 /*
+ * As splitStringByCharacter: ..., but allows control over quoting
+ * - it recognises CREATE ... BEGIN ... END statements
+ * - it can detect a SINGLE SQL statement in between
+ *     delimiter foo ... foo delimiter ; 
+ *     ['delimiter ;' MUST be given!]
+ * - it returns an array of ranges (as NSString "{loc, length}").
+ * FromPosition: is needed if a subrange is passed to sync the ranges 
+ * according to the CQ textView ones.
+ */
+- (NSArray *) splitStringIntoRangesOfSQLQueries;
+- (NSArray *) splitStringIntoRangesOfSQLQueriesFromPosition:(long)position;
+
+/*
  * Methods used internally by this class to power the methods above:
  */
 - (long) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
