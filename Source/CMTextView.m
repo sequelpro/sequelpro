@@ -280,10 +280,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) keyDown:(NSEvent *)theEvent
 {
 
-	if([prefs boolForKey:@"CustomQueryAutohelp"]) // cancel autoHelp request
+	if([prefs boolForKey:@"CustomQueryAutohelp"]) {// restart autoHelp timer
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
+		[self performSelector:@selector(autoHelp) withObject:nil 
+			afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+	}
 	
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
@@ -446,8 +449,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-	if([prefs boolForKey:@"CustomQueryAutohelp"])
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
 
 }
 
@@ -1778,8 +1779,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void)autoHelp
 {
+
 	if(![prefs boolForKey:@"CustomQueryAutohelp"]) return;
-	
+
 	// If selection show Help for it
 	if([self selectedRange].length)
 	{
@@ -2067,6 +2069,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	//make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
+
+	if([prefs boolForKey:@"CustomQueryAutohelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
 
 	[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doSyntaxHighlighting) 
