@@ -2169,6 +2169,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 
+	[[sheet window] orderOut:nil];
 	if ( returnCode == NSAlertFirstButtonReturn )
 		[self insertFileContentOfFile:[sheet helpAnchor]];
 
@@ -2226,7 +2227,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[task release];
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
-	if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result hasPrefix:@"text/plain"])
+	if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result hasPrefix:@"text/plain"] || [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"])
 	{
 		// if UTF16/32 cocoa will try to find the correct encoding
 		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)
