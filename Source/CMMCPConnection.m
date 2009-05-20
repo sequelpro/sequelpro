@@ -42,8 +42,7 @@ static void forcePingTimeout(int signalNumber);
 		theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
 		if ([theResult numOfRows]) {
 			[theResult dataSeek:0];
-			serverVersionString = [NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]];
-			[theResult dataSeek:[theResult numOfRows]];
+			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
 		}
 	}
 }
@@ -146,8 +145,9 @@ static void forcePingTimeout(int signalNumber);
 	
 	if( serverVersionString != nil ) {
 		serverVersionString = nil;
+		[serverVersionString release];
 	}
-	
+
 	[self stopKeepAliveTimer];
 }
 
