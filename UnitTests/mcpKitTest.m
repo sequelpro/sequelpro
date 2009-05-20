@@ -66,6 +66,7 @@
 		return;
 	
 	STAssertTrue( [mySQLConnection serverMajorVersion] != 0, @"server version");
+	STAssertTrue( [mySQLConnection serverMajorVersion] != 0, @"server version");
 }
 
 
