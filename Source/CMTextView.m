@@ -103,7 +103,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion
 {
 	mySQLConnection = theConnection;
-	NSLog(@"%d", majorVersion);
 	mySQLmajorVersion = majorVersion;
 }
 
@@ -304,7 +303,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[self performSelector:@selector(autoHelp) withObject:nil 
 			afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
 	}
-	
+
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
@@ -321,7 +320,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
-	
+
+	if ([theEvent keyCode] == 53 || insertedCharacter == NSF5FunctionKey){ // ESC key or F5 for completion
+		[super keyDown: theEvent];
+		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
+		if(![self selectedRange].length && [self selectedRange].location)
+			[[self textStorage] removeAttribute:kSQLkeyword range:NSMakeRange([self selectedRange].location-1,1)];
+		return;
+	}
+
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
 	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
 		if(curFlags==(NSControlKeyMask))
@@ -332,7 +339,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	if([charactersIgnMod isEqualToString:@"h"]) // ^C copy as RTF
 		if(curFlags==(NSControlKeyMask))
 		{
-			
 			[self showMySQLHelpForCurrentWord:self];
 			return;
 		}
@@ -490,7 +496,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSRange currentRange = [self selectedRange];
 	if (currentRange.length == 0 && currentRange.location > 0 && [self areAdjacentCharsLinked])
 		[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
-	
+
 	// Avoid auto-uppercasing if resulting word would be a SQL keyword;
 	// e.g. type inta| and deleteBackward:
 	delBackwardsWasPressed = YES;	
@@ -680,6 +686,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 
 	if (!charRange.length) return nil;
+	
+	// Refresh quote attributes
+	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
+	[self insertText:@""];
+	
 	
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
@@ -1965,7 +1976,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	//first remove the old colors and kQuote
 	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
-	[textStore removeAttribute:kQuote range:textRange];
+	// mainly for suppressing auto-pairing in 
 	[textStore removeAttribute:kLEXToken range:textRange];
 
 	//initialise flex
@@ -2007,14 +2018,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 		// make sure that tokenRange is valid (and therefore within textRange)
 		// otherwise a bug in the lex code could cause the the TextView to crash
-		tokenRange = NSIntersectionRange(tokenRange, textRange); 
+		tokenRange = NSIntersectionRange(tokenRange, textRange);
 		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
-		tokenEnd = tokenRange.location+tokenRange.length-1; 
+		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
 		if (autouppercaseKeywords && !delBackwardsWasPressed
-			&& [[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil])
+			&& [[[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
@@ -2024,13 +2035,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				BOOL doIt = NO;
 				@try
 				{
-					doIt = ![[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1  effectiveRange:nil];
-				} @catch(id ae) { doIt = YES;  }
+					doIt = ![[[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1 effectiveRange:nil] isEqualToString:kValue];
+				} @catch(id ae) { doIt = NO; }
 
 				if(doIt && ![[curTokenString uppercaseString] isEqualToString:curTokenString])
 				{
 					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
-					[self shouldChangeTextInRange:tokenRange replacementString:[curTokenString uppercaseString]];
+					[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
 					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
 				}
 			}
@@ -2165,11 +2176,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	if([prefs boolForKey:@"CustomQueryAutohelp"])
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
 
-	[NSObject cancelPreviousPerformRequestsWithTarget:self 
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doSyntaxHighlighting) 
 								object:nil];
 
-	[self doSyntaxHighlighting];
+	// Do syntax highlighting only if the user really changed the text
+	if([textStore editedMask] != 1){
+		[self doSyntaxHighlighting];
+	}
 
 }
 
