@@ -40,9 +40,11 @@ static void forcePingTimeout(int signalNumber);
 	if( mConnected ) {
 		CMMCPResult *theResult;
 		theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
-		if ([theResult numOfRows]) 
-			[theResult dataSeek:0];	
-		serverVersionString = [NSString stringWithString:[[theResult fetchRowAsDictionary] objectForKey:@"Value"]];	
+		if ([theResult numOfRows]) {
+			[theResult dataSeek:0];
+			serverVersionString = [NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]];
+			[theResult dataSeek:[theResult numOfRows]];
+		}
 	}
 }
 @end
