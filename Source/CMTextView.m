@@ -50,6 +50,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kBTQuoteValue  @"isBTQuoted"
 
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
+#define SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG          1001
 
 #define SP_SYNTAX_HILITE_BIAS 2000
 
@@ -2035,7 +2036,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	else
 		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word");
 	
-	// Add the menu item if it doesn't yet exist
+	// Add the menu items for
+	// - MySQL Help for Word/Selection
+	// - Copy as RTF
+	// if it doesn't yet exist
 	NSMenu *menu = [[self class] defaultMenu];
 	
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
@@ -2047,6 +2051,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
 	} else {
 		[[menu itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] setTitle:showMySQLHelpFor];
+	}
+	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG] == nil)
+	{
+		NSMenuItem *copyAsRTFMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Copy as RTF", @"Copy as RTF") action:@selector(copyAsRTF) keyEquivalent:@"c"];
+		[copyAsRTFMenuItem setTag:SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG];
+		[copyAsRTFMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+		[menu insertItem:copyAsRTFMenuItem atIndex:2];
 	}
     return menu;
 }
@@ -2062,7 +2073,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		long stringSize = [self getRangeForCurrentWord].length;
 		return (stringSize || stringSize > 64);
 	}
-	
+	// Enable Copy as RTF if soemthing is selected
+	if ([menuItem action] == @selector(copyAsRTF)) {
+		return ([self selectedRange].length>0);
+	}	
 	return YES;
 }
 
