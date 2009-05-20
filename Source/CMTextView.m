@@ -28,6 +28,10 @@
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
 
+
+#pragma mark -
+#pragma mark lex init
+
 /*
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
@@ -37,6 +41,9 @@ extern int yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
+
+#pragma mark -
+#pragma mark attribute definition 
 
 #define kAPlinked      @"Linked" // attribute for a via auto-pair inserted char
 #define kAPval         @"linked"
@@ -49,13 +56,17 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kBTQuote       @"BTQuote"
 #define kBTQuoteValue  @"isBTQuoted"
 
+#pragma mark -
+#pragma mark constant definitions
+
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
 #define SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG          1001
 
 #define SP_SYNTAX_HILITE_BIAS 2000
 
-
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
+
+#pragma mark -
 
 @implementation CMTextView
 
@@ -87,9 +98,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
 
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
-
+	
 }
-
+- (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion
+{
+	mySQLConnection = theConnection;
+	NSLog(@"%d", majorVersion);
+	mySQLmajorVersion = majorVersion;
+}
 
 /*
  * Returns the associated line number for a character position inside of the CMTextView
@@ -683,25 +699,55 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	unsigned i, insindex;
 	insindex = 0;
 
-	// Add current table names omitting the first item (it's the table header)
-	id tableNames = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tables"];
-	[possibleCompletions addObjectsFromArray:[tableNames objectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [tableNames count]-1)]]];
 
-	// Add column names to completions list for currently selected table
-	if ([[[self window] delegate] table] != nil) {
-		id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
-		[possibleCompletions addObjectsFromArray:columnNames];
-	}
-
-	// Add all database names
-	MCPResult *queryResult = [[[[self window] delegate] valueForKeyPath:@"mySQLConnection"] valueForKey:@"listDBs"];
-	if ([queryResult numOfRows])
-		[queryResult dataSeek:0];
-	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+	if([mySQLConnection isConnected])
 	{
-		[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-	}
+		// Add table names to completions list
+		MCPResult *queryResult = [mySQLConnection listTables];
+		if ([queryResult numOfRows])
+			[queryResult dataSeek:0];
+		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+		{
+			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+		}
 
+		// Add field names to completions list for currently selected table
+		if ([[[self window] delegate] table] != nil) {
+			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
+			[possibleCompletions addObjectsFromArray:columnNames];
+		}
+
+		// Add all database names to completions list
+		queryResult = [mySQLConnection listDBs];
+		if ([queryResult numOfRows])
+			[queryResult dataSeek:0];
+		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+		{
+			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+		}
+
+		// Add proc/func only for MySQL version 5 or higher
+		if(mySQLmajorVersion > 4) {
+			// Add all procedures to completions list for currently selected table
+			queryResult = [mySQLConnection queryString:@"SHOW PROCEDURE STATUS"];
+			if ([queryResult numOfRows])
+				[queryResult dataSeek:0];
+			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+			{
+				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+			}
+
+			// Add all function to completions list for currently selected table
+			queryResult = [mySQLConnection queryString:@"SHOW FUNCTION STATUS"];
+			if ([queryResult numOfRows])
+				[queryResult dataSeek:0];
+			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+			{
+				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+			}
+		}
+		
+	}
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
@@ -729,6 +775,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				// Not matching case --> Insert at end of completion list
 				[compl addObject:obj];
 	}
+
+	[possibleCompletions release];
 
 	return [compl autorelease];
 }

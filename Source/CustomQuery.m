@@ -1403,6 +1403,8 @@ traps enter key and
 - (void)setMySQLversion:(NSString *)theVersion
 {
 	mySQLversion = [[theVersion substringToIndex:3] retain];
+	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] intValue]];
+	
 }
 
 /*

@@ -47,6 +47,9 @@
 	
 	NSUserDefaults *prefs;
 
+	CMMCPConnection *mySQLConnection;
+	int mySQLmajorVersion;
+
 }
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
@@ -77,5 +80,6 @@
 - (unsigned int) characterIndexOfPoint:(NSPoint)aPoint;
 - (void) makeTextSizeLarger;
 - (void) makeTextSizeSmaller;
+- (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion;
 
 @end
