@@ -304,7 +304,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
-	int keyCode = [theEvent keyCode];
 	
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
 	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
