@@ -695,7 +695,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		// Only parse for words if text size is less than 6MB
 		if([[self string] length]<6000000)
 		{
-			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~"];
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
 			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
 			[possibleCompletions addObjectsFromArray:textViewWords];
 		}
