@@ -236,16 +236,19 @@ reloads the table (performing a new mysql-query)
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	[tableFields addObject:[NSMutableDictionary
-							dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
-										  forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]];
+	int insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
+	
+	[tableFields insertObject:[NSMutableDictionary 
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+							   forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]
+					  atIndex:insertIndex];
 
 	[tableSourceView reloadData];
-	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
+	[tableSourceView selectRow:insertIndex byExtendingSelection:NO];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableSourceView selectedRow];
-	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
+	[tableSourceView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
 
 /**
@@ -711,10 +714,14 @@ fetches the result as an array with a dictionary for each row in it
 		if ( code ) {
 			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
 				[queryString appendString:@" PRIMARY KEY"];
+				[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 			} else {
+				[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
+	} else {
+		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 	}
 		
 	[mySQLConnection queryString:queryString];
