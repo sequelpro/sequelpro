@@ -304,6 +304,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
+	int keyCode = [theEvent keyCode];
 	
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
 	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
@@ -319,6 +320,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			[self showMySQLHelpForCurrentWord:self];
 			return;
 		}
+	if(curFlags & NSCommandKeyMask) {
+		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
+		{
+			[self makeTextSizeLarger];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
+		{
+			[self makeTextSizeSmaller];
+			return;
+		}
+	}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if ([prefs boolForKey:@"CustomQueryAutopair"] && characters && [characters length] == 1) {
@@ -720,6 +733,24 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	return [compl autorelease];
 }
 
+/*
+ * Increase the textView's font size by 1
+ */
+- (void)makeTextSizeLarger
+{
+	NSFont *aFont = [self font];
+	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:[aFont pointSize]+1]];
+}
+
+/*
+ * Decrease the textView's font size by 1 but not smaller than 4pt
+ */
+- (void)makeTextSizeSmaller
+{
+	NSFont *aFont = [self font];
+	int newSize = ([aFont pointSize]-1 < 4) ? [aFont pointSize] : [aFont pointSize]-1;
+	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:newSize]];
+}
 
 /*
  * Hook to invoke the auto-uppercasing of SQL keywords after pasting

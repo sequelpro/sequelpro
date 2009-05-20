@@ -74,6 +74,8 @@
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
 - (void) insertFileContentOfFile:(NSString *)aPath;
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (unsigned int) characterIndexOfPoint:(NSPoint)aPoint;
+- (void) makeTextSizeLarger;
+- (void) makeTextSizeSmaller;
 
 @end
