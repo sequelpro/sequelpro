@@ -220,6 +220,7 @@ closes the sheet
 	// "Editor font..." menu item to bring up the font panel
 	if (sender == editorFontMenuItem) {
 		[[NSFontPanel sharedFontPanel] setPanelFont:[textView font] isMultiple:NO];
+		[[NSFontPanel sharedFontPanel] setDelegate:self];
 		[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
 	}
 
@@ -1391,6 +1392,12 @@ traps enter key and
 	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
 	if (prefs)
 		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+}
+
+// set font panel's valid modes
+- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+{
+	return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
 }
 
 

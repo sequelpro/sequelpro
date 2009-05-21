@@ -38,6 +38,7 @@
 #define PREFERENCE_TOOLBAR_AUTOUPDATE		@"Preference Toolbar Auto Update"
 #define PREFERENCE_TOOLBAR_NETWORK			@"Preference Toolbar Network"
 #define PREFERENCE_TOOLBAR_EDITOR			@"Preference Toolbar Editor"
+#define PREFERENCE_TOOLBAR_SHORTCUTS		@"Preference Toolbar Shortcuts"
 
 #pragma mark -
 
@@ -588,6 +589,9 @@
 	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_EDITOR]) {
 		return editorItem;
 	}
+	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_SHORTCUTS]) {
+		return shortcutItem;
+	}
 	
     return [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
 }
@@ -597,7 +601,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -605,7 +609,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -613,7 +617,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
+	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 #pragma mark -
@@ -799,7 +803,7 @@
 // set font panel's valid modes
 - (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+   return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
 }
 // Action receiver for a font change in the font panel
 - (void)changeFont:(id)sender
@@ -861,11 +865,27 @@
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
 
-	[notificationsItem setLabel:NSLocalizedString(@"Notifications", @"")];
+	[notificationsItem setLabel:NSLocalizedString(@"Alerts", @"")];
 	[notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
 	[notificationsItem setTarget:self];
 	[notificationsItem setAction:@selector(displayNotificationPreferences:)];
 
+	// Editor preferences
+	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
+	
+	[editorItem setLabel:NSLocalizedString(@"Query Editor", @"")];
+	[editorItem setImage:[NSImage imageNamed:@"toolbar-preferences-queryeditor"]];
+	[editorItem setTarget:self];
+	[editorItem setAction:@selector(displayEditorPreferences:)];
+	
+	// Shortcut preferences
+	shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
+	
+	[shortcutItem setLabel:NSLocalizedString(@"Shortcuts", @"")];
+	[shortcutItem setImage:[NSImage imageNamed:@"toolbar-preferences-shortcuts"]];
+	[shortcutItem setTarget:self];
+	[shortcutItem setAction:@selector(NSBeep)];
+	
 	// AutoUpdate preferences
 	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
 
@@ -881,15 +901,6 @@
 	[networkItem setImage:[NSImage imageNamed:@"toolbar-preferences-network"]];
 	[networkItem setTarget:self];
 	[networkItem setAction:@selector(displayNetworkPreferences:)];
-
-	// Editor preferences
-	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
-
-	[editorItem setLabel:NSLocalizedString(@"Query Editor", @"")];
-	[editorItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
-	[editorItem setTarget:self];
-	[editorItem setAction:@selector(displayEditorPreferences:)];
-
 
 	[toolbar setDelegate:self];
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];

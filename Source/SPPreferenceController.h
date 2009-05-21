@@ -64,6 +64,7 @@
 	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *networkItem;
 	NSToolbarItem *editorItem;
+	NSToolbarItem *shortcutItem;
 
 	NSUserDefaults *prefs;
 }
