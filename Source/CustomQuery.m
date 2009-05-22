@@ -235,7 +235,7 @@
 	// "Auto-pair characters" toggle
 	if (sender == autopairMenuItem) {
 		BOOL enableAutopair = !([autopairMenuItem state] == NSOffState);
-		[prefs setBool:enableAutopair forKey:@"CustomQueryAutoPair"];
+		[prefs setBool:enableAutopair forKey:@"CustomQueryAutoPairCharacters"];
 		[prefs synchronize];
 		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
 		[textView setAutopair:enableAutopair];
@@ -940,8 +940,8 @@
 	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoIndent"]?NSOnState:NSOffState)];
 	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoIndent"]];
 	[textView setAutoindentIgnoresEnter:YES];
-	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutoPair"]?NSOnState:NSOffState)];
-	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutoPair"]];
+	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutoPairCharacters"]?NSOnState:NSOffState)];
+	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutoPairCharacters"]];
 	[autohelpMenuItem setState:([prefs boolForKey:@"CustomQueryUpdateAutoHelp"]?NSOnState:NSOffState)];
 	[textView setAutohelp:[prefs boolForKey:@"CustomQueryUpdateAutoHelp"]];
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]?NSOnState:NSOffState)];
