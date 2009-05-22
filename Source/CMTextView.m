@@ -277,7 +277,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	
 	// Cancel autoHelp timer
-	if([prefs boolForKey:@"CustomQueryAutohelp"])
+	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
@@ -285,8 +285,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[super mouseDown:theEvent];
 
 	// Start autoHelp timer
-	if([prefs boolForKey:@"CustomQueryAutohelp"])
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
 	
 }
 
@@ -296,12 +296,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void) keyDown:(NSEvent *)theEvent
 {
 
-	if([prefs boolForKey:@"CustomQueryAutohelp"]) {// restart autoHelp timer
+	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"]) {// restart autoHelp timer
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
 		[self performSelector:@selector(autoHelp) withObject:nil 
-			afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+			afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
 	}
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
@@ -356,7 +356,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
-	if ([prefs boolForKey:@"CustomQueryAutopair"] && characters && [characters length] == 1) {
+	if ([prefs boolForKey:@"CustomQueryAutoPairCharacters"] && characters && [characters length] == 1) {
 
 		delBackwardsWasPressed = NO;
 
@@ -516,7 +516,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
     if (aSelector == @selector(insertNewline:)
-		&& [prefs boolForKey:@"CustomQueryAutoindent"]
+		&& [prefs boolForKey:@"CustomQueryAutoIndent"]
 		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
 	{
 		NSString *textViewString = [[self textStorage] string];
@@ -1870,7 +1870,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void)autoHelp
 {
 
-	if(![prefs boolForKey:@"CustomQueryAutohelp"]) return;
+	if(![prefs boolForKey:@"CustomQueryUpdateAutoHelp"]) return;
 
 	// If selection show Help for it
 	if([self selectedRange].length)
@@ -1897,7 +1897,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	NSTextStorage *textStore = [self textStorage];
 	NSRange textRange;
-	
+		
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 	// do highlighting partly (max SP_SYNTAX_HILITE_BIAS*2).
 	// The approach is to take the middle position of the current view port
@@ -1968,8 +1968,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorNumericColor"]] retain];//[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
 	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorVariableColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
 	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
-
-	BOOL autouppercaseKeywords = [prefs boolForKey:@"CustomQueryAutouppercaseKeywords"];
+		
+	BOOL autouppercaseKeywords = [prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"];
 
 	unsigned long tokenEnd, token;
 	NSRange tokenRange;
@@ -2173,8 +2173,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	//make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
-	if([prefs boolForKey:@"CustomQueryAutohelp"])
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutohelpDelay"] retain] floatValue]];
+	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
 
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 

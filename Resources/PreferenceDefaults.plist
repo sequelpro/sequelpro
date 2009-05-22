@@ -56,15 +56,15 @@
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAAAAAYY=</data>
 	<key>CustomQueryEditorVariableColor</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg3zv/T6DfO/9PoN87/0+AYY=</data>
-	<key>CustomQueryAutoindent</key>
+	<key>CustomQueryAutoIndent</key>
 	<true/>
-	<key>CustomQueryAutopair</key>
+	<key>CustomQueryAutoPairCharacters</key>
 	<true/>
-	<key>CustomQueryAutouppercaseKeywords</key>
+	<key>CustomQueryAutoUppercaseKeywords</key>
 	<false/>
-	<key>CustomQueryAutohelp</key>
+	<key>CustomQueryUpdateAutoHelp</key>
 	<false/>
-	<key>CustomQueryAutohelpDelay</key>
+	<key>CustomQueryAutoHelpDelay</key>
 	<real>1</real>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>

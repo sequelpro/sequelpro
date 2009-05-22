@@ -121,11 +121,10 @@
 	[self performQueries:queries];
 }
 
-
-- (IBAction)chooseQueryFavorite:(id)sender
 /*
-insert the choosen favorite query in the query textView or save query to favorites or opens window to edit favorites
-*/
+ * Insert the choosen favorite query in the query textView or save query to favorites or opens window to edit favorites
+ */
+- (IBAction)chooseQueryFavorite:(id)sender
 {
 	if ( [queryFavoritesButton indexOfSelectedItem] == 1) {
 //save query to favorites
@@ -167,10 +166,10 @@ insert the choosen favorite query in the query textView or save query to favorit
 	}
 }
 
-- (IBAction)chooseQueryHistory:(id)sender
 /*
-insert the choosen history query in the query textView
-*/
+ * Insert the choosen history query in the query textView
+ */
+- (IBAction)chooseQueryHistory:(id)sender
 {
 	// Register the next action for undo
 	[textView shouldChangeTextInRange:NSMakeRange(0,[[textView string] length]) replacementString:[queryHistoryButton titleOfSelectedItem]];
@@ -180,10 +179,10 @@ insert the choosen history query in the query textView
 	[textView selectAll:self];
 }
 
-- (IBAction)closeSheet:(id)sender
 /*
-closes the sheet
-*/
+ * Closes the sheet
+ */
+- (IBAction)closeSheet:(id)sender
 {
 	[NSApp stopModal];
 }
@@ -227,7 +226,7 @@ closes the sheet
 	// "Indent new lines" toggle
 	if (sender == autoindentMenuItem) {
 		BOOL enableAutoindent = !([autoindentMenuItem state] == NSOffState);
-		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoindent"];
+		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoIndent"];
 		[prefs synchronize];
 		[autoindentMenuItem setState:enableAutoindent?NSOnState:NSOffState];
 		[textView setAutoindent:enableAutoindent];
@@ -236,7 +235,7 @@ closes the sheet
 	// "Auto-pair characters" toggle
 	if (sender == autopairMenuItem) {
 		BOOL enableAutopair = !([autopairMenuItem state] == NSOffState);
-		[prefs setBool:enableAutopair forKey:@"CustomQueryAutopair"];
+		[prefs setBool:enableAutopair forKey:@"CustomQueryAutoPair"];
 		[prefs synchronize];
 		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
 		[textView setAutopair:enableAutopair];
@@ -245,7 +244,7 @@ closes the sheet
 	// "Auto-help" toggle
 	if (sender == autohelpMenuItem) {
 		BOOL enableAutohelp = !([autohelpMenuItem state] == NSOffState);
-		[prefs setBool:enableAutohelp forKey:@"CustomQueryAutohelp"];
+		[prefs setBool:enableAutohelp forKey:@"CustomQueryUpdateAutoHelp"];
 		[prefs synchronize];
 		[autohelpMenuItem setState:enableAutohelp?NSOnState:NSOffState];
 		[textView setAutohelp:enableAutohelp];
@@ -254,22 +253,29 @@ closes the sheet
 	// "Auto-uppercase keywords" toggle
 	if (sender == autouppercaseKeywordsMenuItem) {
 		BOOL enableAutouppercaseKeywords = !([autouppercaseKeywordsMenuItem state] == NSOffState);
-		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutouppercaseKeywords"];
+		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutoUppercaseKeywords"];
 		[prefs synchronize];
 		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
 		[textView setAutouppercaseKeywords:enableAutouppercaseKeywords];
 	}
 }
 
+/*
+ * Set font panel's valid modes
+ */
+- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+{
+	return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
+}
+
 
 #pragma mark -
 #pragma mark queryFavoritesSheet methods
 
-
-- (IBAction)addQueryFavorite:(id)sender
 /*
-adds a query favorite
-*/
+ * Adds a query favorite
+ */
+- (IBAction)addQueryFavorite:(id)sender
 {
 	int row = [queryFavoritesView editedRow];
 	int column = [queryFavoritesView editedColumn];
@@ -289,10 +295,10 @@ adds a query favorite
 	[queryFavoritesView editColumn:0 row:[queryFavoritesView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-- (IBAction)removeQueryFavorite:(id)sender
 /*
-removes a query favorite
-*/
+ * removes a query favorite
+ */
+- (IBAction)removeQueryFavorite:(id)sender
 {
 	int row = [queryFavoritesView editedRow];
 	int column = [queryFavoritesView editedColumn];
@@ -312,10 +318,10 @@ removes a query favorite
 	}
 }
 
-- (IBAction)copyQueryFavorite:(id)sender
 /*
-copies a query favorite
-*/
+ * Copies a query favorite
+ */
+- (IBAction)copyQueryFavorite:(id)sender
 {
 	int row = [queryFavoritesView editedRow];
 	int column = [queryFavoritesView editedColumn];
@@ -339,10 +345,10 @@ copies a query favorite
 	}
 }
 
-- (IBAction)closeQueryFavoritesSheet:(id)sender
 /*
-closes queryFavoritesSheet and saves favorites to preferences
-*/
+ * Closes queryFavoritesSheet and saves favorites to preferences
+ */
+- (IBAction)closeQueryFavoritesSheet:(id)sender
 {
 	int row = [queryFavoritesView editedRow];
 	int column = [queryFavoritesView editedColumn];
@@ -365,12 +371,11 @@ closes queryFavoritesSheet and saves favorites to preferences
 #pragma mark -
 #pragma mark Query actions
 
-
-- (void)performQueries:(NSArray *)queries;
 /*
-performs the mysql-query given by the user
-sets the tableView columns corresponding to the mysql-result
-*/
+ * Performs the mysql-query given by the user
+ * sets the tableView columns corresponding to the mysql-result
+ */
+- (void)performQueries:(NSArray *)queries;
 {	
 	
 	NSArray		*theColumns;
@@ -863,11 +868,12 @@ sets the tableView columns corresponding to the mysql-result
 #pragma mark -
 #pragma mark Accessors
 
-
-- (NSArray *)currentResult
 /*
-returns the current result (as shown in custom result view) as array, the first object containing the field names as array, the following objects containing the rows as array
-*/
+ * Returns the current result (as shown in custom result view) as array, 
+ * the first object containing the field names as array, 
+ * the following objects containing the rows as array
+ */
+- (NSArray *)currentResult
 {
 	NSArray *tableColumns = [customQueryView tableColumns];
 	NSEnumerator *enumerator = [tableColumns objectEnumerator];
@@ -898,11 +904,10 @@ returns the current result (as shown in custom result view) as array, the first 
 #pragma mark -
 #pragma mark Additional methods
 
-
-- (void)setConnection:(CMMCPConnection *)theConnection
 /*
-sets the connection (received from TableDocument) and makes things that have to be done only once 
-*/
+ * Sets the connection (received from TableDocument) and makes things that have to be done only once 
+ */
+- (void)setConnection:(CMMCPConnection *)theConnection
 {
 	NSArray *tableColumns = [queryFavoritesView tableColumns];
 	NSEnumerator *enumerator = [tableColumns objectEnumerator];
@@ -932,15 +937,15 @@ sets the connection (received from TableDocument) and makes things that have to 
 
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
 	[textView setContinuousSpellCheckingEnabled:NO];
-	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoindent"]?NSOnState:NSOffState)];
-	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoindent"]];
+	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoIndent"]?NSOnState:NSOffState)];
+	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoIndent"]];
 	[textView setAutoindentIgnoresEnter:YES];
-	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutopair"]?NSOnState:NSOffState)];
-	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutopair"]];
-	[autohelpMenuItem setState:([prefs boolForKey:@"CustomQueryAutohelp"]?NSOnState:NSOffState)];
-	[textView setAutohelp:[prefs boolForKey:@"CustomQueryAutohelp"]];
-	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]?NSOnState:NSOffState)];
-	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutouppercaseKeywords"]];
+	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutoPair"]?NSOnState:NSOffState)];
+	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutoPair"]];
+	[autohelpMenuItem setState:([prefs boolForKey:@"CustomQueryUpdateAutoHelp"]?NSOnState:NSOffState)];
+	[textView setAutohelp:[prefs boolForKey:@"CustomQueryUpdateAutoHelp"]];
+	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]?NSOnState:NSOffState)];
+	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 	while ( (column = [enumerator nextObject]) )
 	{
@@ -961,10 +966,10 @@ sets the connection (received from TableDocument) and makes things that have to 
 	
 }
 
-- (void)setFavorites
 /*
-set up the favorites popUpButton
-*/
+ * Set up the favorites popUpButton
+ */
+- (void)setFavorites
 {
 	int i;
 
@@ -975,10 +980,10 @@ set up the favorites popUpButton
 	[queryFavoritesButton addItemsWithTitles:queryFavorites];
 }
 
-- (void)doPerformQueryService:(NSString *)query
 /*
-inserts the query in the textView and performs query
-*/
+ * Inserts the query in the textView and performs query
+ */
+- (void)doPerformQueryService:(NSString *)query
 {
 	[textView setString:query];
 	[self runAllQueries:self];
@@ -989,9 +994,9 @@ inserts the query in the textView and performs query
 	return usedQuery;
 }
 
+
 #pragma mark -
 #pragma mark TableView datasource methods
-
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
@@ -1074,7 +1079,9 @@ inserts the query in the textView and performs query
 }
 
 
-//tableView drag&drop datasource methods
+#pragma mark -
+#pragma mark TableView Drag & Drop datasource methods
+
 - (BOOL)tableView:(NSTableView *)aTableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {
 	int originalRow;
@@ -1165,11 +1172,13 @@ inserts the query in the textView and performs query
 }
 
 
-//tableView delegate methods
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+#pragma mark -
+#pragma mark TableView delegate methods
+
 /*
-opens sheet with value when double clicking on a field
-*/
+ * Opens sheet with value when double clicking on a field
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	if ( aTableView == customQueryView ) {
 		NSArray *theRow;
@@ -1209,54 +1218,30 @@ opens sheet with value when double clicking on a field
 	}
 }
 
-
 #pragma mark -
-#pragma mark SplitView delegate methods
+#pragma mark TableView notifications
 
-
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 /*
-tells the splitView that it can collapse views
-*/
-{
-	return YES;
-}
-
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-/*
-defines max position of splitView
-*/
-{
-	if ( offset == 0 ) {
-		return proposedMax - 100;
-	} else {
-		return proposedMax - 73;
+ * Updates various interface elements based on the current table view selection.
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{	
+	if ([notification object] == queryFavoritesView) {
+		
+		// Enable/disable buttons
+		[removeQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
+		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
 	}
 }
-
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-/*
-defines min position of splitView
-*/
-{
-	if ( offset == 0 ) {
-		return proposedMin + 100;
-	} else {
-		return proposedMin + 100;
-	}
-}
-
 
 #pragma mark -
 #pragma mark TextView delegate methods
 
-
-- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 /*
-traps enter key and
-	performs query instead of inserting a line break if aTextView == textView
-	closes valueSheet if aTextView == valueTextField
-*/
+ * Traps enter key and performs query instead of inserting a line break if aTextView == textView
+ * closes valueSheet if aTextView == valueTextField
+ */
+- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
 	if ( aTextView == textView ) {
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
@@ -1279,6 +1264,9 @@ traps enter key and
 	}
 	return NO;
 }
+
+#pragma mark -
+#pragma mark TextView notifications
 
 /*
  * A notification posted when the selection changes within the text view;
@@ -1366,38 +1354,50 @@ traps enter key and
 
 }
 
-#pragma mark -
-#pragma mark TableView notifications
-
-
-/*
- * Updates various interface elements based on the current table view selection.
- */
-- (void)tableViewSelectionDidChange:(NSNotification *)notification
-{	
-	if ([notification object] == queryFavoritesView) {
-		
-		// Enable/disable buttons
-		[removeQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
-		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
-	}
-}
-
 /*
  * Save the custom query editor font if it is changed.
  */
 - (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
 {
-
 	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
 	if (prefs)
 		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
 }
 
-// set font panel's valid modes
-- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+
+#pragma mark -
+#pragma mark SplitView delegate methods
+
+/*
+ * Tells the splitView that it can collapse views
+ */
+- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
-	return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
+	return YES;
+}
+
+/*
+ * Defines max position of splitView
+ */
+- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+{
+	if ( offset == 0 ) {
+		return proposedMax - 100;
+	} else {
+		return proposedMax - 73;
+	}
+}
+
+/*
+ * Defines min position of splitView
+ */
+- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+{
+	if ( offset == 0 ) {
+		return proposedMin + 100;
+	} else {
+		return proposedMin + 100;
+	}
 }
 
 
@@ -1879,7 +1879,7 @@ traps enter key and
 #pragma mark -
 #pragma mark Other
 
-/**
+/*
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
