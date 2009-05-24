@@ -108,7 +108,21 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	mySQLmajorVersion = majorVersion;
 }
 
-- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord
+/*
+ * Sort function (mainly used to sort the words in the textView)
+ */
+NSInteger alphabeticSort(id string1, id string2, void *reverse)
+{
+	return [string1 localizedCaseInsensitiveCompare:string2];
+}
+
+/*
+ * Return an array of NSDictionary containing the sorted strings representing
+ * the set of unique words, SQL keywords, user-defined funcs/procs, tables etc.
+ * NSDic key "display" := the displayed and to be inserted word
+ * NSDic key "image" := an image to be shown left from "display" (optional)
+ */
+- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode
 {
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
@@ -116,7 +130,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	unsigned i, insindex;
 	insindex = 0;
 
-	if([mySQLConnection isConnected])
+	if([mySQLConnection isConnected] && !isDictMode)
 	{
 		// Add table names to completions list
 		MCPResult *queryResult = [mySQLConnection listTables];
@@ -164,24 +178,36 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		}
 		
 	}
+	
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if([[self string] length] && ![[[self textStorage] attribute:kBTQuote atIndex:[self selectedRange].location-1 effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
 		// Only parse for words if text size is less than 6MB
 		if([[self string] length]<6000000)
 		{
-			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
 			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
-			[possibleCompletions addObjectsFromArray:textViewWords];
+			NSMutableArray *uniqueArray = [NSMutableArray array];
+			NSString *s;
+			enumerate(textViewWords, s)
+				if(![uniqueArray containsObject:s])
+					[uniqueArray addObject:s];
+					
+			int reverseSort = NO;
+			NSArray *sortedArray = [[[uniqueArray mutableCopy] autorelease] sortedArrayUsingFunction:alphabeticSort context:&reverseSort];
+			[possibleCompletions addObjectsFromArray:sortedArray];
 		}
-		[possibleCompletions addObjectsFromArray:[self keywords]];
 	}
+
+	// Add predefined keywords
+	if(!isDictMode)
+		[possibleCompletions addObjectsFromArray:[self keywords]];
 	
 	// Remove the current word
 	[possibleCompletions removeObject:currentWord];
 	
-	// Build array of dictionaries as in:
-	// as in: [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
+	// Build array of dictionaries as e.g.:
+	// [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
 	NSString* candidate;
 	enumerate(possibleCompletions, candidate)
 	{
@@ -197,7 +223,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void)doCompletion
 {
 
-	// No completion for a selection
+	// No completion for a selection (yet?)
 	if ([self selectedRange].length > 0) return;
 	
 	// Refresh quote attributes
@@ -206,22 +232,22 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
-	// if([[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
-	// 	return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
+	// plus all unique words used in the textView
+	BOOL isDictMode = ([[[self textStorage] attribute:kQuote atIndex:[self getRangeForCurrentWord].location effectiveRange:nil] isEqualToString:kQuoteValue] );
 
 	NSString* filter     = [[self string] substringWithRange:[self getRangeForCurrentWord]];
 	NSString* prefix     = @"";
-	NSString* allow      = @" ";
+	NSString* allow      = @" _."; // additional chars which not close the popup
 	BOOL caseInsensitive = YES;
 
-	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:filter] 
+	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:filter dictMode:isDictMode] 
 					alreadyTyped:filter 
 					staticPrefix:prefix 
 					additionalWordCharacters:allow 
 					caseSensitive:!caseInsensitive
 					charRange:[self getRangeForCurrentWord]
 					inView:self
-					dictMode:NO];
+					dictMode:isDictMode];
 
 	//Get the NSPoint of the first character of the current word
 	NSRange range = NSMakeRange([self getRangeForCurrentWord].location,0);
@@ -231,6 +257,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 	NSFont* font = [self font];
 
+	// TODO: check if needed
 	// if(filter)
 	// 	pos.x -= [filter sizeWithAttributes:[NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName]].width;
 	
@@ -2293,9 +2320,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void)changeColor:(id)sender
 {
 	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCaretColor"]]];
+	// Remember the old selected range
 	NSRange oldRange = [self selectedRange];
+	// Invoke syntax highlighting
 	[self setSelectedRange:NSMakeRange(oldRange.location,0)];
 	[self insertText:@""];
+	// Reset old selected range
 	[self setSelectedRange:oldRange];
 }
 

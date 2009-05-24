@@ -119,7 +119,6 @@
 {
 	if(self = [self init])
 	{
-		suggestions = [someSuggestions retain];
 
 		if(aUserString)
 			[mutablePrefix appendString:aUserString];
@@ -134,6 +133,13 @@
 		theCharRange = initRange;
 		theView = aView;
 		dictMode = mode;
+		
+		if(dictMode) {
+			words = [NSArray arrayWithArray:suggestions];
+		} else {
+			suggestions = [someSuggestions retain];
+			words = nil;
+		}
 	}
 	return self;
 }
@@ -205,12 +211,15 @@
 {
 	NSImage* image = nil;
 	NSString* imageName = nil;
-	imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
-	if(imageName)
-		image = [NSImage imageNamed:imageName];
-	[[aTableColumn dataCell] setImage:image];
+	if(!dictMode) {
+		imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+		if(imageName)
+			image = [NSImage imageNamed:imageName];
+		[[aTableColumn dataCell] setImage:image];
+		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+	}
+	return [filtered objectAtIndex:rowIndex];
 
-	return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 }
 
 // ====================
@@ -223,16 +232,24 @@
 	NSArray* newFiltered;
 	if([mutablePrefix length] > 0)
 	{
-		NSPredicate* predicate;
-		if(caseSensitive)
-			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
-		else
-			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
-		newFiltered = [suggestions filteredArrayUsingPredicate:predicate];
+		if(dictMode)
+		{
+			newFiltered = [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0];
+		} else {
+			NSPredicate* predicate;
+			if(caseSensitive)
+				predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
+			else
+				predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
+			newFiltered = [suggestions filteredArrayUsingPredicate:predicate];
+		}
 	}
 	else
 	{
-		newFiltered = suggestions;
+		if(dictMode)
+			newFiltered = nil;
+		else
+			newFiltered = suggestions;
 	}
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 	
@@ -247,7 +264,10 @@
 	{
 		for(i=0; i<[newFiltered count]; i++)
 		{
-			item = [[newFiltered objectAtIndex:i] objectForKey:@"display"];
+			if(dictMode)
+				item = [newFiltered objectAtIndex:i];
+			else
+				item = [[newFiltered objectAtIndex:i] objectForKey:@"display"];
 			if([item length]>maxLen)
 				maxLen = [item length];
 		}
@@ -267,7 +287,7 @@
 	// newHeight is currently the new height for theTableView, but we need to resize the whole window
 	// so here we use the difference in height to find the new height for the window
 	// newHeight = [[self contentView] frame].size.height + (newHeight - [theTableView frame].size.height);
-	[self setFrame:NSMakeRect(old.x,old.y-newHeight,maxWidth,newHeight) display:YES];
+	[self setFrame:NSMakeRect(old.x, old.y-newHeight, maxWidth, newHeight) display:YES];
 	[filtered release];
 	filtered = [newFiltered retain];
 	[theTableView reloadData];
@@ -401,7 +421,11 @@
 		return;
 
 	id cur = [filtered objectAtIndex:row];
-	NSString* curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
+	NSString* curMatch;
+	if(dictMode)
+		curMatch = [NSString stringWithString:cur];
+	else
+		curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
 	if([[self filterString] length] + 1 < [curMatch length])
 	{
 		NSString* prefix = [curMatch substringToIndex:[[self filterString] length] + 1];
@@ -409,7 +433,11 @@
 		for(int i = row; i < [filtered count]; ++i)
 		{
 			id candidate = [filtered objectAtIndex:i];
-			NSString* candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
+			NSString* candidateMatch;
+			if(dictMode)
+				candidateMatch = [filtered objectAtIndex:i];
+			else
+				candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
 			if([candidateMatch hasPrefix:prefix])
 				[candidates addObject:candidateMatch];
 		}
@@ -421,10 +449,10 @@
 
 		if([[self filterString] length] < [commonPrefix length])
 		{
-			// NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
-			// [mutablePrefix appendString:toInsert];
-			// [self insert_text:toInsert];
 			[self insert_text:commonPrefix];
+			NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
+			[mutablePrefix appendString:toInsert];
+			theCharRange = NSMakeRange(theCharRange.location,[commonPrefix length]);
 			[self filter];
 		}
 	}
@@ -446,16 +474,14 @@
 	if([theTableView selectedRow] == -1)
 		return;
 
-	NSMutableDictionary* selectedItem = [[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease];
-
-	NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
-	if([[self filterString] length] < [candidateMatch length])
-		// [self insert_text:[candidateMatch substringFromIndex:[[self filterString] length]]];
-		[self insert_text:candidateMatch];
-
-	// NSString* toInsert = [selectedItem objectForKey:@"insert"];
-	// [self insert_text:toInsert];
-
+	if(dictMode){
+		[self insert_text:[[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease]];
+	} else {
+		NSMutableDictionary* selectedItem = [[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease];
+		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
+		if([[self filterString] length] < [candidateMatch length])
+			[self insert_text:candidateMatch];
+	}
 	closeMe = YES;
 }
 @end

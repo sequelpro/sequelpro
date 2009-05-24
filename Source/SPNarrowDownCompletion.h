@@ -53,6 +53,7 @@
 	BOOL dictMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
+	NSArray *words;
 	id theView;
 	
 	NSMutableCharacterSet* textualInputCharacters;

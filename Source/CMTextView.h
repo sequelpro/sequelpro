@@ -82,6 +82,6 @@
 - (void) makeTextSizeSmaller;
 - (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion;
 - (void) doCompletion;
-- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord;
+- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
 
 @end
