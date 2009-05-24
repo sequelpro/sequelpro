@@ -115,7 +115,7 @@
 	[super dealloc];
 }
 
-- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView
+- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView dictMode:(BOOL)mode
 {
 	if(self = [self init])
 	{
@@ -133,6 +133,7 @@
 		caseSensitive = isCaseSensitive;
 		theCharRange = initRange;
 		theView = aView;
+		dictMode = mode;
 	}
 	return self;
 }

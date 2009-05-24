@@ -27,6 +27,8 @@
 #import "TableDocument.h"
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
+#import "SPNarrowDownCompletion.h"
+
 
 
 #pragma mark -
@@ -105,6 +107,141 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;
 }
+
+- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord
+{
+	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
+	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
+
+	unsigned i, insindex;
+	insindex = 0;
+
+	if([mySQLConnection isConnected])
+	{
+		// Add table names to completions list
+		MCPResult *queryResult = [mySQLConnection listTables];
+		if ([queryResult numOfRows])
+			[queryResult dataSeek:0];
+		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+		{
+			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+		}
+
+		// Add field names to completions list for currently selected table
+		if ([[[self window] delegate] table] != nil) {
+			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
+			[possibleCompletions addObjectsFromArray:columnNames];
+		}
+
+		// Add all database names to completions list
+		queryResult = [mySQLConnection listDBs];
+		if ([queryResult numOfRows])
+			[queryResult dataSeek:0];
+		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+		{
+			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+		}
+
+		// Add proc/func only for MySQL version 5 or higher
+		if(mySQLmajorVersion > 4) {
+			// Add all procedures to completions list for currently selected table
+			queryResult = [mySQLConnection queryString:@"SHOW PROCEDURE STATUS"];
+			if ([queryResult numOfRows])
+				[queryResult dataSeek:0];
+			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+			{
+				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+			}
+
+			// Add all function to completions list for currently selected table
+			queryResult = [mySQLConnection queryString:@"SHOW FUNCTION STATUS"];
+			if ([queryResult numOfRows])
+				[queryResult dataSeek:0];
+			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
+			{
+				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+			}
+		}
+		
+	}
+	// If caret is not inside backticks add keywords and all words coming from the view.
+	if([[self string] length] && ![[[self textStorage] attribute:kBTQuote atIndex:[self selectedRange].location-1 effectiveRange:nil] isEqualToString:kBTQuoteValue] )
+	{
+		// Only parse for words if text size is less than 6MB
+		if([[self string] length]<6000000)
+		{
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
+			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+			[possibleCompletions addObjectsFromArray:textViewWords];
+		}
+		[possibleCompletions addObjectsFromArray:[self keywords]];
+	}
+	
+	// Remove the current word
+	[possibleCompletions removeObject:currentWord];
+	
+	// Build array of dictionaries as in:
+	// as in: [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
+	NSString* candidate;
+	enumerate(possibleCompletions, candidate)
+	{
+		if(![compl containsObject:candidate])
+			[compl addObject:[NSDictionary dictionaryWithObjectsAndKeys:candidate, @"display", nil]];
+	}
+
+	[possibleCompletions release];
+	return [compl autorelease];
+
+}
+
+- (void)doCompletion
+{
+
+	// No completion for a selection
+	if ([self selectedRange].length > 0) return;
+	
+	// Refresh quote attributes
+	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
+	[self insertText:@""];
+	
+	// Check if the caret is inside quotes "" or ''; if so 
+	// return the normal word suggestion due to the spelling's settings
+	// if([[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
+	// 	return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
+
+	NSString* filter     = [[self string] substringWithRange:[self getRangeForCurrentWord]];
+	NSString* prefix     = @"";
+	NSString* allow      = @" ";
+	BOOL caseInsensitive = YES;
+
+	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:filter] 
+					alreadyTyped:filter 
+					staticPrefix:prefix 
+					additionalWordCharacters:allow 
+					caseSensitive:!caseInsensitive
+					charRange:[self getRangeForCurrentWord]
+					inView:self
+					dictMode:NO];
+
+	//Get the NSPoint of the first character of the current word
+	NSRange range = NSMakeRange([self getRangeForCurrentWord].location,0);
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:range actualCharacterRange:NULL];
+	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+	boundingRect = [self convertRect: boundingRect toView: NULL];
+	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+	NSFont* font = [self font];
+
+	// if(filter)
+	// 	pos.x -= [filter sizeWithAttributes:[NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName]].width;
+	
+	// Adjust list location to be under the current word
+	pos.y -= [font pointSize]*1.25;
+
+	[completionPopUp setCaretPos:pos];
+	[completionPopUp orderFront:self];
+
+}
+
 
 /*
  * Returns the associated line number for a character position inside of the CMTextView
@@ -321,11 +458,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if ([theEvent keyCode] == 53 || insertedCharacter == NSF5FunctionKey){ // ESC key or F5 for completion
+	if ([theEvent keyCode] == 53){ // ESC key for internal completion
 		[super keyDown: theEvent];
 		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
 		if(![self selectedRange].length && [self selectedRange].location)
 			[[self textStorage] removeAttribute:kSQLkeyword range:NSMakeRange([self selectedRange].location-1,1)];
+		return;
+	}
+	if (insertedCharacter == NSF5FunctionKey){ // F5 for cocoa completion
+		[self doCompletion];
+		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
+		if(![self selectedRange].length && [self selectedRange].location)
+			[[self textStorage] removeAttribute:kSQLkeyword range:[self getRangeForCurrentWord]];
 		return;
 	}
 
@@ -2142,6 +2286,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 #pragma mark delegates
+
+/*
+ * Update colors by setting them in the Preference pane.
+ */
+- (void)changeColor:(id)sender
+{
+	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCaretColor"]]];
+	NSRange oldRange = [self selectedRange];
+	[self setSelectedRange:NSMakeRange(oldRange.location,0)];
+	[self insertText:@""];
+	[self setSelectedRange:oldRange];
+}
 
 /*
  * Scrollview delegate after the textView's view port was changed.

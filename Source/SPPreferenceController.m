@@ -797,6 +797,7 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.000 alpha:1.000]] forKey:@"CustomQueryEditorNumericColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.500 green:0.500 blue:0.500 alpha:1.000]] forKey:@"CustomQueryEditorVariableColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorTextColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorCaretColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:@"CustomQueryEditorBackgroundColor"];
 
 }
