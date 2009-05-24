@@ -132,6 +132,7 @@
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BCB151910FC9542B00977C87 /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
 
@@ -359,6 +360,8 @@
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BCB1518F0FC9542B00977C87 /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
+		BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -614,6 +617,8 @@
 		17E641710EF01F5C001BC333 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
+				BCB1518F0FC9542B00977C87 /* SPNarrowDownCompletion.h */,
+				BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */,
 				17E6417C0EF01FA8001BC333 /* CMCopyTable.h */,
 				17E6417D0EF01FA8001BC333 /* CMCopyTable.m */,
 				17E6417E0EF01FA8001BC333 /* CMImageView.h */,
@@ -1039,6 +1044,7 @@
 				5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */,
 				BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */,
 				387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */,
+				BCB151910FC9542B00977C87 /* SPNarrowDownCompletion.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
