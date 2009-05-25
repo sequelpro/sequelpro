@@ -2598,6 +2598,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSBeep();
 }
 
+#pragma mark -
+#pragma mark multi-touch trackpad support
+
+/*
+ * Trackpad two-finger zooming gesture in/decreases the font size
+ */
+- (void) magnifyWithEvent:(NSEvent *)anEvent
+{
+	if([anEvent deltaZ]>5.0)
+		[self makeTextSizeLarger];
+	else if([anEvent deltaZ]<-5.0)
+		[self makeTextSizeSmaller];
+
+	[self insertText:@""];
+}
 
 
 @end
