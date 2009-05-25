@@ -354,7 +354,17 @@
 		{
 			unsigned int flags = [event modifierFlags];
 			unichar key        = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-			if((flags & NSControlKeyMask) || (flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
+
+			// Check if user pressed ⌥ to allow composing of accented characters.
+			// e.g. for US keyboard "⌥u a" to insert ä
+			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0)
+			{
+				[NSApp sendEvent: event];
+				[mutablePrefix appendString:[event characters]];
+				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length+[[event characters] length]);
+				[self filter];
+			}
+			else if((flags & NSControlKeyMask) || (flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
 			{
 				[NSApp sendEvent:event];
 				break;
