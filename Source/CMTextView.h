@@ -62,6 +62,7 @@
 - (BOOL) shiftSelectionLeft;
 - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
 - (NSArray *) keywords;
+- (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
 - (BOOL) autoindent;
 - (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;

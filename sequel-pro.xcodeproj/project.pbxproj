@@ -131,7 +131,10 @@
 		B5E92F400F75B32100012500 /* toolbar-export-xml.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
+		BC26D7A90FCB28F900A4F918 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = BC26D7A80FCB28F900A4F918 /* dummy-small.png */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC6B05A80FCB26A500AC02A6 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = BC6B05A70FCB26A500AC02A6 /* database-small.png */; };
+		BCA509480FCB25F200D3879C /* table-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCA509450FCB25F200D3879C /* table-small-square.tiff */; };
 		BCB151910FC9542B00977C87 /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
@@ -359,7 +362,10 @@
 		B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xml.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
+		BC26D7A80FCB28F900A4F918 /* dummy-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dummy-small.png"; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC6B05A70FCB26A500AC02A6 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
+		BCA509450FCB25F200D3879C /* table-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-small-square.tiff"; sourceTree = "<group>"; };
 		BCB1518F0FC9542B00977C87 /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
 		BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
@@ -645,6 +651,9 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				BC26D7A80FCB28F900A4F918 /* dummy-small.png */,
+				BC6B05A70FCB26A500AC02A6 /* database-small.png */,
+				BCA509450FCB25F200D3879C /* table-small-square.tiff */,
 				384582C60FB9603600DDACB6 /* proc-small.png */,
 				384582C30FB95FF800DDACB6 /* func-small.png */,
 				17E6418C0EF02036001BC333 /* appicon.icns */,
@@ -952,6 +961,9 @@
 				B5D93ABB0FC5121300710017 /* toolbar-preferences-network.tiff in Resources */,
 				B5D93ABC0FC5121300710017 /* toolbar-preferences-queryeditor.tiff in Resources */,
 				B5D93ABD0FC5121300710017 /* toolbar-preferences-shortcuts.png in Resources */,
+				BCA509480FCB25F200D3879C /* table-small-square.tiff in Resources */,
+				BC6B05A80FCB26A500AC02A6 /* database-small.png in Resources */,
+				BC26D7A90FCB28F900A4F918 /* dummy-small.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

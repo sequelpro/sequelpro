@@ -138,13 +138,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[queryResult dataSeek:0];
 		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 		{
-			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:0], @"display", @"table-small-square", @"image", nil]];
+			//[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 		}
 
 		// Add field names to completions list for currently selected table
 		if ([[[self window] delegate] table] != nil) {
 			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
-			[possibleCompletions addObjectsFromArray:columnNames];
+			// [possibleCompletions addObjectsFromArray:columnNames];
+			NSString *s;
+			enumerate(columnNames, s)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
 		}
 
 		// Add all database names to completions list
@@ -153,7 +157,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[queryResult dataSeek:0];
 		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 		{
-			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+			// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:0], @"display", @"database-small", @"image", nil]];
 		}
 
 		// Add proc/func only for MySQL version 5 or higher
@@ -164,7 +169,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				[queryResult dataSeek:0];
 			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 			{
-				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:1], @"display", @"proc-small", @"image", nil]];
 			}
 
 			// Add all function to completions list for currently selected table
@@ -173,7 +179,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				[queryResult dataSeek:0];
 			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 			{
-				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:1], @"display", @"func-small", @"image", nil]];
 			}
 		}
 		
@@ -192,19 +199,39 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			enumerate(textViewWords, s)
 				if(![uniqueArray containsObject:s])
 					[uniqueArray addObject:s];
-					
+
+			// Remove current word from list
+			[uniqueArray removeObject:currentWord];
+
 			int reverseSort = NO;
 			NSArray *sortedArray = [[[uniqueArray mutableCopy] autorelease] sortedArrayUsingFunction:alphabeticSort context:&reverseSort];
-			[possibleCompletions addObjectsFromArray:sortedArray];
+			// [possibleCompletions addObjectsFromArray:sortedArray];
+			NSString *w;
+			enumerate(sortedArray, w)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
+			
+
+			// Remove the current word
+			// [possibleCompletions removeObject:currentWord];
 		}
 	}
 
 	// Add predefined keywords
-	if(!isDictMode)
-		[possibleCompletions addObjectsFromArray:[self keywords]];
-	
-	// Remove the current word
-	[possibleCompletions removeObject:currentWord];
+	if(!isDictMode) {
+		// [possibleCompletions addObjectsFromArray:[self keywords]];
+		NSString *s;
+		enumerate([self keywords], s)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
+	}
+		
+
+	// Add predefined functions
+	if(!isDictMode) {
+		// [possibleCompletions addObjectsFromArray:[self functions]];
+		NSString *s;
+		enumerate([self functions], s)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"func-small", @"image", nil]];
+	}
 	
 	// Build array of dictionaries as e.g.:
 	// [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
@@ -212,7 +239,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	enumerate(possibleCompletions, candidate)
 	{
 		if(![compl containsObject:candidate])
-			[compl addObject:[NSDictionary dictionaryWithObjectsAndKeys:candidate, @"display", nil]];
+			[compl addObject:candidate];
 	}
 
 	[possibleCompletions release];
@@ -1646,8 +1673,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	@"YEAR_MONTH",
 	@"ZEROFILL",
 
-	//functions
-	
+	nil];
+}
+
+/*
+ * List of fucntions for autocompletion. If you add a keyword here,
+ * it should also be added to the flex file SPEditorTokens.l
+ */
+-(NSArray *)functions
+{
+	return [NSArray arrayWithObjects:
 	@"ABS",
 	@"ACOS",
 	@"ADDDATE",
