@@ -24,6 +24,7 @@
 
 #import "CMCopyTable.h"
 
+int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 
 @implementation CMCopyTable
 
@@ -32,7 +33,7 @@
 	NSString *tmp = nil;
 
 	BOOL withHeaders = NO;
-	if([[sender title] isEqualToString:@"Copy with Column Names"]) {
+	if([sender tag] == MENU_EDIT_COPY_WITH_COLUMN) {
 		withHeaders = YES;
 	}
 	
@@ -60,7 +61,7 @@
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem 
 {	
 	int row = [self selectedRow];
-	if ( [[anItem title] isEqualToString:@"Copy"] || [[anItem title] isEqualToString:@"Copy with Column Names"] )
+	if ( [[anItem title] isEqualToString:@"Copy"] || [anItem tag] == MENU_EDIT_COPY_WITH_COLUMN )
 	{
 		if (row < 0 )
 		{
