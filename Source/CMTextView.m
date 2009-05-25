@@ -237,7 +237,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSString* filter     = [[self string] substringWithRange:[self getRangeForCurrentWord]];
 	NSString* prefix     = @"";
-	NSString* allow      = @" _."; // additional chars which not close the popup
+	NSString* allow      = @"_."; // additional chars which not close the popup
 	BOOL caseInsensitive = YES;
 
 	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:filter dictMode:isDictMode] 

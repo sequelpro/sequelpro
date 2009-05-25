@@ -126,9 +126,6 @@
 		if(aStaticPrefix)
 			staticPrefix = [aStaticPrefix retain];
 
-		if(someAdditionalWordCharacters)
-			[textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
-
 		caseSensitive = isCaseSensitive;
 		theCharRange = initRange;
 		theView = aView;
@@ -140,6 +137,10 @@
 			suggestions = [someSuggestions retain];
 			words = nil;
 		}
+
+		if(someAdditionalWordCharacters)
+			[textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
+
 	}
 	return self;
 }
@@ -187,7 +188,7 @@
 	[theTableView setHeaderView:nil];
 
 	NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"foo"] autorelease];
-	//TODO maybe in the future add an image...
+	//
 	[column setDataCell:[ImageAndTextCell new]];
 	[column setEditable:NO];
 	[theTableView addTableColumn:column];
@@ -259,6 +260,8 @@
 	float maxLen = 1;
 	NSString* item;
 	int i;
+	BOOL spaceInSuggestion = NO;
+	[textualInputCharacters removeCharactersInString:@" "];
 	float maxWidth = [self frame].size.width;
 	if([newFiltered count]>0)
 	{
@@ -268,10 +271,16 @@
 				item = [newFiltered objectAtIndex:i];
 			else
 				item = [[newFiltered objectAtIndex:i] objectForKey:@"display"];
+			// If space in suggestion add space to allowed input chars
+			if(!spaceInSuggestion && [item rangeOfString:@" "].length) {
+				[textualInputCharacters addCharactersInString:@" "];
+				spaceInSuggestion = YES;
+			}
+
 			if([item length]>maxLen)
 				maxLen = [item length];
 		}
-		maxWidth = maxLen*18;
+		maxWidth = maxLen*16;
 		maxWidth = (maxWidth>340) ? 340 : maxWidth;
 	}
 	if(caretPos.y>=0 && (isAbove || caretPos.y<newHeight))
@@ -464,9 +473,8 @@
 
 - (void)insert_text:(NSString* )aString
 {
-	// Register the auto-pairing for undo
-	[theView shouldChangeTextInRange:theCharRange replacementString:aString];
-	[theView replaceCharactersInRange:theCharRange withString:aString];
+	[theView setSelectedRange:theCharRange];
+	[theView insertText:aString];
 }
 
 - (void)completeAndInsertSnippet
