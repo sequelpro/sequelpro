@@ -126,7 +126,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	//add ability to select orientation to print panel
 	NSPrintPanel *printPanel = [op printPanel];
-	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling];
+	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
 	[op setPrintPanel:printPanel];
 	
     [op runOperationModalForWindow:tableWindow
