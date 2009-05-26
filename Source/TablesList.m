@@ -807,15 +807,26 @@
 	}
 }
 
+/*
+ * Controls the NSTextField's press RETURN event of Add/Rename/Duplicate sheets
+ */
 - (void)controlTextDidEndEditing:(NSNotification *)notification
 {
 	id object = [notification object];
 
+	// Only RETURN/ENTER will be recognized for Add/Rename/Duplicate sheets to
+	// activate the Add/Rename/Duplicate buttons
+	if([[[notification userInfo] objectForKey:@"NSTextMovement"] intValue] != 0)
+		return;
+
 	if (object == tableRenameField) {
 		[renameTableButton performClick:object];
 	}
-	if (object == tableNameField) {
+	else if (object == tableNameField) {
 		[addTableButton performClick:object];
+	}
+	else if (object == copyTableNameField) {
+		[copyTableButton performClick:object];
 	}
 }
 
