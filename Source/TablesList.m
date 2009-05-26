@@ -810,9 +810,12 @@
 - (void)controlTextDidEndEditing:(NSNotification *)notification
 {
 	id object = [notification object];
-	
+
 	if (object == tableRenameField) {
 		[renameTableButton performClick:object];
+	}
+	if (object == tableNameField) {
+		[addTableButton performClick:object];
 	}
 }
 
