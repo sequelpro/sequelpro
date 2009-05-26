@@ -720,10 +720,10 @@ fetches the result as an array with a dictionary for each row in it
 				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
-	} else {
+	} else if(isEditingNewRow){ // Add AFTER ... only if the user added a new field
 		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 	}
-		
+
 	[mySQLConnection queryString:queryString];
 
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
