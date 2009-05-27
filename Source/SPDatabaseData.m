@@ -158,8 +158,8 @@
 	CMMCPResult *result = [connection queryString:query];
 	
 	// Log any errors
-	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
-		NSLog(@"");
+	if ([[connection getLastErrorMessage] isEqualToString:@""]) {
+		NSLog(@"Error executing query in %@. MySQL said: %@", [self className], [connection getLastErrorMessage]);
 	}
 	else {
 		[result dataSeek:0];
