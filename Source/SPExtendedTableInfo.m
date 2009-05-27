@@ -40,14 +40,6 @@
 
 @synthesize connection;
 
-/**
- * Set the create table syntax textview's font.
- */
-- (void)awakeFromNib
-{
-	[tableCreateSyntaxTextView setFont:[NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"CustomQueryEditorFont"]]];
-}
-
 #pragma mark -
 #pragma mark IBAction methods
 
