@@ -45,7 +45,7 @@ enum sp_table_types
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id tableStatusInstance;
+	IBOutlet id extendedTableInfoInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;

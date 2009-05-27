@@ -43,7 +43,9 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		
 		tableEncoding = nil;
+		tableCreateSyntax = nil;
 		mySQLConnection = nil;
 	}
 
@@ -74,6 +76,23 @@
 		}
 	}
 	return [NSString stringWithString:tableEncoding];
+}
+
+/*
+ * Retrieve the create syntax for the current table, using or refreshing the cache as appropriate.
+ */
+- (NSString *) tableCreateSyntax
+{
+	if (tableCreateSyntax == nil) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} 
+		else {
+			[self updateInformationForCurrentTable];
+		}
+	}
+	
+	return [NSString stringWithString:tableCreateSyntax];
 }
 
 
@@ -189,9 +208,15 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[status removeAllObjects];
+	
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 		tableEncoding = nil;
+	}
+	
+	if (tableCreateSyntax != nil) {
+		[tableCreateSyntax release];
+		tableCreateSyntax = nil;
 	}
 }
 
@@ -272,6 +297,8 @@
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
 	
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
+	
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
@@ -290,9 +317,12 @@
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	
 	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
+		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
 		createTableParser = [[SPSQLParser alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]]; 
 	} else {
+		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
 		createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
 	}
 
@@ -837,7 +867,9 @@
 	[columnNames release];
 	[constraints release];
 	[status release];
+	
 	if (tableEncoding != nil) [tableEncoding release];
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 
 	[super dealloc];
 }

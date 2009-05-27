@@ -39,8 +39,6 @@
 	IBOutlet NSView *networkView;
 	IBOutlet NSView *editorView;
 	
-	
-	
 	IBOutlet NSPopUpButton *defaultFavoritePopup;
 	
 	IBOutlet NSTableView *favoritesTableView;

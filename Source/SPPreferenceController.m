@@ -809,7 +809,7 @@
 // Action receiver for a font change in the font panel
 - (void)changeFont:(id)sender
 {
-	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
+	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];	
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:@"CustomQueryEditorFont"];
 	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 }

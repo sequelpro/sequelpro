@@ -45,7 +45,8 @@
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id tableStatusInstance;
+	IBOutlet id extendedTableInfoInstance;
+	IBOutlet id databaseDataInstance;
 	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;

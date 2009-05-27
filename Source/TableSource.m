@@ -413,8 +413,9 @@ reloads the table (performing a new mysql-query)
 			[tableDataInstance resetColumnData];
 		} else {
 			[sender selectItemWithTitle:tableType];
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't change table type.\nMySQL said: %@", @"message of panel when table type cannot be removed"), [mySQLConnection getLastErrorMessage]]);
+			NSBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"), 
+							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table to '%@' from '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), selectedItem, tableType, [mySQLConnection getLastErrorMessage]]);
 		}
 	}
 }

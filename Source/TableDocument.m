@@ -32,21 +32,22 @@
 #import "TableContent.h"
 #import "CustomQuery.h"
 #import "TableDump.h"
-#import "TableStatus.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPQueryConsole.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
+#import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPQueryConsole.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "MainController.h"
+#import "SPExtendedTableInfo.h"
 #import "SPPreferenceController.h"
 
-//used for printing
+// Used for printing
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
 
@@ -341,17 +342,24 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		} else {
 			mySQLVersion = [[NSString stringWithString:version] retain];
 		}
+		
 		[self setDatabases:self];
+		
+		// For each of the main controllers assigned the current connection
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableSourceInstance setConnection:mySQLConnection];
 		[tableContentInstance setConnection:mySQLConnection];
 		[tableRelationsInstance setConnection:mySQLConnection];
 		[customQueryInstance setConnection:mySQLConnection];
-		[customQueryInstance setMySQLversion:mySQLVersion];
 		[tableDumpInstance setConnection:mySQLConnection];
 		[spExportControllerInstance setConnection:mySQLConnection];
-		[tableStatusInstance setConnection:mySQLConnection];
 		[tableDataInstance setConnection:mySQLConnection];
+		[extendedTableInfoInstance setConnection:mySQLConnection];
+		[databaseDataInstance setConnection:mySQLConnection];
+		
+		// Set the cutom query editor's MySQL version
+		[customQueryInstance setMySQLversion:mySQLVersion];
+		
 		[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [userField stringValue],
 						   [hostField stringValue], [databaseField stringValue]]];
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [databaseField stringValue]]];
@@ -782,7 +790,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if (reloadViews) {
 		if ([tablesListInstance structureLoaded]) [tableSourceInstance reloadTable:self];
 		if ([tablesListInstance contentLoaded]) [tableContentInstance reloadTable:self];
-		if ([tablesListInstance statusLoaded]) [tableStatusInstance reloadTable:self];
+		if ([tablesListInstance statusLoaded]) [extendedTableInfoInstance reloadTable:self];
 	}
 }
 

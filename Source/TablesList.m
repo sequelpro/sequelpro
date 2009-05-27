@@ -276,7 +276,7 @@
 			statusLoaded = NO;
 		} 
 		else if (selectedIndex == 3) {
-			[tableStatusInstance loadTable:tableName];
+			[extendedTableInfoInstance loadTable:tableName];
 			structureLoaded = NO;
 			contentLoaded = NO; 			
 			statusLoaded = YES;
@@ -1011,7 +1011,7 @@
 				statusLoaded = NO;
 			} 
 			else if (selectedIndex == 3) {
-				[tableStatusInstance loadTable:anObject];
+				[extendedTableInfoInstance loadTable:anObject];
 				structureLoaded = NO;
 				contentLoaded = NO;
 				statusLoaded = YES;
@@ -1123,7 +1123,7 @@
 				contentLoaded = YES;
 				statusLoaded = NO;
 			} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-				[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				[extendedTableInfoInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 				structureLoaded = NO;
 				contentLoaded = NO;
 				statusLoaded = YES;
@@ -1136,7 +1136,7 @@
 			// if we are not looking at a table or view, clear these
 			[tableSourceInstance loadTable:nil];
 			[tableContentInstance loadTable:nil];
-			[tableStatusInstance loadTable:nil];
+			[extendedTableInfoInstance loadTable:nil];
 			structureLoaded = NO;
 			contentLoaded = NO;
 			statusLoaded = NO;
@@ -1229,7 +1229,7 @@
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[tableStatusInstance loadTable:nil];
+		[extendedTableInfoInstance loadTable:nil];
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
@@ -1360,7 +1360,7 @@
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
-			[tableStatusInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+			[extendedTableInfoInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
 			statusLoaded = YES;
 		}
 	}

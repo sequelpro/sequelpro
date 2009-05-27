@@ -9,9 +9,15 @@
 /* Begin PBXBuildFile section */
 		170088CE0F5870E200DD6B51 /* SPQueryConsole.m in Sources */ = {isa = PBXBuildFile; fileRef = 170088CD0F5870E200DD6B51 /* SPQueryConsole.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
+		1740FABB0FC4372F00CF3699 /* SPDatabaseData.m in Sources */ = {isa = PBXBuildFile; fileRef = 1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
+		177E792E0FCB54EC00E9E122 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792B0FCB54EC00E9E122 /* database-small.png */; };
+		177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792C0FCB54EC00E9E122 /* dummy-small.png */; };
+		177E79300FCB54EC00E9E122 /* table-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 177E792D0FCB54EC00E9E122 /* table-small-square.tiff */; };
+		177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
+		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* MainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* MainController.m */; };
@@ -22,7 +28,6 @@
 		17E6415C0EF01EF6001BC333 /* TableSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641550EF01EF6001BC333 /* TableSource.m */; };
 		17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6415F0EF01F15001BC333 /* SPTableInfo.m */; };
 		17E641650EF01F15001BC333 /* TablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* TablesList.m */; };
-		17E641660EF01F15001BC333 /* TableStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641630EF01F15001BC333 /* TableStatus.m */; };
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
 		17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */; };
 		17E641750EF01F80001BC333 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
@@ -131,11 +136,7 @@
 		B5E92F400F75B32100012500 /* toolbar-export-xml.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
-		BC26D7A90FCB28F900A4F918 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = BC26D7A80FCB28F900A4F918 /* dummy-small.png */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
-		BC6B05A80FCB26A500AC02A6 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = BC6B05A70FCB26A500AC02A6 /* database-small.png */; };
-		BCA509480FCB25F200D3879C /* table-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCA509450FCB25F200D3879C /* table-small-square.tiff */; };
-		BCB151910FC9542B00977C87 /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
 
@@ -191,13 +192,22 @@
 		1703EF400F0B0742005BBE7E /* tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = tables.html; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
+		1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseData.h; sourceTree = "<group>"; };
+		1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseData.m; sourceTree = "<group>"; };
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
+		177E792B0FCB54EC00E9E122 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
+		177E792C0FCB54EC00E9E122 /* dummy-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dummy-small.png"; sourceTree = "<group>"; };
+		177E792D0FCB54EC00E9E122 /* table-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-small-square.tiff"; sourceTree = "<group>"; };
+		177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExtendedTableInfo.h; sourceTree = "<group>"; };
+		177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExtendedTableInfo.m; sourceTree = "<group>"; };
 		1789343A0F30C1DD0097539A /* SPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditions.h; sourceTree = "<group>"; };
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
+		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
+		17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
@@ -219,8 +229,6 @@
 		17E6415F0EF01F15001BC333 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
 		17E641600EF01F15001BC333 /* TablesList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TablesList.h; sourceTree = "<group>"; };
 		17E641610EF01F15001BC333 /* TablesList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TablesList.m; sourceTree = "<group>"; };
-		17E641620EF01F15001BC333 /* TableStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableStatus.h; sourceTree = "<group>"; };
-		17E641630EF01F15001BC333 /* TableStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableStatus.m; sourceTree = "<group>"; };
 		17E641680EF01F37001BC333 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		17E641690EF01F37001BC333 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
 		17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
@@ -362,12 +370,7 @@
 		B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xml.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
-		BC26D7A80FCB28F900A4F918 /* dummy-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dummy-small.png"; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
-		BC6B05A70FCB26A500AC02A6 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
-		BCA509450FCB25F200D3879C /* table-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-small-square.tiff"; sourceTree = "<group>"; };
-		BCB1518F0FC9542B00977C87 /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
-		BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -550,6 +553,8 @@
 				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
 				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
 				58FEF57D0F3B4E9700518E8E /* SPTableData.m */,
+				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
+				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
 				170088CC0F5870E200DD6B51 /* SPQueryConsole.h */,
 				170088CD0F5870E200DD6B51 /* SPQueryConsole.m */,
 				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
@@ -565,10 +570,12 @@
 				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
 				17E641600EF01F15001BC333 /* TablesList.h */,
 				17E641610EF01F15001BC333 /* TablesList.m */,
-				17E641620EF01F15001BC333 /* TableStatus.h */,
-				17E641630EF01F15001BC333 /* TableStatus.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
+				177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */,
+				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
+				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
+				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -623,8 +630,6 @@
 		17E641710EF01F5C001BC333 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
-				BCB1518F0FC9542B00977C87 /* SPNarrowDownCompletion.h */,
-				BCB151900FC9542B00977C87 /* SPNarrowDownCompletion.m */,
 				17E6417C0EF01FA8001BC333 /* CMCopyTable.h */,
 				17E6417D0EF01FA8001BC333 /* CMCopyTable.m */,
 				17E6417E0EF01FA8001BC333 /* CMImageView.h */,
@@ -651,9 +656,9 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				BC26D7A80FCB28F900A4F918 /* dummy-small.png */,
-				BC6B05A70FCB26A500AC02A6 /* database-small.png */,
-				BCA509450FCB25F200D3879C /* table-small-square.tiff */,
+				177E792B0FCB54EC00E9E122 /* database-small.png */,
+				177E792C0FCB54EC00E9E122 /* dummy-small.png */,
+				177E792D0FCB54EC00E9E122 /* table-small-square.tiff */,
 				384582C60FB9603600DDACB6 /* proc-small.png */,
 				384582C30FB95FF800DDACB6 /* func-small.png */,
 				17E6418C0EF02036001BC333 /* appicon.icns */,
@@ -961,9 +966,9 @@
 				B5D93ABB0FC5121300710017 /* toolbar-preferences-network.tiff in Resources */,
 				B5D93ABC0FC5121300710017 /* toolbar-preferences-queryeditor.tiff in Resources */,
 				B5D93ABD0FC5121300710017 /* toolbar-preferences-shortcuts.png in Resources */,
-				BCA509480FCB25F200D3879C /* table-small-square.tiff in Resources */,
-				BC6B05A80FCB26A500AC02A6 /* database-small.png in Resources */,
-				BC26D7A90FCB28F900A4F918 /* dummy-small.png in Resources */,
+				177E792E0FCB54EC00E9E122 /* database-small.png in Resources */,
+				177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */,
+				177E79300FCB54EC00E9E122 /* table-small-square.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1023,7 +1028,6 @@
 				17E6415C0EF01EF6001BC333 /* TableSource.m in Sources */,
 				17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */,
 				17E641650EF01F15001BC333 /* TablesList.m in Sources */,
-				17E641660EF01F15001BC333 /* TableStatus.m in Sources */,
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
 				17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */,
 				17E641750EF01F80001BC333 /* KeyChain.m in Sources */,
@@ -1056,7 +1060,9 @@
 				5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */,
 				BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */,
 				387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */,
-				BCB151910FC9542B00977C87 /* SPNarrowDownCompletion.m in Sources */,
+				1740FABB0FC4372F00CF3699 /* SPDatabaseData.m in Sources */,
+				17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */,
+				177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

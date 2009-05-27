@@ -25,8 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-
-@interface SPTableData : NSObject {
+@interface SPTableData : NSObject 
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableListInstance;
 
@@ -34,13 +34,16 @@
 	NSMutableArray *columnNames;
 	NSMutableArray *constraints;
 	NSMutableDictionary *status;
+	
 	NSString *tableEncoding;
-
+	NSString *tableCreateSyntax;
+	
 	CMMCPConnection *mySQLConnection;
 }
 
 - (void) setConnection:(CMMCPConnection *)theConnection;
 - (NSString *) tableEncoding;
+- (NSString *) tableCreateSyntax;
 - (NSArray *) columns;
 - (NSDictionary *) columnWithName:(NSString *)colName;
 - (NSArray *) columnNames;

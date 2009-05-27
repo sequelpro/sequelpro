@@ -23,8 +23,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "MainController.h"
 #import "KeyChain.h"
+#import "MainController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
 
@@ -174,6 +174,16 @@
 	
 	// Suppress warning
 	return nil;
+}
+
+/**
+ * Deallocate prefs controller
+ */
+- (void)dealloc
+{
+	[prefsController release], prefsController = nil;
+	
+	[super dealloc];
 }
 
 @end
