@@ -40,6 +40,23 @@
 
 @synthesize connection;
 
+/**
+ * Upon awakening bind the create syntax text view's background colour.
+ */
+- (void)awakeFromNib
+{
+	[tableCreateSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
+	
+	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
+	
+	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
+	
+	[tableCreateSyntaxTextView bind:@"backgroundColor"
+						   toObject:[NSUserDefaultsController sharedUserDefaultsController]
+						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
+							options:bindingOptions];
+}
+
 #pragma mark -
 #pragma mark IBAction methods
 
