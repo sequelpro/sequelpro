@@ -914,6 +914,8 @@
 	id column;
 
 	mySQLConnection = theConnection;
+	
+	prefs = [NSUserDefaults standardUserDefaults];
 
 	if ( [prefs objectForKey:@"queryFavorites"] ) {
 		queryFavorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"queryFavorites"]];
@@ -1916,8 +1918,6 @@
 		// init search history
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
-		
-		prefs = [NSUserDefaults standardUserDefaults];
 	}
 
 	return self;
