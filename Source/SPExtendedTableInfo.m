@@ -187,6 +187,14 @@
 		
 		if ([[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
 			[tableTypePopUpButton addItemWithTitle:@"View"];
+			// Set create syntax
+			[tableCreateSyntaxTextView setEditable:YES];
+			[tableCreateSyntaxTextView setString:@""];
+			[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier]];
+			[tableCreateSyntaxTextView setEditable:NO];
+		} else {
+			[tableCreateSyntaxTextView setEditable:NO];
+			[tableCreateSyntaxTextView setString:@""];
 		}
 		
 		[tableCreatedAt setStringValue:@"Created at: "];
@@ -206,9 +214,8 @@
 		
 		// Set comments 
 		[tableCommentsTextView setString:@""];
+		[tableCommentsTextView setEditable:NO];
 		
-		// Set create syntax
-		[tableCreateSyntaxTextView setString:@""];
 		
 		return;
 	}
@@ -274,6 +281,7 @@
 	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields withLabel:@"Free data size"]];	 
 	
 	// Set comments
+	[tableCommentsTextView setEditable:YES];
 	[tableCommentsTextView setString:[statusFields objectForKey:@"Comment"]];
 	
 	// Set create syntax
@@ -288,11 +296,12 @@
  */
 - (void)textDidEndEditing:(NSNotification *)notification
 {
-	if (([notification object] == tableCommentsTextView) && ([selectedTable length] > 0)) {
+	id object = [notification object];
+	if ((object == tableCommentsTextView) && ([object isEditable]) && ([selectedTable length] > 0)) {
 		
 		NSString *currentComment = [tableDataInstance statusValueForKey:@"Comment"];
 		NSString *newComment = [[tableCommentsTextView string] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-		
+
 		// Check that the user actually changed the tables comment
 		if (![currentComment isEqualToString:newComment]) {
 			

@@ -585,8 +585,31 @@
 	// Catch unselected views and return nil
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
+	// Retrieve the CREATE TABLE syntax for the table
+	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+																					   [viewName backtickQuotedString]
+																					]];
+
+	// Check for any errors, but only display them if a connection still exists
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
+		return nil;
+	}
+
+	// Retrieve the table syntax string
+	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	
+	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
+		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
+	} else {
+		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	}
+
+
 	// Retrieve the SHOW COLUMNS syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
