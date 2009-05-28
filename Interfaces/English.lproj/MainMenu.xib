@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="926"/>
+			<integer value="504"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -951,7 +951,7 @@
 								</object>
 								<object class="NSMenuItem" id="1058233714">
 									<reference key="NSMenu" ref="466354362"/>
-									<string key="NSTitle">Table Status</string>
+									<string key="NSTitle">Table Info</string>
 									<string key="NSKeyEquiv">4</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -4559,7 +4559,6 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>chooseFavorite:</string>
 							<string>closeDatabaseSheet:</string>
 							<string>closeSheet:</string>
-							<string>connect:</string>
 							<string>connectSheetAddToFavorites:</string>
 							<string>connectSheetShowHelp:</string>
 							<string>connectToDB:</string>
@@ -4571,6 +4570,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>flushPrivileges:</string>
 							<string>flushTable:</string>
 							<string>import:</string>
+							<string>initiateConnection:</string>
 							<string>optimizeTable:</string>
 							<string>removeDatabase:</string>
 							<string>repairTable:</string>
@@ -4579,6 +4579,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>showCreateTableSyntax:</string>
 							<string>showMySQLHelp:</string>
 							<string>showVariables:</string>
+							<string>toggleUseSSH:</string>
 							<string>viewContent:</string>
 							<string>viewQuery:</string>
 							<string>viewRelations:</string>
@@ -4587,6 +4588,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -4638,11 +4640,13 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>createTableSyntaxWindow</string>
 							<string>customQueryInstance</string>
 							<string>customQueryTextView</string>
+							<string>databaseDataInstance</string>
 							<string>databaseEncodingButton</string>
 							<string>databaseField</string>
 							<string>databaseNameField</string>
 							<string>databaseSheet</string>
 							<string>dbTablesTableView</string>
+							<string>extendedTableInfoInstance</string>
 							<string>favoritesButton</string>
 							<string>favoritesController</string>
 							<string>hostField</string>
@@ -4654,6 +4658,11 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>sidebarGrabber</string>
 							<string>socketField</string>
 							<string>spExportControllerInstance</string>
+							<string>sshCheckbox</string>
+							<string>sshHostField</string>
+							<string>sshPasswordField</string>
+							<string>sshPortField</string>
+							<string>sshUserField</string>
 							<string>syntaxView</string>
 							<string>syntaxViewContent</string>
 							<string>tableContentInstance</string>
@@ -4661,7 +4670,6 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>tableDumpInstance</string>
 							<string>tableRelationsInstance</string>
 							<string>tableSourceInstance</string>
-							<string>tableStatusInstance</string>
 							<string>tableTabView</string>
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
@@ -4674,7 +4682,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSTableView</string>
-							<string>id</string>
+							<string>NSProgressIndicator</string>
 							<string>NSTextField</string>
 							<string>id</string>
 							<string>NSWindow</string>
@@ -4684,9 +4692,15 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 							<string>NSTableView</string>
 							<string>id</string>
+							<string>id</string>
 							<string>NSArrayController</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
