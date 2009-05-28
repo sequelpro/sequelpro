@@ -1534,7 +1534,7 @@
  */
 - (IBAction)showHelpForCurrentWord:(id)sender
 {
-	NSString *searchString = [[textView string] substringWithRange:[textView getRangeForCurrentWord]];
+	NSString *searchString = [[sender string] substringWithRange:[sender getRangeForCurrentWord]];
 	[self showHelpFor:searchString addToHistory:YES];
 }
 
