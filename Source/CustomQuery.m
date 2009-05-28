@@ -774,6 +774,7 @@
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
 	NSString *query = nil;
+	NSRange queryRange;
 	int i, j, lastQueryStartPosition, queryPosition = 0;
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
@@ -795,6 +796,8 @@
 	// ========= test case for SQL splitting into ranges == END
 	[customQueryParser release];
 
+	NSCharacterSet *newlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
 	// Walk along the array of queries to identify the current query - taking into account
 	// the extra semicolon at the end of each query
 	for (i = 0; i < [queries count]; i++ ) {
@@ -809,7 +812,6 @@
 			// before the next character, also consider the position to belong to the previous query.
 			if (*doLookBehind) {
 				BOOL positionAssociatedWithPreviousQuery = NO;
-				NSCharacterSet *newlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 				// If the caret is at the very start of the string, always associate
 				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
@@ -834,6 +836,7 @@
 				if (i && positionAssociatedWithPreviousQuery && [[[queries objectAtIndex:i-1] stringByTrimmingCharactersInSet:newlineSet] length]) {
 					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
 					queryStartPosition = lastQueryStartPosition;
+					queryRange=NSMakeRange(queryStartPosition, [[queries objectAtIndex:i-1] length]);
 					break;
 				}
 
@@ -842,6 +845,7 @@
 			}
 			
 			query = [NSString stringWithString:[queries objectAtIndex:i]];
+			queryRange=NSMakeRange(queryStartPosition, [[queries objectAtIndex:i] length]);
 			break;
 		}
 		queryPosition++;
@@ -851,14 +855,28 @@
 	if (*doLookBehind && position == [[textView string] length] && !query)
 	{
 		query = [queries lastObject];
+		queryRange=NSMakeRange(queryStartPosition, [[queries lastObject] length]);
 	} 
 
 	[queries release];
+	
+	// Remove all background color attributes
+	[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
 
 	// Ensure the string isn't empty.
 	// (We could also strip comments for this check, but that prevents use of conditional comments)
 	if ([[query stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
 		return nil;
+
+	// Highlight by setting a background color the current query
+	// and delete leading/trailing white spaces
+	int biasStart = [query rangeOfRegex:@"^\\s*"].length;
+	int biasEnd = [query rangeOfRegex:@"\\s*$"].length;
+	queryRange.location += biasStart;
+	queryRange.length -= biasEnd+biasStart;
+	[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
+					  value: [NSColor colorWithDeviceRed:0.95 green:0.95 blue:0.95 alpha:1]
+					  range: queryRange ];
 
 	// Return the located string.
 	return query;
