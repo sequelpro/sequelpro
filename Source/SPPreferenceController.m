@@ -257,13 +257,15 @@
 		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
 		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
 		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
+		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
+		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
 		int favoriteid = [[favoritesController valueForKeyPath:@"selection.id"] intValue];
 
 		// Remove passwords from the Keychain
 		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", name, favoriteid]
 								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
 		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", name, favoriteid]
-								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+								account:[NSString stringWithFormat:@"%@@%@", sshUser, sshHost]];
 		
 		// Reset last used favorite
 		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"LastFavoriteIndex"]) {
@@ -288,15 +290,18 @@
 - (IBAction)duplicateFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		NSString *keychainName, *keychainAccount, *password;
+		NSString *keychainName, *keychainAccount, *password, *keychainSSHName, *keychainSSHAccount, *sshPassword;
 		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
 		NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 
-		// Select the keychain password for duplication
+		// Select the keychain passwords for duplication
 		keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
 		keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 							[favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
 		password = [keychain getPasswordForName:keychainName account:keychainAccount];
+		keychainSSHName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+		keychainSSHAccount = [NSString stringWithFormat:@"%@@%@", [favorite objectForKey:@"sshUser"], [favorite objectForKey:@"sshHost"]];
+		sshPassword = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
 
 		// Update the unique ID
 		[favorite setObject:favoriteid forKey:@"id"];
@@ -304,12 +309,16 @@
 		// Alter the name for clarity
 		[favorite setObject:[NSString stringWithFormat:@"%@ Copy", [favorite objectForKey:@"name"]] forKey:@"name"];
 
-		// Create a new keychain item if appropriate
+		// Create new keychain items if appropriate
 		if (password && [password length]) {
 			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
 			[keychain addPassword:password forName:keychainName account:keychainAccount];
 		}
-		password = nil;
+		if (sshPassword && [sshPassword length]) {
+			keychainSSHName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+			[keychain addPassword:sshPassword forName:keychainSSHName account:keychainSSHAccount];
+		}
+		password = nil, sshPassword = nil;
 		
 		[favoritesController addObject:favorite];
 
@@ -547,6 +556,7 @@
 	// If no selection is present, blank the field.
 	if ([[favoritesTableView selectedRowIndexes] count] == 0) {
 		[passwordField setStringValue:@""];
+		[sshPasswordField setStringValue:@""];
 		return;
 	}
 
@@ -558,6 +568,14 @@
 								 [favoritesController valueForKeyPath:@"selection.database"]];
 
 	[passwordField setStringValue:[keychain getPasswordForName:keychainName account:keychainAccount]];
+
+	// Retrieve the SSH keychain password if appropriate.
+	NSString *keychainSSHName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
+	NSString *keychainSSHAccount = [NSString stringWithFormat:@"%@@%@",
+								 [favoritesController valueForKeyPath:@"selection.sshUser"],
+								 [favoritesController valueForKeyPath:@"selection.sshHost"]];
+
+	[sshPasswordField setStringValue:[keychain getPasswordForName:keychainSSHName account:keychainSSHAccount]];
 }
 
 #pragma mark -
@@ -651,46 +669,67 @@
 {
 	NSString *oldKeychainName, *newKeychainName;
 	NSString *oldKeychainAccount, *newKeychainAccount;
-	NSString *oldPassword;
 
-	// Only proceed for name, host, user or database changes
-	if (control != nameField && control != hostField && control != userField && control != passwordField && control != databaseField)
+	// Only proceed for name, host, user or database changes, for both standard and SSH
+	if (control != nameField && control != hostField && control != userField && control != passwordField && control != databaseField
+		&& control != sshHostField && control != sshUserField && control != sshPasswordField)
 		return YES;
 
-	// Set the current keychain name and account strings
-	oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	oldKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-						  [favoritesController valueForKeyPath:@"selection.user"],
-						  [favoritesController valueForKeyPath:@"selection.host"],
-						  [favoritesController valueForKeyPath:@"selection.database"]];
+	// If account/password details have changed, update the keychain to match
+	if ([nameField stringValue] != [favoritesController valueForKeyPath:@"selection.name"]
+		|| [hostField stringValue] != [favoritesController valueForKeyPath:@"selection.host"]
+		|| [userField stringValue] != [favoritesController valueForKeyPath:@"selection.user"]
+		|| [databaseField stringValue] != [favoritesController valueForKeyPath:@"selection.database"]
+		|| control == passwordField) {
 
-	// Retrieve the old password
-	oldPassword = [keychain getPasswordForName:oldKeychainName account:oldKeychainAccount];
-	
-	// If no details have changed, skip processing
-	if ([nameField stringValue] == [favoritesController valueForKeyPath:@"selection.name"]
-		&& [hostField stringValue] == [favoritesController valueForKeyPath:@"selection.host"]
-		&& [userField stringValue] == [favoritesController valueForKeyPath:@"selection.user"]
-		&& [databaseField stringValue] == [favoritesController valueForKeyPath:@"selection.database"]
-		&& [passwordField stringValue] == oldPassword) {
-		oldPassword = nil;
-		return YES;
+		// Get the current keychain name and account strings
+		oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
+		oldKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+							  [favoritesController valueForKeyPath:@"selection.user"],
+							  [favoritesController valueForKeyPath:@"selection.host"],
+							  [favoritesController valueForKeyPath:@"selection.database"]];
+
+		// Set up the new keychain name and account strings
+		newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
+		newKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
+							  [userField stringValue],
+							  [hostField stringValue],
+							  [databaseField stringValue]];
+
+		// Delete the old keychain item
+		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Add the new keychain item if the password field has a value
+		if ([[passwordField stringValue] length])
+			[keychain addPassword:[passwordField stringValue] forName:newKeychainName account:newKeychainAccount];
 	}
-	oldPassword = nil;
 
-	// Set up the new keychain name and account strings
-	newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	newKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-						  [userField stringValue],
-						  [hostField stringValue],
-						  [databaseField stringValue]];
 
-	// Delete the old keychain item
-	[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+	// If SSH account/password details have changed, update the keychain to match
+	if ([nameField stringValue] != [favoritesController valueForKeyPath:@"selection.name"]
+		|| [sshHostField stringValue] != [favoritesController valueForKeyPath:@"selection.sshHost"]
+		|| [sshUserField stringValue] != [favoritesController valueForKeyPath:@"selection.sshUser"]
+		|| control == sshPasswordField) {
 
-	// Add the new keychain item if the password field has a value
-	if ([[passwordField stringValue] length])
-		[keychain addPassword:[passwordField stringValue] forName:newKeychainName account:newKeychainAccount];
+		// Get the current keychain name and account strings
+		oldKeychainName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
+		oldKeychainAccount = [NSString stringWithFormat:@"%@@%@",
+							  [favoritesController valueForKeyPath:@"selection.sshUser"],
+							  [favoritesController valueForKeyPath:@"selection.sshHost"]];
+
+		// Set up the new keychain name and account strings
+		newKeychainName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
+		newKeychainAccount = [NSString stringWithFormat:@"%@@%@",
+							  [sshUserField stringValue],
+							  [sshHostField stringValue]];
+
+		// Delete the old keychain item
+		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Add the new keychain item if the password field has a value
+		if ([[sshPasswordField stringValue] length])
+			[keychain addPassword:[sshPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+	}
 
 	// Proceed with editing
 	return YES;

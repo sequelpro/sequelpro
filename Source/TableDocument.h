@@ -28,6 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import <WebKit/WebKit.h>
+#import "SPSSHTunnel.h"
 
 @class CMMCPConnection, CMMCPResult;
 
@@ -65,8 +66,13 @@
 	IBOutlet id passwordField;
 	IBOutlet id portField;
 	IBOutlet id databaseField;
+	IBOutlet id sshCheckbox;
+	IBOutlet id sshHostField;
+	IBOutlet id sshUserField;
+	IBOutlet id sshPasswordField;
+	IBOutlet id sshPortField;
 
-	IBOutlet id connectProgressBar;
+	IBOutlet NSProgressIndicator *connectProgressBar;
 	IBOutlet NSTextField *connectProgressStatusText;
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
@@ -92,6 +98,11 @@
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
 
+	NSString *connectionKeychainItemName;
+	NSString *connectionKeychainItemAccount;
+	NSString *connectionSSHKeychainItemName;
+	NSString *connectionSSHKeychainItemAccount;
+
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
@@ -107,13 +118,17 @@
 //start sheet
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (IBAction)connectToDB:(id)sender;
-- (IBAction)connect:(id)sender;
+- (IBAction)initiateConnection:(id)sender;
+- (void)initiateSSHTunnelConnection;
+- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
+- (void)initiateMySQLConnection:(SPSSHTunnel *)theTunnel;
+- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
+- (IBAction)toggleUseSSH:(id)sender;
 - (IBAction)editFavorites:(id)sender;
 - (id)selectedFavorite;
-- (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;
 - (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password

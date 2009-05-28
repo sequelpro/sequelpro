@@ -26,6 +26,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 #import "CMMCPResult.h"
+#import "KeyChain.h"
+#import "SPSSHTunnel.h"
 
 @interface NSObject (CMMCPConnectionDelegate)
 
@@ -41,13 +43,17 @@
 	id	delegate;
 
 	BOOL nibLoaded;
+	SPSSHTunnel *connectionTunnel;
 	NSString *connectionLogin;
+	NSString *connectionKeychainName;
+	NSString *connectionKeychainAccount;
 	NSString *connectionPassword;
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
 	float lastQueryExecutionTime;
 	int connectionTimeout;
+	int currentSSHTunnelState;
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
@@ -58,15 +64,18 @@
 }
 
 - (id) init;
-- (id) initToHost:(NSString *) host withLogin:(NSString *) login password:(NSString *) pass usingPort:(int) port;
-- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login password:(NSString *) pass;
+- (id) initToHost:(NSString *) host withLogin:(NSString *) login usingPort:(int) port;
+- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login;
 - (void) initSPExtensions;
-- (BOOL) connectWithLogin:(NSString *) login password:(NSString *) pass host:(NSString *) host port:(int) port socket:(NSString *) socket;
+- (BOOL) setPassword:(NSString *)thePassword;
+- (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
+- (BOOL) setSSHTunnel:(SPSSHTunnel *)theTunnel;
+- (BOOL) connect;
 - (void) disconnect;
 - (BOOL) reconnect;
+- (void) setParentWindow:(NSWindow *)theWindow;
 - (IBAction) closeSheet:(id)sender;
 + (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding;
-- (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
 - (CMMCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;

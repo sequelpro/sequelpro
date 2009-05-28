@@ -35,20 +35,54 @@
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account
 {
 	OSStatus status;
+	SecTrustedApplicationRef sequelProRef, sequelProHelperRef;
+	SecAccessRef passwordAccessRef;
+	SecKeychainAttribute attributes[4];
+	SecKeychainAttributeList attList;
 	
 	// Check if password already exists before adding
 	if (![self passwordExistsForName:name account:account]) {
-		status = SecKeychainAddGenericPassword(
-											   NULL,						// default keychain
-											   strlen([name UTF8String]),		// length of service name
-											   [name UTF8String],				// service name
-											   strlen([account UTF8String]),		// length of account name
-											   [account UTF8String],			// account name
-											   strlen([password UTF8String]),	// length of password
-											   [password UTF8String],			// pointer to password data
-											   NULL							// the item reference
-											   );
+
+		// Create a trusted access list with two items - ourselves and the SSH pass app.
+		NSString *helperPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"TunnelPassphraseRequester"];
+		if ((SecTrustedApplicationCreateFromPath(NULL, &sequelProRef) == noErr) &&
+			(SecTrustedApplicationCreateFromPath([helperPath UTF8String], &sequelProHelperRef) == noErr)) {
+
+			NSArray *trustedApps = [NSArray arrayWithObjects:(id)sequelProRef, (id)sequelProHelperRef, nil];
+			status = SecAccessCreate((CFStringRef)name, (CFArrayRef)trustedApps, &passwordAccessRef);
+			if (status != noErr) {
+				NSLog(@"Error (%i) while trying to create access list for name: %@ account: %@", status, name, account);
+				passwordAccessRef = NULL;
+			}
+		}
 		
+		// Set up the item attributes
+		attributes[0].tag = kSecGenericItemAttr;
+		attributes[0].data = "application password";
+		attributes[0].length = 20;
+		attributes[1].tag = kSecLabelItemAttr;
+		attributes[1].data = (unichar *)[name UTF8String];
+		attributes[1].length = strlen([name UTF8String]);
+		attributes[2].tag = kSecAccountItemAttr;
+		attributes[2].data = (unichar *)[account UTF8String];
+		attributes[2].length = strlen([account UTF8String]);
+		attributes[3].tag = kSecServiceItemAttr;
+		attributes[3].data = (unichar *)[name UTF8String];
+		attributes[3].length = strlen([name UTF8String]);
+		attList.count = 4;
+		attList.attr = attributes;
+
+		// Create the keychain item
+		status = SecKeychainItemCreateFromContent(
+			kSecGenericPasswordItemClass,			// Generic password type
+			&attList,								// The attribute list created for the keychain item
+			strlen([password UTF8String]),			// Length of password
+			[password UTF8String],					// Password data
+			NULL,									// Default keychain
+			passwordAccessRef,						// Access list for this keychain
+			NULL);									// The item reference
+
+		if (passwordAccessRef) CFRelease(passwordAccessRef);
 		if (status != noErr) {
 			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
 		}
@@ -120,7 +154,7 @@
 			}
 		}
 		
-		CFRelease(itemRef);
+		if (itemRef) CFRelease(itemRef);
 	}
 }
 

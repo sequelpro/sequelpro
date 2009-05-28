@@ -49,6 +49,10 @@
 	IBOutlet NSTextField *userField;
 	IBOutlet NSTextField *databaseField;
 	IBOutlet NSSecureTextField *passwordField;
+	IBOutlet NSTextField *sshHostField;
+	IBOutlet NSTextField *sshUserField;
+	IBOutlet NSSecureTextField *sshPasswordField;
+	IBOutlet NSTextField *sshPortField;
 	KeyChain *keychain;
 
 	IBOutlet NSTextField *editorFontName;
