@@ -996,7 +996,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)makeTextSizeLarger
 {
 	NSFont *aFont = [self font];
+	BOOL editableStatus = [self isEditable];
+	[self setEditable:YES];
 	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:[aFont pointSize]+1]];
+	[self setEditable:editableStatus];
 }
 
 /*
@@ -1006,7 +1009,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSFont *aFont = [self font];
 	int newSize = ([aFont pointSize]-1 < 4) ? [aFont pointSize] : [aFont pointSize]-1;
+	BOOL editableStatus = [self isEditable];
+	[self setEditable:YES];
 	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:newSize]];
+	[self setEditable:editableStatus];
 }
 
 /*
