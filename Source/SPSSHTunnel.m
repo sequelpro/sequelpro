@@ -352,7 +352,7 @@
 - (NSString *)getPasswordWithVerificationHash:(NSString *)theHash
 {
 	if (passwordInKeychain) return nil;
-	if (theHash != passwordConnectionVerifyHash) return nil;
+	if (![theHash isEqualToString:passwordConnectionVerifyHash]) return nil;
 	return password;
 }
 
