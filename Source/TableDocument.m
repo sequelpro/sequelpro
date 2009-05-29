@@ -331,7 +331,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[connectProgressStatusText display];
 
 	// Set up the tunnel details
-	theTunnel = [[SPSSHTunnel alloc] initToHost:[sshHostField stringValue] port:([sshPortField intValue]?[sshPortField intValue]:22) login:[sshUserField stringValue] tunnellingToPort:([portField intValue]?[portField intValue]:3306) onHost:[hostField stringValue]];
+	theTunnel = [[SPSSHTunnel alloc] initToHost:[sshHostField stringValue] port:([[sshPortField stringValue] length]?[sshPortField intValue]:22) login:[sshUserField stringValue] tunnellingToPort:([[portField stringValue] length]?[portField intValue]:3306) onHost:[hostField stringValue]];
 
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
