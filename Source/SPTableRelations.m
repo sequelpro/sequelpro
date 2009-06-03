@@ -29,59 +29,46 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "SPTableData.h"
+#import "SPStringAdditions.h"
+
+@interface SPTableRelations (PrivateAPI)
+
+- (void)_updateAvailableTableColumns;
+
+@end
 
 @implementation SPTableRelations
 
-/*
+@synthesize connection;
+
+/**
  * init
  */
 - (id)init
 {
-	if (![super init])
-		return nil;
-	
-	relData = [[NSMutableArray alloc] init];
+	if ((self = [super init])) {
+		relationData = [[NSMutableArray alloc] init];
+	}
 
 	return self;
 }
 
-/*
- * dealloc
- */
-- (void)dealloc
-{	
-	[relData release], relData = nil;
-	
-	[super dealloc];
-}
-
-/*
- * awakeFromNib
+/**
+ * Register to listen for table selection changes upon nib awakening.
  */
 - (void)awakeFromNib
 {
 	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(tableChanged:) 
+											 selector:@selector(tableSelectionChanged:) 
 												 name:NSTableViewSelectionDidChangeNotification 
 											   object:tableList];
-}
-
-/*
- * setConnection
- * set the database connection
- */
-- (void)setConnection:(CMMCPConnection *)theConnection
-{
-	// Weak reference
-	mySQLConnection = theConnection;			
 }
 
 #pragma mark -
 #pragma mark IB action methods
 
-/*
- * closeRelationSheet
- * happens if the user hits cancel
+/**
+ * Closes the relation sheet.
  */
 - (IBAction)closeRelationSheet:(id)sender
 {
@@ -89,162 +76,155 @@
 	[NSApp stopModalWithCode:0];
 }
 
-/*
- * addRelation
- * attempt to add the relations from the relationSheet data
+/**
+ * Add a new relation using the selected values.
  */
-- (IBAction)addRelation:(id)sender
-{
-	// 0 = success
-	int retCode = 0;
-	NSString *thisTable = [tablesListInstance tableName];
-	NSString *thisColumn = [columnSelect titleOfSelectedItem];
-	NSString *thatTable = [refTableSelect titleOfSelectedItem];
-	NSString *thatColumn = [refColumnSelect titleOfSelectedItem];
-	NSString *onUpdate = [onUpdateSelect titleOfSelectedItem];
-	NSString *onDelete = [onDeleteSelect titleOfSelectedItem];
-	NSString *query = [NSString stringWithFormat:
-					   @"ALTER TABLE `%@` ADD FOREIGN KEY (`%@`) REFERENCES `%@` (`%@`)", 
-					   thisTable,
-					   thisColumn,
-					   thatTable,
-					   thatColumn];
+- (IBAction)confirmAddRelation:(id)sender
+{	
+	NSString *thisTable  = [tablesListInstance tableName];
+	NSString *thisColumn = [columnPopUpButton titleOfSelectedItem];
+	NSString *thatTable  = [refTablePopUpButton titleOfSelectedItem];
+	NSString *thatColumn = [refColumnPopUpButton titleOfSelectedItem];
 	
-	if( [onDelete length] ) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", onDelete]];
-	}
-	if( [onUpdate length] ) {
-			query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", onUpdate]];
+	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD FOREIGN KEY (%@) REFERENCES %@ (%@)", 
+												[thisTable backtickQuotedString],
+												thisColumn,
+												[thatTable backtickQuotedString],
+												thatColumn];
+	
+	// If required add ON DELETE
+	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [onDeletePopUpButton titleOfSelectedItem]]];
 	}
 	
-	[mySQLConnection queryString:query];
+	// If required add ON UPDATE
+	if ([onUpdatePopUpButton indexOfSelectedItem] > 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [onUpdatePopUpButton titleOfSelectedItem]]];
+	}
 	
-	if ( ! [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		NSLog(@"error: %@", [mySQLConnection getLastErrorMessage]);
-		retCode = 1;
-	} 
+	// Execute query
+	[connection queryString:query];
+	
+	int retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
 		
 	[NSApp stopModalWithCode:retCode];	
 }
 
-/*
- * chooseRefTable
- * update the columns select when the user chooses a reference table
+/**
+ * Updates the available columns when the user selects a table.
  */
-- (IBAction)chooseRefTable:(id)sender
+- (IBAction)selectTableColumn:(id)sender
 {
-	NSString *table = [refTableSelect titleOfSelectedItem];
-	
-	[refColumnSelect removeAllItems];
-
-	NSDictionary *info = [tableDataInstance informationForTable:table];
-	NSArray *cols = [info objectForKey:@"columns"];
-	NSMutableArray *colNames = [[NSMutableArray alloc] init];
-	// TODO depending on the selected column type, it would be smart to only
-	// show columns that are valid to linkage. this.int -> ints only
-	for( int i = 0; i < [cols count]; i++ ) {
-		[colNames addObject:[[cols objectAtIndex:i] objectForKey:@"name"]];
-	}
-	[refColumnSelect addItemsWithTitles:colNames];
-	[colNames release];
+	[self _updateAvailableTableColumns];
 }
 
-/*
- * addRow
- * called when the user indicated they want to add a relation
+/**
+ * Updates the available columns when the user selects a table.
  */
-- (IBAction)addRow:(id)sender
+- (IBAction)selectReferenceTable:(id)sender
 {
-	// TODO check that this is an INNO table 
+	[self _updateAvailableTableColumns];
+}
+
+/**
+ * Called whenever the user selected to add a new relation. 
+ */
+- (IBAction)addRelation:(id)sender
+{	
+	// Set up the controls
+	[addRelationTableBox setTitle:[NSString stringWithFormat:@"Table: %@", [tablesListInstance tableName]]];
 	
-	// set up the controls
-	[tableBox setTitle:[NSString stringWithFormat:@"Table: %@",[tablesListInstance tableName] ]];
-	[columnSelect removeAllItems];
-	[columnSelect addItemsWithTitles:[tableDataInstance columnNames]];
-	[refTableSelect removeAllItems];
-	// grab only real tables
-	// TODO filter this so it only shows INNO tables
-	NSArray *tables = [tablesListInstance tables];
-	NSArray *types = [tablesListInstance tableTypes];
-	NSMutableArray *validTables = [[NSMutableArray alloc] init];
-	for( int i = 0; i < [tables count]; i++ ) {
-		if( [[types objectAtIndex:i] intValue] == SP_TABLETYPE_TABLE ) {
-			[validTables addObject:[tables objectAtIndex:i]];
-		}
+	[columnPopUpButton removeAllItems];
+	[columnPopUpButton addItemsWithTitles:[tableDataInstance columnNames]];
+	
+	[refTablePopUpButton removeAllItems];
+	
+	// Get all InnoDB tables in the current database
+	CMMCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = '%@' AND table_name != '%@'", [tableDocumentInstance database], [tablesListInstance tableName]]];
+	
+	[result dataSeek:0];
+	
+	for (int i = 0; i < [result numOfRows]; i++)
+	{		
+		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
-	[refTableSelect addItemsWithTitles:validTables];
-	[validTables release];
-	[self chooseRefTable:nil];
 	
-	[NSApp beginSheet:relationSheet
-			modalForWindow:tableWindow
-			modalDelegate:self
-			didEndSelector:nil 
+	[self selectReferenceTable:nil];
+	
+	[NSApp beginSheet:addRelationPanel
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:nil 
 		  contextInfo:nil];
 	
+	int code = [NSApp runModalForWindow:addRelationPanel];
 	
-	int code = [NSApp runModalForWindow:relationSheet];
-	
-	[NSApp endSheet:relationSheet];
-	[relationSheet orderOut:nil];
+	[NSApp endSheet:addRelationPanel];
+	[addRelationPanel orderOut:nil];
 
 	// 0 indicates success
-	if( code ) {
+	if (code) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [mySQLConnection getLastErrorMessage]]);		
-	} else {
-		[self refresh:nil];		
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
+	} 
+	else {
+		[self refreshRelations:nil];		
 	}
 }
 
-/*
- * removeRow
- * called when rows are selected and the user wants to remove those relations
+/**
+ * Removes the selected relations.
  */
-- (IBAction)removeRow:(id)sender
+- (IBAction)removeRelation:(id)sender
 {
-	if ( [relationsView numberOfSelectedRows] ) {
-		int resp = NSRunAlertPanel(NSLocalizedString(@"Delete relation", @"delete relation message"),
-								   NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone", @"delete selected relation informative message"),
-								   NSLocalizedString(@"Delete", @"delete button"), 
-								   NSLocalizedString(@"Cancel", @"cancel button"), nil );
+	if ([relationsTableView numberOfSelectedRows] > 0) {
 		
-		if( resp == NSAlertDefaultReturn ) {
+		int response = NSRunAlertPanel(NSLocalizedString(@"Delete relation", @"delete relation message"),
+									   NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone", @"delete selected relation informative message"),
+									   NSLocalizedString(@"Delete", @"delete button"), 
+									   NSLocalizedString(@"Cancel", @"cancel button"), nil );
+		
+		if (response == NSAlertDefaultReturn) {
+			
 			NSString *thisTable = [tablesListInstance tableName];
-			NSIndexSet *selectedSet = [relationsView selectedRowIndexes];
+			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
+			
 			unsigned int row = [selectedSet lastIndex];
-			while( row != NSNotFound ) 
+			
+			while (row != NSNotFound) 
 			{
-				NSArray *relName = [[relData objectAtIndex:row] objectForKey:@"name"];
-				NSString *query = [NSString stringWithFormat:@"ALTER TABLE `%@` DROP FOREIGN KEY `%@`", thisTable, relName];
+				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
+				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
 				
-				[mySQLConnection queryString:query];
+				[connection queryString:query];
 				
-				if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
 					
 					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [mySQLConnection getLastErrorMessage]]);	
-					// abort loop
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
+					
+					// Abort loop
 					break;
 				} 
+				
 				row = [selectedSet indexLessThanIndex:row];
 			}
-			[self refresh:nil];
+			
+			[self refreshRelations:nil];
 		}
 	}
 }
 
-/*
- * refresh
- * called to refesh the relations list
+/**
+ * Refreshes the displayed relations.
  */
-- (IBAction)refresh:(id)sender
+- (IBAction)refreshRelations:(id)sender
 {
-	[relData removeAllObjects];
+	[relationData removeAllObjects];
 	
 	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
 		
@@ -252,32 +232,33 @@
 				
 		NSArray *constraints = [tableDataInstance getConstraints];
 		
-		for( int i = 0; i < [constraints count]; i++ ) {
-			[relData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-								[tablesListInstance tableName], @"table",
-								[[constraints objectAtIndex:i] objectForKey:@"name"], @"name",
-								[[constraints objectAtIndex:i] objectForKey:@"columns"], @"columns",
-								[[constraints objectAtIndex:i] objectForKey:@"ref_table"], @"fk_table",
-								[[constraints objectAtIndex:i] objectForKey:@"ref_columns"], @"fk_columns",
-								[[constraints objectAtIndex:i] objectForKey:@"update"], @"on_update",
-								[[constraints objectAtIndex:i] objectForKey:@"delete"], @"on_delete",
-								nil]];
+		for (NSDictionary *constraint in constraints) 
+		{
+			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									[tablesListInstance tableName], @"table",
+									[constraint objectForKey:@"name"], @"name",
+									[constraint objectForKey:@"columns"], @"columns",
+									[constraint objectForKey:@"ref_table"], @"fk_table",
+									[constraint objectForKey:@"ref_columns"], @"fk_columns",
+									[constraint objectForKey:@"update"], @"on_update",
+									[constraint objectForKey:@"delete"], @"on_delete",
+									nil]];
 			
 		}
 	} 
 	
-	[relationsView reloadData];
+	[relationsTableView reloadData];
 }
 
-/*
- * tableChanged
- * notification from the tableList when the users click a table
+/**
+ * Called whenever the user selects a different table.
  */
-- (void)tableChanged:(NSNotification *)notification
+- (void)tableSelectionChanged:(NSNotification *)notification
 {
 	// To begin enable all interface elements
-	[addButton setEnabled:YES];		
-	[refreshButton setEnabled:YES];
+	[addRelationButton setEnabled:YES];		
+	[refreshRelationsButton setEnabled:YES];
+	[relationsTableView setEnabled:YES];
 	
 	// Get the current table's storage engine
 	NSString *engine = [tableDataInstance statusValueForKey:@"Engine"];
@@ -285,76 +266,107 @@
 	if (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
 		
 		// Update the text label
-		[labelText setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
+		[labelTextField setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
 		
-		[addButton setEnabled:YES];
-		[refreshButton setEnabled:YES];
+		[addRelationButton setEnabled:YES];
+		[refreshRelationsButton setEnabled:YES];
+		[relationsTableView setEnabled:YES];
 	} 
 	else {
-		[addButton setEnabled:NO];		
-		[refreshButton setEnabled:NO];	
+		[addRelationButton setEnabled:NO];		
+		[refreshRelationsButton setEnabled:NO];	
+		[relationsTableView setEnabled:NO];
 		
-		[labelText setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
+		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
 	}	
 	
-	[self refresh:self];
+	[self refreshRelations:self];
 }
 
 #pragma mark -
 #pragma mark Tableview datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (int)numberOfRowsInTableView:(NSTableView *)tableView
 {
-	return [relData count];
+	return [relationData count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(int)rowIndex
 {
-	return [[relData objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-}
-
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{
-	
+	return [[relationData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 }
 
 #pragma mark -
 #pragma mark Tableview delegate methods
 
-- (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
+/**
+ * Called whenever the relations table view selection changes.
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
+	[removeRelationButton setEnabled:([relationsTableView numberOfSelectedRows] > 0)];
+}
+
+#pragma mark -
+#pragma mark Other
+
+/*
+ * Dealloc.
+ */
+- (void)dealloc
+{	
+	[relationData release], relationData = nil;
 	
+	[super dealloc];
 }
 
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
-{
-	[removeButton setEnabled:([relationsView numberOfSelectedRows] > 0)];
-}
+@end
 
-- (void)tableViewSelectionIsChanging:(NSNotification *)aNotification
+@implementation SPTableRelations (PrivateAPI)
+
+/**
+ * Updates the available table columns that the reference is pointing to. Available columns are those that are
+ * within the selected table and are of the same data type as the column the reference is from.
+ */
+- (void)_updateAvailableTableColumns
 {
+	NSString *column = [columnPopUpButton titleOfSelectedItem];
+	NSString *table = [refTablePopUpButton titleOfSelectedItem];
+		
+	[tableDataInstance resetAllData];
+	[tableDataInstance updateInformationForCurrentTable];
 	
-}
-
-- (void)tableViewColumnDidResize:(NSNotification *)aNotification
-{
+	NSDictionary *columnInfo = [[tableDataInstance columnWithName:column] copy];
+		
+	[refColumnPopUpButton setEnabled:NO];
+	[confirmAddRelationButton setEnabled:NO];
 	
-}
-
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{
-	return NO;
-}
-
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
-{
-	return NO;
-}
-
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
-{
-	return NO;
+	[refColumnPopUpButton removeAllItems];
+	
+	[tableDataInstance resetAllData];
+	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
+	
+	NSArray *columns = [tableInfo objectForKey:@"columns"];
+	
+	NSMutableArray *validColumns = [NSMutableArray array];
+	
+	// Only add columns of the same data type
+	for (int i = 0; i < [columns count]; i++) 
+	{		
+		if ([[columnInfo objectForKey:@"type"] isEqualToString:[[columns objectAtIndex:i] objectForKey:@"type"]]) {
+			[validColumns addObject:[[columns objectAtIndex:i] objectForKey:@"name"]];			
+		}
+	}
+	
+	// Add the valid columns
+	if ([validColumns count] > 0) {
+		[refColumnPopUpButton addItemsWithTitles:validColumns];
+		
+		[refColumnPopUpButton setEnabled:YES];
+		[confirmAddRelationButton setEnabled:YES];
+	}
+	
+	[columnInfo release];
 }
 
 @end

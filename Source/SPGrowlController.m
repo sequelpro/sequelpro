@@ -29,7 +29,7 @@ static SPGrowlController *sharedGrowlController = nil;
 
 @implementation SPGrowlController
 
-/*
+/**
  * Returns the shared Growl controller.
  */
 + (SPGrowlController *)sharedGrowlController
@@ -58,14 +58,14 @@ static SPGrowlController *sharedGrowlController = nil;
 
 - (id)init
 {
-    if (self = [super init]) {
+    if ((self = [super init])) {
         [GrowlApplicationBridge setGrowlDelegate:self];
     }
     
     return self;
 }
 
-/*
+/**
  * The following base protocol methods are implemented to ensure the singleton status of this class.
  */
 
@@ -79,7 +79,7 @@ static SPGrowlController *sharedGrowlController = nil;
 
 - (void)release { }
 
-/*
+/**
  * Posts a Growl notification using the supplied details and default values.
  */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name
@@ -93,7 +93,7 @@ static SPGrowlController *sharedGrowlController = nil;
 			clickContext:nil];
 }
      
-/*
+/**
  * Posts a Growl notification using the supplied details and effectively ignoring the default values.
  */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext

@@ -31,39 +31,41 @@
 @interface SPTableRelations : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
-	IBOutlet id tablesListInstance;	
+	IBOutlet id tablesListInstance;
+	IBOutlet id tableDataInstance;
+	
 	IBOutlet id tableList;
 	IBOutlet id tableWindow;
-	IBOutlet id tableDataInstance;
-	IBOutlet id addButton;
-	IBOutlet id removeButton;	
-	IBOutlet id refreshButton;
-	IBOutlet id labelText;		
-	IBOutlet id relationsView;
-	IBOutlet id relationSheet;
+	
+	IBOutlet NSButton    *addRelationButton;
+	IBOutlet NSButton    *removeRelationButton;	
+	IBOutlet NSButton    *refreshRelationsButton;
+	IBOutlet NSTextField *labelTextField;		
+	IBOutlet NSTableView *relationsTableView;
+	IBOutlet NSPanel     *addRelationPanel;
 
-	IBOutlet id tableBox;
-	IBOutlet id columnSelect;
-	IBOutlet id refTableSelect;
-	IBOutlet id refColumnSelect;
-	IBOutlet id onUpdateSelect;
-	IBOutlet id onDeleteSelect;
+	IBOutlet NSBox         *addRelationTableBox;
+	IBOutlet NSPopUpButton *columnPopUpButton;
+	IBOutlet NSPopUpButton *refTablePopUpButton;
+	IBOutlet NSPopUpButton *refColumnPopUpButton;
+	IBOutlet NSPopUpButton *onUpdatePopUpButton;
+	IBOutlet NSPopUpButton *onDeletePopUpButton;
+	IBOutlet NSButton      *confirmAddRelationButton;
 		
-	CMMCPConnection *mySQLConnection;
+	CMMCPConnection *connection;
 
-	NSMutableArray *relData;
+	NSMutableArray *relationData;
 }
 
-- (void)setConnection:(CMMCPConnection *)theConnection;
+@property (readwrite, assign) CMMCPConnection *connection;
 
 // IB action methods
-- (IBAction)addRow:(id)sender;
-- (IBAction)removeRow:(id)sender;
-- (IBAction)closeRelationSheet:(id)sender;
 - (IBAction)addRelation:(id)sender;
-- (IBAction)chooseRefTable:(id)sender;
-- (IBAction)refresh:(id)sender;
-
-- (void)tableChanged:(NSNotification *)notification;
+- (IBAction)removeRelation:(id)sender;
+- (IBAction)closeRelationSheet:(id)sender;
+- (IBAction)confirmAddRelation:(id)sender;
+- (IBAction)selectTableColumn:(id)sender;
+- (IBAction)selectReferenceTable:(id)sender;
+- (IBAction)refreshRelations:(id)sender;
 
 @end
