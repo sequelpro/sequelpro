@@ -203,9 +203,10 @@
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%i", connectionTimeout]];
+	[taskArguments addObject:@"-o NumberOfPasswordPrompts=1"];
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
-		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%i", ceil(keepAliveInterval)]];		
+		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%i", (int)ceil(keepAliveInterval)]];		
 		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
 	}
 	[taskArguments addObject:[NSString stringWithFormat:@"-p %i", sshPort]];
@@ -317,6 +318,13 @@
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was closed 'by the remote host'.  This may indicate a networking issue or a network timeout.", @"SSH tunnel was closed by remote host message")];
+				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+			}
+			if ([message rangeOfString:@"Permission denied (" ].location != NSNotFound) {
+				connectionState = SPSSH_STATE_IDLE;
+				[task terminate];
+				if (lastError) [lastError release];
+				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel could not authenticate with the remote host.  Please check your password and ensure you still have access.", @"SSH tunnel authentication failed message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"Operation timed out" ].location != NSNotFound) {

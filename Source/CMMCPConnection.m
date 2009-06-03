@@ -444,7 +444,9 @@ static void forcePingTimeout(int signalNumber);
 	// Restart the tunnel if it dies
 	if (mConnected && newState == SPSSH_STATE_IDLE && currentSSHTunnelState == SPSSH_STATE_CONNECTED) {
 		currentSSHTunnelState = newState;
+		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
 		[self reconnect];
+		return;
 	}
 
 	currentSSHTunnelState = newState;
