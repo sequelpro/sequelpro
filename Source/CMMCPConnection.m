@@ -259,8 +259,8 @@ static void forcePingTimeout(int signalNumber);
 	if (connectionTunnel) [connectionTunnel disconnect];
 	
 	if( serverVersionString != nil ) {
-		serverVersionString = nil;
 		[serverVersionString release];
+		serverVersionString = nil;
 	}
 
 	[self stopKeepAliveTimer];
