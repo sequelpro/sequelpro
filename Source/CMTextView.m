@@ -63,6 +63,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
 #define SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG          1001
+#define SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG 1002
 
 #define SP_SYNTAX_HILITE_BIAS 2000
 
@@ -429,6 +430,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 }
 
+- (void) selectCurrentQuery
+{
+	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] selectCurrentQuery];
+}
 
 /*
  * Selects the line lineNumber relatively to a selection (if given) and scrolls to it
@@ -534,10 +539,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self copyAsRTF];
 			return;
 		}
-	if([charactersIgnMod isEqualToString:@"h"]) // ^C copy as RTF
+	if([charactersIgnMod isEqualToString:@"h"]) // ^H show MySQL Help
 		if(curFlags==(NSControlKeyMask))
 		{
 			[self showMySQLHelpForCurrentWord:self];
+			return;
+		}
+	if([charactersIgnMod isEqualToString:@"y"]) // ⇧⌘A select current query
+		if(curFlags==(NSControlKeyMask))
+		{
+			[self selectCurrentQuery];
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
@@ -2310,6 +2321,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Add the menu items for
 	// - MySQL Help for Word/Selection
 	// - Copy as RTF
+	// - Select Active Query
 	// if it doesn't yet exist
 	NSMenu *menu = [[self class] defaultMenu];
 	
@@ -2330,6 +2342,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[copyAsRTFMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:copyAsRTFMenuItem atIndex:2];
 	}
+	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG] == nil)
+	{
+		NSMenuItem *selectCurrentQueryMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Select Active Query", @"Select Active Query") action:@selector(selectCurrentQuery) keyEquivalent:@"q"];
+		[selectCurrentQueryMenuItem setTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG];
+		[selectCurrentQueryMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+		[menu insertItem:selectCurrentQueryMenuItem atIndex:4];
+	}
+	// Hide "Select Active Query" if self is not editable
+	[[menu itemAtIndex:4] setHidden:![self isEditable]];
+	
     return menu;
 }
 
@@ -2347,7 +2369,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Enable Copy as RTF if soemthing is selected
 	if ([menuItem action] == @selector(copyAsRTF)) {
 		return ([self selectedRange].length>0);
-	}	
+	}
+	// Validate Select Active Query
+	if ([menuItem action] == @selector(selectCurrentQuery)) {
+		return ([self isEditable]);
+	}
 	return YES;
 }
 

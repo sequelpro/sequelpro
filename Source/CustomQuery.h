@@ -136,6 +136,7 @@
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
+- (void)selectCurrentQuery;
 - (NSString *)usedQuery;
 
 

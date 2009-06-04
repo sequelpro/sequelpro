@@ -818,6 +818,11 @@
 	return (queryRange.length) ? [[textView string] substringWithRange:queryRange] : nil;
 }
 
+- (void)selectCurrentQuery
+{
+	if(currentQueryRange.length)
+		[textView setSelectedRange:currentQueryRange];
+}
 
 #pragma mark -
 #pragma mark Accessors
@@ -1245,7 +1250,8 @@
 	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
 
 	// Highlight by setting a background color the current query
-	if(qRange.length) {
+	// if nothing is selected
+	if(qRange.length && !currentSelection.length) {
 		[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
 					  value: [NSColor colorWithDeviceRed:0.95 green:0.95 blue:0.95 alpha:1]
 					  range: qRange ];
