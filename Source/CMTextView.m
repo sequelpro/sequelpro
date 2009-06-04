@@ -545,7 +545,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self showMySQLHelpForCurrentWord:self];
 			return;
 		}
-	if([charactersIgnMod isEqualToString:@"y"]) // ⇧⌘A select current query
+	if([charactersIgnMod isEqualToString:@"y"]) // ^Y select current query
 		if(curFlags==(NSControlKeyMask))
 		{
 			[self selectCurrentQuery];
@@ -2344,7 +2344,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG] == nil)
 	{
-		NSMenuItem *selectCurrentQueryMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Select Active Query", @"Select Active Query") action:@selector(selectCurrentQuery) keyEquivalent:@"q"];
+		NSMenuItem *selectCurrentQueryMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Select Active Query", @"Select Active Query") action:@selector(selectCurrentQuery) keyEquivalent:@"y"];
 		[selectCurrentQueryMenuItem setTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG];
 		[selectCurrentQueryMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:selectCurrentQueryMenuItem atIndex:4];
