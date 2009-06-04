@@ -422,4 +422,9 @@
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
+- (void)dealloc
+{	
+	[super dealloc];
+}
+
 @end

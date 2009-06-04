@@ -46,6 +46,7 @@
 #import "MainController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPPreferenceController.h"
+#import "SPPrintAccessory.h"
 
 // Used for printing
 #import "MGTemplateEngine.h"
@@ -134,6 +135,15 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	//add ability to select orientation to print panel
 	NSPrintPanel *printPanel = [op printPanel];
 	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
+	
+	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
+	[printAccessory initWithNibName:@"printAccessory" bundle:nil];
+	[printPanel addAccessoryController:printAccessory];
+	
+	NSPageLayout *pageLayout = [NSPageLayout pageLayout];
+	[pageLayout addAccessoryController:printAccessory];
+    [printAccessory release];
+	
 	[op setPrintPanel:printPanel];
 	
     [op runOperationModalForWindow:tableWindow
@@ -217,8 +227,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 			rows, @"rows",
 			nil];
 
+    [connection release];
+    [rows release];
+
 	// Process the template and display the results.
 	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
+	NSLog(@"result %@", result);
+
 	return result;
 }
 
