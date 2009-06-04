@@ -739,16 +739,17 @@
 {
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
-	int i;
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
 	if (position < 0 || position > [[textView string] length])
 		return NSMakeRange(NSNotFound,0);
 
-	// Split the current text into queries
+	// Split the current text into ranges of queries
 	customQueryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:NSMakeRange(position, [[textView string] length]-position)]];
-	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringByCharacter:';']];
+	queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
 	[customQueryParser release];
+
+	// Check for a valid index
 	anIndex--;
 	if(anIndex < 0 || anIndex >= [queries count])
 	{
@@ -756,21 +757,16 @@
 		return NSMakeRange(NSNotFound, 0);
 	}
 
-	NSString *theQuery = [queries objectAtIndex:anIndex];
-
-	// Calculate the text length before that query at index anIndex
-	long prevQueriesLength = 0;
-	for (i = 0; i < anIndex; i++ ) {
-		prevQueriesLength += [[queries objectAtIndex:i] length] + 1;
-	}
-
+	NSRange theQueryRange = [[queries objectAtIndex:anIndex] rangeValue];
+	NSString *theQueryString = [[textView string] substringWithRange:theQueryRange];
+	
 	[queries release];
 	
 	// Remove all leading white spaces
-	NSError *err;
-	int offset = [theQuery rangeOfRegex:@"^(\\s*)" options:RKLNoOptions inRange:NSMakeRange(0, [theQuery length]) capture:1 error:&err].length;
-
-	return NSMakeRange(position+offset+prevQueriesLength, [theQuery length] - offset);
+	int offset = [theQueryString rangeOfRegex:@"^(\\s*)"].length;
+	theQueryRange.location += offset;
+	theQueryRange.length -= offset;
+	return theQueryRange;
 }
 
 /*
