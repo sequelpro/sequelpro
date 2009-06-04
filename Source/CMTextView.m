@@ -2352,6 +2352,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Hide "Select Active Query" if self is not editable
 	[[menu itemAtIndex:4] setHidden:![self isEditable]];
 	
+	if([[[self window] delegate] valueForKeyPath:@"customQueryInstance"]) {
+		[[menu itemAtIndex:5] setHidden:NO];
+		[[menu itemAtIndex:6] setHidden:NO];
+	} else {
+		[[menu itemAtIndex:5] setHidden:YES];
+		[[menu itemAtIndex:6] setHidden:YES];
+	}
+	
     return menu;
 }
 

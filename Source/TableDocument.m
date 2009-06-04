@@ -2196,7 +2196,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
 	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
 	[[customQueryInstance helpWebViewWindow] release];
-	[createTableSyntaxWindow release];
+	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
