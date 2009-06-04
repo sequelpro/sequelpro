@@ -225,6 +225,7 @@
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%i", connectionTimeout]];
+	[taskArguments addObject:@"-o PubkeyAuthentication=yes"];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=1"];
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
