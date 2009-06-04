@@ -78,6 +78,8 @@
 	CMMCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
+	NSRange currentQueryRange;
+	NSArray *currentQueryRanges;
 	NSString *mySQLversion;
 		
 	int queryStartPosition;

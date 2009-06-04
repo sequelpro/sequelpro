@@ -453,8 +453,8 @@
 		[singleProgressBar startAnimation:self];
 		
 		//get array with an object for each mysql-query
-		queries = [dumpFile splitStringByCharacter:';'];
-		
+		queries = [dumpFile splitSqlStringByCharacter:';'];
+
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
