@@ -487,7 +487,7 @@
 			}
 			// who knows
 			else {
-				NSLog( @"not parsed: %@", [parts objectAtIndex:0] );
+				// NSLog( @"not parsed: %@", [parts objectAtIndex:0] );
 			}
 		}
 	}

@@ -1177,13 +1177,17 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 
+	[syntaxViewContent setEditable:YES];
 	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
 		[syntaxViewContent setString:[tableSyntax createViewSyntaxPrettifier]];
 	else
 		[syntaxViewContent setString:tableSyntax];
-
+	[syntaxViewContent setEditable:NO];
+	
 	[createTableSyntaxWindow setTitle:createWindowTitle];
-	[createTableSyntaxWindow makeKeyAndOrderFront:self];
+
+	if(![createTableSyntaxWindow isVisible])
+		[createTableSyntaxWindow makeKeyAndOrderFront:self];
 }
 
 /**
@@ -1921,6 +1925,14 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 			[variablesString writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 		}
 	}
+}
+
+/*
+ * Return the createTableSyntaxWindow
+ */
+- (NSWindow *)getCreateTableSyntaxWindow
+{
+	return createTableSyntaxWindow;
 }
 
 #pragma mark Toolbar Methods

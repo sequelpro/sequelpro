@@ -183,6 +183,7 @@
 - (void)flushPrivileges:(id)sender;
 - (void)showVariables:(id)sender;
 - (void)closeConnection;
+- (NSWindow *)getCreateTableSyntaxWindow;
 
 //getter methods
 - (NSString *)name;

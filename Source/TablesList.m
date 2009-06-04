@@ -1226,6 +1226,12 @@
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database], [tables objectAtIndex:[tablesListView selectedRow]]]];
+
+		// Update the "Show Create Syntax" window if it's already opened
+		// according to the selected table/view/proc/func
+		if([[tableDocumentInstance getCreateTableSyntaxWindow] isVisible])
+			[tableDocumentInstance showCreateTableSyntax:self];
+
 	} else {
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
