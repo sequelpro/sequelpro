@@ -515,8 +515,7 @@
 		// set the error text
 		[errorText setStringValue:errors];
 		// select the line x of the first error if error message contains "at line x"
-		NSError *err1 = NULL;
-		NSRange errorLineNumberRange = [errors rangeOfRegex:@"([0-9]+)$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+		NSRange errorLineNumberRange = [errors rangeOfRegex:@"([0-9]+)$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
 		if(errorLineNumberRange.length) // if a line number was found
 		{
 			// Get the line number
@@ -524,7 +523,7 @@
 			[textView selectLineNumber:errorAtLine ignoreLeadingNewLines:YES];
 
 			// Check for near message
-			NSRange errorNearMessageRange = [errors rangeOfRegex:@" '(.*?)' " options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:&err1];
+			NSRange errorNearMessageRange = [errors rangeOfRegex:@" '(.*?)' " options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
 			if(errorNearMessageRange.length) // if a "near message" was found
 			{
 				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
@@ -543,7 +542,7 @@
 			if(firstErrorOccuredInQuery == -1) // for current or previous query
 			{
 				BOOL isLookBehind = YES;
-				queryRange = [self queryTextRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
+				queryRange = [self queryRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
 				[textView setSelectedRange:queryRange];
 			} else {
 				// select the query for which the first error was detected
@@ -646,89 +645,122 @@
  * Retrieve the range of the query at a position specified 
  * within the custom query text view.
  */
-- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
+- (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
 {
 	SPSQLParser *customQueryParser;
-	NSArray *queries;
-	NSString *query = nil;
-	int i, j, lastQueryStartPosition, queryPosition = 0;
+	NSArray     *queries;
+	NSString    *query = nil;
+	NSRange     queryRange;
+	
+	long i, j, queryPosition = 0;
+	long queryCount;
+
+	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	NSCharacterSet *whitespaceSet           = [NSCharacterSet whitespaceCharacterSet];
 
 	// If the supplied position is negative or beyond the end of the string, return nil.
 	if (position < 0 || position > [[textView string] length])
-		return NSMakeRange(NSNotFound,0);
+		return NSMakeRange(NSNotFound, 0);
 
-	// Split the current text into queries
-	customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringByCharacter:';']];
-	[customQueryParser release];
+	// Split the current text into ranges of queries
+	// only if the textView was really changed, otherwise use the cache
+	if([[textView textStorage] editedMask] != 0) {
+		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
+		queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
+		if(currentQueryRanges)
+			[currentQueryRanges release];
+		currentQueryRanges = [[NSArray arrayWithArray:queries] retain];
+		[customQueryParser release];
+	} else {
+		queries = [[NSArray alloc] initWithArray:currentQueryRanges];
+	}
+
+	queryCount = [queries count];
 
 	// Walk along the array of queries to identify the current query - taking into account
 	// the extra semicolon at the end of each query
-	for (i = 0; i < [queries count]; i++ ) {
-		lastQueryStartPosition = queryStartPosition;
-		queryStartPosition = queryPosition;
-		queryPosition += [[queries objectAtIndex:i] length];
-		if (queryPosition >= position) {
+	for (i = 0; i < queryCount; i++ ) {
 
+		queryRange = [[queries objectAtIndex:i] rangeValue];
+		queryPosition = NSMaxRange(queryRange);
+		queryStartPosition = queryRange.location;
+
+		if (queryPosition >= position) {
+		
 			// If lookbehind is enabled, check whether the current position could be considered to
 			// be within the previous query.  A position just after a semicolon is always considered
 			// to be within the previous query; otherwise, if there is only whitespace *and newlines*
 			// before the next character, also consider the position to belong to the previous query.
 			if (*doLookBehind) {
 				BOOL positionAssociatedWithPreviousQuery = NO;
-				NSCharacterSet *newlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 				// If the caret is at the very start of the string, always associate
 				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
-
+				
+				// If the caret is in between a user-defined delimiter whose length is >1, always associate
+				if (!positionAssociatedWithPreviousQuery && i && NSMaxRange([[queries objectAtIndex:i-1] rangeValue]) < position && position < queryStartPosition) positionAssociatedWithPreviousQuery = YES;
+				
 				// Otherwise associate if only whitespace since previous, and a newline before next.
 				if (!positionAssociatedWithPreviousQuery) {
+					@try{
 					NSString *stringToPrevious = [[textView string] substringWithRange:NSMakeRange(queryStartPosition, position - queryStartPosition)];
 					NSString *stringToEnd = [[textView string] substringWithRange:NSMakeRange(position, queryPosition - position)];
-					NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
-					if (![[stringToPrevious stringByTrimmingCharactersInSet:newlineSet] length]) {
+					if (![[stringToPrevious stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length]) {
 						for (j = 0; j < [stringToEnd length]; j++) {
 							if ([whitespaceSet characterIsMember:[stringToEnd characterAtIndex:j]]) continue;
-							if ([newlineSet characterIsMember:[stringToEnd characterAtIndex:j]]) {
+							if ([whitespaceAndNewlineSet characterIsMember:[stringToEnd characterAtIndex:j]]) {
 								positionAssociatedWithPreviousQuery = YES;
 							}
 							break;
 						}
 					}
+					} @catch(id ae) {}
 				}
 
-				// If there is a previous query and the position should and can be associated with it, do so.
-				if (i && positionAssociatedWithPreviousQuery && [[[queries objectAtIndex:i-1] stringByTrimmingCharactersInSet:newlineSet] length]) {
-					query = [NSString stringWithString:[queries objectAtIndex:i-1]];
-					queryStartPosition = lastQueryStartPosition;
+				// If there is a previous query and the position should be associated with it, do so.
+				if (i && positionAssociatedWithPreviousQuery && [[[[textView string] substringWithRange:[[queries objectAtIndex:i-1] rangeValue]] stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length]) {
+					queryRange = [[queries objectAtIndex:i-1] rangeValue];
 					break;
 				}
 
 				// Lookbehind failed - set the pointer to NO so the parent knows.
 				*doLookBehind = NO;
 			}
-
-			query = [NSString stringWithString:[queries objectAtIndex:i]];
 			break;
 		}
-		queryPosition++;
 	}
 
 	// For lookbehinds catch position at the very end of a string ending in a semicolon
-	if (*doLookBehind && position == [[textView string] length] && !query)
+	if (*doLookBehind && position == [[textView string] length])
 	{
-		query = [queries lastObject];
+		queryRange = [[queries lastObject] rangeValue];
 	} 
-
-	if(queryStartPosition < 0) queryStartPosition = 0;
 
 	[queries release];
 
-	// Remove all leading white spaces
-	NSError *err;
-	int offset = [query rangeOfRegex:@"^(\\s*)" options:RKLNoOptions inRange:NSMakeRange(0, [query length]) capture:1 error:&err].length;
+	
+	queryRange = NSIntersectionRange(queryRange, NSMakeRange(0, [[textView string] length])); 
+	if (!queryRange.length) {
+		return NSMakeRange(NSNotFound, 0);
+	}
 
-	return NSMakeRange(queryStartPosition+offset, [query length]-offset);
+	query = [[textView string] substringWithRange:queryRange];
+
+	// Highlight by setting a background color the current query
+	// and ignore leading/trailing white spaces
+	int biasStart = [query rangeOfRegex:@"^\\s*"].length;
+	int biasEnd   = [query rangeOfRegex:@"\\s*$"].length;
+	queryRange.location += biasStart;
+	queryRange.length   -= biasEnd+biasStart;
+
+	// Ensure the string isn't empty.
+	// (We could also strip comments for this check, but that prevents use of conditional comments)
+	if(queryRange.length < 1 || queryRange.length > [query length]) {
+		return NSMakeRange(NSNotFound, 0);
+	}
+
+	// Return the located query range
+	return queryRange;
 }
 
 /*
@@ -778,134 +810,12 @@
  */
 - (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
 {
-	SPSQLParser *customQueryParser;
-	NSArray     *queries;
-	NSString    *query = nil;
-	NSRange     queryRange;
+
+	BOOL lookBehind = *doLookBehind;
+	NSRange queryRange = [self queryRangeAtPosition:position lookBehind:&lookBehind];
+	*doLookBehind = lookBehind;
 	
-	long i, j, lastQueryStartPosition, queryPosition = 0;
-	long queryCount;
-
-	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-	NSCharacterSet *whitespaceSet           = [NSCharacterSet whitespaceCharacterSet];
-
-	// If the supplied position is negative or beyond the end of the string, return nil.
-	if (position < 0 || position > [[textView string] length])
-		return nil;
-
-	// Split the current text into queries and ranges
-	// only if the textView was really changed, otherwise use the cache
-	if([[textView textStorage] editedMask] != 0) {
-		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-		queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
-		if(currentQueryRanges)
-			[currentQueryRanges release];
-		currentQueryRanges = [[NSArray arrayWithArray:queries] retain];
-		[customQueryParser release];
-	} else {
-		queries = [[NSArray alloc] initWithArray:currentQueryRanges];
-	}
-
-	queryCount = [queries count];
-
-	// Walk along the array of queries to identify the current query - taking into account
-	// the extra semicolon at the end of each query
-	for (i = 0; i < queryCount; i++ ) {
-
-		lastQueryStartPosition = queryStartPosition;
-		queryRange = [[queries objectAtIndex:i] rangeValue];
-		queryStartPosition = queryRange.location;
-		queryPosition = NSMaxRange(queryRange);
-
-		if (queryPosition >= position) {
-		
-			// If lookbehind is enabled, check whether the current position could be considered to
-			// be within the previous query.  A position just after a semicolon is always considered
-			// to be within the previous query; otherwise, if there is only whitespace *and newlines*
-			// before the next character, also consider the position to belong to the previous query.
-			if (*doLookBehind) {
-				BOOL positionAssociatedWithPreviousQuery = NO;
-
-				// If the caret is at the very start of the string, always associate
-				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
-				
-				// If the caret is in between a user-defined delimiter whose length is >1, always associate
-				if (!positionAssociatedWithPreviousQuery && i && NSMaxRange([[queries objectAtIndex:i-1] rangeValue]) < position && position < queryStartPosition) positionAssociatedWithPreviousQuery = YES;
-				
-				// Otherwise associate if only whitespace since previous, and a newline before next.
-				if (!positionAssociatedWithPreviousQuery) {
-					@try{
-					NSString *stringToPrevious = [[textView string] substringWithRange:NSMakeRange(queryStartPosition, position - queryStartPosition)];
-					NSString *stringToEnd = [[textView string] substringWithRange:NSMakeRange(position, queryPosition - position)];
-					if (![[stringToPrevious stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length]) {
-						for (j = 0; j < [stringToEnd length]; j++) {
-							if ([whitespaceSet characterIsMember:[stringToEnd characterAtIndex:j]]) continue;
-							if ([whitespaceAndNewlineSet characterIsMember:[stringToEnd characterAtIndex:j]]) {
-								positionAssociatedWithPreviousQuery = YES;
-							}
-							break;
-						}
-					}
-					} @catch(id ae) {}
-				}
-
-				// If there is a previous query and the position should be associated with it, do so.
-				if (i && positionAssociatedWithPreviousQuery && [[[[textView string] substringWithRange:[[queries objectAtIndex:i-1] rangeValue]] stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length]) {
-					queryStartPosition = lastQueryStartPosition;
-					queryRange = [[queries objectAtIndex:i-1] rangeValue];
-					break;
-				}
-
-				// Lookbehind failed - set the pointer to NO so the parent knows.
-				*doLookBehind = NO;
-			}
-			break;
-		}
-	}
-
-	// For lookbehinds catch position at the very end of a string ending in a semicolon
-	if (*doLookBehind && position == [[textView string] length])
-	{
-		queryRange = [[queries lastObject] rangeValue];
-	} 
-
-	[queries release];
-
-	
-	// Remove all background color attributes
-	NSRange textRange = NSMakeRange(0,[[textView string] length]);
-	[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:textRange];
-
-	queryRange = NSIntersectionRange(queryRange, textRange); 
-	if (!queryRange.length) {
-		currentQueryRange = NSMakeRange(0,0);
-		return nil;
-	}
-
-	query = [[textView string] substringWithRange:queryRange];
-
-	// Highlight by setting a background color the current query
-	// and ignore leading/trailing white spaces
-	int biasStart = [query rangeOfRegex:@"^\\s*"].length;
-	int biasEnd   = [query rangeOfRegex:@"\\s*$"].length;
-	queryRange.location += biasStart;
-	queryRange.length   -= biasEnd+biasStart;
-
-	// Ensure the string isn't empty.
-	// (We could also strip comments for this check, but that prevents use of conditional comments)
-	if(queryRange.length < 1 || queryRange.length > [query length]) {
-		currentQueryRange = NSMakeRange(0,0);
-		return nil;
-	}
-
-	[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
-					  value: [NSColor colorWithDeviceRed:0.95 green:0.95 blue:0.95 alpha:1]
-					  range: queryRange ];
-
-	currentQueryRange = queryRange;
-
-	// Return the located string
-	return query;
+	return (queryRange.length) ? [[textView string] substringWithRange:queryRange] : nil;
 }
 
 
@@ -1326,8 +1236,26 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
+	// Remove all background color attributes
+	[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
+
+	BOOL isLookBehind = YES;
+	NSRange currentSelection = [textView selectedRange];
+	long caretPosition = currentSelection.location;
+	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
+
+	// Highlight by setting a background color the current query
+	if(qRange.length) {
+		[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
+					  value: [NSColor colorWithDeviceRed:0.95 green:0.95 blue:0.95 alpha:1]
+					  range: qRange ];
+		currentQueryRange = qRange;
+	} else {
+		currentQueryRange = NSMakeRange(0, 0);
+	}
+
 	// If no text is selected, disable the button and action menu.
-	if ( [textView selectedRange].location == NSNotFound ) {
+	if ( caretPosition == NSNotFound ) {
 		[runSelectionButton setEnabled:NO];
 		[runSelectionMenuItem setEnabled:NO];
 		return;
@@ -1335,64 +1263,22 @@
 
 	// If the current selection is a single caret position, update the button based on
 	// whether the caret is inside a valid query.
-	if ([textView selectedRange].length == 0) {
-		int selectionPosition = [textView selectedRange].location;
-		// int movedRangeStart, movedRangeLength;
-		BOOL updateQueryButtons = TRUE;
-		// NSRange oldSelection;
-		// NSCharacterSet *whitespaceAndNewlineCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	if (!currentSelection.length) {
+		[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
+		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
 
-		// Retrieve the old selection position
-        // [[[aNotification userInfo] objectForKey:@"NSOldSelectedCharacterRange"] getValue:&oldSelection];
-
-		// Only process the query text if the selection previously had length, or moved more than 100 characters,
-		// or the intervening space contained a semicolon, or typing has been performed with no current query.
-		// This adds more checks to every keypress, but ensures the majority of the actions don't incur a
-		// parsing overhead - which is cheap on small text strings but heavy of large queries.
-		// movedRangeStart = (selectionPosition < oldSelection.location)?selectionPosition:oldSelection.location;
-		// movedRangeLength = abs(selectionPosition - oldSelection.location);
-		// updateQueryButtons = TRUE;
-		// if (oldSelection.length > 0) updateQueryButtons = TRUE;
-		// if (!updateQueryButtons && movedRangeLength > 100) updateQueryButtons = TRUE;
-		// if (!updateQueryButtons && oldSelection.location > [[textView string] length]) updateQueryButtons = TRUE;
-		// if (!updateQueryButtons && [[textView string] rangeOfString:@";" options:0 range:NSMakeRange(movedRangeStart, movedRangeLength)].location != NSNotFound) updateQueryButtons = TRUE;
-		// if (!updateQueryButtons && ![runSelectionButton isEnabled] && selectionPosition > oldSelection.location
-		// 		&& [[[[textView string] substringWithRange:NSMakeRange(movedRangeStart, movedRangeLength)] stringByTrimmingCharactersInSet:whitespaceAndNewlineCharset] length]) updateQueryButtons = TRUE;
-		// if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")]) {
-		// 	int charPosition;
-		// 	unichar theChar;
-		// 	for (charPosition = selectionPosition; charPosition > 0; charPosition--) {
-		// 		theChar = [[textView string] characterAtIndex:charPosition-1];
-		// 		if (theChar == ';') {
-		// 			updateQueryButtons = TRUE;
-		// 			break;
-		// 		}
-		// 		if (![whitespaceAndNewlineCharset characterIsMember:theChar]) break;
-		// 	}
-		// }
-		// if (!updateQueryButtons && [[runSelectionButton title] isEqualToString:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")]) {
-		// 	updateQueryButtons = TRUE;
-		// }
-		
-		if (updateQueryButtons) {
-			[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
-			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
-
-			// If a valid query is present at the cursor position, enable the button
-			BOOL isLookBehind = YES;
-			if ([self queryAtPosition:selectionPosition lookBehind:&isLookBehind]) {
-				if (isLookBehind) {
-					[runSelectionButton setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
-					[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
-				}
-				[runSelectionButton setEnabled:YES];
-				[runSelectionMenuItem setEnabled:YES];
-			} else {
-				[runSelectionButton setEnabled:NO];
-				[runSelectionMenuItem setEnabled:NO];
+		// If a valid query is present at the cursor position, enable the button
+		if (qRange.length) {
+			if (isLookBehind) {
+				[runSelectionButton setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
+				[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
 			}
+			[runSelectionButton setEnabled:YES];
+			[runSelectionMenuItem setEnabled:YES];
+		} else {
+			[runSelectionButton setEnabled:NO];
+			[runSelectionMenuItem setEnabled:NO];
 		}
-
 	// For selection ranges, enable the button.
 	} else {
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];

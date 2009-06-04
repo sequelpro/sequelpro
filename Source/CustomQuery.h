@@ -117,7 +117,7 @@
 // Query actions
 - (void)performQueries:(NSArray *)queries;
 - (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
-- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
 
 // Accessors
