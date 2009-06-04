@@ -73,6 +73,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		connectionSSHKeychainItemName = nil;
 		connectionSSHKeychainItemAccount = nil;
 		selectedDatabase = nil;
+		sshTunnel = nil;
 		
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
@@ -277,8 +278,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[self failConnectionWithErrorMessage:NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message")];
 		return;
 	}
-	if ([sshCheckbox state] == NSOnState && (![[sshHostField stringValue] length] || ![[sshUserField stringValue] length])) {
-		[self failConnectionWithErrorMessage:NSLocalizedString(@"Please enter the hostname and username for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete")];
+	if ([sshCheckbox state] == NSOnState && ![[sshHostField stringValue] length]) {
+		[self failConnectionWithErrorMessage:NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete")];
 		return;
 	}
 
@@ -292,7 +293,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// for increased security.
 	if (connectionKeychainItemName) {
 		if ([[keyChainInstance getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount] isEqualToString:[passwordField stringValue]]) {
-			[passwordField setStringValue:@""];
+			[passwordField setStringValue:[[NSString string] stringByPaddingToLength:[[passwordField stringValue] length] withString:@"sp" startingAtIndex:0]];
 			[[self undoManager] removeAllActionsWithTarget:passwordField];
 		} else {
 			[connectionKeychainItemName release], connectionKeychainItemName = nil;
@@ -301,7 +302,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 	if (connectionSSHKeychainItemName) {
 		if ([[keyChainInstance getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount] isEqualToString:[sshPasswordField stringValue]]) {
-			[sshPasswordField setStringValue:@""];
+			[sshPasswordField setStringValue:[[NSString string] stringByPaddingToLength:[[sshPasswordField stringValue] length] withString:@"sp" startingAtIndex:0]];
 			[[self undoManager] removeAllActionsWithTarget:sshPasswordField];
 		} else {
 			[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
@@ -316,7 +317,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 
 	// ...or start the MySQL connection process directly	
-	[self initiateMySQLConnection:nil];
+	[self initiateMySQLConnection];
 }
 
 /*
@@ -326,26 +327,26 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (void)initiateSSHTunnelConnection
 {
-	SPSSHTunnel *theTunnel;
 	[connectProgressStatusText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
 	[connectProgressStatusText display];
 
 	// Set up the tunnel details
-	theTunnel = [[SPSSHTunnel alloc] initToHost:[sshHostField stringValue] port:([[sshPortField stringValue] length]?[sshPortField intValue]:22) login:[sshUserField stringValue] tunnellingToPort:([[portField stringValue] length]?[portField intValue]:3306) onHost:[hostField stringValue]];
+	sshTunnel = [[SPSSHTunnel alloc] initToHost:[sshHostField stringValue] port:([[sshPortField stringValue] length]?[sshPortField intValue]:22) login:[sshUserField stringValue] tunnellingToPort:([[portField stringValue] length]?[portField intValue]:3306) onHost:[hostField stringValue]];
+	[sshTunnel setParentWindow:tableWindow];
 
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
-		[theTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
+		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 	} else {
-		[theTunnel setPassword:[sshPasswordField stringValue]];
+		[sshTunnel setPassword:[sshPasswordField stringValue]];
 	}
 
 	// Set the callback function on the tunnel
-	[theTunnel setConnectionStateChangeSelector:@selector(sshTunnelCallback:) delegate:self];
+	[sshTunnel setConnectionStateChangeSelector:@selector(sshTunnelCallback:) delegate:self];
 
 	// Ask the tunnel to connect.  This will call the callback below on success or failure, passing
 	// itself as an argument - retain count should be one at this point.
-	[theTunnel connect];
+	[sshTunnel connect];
 }
 
 /*
@@ -360,19 +361,19 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if (newState == SPSSH_STATE_IDLE) {
 		[self failConnectionWithErrorMessage:[theTunnel lastError]];
 	} else if (newState == SPSSH_STATE_CONNECTED) {
-		[self initiateMySQLConnection:theTunnel];
+		[self initiateMySQLConnection];
 	}
 }
 
 /*
  * Set up the MySQL connection, either through a successful tunnel or directly.
  */
-- (void)initiateMySQLConnection:(SPSSHTunnel *)theTunnel
+- (void)initiateMySQLConnection
 {
 	CMMCPResult *theResult;
 	id version;
 
-	if (theTunnel)
+	if (sshTunnel)
 		[connectProgressStatusText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
 	else
 		[connectProgressStatusText setStringValue:NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
@@ -388,12 +389,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	// Otherwise, initialise to host, using tunnel if appropriate
 	} else {
-		if (theTunnel) {
+		if (sshTunnel) {
 			mySQLConnection = [[CMMCPConnection alloc] initToHost:@"127.0.0.1"
 														withLogin:[userField stringValue]
-														usingPort:[theTunnel localPort]];
-			[mySQLConnection setSSHTunnel:theTunnel];
-			[theTunnel release];
+														usingPort:[sshTunnel localPort]];
+			[mySQLConnection setSSHTunnel:sshTunnel];
+			[sshTunnel release], sshTunnel = nil;
 		} else {
 			mySQLConnection = [[CMMCPConnection alloc] initToHost:[hostField stringValue]
 														withLogin:[userField stringValue]
@@ -414,7 +415,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	if (![mySQLConnection isConnected]) {
 		[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]]];
-		if (theTunnel) [theTunnel disconnect];
 		return;
 	}
 	if (![[databaseField stringValue] isEqualToString:@""]) {
@@ -423,7 +423,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 			selectedDatabase = [[databaseField stringValue] retain];
 		} else {
 			[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]];
-			if (theTunnel) [theTunnel disconnect];
 			return;
 		}
 	}
@@ -500,6 +499,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// Stop the modal sheet
 	[connectSheet orderOut:nil];
 	[NSApp endSheet:connectSheet];
+	
+	// Release as appropriate
+	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
 
 	// Display the connection error message
 	NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
@@ -548,11 +550,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	// Check whether the password exists in the keychain, and if so add it; also record the
 	// keychain details so we can pass around only those details if the password doesn't change
-	connectionKeychainItemName = [[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [self valueForKeyPath:@"selectedFavorite.name"], [[self valueForKeyPath:@"selectedFavorite.id"] intValue]] retain];
-	connectionKeychainItemAccount = [[NSString stringWithFormat:@"%@@%@/%@",
-								 [self valueForKeyPath:@"selectedFavorite.user"],
-								 [self valueForKeyPath:@"selectedFavorite.host"],
-								 [self valueForKeyPath:@"selectedFavorite.database"]] retain];
+	connectionKeychainItemName = [[keyChainInstance nameForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]] retain];
+	connectionKeychainItemAccount = [[keyChainInstance accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:[self valueForKeyPath:@"selectedFavorite.host"] database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
 	if ([keyChainInstance passwordExistsForName:connectionKeychainItemName account:connectionKeychainItemAccount]) {
 		[passwordField setStringValue:[keyChainInstance getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 	} else {
@@ -562,10 +561,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 
 	// And the same for the SSH password
-	connectionSSHKeychainItemName = [[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [self valueForKeyPath:@"selectedFavorite.name"], [[self valueForKeyPath:@"selectedFavorite.id"] intValue]] retain];
-	connectionSSHKeychainItemAccount = [[NSString stringWithFormat:@"%@@%@",
-								 [self valueForKeyPath:@"selectedFavorite.sshUser"],
-								 [self valueForKeyPath:@"selectedFavorite.sshHost"]] retain];
+	connectionSSHKeychainItemName = [[NSString alloc] initWithString:[keyChainInstance nameForSSHForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]]];
+	connectionSSHKeychainItemAccount = [[NSString alloc] initWithString:[keyChainInstance accountForSSHUser:[self valueForKeyPath:@"selectedFavorite.sshUser"] sshHost:[self valueForKeyPath:@"selectedFavorite.sshHost"]]];
 	if ([keyChainInstance passwordExistsForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]) {
 		[sshPasswordField setStringValue:[keyChainInstance getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
 	} else {
@@ -619,7 +616,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 - (void)connectSheetAddToFavorites:(id)sender
 {
-	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:false sshHost:@"" sshUser:@"" sshPassword:@"" sshPort:@""];
+	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:([sshCheckbox state] == NSOnState) sshHost:[sshHostField stringValue] sshUser:[sshUserField stringValue] sshPassword:[sshPasswordField stringValue] sshPort:[sshPortField stringValue]];
 }
 
 /**
@@ -628,31 +625,50 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
 					 user:(NSString *)user password:(NSString *)password
 					 port:(NSString *)port database:(NSString *)database
-				   useSSH:(BOOL)useSSH // no-longer in use
-				  sshHost:(NSString *)sshHost // no-longer in use
-				  sshUser:(NSString *)sshUser // no-longer in use
-			  sshPassword:(NSString *)sshPassword // no-longer in use
-				  sshPort:(NSString *)sshPort // no-longer in use
+				   useSSH:(BOOL)useSSH
+				  sshHost:(NSString *)sshHost sshUser:(NSString *)sshUser
+			  sshPassword:(NSString *)sshPassword sshPort:(NSString *)sshPort
 {
 	NSString *favoriteName = [name length]?name:[NSString stringWithFormat:@"%@@%@", user, host];
 	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 	if (![name length] && ![database isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", database, favoriteName];
 	
-	// test if host and socket are not nil
+	// Ensure that host and socket are not nil
 	if ([host isEqualToString:@""] && [socket isEqualToString:@""]) {
 		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
-		
 		return;
 	}
 	
-	// write favorites and password
-	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, host,	socket,	user,	port,	database,	favoriteid, nil]
-															forKeys:[NSArray arrayWithObjects:@"name",	  @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
+	// If SSH is enabled, ensure that the SSH host is not nil
+	if ([sshCheckbox state] == NSOnState && ![[sshHostField stringValue] length]) {
+		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+		return;
+	}
+	
+	// Write favorites and password(s)
+	NSDictionary *newFavorite = [NSDictionary dictionaryWithObjectsAndKeys:
+									favoriteName, @"name",
+									host, @"host",
+									socket, @"socket",
+									user, @"user",
+									port, @"port",
+									database, @"database",
+									[NSNumber numberWithBool:useSSH], @"useSSH",
+									sshHost, @"sshHost",
+									sshUser, @"sshUser",
+									sshPort, @"sshPort",
+									favoriteid, @"id",
+									nil];
 	if (![password isEqualToString:@""]) {
 		[keyChainInstance addPassword:password
-							  forName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", favoriteName, [favoriteid intValue]]
-							  account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+							  forName:[keyChainInstance nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
+							  account:[keyChainInstance accountForUser:user host:host database:database]];
+	}
+	if (![sshPassword isEqualToString:@""]) {
+		[keyChainInstance addPassword:password
+							  forName:[keyChainInstance nameForSSHForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
+							  account:[keyChainInstance accountForSSHUser:sshUser sshHost:sshHost]];
 	}
 	
 	[favoritesController addObject:newFavorite];
@@ -1568,7 +1584,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)closeConnection
 {
 	[mySQLConnection disconnect];
-    
+
     // Disconnected Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
@@ -1858,8 +1874,19 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		return;
 	}
 	
-	// Add current connection to favorites using the same method as used on the connection sheet to provide consistency.
-	[self connectSheetAddToFavorites:self];
+	// Add current connection to favorites
+	NSString *password, *sshPassword;
+	if (connectionKeychainItemName) {
+		password = [keyChainInstance getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount];
+	} else {
+		password = [passwordField stringValue];
+	}
+	if (connectionSSHKeychainItemName) {
+		sshPassword = [keyChainInstance getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
+	} else {
+		sshPassword = [sshPasswordField stringValue];
+	}	
+	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:password port:[portField stringValue] database:[databaseField stringValue] useSSH:([sshCheckbox state] == NSOnState) sshHost:[sshHostField stringValue] sshUser:[sshUserField stringValue] sshPassword:sshPassword sshPort:[sshPortField stringValue]];
 }
 
 /**
@@ -2151,6 +2178,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)windowWillClose:(NSNotification *)aNotification
 {	
 	if ([mySQLConnection isConnected]) [self closeConnection];
+	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
 	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
 	[[customQueryInstance helpWebViewWindow] release];
 	[createTableSyntaxWindow release];

@@ -259,13 +259,13 @@
 		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
 		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
 		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
-		int favoriteid = [[favoritesController valueForKeyPath:@"selection.id"] intValue];
+		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
 
 		// Remove passwords from the Keychain
-		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", name, favoriteid]
-								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", name, favoriteid]
-								account:[NSString stringWithFormat:@"%@@%@", sshUser, sshHost]];
+		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
+								account:[keychain accountForUser:user host:host database:database]];
+		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
+								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
 		
 		// Reset last used favorite
 		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"LastFavoriteIndex"]) {
@@ -295,12 +295,11 @@
 		NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 
 		// Select the keychain passwords for duplication
-		keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
-		keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-							[favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
+		keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
+		keychainAccount = [keychain accountForUser:[favorite objectForKey:@"user"] host:[favorite objectForKey:@"host"] database:[favorite objectForKey:@"database"]];
 		password = [keychain getPasswordForName:keychainName account:keychainAccount];
-		keychainSSHName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
-		keychainSSHAccount = [NSString stringWithFormat:@"%@@%@", [favorite objectForKey:@"sshUser"], [favorite objectForKey:@"sshHost"]];
+		keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
+		keychainSSHAccount = [keychain accountForSSHUser:[favorite objectForKey:@"sshUser"] sshHost:[favorite objectForKey:@"sshHost"]];
 		sshPassword = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
 
 		// Update the unique ID
@@ -311,16 +310,17 @@
 
 		// Create new keychain items if appropriate
 		if (password && [password length]) {
-			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+			keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
 			[keychain addPassword:password forName:keychainName account:keychainAccount];
 		}
 		if (sshPassword && [sshPassword length]) {
-			keychainSSHName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+			keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
 			[keychain addPassword:sshPassword forName:keychainSSHName account:keychainSSHAccount];
 		}
 		password = nil, sshPassword = nil;
 		
 		[favoritesController addObject:favorite];
+		[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
 
 		[favoritesTableView reloadData];
 		[self updateDefaultFavoritePopup];
@@ -561,19 +561,14 @@
 	}
 
 	// Otherwise retrieve and set the password.
-	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-								 [favoritesController valueForKeyPath:@"selection.user"],
-								 [favoritesController valueForKeyPath:@"selection.host"],
-								 [favoritesController valueForKeyPath:@"selection.database"]];
+	NSString *keychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+	NSString *keychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:[favoritesController valueForKeyPath:@"selection.host"] database:[favoritesController valueForKeyPath:@"selection.database"]];
 
 	[passwordField setStringValue:[keychain getPasswordForName:keychainName account:keychainAccount]];
 
 	// Retrieve the SSH keychain password if appropriate.
-	NSString *keychainSSHName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	NSString *keychainSSHAccount = [NSString stringWithFormat:@"%@@%@",
-								 [favoritesController valueForKeyPath:@"selection.sshUser"],
-								 [favoritesController valueForKeyPath:@"selection.sshHost"]];
+	NSString *keychainSSHName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+	NSString *keychainSSHAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
 
 	[sshPasswordField setStringValue:[keychain getPasswordForName:keychainSSHName account:keychainSSHAccount]];
 }
@@ -683,18 +678,12 @@
 		|| control == passwordField) {
 
 		// Get the current keychain name and account strings
-		oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-		oldKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-							  [favoritesController valueForKeyPath:@"selection.user"],
-							  [favoritesController valueForKeyPath:@"selection.host"],
-							  [favoritesController valueForKeyPath:@"selection.database"]];
+		oldKeychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		oldKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:[favoritesController valueForKeyPath:@"selection.host"] database:[favoritesController valueForKeyPath:@"selection.database"]];
 
 		// Set up the new keychain name and account strings
-		newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-		newKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-							  [userField stringValue],
-							  [hostField stringValue],
-							  [databaseField stringValue]];
+		newKeychainName = [keychain nameForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		newKeychainAccount = [keychain accountForUser:[userField stringValue] host:[hostField stringValue] database:[databaseField stringValue]];
 
 		// Delete the old keychain item
 		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
@@ -712,16 +701,12 @@
 		|| control == sshPasswordField) {
 
 		// Get the current keychain name and account strings
-		oldKeychainName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-		oldKeychainAccount = [NSString stringWithFormat:@"%@@%@",
-							  [favoritesController valueForKeyPath:@"selection.sshUser"],
-							  [favoritesController valueForKeyPath:@"selection.sshHost"]];
+		oldKeychainName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		oldKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
 
 		// Set up the new keychain name and account strings
-		newKeychainName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-		newKeychainAccount = [NSString stringWithFormat:@"%@@%@",
-							  [sshUserField stringValue],
-							  [sshHostField stringValue]];
+		newKeychainName = [keychain nameForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		newKeychainAccount = [keychain accountForSSHUser:[sshUserField stringValue] sshHost:[sshHostField stringValue]];
 
 		// Delete the old keychain item
 		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];

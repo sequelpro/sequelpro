@@ -32,5 +32,9 @@
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account;
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account;
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account;
+- (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID;
+- (NSString *)accountForUser:(NSString *)theUser host:(NSString *)theHost database:(NSString *)theDatabase;
+- (NSString *)nameForSSHForFavoriteName:(NSString *)theName id:(NSString *)theID;
+- (NSString *)accountForSSHUser:(NSString *)theSSHUser sshHost:(NSString *)theSSHHost;
 
 @end

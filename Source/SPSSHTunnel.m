@@ -53,7 +53,17 @@
 	stateChangeSelector = nil;
 	lastError = nil;
 
-	passwordConnection = nil;
+	// Set up a connection for use by the tunnel process
+	tunnelConnectionName = [NSString stringWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnection = [[NSConnection defaultConnection] retain];
+	[tunnelConnection runInNewThread];
+	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
+	[tunnelConnection setRootObject:self];
+	if ([tunnelConnection registerName:tunnelConnectionName] == NO) {
+		return nil;
+	}
+
+	parentWindow = nil;
 	password = nil;
 	keychainName = nil;
 	keychainAccount = nil;
@@ -78,6 +88,18 @@
 }
 
 /*
+ * Set the parent window of the connection for use with dialogs.
+ */
+- (void)setParentWindow:(NSWindow *)theWindow
+{
+	parentWindow = theWindow;
+	if (![NSBundle loadNibNamed:@"SSHQuestionDialog" owner:self]) {
+		NSLog(@"SSH query dialog could not be loaded; SSH tunnels will not function correctly.");
+		parentWindow = nil;
+	}
+}
+
+/*
  * Sets the password to be stored (and returned to the tunnel authenticator) locally.
  * Providing a keychain name is much more secure.
  */
@@ -85,16 +107,7 @@
 {
 	if (passwordInKeychain) return NO;
 	password = [[NSString alloc] initWithString:thePassword];
-	passwordConnection = [[NSConnection defaultConnection] retain];
-	[passwordConnection runInNewThread];
-	[passwordConnection removeRunLoop:[NSRunLoop currentRunLoop]];
-	[passwordConnection setRootObject:self];
-	passwordConnectionName = [NSString stringWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	passwordConnectionVerifyHash = [NSString stringWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
-	if ([passwordConnection registerName:passwordConnectionName] == NO) {
-		[password release], password = nil;
-		return NO; 
-	}
+	tunnelConnectionVerifyHash = [NSString stringWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
 	
 	return YES;
 }
@@ -105,7 +118,6 @@
  */
 - (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
 {
-	if (passwordConnection) [passwordConnection release], passwordConnection = nil;
 	if (password) [password release], password = nil;
 
 	passwordInKeychain = YES;
@@ -156,6 +168,16 @@
 
 	connectionState = SPSSH_STATE_CONNECTING;
 	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+
+	// Enforce a parent window being present for dialogs
+	if (!parentWindow) {
+		connectionState = SPSSH_STATE_IDLE;
+		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+		if (lastError) [lastError release];
+		lastError = [[NSString alloc] initWithString:@"SSH Tunnel started without a parent window.  A parent window must be present."];
+		[pool release];
+		return;
+	}
 
 	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
@@ -221,14 +243,14 @@
 	[taskEnvironment removeObjectForKey: @"SSH_AUTH_SOCK"];
 	[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 	[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
+	[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];
 	if (passwordInKeychain) {
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 		[taskEnvironment setObject:keychainName forKey:@"SP_KEYCHAIN_ITEM_NAME"];
 		[taskEnvironment setObject:keychainAccount forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
 	} else {
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
-		[taskEnvironment setObject:passwordConnectionName forKey:@"SP_CONNECTION_NAME"];
-		[taskEnvironment setObject:passwordConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
+		[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
 	}
 	[task setEnvironment:taskEnvironment];
 
@@ -360,8 +382,43 @@
 - (NSString *)getPasswordWithVerificationHash:(NSString *)theHash
 {
 	if (passwordInKeychain) return nil;
-	if (![theHash isEqualToString:passwordConnectionVerifyHash]) return nil;
+	if (![theHash isEqualToString:tunnelConnectionVerifyHash]) return nil;
 	return password;
+}
+
+/*
+ * Method to allow an SSH tunnel to request the response to a question, returning the response as
+ * a boolean.  This is used by the SSH_ASKPASS environment setting to deal with situations like
+ * host key mismatches.
+ */
+- (BOOL) getResponseForQuestion:(NSString *)theQuestion
+{
+
+	// Ask how to proceed
+	[sshQuestionText setStringValue:theQuestion];
+	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	int sshQueryResponseCode = [NSApp runModalForWindow:sshQuestionDialog];
+	[NSApp endSheet:sshQuestionDialog];
+	[sshQuestionDialog orderOut:nil];
+
+	switch (sshQueryResponseCode) {
+
+		// Yes
+		case 1:
+			return YES;
+
+		// No
+		default:
+			return NO;
+	}
+}
+
+/*
+ * Ends an existing modal session
+ */
+- (IBAction) closeSheet:(id)sender
+{
+	[NSApp stopModalWithCode:[sender tag]];
 }
 
 @end

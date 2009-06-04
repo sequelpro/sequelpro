@@ -164,9 +164,8 @@
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account
 {
 	SecKeychainItemRef item;
-	SecKeychainSearchRef search;
+	SecKeychainSearchRef search = NULL;
     int numberOfItemsFound = 0;
-	
 	SecKeychainAttributeList list;
 	SecKeychainAttribute attributes[2];
 	
@@ -188,9 +187,66 @@
 		}
 	}
 	
-    CFRelease(search);
+    if (search) CFRelease(search);
 	
 	return (numberOfItemsFound > 0);
+}
+
+/**
+ * Retrieve the keychain item name for a supplied name and id.
+ */
+- (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID
+{
+	NSString *keychainItemName;
+
+	keychainItemName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)",
+							theName,
+							[theID intValue]];
+
+	return keychainItemName;
+}
+
+/**
+ * Retrieve the keychain item account for a supplied user, host, and database - which can be nil.
+ */
+- (NSString *)accountForUser:(NSString *)theUser host:(NSString *)theHost database:(NSString *)theDatabase
+{
+	NSString *keychainItemAccount;
+
+	keychainItemAccount = [NSString stringWithFormat:@"%@@%@/%@",
+								theUser?theUser:@"",
+								theHost?theHost:@"",
+								theDatabase?theDatabase:@""];
+
+	return keychainItemAccount;
+}
+
+/**
+ * Retrieve the keychain SSH item name for a supplied name and id.
+ */
+- (NSString *)nameForSSHForFavoriteName:(NSString *)theName id:(NSString *)theID
+{
+	NSString *sshKeychainItemName;
+
+	sshKeychainItemName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)",
+							theName,
+							[theID intValue]];
+
+	return sshKeychainItemName;
+}
+
+/**
+ * Retrieve the keychain SSH item account for a supplied SSH user and host - which can be nil.
+ */
+- (NSString *)accountForSSHUser:(NSString *)theSSHUser sshHost:(NSString *)theSSHHost
+{
+	NSString *sshKeychainItemAccount;
+
+	sshKeychainItemAccount = [NSString stringWithFormat:@"%@@%@",
+								theSSHUser?theSSHUser:@"",
+								theSSHHost?theSSHHost:@""];
+
+	return sshKeychainItemAccount;
 }
 
 @end

@@ -17,14 +17,18 @@ enum spsshtunnel_password_modes
 
 @interface SPSSHTunnel : NSObject
 {
+	IBOutlet NSWindow *sshQuestionDialog;
+	IBOutlet NSTextField *sshQuestionText;
+
+	NSWindow *parentWindow;
 	NSTask *task;
 	NSPipe *standardError;
 	id delegate;
 	SEL stateChangeSelector;
-	NSConnection *passwordConnection;
+	NSConnection *tunnelConnection;
 	NSString *lastError;
-	NSString *passwordConnectionName;
-	NSString *passwordConnectionVerifyHash;
+	NSString *tunnelConnectionName;
+	NSString *tunnelConnectionVerifyHash;
 	NSString *sshHost;
 	NSString *sshLogin;
 	NSString *remoteHost;
@@ -40,15 +44,18 @@ enum spsshtunnel_password_modes
 
 - (id) initToHost:(NSString *) theHost port:(int) thePort login:(NSString *) theLogin tunnellingToPort:(int) targetPort onHost:(NSString *) targetHost;
 - (BOOL) setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
-- (BOOL) setPassword:(NSString *)thePassword;
+- (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
+- (BOOL) setPassword:(NSString *)thePassword;
 - (int) state;
 - (NSString *) lastError;
 - (int) localPort;
 - (void) connect;
 - (void) launchTask:(id) dummy;
-- (void)disconnect;
+- (void) disconnect;
 - (void) standardErrorHandler:(NSNotification*)aNotification;
 - (NSString *) getPasswordWithVerificationHash:(NSString *)theHash;
+- (BOOL) getResponseForQuestion:(NSString *)theQuestion;
+- (IBAction) closeSheet:(id)sender;
 
 @end

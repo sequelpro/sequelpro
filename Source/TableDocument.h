@@ -92,6 +92,7 @@
 	IBOutlet NSWindow *createTableSyntaxWindow;
 
 	CMMCPConnection *mySQLConnection;
+	SPSSHTunnel *sshTunnel;
 
 	NSArray *variables;
 	NSString *selectedDatabase;
@@ -121,7 +122,7 @@
 - (IBAction)initiateConnection:(id)sender;
 - (void)initiateSSHTunnelConnection;
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
-- (void)initiateMySQLConnection:(SPSSHTunnel *)theTunnel;
+- (void)initiateMySQLConnection;
 - (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;

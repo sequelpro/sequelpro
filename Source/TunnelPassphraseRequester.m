@@ -28,12 +28,37 @@ int main(int argc, const char *argv[])
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+	NSString *argument = nil;
+	SPSSHTunnel *sequelProTunnel;
+	NSString *connectionName = [environment objectForKey:@"SP_CONNECTION_NAME"];
 
 	if (![environment objectForKey:@"SP_PASSWORD_METHOD"]) {
 		[pool release];
 		return 1;
 	}
 
+	if (argc > 1) {
+		argument = [[NSString alloc] initWithCString:argv[1] encoding:NSUTF8StringEncoding];
+	}
+
+	// Check if we're being asked a question and respond if so
+	if (argument && [argument rangeOfString:@" (yes/no)?"].location != NSNotFound) {
+		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+		if (!sequelProTunnel) {
+			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
+			[pool release];
+			return 1;
+		}
+		BOOL response = [sequelProTunnel getResponseForQuestion:argument];
+		if (response) {
+			printf("yes\n");
+		} else {
+			printf("no\n");
+		}
+		[pool release];
+		return 0;
+	}
+	
 	// If the password method is set to use the keychain, use the supplied keychain name to
 	// request the password
 	if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] intValue] == SPSSH_PASSWORD_USES_KEYCHAIN) {
@@ -61,9 +86,7 @@ int main(int argc, const char *argv[])
 
 	// If the password method is set to request the password from the tunnel instance, do so.
 	if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] intValue] == SPSSH_PASSWORD_ASKS_UI) {
-		SPSSHTunnel *sequelProTunnel;
 		NSString *password;
-		NSString *connectionName = [environment objectForKey:@"SP_CONNECTION_NAME"];
 		NSString *verificationHash = [environment objectForKey:@"SP_CONNECTION_VERIFY_HASH"];
 		
 		if (!connectionName || !verificationHash) {

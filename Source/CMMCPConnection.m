@@ -239,6 +239,7 @@ static void forcePingTimeout(int signalNumber);
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
 	if (theRet != mConnection) {
+		if (connectionTunnel) [connectionTunnel disconnect];
 		return mConnected = NO;
 	}
 
@@ -576,6 +577,7 @@ static void forcePingTimeout(int signalNumber);
 		[self startKeepAliveTimerResettingState:YES];
 		return YES;
 	}
+	if (connectionTunnel) [connectionTunnel disconnect];
 	return NO;
 }
 
