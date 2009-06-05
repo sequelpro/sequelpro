@@ -47,7 +47,6 @@ int main(int argc, const char *argv[])
 		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
 		if (!sequelProTunnel) {
 			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
-			[argument release];
 			[pool release];
 			return 1;
 		}
@@ -58,7 +57,6 @@ int main(int argc, const char *argv[])
 			printf("no\n");
 		}
 		[pool release];
-		[argument release];
 		return 0;
 	}
 	
@@ -81,11 +79,13 @@ int main(int argc, const char *argv[])
 			keychain = [[KeyChain alloc] init];
 			if (![keychain passwordExistsForName:keychainName account:keychainAccount]) {
 				NSLog(@"SSH Tunnel: specified keychain password not found");
+				[keychain release];
 				[pool release];
 				return 1;
 			}
 
 			printf("%s\n", [[keychain getPasswordForName:keychainName account:keychainAccount] UTF8String]);
+			[keychain release];
 			[pool release];
 			return 0;
 		}
@@ -116,7 +116,6 @@ int main(int argc, const char *argv[])
 
 			printf("%s\n", [password UTF8String]);
 			[pool release];
-			[argument release];
 			return 0;
 		}
 	}
@@ -128,7 +127,6 @@ int main(int argc, const char *argv[])
 		if (!verificationHash) {
 			NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");
 			[pool release];
-			[argument release];
 			return 1;
 		}
 
@@ -136,23 +134,19 @@ int main(int argc, const char *argv[])
 		if (!sequelProTunnel) {
 			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
 			[pool release];
-			[argument release];
 			return 1;
 		}
 		passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
 		if (!passphrase) {
 			[pool release];
-			[argument release];
 			return 1;
 		}
 
 		printf("%s\n", [passphrase UTF8String]);
 		[pool release];
-		[argument release];
 		return 0;
 	}
 
 	[pool release];
-	[argument release];
 	return 1;
 }
