@@ -906,6 +906,8 @@
 		queryFavorites = [[NSMutableArray array] retain];
 	}
 
+	hasBackgroundAttribute = NO;
+
 	// Set up the interface
 	// Bind backgroundColor
 	[textView setAllowsDocumentBackgroundColorChange:YES];
@@ -933,6 +935,7 @@
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]?NSOnState:NSOffState)];
 	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]];
 	[queryFavoritesView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
+
 	while ( (column = [enumerator nextObject]) )
 	{
 		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
@@ -1264,8 +1267,16 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	// Remove all background color attributes
-	[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
+	// Remove all background color attributes for highlighting the current query
+	if([prefs boolForKey:@"CustomQueryHighlightCurrentQuery"]) {
+		[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
+	} else {
+		// ensure that we do it only once
+		if(hasBackgroundAttribute) {
+			[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
+			hasBackgroundAttribute = NO;
+		}
+	}
 
 	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
@@ -1275,10 +1286,14 @@
 	// Highlight by setting a background color the current query
 	// if nothing is selected
 	if(qRange.length && !currentSelection.length) {
-		[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
-					  value: [NSColor colorWithDeviceRed:0.95 green:0.95 blue:0.95 alpha:1]
+		if([prefs boolForKey:@"CustomQueryHighlightCurrentQuery"]) {
+			[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
+					  value: [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorHighlightQueryColor"]]
 					  range: qRange ];
+			hasBackgroundAttribute = YES;
+		}
 		currentQueryRange = qRange;
+		
 	} else {
 		currentQueryRange = NSMakeRange(0, 0);
 	}

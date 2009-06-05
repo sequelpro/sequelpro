@@ -80,6 +80,7 @@
 	NSString *usedQuery;
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
+	BOOL hasBackgroundAttribute;
 	NSString *mySQLversion;
 		
 	int queryStartPosition;
