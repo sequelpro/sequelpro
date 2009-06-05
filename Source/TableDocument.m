@@ -60,6 +60,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 @end
 
+#pragma mark -
+
 @implementation TableDocument
 
 - (id)init
@@ -739,8 +741,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/docs/Getting_Connected"]];
 }
 
-
-#pragma mark database methods
+#pragma mark -
+#pragma mark Database methods
 
 /**
  * sets up the database select toolbar item
@@ -909,6 +911,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
 }
 
+#pragma mark -
 #pragma mark Console methods
 
 /**
@@ -937,6 +940,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[[SPQueryConsole sharedQueryConsole] clearConsole:sender];
 }
 
+#pragma mark -
 #pragma mark Encoding Methods
 
 /**
@@ -1128,6 +1132,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	return _supportsEncoding;
 }
 
+#pragma mark -
 #pragma mark Table Methods
 
 /**
@@ -1522,6 +1527,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 					   contextInfo:NULL];		
 }
 
+#pragma mark -
 #pragma mark Other Methods
 
 /**
@@ -1877,7 +1883,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 	
 	[tableTabView selectTabViewItemAtIndex:4];
-	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableInfoToolbarItemIdentifier"];
+	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableRelationsToolbarItemIdentifier"];
 }
 
 
@@ -1935,6 +1941,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	return createTableSyntaxWindow;
 }
 
+#pragma mark -
 #pragma mark Toolbar Methods
 
 /**
@@ -2052,6 +2059,17 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewStatus:)];
+
+	} else if ([itemIdentifier isEqualToString:@"SwitchToTableRelationsToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Relations", @"toolbar item label for switching to the Table Relations tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Relations tab", @"tooltip for toolbar item for switching to the Table Relations tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-table-relations"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewRelations:)];
+		
 		
 	} else {
 		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
@@ -2075,6 +2093,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 			@"SwitchToTableContentToolbarItemIdentifier",
 			@"SwitchToRunQueryToolbarItemIdentifier",
 			@"SwitchToTableInfoToolbarItemIdentifier",
+			@"SwitchToTableRelationsToolbarItemIdentifier",
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
 			NSToolbarSpaceItemIdentifier,
@@ -2094,7 +2113,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 			@"SwitchToTableContentToolbarItemIdentifier",
 			@"SwitchToRunQueryToolbarItemIdentifier",
 			@"SwitchToTableInfoToolbarItemIdentifier",
+			@"SwitchToTableRelationsToolbarItemIdentifier",
 			NSToolbarFlexibleSpaceItemIdentifier,
+			@"ToggleConsoleIdentifier",
+			@"ClearConsoleIdentifier",
 			nil];
 }
 
@@ -2108,6 +2130,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 			@"SwitchToTableContentToolbarItemIdentifier",
 			@"SwitchToRunQueryToolbarItemIdentifier",
 			@"SwitchToTableInfoToolbarItemIdentifier",
+			@"SwitchToTableRelationsToolbarItemIdentifier",
 			nil];
 	
 }
@@ -2224,6 +2247,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 }
 
+#pragma mark -
 #pragma mark SMySQL delegate methods
 
 /**
@@ -2265,7 +2289,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	}
 }
 
-
+#pragma mark -
 #pragma mark SplitView delegate methods
 
 /**
@@ -2329,7 +2353,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[chooseDatabaseToolbarItem setMaxSize:NSMakeSize(leftPaneWidth, 32)];
 }
 
-
+#pragma mark -
 #pragma mark TableView datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
@@ -2371,6 +2395,8 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 @end
+
+#pragma mark -
 
 @implementation TableDocument (PrivateAPI)
 

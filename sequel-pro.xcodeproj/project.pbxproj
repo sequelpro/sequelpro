@@ -103,6 +103,7 @@
 		B52460D80F8EF92300171639 /* SPTextViewAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D60F8EF92300171639 /* SPTextViewAdditions.m */; };
 		B52460DB0F8EF93B00171639 /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52460D90F8EF93B00171639 /* Console.xib */; };
 		B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B53857330F9CC3B600EB2354 /* button_clear.tiff */; };
+		B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */; };
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
 		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
@@ -346,6 +347,7 @@
 		B52460D60F8EF92300171639 /* SPTextViewAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextViewAdditions.m; sourceTree = "<group>"; };
 		B52460DA0F8EF93B00171639 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
 		B53857330F9CC3B600EB2354 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
+		B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-relations.png"; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
@@ -736,6 +738,7 @@
 				17E641BD0EF02036001BC333 /* toolbar-switch-to-sql.tiff */,
 				17E641BE0EF02036001BC333 /* toolbar-switch-to-structure.png */,
 				17E641BF0EF02036001BC333 /* toolbar-switch-to-table-info.png */,
+				B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */,
 				B5E92F350F75B32100012500 /* toolbar-export-csv.tiff */,
 				B5E92F360F75B32100012500 /* toolbar-export-html.tiff */,
 				B5E92F370F75B32100012500 /* toolbar-export-pdf.tiff */,
@@ -1022,6 +1025,7 @@
 				177E79300FCB54EC00E9E122 /* table-small-square.tiff in Resources */,
 				29A1B7EB0FD12E55000B88E8 /* printAccessory.xib in Resources */,
 				586F432B0FD74CFC00B428D7 /* SSHQuestionDialog.xib in Resources */,
+				B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
