@@ -35,13 +35,13 @@
  */
 - (id) initToHost:(NSString *) theHost port:(int) thePort login:(NSString *) theLogin tunnellingToPort:(int) targetPort onHost:(NSString *) targetHost
 {
-	if (!theHost || !thePort || !theLogin || !targetPort || !targetHost) return nil;
+	if (!theHost || !thePort || !targetPort || !targetHost) return nil;
 
 	self = [super init];
 
 	// Store the connection settings as appropriate
 	sshHost = [[NSString alloc] initWithString:theHost];
-	sshLogin = [[NSString alloc] initWithString:theLogin];
+	sshLogin = [[NSString alloc] initWithString:(theLogin?theLogin:@"")];
 	sshPort = thePort;
 	if ([theHost isEqualToString:targetHost]) {
 		remoteHost = [[NSString alloc] initWithString:@"127.0.0.1"];
@@ -54,8 +54,8 @@
 	lastError = nil;
 
 	// Set up a connection for use by the tunnel process
-	tunnelConnectionName = [NSString stringWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	tunnelConnectionVerifyHash = [NSString stringWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
 	tunnelConnection = [[NSConnection defaultConnection] retain];
 	[tunnelConnection runInNewThread];
 	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
@@ -140,6 +140,7 @@
  */
 - (NSString *) lastError
 {
+	if (!lastError) return nil;
 	return [NSString stringWithString:lastError];
 }
 
@@ -219,7 +220,7 @@
 	[task setLaunchPath: @"/usr/bin/ssh"];
 
 	// Set up the arguments for the task
-	taskArguments = [ NSMutableArray array ];
+	taskArguments = [[NSMutableArray alloc] init];
 	[taskArguments addObject:@"-N"]; // Tunnel only
 	[taskArguments addObject:@"-v"]; // Verbose mode for messages
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
@@ -242,7 +243,7 @@
 
 	// Set up the environment for the task
 	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"TunnelPassphraseRequester"];
-	taskEnvironment = [NSMutableDictionary dictionaryWithDictionary:[[NSProcessInfo processInfo] environment]];
+	taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 	[taskEnvironment removeObjectForKey: @"SSH_AGENT_PID"];
 	[taskEnvironment removeObjectForKey: @"SSH_AUTH_SOCK"];
 	[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
@@ -289,6 +290,7 @@
 	// If the task closed unexpectedly, alert appropriately
 	if (connectionState != SPSSH_STATE_IDLE) {
 		connectionState = SPSSH_STATE_IDLE;
+		if (lastError) [lastError release];
 		lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
 		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 	}
@@ -299,6 +301,8 @@
 												  object:[standardError fileHandleForReading]];
 	[task release], task = nil;
 	[standardError release], standardError = nil;
+	[taskEnvironment release], taskEnvironment = nil;
+	[taskArguments release], taskArguments = nil;
 
 	[pool release];
 }
@@ -472,7 +476,17 @@
 }
 
 - (void)dealloc
-{	
+{
+	[sshHost release];
+	[sshLogin release];
+	[remoteHost release];
+	[tunnelConnectionName release];
+	[tunnelConnectionVerifyHash release];
+	[tunnelConnection release];
+	if (password) [password release];
+	if (keychainName) [keychainName release];
+	if (keychainAccount) [keychainAccount release];
+	
 	[super dealloc];
 }
 
