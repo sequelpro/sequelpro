@@ -95,6 +95,92 @@
 }
 
 /*
+ *
+ */
+- (IBAction)selectEnclosingBrackets:(id)sender
+{
+	long caretPosition = [self selectedRange].location;
+	long stringLength = [[self string] length];
+	unichar co, cc;
+	
+	if(caretPosition == 0 || caretPosition >= stringLength) return;
+
+	long pcnt = 0;
+	long bcnt = 0;
+	long scnt = 0;
+
+	long i;
+
+	// look for the first non-balanced closing bracket
+	for(i=caretPosition; i<stringLength; i++) {
+		switch([[self string] characterAtIndex:i]) {
+			case ')': 
+			if(!pcnt) {
+				co='(';cc=')';
+				i=stringLength;
+			}
+			pcnt++; break;
+			case '(': pcnt--; break;
+			case ']': 
+			if(!bcnt) {
+				co='[';cc=']';
+				i=stringLength;
+			}
+			bcnt++; break;
+			case '[': bcnt--; break;
+			case '}': 
+			if(!scnt) {
+				co='{';cc='}';
+				i=stringLength;
+			}
+			scnt++; break;
+			case '{': scnt--; break;
+		}
+	}
+	
+	long start = -1;
+	long end = -1;
+	long bracketCounter = 0;
+
+	if([[self string] characterAtIndex:caretPosition] == cc)
+		bracketCounter--;
+	if([[self string] characterAtIndex:caretPosition] == co)
+		bracketCounter++;
+
+	for(i=caretPosition; i>=0; i--) {
+		if([[self string] characterAtIndex:i] == co) {
+			if(!bracketCounter) {
+				start = i;
+				break;
+			}
+			bracketCounter--;
+		}
+		if([[self string] characterAtIndex:i] == cc) {
+			bracketCounter++;
+		}
+	}
+	if(start < 0 ) return;
+
+	bracketCounter = 0;
+	for(i=caretPosition; i<stringLength; i++) {
+		if([[self string] characterAtIndex:i] == co) {
+			bracketCounter++;
+		}
+		if([[self string] characterAtIndex:i] == cc) {
+			if(!bracketCounter) {
+				end = i+1;
+				break;
+			}
+			bracketCounter--;
+		}
+	}
+	if(end < 0 || bracketCounter || end-start < 1) return;
+	
+	[self setSelectedRange:NSMakeRange(start, end-start)];
+	
+}
+
+/*
  * Change selection or current word to upper case and preserves the selection.
  */
 - (IBAction)doSelectionUpperCase:(id)sender
