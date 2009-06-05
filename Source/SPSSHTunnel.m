@@ -55,6 +55,7 @@
 
 	// Set up a connection for use by the tunnel process
 	tunnelConnectionName = [NSString stringWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionVerifyHash = [NSString stringWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
 	tunnelConnection = [[NSConnection defaultConnection] retain];
 	[tunnelConnection runInNewThread];
 	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
@@ -107,7 +108,6 @@
 {
 	if (passwordInKeychain) return NO;
 	password = [[NSString alloc] initWithString:thePassword];
-	tunnelConnectionVerifyHash = [NSString stringWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
 	
 	return YES;
 }
@@ -225,7 +225,6 @@
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%i", connectionTimeout]];
-	[taskArguments addObject:@"-o PubkeyAuthentication=yes"];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=1"];
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
@@ -233,7 +232,11 @@
 		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
 	}
 	[taskArguments addObject:[NSString stringWithFormat:@"-p %i", sshPort]];
-	[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
+	if ([sshLogin length]) {
+		[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
+	} else {
+		[taskArguments addObject:sshHost];
+	}
 	[taskArguments addObject:[NSString stringWithFormat:@"-L %i/%@/%i", localPort, remoteHost, remotePort]];
 	[task setArguments:taskArguments];
 
@@ -245,13 +248,13 @@
 	[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 	[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
 	[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];
+	[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
 	if (passwordInKeychain) {
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 		[taskEnvironment setObject:keychainName forKey:@"SP_KEYCHAIN_ITEM_NAME"];
 		[taskEnvironment setObject:keychainAccount forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
 	} else {
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
-		[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
 	}
 	[task setEnvironment:taskEnvironment];
 
@@ -282,6 +285,8 @@
 
 	// Listen for output
 	[task waitUntilExit];
+	
+	// If the task closed unexpectedly, alert appropriately
 	if (connectionState != SPSSH_STATE_IDLE) {
 		connectionState = SPSSH_STATE_IDLE;
 		lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
@@ -343,7 +348,7 @@
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was closed 'by the remote host'.  This may indicate a networking issue or a network timeout.", @"SSH tunnel was closed by remote host message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
-			if ([message rangeOfString:@"Permission denied (" ].location != NSNotFound) {
+			if ([message rangeOfString:@"Permission denied (" ].location != NSNotFound || [message rangeOfString:@"No more authentication methods to try" ].location != NSNotFound) {
 				connectionState = SPSSH_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
@@ -394,9 +399,15 @@
  */
 - (BOOL) getResponseForQuestion:(NSString *)theQuestion
 {
+	NSSize questionTextSize;
+	NSRect windowFrameRect;
 
-	// Ask how to proceed
+	// Ask how to proceed, sizing the window appropriately to fit the question
 	[sshQuestionText setStringValue:theQuestion];
+	questionTextSize = [[sshQuestionText cell] cellSizeForBounds:NSMakeRect(0, 0, [sshQuestionText bounds].size.width, 500)];
+	windowFrameRect = [sshQuestionDialog frame];
+	windowFrameRect.size.height = ((questionTextSize.height < 100)?100:questionTextSize.height) + 90;
+	[sshQuestionDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	int sshQueryResponseCode = [NSApp runModalForWindow:sshQuestionDialog];
 	[NSApp endSheet:sshQuestionDialog];
@@ -414,6 +425,44 @@
 	}
 }
 
+/*
+ * Method to allow an SSH tunnel to request a password.  This is used by the program set by the
+ * SSH_ASKPASS environment setting to request passphrases for SSH keys.
+ */
+- (NSString *) getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash
+{
+	if (![theHash isEqualToString:tunnelConnectionVerifyHash]) return nil;
+
+	NSSize queryTextSize;
+	NSRect windowFrameRect;
+	NSString *thePassword;
+
+	// Request the password, sizing the window appropriately to fit the query
+	[sshPasswordText setStringValue:theQuery];
+	queryTextSize = [[sshPasswordText cell] cellSizeForBounds:NSMakeRect(0, 0, [sshPasswordText bounds].size.width, 500)];
+	windowFrameRect = [sshPasswordDialog frame];
+	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 143;
+	[sshPasswordDialog setFrame:windowFrameRect display:NO];
+	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	int sshQueryResponseCode = [NSApp runModalForWindow:sshPasswordDialog];
+	[NSApp endSheet:sshPasswordDialog];
+	[sshPasswordDialog orderOut:nil];
+
+	switch (sshQueryResponseCode) {
+
+		// OK
+		case 1:
+			thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
+			[sshPasswordField setStringValue:@""];
+			[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+			return thePassword;
+
+		// Cancel
+		default:
+			return nil;
+	}
+}
+ 
 /*
  * Ends an existing modal session
  */
