@@ -293,7 +293,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-	[completionPopUp release];
+	//TODO : where to place the release??
+	// [completionPopUp release];
+	
+
 }
 
 

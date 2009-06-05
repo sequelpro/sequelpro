@@ -184,6 +184,7 @@
 - (void)showVariables:(id)sender;
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
+- (void) refreshCurrentDatabase;
 
 //getter methods
 - (NSString *)name;

@@ -52,7 +52,8 @@
 	NSInteger selectedRowIndex;
 	
 	selectedRowIndex = [tablesListView selectedRow];
-	if(selectedRowIndex > 0 && [tables count]){
+	
+	if(selectedRowIndex > 0 && [tables count] && selectedRowIndex < [tables count]){
 		selectedTable = [NSString stringWithString:[tables objectAtIndex:selectedRowIndex]];
 	}
 	
@@ -187,7 +188,7 @@
 
 	[tablesListView reloadData];
 	
-	//if the previous selected table still exists, select it
+	// if the previous selected table still exists, select it
 	if( selectedTable != nil && [tables indexOfObject:selectedTable] < [tables count]) {
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tables indexOfObject:selectedTable]] byExtendingSelection:NO];
 	}
@@ -489,8 +490,6 @@
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		}
-		[scanner release];
-
 		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
 		{
 			// get the create syntax
@@ -518,13 +517,13 @@
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			[tableSyntax release];
-
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 
 		}
+		[scanner release];
 
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table
@@ -988,7 +987,6 @@
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", tableType] withString:[anObject backtickQuotedString]]];
 			[tableSyntax release];
-
 			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
 					[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[tables objectAtIndex:rowIndex] backtickQuotedString]]];

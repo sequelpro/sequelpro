@@ -468,33 +468,47 @@
 		//get array with an object for each mysql-query
 		queries = [dumpFile splitSqlStringByCharacter:';'];
 
+		unsigned long queryCount = [queries count];
+
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Executing %d statements...", @"text showing that app is executing x statements"), queryCount]];
 
 		NSCharacterSet *whitespaceAndNewline = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-		unsigned long queryCount = [queries count];
 
 		//perform all mysql-queries
-		for ( i = 0 ; i < queryCount ; i++ ) {
-			[singleProgressBar setDoubleValue:((i+1)*100/queryCount)];
-			[singleProgressBar displayIfNeeded];
+		if (importSQLAsUTF8)
+			for ( i = 0 ; i < queryCount ; i++ ) {
+				[singleProgressBar setDoubleValue:(i*100/queryCount)];
+				// [singleProgressBar displayIfNeeded];
 			
-			// Skip blank or whitespace-only queries to avoid errors
-			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline] length] == 0)
-				continue;
+				// Skip blank or whitespace-only queries to avoid errors
+				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				if (![q length]) continue;
 
-			if (importSQLAsUTF8) {
-				[mySQLConnection queryString:[queries objectAtIndex:i] usingEncoding:NSUTF8StringEncoding];
-			} else {
-				[mySQLConnection queryString:[queries objectAtIndex:i]];
+				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding];
+
+				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
+				}
 			}
-			
-			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
-			}
-		}
+		else
+			for ( i = 0 ; i < queryCount ; i++ ) {
+				[singleProgressBar setDoubleValue:(i*100/queryCount)];
+				// [singleProgressBar displayIfNeeded];
 		
+				// Skip blank or whitespace-only queries to avoid errors
+				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				if (![q length]) continue;
+					
+				[mySQLConnection queryString:q];
+
+				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
+				}
+			}
+
 		//close progress sheet
 		[NSApp endSheet:singleProgressSheet];
 		[singleProgressSheet orderOut:nil];
@@ -507,20 +521,23 @@
 				modalDelegate:self
 			   didEndSelector:nil
 				  contextInfo:nil];
-			
+
 			[NSApp runModalForWindow:errorsSheet];
-			
+
 			[NSApp endSheet:errorsSheet];
 			[errorsSheet orderOut:nil];
 		}
-		
-		//update tables list
+
+		//update available databases
+		[tableDocumentInstance setDatabases:self];
+		//update current selected database
+		[tableDocumentInstance refreshCurrentDatabase];
+		//udpate current database tables 
 		[tablesListInstance updateTables:self];
-		
-		////////////////
-		// IMPORT CSV //
-		////////////////
-		
+
+	////////////////
+	// IMPORT CSV //
+	////////////////
 	} else if ( [fileType isEqualToString:@"CSV"] ) {
 		int code;
 		//open progress sheet
@@ -604,9 +621,9 @@
 			[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 			[buttonCell setBordered:NO];
 			[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
-			[buttonCell release];
 			[self updateFieldMappingButtonCell];
 			[fieldMappingTableView reloadData];
+			[buttonCell release];
 			
 			// show fieldMapping sheet
 			[NSApp beginSheet:fieldMappingSheet
@@ -708,7 +725,6 @@
 		//free arrays
 		fieldMappingArray = nil;
 		importArray = nil;
-		
 	}
 	
     // Import finished Growl notification
@@ -805,7 +821,8 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength;
+	int i,j,t,rowCount, colCount, lastProgressValue, queryLength;
+	// int progressBarWidth;
 	int tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
 	CMMCPResult *queryResult;
 	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
@@ -1285,7 +1302,7 @@
 	lineEndString = [NSString stringWithString:tempLineEndString];
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
@@ -1602,7 +1619,8 @@
 	NSMutableString *xmlString = [NSMutableString string];
 	NSMutableString *xmlItem = [NSMutableString string];
 	NSString *dataConversionString;
-	int i,j, startingRow, totalRows, progressBarWidth, lastProgressValue;
+	int i,j, startingRow, totalRows, lastProgressValue;
+	// int progressBarWidth;
 	
 	if (queryResult != nil && [queryResult numOfRows]) [queryResult dataSeek:0];
 	

@@ -911,6 +911,47 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
 }
 
+/*
+ * Reset the current selected database name
+ */
+- (void) refreshCurrentDatabase
+{
+	NSString *dbName;
+
+	// Notify listeners that a query has started
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	
+	CMMCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
+	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		int i;
+		int r = [theResult numOfRows];
+		if (r) [theResult dataSeek:0];
+		for ( i = 0 ; i < r ; i++ ) {
+			dbName = [[theResult fetchRowAsArray] objectAtIndex:0];
+		}
+		if(![dbName isKindOfClass:[NSNull class]]) {
+			if(![dbName isEqualToString:selectedDatabase]) {
+				if (selectedDatabase) {
+					[selectedDatabase release];
+					selectedDatabase = nil;
+				}
+				selectedDatabase = [dbName retain];
+				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
+				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], selectedDatabase]];
+			}
+		} else {
+			[selectedDatabase release];
+			selectedDatabase = nil;
+			[chooseDatabaseButton selectItemAtIndex:0];
+			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/", mySQLVersion, [self name]]];
+		}
+	}
+	
+	//query finished
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	
+}
+
 #pragma mark -
 #pragma mark Console methods
 

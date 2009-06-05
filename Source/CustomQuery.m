@@ -29,6 +29,8 @@
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "TableDocument.h"
+#import "TablesList.h"
+#import "RegexKitLite.h"
 
 #define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
 #define SP_HELP_SEARCH_IN_MYSQL   0
@@ -380,17 +382,21 @@
 - (void)performQueries:(NSArray *)queries;
 {	
 	
-	NSArray		*theColumns;
-	NSTableColumn	*theCol;
-	CMMCPResult	*theResult = nil;
-	NSMutableArray	*menuItems = [NSMutableArray array];
-	NSMutableArray	*tempResult = [NSMutableArray array];
-	NSMutableString	*errors = [NSMutableString string];
+	NSArray         *theColumns;
+	NSTableColumn   *theCol;
+	CMMCPResult     *theResult  = nil;
+	NSMutableArray  *menuItems  = [NSMutableArray array];
+	NSMutableArray  *tempResult = [NSMutableArray array];
+	NSMutableString *errors     = [NSMutableString string];
+	
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
 	float executionTime = 0;
 	int firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
-	// NSString *delimiterMatch = @"^\\s*delimiter\\s*$|^\\s*delimiter\\s+\\S+\\s*$";
+	BOOL tableListNeedsReload = NO;
+	BOOL databaseWasChanged = NO;
+	BOOL queriesSeparatedByDelimiter = NO;
+	
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 	// Notify listeners that a query has started
@@ -407,11 +413,9 @@
 		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
 	}
 
-	BOOL queriesSeparatedByDelimiter = NO;
-
 	// Perform the supplied queries in series
 	for ( i = 0 ; i < [queries count] ; i++ ) {
-	
+
 		// Don't run blank queries, or queries which only contain whitespace.
 		if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length] == 0)
 			continue;
@@ -427,12 +431,12 @@
 
 		// Store any error messages
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-			
+
 			// If the query errored, append error to the error log for display at the end
 			if ( [queries count] > 1 ) {
 				if(firstErrorOccuredInQuery == -1)
 					firstErrorOccuredInQuery = i+1;
-				
+
 				if(!suppressErrorSheet)
 				{
 					// Update error text for the user
@@ -459,7 +463,7 @@
 								[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
 							i = [queries count]; // break for loop; for safety reasons stop the execution of the following queries
 					}
-				
+
 				} else {
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
 											i+1,
@@ -468,7 +472,26 @@
 			} else {
 				[errors setString:[mySQLConnection getLastErrorMessage]];
 			}
+		} else {
+			// Check if table list needs an update
+			if(!tableListNeedsReload && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)^\\s*(create|alter|drop|rename)\\s"])
+				tableListNeedsReload = YES;
+			if(!databaseWasChanged && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)^\\s*(use|drop\\s+database|drop\\s+schema)\\s"])
+				databaseWasChanged = YES;
 		}
+	}
+
+	// Reload table list if at least one query began with drop, alter, rename, or create
+	if(tableListNeedsReload || databaseWasChanged) {
+		// Build database pulldown menu
+		[[tableWindow delegate] setDatabases:self];
+
+		if (databaseWasChanged)
+			// Reset the current database
+			[[tableWindow delegate] refreshCurrentDatabase];
+
+		// Reload table list
+		[[[tableWindow delegate] valueForKeyPath:@"tablesListInstance"] updateTables:self];
 	}
 	
 	if(usedQuery)
@@ -1813,6 +1836,7 @@
 		[searchInMySQL setTarget:self];
 		[webViewMenuItems insertObject:searchInMySQL atIndex:0];
 		[searchInMySQL release];
+
 	}
 
 	return webViewMenuItems;
