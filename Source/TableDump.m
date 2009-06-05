@@ -1141,11 +1141,10 @@
 	[metaString appendString:@"\tlabelloc = t;\n"];
 	[metaString appendString:@"\tcompound = true;\n"];
 	[metaString appendString:@"\tnode [ shape = record ];\n"];
-	[metaString appendString:@"\tfontsize = 11;\n"];
 	[metaString appendString:@"\tfontname = \"Helvetica\";\n"];
-	[metaString appendString:@"\tranksep = 2.5;\n"];
+	[metaString appendString:@"\tranksep = 1.25;\n"];
 	[metaString appendString:@"\tratio = 0.7;\n"];
-	[metaString appendString:@"\trankdir = global;\n"];
+	[metaString appendString:@"\trankdir = LR;\n"];
 
 	// Write information to the file
 	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
@@ -1180,7 +1179,7 @@
 			[theResult dataSeek:0];
 		for ( int j = 0 ; j < [theResult numOfRows] ; j++ ) {
 			NSMutableDictionary *tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
-			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\">%@</TD></TR>\n", [tempRow objectForKey:@"Field"]]];
+			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Type"]]];
 		}
 		
 		[theResult release];
@@ -1197,17 +1196,17 @@
 	[singleProgressBar setUsesThreadedAnimation:YES];
 	[singleProgressBar startAnimation:self];
 	
-	[metaString setString:@"\n"];
+	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
 	
 	// grab the relations
 	CMMCPResult *theResult = [[mySQLConnection queryString:
-							   [NSString stringWithFormat:@"SELECT CONCAT( table_name, ' -> ', referenced_table_name ) AS list_of_fks FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = ('%@') AND REFERENCED_TABLE_NAME is not null ORDER BY TABLE_NAME, COLUMN_NAME", 
+							   [NSString stringWithFormat:@"SELECT CONCAT( table_name, ':' , column_name, ' -> ', referenced_table_name, ':', referenced_column_name ) AS list_of_fks FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = ('%@') AND REFERENCED_TABLE_NAME is not null ORDER BY TABLE_NAME, COLUMN_NAME", 
 								[tableDocumentInstance database]]] retain];		
 
 	if ([theResult numOfRows]) 
 		[theResult dataSeek:0];
 	for ( int i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[metaString appendString:[NSString stringWithFormat:@"%@ [ color=grey, arrowhead=crow, arrowtail=inv];\n", [[theResult fetchRowAsDictionary] objectForKey:@"list_of_fks"]]];
+		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [[theResult fetchRowAsDictionary] objectForKey:@"list_of_fks"]]];
 	}
 	
 	[theResult release];
