@@ -128,8 +128,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
 
-	unsigned i, insindex;
-	insindex = 0;
+	unsigned i;
 
 	if([mySQLConnection isConnected] && !isDictMode)
 	{
@@ -294,7 +293,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-
+	[completionPopUp release];
 }
 
 
@@ -2332,6 +2331,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[showMySQLHelpForMenuItem setTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG];
 		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
+		[showMySQLHelpForMenuItem release];
 	} else {
 		[[menu itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] setTitle:showMySQLHelpFor];
 	}
@@ -2341,6 +2341,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[copyAsRTFMenuItem setTag:SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG];
 		[copyAsRTFMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:copyAsRTFMenuItem atIndex:2];
+		[copyAsRTFMenuItem release];
 	}
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG] == nil)
 	{
@@ -2348,6 +2349,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[selectCurrentQueryMenuItem setTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG];
 		[selectCurrentQueryMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:selectCurrentQueryMenuItem atIndex:4];
+		[selectCurrentQueryMenuItem release];
 	}
 	// Hide "Select Active Query" if self is not editable
 	[[menu itemAtIndex:4] setHidden:![self isEditable]];
@@ -2520,6 +2522,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						modalDelegate:self 
 						didEndSelector:@selector(dragAlertSheetDidEnd:returnCode:contextInfo:) 
 						contextInfo:nil];
+					[alert release];
 					
 				} else
 					[self insertFileContentOfFile:filepath];
@@ -2654,6 +2657,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self insertText:@""];
 }
 
+- (void) dealloc
+{
+	[super dealloc];
+}
 
 @end
-

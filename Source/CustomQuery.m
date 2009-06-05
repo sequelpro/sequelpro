@@ -1409,6 +1409,7 @@
 	{
 		WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[NSString stringWithFormat:@"applewebdata://%@", searchString] title:searchString lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
 		[[helpWebView backForwardList] addItem:aWebHistoryItem];
+		[aWebHistoryItem release];
 	}
 
 	// validate goback/forward buttons
@@ -1805,12 +1806,13 @@
 		[searchInMySQLonline setEnabled:YES];
 		[searchInMySQLonline setTarget:self];
 		[webViewMenuItems insertObject:searchInMySQLonline atIndex:0];
+		[searchInMySQLonline release];
 
 		searchInMySQL = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Help", @"Search in MySQL Help") action:@selector(showHelpForWebViewSelection:) keyEquivalent:@""];
 		[searchInMySQL setEnabled:YES];
 		[searchInMySQL setTarget:self];
 		[webViewMenuItems insertObject:searchInMySQL atIndex:0];
-
+		[searchInMySQL release];
 	}
 
 	return webViewMenuItems;

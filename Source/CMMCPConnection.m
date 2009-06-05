@@ -929,7 +929,6 @@ static void forcePingTimeout(int signalNumber)
 	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
 }
 
-
 /*
  * Modified version of the original to support a supplied encoding.
  * For internal use only. Transforms a NSString to a C type string (ending with \0).
@@ -946,6 +945,11 @@ static void forcePingTimeout(int signalNumber)
 	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
 	[theData increaseLengthBy:1];
 	return (const char *)[theData bytes];
+}
+
+- (void) dealloc
+{
+	[super dealloc];
 }
 
 @end

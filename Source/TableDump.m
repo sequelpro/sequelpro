@@ -397,7 +397,7 @@
 - (void)importBackgroundProcess:(NSString*)filename
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	SPSQLParser *dumpFile;
+	SPSQLParser *dumpFile = nil;
 	NSError *errorStr = nil;
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
@@ -523,8 +523,6 @@
 		
 	} else if ( [fileType isEqualToString:@"CSV"] ) {
 		int code;
-		NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
-		
 		//open progress sheet
 		[NSApp beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow
@@ -601,10 +599,12 @@
 			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
 			
 			//set up tableView buttons
+			NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
 			[buttonCell setControlSize:NSSmallControlSize];
 			[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 			[buttonCell setBordered:NO];
 			[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+			[buttonCell release];
 			[self updateFieldMappingButtonCell];
 			[fieldMappingTableView reloadData];
 			
@@ -708,6 +708,7 @@
 		//free arrays
 		fieldMappingArray = nil;
 		importArray = nil;
+		
 	}
 	
     // Import finished Growl notification
@@ -804,7 +805,8 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength, tableType;
+	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength;
+	int tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
 	CMMCPResult *queryResult;
 	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
 	NSArray *fieldNames;
@@ -825,7 +827,7 @@
 	[errorsView displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	[singleProgressText displayIfNeeded];
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 	
@@ -1283,7 +1285,7 @@
 	lineEndString = [NSString stringWithString:tempLineEndString];
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
@@ -1605,7 +1607,7 @@
 	if (queryResult != nil && [queryResult numOfRows]) [queryResult dataSeek:0];
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
@@ -2042,6 +2044,7 @@
 	[[exportDumpTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleCSVTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleXMLTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
+	[switchButton release];
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];

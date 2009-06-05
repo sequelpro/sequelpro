@@ -482,15 +482,15 @@
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
-			[scanner release];
 		} 
 		else if(tblType == SP_TABLETYPE_TABLE){
 			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
-			[scanner release];
 		}
+		[scanner release];
+
 		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
 		{
 			// get the create syntax
@@ -516,7 +516,9 @@
 				tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 
 			// replace the old name by the new one and drop the old one
-			theResult = [mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
+			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
+			[tableSyntax release];
+
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
@@ -651,7 +653,8 @@
 			tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 
 		// replace the old name by the new one and drop the old one
-		theResult = [mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[tableRenameField stringValue] backtickQuotedString]]];
+		[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[tableRenameField stringValue] backtickQuotedString]]];
+		[tableSyntax release];
 		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			if ([mySQLConnection isConnected]) {
 				[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[self tableName] backtickQuotedString]]];
@@ -983,7 +986,9 @@
 				tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 
 			// replace the old name by the new one and drop the old one
-			theResult = [mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", tableType] withString:[anObject backtickQuotedString]]];
+			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", tableType] withString:[anObject backtickQuotedString]]];
+			[tableSyntax release];
+
 			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
 					[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[tables objectAtIndex:rowIndex] backtickQuotedString]]];

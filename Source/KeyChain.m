@@ -116,10 +116,10 @@
 		password = [NSString stringWithCString:passwordData length:passwordLength];
 		
 		// Free the data allocated by SecKeychainFindGenericPassword:
-		status = SecKeychainItemFreeContent(
-											NULL,           // No attribute data to release
-											passwordData    // Release data
-											);
+		SecKeychainItemFreeContent(
+									NULL,           // No attribute data to release
+									passwordData    // Release data
+									);
 	}
 
 	return password;

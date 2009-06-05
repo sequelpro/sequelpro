@@ -445,11 +445,9 @@
 						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
-							nextOffs = 13;
 						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"update"];
-							nextOffs = 13;
 						} else {
 							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
 												  forKey:@"update"];							
@@ -460,11 +458,9 @@
 						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
-							nextOffs = 13;
 						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"delete"];
-							nextOffs = 13;
 						} else {
 							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
 												  forKey:@"delete"];							
@@ -472,6 +468,7 @@
 					}
 				}
 				[constraints addObject:constraintDetails];
+				[constraintDetails release];
 			}
 			// primary key
 			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {

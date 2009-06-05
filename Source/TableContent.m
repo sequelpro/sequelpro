@@ -738,7 +738,7 @@
 {
 	NSMutableDictionary *tempRow;
 	CMMCPResult *queryResult;
-	NSDictionary *row, *dbDataRow;
+	NSDictionary *row, *dbDataRow = nil;
 	int i;
 	
 	// Check whether a save of the current row is required.
@@ -765,7 +765,6 @@
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
 		dbDataRow = [queryResult fetchRowAsDictionary];
 	}
-	
 	
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
