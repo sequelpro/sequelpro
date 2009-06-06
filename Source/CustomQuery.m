@@ -1267,9 +1267,15 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	// Remove all background color attributes for highlighting the current query
+	// Remove all background color attributes used by highlighting the current query
 	if([prefs boolForKey:@"CustomQueryHighlightCurrentQuery"]) {
-		[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
+		// Remove only the background attribute for the current range if still valid
+		NSRange textRange = NSMakeRange(0,[[textView string] length]);
+		NSRange r = NSIntersectionRange(currentQueryRange, textRange);
+		if(r.length)
+			[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:r];
+		else
+			[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:textRange];
 	} else {
 		// ensure that we do it only once
 		if(hasBackgroundAttribute) {
