@@ -34,6 +34,14 @@
  */
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account
 {
+	[self addPassword:password forName:name account:account withLabel:name];
+}
+
+/**
+ * Add the supplied password to the user's Keychain using the supplied name, account, and label.
+ */
+- (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account withLabel:(NSString *)label;
+{
 	OSStatus status;
 	SecTrustedApplicationRef sequelProRef, sequelProHelperRef;
 	SecAccessRef passwordAccessRef;
@@ -61,8 +69,8 @@
 		attributes[0].data = "application password";
 		attributes[0].length = 20;
 		attributes[1].tag = kSecLabelItemAttr;
-		attributes[1].data = (unichar *)[name UTF8String];
-		attributes[1].length = strlen([name UTF8String]);
+		attributes[1].data = (unichar *)[label UTF8String];
+		attributes[1].length = strlen([label UTF8String]);
 		attributes[2].tag = kSecAccountItemAttr;
 		attributes[2].data = (unichar *)[account UTF8String];
 		attributes[2].length = strlen([account UTF8String]);
@@ -173,7 +181,7 @@
 	attributes[0].data   = (void *)[account UTF8String];
 	attributes[0].length = [account length];
 	
-	attributes[1].tag    = kSecLabelItemAttr;
+	attributes[1].tag    = kSecServiceItemAttr;
     attributes[1].data   = (void *)[name UTF8String];
     attributes[1].length = [name length];
 	

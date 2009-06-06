@@ -23,6 +23,7 @@
 #import <Cocoa/Cocoa.h>
 #import "KeyChain.h"
 #import "SPSSHTunnel.h"
+#import "RegexKitLite.h"
 
 int main(int argc, const char *argv[])
 {
@@ -120,9 +121,25 @@ int main(int argc, const char *argv[])
 		}
 	}
 
-	// Check whether we're being asked for a SSH key passphrase, forward requests to the GUI
+	// Check whether we're being asked for a SSH key passphrase
 	if (argument && [[argument lowercaseString] rangeOfString:@"enter passphrase for"].location != NSNotFound ) {
 		NSString *passphrase;
+		NSString *keyName = [argument stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
+
+		if (keyName) {
+		
+			// Check whether the passphrase is in the keychain, using standard OS X sshagent name and account
+			KeyChain *keychain = [[KeyChain alloc] init];
+			if ([keychain passwordExistsForName:@"SSH" account:keyName]) {
+				printf("%s\n", [[keychain getPasswordForName:@"SSH" account:keyName] UTF8String]);
+				[keychain release];
+				[pool release];
+				return 0;
+			}
+			[keychain release];
+		}
+		
+		// Not found in the keychain - we need to ask the GUI.
 
 		if (!verificationHash) {
 			NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");

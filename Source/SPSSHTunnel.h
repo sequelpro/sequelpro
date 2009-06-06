@@ -19,6 +19,7 @@ enum spsshtunnel_password_modes
 {
 	IBOutlet NSWindow *sshQuestionDialog;
 	IBOutlet NSTextField *sshQuestionText;
+	IBOutlet NSButton *sshPasswordKeychainCheckbox;
 	IBOutlet NSWindow *sshPasswordDialog;
 	IBOutlet NSTextField *sshPasswordText;
 	IBOutlet NSSecureTextField *sshPasswordField;
@@ -38,6 +39,8 @@ enum spsshtunnel_password_modes
 	NSString *password;
 	NSString *keychainName;
 	NSString *keychainAccount;
+	NSString *requestedPassphrase;
+	BOOL requestedResponse;
 	BOOL passwordInKeychain;
 	int sshPort;
 	int remotePort;
@@ -59,7 +62,9 @@ enum spsshtunnel_password_modes
 - (void) standardErrorHandler:(NSNotification*)aNotification;
 - (NSString *) getPasswordWithVerificationHash:(NSString *)theHash;
 - (BOOL) getResponseForQuestion:(NSString *)theQuestion;
+- (void) workerGetResponseForQuestion:(NSString *)theQuestion;
 - (NSString *) getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash;
+- (void) workerGetPasswordForQuery:(NSString *)theQuery;
 - (IBAction) closeSheet:(id)sender;
 
 @end

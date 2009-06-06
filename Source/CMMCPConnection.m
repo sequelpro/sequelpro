@@ -355,7 +355,7 @@ static void forcePingTimeout(int signalNumber);
 		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
 		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
 		[connectionTunnel connect];
-		NSDate *tunnelStartDate = [NSDate date];
+		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
 		
 		// Allow the tunnel to attempt to connect in a loop
 		while (1) {
@@ -367,7 +367,11 @@ static void forcePingTimeout(int signalNumber);
 				[connectionTunnel disconnect];
 				break;
 			}
-			[NSThread sleepForTimeInterval:0.25];
+			
+			// Process events for a short time, allowing dialogs to be shown but waiting for the tunnel
+			interfaceInteractionTimer = [NSDate date];
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			tunnelStartDate = [tunnelStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
 		}
 		currentSSHTunnelState = [connectionTunnel state];
 		[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];

@@ -22,6 +22,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPSSHTunnel.h"
+#import "RegexKitLite.h"
+#import "KeyChain.h"
 #import <netinet/in.h>
 
 
@@ -69,6 +71,8 @@
 	keychainName = nil;
 	keychainAccount = nil;
 	passwordInKeychain = NO;
+	requestedPassphrase = nil;
+	requestedResponse = NO;
 	task = nil;
 	localPort = 0;
 	connectionState = SPSSH_STATE_IDLE;
@@ -226,7 +230,7 @@
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%i", connectionTimeout]];
-	[taskArguments addObject:@"-o NumberOfPasswordPrompts=1"];
+	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
 		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%i", (int)ceil(keepAliveInterval)]];		
@@ -403,6 +407,13 @@
  */
 - (BOOL) getResponseForQuestion:(NSString *)theQuestion
 {
+	[self performSelectorOnMainThread:@selector(workerGetResponseForQuestion:) withObject:theQuestion waitUntilDone:YES];
+	
+	return requestedResponse;
+}
+- (void) workerGetResponseForQuestion:(NSString *)theQuestion
+{	
+
 	NSSize questionTextSize;
 	NSRect windowFrameRect;
 
@@ -410,7 +421,7 @@
 	[sshQuestionText setStringValue:theQuestion];
 	questionTextSize = [[sshQuestionText cell] cellSizeForBounds:NSMakeRect(0, 0, [sshQuestionText bounds].size.width, 500)];
 	windowFrameRect = [sshQuestionDialog frame];
-	windowFrameRect.size.height = ((questionTextSize.height < 100)?100:questionTextSize.height) + 90;
+	windowFrameRect.size.height = ((questionTextSize.height < 100)?100:questionTextSize.height) + 70 + ([sshPasswordDialog isSheet]?0:22);
 	[sshQuestionDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	int sshQueryResponseCode = [NSApp runModalForWindow:sshQuestionDialog];
@@ -421,11 +432,13 @@
 
 		// Yes
 		case 1:
-			return YES;
+			requestedResponse = YES;
+			return;
 
 		// No
 		default:
-			return NO;
+			requestedResponse = NO;
+			return;
 	}
 }
 
@@ -437,15 +450,36 @@
 {
 	if (![theHash isEqualToString:tunnelConnectionVerifyHash]) return nil;
 
+	NSString *thePassword;
+	
+	[self performSelectorOnMainThread:@selector(workerGetPasswordForQuery:) withObject:theQuery waitUntilDone:YES];
+
+	if (!requestedPassphrase) return nil;
+	thePassword = [NSString stringWithString:requestedPassphrase];
+	[requestedPassphrase release], requestedPassphrase = nil;
+	return thePassword;
+}
+- (void) workerGetPasswordForQuery:(NSString *)theQuery
+{
 	NSSize queryTextSize;
 	NSRect windowFrameRect;
 	NSString *thePassword;
+	KeyChain *keychain;
+
+	// Work out whether a passphrase is being requested, extracting the key name
+	NSString *keyName = [theQuery stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
+	if (keyName) {
+		[sshPasswordText setStringValue:[NSString stringWithFormat:@"Enter your password for the SSH key\n\"%@\"", keyName]];
+		[sshPasswordKeychainCheckbox setHidden:NO];
+	} else {
+		[sshPasswordText setStringValue:theQuery];
+		[sshPasswordKeychainCheckbox setHidden:YES];	
+	}
 
 	// Request the password, sizing the window appropriately to fit the query
-	[sshPasswordText setStringValue:theQuery];
 	queryTextSize = [[sshPasswordText cell] cellSizeForBounds:NSMakeRect(0, 0, [sshPasswordText bounds].size.width, 500)];
 	windowFrameRect = [sshPasswordDialog frame];
-	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 143;
+	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	int sshQueryResponseCode = [NSApp runModalForWindow:sshPasswordDialog];
@@ -459,11 +493,19 @@
 			thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
 			[sshPasswordField setStringValue:@""];
 			[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
-			return thePassword;
+			requestedPassphrase = [[NSString alloc] initWithString:thePassword];
+			
+			// Add to keychain if appropriate
+			if (keyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
+				keychain = [[KeyChain alloc] init];
+				[keychain addPassword:thePassword forName:@"SSH" account:keyName withLabel:[NSString stringWithFormat:@"SSH: %@", keyName]];
+				[keychain release];
+			}
+			return;
 
 		// Cancel
 		default:
-			return nil;
+			return;
 	}
 }
  

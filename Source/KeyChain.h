@@ -29,6 +29,7 @@
 @interface KeyChain : NSObject
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account;
+- (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account withLabel:(NSString *)label;
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account;
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account;
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account;
