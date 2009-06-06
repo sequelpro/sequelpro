@@ -27,5 +27,6 @@
 @interface NSArray (SPArrayAdditions)
 
 - (NSString *)componentsJoinedAndBacktickQuoted;
+- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end

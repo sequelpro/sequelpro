@@ -87,6 +87,8 @@
 */
 - (NSString *)draggedRowsAsTabString:(NSArray *)rows;
 
+- (NSString *)selectedRowsAsSqlInserts;
+
 @end
 
 extern int MENU_EDIT_COPY_WITH_COLUMN;

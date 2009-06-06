@@ -23,8 +23,10 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #import "CMCopyTable.h"
+#import "SPArrayAdditions.h"
 
 int MENU_EDIT_COPY_WITH_COLUMN = 2001;
+int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 @implementation CMCopyTable
 
@@ -32,22 +34,30 @@ int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 {
 	NSString *tmp = nil;
 
-	BOOL withHeaders = NO;
-	if([sender tag] == MENU_EDIT_COPY_WITH_COLUMN) {
-		withHeaders = YES;
-	}
-	
-	tmp = [self selectedRowsAsTabStringWithHeaders:withHeaders];		
-	if ( nil != tmp )
-	{
-		NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	if([sender tag] == MENU_EDIT_COPY_AS_SQL) {
+		tmp = [self selectedRowsAsSqlInserts];
+		if ( nil != tmp )
+		{
+			NSPasteboard *pb = [NSPasteboard generalPasteboard];
 		
-		[pb declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
-			NSStringPboardType, nil]
-				   owner:nil];
+			[pb declareTypes:[NSArray arrayWithObjects: NSStringPboardType, nil]
+					   owner:nil];
 		
-		[pb setString:tmp forType:NSStringPboardType];
-		[pb setString:tmp forType:NSTabularTextPboardType];
+			[pb setString:tmp forType:NSStringPboardType];
+		}
+	} else {
+		tmp = [self selectedRowsAsTabStringWithHeaders:([sender tag] == MENU_EDIT_COPY_WITH_COLUMN)];
+		if ( nil != tmp )
+		{
+			NSPasteboard *pb = [NSPasteboard generalPasteboard];
+		
+			[pb declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
+				NSStringPboardType, nil]
+					   owner:nil];
+		
+			[pb setString:tmp forType:NSStringPboardType];
+			[pb setString:tmp forType:NSTabularTextPboardType];
+		}
 	}
 }
 
@@ -60,13 +70,11 @@ int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 //only have the copy menu item enabled when row(s) are selected
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem 
 {	
-	int row = [self selectedRow];
-	if ( [[anItem title] isEqualToString:@"Copy"] || [anItem tag] == MENU_EDIT_COPY_WITH_COLUMN )
+	if ( [[anItem title] isEqualToString:@"Copy"] 
+		|| [anItem tag] == MENU_EDIT_COPY_WITH_COLUMN 
+		|| [anItem tag] == MENU_EDIT_COPY_AS_SQL )
 	{
-		if (row < 0 )
-		{
-			return NO;
-		}
+		return ([self selectedRow] > -1);
 	}
 	return YES;
 }
@@ -130,6 +138,81 @@ int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 		{
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
+		return result;
+	}
+	else
+	{
+		return nil;
+	}
+}
+
+//get selected rows as SQL INSERT INTO foo VALUES format
+//the value in each field is from the objects description method
+- (NSString *)selectedRowsAsSqlInserts
+{
+	if ( [self numberOfSelectedRows] > 0 )
+	{
+		NSArray *columns = [self tableColumns];
+		int numColumns = [columns count];
+		id dataSource = [self dataSource];
+		id enumObj;
+		
+		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
+
+		// Create an array of table column names
+		NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
+		enumerate(columns, enumObj) [tbHeader addObject:[[enumObj headerCell] stringValue]];
+
+		[result appendString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@)\nVALUES\n", 
+			@"<table>", [tbHeader componentsJoinedAndBacktickQuoted]]];
+
+		//this is really deprecated in 10.3, but the new method is really weird
+		// NSEnumerator *enumerator = [self selectedRowEnumerator]; 
+		
+		int c;
+		id rowData = nil;
+		NSTableColumn *col = nil;
+		NSIndexSet *rowIndexes = [self selectedRowIndexes];
+		unsigned row = [rowIndexes firstIndex];
+		// while (row = [enumerator nextObject]) 
+		while ( row != NSNotFound )
+		{ 
+			[result appendString:@"\t("];
+			rowData = nil;
+			for ( c = 0; c < numColumns; c++)
+			{
+				col = [columns objectAtIndex:c];
+				rowData = [dataSource tableView:self 
+					  objectValueForTableColumn:col 
+											row:row ];
+				
+				if ( nil != rowData )
+				{
+					[result appendString:[NSString stringWithFormat:@"'%@',", [[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\'"] ] ];
+				}
+				else
+				{
+					[result appendString:@"'',"];
+				}
+			} //end for each column
+			
+			if ( [result length] )
+			{
+				[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
+			}
+			[result appendString: [ NSString stringWithFormat:@"),\n"]];
+			
+			row = [rowIndexes indexGreaterThanIndex: row];
+			
+		} //end for each row
+		
+		if ( [result length] > 3 )
+		{
+			[result deleteCharactersInRange:NSMakeRange([result length]-2, 2)];
+		}
+		
+		[result appendString:@";\n"];
+		
 		return result;
 	}
 	else

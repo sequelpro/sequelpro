@@ -30,15 +30,6 @@
 
 #define SP_NARROWDOWNLIST_MAX_ROWS 15
 
-#ifndef enumerate
-#define enumerate(container,var) for(NSEnumerator* _enumerator = [container objectEnumerator]; var = [_enumerator nextObject]; )
-#endif
-
-#ifndef sizeofA
-#define sizeofA(a) (sizeof(a)/sizeof(a[0]))
-#endif
-
-
 @interface SPNarrowDownCompletion : NSWindow {
 
 	NSArray* suggestions;
