@@ -154,7 +154,8 @@
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
 
-	[tableContentView setColumnDefinitions:theColumns];
+	// Init copyTable with necessary information for copying selected rows as SQL INSERT
+	[tableContentView setTableInfoWithColumns:theColumns withTable:selectedTable];
 
 	// Retrieve the total number of rows of the current table
 	// to adjustify "Limit From:"

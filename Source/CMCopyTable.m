@@ -189,7 +189,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		}
 		
 		[result appendString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@)\nVALUES\n", 
-			@"<table>", [tbHeader componentsJoinedAndBacktickQuoted]]];
+			(selectedTable == nil)?@"<table>":selectedTable, [tbHeader componentsJoinedAndBacktickQuoted]]];
 
 		int c;
 		id rowData = nil;
@@ -310,9 +310,10 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	}
 }
 
-- (void)setColumnDefinitions:(NSArray *)columnDefs
+- (void)setTableInfoWithColumns:(NSArray *)columnDefs withTable:(NSString *)aTable
 {
 	columnDefinitions = [[NSArray arrayWithArray:columnDefs] retain];
+	selectedTable = aTable;
 }
 
 @end

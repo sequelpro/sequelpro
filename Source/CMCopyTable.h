@@ -36,6 +36,7 @@
 {
 
 	NSArray* columnDefinitions;
+	NSString* selectedTable;
 
 }
 
@@ -91,7 +92,7 @@
 
 - (NSString *)selectedRowsAsSqlInserts;
 
-- (void)setColumnDefinitions:(NSArray *)columnDefs;
+- (void)setTableInfoWithColumns:(NSArray *)columnDefs withTable:(NSString *)aTable;
 
 @end
 

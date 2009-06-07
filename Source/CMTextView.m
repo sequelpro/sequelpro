@@ -2382,7 +2382,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		long stringSize = [self getRangeForCurrentWord].length;
 		return (stringSize || stringSize > 64);
 	}
-	// Enable Copy as RTF if soemthing is selected
+	// Enable Copy as RTF if something is selected
 	if ([menuItem action] == @selector(copyAsRTF)) {
 		return ([self selectedRange].length>0);
 	}
@@ -2390,6 +2390,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if ([menuItem action] == @selector(selectCurrentQuery)) {
 		return ([self isEditable]);
 	}
+	// Disable "Copy with Column Names" and "Copy as SQL INSERT"
+	// in the main menu
+	if ( [menuItem tag] == MENU_EDIT_COPY_WITH_COLUMN
+		|| [menuItem tag] == MENU_EDIT_COPY_AS_SQL ) {
+		return NO;
+	}
+	
 	return YES;
 }
 
