@@ -153,7 +153,9 @@
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
-	
+
+	[tableContentView setColumnDefinitions:theColumns];
+
 	// Retrieve the total number of rows of the current table
 	// to adjustify "Limit From:"
 	maxNumRowsOfCurrentTable = [[[tableDataInstance statusValues] objectForKey:@"Rows"] intValue];

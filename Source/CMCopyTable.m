@@ -71,10 +71,13 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem 
 {	
 	if ( [[anItem title] isEqualToString:@"Copy"] 
-		|| [anItem tag] == MENU_EDIT_COPY_WITH_COLUMN 
-		|| [anItem tag] == MENU_EDIT_COPY_AS_SQL )
+		|| [anItem tag] == MENU_EDIT_COPY_WITH_COLUMN )
 	{
 		return ([self selectedRow] > -1);
+	}
+	if ( [anItem tag] == MENU_EDIT_COPY_AS_SQL )
+	{
+		return (columnDefinitions != NULL && [self selectedRow] > -1);
 	}
 	return YES;
 }
@@ -146,8 +149,10 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	}
 }
 
-//get selected rows as SQL INSERT INTO foo VALUES format
-//the value in each field is from the objects description method
+/* 
+ * Return selected rows as SQL INSERT INTO foo VALUES baz
+ * string.
+ */
 - (NSString *)selectedRowsAsSqlInserts
 {
 	if ( [self numberOfSelectedRows] > 0 )
@@ -156,25 +161,42 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		int numColumns = [columns count];
 		id dataSource = [self dataSource];
 		id enumObj;
-		
+
 		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 
 		// Create an array of table column names
 		NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
 		enumerate(columns, enumObj) [tbHeader addObject:[[enumObj headerCell] stringValue]];
 
+		// Create an hash of header name and typegrouping
+		NSMutableDictionary *headerType = [NSMutableDictionary dictionaryWithCapacity:numColumns];
+		enumerate(columnDefinitions, enumObj)
+			[headerType setObject:[enumObj objectForKey:@"typegrouping"] forKey:[enumObj objectForKey:@"name"]];
+
+		// Create array of types according to the column order
+		NSMutableArray *types = [NSMutableArray arrayWithCapacity:numColumns];
+		enumerate(tbHeader, enumObj)
+		{
+			NSString *t = [headerType objectForKey:enumObj];
+
+			if([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
+				[types addObject:[NSNumber numberWithInt:0]];
+			else if([t isEqualToString:@"blobdata"])
+				[types addObject:[NSNumber numberWithInt:2]];
+			else
+				[types addObject:[NSNumber numberWithInt:1]];
+
+		}
+		
 		[result appendString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@)\nVALUES\n", 
 			@"<table>", [tbHeader componentsJoinedAndBacktickQuoted]]];
 
-		//this is really deprecated in 10.3, but the new method is really weird
-		// NSEnumerator *enumerator = [self selectedRowEnumerator]; 
-		
 		int c;
 		id rowData = nil;
 		NSTableColumn *col = nil;
 		NSIndexSet *rowIndexes = [self selectedRowIndexes];
 		unsigned row = [rowIndexes firstIndex];
-		// while (row = [enumerator nextObject]) 
+
 		while ( row != NSNotFound )
 		{ 
 			[result appendString:@"\t("];
@@ -185,15 +207,23 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				rowData = [dataSource tableView:self 
 					  objectValueForTableColumn:col 
 											row:row ];
-				
-				if ( nil != rowData )
-				{
-					[result appendString:[NSString stringWithFormat:@"'%@',", [[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\'"] ] ];
+
+				if ( nil != rowData ) {
+
+					switch([[types objectAtIndex:c] intValue]) {
+						case 0: // numeric
+						[result appendString:[NSString stringWithFormat:@"%@,", [rowData description]]];
+						break;
+						case 1: // string
+						[result appendString:[NSString stringWithFormat:@"'%@',", [[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\'"] ] ];
+						break;
+						case 2: //blob
+						[result appendString:[NSString stringWithFormat:@"X'%@',", @"<BLOB>"]];
+					}
 				}
 				else
-				{
 					[result appendString:@"'',"];
-				}
+
 			} //end for each column
 			
 			if ( [result length] )
@@ -278,6 +308,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	{
 		return nil;
 	}
+}
+
+- (void)setColumnDefinitions:(NSArray *)columnDefs
+{
+	columnDefinitions = [[NSArray arrayWithArray:columnDefs] retain];
 }
 
 @end

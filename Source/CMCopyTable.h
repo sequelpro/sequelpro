@@ -35,6 +35,8 @@
 @interface CMCopyTable : NSTableView 
 {
 
+	NSArray* columnDefinitions;
+
 }
 
 /*!
@@ -89,6 +91,9 @@
 
 - (NSString *)selectedRowsAsSqlInserts;
 
+- (void)setColumnDefinitions:(NSArray *)columnDefs;
+
 @end
 
 extern int MENU_EDIT_COPY_WITH_COLUMN;
+extern int MENU_EDIT_COPY_AS_SQL;
