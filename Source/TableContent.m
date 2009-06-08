@@ -154,9 +154,6 @@
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
 
-	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInfoWithColumns:theColumns withTable:selectedTable];
-
 	// Retrieve the total number of rows of the current table
 	// to adjustify "Limit From:"
 	maxNumRowsOfCurrentTable = [[[tableDataInstance statusValues] objectForKey:@"Rows"] intValue];
@@ -347,6 +344,9 @@
 	// Reload the table data
 	[tableContentView reloadData];
 	
+	// Init copyTable with necessary information for copying selected rows as SQL INSERT
+	[tableContentView setTableInstance:self withTableData:filteredResult withColumns:theColumns withTableName:selectedTable withConnection:mySQLConnection];
+
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
