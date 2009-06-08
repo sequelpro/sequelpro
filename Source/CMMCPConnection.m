@@ -467,6 +467,36 @@ static void forcePingTimeout(int signalNumber);
 }
 
 /*
+ * Determines whether a supplied error number can be classed as a connection
+ * error.
+ */
++ (BOOL) isErrorNumberConnectionError:(int)theErrorNumber
+{
+
+	switch (theErrorNumber) {
+		case 2001: // CR_SOCKET_CREATE_ERROR
+		case 2002: // CR_CONNECTION_ERROR
+		case 2003: // CR_CONN_HOST_ERROR
+		case 2004: // CR_IPSOCK_ERROR
+		case 2005: // CR_UNKNOWN_HOST
+		case 2006: // CR_SERVER_GONE_ERROR
+		case 2007: // CR_VERSION_ERROR
+		case 2009: // CR_WRONG_HOST_INFO
+		case 2012: // CR_SERVER_HANDSHAKE_ERR
+		case 2013: // CR_SERVER_LOST
+		case 2027: // CR_MALFORMED_PACKET
+		case 2032: // CR_DATA_TRUNCATED
+		case 2047: // CR_CONN_UNKNOW_PROTOCOL
+		case 2048: // CR_INVALID_CONN_HANDLE
+		case 2050: // CR_FETCH_CANCELED
+		case 2055: // CR_SERVER_LOST_EXTENDED
+			return YES;
+	}
+	
+	return NO;
+}
+
+/*
  * Gets a proper NSStringEncoding according to the given MySQL charset.
  *
  * MySQL 4.0 offers this charsets:
@@ -598,41 +628,71 @@ static void forcePingTimeout(int signalNumber);
 
 /*
  * Modified version of queryString to be used in Sequel Pro.
- * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
- * on the status, not returning control until either the query has been executed and the result can
- * be returned or the connection and document have been closed.
+ * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
+ * proceed and loop depending on the status, not returning control until either the query has been executed
+ * and the result can be returned or the connection and document have been closed.
  */
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult	*theResult;
-	const char	*theCQuery;
-	int			theQueryCode;
 	NSDate		*queryStartDate;
+	NSThread	*queryThread;
+	BOOL connectionHasTimedOut = NO, connectionChecked = NO;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
 
 	[self stopKeepAliveTimer];
 
-	// Generate the cString as appropriate
-	theCQuery = [self cStringFromString:query usingEncoding:encoding];
-
-	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
-	// has been requested - in which case return nil
-	if (![self checkConnection]) return nil;
-
 	// Inform the delegate about the query
 	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
 		[delegate willQueryString:query];
 	}
+
+	// Set up the worker thread
+	workerStringEncoding = encoding;
+	workerQueryComplete = NO;
+	queryThread = [[NSThread alloc] initWithTarget:self selector:@selector(workerPerformQuery:) object:query];
 	
-	// Run the query, storing run time (note this will include some network and overhead)
+	// Start the query, monitoring the execution time and ensuring the connection is still
+	// active if it takes longer than three seconds. (Note that this code can be significantly simplified,
+	// removing threading and the extra connection timeout ping check, as soon as we upgrade the MySQL
+	// client libraries so that http://bugs.mysql.com/bug.php?id=9678 is fixed.  This will result in a ~1.5x
+	// speedup for local queries, largely due to reduced CPU usage (?).
 	queryStartDate = [NSDate date];
-	theQueryCode = mysql_query(mConnection, theCQuery);
-	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
-	
+	[queryThread start];
+	while (!workerQueryComplete) {
+		if (!connectionChecked && [[NSDate date] timeIntervalSinceDate:queryStartDate] > 3) {
+			connectionChecked = YES;
+			if (![self pingConnection]) {
+				connectionHasTimedOut = YES;
+				[queryThread cancel];
+				break;
+			}
+		}
+		usleep(20);
+	}
+	[queryThread release];
+
+	// If there was an error, check whether it was a connection-related error
+	if (connectionHasTimedOut || (0 != workerQueryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]])) {
+
+		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
+		// should only return false if a disconnection has been requested - in which case return nil.
+		if (![self checkConnection]) return nil;
+			
+		// The connection has been restored - re-run the query
+		workerQueryComplete = NO;
+		queryThread = [[NSThread alloc] initWithTarget:self selector:@selector(workerPerformQuery:) object:query];
+		[queryThread start];
+		while (!workerQueryComplete) {
+			usleep(20);
+		}
+		[queryThread release];
+	}
+
 	// Retrieve the result or error appropriately.
-	if (0 == theQueryCode) {
+	if (0 == workerQueryResultCode) {
 		if (mysql_field_count(mConnection) != 0) {
 
 			// Use CMMCPResult instead of MCPResult
@@ -654,6 +714,37 @@ static void forcePingTimeout(int signalNumber);
 
 	return [theResult autorelease];
 }
+
+/*
+ * Perform a query in threaded mode.
+ */
+- (void) workerPerformQuery:(NSString *)theQuery
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	const char	*theCQuery;
+	NSDate *queryStartDate;
+	float queryExecutionTime;
+	int theQueryCode;
+
+	theCQuery = [self cStringFromString:theQuery usingEncoding:workerStringEncoding];
+
+	queryStartDate = [NSDate date];
+	theQueryCode = mysql_query(mConnection, theCQuery);
+	queryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+
+	// If the thread has already been cancelled, this is a timed-out result.
+	if ([[NSThread currentThread] isCancelled]) {
+		[pool release];
+		return;
+	}
+	
+	workerQueryResultCode = theQueryCode;
+	lastQueryExecutionTime = queryExecutionTime;
+	workerQueryComplete = YES;
+
+	[pool release];
+}
+
 
 
 /*

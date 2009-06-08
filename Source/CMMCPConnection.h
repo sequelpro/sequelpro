@@ -59,6 +59,10 @@
 	
 	NSString *serverVersionString;
 	
+	NSStringEncoding workerStringEncoding;
+	int workerQueryResultCode;
+	BOOL workerQueryComplete;
+	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
 }
@@ -75,10 +79,12 @@
 - (BOOL) reconnect;
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (IBAction) closeSheet:(id)sender;
++ (BOOL) isErrorNumberConnectionError:(int)theErrorNumber;
 + (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding;
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
 - (CMMCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;
+- (void) workerPerformQuery:(NSString *)theQuery;
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
