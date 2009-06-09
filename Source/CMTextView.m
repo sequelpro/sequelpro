@@ -2449,7 +2449,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	//make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
-	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"])
+	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
+	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"] && [textStore editedMask] != 1)
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
 
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
