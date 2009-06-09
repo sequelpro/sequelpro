@@ -68,8 +68,6 @@
 		17CF7A0E0FDEF84A00A5C558 /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A0C0FDEF84A00A5C558 /* SPNarrowDownCompletion.m */; };
 		17CF7A130FDEF86600A5C558 /* SPDatabaseData.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A100FDEF86600A5C558 /* SPDatabaseData.m */; };
 		17CF7A140FDEF86600A5C558 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A120FDEF86600A5C558 /* SPPrintAccessory.m */; };
-		17CF7A360FDEF8D400A5C558 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A330FDEF8D400A5C558 /* mcpKitTest.m */; };
-		17CF7A370FDEF8D400A5C558 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A350FDEF8D400A5C558 /* stringCategoryAdditionsTest.m */; };
 		17CF7A470FDEF92600A5C558 /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 171621EC0F865296000E3AF5 /* MCPKit.framework */; };
 		17CF7A4A0FDEF93400A5C558 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A330FDEF8D400A5C558 /* mcpKitTest.m */; };
 		17CF7A4B0FDEF93400A5C558 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A350FDEF8D400A5C558 /* stringCategoryAdditionsTest.m */; };
@@ -215,6 +213,13 @@
 			remoteGlobalIDString = 8D15AC270486D014006FF6A4;
 			remoteInfo = "Sequel Pro";
 		};
+		17CF7ADC0FDF00A100A5C558 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17CF7A570FDEF98800A5C558 /* TunnelPassphraseRequester */;
+			remoteInfo = TunnelPassphraseRequester;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -334,7 +339,6 @@
 		17CF7A340FDEF8D400A5C558 /* stringCategoryAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stringCategoryAdditionsTest.h; sourceTree = "<group>"; };
 		17CF7A350FDEF8D400A5C558 /* stringCategoryAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = stringCategoryAdditionsTest.m; sourceTree = "<group>"; };
 		17CF7A3F0FDEF90500A5C558 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		17CF7A400FDEF90500A5C558 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17CF7A580FDEF98800A5C558 /* TunnelPassphraseRequester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TunnelPassphraseRequester; sourceTree = BUILT_PRODUCTS_DIR; };
 		17CF7A5F0FDEF9FC00A5C558 /* libicucore.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.A.dylib; path = /usr/lib/libicucore.A.dylib; sourceTree = "<absolute>"; };
 		17CF7A720FDEFA8300A5C558 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
@@ -1037,7 +1041,6 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
-				17CF7A400FDEF90500A5C558 /* Unit Tests-Info.plist */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
@@ -1185,6 +1188,7 @@
 			);
 			dependencies = (
 				171621F30F8652B3000E3AF5 /* PBXTargetDependency */,
+				17CF7ADD0FDF00A100A5C558 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -1429,8 +1433,6 @@
 				17CF7A0E0FDEF84A00A5C558 /* SPNarrowDownCompletion.m in Sources */,
 				17CF7A130FDEF86600A5C558 /* SPDatabaseData.m in Sources */,
 				17CF7A140FDEF86600A5C558 /* SPPrintAccessory.m in Sources */,
-				17CF7A360FDEF8D400A5C558 /* mcpKitTest.m in Sources */,
-				17CF7A370FDEF8D400A5C558 /* stringCategoryAdditionsTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1446,6 +1448,11 @@
 			isa = PBXTargetDependency;
 			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
 			targetProxy = 17CF7A450FDEF92100A5C558 /* PBXContainerItemProxy */;
+		};
+		17CF7ADD0FDF00A100A5C558 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17CF7A570FDEF98800A5C558 /* TunnelPassphraseRequester */;
+			targetProxy = 17CF7ADC0FDF00A100A5C558 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1636,6 +1643,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1655,6 +1663,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Unit Tests";
+				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
