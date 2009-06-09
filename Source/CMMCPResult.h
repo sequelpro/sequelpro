@@ -26,10 +26,29 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
-#define FIELD_TYPE_BIT 16
+#define FIELD_TYPE_BIT          16
+#define MAGIC_BINARY_CHARSET_NR 63
 
 @interface CMMCPResult : MCPResult
 
+typedef struct st_our_charset
+{
+	unsigned int	nr;
+	const char		*name;
+	const char		*collation;
+	unsigned int	char_minlen;
+	unsigned int	char_maxlen;
+} OUR_CHARSET;
+
+
 - (id)fetchRowAsType:(MCPReturnType)aType;
+- (NSArray *)fetchResultFieldsStructure;
+
+
+- (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length;
+- (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags;
+- (NSString *)find_charsetName:(unsigned int)charsetnr;
+- (NSString *)find_charsetCollation:(unsigned int)charsetnr;
+- (unsigned int)find_charsetMaxByteLengthPerChar:(unsigned int)charsetnr;
 
 @end
