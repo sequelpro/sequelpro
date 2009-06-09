@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TableDocument.h
 //  sequel-pro
 //
@@ -26,6 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
+#import "SPSSHTunnel.h"
 
 @class CMMCPConnection, CMMCPResult;
 
@@ -43,7 +46,8 @@
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id tableStatusInstance;
+	IBOutlet id extendedTableInfoInstance;
+	IBOutlet id databaseDataInstance;
 	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
@@ -62,8 +66,13 @@
 	IBOutlet id passwordField;
 	IBOutlet id portField;
 	IBOutlet id databaseField;
+	IBOutlet id sshCheckbox;
+	IBOutlet id sshHostField;
+	IBOutlet id sshUserField;
+	IBOutlet id sshPasswordField;
+	IBOutlet id sshPortField;
 
-	IBOutlet id connectProgressBar;
+	IBOutlet NSProgressIndicator *connectProgressBar;
 	IBOutlet NSTextField *connectProgressStatusText;
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
@@ -83,11 +92,17 @@
 	IBOutlet NSWindow *createTableSyntaxWindow;
 
 	CMMCPConnection *mySQLConnection;
+	SPSSHTunnel *sshTunnel;
 
 	NSArray *variables;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
+
+	NSString *connectionKeychainItemName;
+	NSString *connectionKeychainItemAccount;
+	NSString *connectionSSHKeychainItemName;
+	NSString *connectionSSHKeychainItemAccount;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
@@ -104,13 +119,17 @@
 //start sheet
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (IBAction)connectToDB:(id)sender;
-- (IBAction)connect:(id)sender;
+- (IBAction)initiateConnection:(id)sender;
+- (void)initiateSSHTunnelConnection;
+- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
+- (void)initiateMySQLConnection;
+- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
+- (IBAction)toggleUseSSH:(id)sender;
 - (IBAction)editFavorites:(id)sender;
 - (id)selectedFavorite;
-- (NSString *)selectedFavoritePassword;
 - (void)connectSheetAddToFavorites:(id)sender;
 - (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
 					  user:(NSString *)user password:(NSString *)password
@@ -120,6 +139,7 @@
 				   sshUser:(NSString *)sshUser // no-longer in use
 			   sshPassword:(NSString *)sshPassword // no-longer in use
 				   sshPort:(NSString *)sshPort; // no-longer in use
+- (IBAction)connectSheetShowHelp:(id)sender;
 
 - (NSString *)getHTMLforPrint;
 
@@ -163,6 +183,8 @@
 - (void)flushPrivileges:(id)sender;
 - (void)showVariables:(id)sender;
 - (void)closeConnection;
+- (NSWindow *)getCreateTableSyntaxWindow;
+- (void) refreshCurrentDatabase;
 
 //getter methods
 - (NSString *)name;

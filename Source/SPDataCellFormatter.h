@@ -1,5 +1,7 @@
 //
-//  SPDataCell.h
+//  $Id$
+//
+//  SPDataCellFormatter.h
 //  sequel-pro
 //
 //  Created by Rowan Beentje on 11/02/2009.
@@ -22,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-
 
 @interface SPDataCellFormatter : NSFormatter {
 	int textLimit;

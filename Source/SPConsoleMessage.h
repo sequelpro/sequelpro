@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPConsoleMessage.h
 //  sequel-pro
 //

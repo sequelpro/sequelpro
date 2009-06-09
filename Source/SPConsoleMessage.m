@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPConsoleMessage.m
 //  sequel-pro
 //

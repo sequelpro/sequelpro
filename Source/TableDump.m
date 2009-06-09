@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TableDump.m
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "TableDump.h"
 #import "TableDocument.h"
@@ -192,6 +193,15 @@
 			[savePanel setAccessoryView:exportMultipleXMLView];
 			contextInfo = @"exportMultipleTablesAsXML";
 			break;
+			
+			// graphviz dot file
+		case 14:
+			[self reloadTables:self];
+			file = [NSString stringWithString:[tableDocumentInstance database]];
+			[savePanel setRequiredFileType:@"dot"];
+			contextInfo = @"exportDot";
+			break;
+			
 		default:
 			ALog(@"ERROR: unknown export item with tag %d", tag);
 			return;
@@ -310,6 +320,10 @@
 	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsXML"] ) {
 		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"xml"];
 		
+		// Export the tables selected in the MySQL export sheet to a file
+	} else if ( [contextInfo isEqualToString:@"exportDot"] ) {
+			success = [self dumpSchemaAsDotToFileHandle:fileHandle];
+			
 		// Unknown operation
 	} else {
 		ALog(@"Unknown export operation: %@", [contextInfo description]);
@@ -383,7 +397,7 @@
 - (void)importBackgroundProcess:(NSString*)filename
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	SPSQLParser *dumpFile;
+	SPSQLParser *dumpFile = nil;
 	NSError *errorStr = nil;
 	NSMutableString *errors = [NSMutableString string];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
@@ -452,32 +466,49 @@
 		[singleProgressBar startAnimation:self];
 		
 		//get array with an object for each mysql-query
-		queries = [dumpFile splitStringByCharacter:';'];
-		
+		queries = [dumpFile splitSqlStringByCharacter:';'];
+
+		unsigned long queryCount = [queries count];
+
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
-		
-		//perform all mysql-queries
-		for ( i = 0 ; i < [queries count] ; i++ ) {
-			[singleProgressBar setDoubleValue:((i+1)*100/[queries count])];
-			[singleProgressBar displayIfNeeded];
-			
-			// Skip blank or whitespace-only queries to avoid errors
-			if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
-				continue;
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Executing %d statements...", @"text showing that app is executing x statements"), queryCount]];
 
-			if (importSQLAsUTF8) {
-				[mySQLConnection queryString:[queries objectAtIndex:i] usingEncoding:NSUTF8StringEncoding];			
-			} else {
-				[mySQLConnection queryString:[queries objectAtIndex:i]];
-			}
+		NSCharacterSet *whitespaceAndNewline = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
+		//perform all mysql-queries
+		if (importSQLAsUTF8)
+			for ( i = 0 ; i < queryCount ; i++ ) {
+				[singleProgressBar setDoubleValue:(i*100/queryCount)];
+				// [singleProgressBar displayIfNeeded];
 			
-			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
+				// Skip blank or whitespace-only queries to avoid errors
+				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				if (![q length]) continue;
+
+				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding];
+
+				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
+				}
 			}
-		}
+		else
+			for ( i = 0 ; i < queryCount ; i++ ) {
+				[singleProgressBar setDoubleValue:(i*100/queryCount)];
+				// [singleProgressBar displayIfNeeded];
 		
+				// Skip blank or whitespace-only queries to avoid errors
+				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				if (![q length]) continue;
+					
+				[mySQLConnection queryString:q];
+
+				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
+				}
+			}
+
 		//close progress sheet
 		[NSApp endSheet:singleProgressSheet];
 		[singleProgressSheet orderOut:nil];
@@ -490,24 +521,25 @@
 				modalDelegate:self
 			   didEndSelector:nil
 				  contextInfo:nil];
-			
+
 			[NSApp runModalForWindow:errorsSheet];
-			
+
 			[NSApp endSheet:errorsSheet];
 			[errorsSheet orderOut:nil];
 		}
-		
-		//update tables list
+
+		//update available databases
+		[tableDocumentInstance setDatabases:self];
+		//update current selected database
+		[tableDocumentInstance refreshCurrentDatabase];
+		//udpate current database tables 
 		[tablesListInstance updateTables:self];
-		
-		////////////////
-		// IMPORT CSV //
-		////////////////
-		
+
+	////////////////
+	// IMPORT CSV //
+	////////////////
 	} else if ( [fileType isEqualToString:@"CSV"] ) {
 		int code;
-		NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
-		
 		//open progress sheet
 		[NSApp beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow
@@ -584,12 +616,14 @@
 			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
 			
 			//set up tableView buttons
+			NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
 			[buttonCell setControlSize:NSSmallControlSize];
 			[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 			[buttonCell setBordered:NO];
 			[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
 			[self updateFieldMappingButtonCell];
 			[fieldMappingTableView reloadData];
+			[buttonCell release];
 			
 			// show fieldMapping sheet
 			[NSApp beginSheet:fieldMappingSheet
@@ -787,7 +821,9 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, colCount, progressBarWidth, lastProgressValue, queryLength, tableType;
+	int i,j,t,rowCount, colCount, lastProgressValue, queryLength;
+	// int progressBarWidth;
+	int tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
 	CMMCPResult *queryResult;
 	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
 	NSArray *fieldNames;
@@ -808,7 +844,7 @@
 	[errorsView displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	[singleProgressText displayIfNeeded];
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 	
@@ -1087,6 +1123,133 @@
 	
 	return TRUE;
 }
+
+/*
+ Dump the selected tables to a file handle in Graphviz dot format.
+ */
+- (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle
+{
+	NSMutableString *metaString = [NSMutableString string];
+	int  progressBarWidth;
+	NSString *previousConnectionEncoding;
+	BOOL previousConnectionEncodingViaLatin1;
+	
+	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
+	[singleProgressText displayIfNeeded];
+	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	[singleProgressBar setDoubleValue:0];
+	[singleProgressBar displayIfNeeded];
+	
+	// Open the progress sheet
+	[NSApp beginSheet:singleProgressSheet
+	   modalForWindow:tableWindow modalDelegate:self
+	   didEndSelector:nil contextInfo:nil];
+		
+	[metaString setString:@"// Generated by: Sequel Pro\n"];
+	[metaString appendString:[NSString stringWithFormat:@"// Version %@\n",
+							  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+	[metaString appendString:@"// http://code.google.com/p/sequel-pro\n//\n"];
+	[metaString appendString:[NSString stringWithFormat:@"// Host: %@ (MySQL %@)\n",
+							  [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
+	[metaString appendString:[NSString stringWithFormat:@"// Database: %@\n", [tableDocumentInstance database]]];
+	[metaString appendString:[NSString stringWithFormat:@"// Generation Time: %@\n", [NSDate date]]];
+	[metaString appendString:@"// ************************************************************\n\n"];
+	
+	[metaString appendString:@"digraph \"Database Structure\" {\n"];
+	[metaString appendString:[NSString stringWithFormat:@"\tlabel = \"ER Diagram: %@\";\n", [tableDocumentInstance database]]];
+	[metaString appendString:@"\tlabelloc = t;\n"];
+	[metaString appendString:@"\tcompound = true;\n"];
+	[metaString appendString:@"\tnode [ shape = record ];\n"];
+	[metaString appendString:@"\tfontname = \"Helvetica\";\n"];
+	[metaString appendString:@"\tranksep = 1.25;\n"];
+	[metaString appendString:@"\tratio = 0.7;\n"];
+	[metaString appendString:@"\trankdir = LR;\n"];
+
+	// Write information to the file
+	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	// store connection encoding
+	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	
+	
+	// tables here
+	for ( int i = 0 ; i < [tables count] ; i++ ) {
+
+		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
+		
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [tables count], tableName]];
+		[singleProgressText displayIfNeeded];
+		[singleProgressBar setIndeterminate:YES];
+		[singleProgressBar setUsesThreadedAnimation:YES];
+		[singleProgressBar startAnimation:self];
+		
+		
+		[metaString setString:[NSString stringWithFormat:@"\tsubgraph \"table_%@\" {\n", tableName]];
+		[metaString appendString:@"\t\tnode = [ shape = \"plaintext\" ];\n"];
+		[metaString appendString:[NSString stringWithFormat:@"\t\t\"%@\" [ label=<\n", tableName]];
+		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
+		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"#DDDDDD\">%@</TD></TR>\n", tableName]];
+		
+		// grab column info
+		CMMCPResult *theResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [tableName backtickQuotedString]]] retain];		
+		
+		if ([theResult numOfRows]) 
+			[theResult dataSeek:0];
+		for ( int j = 0 ; j < [theResult numOfRows] ; j++ ) {
+			NSMutableDictionary *tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
+			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Type"]]];
+		}
+		
+		[theResult release];
+		
+		[metaString appendString:@"\t\t\t</TABLE>>\n"];
+		[metaString appendString:@"\t\t];\n"];
+		[metaString appendString:@"\t}\n"];
+		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	}
+
+	[singleProgressText setStringValue:NSLocalizedString(@"Fetching relations...", @"text showing that app is fetching data")];
+	[singleProgressText displayIfNeeded];
+	[singleProgressBar setIndeterminate:YES];
+	[singleProgressBar setUsesThreadedAnimation:YES];
+	[singleProgressBar startAnimation:self];
+	
+	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
+	
+	// grab the relations
+	CMMCPResult *theResult = [[mySQLConnection queryString:
+							   [NSString stringWithFormat:@"SELECT CONCAT( table_name, ':' , column_name, ' -> ', referenced_table_name, ':', referenced_column_name ) AS list_of_fks FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = ('%@') AND REFERENCED_TABLE_NAME is not null ORDER BY TABLE_NAME, COLUMN_NAME", 
+								[tableDocumentInstance database]]] retain];		
+
+	if ([theResult numOfRows]) 
+		[theResult dataSeek:0];
+	for ( int i = 0 ; i < [theResult numOfRows] ; i++ ) {
+		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [[theResult fetchRowAsDictionary] objectForKey:@"list_of_fks"]]];
+	}
+	
+	[theResult release];
+	
+	// done
+	[metaString appendString:@"}\n"];
+	
+	// Write information to the file
+	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+
+	// Restore the connection character set to pre-export details
+	[tableDocumentInstance
+	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
+	 reloadingViews:NO];
+	
+	
+	// Close the progress sheet
+	[NSApp endSheet:singleProgressSheet];
+	[singleProgressSheet orderOut:nil];
+	
+	
+	return TRUE;
+}
+
 
 /*
  Takes an array and writes it in CSV format to the supplied NSFileHandle
@@ -1456,12 +1619,13 @@
 	NSMutableString *xmlString = [NSMutableString string];
 	NSMutableString *xmlItem = [NSMutableString string];
 	NSString *dataConversionString;
-	int i,j, startingRow, totalRows, progressBarWidth, lastProgressValue;
+	int i,j, startingRow, totalRows, lastProgressValue;
+	// int progressBarWidth;
 	
 	if (queryResult != nil && [queryResult numOfRows]) [queryResult dataSeek:0];
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
@@ -1898,6 +2062,7 @@
 	[[exportDumpTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleCSVTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleXMLTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
+	[switchButton release];
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];

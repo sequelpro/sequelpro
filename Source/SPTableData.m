@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPTableData.m
 //  sequel-pro
 //
@@ -41,7 +43,9 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		
 		tableEncoding = nil;
+		tableCreateSyntax = nil;
 		mySQLConnection = nil;
 	}
 
@@ -72,6 +76,23 @@
 		}
 	}
 	return [NSString stringWithString:tableEncoding];
+}
+
+/*
+ * Retrieve the create syntax for the current table, using or refreshing the cache as appropriate.
+ */
+- (NSString *) tableCreateSyntax
+{
+	if (tableCreateSyntax == nil) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} 
+		else {
+			[self updateInformationForCurrentTable];
+		}
+	}
+	
+	return [NSString stringWithString:tableCreateSyntax];
 }
 
 
@@ -187,9 +208,15 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[status removeAllObjects];
+	
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 		tableEncoding = nil;
+	}
+	
+	if (tableCreateSyntax != nil) {
+		[tableCreateSyntax release];
+		tableCreateSyntax = nil;
 	}
 }
 
@@ -270,6 +297,8 @@
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
 	
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
+	
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
@@ -288,9 +317,12 @@
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	
 	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
+		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
 		createTableParser = [[SPSQLParser alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]]; 
 	} else {
+		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
 		createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
 	}
 
@@ -413,11 +445,9 @@
 						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
-							nextOffs = 13;
 						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"update"];
-							nextOffs = 13;
 						} else {
 							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
 												  forKey:@"update"];							
@@ -428,11 +458,9 @@
 						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
-							nextOffs = 13;
 						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"delete"];
-							nextOffs = 13;
 						} else {
 							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
 												  forKey:@"delete"];							
@@ -440,6 +468,7 @@
 					}
 				}
 				[constraints addObject:constraintDetails];
+				[constraintDetails release];
 			}
 			// primary key
 			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {
@@ -455,7 +484,7 @@
 			}
 			// who knows
 			else {
-				NSLog( @"not parsed: %@", [parts objectAtIndex:0] );
+				// NSLog( @"not parsed: %@", [parts objectAtIndex:0] );
 			}
 		}
 	}
@@ -553,8 +582,31 @@
 	// Catch unselected views and return nil
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
+	// Retrieve the CREATE TABLE syntax for the table
+	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+																					   [viewName backtickQuotedString]
+																					]];
+
+	// Check for any errors, but only display them if a connection still exists
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
+		return nil;
+	}
+
+	// Retrieve the table syntax string
+	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	
+	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
+		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
+	} else {
+		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	}
+
+
 	// Retrieve the SHOW COLUMNS syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -835,7 +887,9 @@
 	[columnNames release];
 	[constraints release];
 	[status release];
+	
 	if (tableEncoding != nil) [tableEncoding release];
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 
 	[super dealloc];
 }

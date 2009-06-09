@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TableDocumentSplitView.m
 //  sequel-pro
 //
@@ -19,7 +21,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  
 
 #import "TableDocumentSplitView.h"
 
@@ -27,13 +28,13 @@
 
 - (float)dividerThickness
 {
-  return 1;
+	return 1;
 }
 
 - (void)drawDividerInRect:(NSRect)rect
 {
-  [[NSColor controlShadowColor] set];
-  NSRectFill(rect);
+	[[NSColor controlShadowColor] set];
+	NSRectFill(rect);
 }
 
 @end

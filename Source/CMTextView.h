@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  CMTextView.h
 //  sequel-pro
 //
@@ -19,7 +21,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
 #import "NoodleLineNumberView.h"
@@ -46,17 +47,22 @@
 	
 	NSUserDefaults *prefs;
 
+	CMMCPConnection *mySQLConnection;
+	int mySQLmajorVersion;
+
 }
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
 - (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue;
 - (BOOL) areAdjacentCharsLinked;
+- (BOOL) isCaretAdjacentToAlphanumCharWithInsertionOf:(unichar)aChar;
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
 - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
 - (NSArray *) keywords;
+- (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
 - (BOOL) autoindent;
 - (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
@@ -72,6 +78,12 @@
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
 - (void) insertFileContentOfFile:(NSString *)aPath;
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (unsigned int) characterIndexOfPoint:(NSPoint)aPoint;
+- (void) makeTextSizeLarger;
+- (void) makeTextSizeSmaller;
+- (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion;
+- (void) doCompletion;
+- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
+- (void) selectCurrentQuery;
 
 @end

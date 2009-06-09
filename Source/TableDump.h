@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TableDump.h
 //  sequel-pro
 //
@@ -130,6 +132,7 @@
 
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
+- (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle;
 - (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
 	toFileHandle:(NSFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated

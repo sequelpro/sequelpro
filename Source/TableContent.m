@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TableDocument.h
 //  sequel-pro
 //
@@ -38,21 +40,35 @@
 
 @implementation TableContent
 
+/**
+ * Standard init method. Initialize various ivars.
+ */
 - (id)init
 {
-	if (![super init])
-		return nil;
-	
-	fullResult = [[NSMutableArray alloc] init];
-	filteredResult = [[NSMutableArray alloc] init];
-	oldRow = [[NSMutableDictionary alloc] init];
-	selectedTable = nil;
-	sortField = nil;
-	areShowingAllRows = false;
-	currentlyEditingRow = -1;
-	usedQuery = [[NSString stringWithString:@""] retain];
+	if ((self == [super init])) {
 		
+		fullResult     = [[NSMutableArray alloc] init];
+		filteredResult = [[NSMutableArray alloc] init];
+		oldRow         = [[NSMutableDictionary alloc] init];
+		
+		selectedTable = nil;
+		sortField     = nil;
+		
+		areShowingAllRows = false;
+		currentlyEditingRow = -1;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+		
+		usedQuery = [[NSString stringWithString:@""] retain];
+	}
+	
 	return self;
+}
+
+- (void)awakeFromNib
+{
+	// Set the table content view's vertical gridlines if required
+	[tableContentView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 /*
@@ -137,7 +153,7 @@
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
 	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
-	
+
 	// Retrieve the total number of rows of the current table
 	// to adjustify "Limit From:"
 	maxNumRowsOfCurrentTable = [[[tableDataInstance statusValues] objectForKey:@"Rows"] intValue];
@@ -328,6 +344,9 @@
 	// Reload the table data
 	[tableContentView reloadData];
 	
+	// Init copyTable with necessary information for copying selected rows as SQL INSERT
+	[tableContentView setTableInstance:self withTableData:filteredResult withColumns:theColumns withTableName:selectedTable withConnection:mySQLConnection];
+
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
@@ -527,11 +546,16 @@
 						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
 						break;
 					case 7:
+						compareOperator = @"LIKE";
+						doQuote = YES;
+						ignoreArgument = YES;
+						break;
+					case 8:
 						compareOperator = @"IS NULL";
 						doQuote = NO;
 						ignoreArgument = YES;
 						break;
-					case 8:
+					case 9:
 						compareOperator = @"IS NOT NULL";
 						doQuote = NO;
 						ignoreArgument = YES;
@@ -717,7 +741,7 @@
 {
 	NSMutableDictionary *tempRow;
 	CMMCPResult *queryResult;
-	NSDictionary *row, *dbDataRow;
+	NSDictionary *row, *dbDataRow = nil;
 	int i;
 	
 	// Check whether a save of the current row is required.
@@ -744,7 +768,6 @@
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
 		dbDataRow = [queryResult fetchRowAsDictionary];
 	}
-	
 	
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
@@ -1082,7 +1105,6 @@
 	
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
 	
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[argumentField setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		[limitRowsField setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
@@ -1109,7 +1131,7 @@
 - (IBAction)setCompareTypes:(id)sender
 {
 	NSArray *stringTypes  = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
-	NSArray *numberTypes  = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", nil];
+	NSArray *numberTypes  = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", @"LIKE", nil];
 	NSArray *dateTypes    = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"is after", @"popup menuitem for field AFTER DATE value"), NSLocalizedString(@"is before", @"popup menuitem for field BEFORE DATE value"), NSLocalizedString(@"is after or equal to", @"popup menuitem for field AFTER OR EQUAL TO value"), NSLocalizedString(@"is before or equal to", @"popup menuitem for field BEFORE OR EQUAL TO value"), nil];
 	NSString *fieldTypeGrouping   = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
 	
@@ -2189,12 +2211,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	}
 }
 
+// TextView delegate methods
 
-//textView delegate methods
-- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
-/*
- traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return
+/**
+ * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
  */
+- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
 	if ( aTextView == editTextView ) {
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
@@ -2209,9 +2231,17 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return NO;
 }
 
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+        [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+}
 
-//last but not least
-
+// Last but not least
 - (void)dealloc
 {	
 	[editData release];
@@ -2221,7 +2251,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[oldRow release];
 	[compareType release];
 	if (sortField) [sortField release];
-	[prefs release];
 	[usedQuery release];
 	
 	[super dealloc];

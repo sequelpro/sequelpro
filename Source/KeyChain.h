@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  KeyChain.h
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
@@ -28,8 +29,13 @@
 @interface KeyChain : NSObject
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account;
+- (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account withLabel:(NSString *)label;
 - (NSString *)getPasswordForName:(NSString *)name account:(NSString *)account;
 - (void)deletePasswordForName:(NSString *)name account:(NSString *)account;
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account;
+- (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID;
+- (NSString *)accountForUser:(NSString *)theUser host:(NSString *)theHost database:(NSString *)theDatabase;
+- (NSString *)nameForSSHForFavoriteName:(NSString *)theName id:(NSString *)theID;
+- (NSString *)accountForSSHUser:(NSString *)theSSHUser sshHost:(NSString *)theSSHHost;
 
 @end

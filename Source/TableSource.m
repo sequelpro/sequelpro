@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TableSource.m
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "TableSource.h"
 #import "TablesList.h"
@@ -235,16 +236,19 @@ reloads the table (performing a new mysql-query)
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	[tableFields addObject:[NSMutableDictionary
-							dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
-										  forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]];
+	int insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
+	
+	[tableFields insertObject:[NSMutableDictionary 
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+							   forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]
+					  atIndex:insertIndex];
 
 	[tableSourceView reloadData];
-	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
+	[tableSourceView selectRow:insertIndex byExtendingSelection:NO];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableSourceView selectedRow];
-	[tableSourceView editColumn:0 row:[tableSourceView numberOfRows]-1 withEvent:nil select:YES];
+	[tableSourceView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
 
 /**
@@ -409,8 +413,9 @@ reloads the table (performing a new mysql-query)
 			[tableDataInstance resetColumnData];
 		} else {
 			[sender selectItemWithTitle:tableType];
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't change table type.\nMySQL said: %@", @"message of panel when table type cannot be removed"), [mySQLConnection getLastErrorMessage]]);
+			NSBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"), 
+							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table to '%@' from '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), selectedItem, tableType, [mySQLConnection getLastErrorMessage]]);
 		}
 	}
 }
@@ -506,8 +511,6 @@ sets the connection (received from TableDocument) and makes things that have to 
 	id fieldColumn;
 
 	mySQLConnection = theConnection;
-
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
 	//set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
@@ -712,12 +715,16 @@ fetches the result as an array with a dictionary for each row in it
 		if ( code ) {
 			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
 				[queryString appendString:@" PRIMARY KEY"];
+				//[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 			} else {
+				[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
+	} else if(isEditingNewRow){ // Add AFTER ... only if the user added a new field
+		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 	}
-		
+
 	[mySQLConnection queryString:queryString];
 
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -815,6 +822,16 @@ fetches the result as an array with a dictionary for each row in it
 	}
 }
 
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+        [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+		[indexView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+}
 
 #pragma mark Getter methods
 
@@ -1193,19 +1210,28 @@ traps enter and esc and make/cancel editing without entering next row
 	return [structureGrabber convertRect:[structureGrabber bounds] toView:splitView];
 }
 
-//last but not least
+// Last but not least
 - (id)init
 {
-	self = [super init];
-
-	tableFields = [[NSMutableArray alloc] init];
-	indexes = [[NSMutableArray alloc] init];
-	oldRow = [[NSMutableDictionary alloc] init];
-	enumFields = [[NSMutableDictionary alloc] init];
-
-	currentlyEditingRow = -1;
+	if ((self = [super init])) {
+		tableFields = [[NSMutableArray alloc] init];
+		indexes     = [[NSMutableArray alloc] init];
+		oldRow      = [[NSMutableDictionary alloc] init];
+		enumFields  = [[NSMutableDictionary alloc] init];
+		
+		currentlyEditingRow = -1;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+	}
 
 	return self;
+}
+
+- (void)awakeFromNib
+{
+	// Set the structure and index view's vertical gridlines if required
+	[tableSourceView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[indexView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 - (void)dealloc
@@ -1214,7 +1240,6 @@ traps enter and esc and make/cancel editing without entering next row
 	[indexes release];
 	[oldRow release];
 	[defaultValues release];
-	[prefs release];
 	[enumFields release];
 	
 	[super dealloc];

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  CMImageView.m
 //  sequel-pro
 //
@@ -20,13 +22,10 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "CMImageView.h"
 
-
 @implementation CMImageView
-
 
 /*
  * On a drag and drop, read in dragged files and convert dragged images before passing

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPSQLTokenizer.h
 //  sequel-pro
 //
@@ -24,4 +26,5 @@
 #define SP_SQL_TOKEN_DELIM_END            2
 #define SP_SQL_TOKEN_SEMICOLON            3
 #define SP_SQL_TOKEN_COMPOUND_END         4
-#define SP_SQL_TOKEN_IGNORE               5
+#define SP_SQL_TOKEN_SINGLE_LINE_COMMENT  5
+#define SP_SQL_TOKEN_IGNORE               6

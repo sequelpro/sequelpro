@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPQueryConsole.h
 //  sequel-pro
 //

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  KeyChain.m
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "KeyChain.h"
 #include <CoreFoundation/CoreFoundation.h>
@@ -33,21 +34,63 @@
  */
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account
 {
+	[self addPassword:password forName:name account:account withLabel:name];
+}
+
+/**
+ * Add the supplied password to the user's Keychain using the supplied name, account, and label.
+ */
+- (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account withLabel:(NSString *)label;
+{
 	OSStatus status;
+	SecTrustedApplicationRef sequelProRef, sequelProHelperRef;
+	SecAccessRef passwordAccessRef;
+	SecKeychainAttribute attributes[4];
+	SecKeychainAttributeList attList;
 	
 	// Check if password already exists before adding
 	if (![self passwordExistsForName:name account:account]) {
-		status = SecKeychainAddGenericPassword(
-											   NULL,						// default keychain
-											   strlen([name UTF8String]),		// length of service name
-											   [name UTF8String],				// service name
-											   strlen([account UTF8String]),		// length of account name
-											   [account UTF8String],			// account name
-											   strlen([password UTF8String]),	// length of password
-											   [password UTF8String],			// pointer to password data
-											   NULL							// the item reference
-											   );
+
+		// Create a trusted access list with two items - ourselves and the SSH pass app.
+		NSString *helperPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"TunnelPassphraseRequester"];
+		if ((SecTrustedApplicationCreateFromPath(NULL, &sequelProRef) == noErr) &&
+			(SecTrustedApplicationCreateFromPath([helperPath UTF8String], &sequelProHelperRef) == noErr)) {
+
+			NSArray *trustedApps = [NSArray arrayWithObjects:(id)sequelProRef, (id)sequelProHelperRef, nil];
+			status = SecAccessCreate((CFStringRef)name, (CFArrayRef)trustedApps, &passwordAccessRef);
+			if (status != noErr) {
+				NSLog(@"Error (%i) while trying to create access list for name: %@ account: %@", status, name, account);
+				passwordAccessRef = NULL;
+			}
+		}
 		
+		// Set up the item attributes
+		attributes[0].tag = kSecGenericItemAttr;
+		attributes[0].data = "application password";
+		attributes[0].length = 20;
+		attributes[1].tag = kSecLabelItemAttr;
+		attributes[1].data = (unichar *)[label UTF8String];
+		attributes[1].length = strlen([label UTF8String]);
+		attributes[2].tag = kSecAccountItemAttr;
+		attributes[2].data = (unichar *)[account UTF8String];
+		attributes[2].length = strlen([account UTF8String]);
+		attributes[3].tag = kSecServiceItemAttr;
+		attributes[3].data = (unichar *)[name UTF8String];
+		attributes[3].length = strlen([name UTF8String]);
+		attList.count = 4;
+		attList.attr = attributes;
+
+		// Create the keychain item
+		status = SecKeychainItemCreateFromContent(
+			kSecGenericPasswordItemClass,			// Generic password type
+			&attList,								// The attribute list created for the keychain item
+			strlen([password UTF8String]),			// Length of password
+			[password UTF8String],					// Password data
+			NULL,									// Default keychain
+			passwordAccessRef,						// Access list for this keychain
+			NULL);									// The item reference
+
+		if (passwordAccessRef) CFRelease(passwordAccessRef);
 		if (status != noErr) {
 			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
 		}
@@ -81,10 +124,10 @@
 		password = [NSString stringWithCString:passwordData length:passwordLength];
 		
 		// Free the data allocated by SecKeychainFindGenericPassword:
-		status = SecKeychainItemFreeContent(
-											NULL,           // No attribute data to release
-											passwordData    // Release data
-											);
+		SecKeychainItemFreeContent(
+									NULL,           // No attribute data to release
+									passwordData    // Release data
+									);
 	}
 
 	return password;
@@ -119,7 +162,7 @@
 			}
 		}
 		
-		CFRelease(itemRef);
+		if (itemRef) CFRelease(itemRef);
 	}
 }
 
@@ -129,9 +172,8 @@
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account
 {
 	SecKeychainItemRef item;
-	SecKeychainSearchRef search;
+	SecKeychainSearchRef search = NULL;
     int numberOfItemsFound = 0;
-	
 	SecKeychainAttributeList list;
 	SecKeychainAttribute attributes[2];
 	
@@ -139,7 +181,7 @@
 	attributes[0].data   = (void *)[account UTF8String];
 	attributes[0].length = [account length];
 	
-	attributes[1].tag    = kSecLabelItemAttr;
+	attributes[1].tag    = kSecServiceItemAttr;
     attributes[1].data   = (void *)[name UTF8String];
     attributes[1].length = [name length];
 	
@@ -153,9 +195,66 @@
 		}
 	}
 	
-    CFRelease(search);
+    if (search) CFRelease(search);
 	
 	return (numberOfItemsFound > 0);
+}
+
+/**
+ * Retrieve the keychain item name for a supplied name and id.
+ */
+- (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID
+{
+	NSString *keychainItemName;
+
+	keychainItemName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)",
+							theName,
+							[theID intValue]];
+
+	return keychainItemName;
+}
+
+/**
+ * Retrieve the keychain item account for a supplied user, host, and database - which can be nil.
+ */
+- (NSString *)accountForUser:(NSString *)theUser host:(NSString *)theHost database:(NSString *)theDatabase
+{
+	NSString *keychainItemAccount;
+
+	keychainItemAccount = [NSString stringWithFormat:@"%@@%@/%@",
+								theUser?theUser:@"",
+								theHost?theHost:@"",
+								theDatabase?theDatabase:@""];
+
+	return keychainItemAccount;
+}
+
+/**
+ * Retrieve the keychain SSH item name for a supplied name and id.
+ */
+- (NSString *)nameForSSHForFavoriteName:(NSString *)theName id:(NSString *)theID
+{
+	NSString *sshKeychainItemName;
+
+	sshKeychainItemName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)",
+							theName,
+							[theID intValue]];
+
+	return sshKeychainItemName;
+}
+
+/**
+ * Retrieve the keychain SSH item account for a supplied SSH user and host - which can be nil.
+ */
+- (NSString *)accountForSSHUser:(NSString *)theSSHUser sshHost:(NSString *)theSSHHost
+{
+	NSString *sshKeychainItemAccount;
+
+	sshKeychainItemAccount = [NSString stringWithFormat:@"%@@%@",
+								theSSHUser?theSSHUser:@"",
+								theSSHHost?theSSHHost:@""];
+
+	return sshKeychainItemAccount;
 }
 
 @end

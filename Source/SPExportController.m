@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPExportController.m
 //  sequel-pro
 //
@@ -174,4 +176,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return self;
 }
 
+
+- (void)dealloc
+{	
+    [tables release];
+	[super dealloc];
+}
 @end

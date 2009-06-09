@@ -1,14 +1,13 @@
-/*!
- @header CMCopyTable.h
- @abstract   sequel-pro
- @discussion <pre>
- $Id:$
- Created by Stuart Glenn on Wed Apr 21 2004.
- Changed by Lorenz Textor on Sat Nov 13 2004
- Copyright (c) 2004 Stuart Glenn. All rights reserved.
-</pre>
-*/
-
+//
+//  $Id$
+//
+//  CMCopyTable.h
+//  sequel-pro
+//
+//  Created by Stuart Glenn on Wed Apr 21 2004.
+//  Changed by Lorenz Textor on Sat Nov 13 2004
+//  Copyright (c) 2004 Stuart Glenn. All rights reserved.
+//
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation; either version 2 of the License, or
@@ -25,7 +24,6 @@
 
 #import <AppKit/AppKit.h>
 
-
 /*!
 	@class copyTable
 	@abstract   subclassed NSTableView to implement copy & drag-n-drop
@@ -36,6 +34,14 @@
 */
 @interface CMCopyTable : NSTableView 
 {
+
+	id tableInstance;				// the table content view instance
+	id tableData;					// the actual table data source
+	id mySQLConnection;				// current MySQL connection
+	NSArray* columnDefinitions;		// array of NSDictionary containing info about columns
+	NSString* selectedTable;		// the name of the current selected table
+	
+	NSUserDefaults *prefs;
 
 }
 
@@ -89,4 +95,18 @@
 */
 - (NSString *)draggedRowsAsTabString:(NSArray *)rows;
 
+/*
+ * Generate a string in form of INSERT INTO <table> VALUES () of 
+ * currently selected rows. Support blob data as well.
+ */
+- (NSString *)selectedRowsAsSqlInserts;
+
+/*
+ * Set all necessary data from the table content view.
+ */
+- (void)setTableInstance:(id)anInstance withTableData:(id)theTableData withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection;
+
 @end
+
+extern int MENU_EDIT_COPY_WITH_COLUMN;
+extern int MENU_EDIT_COPY_AS_SQL;

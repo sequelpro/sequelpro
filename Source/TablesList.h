@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TablesList.h
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
@@ -44,11 +45,12 @@ enum sp_table_types
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id tableStatusInstance;
+	IBOutlet id extendedTableInfoInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;
 	IBOutlet id tablesListView;
+	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
 	IBOutlet id copyTableContentSwitch;
@@ -56,6 +58,7 @@ enum sp_table_types
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
+	IBOutlet id tableTypeButton;
 	IBOutlet id addTableButton;
 	IBOutlet id tableRenameSheet;
 	IBOutlet id tableRenameField;
@@ -65,6 +68,7 @@ enum sp_table_types
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
+	IBOutlet NSMenuItem *separatorTableMenuItem;
 
 	CMMCPConnection *mySQLConnection;
 	

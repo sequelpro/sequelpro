@@ -1,4 +1,7 @@
 //
+//
+//  $Id$
+//
 //  SPTableInfo.m
 //  sequel-pro
 //
@@ -101,10 +104,8 @@
 	if ([tableListInstance tableName]) {
 		if ([[tableListInstance tableName] isEqualToString:@""]) {
 			[info addObject:@"multiple tables"];
-
 		} 
 		else {
-
 			// Retrieve the table status information via the data cache
 			tableStatus = [tableDataInstance statusValues];
 
@@ -114,21 +115,25 @@
 				return;
 			}
 
-			// Check for "Create_time" == NULL
+			// Check for 'Create_time' == NULL
 			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
 
 				// Add the creation date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
 			}
 
-			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
+			// Check for 'Update_time' == NULL - InnoDB tables don't have an update time
 			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
 				
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
 			}
+			
+			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
+			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
+			} 
 						
-			[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
 			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] intValue]]]];
 			[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
 			

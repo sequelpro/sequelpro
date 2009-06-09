@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPPreferenceController.h
 //  sequel-pro
 //
@@ -37,8 +39,6 @@
 	IBOutlet NSView *networkView;
 	IBOutlet NSView *editorView;
 	
-	
-	
 	IBOutlet NSPopUpButton *defaultFavoritePopup;
 	
 	IBOutlet NSTableView *favoritesTableView;
@@ -49,6 +49,10 @@
 	IBOutlet NSTextField *userField;
 	IBOutlet NSTextField *databaseField;
 	IBOutlet NSSecureTextField *passwordField;
+	IBOutlet NSTextField *sshHostField;
+	IBOutlet NSTextField *sshUserField;
+	IBOutlet NSSecureTextField *sshPasswordField;
+	IBOutlet NSTextField *sshPortField;
 	KeyChain *keychain;
 
 	IBOutlet NSTextField *editorFontName;
@@ -62,6 +66,7 @@
 	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *networkItem;
 	NSToolbarItem *editorItem;
+	NSToolbarItem *shortcutItem;
 
 	NSUserDefaults *prefs;
 }

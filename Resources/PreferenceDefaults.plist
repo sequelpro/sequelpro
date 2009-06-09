@@ -36,6 +36,8 @@
 	<true/>
 	<key>KeepAliveInterval</key>
 	<integer>60</integer>
+	<key>DisplayTableViewVerticalGridlines</key>
+	<false/>
 	<key>CustomQueryEditorFont</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
 	<key>CustomQueryEditorBackgroundColor</key>
@@ -52,18 +54,24 @@
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg83MTD6DnXPOPQEBhg==</data>
 	<key>CustomQueryEditorTextColor</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAAAAAYY=</data>
+	<key>CustomQueryEditorCaretColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmAAAAAYY=</data>
 	<key>CustomQueryEditorVariableColor</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg3zv/T6DfO/9PoN87/0+AYY=</data>
-	<key>CustomQueryAutoindent</key>
+	<key>CustomQueryEditorHighlightQueryColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMChARmZmZmgzMzcz+DMzNzP4MzM3M/AYY=</data>
+	<key>CustomQueryHighlightCurrentQuery</key>
 	<true/>
-	<key>CustomQueryAutopair</key>
+	<key>CustomQueryAutoIndent</key>
 	<true/>
-	<key>CustomQueryAutouppercaseKeywords</key>
+	<key>CustomQueryAutoPairCharacters</key>
+	<true/>
+	<key>CustomQueryAutoUppercaseKeywords</key>
 	<false/>
-	<key>CustomQueryAutohelp</key>
+	<key>CustomQueryUpdateAutoHelp</key>
 	<false/>
-	<key>CustomQueryAutohelpDelay</key>
-	<real>1.0</real>
+	<key>CustomQueryAutoHelpDelay</key>
+	<real>1</real>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>
 	<key>LastFavoriteIndex</key>

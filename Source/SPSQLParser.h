@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPSQLParsing.h
 //  sequel-pro
 //
@@ -62,6 +64,10 @@
 	unichar *stringCharCache;
 	long charCacheStart;
 	long charCacheEnd;
+	NSString *delimiter;
+	int delimiterLength;
+	BOOL charIsDelimiter;
+	BOOL isDelimiterCommand;
 }
 
 
@@ -70,6 +76,7 @@ typedef enum _SPCommentTypes {
 	SPDoubleDashComment = 1,
 	SPCStyleComment = 2
 } SPCommentType;
+
 
 
 /*
@@ -210,12 +217,16 @@ typedef enum _SPCommentTypes {
  */
 - (NSArray *) splitStringByCharacter:(unichar)character skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
+- (NSArray *) splitSqlStringByCharacter:(unichar)character;
+- (NSArray *) splitSqlStringIntoRangesByCharacter:(unichar)character;
+
 /*
  * Methods used internally by this class to power the methods above:
  */
 - (long) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 - (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
-- (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings ;
+- (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
+- (long) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 - (long) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(long)index;
 - (long) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(long)index;
 
@@ -226,11 +237,6 @@ typedef enum _SPCommentTypes {
 - (void) clearCharCache;
 - (void) deleteCharactersInRange:(NSRange)aRange;
 - (void) insertString:(NSString *)aString atIndex:(NSUInteger)anIndex;
-
-/*
- * return an array of queries
- */
-- (NSArray *) parseQueries;
 
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -
@@ -251,4 +257,5 @@ typedef enum _SPCommentTypes {
 - (void) setString:(NSString *)string;
 - (void) replaceCharactersInRange:(NSRange)range withString:(NSString *)string;
 - (void) dealloc;
+
 @end

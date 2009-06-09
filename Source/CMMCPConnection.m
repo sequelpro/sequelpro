@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  CMMCPConnection.m
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import "CMMCPConnection.h"
 #include <unistd.h>
@@ -29,28 +30,81 @@
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
 
+@interface CMMCPConnection(hidden)
+- (void)getServerVersionString;
+@end
+
+@implementation CMMCPConnection(hidden)
+- (void)getServerVersionString
+{
+	if( mConnected ) {
+		CMMCPResult *theResult;
+		theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
+		if ([theResult numOfRows]) {
+			[theResult dataSeek:0];
+			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
+		}
+	}
+}
+@end
+
+
 @implementation CMMCPConnection
 
-
 /*
- * Override the normal init methods, extending them to also init additional details.
+ * Override the normal init methods, extending them to also init additional details,
+ * and to store details of the initialised connection to allow reconnection as method.
+ * Note this also behaves differently from the standard MCPKit connection methods -
+ * passwords are passed separately, and connections are not automatically made on init.
  */
 - (id) init
 {
 	[self initSPExtensions];
 	self = [super init];
+	serverVersionString = nil;
 	return self;
 }
-- (id) initToHost:(NSString *) host withLogin:(NSString *) login password:(NSString *) pass usingPort:(int) port
+- (id) initToHost:(NSString *) host withLogin:(NSString *) login usingPort:(int) port
 {
 	[self initSPExtensions];
-	self = [super initToHost:host withLogin:login password:pass usingPort:port];
+
+	self = [super init];
+	mEncoding = NSISOLatin1StringEncoding;	
+	mConnection = mysql_init(mConnection);
+	mConnected = NO;
+	if (mConnection == NULL) {
+		[self autorelease];
+		return nil;
+	}
+
+	mConnectionFlags = kMCPConnectionDefaultOption;
+	
+	connectionHost = [[NSString alloc] initWithString:host];
+	connectionLogin = [[NSString alloc] initWithString:login];
+	connectionPort = port;
+	connectionSocket = nil;
+
 	return self;
 }
-- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login password:(NSString *) pass
+- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login
 {
 	[self initSPExtensions];
-	self = [super initToSocket:socket withLogin:login password:pass];
+	self = [super init];
+	mEncoding = NSISOLatin1StringEncoding;	
+	mConnection = mysql_init(mConnection);
+	mConnected = NO;
+	if (mConnection == NULL) {
+		[self autorelease];
+		return nil;
+	}
+	
+	mConnectionFlags = kMCPConnectionDefaultOption;
+	
+	connectionHost = nil;
+	connectionLogin = [[NSString alloc] initWithString:login];
+	connectionSocket = [[NSString alloc] initWithString:socket];
+	connectionPort = 0;
+
 	return self;
 }
 
@@ -61,12 +115,11 @@ static void forcePingTimeout(int signalNumber);
 - (void) initSPExtensions
 {
 	parentWindow = nil;
-	connectionLogin = nil;
 	connectionPassword = nil;
-	connectionHost = nil;
-	connectionPort = 0;
-	connectionSocket = nil;
+	connectionKeychainName = nil;
+	connectionKeychainAccount = nil;
 	keepAliveTimer = nil;
+	connectionTunnel = nil;
 	connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
 	useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
@@ -79,51 +132,190 @@ static void forcePingTimeout(int signalNumber);
 	}
 }
 
+/*
+ * Sets the password to be stored locally.
+ * Providing a keychain name is much more secure.
+ */
+- (BOOL) setPassword:(NSString *)thePassword
+{
+	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
+	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
+	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
+
+	connectionPassword = [[NSString alloc] initWithString:thePassword];
+	
+	return YES;
+}
 
 /*
- * Override the normal connection method, extending it to also store details of the
- * current connection to allow reconnection as necessary.  This also sets the connection timeout
- * - used for pings, not for long-running commands.
+ * Sets the keychain name to use to retrieve the password.  This is the recommended and
+ * secure way of supplying a password to the SSH tunnel.
  */
-- (BOOL) connectWithLogin:(NSString *) login password:(NSString *) pass host:(NSString *) host port:(int) port socket:(NSString *) socket
+- (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
 {
-	if (connectionLogin) [connectionLogin release];
-	if (login) connectionLogin = [[NSString alloc] initWithString:login];
-	if (connectionPassword) [connectionPassword release];
-	if (pass) connectionPassword = [[NSString alloc] initWithString:pass];
-	if (connectionHost) [connectionHost release];
-	if (host) connectionHost = [[NSString alloc] initWithString:host];
-	connectionPort = port;
-	if (connectionSocket) [connectionSocket release];
-	if (socket) connectionSocket = [[NSString alloc] initWithString:socket];
+	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
+	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
+	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
 
-	if (mConnection != NULL) {
-		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
-	}
+	connectionKeychainName = [[NSString alloc] initWithString:theName];
+	connectionKeychainAccount = [[NSString alloc] initWithString:theAccount];
 
-	[self startKeepAliveTimerResettingState:YES];
-	return [super connectWithLogin:login password:pass host:host port:port socket:socket];
+	return YES;
 }
 
 
 /*
- * Override the stored disconnection method to ensure that disconnecting clears stored details.
+ * Set a SSH tunnel object to connect through.  This object will be retained locally,
+ * and will be automatically connected/connection checked/reconnected/disconnected
+ * together with the main connection.
+ */
+- (BOOL) setSSHTunnel:(SPSSHTunnel *)theTunnel
+{
+	connectionTunnel = theTunnel;
+	[connectionTunnel retain];
+
+	currentSSHTunnelState = [connectionTunnel state];
+	[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
+
+	return YES;
+}
+
+/*
+ * Add a new connection method, intended for use with the init methods above.
+ * Uses the stored details to instantiate a connection to the specified server,
+ * including custom timeouts - used for pings, not for long-running commands.
+ */
+- (BOOL) connect
+{
+	const char	*theLogin = [self cStringFromString:connectionLogin];
+	const char	*theHost;
+	const char	*thePass;
+	const char	*theSocket;
+	void		*theRet;
+
+	// Ensure that a password method has been provided
+	if (connectionKeychainName == nil && connectionPassword == nil) return NO;
+	
+	// Start the keepalive timer
+	[self startKeepAliveTimerResettingState:YES];
+
+	// Disconnect if a connection is already active
+	if (mConnected) {
+		[self disconnect];
+		mConnection = mysql_init(NULL);
+		if (mConnection == NULL) return NO;
+	}
+
+	// Ensure the custom timeout option is set
+	if (mConnection != NULL) {
+		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+	}
+	
+	// Set the host as appropriate
+	if (!connectionHost || ![connectionHost length]) {
+		theHost = NULL;
+	} else {
+		theHost = [self cStringFromString:connectionHost];
+	}
+	
+	// Use the default socket if none is set, or set appropriately
+	if (connectionSocket == nil || ![connectionSocket length]) {
+		theSocket = kMCPConnectionDefaultSocket;
+	} else {
+		theSocket = [self cStringFromString:connectionSocket];
+	}
+	
+	// Select the password from the provided method
+	if (connectionKeychainName) {
+		KeyChain *keychain;
+		keychain = [[KeyChain alloc] init];
+		thePass = [self cStringFromString:[keychain getPasswordForName:connectionKeychainName account:connectionKeychainAccount]];
+		[keychain release];
+	} else {
+		thePass = [self cStringFromString:connectionPassword];
+	}
+
+	// Connect
+	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+	thePass = NULL;
+	if (theRet != mConnection) {
+		if (connectionTunnel) [connectionTunnel disconnect];
+		return mConnected = NO;
+	}
+
+	mConnected = YES;
+	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	[self timeZone]; // Getting the timezone used by the server.
+	return mConnected;
+}
+
+
+/*
+ * Override the stored disconnection method to ensure that disconnecting clears stored timers.
  */
 - (void) disconnect
 {
 	[super disconnect];
-
-	if (connectionLogin) [connectionLogin release];
-	connectionLogin = nil;
-	if (connectionPassword) [connectionPassword release];
-	connectionPassword = nil;
-	if (connectionHost) [connectionHost release];
-	connectionHost = nil;
-	connectionPort = 0;
-	if (connectionSocket) [connectionSocket release];
-	connectionSocket = nil;
 	
+	if (connectionTunnel) [connectionTunnel disconnect];
+	
+	if( serverVersionString != nil ) {
+		[serverVersionString release];
+		serverVersionString = nil;
+	}
+
 	[self stopKeepAliveTimer];
+}
+
+/*
+ * return the server major version or -1 on fail
+ */
+- (int)serverMajorVersion
+{
+
+	if( mConnected ) {
+		if( serverVersionString == nil ) {
+			[self getServerVersionString];
+		}
+		if( serverVersionString != nil ) {
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
+		} 
+	} 
+	return -1;
+}
+
+/*
+ * return the server minor version or -1 on fail
+ */
+- (int)serverMinorVersion
+{
+	
+	if( mConnected ) {
+		if( serverVersionString == nil ) {
+			[self getServerVersionString];
+		}
+		if( serverVersionString != nil ) {
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] intValue];
+		}
+	}
+	return -1;
+}
+
+/*
+ * return the server release version or -1 on fail
+ */
+- (int)serverReleaseVersion
+{
+	if( mConnected ) {
+		if( serverVersionString == nil ) {
+			[self getServerVersionString];
+		}
+		if( serverVersionString != nil ) {
+			NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
+			return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] intValue];
+		}
+	}
+	return -1;
 }
 
 
@@ -157,20 +349,49 @@ static void forcePingTimeout(int signalNumber);
 		mConnection = NULL;
 	}
 	mConnected = NO;
-
-	// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
-	if (mConnection == NULL) {
-		mConnection = mysql_init(NULL);
+	
+	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
+	if (connectionTunnel) {
+		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
+		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
+		[connectionTunnel connect];
+		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
+		
+		// Allow the tunnel to attempt to connect in a loop
+		while (1) {
+			if ([connectionTunnel state] == SPSSH_STATE_CONNECTED) {
+				connectionPort = [connectionTunnel localPort];
+				break;
+			}
+			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
+				[connectionTunnel disconnect];
+				break;
+			}
+			
+			// Process events for a short time, allowing dialogs to be shown but waiting for the tunnel
+			interfaceInteractionTimer = [NSDate date];
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			tunnelStartDate = [tunnelStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
+		}
+		currentSSHTunnelState = [connectionTunnel state];
+		[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
 	}
 
-	if (mConnection != NULL) {
+	if (!connectionTunnel || [connectionTunnel state] == SPSSH_STATE_CONNECTED) {
 
-		// Set a connection timeout for the new connection
-		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+		// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
+		if (mConnection == NULL) {
+			mConnection = mysql_init(NULL);
+		}
 
-		// Attempt to reestablish the connection - using own method so everything gets set up as standard.
-		// Will store the supplied details again, which isn't a problem.
-		[self connectWithLogin:connectionLogin password:connectionPassword host:connectionHost port:connectionPort socket:connectionSocket];
+		if (mConnection != NULL) {
+
+			// Set a connection timeout for the new connection
+			mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+
+			// Attempt to reestablish the connection
+			[self connect];
+		}
 	}
 
 	// If the connection was successfully established, reselect the old database and encoding if appropriate.
@@ -213,8 +434,27 @@ static void forcePingTimeout(int signalNumber);
 /*
  * Set the parent window of the connection for use with dialogs.
  */
-- (void)setParentWindow:(NSWindow *)theWindow {
+- (void)setParentWindow:(NSWindow *)theWindow
+{
 	parentWindow = theWindow;
+}
+
+/*
+ * Handle any state changes in the associated SSH Tunnel
+ */
+- (void)sshTunnelStateChange:(SPSSHTunnel *)theTunnel
+{
+	int newState = [theTunnel state];
+
+	// Restart the tunnel if it dies
+	if (mConnected && newState == SPSSH_STATE_IDLE && currentSSHTunnelState == SPSSH_STATE_CONNECTED) {
+		currentSSHTunnelState = newState;
+		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
+		[self reconnect];
+		return;
+	}
+
+	currentSSHTunnelState = newState;
 }
 
 
@@ -224,6 +464,36 @@ static void forcePingTimeout(int signalNumber);
 - (IBAction) closeSheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
+}
+
+/*
+ * Determines whether a supplied error number can be classed as a connection
+ * error.
+ */
++ (BOOL) isErrorNumberConnectionError:(int)theErrorNumber
+{
+
+	switch (theErrorNumber) {
+		case 2001: // CR_SOCKET_CREATE_ERROR
+		case 2002: // CR_CONNECTION_ERROR
+		case 2003: // CR_CONN_HOST_ERROR
+		case 2004: // CR_IPSOCK_ERROR
+		case 2005: // CR_UNKNOWN_HOST
+		case 2006: // CR_SERVER_GONE_ERROR
+		case 2007: // CR_VERSION_ERROR
+		case 2009: // CR_WRONG_HOST_INFO
+		case 2012: // CR_SERVER_HANDSHAKE_ERR
+		case 2013: // CR_SERVER_LOST
+		case 2027: // CR_MALFORMED_PACKET
+		case 2032: // CR_DATA_TRUNCATED
+		case 2047: // CR_CONN_UNKNOW_PROTOCOL
+		case 2048: // CR_INVALID_CONN_HANDLE
+		case 2050: // CR_FETCH_CANCELED
+		case 2055: // CR_SERVER_LOST_EXTENDED
+			return YES;
+	}
+	
+	return NO;
 }
 
 /*
@@ -341,6 +611,7 @@ static void forcePingTimeout(int signalNumber);
 		[self startKeepAliveTimerResettingState:YES];
 		return YES;
 	}
+	if (connectionTunnel) [connectionTunnel disconnect];
 	return NO;
 }
 
@@ -357,41 +628,71 @@ static void forcePingTimeout(int signalNumber);
 
 /*
  * Modified version of queryString to be used in Sequel Pro.
- * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
- * on the status, not returning control until either the query has been executed and the result can
- * be returned or the connection and document have been closed.
+ * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
+ * proceed and loop depending on the status, not returning control until either the query has been executed
+ * and the result can be returned or the connection and document have been closed.
  */
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult	*theResult;
-	const char	*theCQuery;
-	int			theQueryCode;
 	NSDate		*queryStartDate;
+	NSThread	*queryThread;
+	BOOL connectionHasTimedOut = NO, connectionChecked = NO;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
 
 	[self stopKeepAliveTimer];
 
-	// Generate the cString as appropriate
-	theCQuery = [self cStringFromString:query usingEncoding:encoding];
-
-	// Check the connection.  This triggers reconnects as necessary, and should only return false if a disconnection
-	// has been requested - in which case return nil
-	if (![self checkConnection]) return nil;
-
 	// Inform the delegate about the query
 	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
 		[delegate willQueryString:query];
 	}
+
+	// Set up the worker thread
+	workerStringEncoding = encoding;
+	workerQueryComplete = NO;
+	queryThread = [[NSThread alloc] initWithTarget:self selector:@selector(workerPerformQuery:) object:query];
 	
-	// Run the query, storing run time (note this will include some network and overhead)
+	// Start the query, monitoring the execution time and ensuring the connection is still
+	// active if it takes longer than three seconds. (Note that this code can be significantly simplified,
+	// removing threading and the extra connection timeout ping check, as soon as we upgrade the MySQL
+	// client libraries so that http://bugs.mysql.com/bug.php?id=9678 is fixed.  This will result in a ~1.5x
+	// speedup for local queries, largely due to reduced CPU usage (?).
 	queryStartDate = [NSDate date];
-	theQueryCode = mysql_query(mConnection, theCQuery);
-	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
-	
+	[queryThread start];
+	while (!workerQueryComplete) {
+		if (!connectionChecked && [[NSDate date] timeIntervalSinceDate:queryStartDate] > 3) {
+			connectionChecked = YES;
+			if (![self pingConnection]) {
+				connectionHasTimedOut = YES;
+				[queryThread cancel];
+				break;
+			}
+		}
+		usleep(20);
+	}
+	[queryThread release];
+
+	// If there was an error, check whether it was a connection-related error
+	if (connectionHasTimedOut || (0 != workerQueryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]])) {
+
+		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
+		// should only return false if a disconnection has been requested - in which case return nil.
+		if (![self checkConnection]) return nil;
+			
+		// The connection has been restored - re-run the query
+		workerQueryComplete = NO;
+		queryThread = [[NSThread alloc] initWithTarget:self selector:@selector(workerPerformQuery:) object:query];
+		[queryThread start];
+		while (!workerQueryComplete) {
+			usleep(20);
+		}
+		[queryThread release];
+	}
+
 	// Retrieve the result or error appropriately.
-	if (0 == theQueryCode) {
+	if (0 == workerQueryResultCode) {
 		if (mysql_field_count(mConnection) != 0) {
 
 			// Use CMMCPResult instead of MCPResult
@@ -413,6 +714,37 @@ static void forcePingTimeout(int signalNumber);
 
 	return [theResult autorelease];
 }
+
+/*
+ * Perform a query in threaded mode.
+ */
+- (void) workerPerformQuery:(NSString *)theQuery
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	const char	*theCQuery;
+	NSDate *queryStartDate;
+	float queryExecutionTime;
+	int theQueryCode;
+
+	theCQuery = [self cStringFromString:theQuery usingEncoding:workerStringEncoding];
+
+	queryStartDate = [NSDate date];
+	theQueryCode = mysql_query(mConnection, theCQuery);
+	queryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+
+	// If the thread has already been cancelled, this is a timed-out result.
+	if ([[NSThread currentThread] isCancelled]) {
+		[pool release];
+		return;
+	}
+	
+	workerQueryResultCode = theQueryCode;
+	lastQueryExecutionTime = queryExecutionTime;
+	workerQueryComplete = YES;
+
+	[pool release];
+}
+
 
 
 /*
@@ -692,7 +1024,6 @@ static void forcePingTimeout(int signalNumber)
 	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
 }
 
-
 /*
  * Modified version of the original to support a supplied encoding.
  * For internal use only. Transforms a NSString to a C type string (ending with \0).
@@ -710,4 +1041,10 @@ static void forcePingTimeout(int signalNumber)
 	[theData increaseLengthBy:1];
 	return (const char *)[theData bytes];
 }
+
+- (void) dealloc
+{
+	[super dealloc];
+}
+
 @end

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPQueryConsole.m
 //  sequel-pro
 //

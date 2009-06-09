@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPTextViewAdditions.h
 //  sequel-pro
 //
@@ -28,6 +30,7 @@
 
 - (IBAction)selectCurrentWord:(id)sender;
 - (IBAction)selectCurrentLine:(id)sender;
+- (IBAction)selectEnclosingBrackets:(id)sender;
 - (IBAction)doSelectionUpperCase:(id)sender;
 - (IBAction)doSelectionLowerCase:(id)sender;
 - (IBAction)doSelectionTitleCase:(id)sender;
