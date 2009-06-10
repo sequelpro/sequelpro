@@ -81,6 +81,9 @@
 	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
 	
+	IBOutlet NSTableView *tableInfoTable;
+	IBOutlet NSSplitView *tableListSplitter;
+	IBOutlet NSSplitView *contentViewSplitter;
 	IBOutlet id sidebarGrabber;
 	
 	IBOutlet NSTextView *customQueryTextView;
