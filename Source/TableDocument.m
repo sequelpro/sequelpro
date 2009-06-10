@@ -79,6 +79,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		sshTunnel = nil;
 		
 		printWebView = [[WebView alloc] init];
+		// otherwise WebView doesn't print background colors
+		WebPreferences* wvPrefs = [printWebView preferences];
+		[wvPrefs setShouldPrintBackgrounds: YES];
 		[printWebView setFrameLoadDelegate:self];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
