@@ -75,7 +75,7 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	return [NSString stringWithString:tableEncoding];
+	return (tableEncoding == nil) ? nil : [NSString stringWithString:tableEncoding];
 }
 
 /*

@@ -110,8 +110,9 @@
 		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
 	}
 
-	// If no table has been supplied, reset the view to a blank table and disabled elements
-	if ( [aTable isEqualToString:@""] || !aTable )
+	// If no table has been supplied, reset the view to a blank table and disabled elements.
+	// [tableDataInstance tableEncoding] == nil indicates that an error occured while retrieving table data
+	if ( [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
 	{
 		// Empty the stored data arrays
 		[fullResult removeAllObjects];

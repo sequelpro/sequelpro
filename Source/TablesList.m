@@ -1106,11 +1106,14 @@
 
 		if( [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW ||
 		   [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
+
+			// tableEncoding == nil indicates that there was an error while retrieving table data
+			NSString *tableEncoding = [tableDataInstance tableEncoding];
 			// If encoding is set to Autodetect, update the connection character set encoding
 			// based on the newly selected table's encoding - but only if it differs from the current encoding.
 			if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
-				if (![[tableDataInstance tableEncoding] isEqualToString:[tableDocumentInstance connectionEncoding]]) {
-					[tableDocumentInstance setConnectionEncoding:[tableDataInstance tableEncoding] reloadingViews:NO];
+				if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+					[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
 					[tableDataInstance resetAllData];
 				}
 			}
@@ -1121,7 +1124,11 @@
 				contentLoaded = NO;
 				statusLoaded = NO;
 			} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-				[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				if(tableEncoding == nil) {
+					[tableContentInstance loadTable:nil];
+				} else {
+					[tableContentInstance loadTable:[tables objectAtIndex:[tablesListView selectedRow]]];
+				}
 				structureLoaded = NO;
 				contentLoaded = YES;
 				statusLoaded = NO;
