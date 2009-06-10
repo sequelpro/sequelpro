@@ -364,8 +364,8 @@ modified version for use with sequel-pro
 		/* Max width (bytes) for selected set */
 		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].max_length] forKey:@"max_byte_length"];
 		/* Max width (chars) for selected set */
-		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].max_length/[self find_charsetMaxByteLengthPerChar:theField[i].charsetnr]] 
-				forKey:@"max_char_length"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].max_length/[self find_charsetMaxByteLengthPerChar:theField[i].charsetnr]] 
+		// 		forKey:@"max_char_length"];
 
 		/* Div flags */
 		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].flags] forKey:@"flags"];
@@ -466,7 +466,7 @@ modified version for use with sequel-pro
 		case MYSQL_TYPE_BLOB:
 		{
 			BOOL isBlob = (charsetnr == MAGIC_BINARY_CHARSET_NR);
-			switch (length) {
+			switch ((int)length/[self find_charsetMaxByteLengthPerChar:charsetnr]) {
 				case 255: return isBlob? @"TINYBLOB":@"TINYTEXT";
 				case 65535: return isBlob? @"BLOB":@"TEXT";
 				case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
@@ -564,9 +564,11 @@ modified version for use with sequel-pro
 		case MYSQL_TYPE_LONG_BLOB:// should no appear over the wire
 		case MYSQL_TYPE_BLOB:
 		{
-			if (charsetnr == MAGIC_BINARY_CHARSET_NR)
+			if (charsetnr == MAGIC_BINARY_CHARSET_NR) {
 				return @"blobdata";
-			return @"textdata";
+			} else {
+				return @"textdata";
+			}
 		}
 		case MYSQL_TYPE_GEOMETRY:
 			return @"geometry";
