@@ -26,6 +26,7 @@
 #import "TableSource.h"
 #import "TablesList.h"
 #import "SPTableData.h"
+#import "SPSQLParser.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 
@@ -39,12 +40,12 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 {
 	NSEnumerator *enumerator;
 	id field;
-	NSScanner *scanner = [NSScanner alloc];
 	NSArray *extrasArray;
 	NSMutableDictionary *tempDefaultValues;
 	NSEnumerator *extrasEnumerator;
 	id extra;
 	int i;
+	SPSQLParser *fieldParser;
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -74,8 +75,6 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		[tableTypeButton selectItemAtIndex:0];
 		[tableTypeButton setEnabled:NO];
 		tableType = nil;
-
-		[scanner release];
 
 		return;
 	}
@@ -115,41 +114,47 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	
 	//put field length and extras in separate key
 	enumerator = [tableFields objectEnumerator];
-	
+
 	while ( (field = [enumerator nextObject]) ) {
 		NSString *type;
 		NSString *length;
 		NSString *extras;
-		
-		// scan for length and extras like unsigned
-		[scanner initWithString:[field objectForKey:@"Type"]];
-		[scanner scanUpToString:@"(" intoString:&type];
-		[scanner scanString:@"(" intoString:nil];
-		
-		if ( ![scanner scanUpToString:@")" intoString:&length] )
+
+		// Set up the field parser with the type definition
+		fieldParser = [[SPSQLParser alloc] initWithString:[field objectForKey:@"Type"]];
+
+		// Pull out the field type; if no brackets are found, this returns nil - in which case simple values can be used.
+		type = [fieldParser trimAndReturnStringToCharacter:'(' trimmingInclusively:YES returningInclusively:NO];
+		if (!type) {
+			type = [NSString stringWithString:fieldParser];
 			length = @"";
-		
-		[scanner scanString:@")" intoString:nil];
-		if ( ![scanner scanUpToString:@"" intoString:&extras] ) {
 			extras = @"";
+		} else {
+
+			// Pull out the length, which may include enum/set values
+			length = [fieldParser trimAndReturnStringToCharacter:')' trimmingInclusively:YES returningInclusively:NO];
+			if (!length) length = @"";
+
+			// Separate any remaining extras
+			extras = [NSString stringWithString:fieldParser];
+			if (!extras) extras = @"";
 		}
-		
-		// get possible values if field is enum or set
-		if ( [type isEqualToString:@"enum"] || [type isEqualToString:@"set"] ) {
-			NSMutableArray *possibleValues = [[[length substringWithRange:NSMakeRange(1,[length length]-2)] componentsSeparatedByString:@"','"] mutableCopy];
-			NSMutableString *possibleValue = [NSMutableString string];
-			
-			for ( i = 0 ; i < [possibleValues count] ; i++ ) {
-				[possibleValue setString:[possibleValues objectAtIndex:i]];
-				[possibleValue replaceOccurrencesOfString:@"''" withString:@"'" options:NSLiteralSearch range:NSMakeRange(0,[possibleValue length])];
-				[possibleValue replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:NSLiteralSearch range:NSMakeRange(0,[possibleValue length])];
-				[possibleValues replaceObjectAtIndex:i withObject:[NSString stringWithString:possibleValue]];
+
+		[fieldParser release];
+
+		// Get possible values if the field is an enum or a set
+		if ([type isEqualToString:@"enum"] || [type isEqualToString:@"set"]) {
+			SPSQLParser *valueParser = [[SPSQLParser alloc] initWithString:length];
+			NSMutableArray *possibleValues = [[NSMutableArray alloc] initWithArray:[valueParser splitStringByCharacter:',']];
+			for (i = 0; i < [possibleValues count]; i++) {
+				[valueParser setString:[possibleValues objectAtIndex:i]];
+				[possibleValues replaceObjectAtIndex:i withObject:[valueParser unquotedString]];
 			}
-			
 			[enumFields setObject:[NSArray arrayWithArray:possibleValues] forKey:[field objectForKey:@"Field"]];
 			[possibleValues release];
+			[valueParser release];
 		}
-		
+
 		// scan extras for values like unsigned, zerofill, binary
 		extrasArray = [extras componentsSeparatedByString:@" "];
 		extrasEnumerator = [extrasArray objectEnumerator];
@@ -213,8 +218,6 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	
-	[scanner release];
 }
 
 /*
