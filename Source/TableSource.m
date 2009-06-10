@@ -208,7 +208,26 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	} else {
 		[indexedColumnsField setNumberOfVisibleItems:10];
 	}
-	
+
+	// Reset font for field and index table
+	NSEnumerator *indexColumnsEnumerator = [[indexView tableColumns] objectEnumerator];
+	NSEnumerator *fieldColumnsEnumerator = [[tableSourceView tableColumns] objectEnumerator];
+	id indexColumn;
+	id fieldColumn;
+	BOOL useMonospacedFont = [prefs boolForKey:@"UseMonospacedFonts"];
+
+	while ( (indexColumn = [indexColumnsEnumerator nextObject]) )
+		if ( useMonospacedFont )
+			[[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
+		else 
+			[[indexColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+
+	while ( (fieldColumn = [fieldColumnsEnumerator nextObject]) )
+		if ( useMonospacedFont )
+			[[fieldColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		else
+			[[fieldColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+
 	[tableSourceView reloadData];
 	[indexView reloadData];
 	
