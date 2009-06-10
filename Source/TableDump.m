@@ -1172,12 +1172,14 @@
 	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
 	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
 	
+	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
 	// tables here
 	for ( int i = 0 ; i < [tables count] ; i++ ) {
 
 		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
-		
+		NSDictionary *tinfo = [tableDataInstance informationForTable:tableName];
+
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [tables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
@@ -1192,21 +1194,27 @@
 		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"#DDDDDD\">%@</TD></TR>\n", tableName]];
 		
 		// grab column info
-		CMMCPResult *theResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [tableName backtickQuotedString]]] retain];		
-		
-		if ([theResult numOfRows]) 
-			[theResult dataSeek:0];
-		for ( int j = 0 ; j < [theResult numOfRows] ; j++ ) {
-			NSMutableDictionary *tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
-			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Type"]]];
+		NSArray *cinfo = [tinfo objectForKey:@"columns"];
+		for( int j = 0; j < [cinfo count]; j++ ) {
+			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"type"]]];
 		}
-		
-		[theResult release];
 		
 		[metaString appendString:@"\t\t\t</TABLE>>\n"];
 		[metaString appendString:@"\t\t];\n"];
 		[metaString appendString:@"\t}\n"];
 		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+		
+		// see about relations
+		cinfo = [tinfo objectForKey:@"constraints"];
+		for( int j = 0; j < [cinfo count]; j++ ) {
+			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@",
+							   tableName,
+							   [[cinfo objectAtIndex:j] objectForKey:@"columns"],
+							   [[cinfo objectAtIndex:j] objectForKey:@"ref_table"],
+							   [[cinfo objectAtIndex:j] objectForKey:@"ref_columns"]
+							   ]];
+		}
+		
 	}
 
 	[singleProgressText setStringValue:NSLocalizedString(@"Fetching relations...", @"text showing that app is fetching data")];
@@ -1218,17 +1226,11 @@
 	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
 	
 	// grab the relations
-	CMMCPResult *theResult = [[mySQLConnection queryString:
-							   [NSString stringWithFormat:@"SELECT CONCAT( table_name, ':' , column_name, ' -> ', referenced_table_name, ':', referenced_column_name ) AS list_of_fks FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = ('%@') AND REFERENCED_TABLE_NAME is not null ORDER BY TABLE_NAME, COLUMN_NAME", 
-								[tableDocumentInstance database]]] retain];		
-
-	if ([theResult numOfRows]) 
-		[theResult dataSeek:0];
-	for ( int i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [[theResult fetchRowAsDictionary] objectForKey:@"list_of_fks"]]];
+	for( int i = 0; i < [fkInfo count]; i++ ) {
+		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [fkInfo objectAtIndex:i]]];
 	}
 	
-	[theResult release];
+	[fkInfo release];
 	
 	// done
 	[metaString appendString:@"}\n"];

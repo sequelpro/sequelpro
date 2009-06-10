@@ -522,6 +522,7 @@
 	tableData = [NSMutableDictionary dictionary];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
+	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
 
 	[encodingString release];
 	[tableColumns release];
