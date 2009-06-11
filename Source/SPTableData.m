@@ -317,6 +317,7 @@
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	NSArray *resultFieldNames = [theResult fetchFieldNames];
 	
 	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
 		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
@@ -520,6 +521,8 @@
 	[fieldParser release];
 
 	tableData = [NSMutableDictionary dictionary];
+	// this will be 'Table' or 'View'
+	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];

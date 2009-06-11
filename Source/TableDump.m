@@ -1186,12 +1186,16 @@
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
 		
+		NSString *hdrColor = @"#DDDDDD";
+		if( [[tinfo objectForKey:@"type"] isEqualToString:@"View"] ) {
+			hdrColor = @"#DDDDFF";
+		}
 		
 		[metaString setString:[NSString stringWithFormat:@"\tsubgraph \"table_%@\" {\n", tableName]];
 		[metaString appendString:@"\t\tnode = [ shape = \"plaintext\" ];\n"];
 		[metaString appendString:[NSString stringWithFormat:@"\t\t\"%@\" [ label=<\n", tableName]];
 		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
-		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"#DDDDDD\">%@</TD></TR>\n", tableName]];
+		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"%@\">%@</TD></TR>\n", hdrColor, tableName]];
 		
 		// grab column info
 		NSArray *cinfo = [tinfo objectForKey:@"columns"];
@@ -1207,11 +1211,22 @@
 		// see about relations
 		cinfo = [tinfo objectForKey:@"constraints"];
 		for( int j = 0; j < [cinfo count]; j++ ) {
-			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@",
+			// get the column refs. these can be comma separated.
+			NSString *ccol = [[cinfo objectAtIndex:j] objectForKey:@"columns"];
+			NSString *rcol = [[cinfo objectAtIndex:j] objectForKey:@"ref_columns"];
+			NSString *extra = @"";
+			NSArray *tc = [ccol componentsSeparatedByString:@","];
+			if( [tc count] > 1 ) {
+				extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
+				ccol = [tc objectAtIndex:0];
+				rcol = [[ccol componentsSeparatedByString:@","] objectAtIndex:0];
+			}
+			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@",
 							   tableName,
-							   [[cinfo objectAtIndex:j] objectForKey:@"columns"],
+							   ccol,
 							   [[cinfo objectAtIndex:j] objectForKey:@"ref_table"],
-							   [[cinfo objectAtIndex:j] objectForKey:@"ref_columns"]
+							   rcol,
+							   extra
 							   ]];
 		}
 		
