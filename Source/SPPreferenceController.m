@@ -891,7 +891,7 @@
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
 
-	[notificationsItem setLabel:NSLocalizedString(@"Alerts", @"")];
+	[notificationsItem setLabel:NSLocalizedString(@"Alerts & Logs", @"")];
 	[notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
 	[notificationsItem setTarget:self];
 	[notificationsItem setAction:@selector(displayNotificationPreferences:)];
@@ -905,12 +905,12 @@
 	[editorItem setAction:@selector(displayEditorPreferences:)];
 	
 	// Shortcut preferences
-	shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
+	/*shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
 	
 	[shortcutItem setLabel:NSLocalizedString(@"Shortcuts", @"")];
 	[shortcutItem setImage:[NSImage imageNamed:@"toolbar-preferences-shortcuts"]];
 	[shortcutItem setTarget:self];
-	[shortcutItem setAction:@selector(NSBeep)];
+	[shortcutItem setAction:@selector(NSBeep)];*/
 	
 	// AutoUpdate preferences
 	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
