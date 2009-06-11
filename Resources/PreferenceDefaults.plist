@@ -76,6 +76,8 @@
 	<true/>
 	<key>LastFavoriteIndex</key>
 	<integer>0</integer>
+	<key>ConsoleEnableLogging</key>
+	<true/>
 	<key>ConsoleShowTimestamps</key>
 	<true/>
 	<key>ConsoleShowSelectsAndShows</key>

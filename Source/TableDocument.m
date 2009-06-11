@@ -100,6 +100,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[prefs addObserver:tableContentInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:customQueryInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
 	
+	// Register observers for when the preference changes
+	[prefs addObserver:[SPQueryConsole sharedQueryConsole] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	
 	// Register double click for the favorites view (double click favorite to connect)
 	[connectFavoritesTableView setTarget:self];
 	[connectFavoritesTableView setDoubleAction:@selector(initiateConnection:)];
@@ -2300,7 +2303,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (void)willQueryString:(NSString *)query
 {		
-	[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"]) {
+		[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+	}
 }
 
 /**
