@@ -57,6 +57,8 @@
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
+	BOOL isMaxAllowedPacketEditable;
+	
 	NSString *serverVersionString;
 	
 	NSStringEncoding workerStringEncoding;

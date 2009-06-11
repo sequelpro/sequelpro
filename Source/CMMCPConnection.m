@@ -246,6 +246,9 @@ static void forcePingTimeout(int signalNumber);
 	mConnected = YES;
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
 	[self timeZone]; // Getting the timezone used by the server.
+	
+	isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
+	
 	return mConnected;
 }
 
@@ -638,6 +641,8 @@ static void forcePingTimeout(int signalNumber);
 	NSDate		*queryStartDate;
 	NSThread	*queryThread;
 	BOOL connectionHasTimedOut = NO, connectionChecked = NO;
+	
+	int currentMaxAllowedPacket = -1;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
@@ -677,6 +682,12 @@ static void forcePingTimeout(int signalNumber);
 	// If there was an error, check whether it was a connection-related error
 	if (connectionHasTimedOut || (0 != workerQueryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]])) {
 
+		// Try to increase max_allowed_packet for error 2006
+		if(isMaxAllowedPacketEditable && !connectionHasTimedOut && workerQueryResultCode == 1 && [self getLastErrorID] == 2006) {
+			currentMaxAllowedPacket = [self getMaxAllowedPacket];
+			[self setMaxAllowedPacketTo:strlen([self cStringFromString:query])+1024];
+		}
+
 		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
 		// should only return false if a disconnection has been requested - in which case return nil.
 		if (![self checkConnection]) return nil;
@@ -691,6 +702,10 @@ static void forcePingTimeout(int signalNumber);
 		[queryThread release];
 	}
 
+	// If max_allowed_packet was changes reset it to default
+	if(currentMaxAllowedPacket > -1)
+		[self setMaxAllowedPacketTo:currentMaxAllowedPacket];
+
 	// Retrieve the result or error appropriately.
 	if (0 == workerQueryResultCode) {
 		if (mysql_field_count(mConnection) != 0) {
@@ -704,12 +719,16 @@ static void forcePingTimeout(int signalNumber);
 
 		// Inform the delegate about errors
 		if (delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
-			[delegate queryGaveError:[self getLastErrorMessage]];
+			if(workerQueryResultCode == 1 && [self getLastErrorID] == 2006)
+				// very likely that query length > max_allowed_packet 
+				[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", [self getLastErrorMessage]]];
+			else
+				[delegate queryGaveError:[self getLastErrorMessage]];
 		}
 
 		return nil;
 	}
-	
+
 	[self startKeepAliveTimerResettingState:YES];
 
 	return [theResult autorelease];
@@ -1048,17 +1067,18 @@ static void forcePingTimeout(int signalNumber)
  */
 - (int) getMaxAllowedPacket
 {
-	CMMCPResult * r;
-	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding];
-	if (![[self getLastErrorMessage] isEqualToString:@""]) {
-		if ([self isConnected])
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
-		return -1;
+
+	if (0 == mysql_query(mConnection, "SELECT @@global.max_allowed_packet")) {
+		if (mysql_field_count(mConnection) != 0) {
+			CMMCPResult *r = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			NSArray *a = [r fetchRowAsArray];
+			[r autorelease];
+			if([a count]) return [[a objectAtIndex:0] intValue];
+		}
 	}
-	NSArray *a = [r fetchRowAsArray];
-	if([a count])
-		return [[a objectAtIndex:0] intValue];
-	
+
+	NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
+
 	return -1;
 }
 
@@ -1070,14 +1090,9 @@ static void forcePingTimeout(int signalNumber)
  */
 - (int) setMaxAllowedPacketTo:(int)newSize
 {
-	
-	if(![self isMaxAllowedPacketEditable]) return [self getMaxAllowedPacket];
+	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return [self getMaxAllowedPacket];
 
-	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] usingEncoding:mEncoding];
-	if (![[self getLastErrorMessage] isEqualToString:@""]) {
-		if ([self isConnected])
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while setting max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
-	}
+	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
 
 	return [self getMaxAllowedPacket];
 }
@@ -1088,8 +1103,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (BOOL) isMaxAllowedPacketEditable
 {
-	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", [self getMaxAllowedPacket]] usingEncoding:mEncoding];
-	return ([[self getLastErrorMessage] isEqualToString:@""]);
+	return(!mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet"));
 }
 
 
