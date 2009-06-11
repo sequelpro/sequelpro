@@ -641,6 +641,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)connectSheetAddToFavorites:(id)sender
 {
 	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:([sshCheckbox state] == NSOnState) sshHost:[sshHostField stringValue] sshUser:[sshUserField stringValue] sshPassword:[sshPasswordField stringValue] sshPort:[sshPortField stringValue]];
+	[connectFavoritesTableView scrollRowToVisible:[connectFavoritesTableView selectedRow]];
 }
 
 /**

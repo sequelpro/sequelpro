@@ -240,8 +240,10 @@
 																	   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
-	
+	[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
+
 	[favoritesTableView reloadData];
+	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 	[self updateDefaultFavoritePopup];
 }
 
@@ -323,6 +325,7 @@
 		[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
 
 		[favoritesTableView reloadData];
+		[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 		[self updateDefaultFavoritePopup];
 	}
 }
@@ -705,7 +708,7 @@
 		oldKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
 
 		// Set up the new keychain name and account strings
-		newKeychainName = [keychain nameForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		newKeychainName = [keychain nameForSSHForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
 		newKeychainAccount = [keychain accountForSSHUser:[sshUserField stringValue] sshHost:[sshHostField stringValue]];
 
 		// Delete the old keychain item
