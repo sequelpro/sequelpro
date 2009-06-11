@@ -96,6 +96,9 @@
 - (void) keepAlive:(NSTimer *)theTimer;
 - (void) threadedKeepAlive;
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding;
+- (int) getMaxAllowedPacket;
+- (BOOL) isMaxAllowedPacketEditable;
+- (int) setMaxAllowedPacketTo:(int)newSize;
 
 /* return server major version number or -1 on fail */
 - (int)serverMajorVersion;

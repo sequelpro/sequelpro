@@ -1042,6 +1042,57 @@ static void forcePingTimeout(int signalNumber)
 	return (const char *)[theData bytes];
 }
 
+/*
+ * Retrieves max_allowed_packet size set as global variable.
+ * It returns -1 if it fails.
+ */
+- (int) getMaxAllowedPacket
+{
+	CMMCPResult * r;
+	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding];
+	if (![[self getLastErrorMessage] isEqualToString:@""]) {
+		if ([self isConnected])
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
+		return -1;
+	}
+	NSArray *a = [r fetchRowAsArray];
+	if([a count])
+		return [[a objectAtIndex:0] intValue];
+	
+	return -1;
+}
+
+/*
+ * It sets max_allowed_packet size to newSize and it returns
+ * max_allowed_packet after setting it to newSize for cross-checking 
+ * if the maximal size was reached (e.g. set it to 4GB it'll return 1GB up to now).
+ * If something failed it return -1;
+ */
+- (int) setMaxAllowedPacketTo:(int)newSize
+{
+	
+	if(![self isMaxAllowedPacketEditable]) return [self getMaxAllowedPacket];
+
+	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] usingEncoding:mEncoding];
+	if (![[self getLastErrorMessage] isEqualToString:@""]) {
+		if ([self isConnected])
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while setting max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
+	}
+
+	return [self getMaxAllowedPacket];
+}
+
+
+/*
+ * It returns whether max_allowed_packet is setable for the user.
+ */
+- (BOOL) isMaxAllowedPacketEditable
+{
+	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", [self getMaxAllowedPacket]] usingEncoding:mEncoding];
+	return ([[self getLastErrorMessage] isEqualToString:@""]);
+}
+
+
 - (void) dealloc
 {
 	[super dealloc];
