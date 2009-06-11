@@ -112,7 +112,7 @@
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
 	// [tableDataInstance tableEncoding] == nil indicates that an error occured while retrieving table data
-	if ( [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
+	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isKindOfClass:[NSNull class]] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
 	{
 		// Empty the stored data arrays
 		[fullResult removeAllObjects];
