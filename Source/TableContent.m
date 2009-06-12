@@ -69,6 +69,9 @@
 {
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	// if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load])
+	//    NSLog(@"Quick Look loaded!");
+	
 }
 
 /*
@@ -856,7 +859,9 @@
 	
 	if ( [panel runModal] == NSOKButton ) {
 		NSString *fileName = [panel filename];
-		
+
+		[editSheetProgressBar startAnimation:self];
+
 		// free old data
 		if ( editData != nil ) {
 			[editData release];
@@ -866,7 +871,7 @@
 		editData = [[NSData alloc] initWithContentsOfFile:fileName];
 		NSImage *image = [[NSImage alloc] initWithData:editData];
 		NSString *contents = [NSString stringWithContentsOfFile:fileName];
-		
+
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
 		[editTextView setString:contents];
@@ -874,15 +879,53 @@
 
 		// If the image cell now contains a valid image, select the image tab
 		if (image) {
-			[editSheetTabView selectTabViewItemAtIndex:1];
+			[editSheetSegmentControl setSelectedSegment:1];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
 
 		// Otherwise deselect the image tab if it's selected but now not showing anything
 		} else {
-			if ([editSheetTabView indexOfTabViewItem:[editSheetTabView selectedTabViewItem]] == 1)
-				[editSheetTabView selectTabViewItemAtIndex:0];
+			[editSheetSegmentControl setSelectedSegment:0];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
 		}
 		
 		[image release];
+		
+		[editSheetProgressBar stopAnimation:self];
+	}
+}
+
+- (IBAction)segmentControllerChanged:(id)sender
+{
+	switch([sender selectedSegment]){
+		case 0:
+		[editTextView setHidden:NO];
+		[editTextScrollView setHidden:NO];
+		[editImage setHidden:YES];
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		break;
+		case 1:
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+		[editImage setHidden:NO];
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		break;
+		case 2:
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+		[editImage setHidden:YES];
+		[hexTextView setHidden:NO];
+		[hexTextScrollView setHidden:NO];
+		break;
 	}
 }
 
@@ -894,6 +937,9 @@
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	if ( [panel runModal] == NSOKButton ) {
+
+		[editSheetProgressBar startAnimation:self];
+
 		NSString *fileName = [panel filename];
 		
 		// Write binary field types directly to the file
@@ -907,8 +953,109 @@
 									   encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 										  error:NULL];
 		}
+
+		[editSheetProgressBar stopAnimation:self];
+
 	}
 }
+
+- (IBAction)quickLookAsWordDoc:(id)sender
+{
+	[self invokeQuickLookOfType:@"doc"];
+}
+- (IBAction)quickLookAsRTF:(id)sender
+{
+	[self invokeQuickLookOfType:@"rtf"];
+}
+- (IBAction)quickLookAsMovie:(id)sender
+{
+	[self invokeQuickLookOfType:@"mov"];
+}
+- (IBAction)quickLookAsSoundM4A:(id)sender
+{
+	[self invokeQuickLookOfType:@"m4a"];
+}
+- (IBAction)quickLookAsSoundMP3:(id)sender
+{
+	[self invokeQuickLookOfType:@"mp3"];
+}
+- (IBAction)quickLookAsSoundLinear:(id)sender
+{
+	[self invokeQuickLookOfType:@"wav"];
+}
+- (IBAction)quickLookAsImage:(id)sender
+{
+	[self invokeQuickLookOfType:@"pict"];
+}
+- (IBAction)quickLookAsPDF:(id)sender
+{
+	[self invokeQuickLookOfType:@"pdf"];
+}
+- (IBAction)quickLookAsHTML:(id)sender
+{
+	[self invokeQuickLookOfType:@"html"];
+}
+
+- (void)invokeQuickLookOfType:(NSString *)type
+{
+
+	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
+
+		[editSheetProgressBar startAnimation:self];
+
+		NSString *tmpFileName = [NSString stringWithFormat:@"/tmp/SequelProQuickLook.%@", type];
+
+		if ( [editData isKindOfClass:[NSData class]] ) {
+			[editData writeToFile:tmpFileName atomically:YES];
+		
+		// Write other field types' representations to the file via the current encoding
+		} else {
+			[[editData description] writeToFile:tmpFileName
+									 atomically:YES
+									   encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+										  error:NULL];
+		}
+
+		[[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] delegate] setDelegate:self];
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setURLs:[NSArray arrayWithObject:
+			[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setShowsAddToiPhotoButton:NO];
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setShowsiChatTheaterButton:NO];
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setShowsFullscreenButton:NO];
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setEnableDragNDrop:NO];
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] makeKeyAndOrderFrontWithEffect:2 canClose:YES];   // 1 = fade in
+
+		qlPane = 0;
+
+		[editSheetProgressBar stopAnimation:self];
+
+		NSModalSession session = [NSApp beginModalSessionForWindow:[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel]];
+		for (;;) {
+			if ([NSApp runModalSession:session] != NSRunContinuesResponse || qlPane == 1 || ![[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
+				break;
+		}
+		[NSApp endModalSession:session];
+
+	}
+
+}
+
+// This is the delegate method
+// It should return the frame for the item represented by the URL
+// If an empty frame is returned then the panel will fade in/out instead
+- (NSRect)previewPanel:(NSPanel*)panel frameForURL:(NSURL*)URL
+{
+
+	// Close modal session defined in invokeQuickLookOfType:
+	// if user closes the QuickLook view
+	qlPane = 1;
+
+	NSRect r = [editSheetQuickLookButton convertRectToBase:[editSheetQuickLookButton frame]];
+	// NSLog(@"%@ %@", r, [[NSApp mainWindow] frame]);
+	r.origin.y=400;
+	return r;
+}
+
 
 /*
  * Invoked when the imageView in the connection sheet has the contents deleted
@@ -2053,46 +2200,69 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
 	if ( [multipleLineEditingButton state] == NSOnState || [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]] ) {
+		
 		theValue = [[filteredResult objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 		NSImage *image = nil;
 		editData = [theValue retain];
-		
+
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editImage setHidden:YES];
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+
+		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+
+		[editSheetProgressBar startAnimation:self];
+
 		if ( [theValue isKindOfClass:[NSData class]] ) {
 			image = [[[NSImage alloc] initWithData:theValue] autorelease];
 			[hexTextView setString:[self dataToHex:theValue]];
 			stringValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 			if (stringValue == nil)
 				stringValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
+			[hexTextView setHidden:NO];
+			[hexTextScrollView setHidden:NO];
+			[editImage setHidden:YES];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editSheetSegmentControl setSelectedSegment:2];
 		} else {
 			[hexTextView setString:@""];
 			stringValue = [[NSString alloc] initWithString:[theValue description]];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
+			[editSheetSegmentControl setSelectedSegment:0];
 		}
 
 		if (image) {
 			[editImage setImage:image];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editSheetSegmentControl setSelectedSegment:1];
 		} else {
-			[editImage setImage:nil];		
+			[editImage setImage:nil];
 		}
 		if (stringValue) {
 			[editTextView setString:stringValue];
-			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+			//[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
 			[stringValue release];
 		}
 		
-		// If the cell contains a valid image, select the image tab
-		if (image) {
-			[editSheetTabView selectTabViewItemAtIndex:1];
+		[editSheetProgressBar stopAnimation:self];
 
-		// Otherwise default to text tab
-		} else {
-			[editSheetTabView selectTabViewItemAtIndex:0];
-		}
-
-		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 		code = [NSApp runModalForWindow:editSheet];
 
 		[NSApp endSheet:editSheet];
 		[editSheet orderOut:nil];
+
+		qlPane = 1;
 
 		if ( code ) {
 			if ( !isEditingRow ) {
@@ -2102,7 +2272,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			}
 			
 			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy] forKey:[aTableColumn identifier]];
-			
 			// Clean up
 			[editImage setImage:nil];
 			[editTextView setString:@""];
@@ -2110,8 +2279,11 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			if ( editData ) {
 				[editData release];
 			}
+
 		}
+
 		return NO;
+
 	} else {
 		return YES;
 	}
@@ -2241,7 +2413,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
         [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }
-
 // Last but not least
 - (void)dealloc
 {	
