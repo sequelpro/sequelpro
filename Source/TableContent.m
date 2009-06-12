@@ -69,9 +69,6 @@
 {
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	// if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load])
-	//    NSLog(@"Quick Look loaded!");
-	
 }
 
 /*
@@ -859,7 +856,8 @@
 	
 	if ( [panel runModal] == NSOKButton ) {
 		NSString *fileName = [panel filename];
-
+		NSString *contents = nil;
+		
 		[editSheetProgressBar startAnimation:self];
 
 		// free old data
@@ -870,14 +868,20 @@
 		// load new data/images
 		editData = [[NSData alloc] initWithContentsOfFile:fileName];
 		NSImage *image = [[NSImage alloc] initWithData:editData];
-		NSString *contents = [NSString stringWithContentsOfFile:fileName];
+		contents = [[NSString alloc] initWithData:editData encoding:[mySQLConnection encoding]];
+		// NSString *contents = [NSString stringWithContentsOfFile:fileName encoding:[mySQLConnection encoding] error:nil];
 
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
-		[editTextView setString:contents];
+		
+		if(contents)
+			[editTextView setString:contents];
+		else
+			[editTextView setString:@""];
+		
 		[hexTextView setString:[self dataToHex:editData]];
 
-		// If the image cell now contains a valid image, select the image tab
+		// If the image cell now contains a valid image, select the image view
 		if (image) {
 			[editSheetSegmentControl setSelectedSegment:1];
 			[hexTextView setHidden:YES];
@@ -886,7 +890,7 @@
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
 
-		// Otherwise deselect the image tab if it's selected but now not showing anything
+		// Otherwise deselect the image view
 		} else {
 			[editSheetSegmentControl setSelectedSegment:0];
 			[hexTextView setHidden:YES];
@@ -897,11 +901,15 @@
 		}
 		
 		[image release];
-		
+		if(contents)
+			[contents release];
 		[editSheetProgressBar stopAnimation:self];
 	}
 }
 
+/*
+ * Segement controller for text/image/hex buttons in editSheet
+ */
 - (IBAction)segmentControllerChanged:(id)sender
 {
 	switch([sender selectedSegment]){
@@ -959,6 +967,9 @@
 	}
 }
 
+#pragma mark -
+#pragma mark QuickLook
+
 - (IBAction)quickLookAsWordDoc:(id)sender
 {
 	[self invokeQuickLookOfType:@"doc"];
@@ -996,19 +1007,26 @@
 	[self invokeQuickLookOfType:@"html"];
 }
 
+/*
+ * Opens QuickLook for current data if QuickLook is available
+ */
 - (void)invokeQuickLookOfType:(NSString *)type
 {
 
+	// Load private framework
 	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
 
 		[editSheetProgressBar startAnimation:self];
 
+		// Create a temporary file name to store the data as file
+		// since QuickLook only works on files.
 		NSString *tmpFileName = [NSString stringWithFormat:@"/tmp/SequelProQuickLook.%@", type];
 
+		// if data are binary
 		if ( [editData isKindOfClass:[NSData class]] ) {
 			[editData writeToFile:tmpFileName atomically:YES];
 		
-		// Write other field types' representations to the file via the current encoding
+		// write other field types' representations to the file via the current encoding
 		} else {
 			[[editData description] writeToFile:tmpFileName
 									 atomically:YES
@@ -1016,25 +1034,40 @@
 										  error:NULL];
 		}
 
-		[[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] delegate] setDelegate:self];
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setURLs:[NSArray arrayWithObject:
-			[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setShowsAddToiPhotoButton:NO];
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setShowsiChatTheaterButton:NO];
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setShowsFullscreenButton:NO];
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] setEnableDragNDrop:NO];
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] makeKeyAndOrderFrontWithEffect:2 canClose:YES];   // 1 = fade in
+		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
 
-		qlPane = 0;
+		// Init QuickLook
+		[[ql delegate] setDelegate:self];
+		[ql setURLs:[NSArray arrayWithObject:
+			[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
+		// No interaction with iChat and iPhoto
+		[ql setShowsAddToiPhotoButton:NO];
+		[ql setShowsiChatTheaterButton:NO];
+		// Since we are inside of editSheet we have to avoid full-screen zooming
+		// otherwise QuickLook hangs
+		[ql setShowsFullscreenButton:NO];
+		[ql setEnableDragNDrop:NO];
+		// Order out QuickLook with animation effect according to self:previewPanel:frameForURL:
+		[ql makeKeyAndOrderFrontWithEffect:2 canClose:YES];   // 1 = fade in
+
+		// quickLookCloseMarker == 1 break the modal session
+		quickLookCloseMarker = 0;
 
 		[editSheetProgressBar stopAnimation:self];
 
-		NSModalSession session = [NSApp beginModalSessionForWindow:[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel]];
+		// Run QuickLook in its own modal seesion for event handling
+		NSModalSession session = [NSApp beginModalSessionForWindow:ql];
 		for (;;) {
-			if ([NSApp runModalSession:session] != NSRunContinuesResponse || qlPane == 1 || ![[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
+			// Conditions for closing QuickLook
+			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
+				|| quickLookCloseMarker == 1 
+				|| ![ql isVisible]) 
 				break;
 		}
 		[NSApp endModalSession:session];
+		
+		// remove temp file
+		[[NSFileManager defaultManager] removeItemAtPath:tmpFileName error:NULL];
 
 	}
 
@@ -1048,10 +1081,11 @@
 
 	// Close modal session defined in invokeQuickLookOfType:
 	// if user closes the QuickLook view
-	qlPane = 1;
+	quickLookCloseMarker = 1;
 
+	// TODO get QuickLook's pulldown button's frame to zoom out/in from/into it
 	NSRect r = [editSheetQuickLookButton convertRectToBase:[editSheetQuickLookButton frame]];
-	// NSLog(@"%@ %@", r, [[NSApp mainWindow] frame]);
+	// tentative setting
 	r.origin.y=400;
 	return r;
 }
@@ -2205,12 +2239,15 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		NSImage *image = nil;
 		editData = [theValue retain];
 
+		// hide all view in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
 
+		// order out editSheet to inform the user that
+		// SP is working
 		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 
 		[editSheetProgressBar startAnimation:self];
@@ -2229,7 +2266,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			[editSheetSegmentControl setSelectedSegment:2];
 		} else {
 			[hexTextView setString:@""];
-			stringValue = [[NSString alloc] initWithString:[theValue description]];
+			// stringValue = [[NSString alloc] initWithString:[theValue description]];
+			stringValue = [theValue retain];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:YES];
@@ -2251,18 +2289,24 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 		if (stringValue) {
 			[editTextView setString:stringValue];
-			//[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+			// Locate the caret in editTextView
+			// (to select all takes a bit time for large data)
+			[editTextView setSelectedRange:NSMakeRange(0,0)];
+			// Set focus to editTextView
+			[editSheet makeFirstResponder:editTextView];
 			[stringValue release];
 		}
 		
 		[editSheetProgressBar stopAnimation:self];
 
+		// wait for editSheet
 		code = [NSApp runModalForWindow:editSheet];
 
 		[NSApp endSheet:editSheet];
 		[editSheet orderOut:nil];
 
-		qlPane = 1;
+		// For safety reasons inform QuickLook to quit
+		quickLookCloseMarker = 1;
 
 		if ( code ) {
 			if ( !isEditingRow ) {
@@ -2272,6 +2316,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			}
 			
 			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy] forKey:[aTableColumn identifier]];
+
 			// Clean up
 			[editImage setImage:nil];
 			[editTextView setString:@""];
@@ -2279,11 +2324,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			if ( editData ) {
 				[editData release];
 			}
-
 		}
-
 		return NO;
-
 	} else {
 		return YES;
 	}

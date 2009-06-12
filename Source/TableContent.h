@@ -28,6 +28,9 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
+
+// since the QuickLook framework is private we have to make
+// these methods public to avoid warnings while compiling
 @interface QLPreviewPanel : NSPanel
 {
 }
@@ -165,7 +168,7 @@
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
 	
-	int qlPane;
+	int quickLookCloseMarker;
 }
 
 //table methods
