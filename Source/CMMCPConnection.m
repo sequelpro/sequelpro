@@ -664,15 +664,15 @@ static void forcePingTimeout(int signalNumber);
 	// If there was an error, check whether it was a connection-related error
 	if (0 != queryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]]) {
 
+		// Try to increase max_allowed_packet for error 2006 BEFORE check connection
+		if(isMaxAllowedPacketEditable && queryResultCode == 1 && [self getLastErrorID] == 2006) {
+			currentMaxAllowedPacket = [self getMaxAllowedPacket];
+			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024];
+		}
+
 		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
 		// should only return false if a disconnection has been requested - in which case return nil.
 		if (![self checkConnection]) return nil;
-			
-		// Try to increase max_allowed_packet for error 2006
-		if(isMaxAllowedPacketEditable && queryResultCode == 1 && [self getLastErrorID] == 2006) {
-			currentMaxAllowedPacket = [self getMaxAllowedPacket];
-			[self setMaxAllowedPacketTo:strlen([self cStringFromString:query])+1024];
-		}
 
 		// The connection has been restored - re-run the query
 		queryStartDate = [NSDate date];
