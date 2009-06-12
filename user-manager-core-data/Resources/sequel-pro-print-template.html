@@ -40,6 +40,15 @@ th {
 tr > td {
 	text-align: left;
 }
+
+tr.even > td {
+	background-color: #EDF3FE;
+}
+
+tr.odd > td {
+	background-color: #FFFFFF;
+}
+
 </style>
 </head>
 
@@ -57,7 +66,7 @@ tr > td {
 
 <tbody>
 {% for row in rows %}
-<tr>
+<tr {% cycle 'class="odd" ' 'class="even" ' %}>
 	{% for cell in row %}<td>{{ cell }}</td>{% /for %}
 </tr>
 {% /for %}

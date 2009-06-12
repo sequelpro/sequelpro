@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPTableData.h
 //  sequel-pro
 //
@@ -23,25 +25,30 @@
 
 #import <Cocoa/Cocoa.h>
 
-
-@interface SPTableData : NSObject {
+@interface SPTableData : NSObject 
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableListInstance;
 
 	NSMutableArray *columns;
 	NSMutableArray *columnNames;
+	NSMutableArray *constraints;
 	NSMutableDictionary *status;
+	
 	NSString *tableEncoding;
-
+	NSString *tableCreateSyntax;
+	
 	CMMCPConnection *mySQLConnection;
 }
 
 - (void) setConnection:(CMMCPConnection *)theConnection;
 - (NSString *) tableEncoding;
+- (NSString *) tableCreateSyntax;
 - (NSArray *) columns;
 - (NSDictionary *) columnWithName:(NSString *)colName;
 - (NSArray *) columnNames;
 - (NSDictionary *) columnAtIndex:(int)index;
+- (NSArray *) getConstraints;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
 - (NSDictionary *) statusValues;

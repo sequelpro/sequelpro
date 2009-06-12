@@ -1,4 +1,7 @@
 //
+//
+//  $Id$
+//
 //  SPTableInfo.m
 //  sequel-pro
 //
@@ -82,15 +85,27 @@
 		return;
 	}
 
+	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
+		[info addObject:@"PROCEDURE INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+
+	if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+		[info addObject:@"FUNCTION INFORMATION"];
+		[info addObject:@"no information available"];
+		[infoTable reloadData];
+		return;
+	}
+	
 	[info addObject:@"TABLE INFORMATION"];
 		
 	if ([tableListInstance tableName]) {
 		if ([[tableListInstance tableName] isEqualToString:@""]) {
 			[info addObject:@"multiple tables"];
-
 		} 
 		else {
-
 			// Retrieve the table status information via the data cache
 			tableStatus = [tableDataInstance statusValues];
 
@@ -100,21 +115,25 @@
 				return;
 			}
 
-			// Check for "Create_time" == NULL
+			// Check for 'Create_time' == NULL
 			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
 
 				// Add the creation date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
 			}
 
-			// Check for "Update_time" == NULL - InnoDB tables don't have an update time
+			// Check for 'Update_time' == NULL - InnoDB tables don't have an update time
 			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
 				
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
 			}
+			
+			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
+			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
+			} 
 						
-			[info addObject:[NSString stringWithFormat:@"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
 			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] intValue]]]];
 			[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
 			
@@ -140,6 +159,12 @@
 	return [info objectAtIndex:rowIndex];
 }
 
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
+{
+	return (row == 0 ? 25 : [tableView rowHeight]);
+}
+
+
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
 	// row 1 and 6 should be editable - ie be able to rename the table and change the auto_increment value.
@@ -157,9 +182,12 @@
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
 		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
+		[(ImageAndTextCell*)aCell setDrawsBackground:NO];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];
+		//[(ImageAndTextCell*)aCell setDrawsBackground:YES];
+		//[(ImageAndTextCell*)aCell setBackgroundColor:[NSColor colorWithDeviceRed:0.894 green:0.917 blue:0.945 alpha:1]];
 	}
 }
 

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  TablesList.h
 //  sequel-pro
 //
@@ -20,15 +22,17 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
 enum sp_table_types
 {
+	SP_TABLETYPE_NONE = -1,
 	SP_TABLETYPE_TABLE = 0,
-	SP_TABLETYPE_VIEW = 1
+	SP_TABLETYPE_VIEW = 1,
+	SP_TABLETYPE_PROC = 2,
+	SP_TABLETYPE_FUNC = 3
 };
 
 @class CMMCResult, CMMCPConnection;
@@ -41,11 +45,12 @@ enum sp_table_types
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id tableStatusInstance;
+	IBOutlet id extendedTableInfoInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;
 	IBOutlet id tablesListView;
+	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
 	IBOutlet id copyTableContentSwitch;
@@ -53,10 +58,17 @@ enum sp_table_types
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
+	IBOutlet id tableTypeButton;
 	IBOutlet id addTableButton;
+	IBOutlet id tableRenameSheet;
+	IBOutlet id tableRenameField;
+	IBOutlet id tableRenameText;
+	IBOutlet id renameTableButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
+	IBOutlet NSMenuItem *renameTableMenuItem;
+	IBOutlet NSMenuItem *separatorTableMenuItem;
 
 	CMMCPConnection *mySQLConnection;
 	
@@ -69,9 +81,10 @@ enum sp_table_types
 // IBAction methods
 - (IBAction)updateTables:(id)sender;
 - (IBAction)addTable:(id)sender;
-- (IBAction)closeTableSheet:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
 - (IBAction)copyTable:(id)sender;
+- (IBAction)renameTable:(id)sender;
 
 // copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;

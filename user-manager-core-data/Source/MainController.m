@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  MainController.m
 //  sequel-pro
 //
@@ -20,10 +22,9 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
-#import "MainController.h"
 #import "KeyChain.h"
+#import "MainController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
 
@@ -173,6 +174,16 @@
 	
 	// Suppress warning
 	return nil;
+}
+
+/**
+ * Deallocate prefs controller
+ */
+- (void)dealloc
+{
+	[prefsController release], prefsController = nil;
+	
+	[super dealloc];
 }
 
 @end

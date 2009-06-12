@@ -402,7 +402,6 @@
         range.length++;
         
         count = [lines count];
-        index = 0;
         
         for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
         {

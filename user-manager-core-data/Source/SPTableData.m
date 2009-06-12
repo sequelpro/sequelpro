@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPTableData.m
 //  sequel-pro
 //
@@ -39,8 +41,11 @@
 	if ((self = [super init])) {
 		columns = [[NSMutableArray alloc] init];
 		columnNames = [[NSMutableArray alloc] init];
+		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		
 		tableEncoding = nil;
+		tableCreateSyntax = nil;
 		mySQLConnection = nil;
 	}
 
@@ -70,7 +75,24 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	return [NSString stringWithString:tableEncoding];
+	return (tableEncoding == nil) ? nil : [NSString stringWithString:tableEncoding];
+}
+
+/*
+ * Retrieve the create syntax for the current table, using or refreshing the cache as appropriate.
+ */
+- (NSString *) tableCreateSyntax
+{
+	if (tableCreateSyntax == nil) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} 
+		else {
+			[self updateInformationForCurrentTable];
+		}
+	}
+	
+	return [NSString stringWithString:tableCreateSyntax];
 }
 
 
@@ -89,6 +111,10 @@
 	return columns;
 }
 
+- (NSArray *) getConstraints
+{
+	return constraints;
+}
 
 /*
  * Retrieve a column with a specified name, using or refreshing the cache as appropriate.
@@ -182,9 +208,15 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[status removeAllObjects];
+	
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 		tableEncoding = nil;
+	}
+	
+	if (tableCreateSyntax != nil) {
+		[tableCreateSyntax release];
+		tableCreateSyntax = nil;
 	}
 }
 
@@ -214,13 +246,18 @@
  */
 - (BOOL) updateInformationForCurrentTable
 {
-	NSDictionary *tableData = [self informationForTable:[tableListInstance tableName]];
+	NSDictionary *tableData = nil;
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
 
-	if (tableData == nil) {
+	if( [tableListInstance tableType] == SP_TABLETYPE_TABLE || [tableListInstance tableType] == SP_TABLETYPE_VIEW ) {
+		tableData = [self informationForTable:[tableListInstance tableName]];
+	}
+	
+	if (tableData == nil ) {
 		[columns removeAllObjects];
 		[columnNames removeAllObjects];
+		[constraints removeAllObjects];
 		return FALSE;
 	}
 
@@ -256,6 +293,12 @@
 	NSString *encodingString;
 	unsigned i, stringStart;
 
+	[columns removeAllObjects];
+	[columnNames removeAllObjects];
+	[constraints removeAllObjects];
+	
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
+	
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
@@ -274,9 +317,13 @@
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	NSArray *resultFieldNames = [theResult fetchFieldNames];
+	
 	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
+		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
 		createTableParser = [[SPSQLParser alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]]; 
 	} else {
+		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
 		createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
 	}
 
@@ -338,7 +385,108 @@
 
 		// TODO: Otherwise it's a key definition, constraint, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
-
+			NSArray *parts = [fieldsParser splitStringByCharacter:' ' skippingBrackets:YES ignoringQuotedStrings:YES];
+			NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:@"`()"];
+			// constraints
+			if( [[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"] ) {
+				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
+				/*
+				 NSLog( @"constraint %@ on %@ ref %@.%@", 
+				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
+				 [[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk], 
+				 [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk], 
+				 [[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk] );
+				 */
+				[constraintDetails setObject:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk]
+									  forKey:@"name"];
+				[constraintDetails setObject:[[parts objectAtIndex:4] stringByRemovingCharactersInSet:junk]
+									  forKey:@"columns"];
+				[constraintDetails setObject:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk]
+									  forKey:@"ref_table"];
+				[constraintDetails setObject:[[parts objectAtIndex:7] stringByRemovingCharactersInSet:junk]
+									  forKey:@"ref_columns"];
+				
+				int nextOffs = 12;
+				if( [parts count] > 8 ) {
+					// NOTE: this won't get SET NULL | NO ACTION
+					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
+						//NSLog( @"update: %@", [parts objectAtIndex:10] );
+						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"update"];
+							nextOffs = 13;
+						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"update"];
+							nextOffs = 13;
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:10]
+												  forKey:@"update"];							
+						}
+					} 
+					else if( [[parts objectAtIndex:9] hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:10] );						
+						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"delete"];
+							nextOffs = 13;
+						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"delete"];
+							nextOffs = 13;
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:10]
+												  forKey:@"delete"];							
+						}
+					}
+				}
+				if( [parts count] > nextOffs - 1 ) {
+					if( [[parts objectAtIndex:nextOffs] hasPrefix:@"UPDATE"] ) {
+						//NSLog( @"update: %@", [parts objectAtIndex:13] );
+						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"update"];
+						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"update"];
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
+												  forKey:@"update"];							
+						}
+					} 
+					else if( [[parts objectAtIndex:nextOffs] hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:13] );						
+						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+							[constraintDetails setObject:@"SET NULL"
+												  forKey:@"delete"];
+						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+							[constraintDetails setObject:@"NO ACTION"
+												  forKey:@"delete"];
+						} else {
+							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
+												  forKey:@"delete"];							
+						}
+					}
+				}
+				[constraints addObject:constraintDetails];
+				[constraintDetails release];
+			}
+			// primary key
+			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {
+				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+			}
+			// key
+			else if( [[parts objectAtIndex:0] hasPrefix:@"KEY"] ) {
+				/*
+				 NSLog( @"key %@.%@", 
+				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
+				 [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+				 */
+			}
+			// who knows
+			else {
+				// NSLog( @"not parsed: %@", [parts objectAtIndex:0] );
+			}
 		}
 	}
 	[fieldStrings release];
@@ -373,8 +521,11 @@
 	[fieldParser release];
 
 	tableData = [NSMutableDictionary dictionary];
+	// this will be 'Table' or 'View'
+	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
+	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
 
 	[encodingString release];
 	[tableColumns release];
@@ -396,6 +547,7 @@
 	if (viewData == nil) {
 		[columns removeAllObjects];
 		[columnNames removeAllObjects];
+		[constraints removeAllObjects];
 		return FALSE;
 	}
 
@@ -434,8 +586,31 @@
 	// Catch unselected views and return nil
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
+	// Retrieve the CREATE TABLE syntax for the table
+	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+																					   [viewName backtickQuotedString]
+																					]];
+
+	// Check for any errors, but only display them if a connection still exists
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected]) {
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		}
+		return nil;
+	}
+
+	// Retrieve the table syntax string
+	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	
+	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
+		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
+	} else {
+		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	}
+
+
 	// Retrieve the SHOW COLUMNS syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -714,8 +889,11 @@
 {
 	[columns release];
 	[columnNames release];
+	[constraints release];
 	[status release];
+	
 	if (tableEncoding != nil) [tableEncoding release];
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 
 	[super dealloc];
 }

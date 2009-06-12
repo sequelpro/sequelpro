@@ -1,8 +1,11 @@
 //
+//  $Id$
+//
 //  SPQueryConsole.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Jan 30, 2009
+//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -115,11 +118,16 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (void)awakeFromNib
 {
+	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+	
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowTimestamps"]];
-	showSelectStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowSelectsAndShows"];
-	showHelpStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowHelps"];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:@"ConsoleShowTimestamps"]];
+	showSelectStatementsAreDisabled = ![prefs boolForKey:@"ConsoleShowSelectsAndShows"];
+	showHelpStatementsAreDisabled = ![prefs boolForKey:@"ConsoleShowHelps"];
+	
 	[self _updateFilterState];
+	
+	[loggingDisabledTextField setStringValue:([prefs boolForKey:@"ConsoleEnableLogging"]) ? @"" : @"Query logging is currently disabled"];
 }
 
 /**
@@ -192,12 +200,6 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	[panel setAccessoryView:saveLogView];
 
 	[panel beginSheetForDirectory:nil file:DEFAULT_CONSOLE_LOG_FILENAME modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
-	[panel beginSheetForDirectory:nil 
-							 file:DEFAULT_CONSOLE_LOG_FILENAME 
-				   modalForWindow:[self window] 
-					modalDelegate:self 
-				   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:NULL];
 }
 
 /**
@@ -335,6 +337,16 @@ static SPQueryConsole *sharedQueryConsole = nil;
 
 		[self _updateFilterState];
 	} 
+}
+
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
+		[loggingDisabledTextField setStringValue:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? @"" : @"Query logging is currently disabled"];
+	}
 }
 
 /**

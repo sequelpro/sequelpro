@@ -1,8 +1,11 @@
 //
+//  $Id$
+//
 //  SPStringAdditions.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -30,6 +33,9 @@
 - (NSString *)backtickQuotedString;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
+
+- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask;
+- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;

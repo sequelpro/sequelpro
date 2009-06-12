@@ -1,8 +1,11 @@
 //
+//  $Id$
+//
 //  SPGrowlController.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Nov 28, 2008
+//  Copyright (c) 2008 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -29,7 +32,16 @@
 + (SPGrowlController *)sharedGrowlController;
 
 // Post notification
-- (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name;
-- (void)notifyWithTitle:(NSString *)title description:(NSString *)description notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext;
+- (void)notifyWithTitle:(NSString *)title 
+			description:(NSString *)description 
+	   notificationName:(NSString *)name;
+
+- (void)notifyWithTitle:(NSString *)title 
+			description:(NSString *)description 
+	   notificationName:(NSString *)name 
+			   iconData:(NSData *)data 
+			   priority:(int)priority 
+			   isSticky:(BOOL)sticky 
+		   clickContext:(id)clickContext;
 
 @end

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPArrayAdditions.m
 //  sequel-pro
 //
@@ -38,6 +40,23 @@
         result = [result stringByAppendingString: [component backtickQuotedString] ];
     }
     return result;
+}
+
+- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes
+{
+	NSMutableArray *subArray  = [NSMutableArray arrayWithCapacity:[indexes count]];
+	unsigned count = [self count];
+
+	unsigned index = [indexes firstIndex];
+	while ( index != NSNotFound )
+	{
+		if ( index < count )
+			[subArray addObject: [self objectAtIndex: index]];
+
+		index = [indexes indexGreaterThanIndex: index];
+	}
+
+	return subArray;
 }
 
 @end

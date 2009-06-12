@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPExportController.m
 //  sequel-pro
 //
@@ -30,10 +32,17 @@
 
 -(void)export
 {
-	if ([NSBundle loadNibNamed:@"ExportDialog" owner:self]) {
-		[self loadTables];
-		[NSApp beginSheet:exportWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+	if (!exportWindow) {
+		[NSBundle loadNibNamed:@"ExportDialog" owner:self];
 	}
+	
+	[self loadTables];
+	
+	[NSApp beginSheet:exportWindow
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:nil];
 }
 
 - (IBAction)closeSheet:(id)sender
@@ -174,4 +183,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return self;
 }
 
+
+- (void)dealloc
+{	
+    [tables release];
+	[super dealloc];
+}
 @end

@@ -3,6 +3,7 @@
 @interface NSManagedObject (CoreDataGeneratedAccessors)
 
 - (NSString *)displayName;
+- (void)setDisplayName:(NSString *)value;
 
 - (NSNumber *)create_priv;
 - (void)setCreate_priv:(NSNumber *)value;

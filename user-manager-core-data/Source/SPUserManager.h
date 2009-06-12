@@ -90,4 +90,7 @@
 // General
 - (IBAction)doCancel:(id)sender;
 - (IBAction)doApply:(id)sender;
+
+// Core Data Notifications
+- (void)contextDidSave:(NSNotification *)notification;
 @end

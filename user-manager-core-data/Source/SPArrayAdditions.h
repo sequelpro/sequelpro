@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPArrayAdditions.h
 //  sequel-pro
 //
@@ -25,5 +27,6 @@
 @interface NSArray (SPArrayAdditions)
 
 - (NSString *)componentsJoinedAndBacktickQuoted;
+- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end

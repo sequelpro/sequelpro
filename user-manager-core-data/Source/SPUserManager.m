@@ -48,6 +48,10 @@
 
 - (void)awakeFromNib
 {	
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(contextDidSave:) 
+												 name:NSManagedObjectContextDidSaveNotification 
+											   object:nil];
 	// Set up the sorting for the NSArrayControllers
 	NSSortDescriptor *sd = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
 	[selectedPrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
@@ -68,7 +72,7 @@
 	selectedPrivs = [[NSMutableArray alloc] init];
 	
 	// Initializing could take a while so run in a separate thread
-	//[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
+	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
 }
 
 - (void)_initializeDatabaseList
@@ -120,6 +124,7 @@
 
 - (void)_initializeTree:(NSArray *)items
 {
+	/*
 	for(int i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] valueForKey:@"User"];
@@ -128,8 +133,8 @@
 		if ([[users valueForKey:@"username"] containsObject:username])
 		{
 			int parentIndex = [[users valueForKey:@"username"] indexOfObject:username];
-			SPUserItem *parent = [users objectAtIndex:parentIndex];
-			SPUserItem *childItem = [[[SPUserItem alloc] init] autorelease];
+			SPUser *parent = [users objectAtIndex:parentIndex];
+			SPUser *childItem = ;
 			
 			[childItem setUsername: [[items objectAtIndex:i] valueForKey:@"User"]];
 			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
@@ -156,6 +161,7 @@
 			[treeController insertObject:userItem atArrangedObjectIndexPath:[NSIndexPath indexPathWithIndex:[users count]]];			
 		}
 	}
+	 */
 }
 
 - (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
@@ -344,6 +350,16 @@
 {
 	return TRUE;
 }
+
+- (BOOL)outlineView:(NSOutlineView *)olv shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	if ([[[item representedObject] children] count] == 0)
+	{
+		return TRUE;
+	}
+	return FALSE;
+	
+}
 // TableView Delegate Methods
 
 
@@ -386,13 +402,12 @@
 {
 	if ([[treeController selectedObjects] count] > 0)
 	{
-		if ([[[treeController selectedObjects] objectAtIndex:0] isLeaf])
+		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil)
 		{
 			[self _selectParentFromSelection];
 		}
 	}	
-	NSIndexPath *indexPath;
-	indexPath = [NSIndexPath indexPathWithIndex:[users count]];
+	NSIndexPath *indexPath = [NSIndexPath indexPathWithIndex:[[[self managedObjectContext] registeredObjects] count]];
 	NSManagedObject *newItem = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
 															 inManagedObjectContext:[self managedObjectContext]];
 	[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
@@ -402,16 +417,35 @@
 - (IBAction)removeUser:(id)sender
 {
 	
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil)
+		{
+			[self _selectParentFromSelection];
+		}
+		[treeController removeObject:[[treeController selectedObjects] objectAtIndex:0]];
+	}	
 }
 
 - (IBAction)addHost:(id)sender
 {
-	
+	[treeController addChild:sender];
 }
 
 - (IBAction)removeHost:(id)sender
 {
-	
+	[treeController remove:sender];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	if ([menuItem action] == @selector(addHost:) ||
+		[menuItem action] == @selector(removeHost:))
+	{
+		return (([[treeController selectedObjects] count] > 0) && 
+				[[[treeController selectedObjects] objectAtIndex:0] parent] == nil);
+	}
+	return TRUE;
 }
 
 - (void)_selectParentFromSelection
@@ -431,5 +465,10 @@
 			[treeController removeSelectionIndexPaths:selectedIndexPaths];
 		}
 	}
+}
+
+- (void)contextDidSave:(NSNotification *)notification
+{
+	NSLog(@"ContextDidSave: %@", [notification userInfo]);
 }
 @end

@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  CustomQuery.h
 //  sequel-pro
 //
@@ -20,7 +22,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
@@ -77,6 +78,9 @@
 	CMMCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
+	NSRange currentQueryRange;
+	NSArray *currentQueryRanges;
+	BOOL hasBackgroundAttribute;
 	NSString *mySQLversion;
 		
 	int queryStartPosition;
@@ -114,7 +118,7 @@
 // Query actions
 - (void)performQueries:(NSArray *)queries;
 - (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
-- (NSRange)queryTextRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
 
 // Accessors
@@ -133,6 +137,7 @@
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
+- (void)selectCurrentQuery;
 - (NSString *)usedQuery;
 
 

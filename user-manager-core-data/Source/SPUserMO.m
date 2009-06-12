@@ -11,6 +11,11 @@
 	}
 }
 
+- (void)setDisplayName:(NSString *)value
+{
+	[self setHost:value];
+}
+
 - (NSNumber *)create_priv 
 {
     NSNumber * tmpValue;

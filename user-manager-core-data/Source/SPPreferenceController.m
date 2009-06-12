@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPPreferenceController.m
 //  sequel-pro
 //
@@ -36,6 +38,7 @@
 #define PREFERENCE_TOOLBAR_AUTOUPDATE		@"Preference Toolbar Auto Update"
 #define PREFERENCE_TOOLBAR_NETWORK			@"Preference Toolbar Network"
 #define PREFERENCE_TOOLBAR_EDITOR			@"Preference Toolbar Editor"
+#define PREFERENCE_TOOLBAR_SHORTCUTS		@"Preference Toolbar Shortcuts"
 
 #pragma mark -
 
@@ -237,8 +240,10 @@
 																	   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
-	
+	[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
+
 	[favoritesTableView reloadData];
+	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 	[self updateDefaultFavoritePopup];
 }
 
@@ -254,13 +259,15 @@
 		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
 		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
 		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
-		int favoriteid = [[favoritesController valueForKeyPath:@"selection.id"] intValue];
+		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
+		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
+		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
 
 		// Remove passwords from the Keychain
-		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro : %@ (%i)", name, favoriteid]
-								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
-		[keychain deletePasswordForName:[NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)", name, favoriteid]
-								account:[NSString stringWithFormat:@"%@@%@/%@", user, host, database]];
+		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
+								account:[keychain accountForUser:user host:host database:database]];
+		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
+								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
 		
 		// Reset last used favorite
 		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"LastFavoriteIndex"]) {
@@ -285,15 +292,17 @@
 - (IBAction)duplicateFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		NSString *keychainName, *keychainAccount, *password;
+		NSString *keychainName, *keychainAccount, *password, *keychainSSHName, *keychainSSHAccount, *sshPassword;
 		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
 		NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 
-		// Select the keychain password for duplication
-		keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
-		keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-							[favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
+		// Select the keychain passwords for duplication
+		keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
+		keychainAccount = [keychain accountForUser:[favorite objectForKey:@"user"] host:[favorite objectForKey:@"host"] database:[favorite objectForKey:@"database"]];
 		password = [keychain getPasswordForName:keychainName account:keychainAccount];
+		keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
+		keychainSSHAccount = [keychain accountForSSHUser:[favorite objectForKey:@"sshUser"] sshHost:[favorite objectForKey:@"sshHost"]];
+		sshPassword = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
 
 		// Update the unique ID
 		[favorite setObject:favoriteid forKey:@"id"];
@@ -301,16 +310,22 @@
 		// Alter the name for clarity
 		[favorite setObject:[NSString stringWithFormat:@"%@ Copy", [favorite objectForKey:@"name"]] forKey:@"name"];
 
-		// Create a new keychain item if appropriate
+		// Create new keychain items if appropriate
 		if (password && [password length]) {
-			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+			keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
 			[keychain addPassword:password forName:keychainName account:keychainAccount];
 		}
-		password = nil;
+		if (sshPassword && [sshPassword length]) {
+			keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
+			[keychain addPassword:sshPassword forName:keychainSSHName account:keychainSSHAccount];
+		}
+		password = nil, sshPassword = nil;
 		
 		[favoritesController addObject:favorite];
+		[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
 
 		[favoritesTableView reloadData];
+		[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 		[self updateDefaultFavoritePopup];
 	}
 }
@@ -544,17 +559,21 @@
 	// If no selection is present, blank the field.
 	if ([[favoritesTableView selectedRowIndexes] count] == 0) {
 		[passwordField setStringValue:@""];
+		[sshPasswordField setStringValue:@""];
 		return;
 	}
 
 	// Otherwise retrieve and set the password.
-	NSString *keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	NSString *keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-								 [favoritesController valueForKeyPath:@"selection.user"],
-								 [favoritesController valueForKeyPath:@"selection.host"],
-								 [favoritesController valueForKeyPath:@"selection.database"]];
+	NSString *keychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+	NSString *keychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:[favoritesController valueForKeyPath:@"selection.host"] database:[favoritesController valueForKeyPath:@"selection.database"]];
 
 	[passwordField setStringValue:[keychain getPasswordForName:keychainName account:keychainAccount]];
+
+	// Retrieve the SSH keychain password if appropriate.
+	NSString *keychainSSHName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+	NSString *keychainSSHAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
+
+	[sshPasswordField setStringValue:[keychain getPasswordForName:keychainSSHName account:keychainSSHAccount]];
 }
 
 #pragma mark -
@@ -586,6 +605,9 @@
 	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_EDITOR]) {
 		return editorItem;
 	}
+	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_SHORTCUTS]) {
+		return shortcutItem;
+	}
 	
     return [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
 }
@@ -595,7 +617,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -603,7 +625,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
+    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -611,7 +633,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, PREFERENCE_TOOLBAR_EDITOR, nil];
+	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
 }
 
 #pragma mark -
@@ -645,46 +667,57 @@
 {
 	NSString *oldKeychainName, *newKeychainName;
 	NSString *oldKeychainAccount, *newKeychainAccount;
-	NSString *oldPassword;
 
-	// Only proceed for name, host, user or database changes
-	if (control != nameField && control != hostField && control != userField && control != passwordField && control != databaseField)
+	// Only proceed for name, host, user or database changes, for both standard and SSH
+	if (control != nameField && control != hostField && control != userField && control != passwordField && control != databaseField
+		&& control != sshHostField && control != sshUserField && control != sshPasswordField)
 		return YES;
 
-	// Set the current keychain name and account strings
-	oldKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favoritesController valueForKeyPath:@"selection.name"], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	oldKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-						  [favoritesController valueForKeyPath:@"selection.user"],
-						  [favoritesController valueForKeyPath:@"selection.host"],
-						  [favoritesController valueForKeyPath:@"selection.database"]];
+	// If account/password details have changed, update the keychain to match
+	if ([nameField stringValue] != [favoritesController valueForKeyPath:@"selection.name"]
+		|| [hostField stringValue] != [favoritesController valueForKeyPath:@"selection.host"]
+		|| [userField stringValue] != [favoritesController valueForKeyPath:@"selection.user"]
+		|| [databaseField stringValue] != [favoritesController valueForKeyPath:@"selection.database"]
+		|| control == passwordField) {
 
-	// Retrieve the old password
-	oldPassword = [keychain getPasswordForName:oldKeychainName account:oldKeychainAccount];
-	
-	// If no details have changed, skip processing
-	if ([nameField stringValue] == [favoritesController valueForKeyPath:@"selection.name"]
-		&& [hostField stringValue] == [favoritesController valueForKeyPath:@"selection.host"]
-		&& [userField stringValue] == [favoritesController valueForKeyPath:@"selection.user"]
-		&& [databaseField stringValue] == [favoritesController valueForKeyPath:@"selection.database"]
-		&& [passwordField stringValue] == oldPassword) {
-		oldPassword = nil;
-		return YES;
+		// Get the current keychain name and account strings
+		oldKeychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		oldKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:[favoritesController valueForKeyPath:@"selection.host"] database:[favoritesController valueForKeyPath:@"selection.database"]];
+
+		// Set up the new keychain name and account strings
+		newKeychainName = [keychain nameForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		newKeychainAccount = [keychain accountForUser:[userField stringValue] host:[hostField stringValue] database:[databaseField stringValue]];
+
+		// Delete the old keychain item
+		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Add the new keychain item if the password field has a value
+		if ([[passwordField stringValue] length])
+			[keychain addPassword:[passwordField stringValue] forName:newKeychainName account:newKeychainAccount];
 	}
-	oldPassword = nil;
 
-	// Set up the new keychain name and account strings
-	newKeychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [nameField stringValue], [[favoritesController valueForKeyPath:@"selection.id"] intValue]];
-	newKeychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
-						  [userField stringValue],
-						  [hostField stringValue],
-						  [databaseField stringValue]];
 
-	// Delete the old keychain item
-	[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+	// If SSH account/password details have changed, update the keychain to match
+	if ([nameField stringValue] != [favoritesController valueForKeyPath:@"selection.name"]
+		|| [sshHostField stringValue] != [favoritesController valueForKeyPath:@"selection.sshHost"]
+		|| [sshUserField stringValue] != [favoritesController valueForKeyPath:@"selection.sshUser"]
+		|| control == sshPasswordField) {
 
-	// Add the new keychain item if the password field has a value
-	if ([[passwordField stringValue] length])
-		[keychain addPassword:[passwordField stringValue] forName:newKeychainName account:newKeychainAccount];
+		// Get the current keychain name and account strings
+		oldKeychainName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		oldKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
+
+		// Set up the new keychain name and account strings
+		newKeychainName = [keychain nameForSSHForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		newKeychainAccount = [keychain accountForSSHUser:[sshUserField stringValue] sshHost:[sshHostField stringValue]];
+
+		// Delete the old keychain item
+		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Add the new keychain item if the password field has a value
+		if ([[sshPasswordField stringValue] length])
+			[keychain addPassword:[sshPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+	}
 
 	// Proceed with editing
 	return YES;
@@ -707,6 +740,28 @@
 
 #pragma mark -
 #pragma mark Other
+
+
+- (void)setGrowlEnabled:(BOOL)value
+{
+	if (value) {
+		NSRunInformationalAlertPanel(
+			NSLocalizedString(@"growl_prefs_title", "Title for Growl Notifications Alert Dialog"),
+			NSLocalizedString(@"growl_prefs_msg", @"Message for Growl Notifications Alert Dialog"),
+			nil,
+			nil,
+			nil
+		);
+	}
+	
+	[prefs setBool:value forKey:@"GrowlEnabled"];
+}
+
+- (BOOL)growlEnabled
+{
+	return [prefs boolForKey:@"GrowlEnabled"];
+}
+
 
 // -------------------------------------------------------------------------------
 // updateDefaultFavoritePopup:
@@ -768,19 +823,21 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.000 blue:0.658 alpha:1.000]] forKey:@"CustomQueryEditorBacktickColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.000 alpha:1.000]] forKey:@"CustomQueryEditorNumericColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.500 green:0.500 blue:0.500 alpha:1.000]] forKey:@"CustomQueryEditorVariableColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.950 green:0.950 blue:0.950 alpha:1.000]] forKey:@"CustomQueryEditorHighlightQueryColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorTextColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorCaretColor"];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:@"CustomQueryEditorBackgroundColor"];
 
 }
 // set font panel's valid modes
 - (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+   return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
 }
 // Action receiver for a font change in the font panel
 - (void)changeFont:(id)sender
 {
-	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
+	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];	
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:@"CustomQueryEditorFont"];
 	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 }
@@ -837,11 +894,27 @@
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
 
-	[notificationsItem setLabel:NSLocalizedString(@"Notifications", @"")];
+	[notificationsItem setLabel:NSLocalizedString(@"Alerts & Logs", @"")];
 	[notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
 	[notificationsItem setTarget:self];
 	[notificationsItem setAction:@selector(displayNotificationPreferences:)];
 
+	// Editor preferences
+	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
+	
+	[editorItem setLabel:NSLocalizedString(@"Query Editor", @"")];
+	[editorItem setImage:[NSImage imageNamed:@"toolbar-preferences-queryeditor"]];
+	[editorItem setTarget:self];
+	[editorItem setAction:@selector(displayEditorPreferences:)];
+	
+	// Shortcut preferences
+	/*shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
+	
+	[shortcutItem setLabel:NSLocalizedString(@"Shortcuts", @"")];
+	[shortcutItem setImage:[NSImage imageNamed:@"toolbar-preferences-shortcuts"]];
+	[shortcutItem setTarget:self];
+	[shortcutItem setAction:@selector(NSBeep)];*/
+	
 	// AutoUpdate preferences
 	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
 
@@ -857,15 +930,6 @@
 	[networkItem setImage:[NSImage imageNamed:@"toolbar-preferences-network"]];
 	[networkItem setTarget:self];
 	[networkItem setAction:@selector(displayNetworkPreferences:)];
-
-	// Editor preferences
-	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
-
-	[editorItem setLabel:NSLocalizedString(@"Query Editor", @"")];
-	[editorItem setImage:[NSImage imageNamed:@"toolbar-switch-to-sql"]];
-	[editorItem setTarget:self];
-	[editorItem setAction:@selector(displayEditorPreferences:)];
-
 
 	[toolbar setDelegate:self];
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];

@@ -1,8 +1,11 @@
 //
+//  $Id$
+//
 //  SPStringAdditions.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -254,5 +257,41 @@
 	return [result autorelease];
 }
 #endif
+
+
+- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask
+{
+	NSRange                 range;
+	NSMutableString*        newString = [NSMutableString string];
+	unsigned                len = [self length];
+	
+	mask &= ~NSBackwardsSearch;
+	range = NSMakeRange (0, len);
+	
+	while (range.length)
+	{
+		NSRange substringRange;
+		unsigned pos = range.location;
+		
+		range = [self rangeOfCharacterFromSet:charSet options:mask range:range];
+		if (range.location == NSNotFound)
+			range = NSMakeRange (len, 0);
+		
+		substringRange = NSMakeRange (pos, range.location - pos);
+		[newString appendString:[self 
+								 substringWithRange:substringRange]];
+		
+		range.location += range.length;
+		range.length = len - range.location;
+	}
+	
+	return newString;
+}
+
+
+- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet
+{
+	return [self stringByRemovingCharactersInSet:charSet options:0];
+}
 
 @end
