@@ -61,10 +61,6 @@
 	
 	NSString *serverVersionString;
 	
-	NSStringEncoding workerStringEncoding;
-	int workerQueryResultCode;
-	BOOL workerQueryComplete;
-	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
 }
@@ -86,7 +82,6 @@
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
 - (CMMCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;
-- (void) workerPerformQuery:(NSString *)theQuery;
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;

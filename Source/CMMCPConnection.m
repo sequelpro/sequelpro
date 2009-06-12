@@ -639,10 +639,9 @@ static void forcePingTimeout(int signalNumber);
 {
 	CMMCPResult	*theResult;
 	NSDate		*queryStartDate;
-	NSThread	*queryThread;
-	BOOL connectionHasTimedOut = NO, connectionChecked = NO;
-	
-	int currentMaxAllowedPacket = -1;
+	const char	*theCQuery;
+	int			queryResultCode;	
+	int			currentMaxAllowedPacket = -1;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
@@ -654,60 +653,39 @@ static void forcePingTimeout(int signalNumber);
 		[delegate willQueryString:query];
 	}
 
-	// Set up the worker thread
-	workerStringEncoding = encoding;
-	workerQueryComplete = NO;
-	queryThread = [[NSThread alloc] initWithTarget:self selector:@selector(workerPerformQuery:) object:query];
-	
-	// Start the query, monitoring the execution time and ensuring the connection is still
-	// active if it takes longer than three seconds. (Note that this code can be significantly simplified,
-	// removing threading and the extra connection timeout ping check, as soon as we upgrade the MySQL
-	// client libraries so that http://bugs.mysql.com/bug.php?id=9678 is fixed.  This will result in a ~1.5x
-	// speedup for local queries, largely due to reduced CPU usage (?).
+	// Derive the query string in the correct encoding
+	theCQuery = [self cStringFromString:query usingEncoding:encoding];
+
+	// Run the query, timing the execution time on the server.  Note that this will include network lag.
 	queryStartDate = [NSDate date];
-	[queryThread start];
-	while (!workerQueryComplete) {
-		if (!connectionChecked && [[NSDate date] timeIntervalSinceDate:queryStartDate] > 3) {
-			connectionChecked = YES;
-			if (![self pingConnection]) {
-				connectionHasTimedOut = YES;
-				[queryThread cancel];
-				break;
-			}
-		}
-		usleep(20);
-	}
-	[queryThread release];
+	queryResultCode = mysql_query(mConnection, theCQuery);
+	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
 
 	// If there was an error, check whether it was a connection-related error
-	if (connectionHasTimedOut || (0 != workerQueryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]])) {
-
-		// Try to increase max_allowed_packet for error 2006
-		if(isMaxAllowedPacketEditable && !connectionHasTimedOut && workerQueryResultCode == 1 && [self getLastErrorID] == 2006) {
-			currentMaxAllowedPacket = [self getMaxAllowedPacket];
-			[self setMaxAllowedPacketTo:strlen([self cStringFromString:query])+1024];
-		}
+	if (0 != queryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]]) {
 
 		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
 		// should only return false if a disconnection has been requested - in which case return nil.
 		if (![self checkConnection]) return nil;
 			
-		// The connection has been restored - re-run the query
-		workerQueryComplete = NO;
-		queryThread = [[NSThread alloc] initWithTarget:self selector:@selector(workerPerformQuery:) object:query];
-		[queryThread start];
-		while (!workerQueryComplete) {
-			usleep(20);
+		// Try to increase max_allowed_packet for error 2006
+		if(isMaxAllowedPacketEditable && queryResultCode == 1 && [self getLastErrorID] == 2006) {
+			currentMaxAllowedPacket = [self getMaxAllowedPacket];
+			[self setMaxAllowedPacketTo:strlen([self cStringFromString:query])+1024];
 		}
-		[queryThread release];
+
+		// The connection has been restored - re-run the query
+		queryStartDate = [NSDate date];
+		queryResultCode = mysql_query(mConnection, theCQuery);
+		lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
 	}
 
-	// If max_allowed_packet was changes reset it to default
+	// If max_allowed_packet was changed, reset it to default
 	if(currentMaxAllowedPacket > -1)
 		[self setMaxAllowedPacketTo:currentMaxAllowedPacket];
 
 	// Retrieve the result or error appropriately.
-	if (0 == workerQueryResultCode) {
+	if (0 == queryResultCode) {
 		if (mysql_field_count(mConnection) != 0) {
 
 			// Use CMMCPResult instead of MCPResult
@@ -719,7 +697,7 @@ static void forcePingTimeout(int signalNumber);
 
 		// Inform the delegate about errors
 		if (delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
-			if(workerQueryResultCode == 1 && [self getLastErrorID] == 2006)
+			if(queryResultCode == 1 && [self getLastErrorID] == 2006)
 				// very likely that query length > max_allowed_packet 
 				[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", [self getLastErrorMessage]]];
 			else
@@ -733,37 +711,6 @@ static void forcePingTimeout(int signalNumber);
 
 	return [theResult autorelease];
 }
-
-/*
- * Perform a query in threaded mode.
- */
-- (void) workerPerformQuery:(NSString *)theQuery
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	const char	*theCQuery;
-	NSDate *queryStartDate;
-	float queryExecutionTime;
-	int theQueryCode;
-
-	theCQuery = [self cStringFromString:theQuery usingEncoding:workerStringEncoding];
-
-	queryStartDate = [NSDate date];
-	theQueryCode = mysql_query(mConnection, theCQuery);
-	queryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
-
-	// If the thread has already been cancelled, this is a timed-out result.
-	if ([[NSThread currentThread] isCancelled]) {
-		[pool release];
-		return;
-	}
-	
-	workerQueryResultCode = theQueryCode;
-	lastQueryExecutionTime = queryExecutionTime;
-	workerQueryComplete = YES;
-
-	[pool release];
-}
-
 
 
 /*
