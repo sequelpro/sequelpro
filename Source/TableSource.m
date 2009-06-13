@@ -450,16 +450,30 @@ opens the indexSheet
 */
 - (IBAction)openIndexSheet:(id)sender
 {
-	int code = 0;
+	int i, code = 0;
 
 	// Check whether a save of the current field row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
+	// Set sheet defaults - key type PRIMARY, key name PRIMARY and disabled, and blank indexed columns
 	[indexTypeField selectItemAtIndex:0];
 	[indexNameField setEnabled:NO];
 	[indexNameField setStringValue:@"PRIMARY"];
 	[indexedColumnsField setStringValue:@""];
+	[indexSheet makeFirstResponder:indexedColumnsField];
+	
+	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
+	for (i = 0; i < [indexes count]; i++) {
+		if ([[[tableFields objectAtIndex:i] objectForKey:@"Key"] isEqualToString:@"PRI"]) {
+			[indexTypeField selectItemAtIndex:1];
+			[indexNameField setEnabled:YES];
+			[indexNameField setStringValue:@""];
+			[indexSheet makeFirstResponder:indexNameField];
+			break;
+		}
+	}
 
+	// Begin the sheet
 	[NSApp beginSheet:indexSheet
 			modalForWindow:tableWindow modalDelegate:self
 			didEndSelector:nil contextInfo:nil];
