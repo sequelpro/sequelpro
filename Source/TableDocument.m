@@ -241,7 +241,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	// Process the template and display the results.
 	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
-	NSLog(@"result %@", result);
+	//NSLog(@"result %@", result);
 
 	return result;
 }

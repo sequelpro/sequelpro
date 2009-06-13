@@ -37,6 +37,7 @@
 #import "SPQueryConsole.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPTextViewAdditions.h"
 
 @implementation TableContent
 
@@ -951,6 +952,7 @@
 		NSString *fileName = [panel filename];
 		
 		// Write binary field types directly to the file
+		//// || [editSheetBinaryButton state] == NSOnState
 		if ( [editData isKindOfClass:[NSData class]] ) {
 			[editData writeToFile:fileName atomically:YES];
 		
@@ -970,47 +972,25 @@
 #pragma mark -
 #pragma mark QuickLook
 
-- (IBAction)quickLookAsWordDoc:(id)sender
+- (IBAction)quickLookFormatButton:(id)sender
 {
-	[self invokeQuickLookOfType:@"doc"];
-}
-- (IBAction)quickLookAsRTF:(id)sender
-{
-	[self invokeQuickLookOfType:@"rtf"];
-}
-- (IBAction)quickLookAsMovie:(id)sender
-{
-	[self invokeQuickLookOfType:@"mov"];
-}
-- (IBAction)quickLookAsSoundM4A:(id)sender
-{
-	[self invokeQuickLookOfType:@"m4a"];
-}
-- (IBAction)quickLookAsSoundMP3:(id)sender
-{
-	[self invokeQuickLookOfType:@"mp3"];
-}
-- (IBAction)quickLookAsSoundLinear:(id)sender
-{
-	[self invokeQuickLookOfType:@"wav"];
-}
-- (IBAction)quickLookAsImage:(id)sender
-{
-	[self invokeQuickLookOfType:@"pict"];
-}
-- (IBAction)quickLookAsPDF:(id)sender
-{
-	[self invokeQuickLookOfType:@"pdf"];
-}
-- (IBAction)quickLookAsHTML:(id)sender
-{
-	[self invokeQuickLookOfType:@"html"];
+	switch([sender tag]) {
+		case 0: [self invokeQuickLookOfType:@"pict" treatAsText:NO];  break;
+		case 1: [self invokeQuickLookOfType:@"m4a"  treatAsText:NO];  break;
+		case 2: [self invokeQuickLookOfType:@"mp3"  treatAsText:NO];  break;
+		case 3: [self invokeQuickLookOfType:@"wav"  treatAsText:NO];  break;
+		case 4: [self invokeQuickLookOfType:@"mov"  treatAsText:NO];  break;
+		case 5: [self invokeQuickLookOfType:@"pdf"  treatAsText:NO];  break;
+		case 6: [self invokeQuickLookOfType:@"html" treatAsText:YES]; break;
+		case 7: [self invokeQuickLookOfType:@"doc"  treatAsText:NO];  break;
+		case 8: [self invokeQuickLookOfType:@"rtf"  treatAsText:YES]; break;
+	}
 }
 
 /*
  * Opens QuickLook for current data if QuickLook is available
  */
-- (void)invokeQuickLookOfType:(NSString *)type
+- (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
 
 	// Load private framework
@@ -1023,7 +1003,7 @@
 		NSString *tmpFileName = [NSString stringWithFormat:@"/tmp/SequelProQuickLook.%@", type];
 
 		// if data are binary
-		if ( [editData isKindOfClass:[NSData class]] ) {
+		if ( [editData isKindOfClass:[NSData class]] || !isText) {
 			[editData writeToFile:tmpFileName atomically:YES];
 		
 		// write other field types' representations to the file via the current encoding
@@ -1083,11 +1063,13 @@
 	// if user closes the QuickLook view
 	quickLookCloseMarker = 1;
 
-	// TODO get QuickLook's pulldown button's frame to zoom out/in from/into it
-	NSRect r = [editSheetQuickLookButton convertRectToBase:[editSheetQuickLookButton frame]];
-	// tentative setting
-	r.origin.y=400;
-	return r;
+	// Return the App's middle point
+	NSRect mwf = [[NSApp mainWindow] frame];
+	return NSMakeRect(
+		mwf.origin.x+mwf.size.width/2,
+		mwf.origin.y+mwf.size.height/2,
+		5, 5);
+
 }
 
 
@@ -1112,7 +1094,8 @@
 	NSString *contents = [[NSString alloc] initWithData:data encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
 
 	// Set the string contents and hex representation
-	[editTextView setString:contents];
+	if(contents)
+		[editTextView setString:contents];
 	[hexTextView setString:[self dataToHex:editData]];
 	
 	[contents release];
@@ -1132,11 +1115,16 @@
 	}
 }
 
-- (void)textDidChange:(NSNotification *)notification
+- (void)textViewDidChangeSelection:(NSNotification *)notification
 /*
  invoked when the user changes the string in the editSheet
  */
 {
+
+	// Do nothing if user really didn't changed text (e.g. for font size changing return)
+	if(editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))
+		return;
+
 	// clear the image and hex (since i doubt someone can "type" a gif)
 	[editImage setImage:nil];
 	[hexTextView setString:@""];
@@ -1148,6 +1136,7 @@
 	
 	// set edit data to text
 	editData = [[editTextView string] retain];
+
 }
 
 - (NSString *)dataToHex:(NSData *)data
@@ -2232,8 +2221,11 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 	}
 	
+	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]];
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-	if ( [multipleLineEditingButton state] == NSOnState || [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]] ) {
+	if ( [multipleLineEditingButton state] == NSOnState || isBlob ) {
+		
+		editSheetWillBeInitialized = YES;
 		
 		theValue = [[filteredResult objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 		NSImage *image = nil;
@@ -2245,6 +2237,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		[editImage setHidden:YES];
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
+
+		[editSheetQuickLookButton setHidden:(!isBlob)];
+		[editSheetSegmentControl setHidden:(!isBlob)];
 
 		// order out editSheet to inform the user that
 		// SP is working
@@ -2298,6 +2293,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 		
 		[editSheetProgressBar stopAnimation:self];
+
+		editSheetWillBeInitialized = NO;
 
 		// wait for editSheet
 		code = [NSApp runModalForWindow:editSheet];
@@ -2430,6 +2427,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 /**
  * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
+ * Catch  ⌘+ and  ⌘- to de/increase font size of aTextView
  */
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
@@ -2439,7 +2437,28 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		{
 			[NSApp stopModalWithCode:1];
 			return YES;
-		} else {
+		} 
+		else if([[NSApp currentEvent] modifierFlags] & NSCommandKeyMask)
+		{
+			// increase text size by 1; ⌘+ and numpad +
+			if([[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@"+"])
+			{
+				[aTextView makeTextSizeLarger];
+				return YES;
+			}
+			// decrease text size by 1; ⌘- and numpad -
+			else if([[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@"-"])
+			{
+				[aTextView makeTextSizeSmaller];
+				return YES;
+			}
+			else
+			{
+				return NO;
+			}
+		}
+		else
+		{
 			return NO;
 		}
 	}

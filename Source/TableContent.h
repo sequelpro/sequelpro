@@ -168,6 +168,8 @@
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
 	
+	BOOL editSheetWillBeInitialized;
+	
 	int quickLookCloseMarker;
 }
 
@@ -191,19 +193,11 @@
 - (IBAction)openEditSheet:(id)sender;
 - (IBAction)saveEditSheet:(id)sender;
 - (IBAction)segmentControllerChanged:(id)sender;
-- (IBAction)quickLookAsMovie:(id)sender;
-- (IBAction)quickLookAsSoundLinear:(id)sender;
-- (IBAction)quickLookAsSoundM4A:(id)sender;
-- (IBAction)quickLookAsSoundMP3:(id)sender;
-- (IBAction)quickLookAsImage:(id)sender;
-- (IBAction)quickLookAsPDF:(id)sender;
-- (IBAction)quickLookAsWordDoc:(id)sender;
-- (IBAction)quickLookAsRTF:(id)sender;
-- (IBAction)quickLookAsHTML:(id)sender;
-- (void)invokeQuickLookOfType:(NSString *)type;
+- (IBAction)quickLookFormatButton:(id)sender;
+- (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText;
 - (void)processUpdatedImageData:(NSData *)data;
 - (IBAction)dropImage:(id)sender;
-- (void)textDidChange:(NSNotification *)notification;
+- (void)textViewDidChangeSelection:(NSNotification *)aNotification;
 - (NSString *)dataToHex:(NSData *)data;
 
 //getter methods
