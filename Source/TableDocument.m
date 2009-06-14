@@ -113,6 +113,17 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
 	[tableListSplitter setDividerStyle:NSSplitViewDividerStyleThin];
+
+	// Add the icon accessory view to the title bar
+	NSView *windowFrame = [[tableWindow contentView] superview];
+	NSRect av = [titleAccessoryView frame];
+	NSRect initialAccessoryViewFrame = NSMakeRect(
+											[windowFrame frame].size.width - av.size.width - 20,
+											[windowFrame frame].size.height - av.size.height,
+											av.size.width,
+											av.size.height);
+	[titleAccessoryView setFrame:initialAccessoryViewFrame];
+	[windowFrame addSubview:titleAccessoryView];
 }
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -383,9 +394,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	int newState = [theTunnel state];
 
 	if (newState == SPSSH_STATE_IDLE) {
+		[self setStatusIconToImageWithName:@"ssh-disconnected"];
 		[self failConnectionWithErrorMessage:[theTunnel lastError]];
 	} else if (newState == SPSSH_STATE_CONNECTED) {
+		[self setStatusIconToImageWithName:@"ssh-connected"];
 		[self initiateMySQLConnection];
+	} else {
+		[self setStatusIconToImageWithName:@"ssh-connecting"];
 	}
 }
 
@@ -1988,6 +2003,29 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (NSWindow *)getCreateTableSyntaxWindow
 {
 	return createTableSyntaxWindow;
+}
+
+#pragma mark -
+#pragma mark Titlebar Methods
+
+/**
+ * Set the connection status icon in the titlebar
+ */
+- (void)setStatusIconToImageWithName:(NSString *)imageName
+{
+	NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:@"png"];
+	if (!imagePath) return;
+
+	NSImage *image = [[NSImage alloc] initByReferencingFile:imagePath];
+	[titleImageView setImage:image];
+}
+
+/**
+ * Clear the connection status icon in the titlebar
+ */
+- (void)clearStatusIcon
+{
+	[titleImageView setImage:nil];
 }
 
 #pragma mark -

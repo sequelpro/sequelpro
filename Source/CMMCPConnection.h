@@ -33,6 +33,7 @@
 
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
+- (void)setStatusIconToImageWithName:(NSString *)imagePath;
 - (BOOL)connectionEncodingViaLatin1;
 
 @end

@@ -51,6 +51,8 @@
 	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
+	IBOutlet id titleAccessoryView;
+	IBOutlet id titleImageView;
 	IBOutlet id connectSheet;
 	IBOutlet id databaseSheet;
 	IBOutlet id variablesSheet;
@@ -214,6 +216,10 @@
 - (IBAction)viewStatus:(id)sender;
 - (IBAction)viewRelations:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
+
+// titlebar methods
+- (void)setStatusIconToImageWithName:(NSString *)imagePath;
+- (void)clearStatusIcon;
 
 //toolbar methods
 - (void)setupToolbar;
