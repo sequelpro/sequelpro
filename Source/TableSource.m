@@ -70,14 +70,13 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		[removeFieldButton setEnabled:NO];
 		[addIndexButton setEnabled:NO];
 		[removeIndexButton setEnabled:NO];
-
-		// set the table type menu back to the default, and disable it
-		[tableTypeButton selectItemAtIndex:0];
-		[tableTypeButton setEnabled:NO];
-		tableType = nil;
+		[editTableButton setEnabled:NO];
 
 		return;
 	}
+	
+	// Enable edit table button
+	[editTableButton setEnabled:YES];
 	
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -95,10 +94,6 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
-
-	// Retrieve the table type via the table data's status cache (which automatically maps Type to Engine)
-	[tableType release];
-	tableType = [[NSString stringWithString:[tableDataInstance statusValueForKey:@"Engine"]] retain];
 	
 	//get table default values
 	if ( defaultValues ) {
@@ -174,15 +169,6 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		
 		[field setObject:type forKey:@"Type"];
 		[field setObject:length forKey:@"Length"];
-	}
-	
-	// Determine the table type
-	if ( ![tableType isKindOfClass:[NSNull class]] && [tablesListInstance tableType] != SP_TABLETYPE_VIEW) {
-		[tableTypeButton selectItemWithTitle:tableType];
-		[tableTypeButton setEnabled:YES];
-	} else {
-		[tableTypeButton selectItemWithTitle:@"--"];
-		[tableTypeButton setEnabled:NO];
 	}
 	
 	// If a view is selected, disable the buttons; otherwise enable.
@@ -397,51 +383,6 @@ reloads the table (performing a new mysql-query)
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeindex"];
 }
-
-- (IBAction)typeChanged:(id)sender
-{
-	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) {
-		[sender selectItemWithTitle:tableType];	
-		return;
-	}
-
-	NSString* selectedItem = [sender titleOfSelectedItem];
-	if([selectedItem isEqualToString:@"--"] || [tableType isEqualToString:selectedItem]) {
-		[sender selectItemWithTitle:tableType];	
-	} else {
-		// alert any listeners that we are about to perform a query.
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-		
-		NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ TYPE = %@",[selectedTable backtickQuotedString],selectedItem];
-		[mySQLConnection queryString:query];
-		
-		// The query is now complete.
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-		
-		// Did the alter work?  If so, we need to record the new data.  If not, we must revert back to
-		// the previous state.
-		if([mySQLConnection getLastErrorID] == 0)
-		{
-			// Make sure "tableType" is changed and the status tab is flagged for reload...
-			[tableType release];
-			tableType = selectedItem;
-			[tableType retain];
-			
-//			[[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedTableStatusHasChanged" object:self];		
-
-			// Mark the content table for refresh and update column caches
-			[tablesListInstance setContentRequiresReload:YES];
-			[tableDataInstance resetColumnData];
-		} else {
-			[sender selectItemWithTitle:tableType];
-			NSBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"), 
-							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table to '%@' from '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), selectedItem, tableType, [mySQLConnection getLastErrorMessage]]);
-		}
-	}
-}
-
 
 #pragma mark Index sheet methods
 
