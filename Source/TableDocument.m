@@ -47,6 +47,7 @@
 #import "SPExtendedTableInfo.h"
 #import "SPPreferenceController.h"
 #import "SPPrintAccessory.h"
+#import "QLPreviewPanel.h"
 
 // Used for printing
 #import "MGTemplateEngine.h"

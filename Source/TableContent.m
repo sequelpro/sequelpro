@@ -38,6 +38,7 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
+#import "QLPreviewPanel.h"
 
 @implementation TableContent
 
