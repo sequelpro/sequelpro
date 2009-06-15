@@ -1470,11 +1470,13 @@
 		return YES;
 	}
 
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
 	if (!isEditingNewRow && [oldRow isEqualToDictionary:[filteredResult objectAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return YES;
 	}
 
@@ -1550,6 +1552,7 @@
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
 		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return YES;
 
 	// On success...
@@ -1603,12 +1606,16 @@
 			}
 		}
 		currentlyEditingRow = -1;
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		
 		return YES;
 
 	// Report errors which have occurred
 	} else {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write row.\nMySQL said: %@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return NO;
 	}
 }
@@ -2254,28 +2261,31 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		NSImage *image = nil;
 		editData = [theValue retain];
 
-		// hide all view in editSheet
+		// hide all views in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
 
+		// Hide QuickLook button and text/iamge/hex control for text data
 		[editSheetQuickLookButton setHidden:(!isBlob)];
 		[editSheetSegmentControl setHidden:(!isBlob)];
 
-		// order out editSheet to inform the user that
-		// SP is working
+		// order out editSheet to inform the user that SP is working
 		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 
 		[editSheetProgressBar startAnimation:self];
 
 		if ( [theValue isKindOfClass:[NSData class]] ) {
 			image = [[[NSImage alloc] initWithData:theValue] autorelease];
+
 			[hexTextView setString:[self dataToHex:theValue]];
+
 			stringValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 			if (stringValue == nil)
 				stringValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
+
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
 			[editImage setHidden:YES];
@@ -2283,9 +2293,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
 		} else {
-			[hexTextView setString:@""];
-			// stringValue = [[NSString alloc] initWithString:[theValue description]];
 			stringValue = [theValue retain];
+
+			[hexTextView setString:@""];
+
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:YES];
@@ -2296,6 +2307,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 		if (image) {
 			[editImage setImage:image];
+
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:NO];

@@ -655,14 +655,14 @@ static void forcePingTimeout(int signalNumber);
  */
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
-	CMMCPResult	*theResult = nil;
-	NSDate		*queryStartDate;
-	const char	*theCQuery;
-	int			queryResultCode;	
-	int			currentMaxAllowedPacket = -1;
-	unsigned int queryErrorID = 0;
-	NSString	*queryErrorMessage;
-	unsigned long threadid = mConnection->thread_id;
+	CMMCPResult		*theResult = nil;
+	NSDate			*queryStartDate;
+	NSString		*queryErrorMessage;
+	const char		*theCQuery;
+	int				queryResultCode;
+	int				currentMaxAllowedPacket = -1;
+	unsigned int 	queryErrorID = 0;
+	unsigned long 	threadid = mConnection->thread_id;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
@@ -693,10 +693,11 @@ static void forcePingTimeout(int signalNumber);
 		if (![self checkConnection]) return nil;
 		threadid = mConnection->thread_id;
 
-		// Try to increase max_allowed_packet for error 2006 BEFORE check connection
+		// Try to increase max_allowed_packet for error 2006 if user
+		// has SUPER privileges 
 		if(isMaxAllowedPacketEditable && queryResultCode == 1 && queryErrorID == 2006) {
 			currentMaxAllowedPacket = [self getMaxAllowedPacket];
-			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024];
+			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
 			[self reconnect];
 		}
 
@@ -721,7 +722,7 @@ static void forcePingTimeout(int signalNumber);
 
 	// If max_allowed_packet was changed, reset it to default
 	if(currentMaxAllowedPacket > -1)
-		[self setMaxAllowedPacketTo:currentMaxAllowedPacket];
+		[self setMaxAllowedPacketTo:currentMaxAllowedPacket resetSize:YES];
 
 	// If an error occurred, inform the delegate
 	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
@@ -1070,13 +1071,18 @@ static void forcePingTimeout(int signalNumber)
  * if the maximal size was reached (e.g. set it to 4GB it'll return 1GB up to now).
  * If something failed it return -1;
  */
-- (int) setMaxAllowedPacketTo:(int)newSize
+- (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset
 {
 	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return [self getMaxAllowedPacket];
 
 	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
-	// Inform the user via a log entry about that change
-	[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize]];
+	// Inform the user via a log entry about that change according to reset value
+	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:)])
+		if(reset)
+			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %d for new session", newSize]];
+		else
+			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize]];
+
 	return [self getMaxAllowedPacket];
 }
 

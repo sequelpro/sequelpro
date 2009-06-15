@@ -97,7 +97,7 @@
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding;
 - (int) getMaxAllowedPacket;
 - (BOOL) isMaxAllowedPacketEditable;
-- (int) setMaxAllowedPacketTo:(int)newSize;
+- (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
 
 /* return server major version number or -1 on fail */
 - (int)serverMajorVersion;

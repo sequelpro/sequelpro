@@ -812,6 +812,7 @@
 		// Get next index (beginning from the end)
 		currentIndex = [indexes indexLessThanIndex:currentIndex];
 	}
+	[tableContentInstance reloadTable:self];
 }
 
 /**
