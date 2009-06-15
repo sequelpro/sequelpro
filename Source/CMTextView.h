@@ -82,4 +82,7 @@
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
 - (void) selectCurrentQuery;
 
+- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (void)insertFileContentOfFile:(NSString *)aPath;
+
 @end

@@ -697,6 +697,7 @@ static void forcePingTimeout(int signalNumber);
 		if(isMaxAllowedPacketEditable && queryResultCode == 1 && queryErrorID == 2006) {
 			currentMaxAllowedPacket = [self getMaxAllowedPacket];
 			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024];
+			[self reconnect];
 		}
 
 		// The connection has been restored - re-run the query
@@ -1074,7 +1075,8 @@ static void forcePingTimeout(int signalNumber)
 	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return [self getMaxAllowedPacket];
 
 	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
-
+	// Inform the user via a log entry about that change
+	[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize]];
 	return [self getMaxAllowedPacket];
 }
 

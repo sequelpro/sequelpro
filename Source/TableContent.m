@@ -2320,14 +2320,19 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Locate the caret in editTextView
 			// (to select all takes a bit time for large data)
 			[editTextView setSelectedRange:NSMakeRange(0,0)];
-			// Set focus to editTextView
-			[editSheet makeFirstResponder:editTextView];
+
+			// Set focus
+			if(image == nil)
+				[editSheet makeFirstResponder:editTextView];
+			else
+				[editSheet makeFirstResponder:editImage];
+
 			[stringValue release];
 		}
 		
-		[editSheetProgressBar stopAnimation:self];
-
 		editSheetWillBeInitialized = NO;
+
+		[editSheetProgressBar stopAnimation:self];
 
 		// wait for editSheet
 		code = [NSApp runModalForWindow:editSheet];

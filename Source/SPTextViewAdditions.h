@@ -44,8 +44,5 @@
 - (void)makeTextSizeLarger;
 - (void)makeTextSizeSmaller;
 
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
-
-- (void)insertFileContentOfFile:(NSString *)aPath;
 
 @end
