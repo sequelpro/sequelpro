@@ -396,15 +396,9 @@
 - (IBAction)copyTable:(id)sender
 {
 	CMMCPResult *queryResult;
-//	NSArray *fieldNames;
-//	NSArray *theRow;
-//	NSMutableString *rowValue = [NSMutableString string];
-//	NSMutableArray *fieldValues;
 	int code;
 	NSString *tableType;
 	int tblType;
-//	int rowCount, i, j;
-//	BOOL errors = NO;
 
 	if ( [tablesListView numberOfSelectedRows] != 1 ) {
 		return;
@@ -672,6 +666,32 @@
 						  [tableDocumentInstance name], [tableDocumentInstance database], [tableRenameField stringValue]]];
 }
 
+/**
+ * Truncates the currently selected table(s).
+ */
+- (IBAction)truncateTable:(id)sender
+{
+	if (![tablesListView numberOfSelectedRows])
+		return;
+	
+	[tableWindow endEditingFor:nil];
+	
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Truncate", @"truncate button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	if ([tablesListView numberOfSelectedRows] == 1) {		
+		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to truncate the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+	} 
+	else {
+		[alert setMessageText:NSLocalizedString(@"Truncate selected tables?", @"truncate tables message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to truncate the selected tables. This operation cannot be undone.", @"truncate tables informative message")];
+	}
+	
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
+}
+
 #pragma mark Alert sheet methods
 
 /**
@@ -679,13 +699,21 @@
  */
 - (void)sheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
-	
-	if ( [contextInfo isEqualToString:@"addRow"] ) {
+	if ([contextInfo isEqualToString:@"addRow"]) {
 		alertSheetOpened = NO;
-	} else if ( [contextInfo isEqualToString:@"removeRow"] ) {
+	} 
+	else if ([contextInfo isEqualToString:@"removeRow"]) {
 		[[sheet window] orderOut:nil];
-		if ( returnCode == NSAlertDefaultReturn ) {
+		
+		if (returnCode == NSAlertDefaultReturn) {
 			[self removeTable];
+		}
+	}
+	else if ([contextInfo isEqualToString:@"truncateTable"]) {
+		[[sheet window] orderOut:nil];
+		
+		if (returnCode == NSAlertDefaultReturn) {
+			[self truncateTable];
 		}
 	}
 }
@@ -701,7 +729,7 @@
 #pragma mark Additional methods
 
 /**
- * Removes selected table(s) or view(s) from mysql-db and tableView
+ * Removes the selected table(s) or view(s) from mysql-db and tableView
  */
 - (void)removeTable
 {
@@ -746,11 +774,6 @@
 		currentIndex = [indexes indexLessThanIndex:currentIndex];
 	}
 	
-	//[tablesListView deselectAll:self];
-	
-	//[tableSourceInstance loadTable:nil];
-	//[tableContentInstance loadTable:nil];
-	//[tableStatusInstance loadTable:nil];
 	[tablesListView reloadData];
 	
 	// set window title
@@ -760,15 +783,35 @@
 	if ( error ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove '%@'.\nMySQL said: %@", @"message of panel when an item cannot be removed"), [tables objectAtIndex:currentIndex], errorText]);
-		 
-		/*
-		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"),
-			[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove table.\nMySQL said: %@", @"message of panel when table cannot be removed"), errorText],
-						NSLocalizedString(@"OK", @"OK button"), nil, nil, nil );
-		 */
 	}
 	
 	[tablesListView deselectAll:self];
+}
+
+/**
+ * Trucates the selected table(s).
+ */
+- (void)truncateTable
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	
+	// Get last index
+	unsigned currentIndex = [indexes lastIndex];
+	
+	while (currentIndex != NSNotFound)
+	{
+		[mySQLConnection queryString:[NSString stringWithFormat: @"TRUNCATE TABLE %@", [[tables objectAtIndex:currentIndex] backtickQuotedString]]]; 
+		
+		// Couldn't truncate table
+		if (![[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
+				NSBeginAlertSheet(NSLocalizedString(@"Error truncating table", @"error truncating table message"), 
+								  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]);
+		}
+		
+		// Get next index (beginning from the end)
+		currentIndex = [indexes indexLessThanIndex:currentIndex];
+	}
 }
 
 /**
@@ -1095,8 +1138,7 @@
  * Loads a table in content or source view (if tab selected)
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
-{
-	
+{	
 	if ( [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length] ) {
 		
 		// Reset the table information caches
@@ -1155,6 +1197,7 @@
 		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 		// according to the table types
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemAtIndex:5] submenu];
+		
 		if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW)
 		{
 			// Change mainMenu > Table > ... according to table type
@@ -1172,10 +1215,11 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
 
 			[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename view", @"rename view menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View", @"rename view menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate view", @"duplicate view menu title")];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove view", @"remove view menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View", @"duplicate view menu title")];
+			[truncateTableButton setHidden:YES];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 		} 
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
@@ -1192,10 +1236,12 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:NO];
 
 			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename table", @"rename table menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table", @"rename table menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate table", @"duplicate table menu title")];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove table", @"remove table menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table", @"duplicate table menu title")];
+			[truncateTableButton setHidden:NO];
+			[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
 		} 
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_PROC) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
@@ -1210,10 +1256,11 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];
 			
 			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename procedure", @"rename proc menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure", @"rename proc menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate procedure", @"duplicate proc menu title")];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedure", @"remove proc menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure", @"duplicate proc menu title")];
+			[truncateTableButton setHidden:YES];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
 		}
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_FUNC) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
@@ -1228,10 +1275,11 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];	
 			
 			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename function", @"rename func menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function", @"rename func menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate function", @"duplicate func menu title")];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove function", @"remove func menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function", @"duplicate func menu title")];
+			[truncateTableButton setHidden:YES];
+			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
 		}
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
@@ -1270,21 +1318,22 @@
 			{
 				switch(lastType) {
 					case SP_TABLETYPE_TABLE:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove tables", @"remove tables menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
+					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
 					break;
 					case SP_TABLETYPE_VIEW:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove views", @"remove views menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
 					break;
 					case SP_TABLETYPE_PROC:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove procedures", @"remove procedures menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
 					break;
 					case SP_TABLETYPE_FUNC:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove functions", @"remove functions menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
 					break;
 				}
 			
 			} else {
-				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove items", @"remove items menu title")];
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
 			}
 		}
 		[renameTableMenuItem setHidden:YES];
@@ -1393,15 +1442,15 @@
 {
 	// popup button below table list
 	if ([menuItem action] == @selector(copyTable:)) {
-		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0;
+		return (([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0);
 	}
 	
-	if ([menuItem action] == @selector(removeTable:) ) {
-		return [tablesListView numberOfSelectedRows] > 0;
+	if ([menuItem action] == @selector(removeTable:) || [menuItem action] == @selector(truncateTable:)) {
+		return ([tablesListView numberOfSelectedRows] > 0);
 	}
 
 	if ([menuItem action] == @selector(renameTable:)) {
-		return ([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length];
+		return (([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length]);
 	}
 	
 	return [super validateMenuItem:menuItem];

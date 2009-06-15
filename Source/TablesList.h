@@ -64,6 +64,7 @@ enum sp_table_types
 	IBOutlet id tableRenameField;
 	IBOutlet id tableRenameText;
 	IBOutlet id renameTableButton;
+	IBOutlet id truncateTableButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
@@ -85,12 +86,14 @@ enum sp_table_types
 - (IBAction)removeTable:(id)sender;
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
+- (IBAction)truncateTable:(id)sender;
 
 // copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;
 
 // Additional methods
 - (void)removeTable;
+- (void)truncateTable;
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 
