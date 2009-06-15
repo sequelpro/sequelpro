@@ -86,6 +86,7 @@
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
+- (void) restoreEncodingDetails;
 - (void) setDelegate:(id)object;
 - (NSTimeZone *) timeZone;
 - (BOOL) pingConnection;

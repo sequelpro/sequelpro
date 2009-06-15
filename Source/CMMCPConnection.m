@@ -655,11 +655,14 @@ static void forcePingTimeout(int signalNumber);
  */
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
-	CMMCPResult	*theResult;
+	CMMCPResult	*theResult = nil;
 	NSDate		*queryStartDate;
 	const char	*theCQuery;
 	int			queryResultCode;	
 	int			currentMaxAllowedPacket = -1;
+	unsigned int queryErrorID = 0;
+	NSString	*queryErrorMessage;
+	unsigned long threadid = mConnection->thread_id;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
@@ -678,55 +681,60 @@ static void forcePingTimeout(int signalNumber);
 	queryStartDate = [NSDate date];
 	queryResultCode = mysql_query(mConnection, theCQuery);
 	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+	if (0 != queryResultCode) queryErrorMessage = [self getLastErrorMessage];
 
 	// If there was an error, check whether it was a connection-related error
 	if (0 != queryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]]) {
 
-		// Try to increase max_allowed_packet for error 2006 BEFORE check connection
-		if(isMaxAllowedPacketEditable && queryResultCode == 1 && [self getLastErrorID] == 2006) {
-			currentMaxAllowedPacket = [self getMaxAllowedPacket];
-			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024];
-		}
+		queryErrorID = [self getLastErrorID];
 
 		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
 		// should only return false if a disconnection has been requested - in which case return nil.
 		if (![self checkConnection]) return nil;
+		threadid = mConnection->thread_id;
+
+		// Try to increase max_allowed_packet for error 2006 BEFORE check connection
+		if(isMaxAllowedPacketEditable && queryResultCode == 1 && queryErrorID == 2006) {
+			currentMaxAllowedPacket = [self getMaxAllowedPacket];
+			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024];
+		}
 
 		// The connection has been restored - re-run the query
 		queryStartDate = [NSDate date];
 		queryResultCode = mysql_query(mConnection, theCQuery);
 		lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+		if (0 != queryResultCode) {
+			queryErrorMessage = [self getLastErrorMessage];
+			queryErrorID = [self getLastErrorID];
+		}
 	}
+
+	// Store the query result if appropriate
+	if (0 == queryResultCode && mysql_field_count(mConnection) != 0) {
+		theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+	}
+	
+	// If the mysql thread id has changed (this seems to happen with large queries
+	// whatever the packet size limit), ensure connection details are still correct
+	if (threadid != mConnection->thread_id) [self restoreEncodingDetails];
 
 	// If max_allowed_packet was changed, reset it to default
 	if(currentMaxAllowedPacket > -1)
 		[self setMaxAllowedPacketTo:currentMaxAllowedPacket];
 
-	// Retrieve the result or error appropriately.
-	if (0 == queryResultCode) {
-		if (mysql_field_count(mConnection) != 0) {
-
-			// Use CMMCPResult instead of MCPResult
-			theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-		} else {
-			return nil;
-		}
-	} else {
-
-		// Inform the delegate about errors
-		if (delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
-			if(queryResultCode == 1 && [self getLastErrorID] == 2006)
-				// very likely that query length > max_allowed_packet 
-				[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", [self getLastErrorMessage]]];
-			else
-				[delegate queryGaveError:[self getLastErrorMessage]];
-		}
-
-		return nil;
+	// If an error occurred, inform the delegate
+	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
+		if (queryResultCode == 1 && queryErrorID == 2006)
+			
+			// Very likely that query length > max_allowed_packet 
+			[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", queryErrorMessage]];
+		else
+			[delegate queryGaveError:queryErrorMessage];
 	}
 
 	[self startKeepAliveTimerResettingState:YES];
 
+	if (!theResult) return nil;
 	return [theResult autorelease];
 }
 
@@ -769,6 +777,7 @@ static void forcePingTimeout(int signalNumber);
 
 	// Get the current thread ID for this connection
 	threadid = mConnection->thread_id;
+NSLog(@"Connection checking");
 
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
@@ -799,16 +808,23 @@ static void forcePingTimeout(int signalNumber);
 
 	// If a connection exists, check whether the thread id differs; if so, the connection has
 	// probably been reestablished and we need to reset the connection encoding
-	} else if (threadid != mConnection->thread_id) {
-		if (delegate && [delegate valueForKey:@"_encoding"]) {
-			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
-			if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
-				if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
-			}
-		}
-	}
+	} else if (threadid != mConnection->thread_id) [self restoreEncodingDetails];
 
 	return connectionVerified;
+}
+
+/**
+ * Restore the connection encoding details as necessary based on the delegate-provided
+ * details.
+ */
+- (void) restoreEncodingDetails
+{
+	if (delegate && [delegate valueForKey:@"_encoding"]) {
+		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+			if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+		}
+	}
 }
 
 - (void)setDelegate:(id)object
