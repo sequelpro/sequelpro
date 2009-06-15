@@ -52,12 +52,15 @@
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
-	float lastQueryExecutionTime;
 	int connectionTimeout;
 	int currentSSHTunnelState;
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
+	float lastQueryExecutionTime;
+	NSString *lastQueryErrorMessage;
+	unsigned int lastQueryErrorId;
+
 	BOOL isMaxAllowedPacketEditable;
 	
 	NSString *serverVersionString;

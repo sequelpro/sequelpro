@@ -115,6 +115,9 @@ static void forcePingTimeout(int signalNumber);
 - (void) initSPExtensions
 {
 	parentWindow = nil;
+	connectionHost = nil;
+	connectionLogin = nil;
+	connectionSocket = nil;
 	connectionPassword = nil;
 	connectionKeychainName = nil;
 	connectionKeychainAccount = nil;
@@ -127,6 +130,8 @@ static void forcePingTimeout(int signalNumber);
 	if (!keepAliveInterval) keepAliveInterval = 0;
 	lastKeepAliveSuccess = nil;
 	lastQueryExecutionTime = 0;
+	lastQueryErrorId = 0;
+	lastQueryErrorMessage = nil;
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
@@ -657,12 +662,13 @@ static void forcePingTimeout(int signalNumber);
 {
 	CMMCPResult		*theResult = nil;
 	NSDate			*queryStartDate;
-	NSString		*queryErrorMessage;
 	const char		*theCQuery;
 	int				queryResultCode;
+	int				queryErrorId = 0;
 	int				currentMaxAllowedPacket = -1;
-	unsigned int 	queryErrorID = 0;
+	BOOL			isQueryRetry = NO;
 	unsigned long 	threadid = mConnection->thread_id;
+	NSString		*queryErrorMessage = nil;
 
 	// If no connection is present, return nil.
 	if (!mConnected) return nil;
@@ -677,61 +683,78 @@ static void forcePingTimeout(int signalNumber);
 	// Derive the query string in the correct encoding
 	theCQuery = [self cStringFromString:query usingEncoding:encoding];
 
-	// Run the query, timing the execution time on the server.  Note that this will include network lag.
-	queryStartDate = [NSDate date];
-	queryResultCode = mysql_query(mConnection, theCQuery);
-	lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
-	if (0 != queryResultCode) queryErrorMessage = [self getLastErrorMessage];
+	// In a loop to allow one reattempt, perform the query.
+	while (1) {
+	
+		// If this query has failed once already, check the connection
+		if (isQueryRetry) {
+			if (![self checkConnection]) return nil;
 
-	// If there was an error, check whether it was a connection-related error
-	if (0 != queryResultCode && [CMMCPConnection isErrorNumberConnectionError:[self getLastErrorID]]) {
+			// If the connection thread is still the same as at the start, the
+			// connection wasn't the issue - don't retry.
+			if (threadid == mConnection->thread_id) break;
+			
+			// Try to increase the max_allowed_packet after error 2006 if the user
+			// has SUPER privileges, reconnecting to use the new settings.
+			if(isMaxAllowedPacketEditable && queryResultCode == 1 && queryErrorId == 2006) {
+				currentMaxAllowedPacket = [self getMaxAllowedPacket];
+				[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
+				[self reconnect];
+			}
 
-		queryErrorID = [self getLastErrorID];
-
-		// Check the connection and see if it can be restored.  This triggers reconnects as necessary, and
-		// should only return false if a disconnection has been requested - in which case return nil.
-		if (![self checkConnection]) return nil;
-		threadid = mConnection->thread_id;
-
-		// Try to increase max_allowed_packet for error 2006 if user
-		// has SUPER privileges 
-		if(isMaxAllowedPacketEditable && queryResultCode == 1 && queryErrorID == 2006) {
-			currentMaxAllowedPacket = [self getMaxAllowedPacket];
-			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
-			[self reconnect];
+			threadid = mConnection->thread_id;
 		}
 
-		// The connection has been restored - re-run the query
+		// Run (or re-run) the query, timing the execution time of the query - note
+		// that this time will include network lag.
 		queryStartDate = [NSDate date];
 		queryResultCode = mysql_query(mConnection, theCQuery);
 		lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
-		if (0 != queryResultCode) {
-			queryErrorMessage = [self getLastErrorMessage];
-			queryErrorID = [self getLastErrorID];
-		}
-	}
 
-	// Store the query result if appropriate
-	if (0 == queryResultCode && mysql_field_count(mConnection) != 0) {
-		theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+		// On success, capture the results
+		if (0 == queryResultCode) {
+			if (mysql_field_count(mConnection) != 0)
+				theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			queryErrorMessage = [[NSString alloc] initWithString:@""];
+			queryErrorId = 0;
+
+		// On failure, set the error messages and IDs
+		} else {
+			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+			queryErrorId = mysql_errno(mConnection);
+
+			// If the error was a connection error, retry once
+			if (!isQueryRetry && [CMMCPConnection isErrorNumberConnectionError:queryErrorId]) {
+				isQueryRetry = YES;
+				continue;
+			}
+		}
+		
+		break;
 	}
 	
-	// If the mysql thread id has changed (this seems to happen with large queries
-	// whatever the packet size limit), ensure connection details are still correct
+	// If the mysql thread id has changed as a result of a connection error,
+	// ensure connection details are still correct
 	if (threadid != mConnection->thread_id) [self restoreEncodingDetails];
 
 	// If max_allowed_packet was changed, reset it to default
 	if(currentMaxAllowedPacket > -1)
 		[self setMaxAllowedPacketTo:currentMaxAllowedPacket resetSize:YES];
 
+	// Update error strings and IDs
+	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
+	lastQueryErrorId = queryErrorId;
+	lastQueryErrorMessage = [[NSString alloc] initWithString:queryErrorMessage?queryErrorMessage:@""];
+	if (queryErrorMessage) [queryErrorMessage release]; 
+	
 	// If an error occurred, inform the delegate
 	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
-		if (queryResultCode == 1 && queryErrorID == 2006)
+		if (queryResultCode == 1 && lastQueryErrorId == 2006)
 			
 			// Very likely that query length > max_allowed_packet 
-			[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", queryErrorMessage]];
+			[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", lastQueryErrorMessage]];
 		else
-			[delegate queryGaveError:queryErrorMessage];
+			[delegate queryGaveError:lastQueryErrorMessage];
 	}
 
 	[self startKeepAliveTimerResettingState:YES];
@@ -779,7 +802,6 @@ static void forcePingTimeout(int signalNumber);
 
 	// Get the current thread ID for this connection
 	threadid = mConnection->thread_id;
-NSLog(@"Connection checking");
 
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
@@ -1045,6 +1067,22 @@ static void forcePingTimeout(int signalNumber)
 }
 
 /*
+ * Returns a string for the last MySQL error message on the connection.
+ */
+- (NSString *) getLastErrorMessage
+{
+	return lastQueryErrorMessage;
+}
+
+/*
+ * Returns the ErrorID of the last MySQL error on the connection.
+ */
+- (unsigned int) getLastErrorID
+{
+	return lastQueryErrorId;
+}
+
+/*
  * Retrieves max_allowed_packet size set as global variable.
  * It returns -1 if it fails.
  */
@@ -1098,6 +1136,15 @@ static void forcePingTimeout(int signalNumber)
 
 - (void) dealloc
 {
+	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
+	if (connectionHost) [connectionHost release];
+	if (connectionLogin) [connectionLogin release];
+	if (connectionSocket) [connectionSocket release];
+	if (connectionPassword) [connectionPassword release];
+	if (connectionKeychainName) [connectionKeychainName release];
+	if (connectionKeychainAccount) [connectionKeychainAccount release];
+	if (lastKeepAliveSuccess) [lastKeepAliveSuccess release];
+
 	[super dealloc];
 }
 
