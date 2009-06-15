@@ -2477,7 +2477,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 /**
  * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
- * Catch  ⌘+ and  ⌘- to de/increase font size of aTextView
  */
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
@@ -2488,29 +2487,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			[NSApp stopModalWithCode:1];
 			return YES;
 		} 
-		else if([[NSApp currentEvent] modifierFlags] & NSCommandKeyMask)
-		{
-			// increase text size by 1; ⌘+ and numpad +
-			if([[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@"+"])
-			{
-				[aTextView makeTextSizeLarger];
-				return YES;
-			}
-			// decrease text size by 1; ⌘- and numpad -
-			else if([[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@"-"])
-			{
-				[aTextView makeTextSizeSmaller];
-				return YES;
-			}
-			else
-			{
-				return NO;
-			}
-		}
 		else
-		{
 			return NO;
-		}
 	}
 	return NO;
 }
