@@ -858,7 +858,9 @@
 	if ( [panel runModal] == NSOKButton ) {
 		NSString *fileName = [panel filename];
 		NSString *contents = nil;
-		
+
+		editSheetWillBeInitialized = YES;
+
 		[editSheetProgressBar startAnimation:self];
 
 		// free old data
@@ -868,12 +870,13 @@
 		
 		// load new data/images
 		editData = [[NSData alloc] initWithContentsOfFile:fileName];
+
 		NSImage *image = [[NSImage alloc] initWithData:editData];
 		contents = [[NSString alloc] initWithData:editData encoding:[mySQLConnection encoding]];
-		// NSString *contents = [NSString stringWithContentsOfFile:fileName encoding:[mySQLConnection encoding] error:nil];
 
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
+
 		
 		if(contents)
 			[editTextView setString:contents];
@@ -905,6 +908,7 @@
 		if(contents)
 			[contents release];
 		[editSheetProgressBar stopAnimation:self];
+		editSheetWillBeInitialized = NO;
 	}
 }
 
@@ -1020,7 +1024,8 @@
 		[[ql delegate] setDelegate:self];
 		[ql setURLs:[NSArray arrayWithObject:
 			[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
-		// No interaction with iChat and iPhoto
+		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
+		// for superclass of class 'MainController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
 		[ql setShowsAddToiPhotoButton:NO];
 		[ql setShowsiChatTheaterButton:NO];
 		// Since we are inside of editSheet we have to avoid full-screen zooming
@@ -1028,7 +1033,7 @@
 		[ql setShowsFullscreenButton:NO];
 		[ql setEnableDragNDrop:NO];
 		// Order out QuickLook with animation effect according to self:previewPanel:frameForURL:
-		[ql makeKeyAndOrderFrontWithEffect:2 canClose:YES];   // 1 = fade in
+		[ql makeKeyAndOrderFrontWithEffect:2];   // 1 = fade in
 
 		// quickLookCloseMarker == 1 break the modal session
 		quickLookCloseMarker = 0;
@@ -1043,14 +1048,27 @@
 				|| quickLookCloseMarker == 1 
 				|| ![ql isVisible]) 
 				break;
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+										beforeDate:[NSDate distantFuture]];
+
 		}
 		[NSApp endModalSession:session];
+
+		// Remove temp file after closing the sheet to allow double-click event at the QuickLook preview.
+		// The afterDelay: time is a kind of dummy, because after double-clicking the model session loop
+		// will break (ql not visible) and returns the event handling back to the editSheet which by itself
+		// blocks the execution of removeQuickLooksTempFile: until the editSheet is closed.
+		[self performSelector:@selector(removeQuickLooksTempFile:) withObject:tmpFileName afterDelay:2];
 		
-		// remove temp file
-		[[NSFileManager defaultManager] removeItemAtPath:tmpFileName error:NULL];
+		// [[NSFileManager defaultManager] removeItemAtPath:tmpFileName error:NULL];
 
 	}
 
+}
+
+- (void)removeQuickLooksTempFile:(NSString*)aPath
+{
+	[[NSFileManager defaultManager] removeItemAtPath:aPath error:NULL];
 }
 
 // This is the delegate method
@@ -1079,6 +1097,9 @@
  */
 - (void)processUpdatedImageData:(NSData *)data
 {
+
+	editSheetWillBeInitialized = YES;
+
 	if (nil != editData) [editData release];
 
 	// If the image was not processed, set a blank string as the contents of the edit and hex views.
@@ -1086,6 +1107,7 @@
 		editData = [[NSData alloc] init];
 		[editTextView setString:@""];
 		[hexTextView setString:@""];
+		editSheetWillBeInitialized = NO;
 		return;
 	}
 
@@ -1099,6 +1121,7 @@
 	[hexTextView setString:[self dataToHex:editData]];
 	
 	[contents release];
+	editSheetWillBeInitialized = NO;
 }
 
 - (IBAction)dropImage:(id)sender
@@ -2284,6 +2307,16 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 		if (stringValue) {
 			[editTextView setString:stringValue];
+
+			if(image == nil) {
+				[hexTextView setHidden:YES];
+				[hexTextScrollView setHidden:YES];
+				[editImage setHidden:YES];
+				[editTextView setHidden:NO];
+				[editTextScrollView setHidden:NO];
+				[editSheetSegmentControl setSelectedSegment:0];
+			 }
+
 			// Locate the caret in editTextView
 			// (to select all takes a bit time for large data)
 			[editTextView setSelectedRange:NSMakeRange(0,0)];
