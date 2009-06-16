@@ -257,6 +257,12 @@ static void forcePingTimeout(int signalNumber);
 	
 	isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
 	
+	// Register notification if a query was sent to the MySQL connection
+	// to be able to identify the sender of that query
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed" object:nil];
+	
+	
 	return mConnected;
 }
 
@@ -651,6 +657,23 @@ static void forcePingTimeout(int signalNumber);
 	return [self queryString:query usingEncoding:mEncoding];
 }
 
+/*
+ * Via that method the current mySQLConnection will be informed
+ * which object sent the current query.
+ */
+- (void)willPerformQuery:(NSNotification *)notification
+{
+
+	// If the sender was CustomQuery disable the retry of queries.
+	// TODO: maybe there's a better way
+	if( [[[[notification object] class] description] isEqualToString:@"CustomQuery"] ) {
+		retryAllowed = NO;
+	} else {
+		retryAllowed = YES;
+	}
+
+}
+
 
 /*
  * Modified version of queryString to be used in Sequel Pro.
@@ -663,6 +686,7 @@ static void forcePingTimeout(int signalNumber);
 	CMMCPResult		*theResult = nil;
 	NSDate			*queryStartDate;
 	const char		*theCQuery;
+	unsigned long	theCQueryLength;
 	int				queryResultCode;
 	int				queryErrorId = 0;
 	int				currentMaxAllowedPacket = -1;
@@ -671,7 +695,16 @@ static void forcePingTimeout(int signalNumber);
 	NSString		*queryErrorMessage = nil;
 
 	// If no connection is present, return nil.
-	if (!mConnected) return nil;
+	if (!mConnected) {
+		// Write a log entry
+		[delegate queryGaveError:@"No conncetion available!"];
+		// Notify that the query has been performed
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		// Show an error alert while resetting
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No conncetion available!", 
+			nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No conncetion available!");
+		return nil;
+	}
 
 	[self stopKeepAliveTimer];
 
@@ -682,49 +715,79 @@ static void forcePingTimeout(int signalNumber);
 
 	// Derive the query string in the correct encoding
 	theCQuery = [self cStringFromString:query usingEncoding:encoding];
+	// Set the length of the current query + 1 (\0)
+	theCQueryLength = strlen(theCQuery)+1;
 
+	// Check query lenght against max_allowed_packet
+	// If max_allowed_packet is editable for the user
+	// increase it for the current session and reconnect.
+	if([self getMaxAllowedPacket] < theCQueryLength) {
+
+		if(isMaxAllowedPacketEditable) {
+
+			currentMaxAllowedPacket = [self getMaxAllowedPacket];
+			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
+			[self reconnect];
+
+		} else {
+
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %d bytes is larger than max_allowed_packet size (%d).", 
+				@"error message if max_allowed_packet < query size"),
+				theCQueryLength, [self getMaxAllowedPacket]];
+
+			// Write a log entry
+			[delegate queryGaveError:errorMessage];
+			// Notify that the query has been performed
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+			// Show an error alert while resetting
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, errorMessage);
+
+			return nil;
+		}
+	}
+	
 	// In a loop to allow one reattempt, perform the query.
 	while (1) {
 	
 		// If this query has failed once already, check the connection
 		if (isQueryRetry) {
-			if (![self checkConnection]) return nil;
+			if (![self checkConnection]) {
+				// Notify that the query has been performed
+				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+				return nil;
+			}
 
 			// If the connection thread is still the same as at the start, the
 			// connection wasn't the issue - don't retry.
 			if (threadid == mConnection->thread_id) break;
 			
-			// Try to increase the max_allowed_packet after error 2006 if the user
-			// has SUPER privileges, reconnecting to use the new settings.
-			if(isMaxAllowedPacketEditable && queryResultCode == 1 && queryErrorId == 2006) {
-				currentMaxAllowedPacket = [self getMaxAllowedPacket];
-				[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
-				[self reconnect];
-			}
-
 			threadid = mConnection->thread_id;
 		}
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
 		queryStartDate = [NSDate date];
-		queryResultCode = mysql_query(mConnection, theCQuery);
+		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
 		lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
 
 		// On success, capture the results
 		if (0 == queryResultCode) {
+
 			if (mysql_field_count(mConnection) != 0)
 				theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
 
 		// On failure, set the error messages and IDs
 		} else {
+
 			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);
 
 			// If the error was a connection error, retry once
-			if (!isQueryRetry && [CMMCPConnection isErrorNumberConnectionError:queryErrorId]) {
+			if (!isQueryRetry && retryAllowed && [CMMCPConnection isErrorNumberConnectionError:queryErrorId]) {
 				isQueryRetry = YES;
 				continue;
 			}
@@ -748,14 +811,8 @@ static void forcePingTimeout(int signalNumber);
 	if (queryErrorMessage) [queryErrorMessage release]; 
 	
 	// If an error occurred, inform the delegate
-	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)]) {
-		if (queryResultCode == 1 && lastQueryErrorId == 2006)
-			
-			// Very likely that query length > max_allowed_packet 
-			[delegate queryGaveError:[NSString stringWithFormat:@"%@ (Please check if query size < max_allowed_packet)", lastQueryErrorMessage]];
-		else
-			[delegate queryGaveError:lastQueryErrorMessage];
-	}
+	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)])
+		[delegate queryGaveError:lastQueryErrorMessage];
 
 	[self startKeepAliveTimerResettingState:YES];
 

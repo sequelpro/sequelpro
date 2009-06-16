@@ -67,6 +67,8 @@
 	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
+	
+	BOOL retryAllowed;
 }
 
 - (id) init;
@@ -101,6 +103,8 @@
 - (int) getMaxAllowedPacket;
 - (BOOL) isMaxAllowedPacketEditable;
 - (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
+
+- (void)willPerformQuery:(NSNotification *)notification;
 
 /* return server major version number or -1 on fail */
 - (int)serverMajorVersion;
