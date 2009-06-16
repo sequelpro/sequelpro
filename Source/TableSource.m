@@ -223,8 +223,11 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	
 	// Enable 'Duplicate field' if at least one field is specified
 	// if no field is selected 'Duplicate field' will copy the last field
-	if([tableSourceView numberOfRows] > 0)
-		[copyFieldButton setEnabled:YES];
+	// Enable 'Duplicate field' only for tables!
+	if([tablesListInstance tableType] == SP_TABLETYPE_TABLE)
+			[copyFieldButton setEnabled:([tableSourceView numberOfRows] > 0)];
+	else
+		[copyFieldButton setEnabled:NO];
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -1104,10 +1107,9 @@ would result in a position change.
         // and change button state accordingly
         if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
             [removeFieldButton setEnabled:YES];
-            // [copyFieldButton setEnabled:YES];
         } else {
             [removeFieldButton setEnabled:NO];
-            // [copyFieldButton setEnabled:YES];
+            [copyFieldButton setEnabled:NO];
         }
     }
     else if ([aNotification object] == indexView) {
