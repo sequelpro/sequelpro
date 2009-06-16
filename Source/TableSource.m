@@ -348,6 +348,21 @@ reloads the table (performing a new mysql-query)
 	if (![self saveRowOnDeselect]) 
 		return;
 
+	// Check if the user tries to delete the last defined field in table
+	if ([tableSourceView numberOfRows] < 2) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while deleting field", @"Error while deleting field")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										   otherButton:nil 
+							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Use “Remove table” (DROP TABLE) instead.",
+							@"You cannot delete the last field in that table. Use “Remove table” (DROP TABLE) instead")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
+		
+	}
+
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete field?", @"delete field message")
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
@@ -796,7 +811,10 @@ fetches the result as an array with a dictionary for each row in it
 						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove index.\nMySQL said: %@", @"message of panel when index cannot be removed"), [mySQLConnection getLastErrorMessage]]);
 			}
 		}
+	} else if ( [contextInfo isEqualToString:@"cannotremovefield"]) {
+		;
 	}
+	
 }
 
 /**
