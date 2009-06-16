@@ -22,6 +22,7 @@
 - (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
 - (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
 - (void)_selectParentFromSelection;
+- (NSArray *)_fetchUserWithUserName:(NSString *)username;
 @end
 
 @implementation SPUserManager
@@ -91,13 +92,15 @@
 	[pool release];
 }
 
- - (void)_initializeUsers
+- (void)_initializeUsers
 {
 	isInitializing = TRUE;
 	
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
+	
+	[[self managedObjectContext] setUndoManager:nil];
 	
 	[[self connection] selectDB:@"mysql"];
 	CMMCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
@@ -114,7 +117,7 @@
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
 	[usersResultArray addObjectsFromArray:resultAsArray];
-
+	
 	[self performSelectorOnMainThread:@selector(_initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
 	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
 	[result release];
@@ -124,46 +127,101 @@
 
 - (void)_initializeTree:(NSArray *)items
 {
-	/*
+	
 	for(int i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] valueForKey:@"User"];
-
+		NSArray *array = [self _fetchUserWithUserName:username];
+		NSDictionary *item = [items objectAtIndex:i];
 		
-		if ([[users valueForKey:@"username"] containsObject:username])
+		if (array != nil && [array count] > 0)
 		{
-			int parentIndex = [[users valueForKey:@"username"] indexOfObject:username];
-			SPUser *parent = [users objectAtIndex:parentIndex];
-			SPUser *childItem = ;
+			// Add Children
+			NSManagedObject *parent = [array objectAtIndex:0];
+			NSManagedObject *child = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
+																	 inManagedObjectContext:[self managedObjectContext]];
+			[child setParent:parent];
+			[parent addChildrenObject:child];
 			
-			[childItem setUsername: [[items objectAtIndex:i] valueForKey:@"User"]];
-			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
-			[childItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
-			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
-			[childItem setLeaf:TRUE];
-			[parent addChild:childItem];
+			[self initializeChild:child withItem:item];
+			
+		} else {
+			// Add Parent
+			NSManagedObject *parent = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
+																	 inManagedObjectContext:[self managedObjectContext]];
+			NSManagedObject *child = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
+																   inManagedObjectContext:[self managedObjectContext]];
+			[parent setValue:username forKey:@"user"];
+			[parent setValue:[item valueForKey:@"Password"] forKey:@"password"];
+			[parent addChildrenObject:child];
+			[child setParent:parent];
+
+			[self initializeChild:child withItem:item];
 		}
-		else
+		NSError *error = nil;
+		[[self managedObjectContext] save:&error];
+		if (error != nil)
 		{
-			SPUserItem *userItem = [[[SPUserItem alloc] init] autorelease];
-			[userItem setUsername:username];
-			[userItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
-			[userItem setLeaf:FALSE];
-			
-			SPUserItem *childItem = [[[SPUserItem alloc] init] autorelease];
-			[childItem setUsername: username];
-			[childItem setPassword: [[items objectAtIndex:i] valueForKey:@"Password"]];
-			[childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
-			[self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
-			[childItem setLeaf:TRUE];
-			[userItem addChild:childItem];
-			
-			[treeController insertObject:userItem atArrangedObjectIndexPath:[NSIndexPath indexPathWithIndex:[users count]]];			
+			[[NSApplication sharedApplication] presentError:error];
 		}
+		/*
+		 if ([[users valueForKey:@"username"] containsObject:username])
+		 {
+		 int parentIndex = [[users valueForKey:@"username"] indexOfObject:username];
+		 SPUser *parent = [users objectAtIndex:parentIndex];
+		 SPUser *childItem = ;
+		 
+		 [childItem setUsername: [[items objectAtIndex:i] valueForKey:@"User"]];
+		 [childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
+		 [childItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
+		 [self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
+		 [childItem setLeaf:TRUE];
+		 [parent addChild:childItem];
+		 }
+		 else
+		 {
+		 SPUserItem *userItem = [[[SPUserItem alloc] init] autorelease];
+		 [userItem setUsername:username];
+		 [userItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
+		 [userItem setLeaf:FALSE];
+		 
+		 SPUserItem *childItem = [[[SPUserItem alloc] init] autorelease];
+		 [childItem setUsername: username];
+		 [childItem setPassword: [[items objectAtIndex:i] valueForKey:@"Password"]];
+		 [childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
+		 [self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
+		 [childItem setLeaf:TRUE];
+		 [userItem addChild:childItem];
+		 
+		 [treeController insertObject:userItem atArrangedObjectIndexPath:[NSIndexPath indexPathWithIndex:[users count]]];			
+		 }
+		 */
 	}
-	 */
 }
 
+- (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item
+{
+	for (NSString *key in item)
+	{
+		NSLog(@"Key: %@", key);
+		NS_DURING
+		if ([key hasSuffix:@"_priv"])
+		{
+			BOOL value = [[item valueForKey:key] boolValue];
+			[child setValue:[NSNumber numberWithBool:value] forKey:key];
+		}
+		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
+		{
+			NSString *value = [item valueForKey:key];
+			[child setValue:value forKey:key];
+		}
+		NS_HANDLER
+		NSLog(@"%@", [localException reason]);
+		NSLog(@"%@ not implemented yet.", key);
+		NS_ENDHANDLER
+	}
+	
+}
 - (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
 {
 	NSArray *itemKeys = [item allKeys];
@@ -192,7 +250,7 @@
 			NSString *newKey = [key substringToIndex:[key rangeOfString:@"_priv"].location];
 			[availablePrivsController addObject:[NSDictionary dictionaryWithObject:newKey forKey:@"name"]];			
 		}
-
+		
 	}
 }
 
@@ -241,7 +299,7 @@
 	
     NSFileManager *fileManager;
     NSString *applicationSupportFolder = nil;
-    NSURL *url;
+//    NSURL *url;
     NSError *error;
     
     fileManager = [NSFileManager defaultManager];
@@ -250,9 +308,9 @@
         [fileManager createDirectoryAtPath:applicationSupportFolder attributes:nil];
     }
     
-    url = [NSURL fileURLWithPath: [applicationSupportFolder stringByAppendingPathComponent: @"SequelProUserData.xml"]];
+//    url = [NSURL fileURLWithPath: [applicationSupportFolder stringByAppendingPathComponent: @"SequelProUserData.xml"]];
     persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
-    if (![persistentStoreCoordinator addPersistentStoreWithType:NSXMLStoreType configuration:nil URL:url options:nil error:&error]){
+    if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error]){
         [[NSApplication sharedApplication] presentError:error];
     }    
 	
@@ -364,13 +422,6 @@
 
 
 // Observer methods
-- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-    if (context == @"TreeController" && !isInitializing) {
-		NSLog(@"Got Change!!");
-		NSLog(@"%@", change);
-	}
-}
 
 
 // General Action Methods 
@@ -381,8 +432,16 @@
 
 - (IBAction)doApply:(id)sender
 {
-	[managedObjectContext save:nil];
-	[window close];
+	NSError *error = nil;
+	[[self managedObjectContext] save:&error];
+	if (error != nil)
+	{
+		[[NSApplication sharedApplication] presentError:error];
+	}
+	else
+	{
+		[window close];
+	}
 }
 
 // Schema Privileges Actions
@@ -467,8 +526,37 @@
 	}
 }
 
+// Notifications
 - (void)contextDidSave:(NSNotification *)notification
 {
-	NSLog(@"ContextDidSave: %@", [notification userInfo]);
+	if (isInitializing)
+	{
+		NSLog(@"ContextDidSave during initializing");
+	} 
+	else
+	{
+		NSLog(@"ContextDidSave: %@", [notification userInfo]);		
+	}
+}
+
+- (NSArray *)_fetchUserWithUserName:(NSString *)username
+{
+	NSManagedObjectContext *moc = [self managedObjectContext];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"user LIKE[cd] %@", username];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
+														 inManagedObjectContext:moc];
+	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
+	
+	[request setEntity:entityDescription];
+	[request setPredicate:predicate];
+	
+	NSError *error = nil;
+	NSArray *array = [moc executeFetchRequest:request error:&error];
+	if (array == nil)
+	{
+		[[NSApplication sharedApplication] presentError:error];
+	}
+	
+	return array;
 }
 @end

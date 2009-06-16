@@ -76,6 +76,7 @@
 - (void)setConnection:(CMMCPConnection *)connection;
 - (CMMCPConnection *)connection;
 - (void)show;
+- (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
 
 // Add/Remove Users
 - (IBAction)addUser:(id)sender;

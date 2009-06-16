@@ -5,7 +5,7 @@
 - (NSString *)displayName
 {
 	if ([self parent] == nil) {
-		return [self username];
+		return [self user];
 	} else {
 		return [self host];
 	}
@@ -14,6 +14,54 @@
 - (void)setDisplayName:(NSString *)value
 {
 	[self setHost:value];
+}
+/*
+- (NSNumber *)alter_priv 
+{
+    NSNumber * tmpValue;
+    
+    [self willAccessValueForKey:@"alter_priv"];
+    tmpValue = [self primitiveValueForKey:@"alter_priv"];
+    [self didAccessValueForKey:@"alter_priv"];
+    
+    return tmpValue;
+}
+
+- (void)setAlter_priv:(NSNumber *)value 
+{
+    [self willChangeValueForKey:@"alter_priv"];
+    [self setPrimitiveValue:value forKey:@"alter_priv"];
+    [self didChangeValueForKey:@"alter_priv"];
+}
+
+- (BOOL)validateAlter_priv:(id *)valueRef error:(NSError **)outError 
+{
+    // Insert custom validation logic here.
+    return YES;
+}
+
+- (NSNumber *)alter_routine_priv 
+{
+    NSNumber * tmpValue;
+    
+    [self willAccessValueForKey:@"alter_routine_priv"];
+    tmpValue = [self primitiveValueForKey:@"alter_routine_priv"];
+    [self didAccessValueForKey:@"alter_routine_priv"];
+    
+    return tmpValue;
+}
+
+- (void)setAlter_routine_priv:(NSNumber *)value 
+{
+    [self willChangeValueForKey:@"alter_routine_priv"];
+    [self setPrimitiveValue:value forKey:@"alter_routine_priv"];
+    [self didChangeValueForKey:@"alter_routine_priv"];
+}
+
+- (BOOL)validateAlter_routine_priv:(id *)valueRef error:(NSError **)outError 
+{
+    // Insert custom validation logic here.
+    return YES;
 }
 
 - (NSNumber *)create_priv 
@@ -35,6 +83,54 @@
 }
 
 - (BOOL)validateCreate_priv:(id *)valueRef error:(NSError **)outError 
+{
+    // Insert custom validation logic here.
+    return YES;
+}
+
+- (NSNumber *)create_routine_priv 
+{
+    NSNumber * tmpValue;
+    
+    [self willAccessValueForKey:@"create_routine_priv"];
+    tmpValue = [self primitiveValueForKey:@"create_routine_priv"];
+    [self didAccessValueForKey:@"create_routine_priv"];
+    
+    return tmpValue;
+}
+
+- (void)setCreate_routine_priv:(NSNumber *)value 
+{
+    [self willChangeValueForKey:@"create_routine_priv"];
+    [self setPrimitiveValue:value forKey:@"create_routine_priv"];
+    [self didChangeValueForKey:@"create_routine_priv"];
+}
+
+- (BOOL)validateCreate_routine_priv:(id *)valueRef error:(NSError **)outError 
+{
+    // Insert custom validation logic here.
+    return YES;
+}
+
+- (NSNumber *)create_tmp_table_priv 
+{
+    NSNumber * tmpValue;
+    
+    [self willAccessValueForKey:@"create_tmp_table_priv"];
+    tmpValue = [self primitiveValueForKey:@"create_tmp_table_priv"];
+    [self didAccessValueForKey:@"create_tmp_table_priv"];
+    
+    return tmpValue;
+}
+
+- (void)setCreate_tmp_table_priv:(NSNumber *)value 
+{
+    [self willChangeValueForKey:@"create_tmp_table_priv"];
+    [self setPrimitiveValue:value forKey:@"create_tmp_table_priv"];
+    [self didChangeValueForKey:@"create_tmp_table_priv"];
+}
+
+- (BOOL)validateCreate_tmp_table_priv:(id *)valueRef error:(NSError **)outError 
 {
     // Insert custom validation logic here.
     return YES;
@@ -136,73 +232,73 @@
     return YES;
 }
 
-- (NSNumber *)maxConnections 
+- (NSNumber *)max_connections 
 {
     NSNumber * tmpValue;
     
-    [self willAccessValueForKey:@"maxConnections"];
-    tmpValue = [self primitiveValueForKey:@"maxConnections"];
-    [self didAccessValueForKey:@"maxConnections"];
+    [self willAccessValueForKey:@"max_connections"];
+    tmpValue = [self primitiveValueForKey:@"max_connections"];
+    [self didAccessValueForKey:@"max_connections"];
     
     return tmpValue;
 }
 
-- (void)setMaxConnections:(NSNumber *)value 
+- (void)setMax_connections:(NSNumber *)value 
 {
-    [self willChangeValueForKey:@"maxConnections"];
-    [self setPrimitiveValue:value forKey:@"maxConnections"];
-    [self didChangeValueForKey:@"maxConnections"];
+    [self willChangeValueForKey:@"max_connections"];
+    [self setPrimitiveValue:value forKey:@"max_connections"];
+    [self didChangeValueForKey:@"max_connections"];
 }
 
-- (BOOL)validateMaxConnections:(id *)valueRef error:(NSError **)outError 
+- (BOOL)validateMax_connections:(id *)valueRef error:(NSError **)outError 
 {
     // Insert custom validation logic here.
     return YES;
 }
 
-- (NSNumber *)maxQuestions 
+- (NSNumber *)max_questions 
 {
     NSNumber * tmpValue;
     
-    [self willAccessValueForKey:@"maxQuestions"];
-    tmpValue = [self primitiveValueForKey:@"maxQuestions"];
-    [self didAccessValueForKey:@"maxQuestions"];
+    [self willAccessValueForKey:@"max_questions"];
+    tmpValue = [self primitiveValueForKey:@"max_questions"];
+    [self didAccessValueForKey:@"max_questions"];
     
     return tmpValue;
 }
 
-- (void)setMaxQuestions:(NSNumber *)value 
+- (void)setMax_questions:(NSNumber *)value 
 {
-    [self willChangeValueForKey:@"maxQuestions"];
-    [self setPrimitiveValue:value forKey:@"maxQuestions"];
-    [self didChangeValueForKey:@"maxQuestions"];
+    [self willChangeValueForKey:@"max_questions"];
+    [self setPrimitiveValue:value forKey:@"max_questions"];
+    [self didChangeValueForKey:@"max_questions"];
 }
 
-- (BOOL)validateMaxQuestions:(id *)valueRef error:(NSError **)outError 
+- (BOOL)validateMax_questions:(id *)valueRef error:(NSError **)outError 
 {
     // Insert custom validation logic here.
     return YES;
 }
 
-- (NSNumber *)maxUserConnections 
+- (NSNumber *)max_user_connections 
 {
     NSNumber * tmpValue;
     
-    [self willAccessValueForKey:@"maxUserConnections"];
-    tmpValue = [self primitiveValueForKey:@"maxUserConnections"];
-    [self didAccessValueForKey:@"maxUserConnections"];
+    [self willAccessValueForKey:@"max_user_connections"];
+    tmpValue = [self primitiveValueForKey:@"max_user_connections"];
+    [self didAccessValueForKey:@"max_user_connections"];
     
     return tmpValue;
 }
 
-- (void)setMaxUserConnections:(NSNumber *)value 
+- (void)setMax_user_connections:(NSNumber *)value 
 {
-    [self willChangeValueForKey:@"maxUserConnections"];
-    [self setPrimitiveValue:value forKey:@"maxUserConnections"];
-    [self didChangeValueForKey:@"maxUserConnections"];
+    [self willChangeValueForKey:@"max_user_connections"];
+    [self setPrimitiveValue:value forKey:@"max_user_connections"];
+    [self didChangeValueForKey:@"max_user_connections"];
 }
 
-- (BOOL)validateMaxUserConnections:(id *)valueRef error:(NSError **)outError 
+- (BOOL)validateMax_user_connections:(id *)valueRef error:(NSError **)outError 
 {
     // Insert custom validation logic here.
     return YES;
@@ -304,25 +400,25 @@
     return YES;
 }
 
-- (NSString *)username 
+- (NSString *)user 
 {
     NSString * tmpValue;
     
-    [self willAccessValueForKey:@"username"];
-    tmpValue = [self primitiveValueForKey:@"username"];
-    [self didAccessValueForKey:@"username"];
+    [self willAccessValueForKey:@"user"];
+    tmpValue = [self primitiveValueForKey:@"user"];
+    [self didAccessValueForKey:@"user"];
     
     return tmpValue;
 }
 
-- (void)setUsername:(NSString *)value 
+- (void)setUser:(NSString *)value 
 {
-    [self willChangeValueForKey:@"username"];
-    [self setPrimitiveValue:value forKey:@"username"];
-    [self didChangeValueForKey:@"username"];
+    [self willChangeValueForKey:@"user"];
+    [self setPrimitiveValue:value forKey:@"user"];
+    [self didChangeValueForKey:@"user"];
 }
 
-- (BOOL)validateUsername:(id *)valueRef error:(NSError **)outError 
+- (BOOL)validateUser:(id *)valueRef error:(NSError **)outError 
 {
     // Insert custom validation logic here.
     return YES;
@@ -377,6 +473,7 @@
     return YES;
 }
 
+*/
 
 @end
 
