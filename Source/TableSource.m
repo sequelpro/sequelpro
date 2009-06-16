@@ -77,7 +77,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	
 	// Enable edit table button
 	[editTableButton setEnabled:YES];
-	
+
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
   
@@ -221,6 +221,11 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[[tableSourceView enclosingScrollView] display];
 	[[tableSourceView enclosingScrollView] tile];
 	
+	// Enable 'Duplicate field' if at least one field is specified
+	// if no field is selected 'Duplicate field' will copy the last field
+	if([tableSourceView numberOfRows] > 0)
+		[copyFieldButton setEnabled:YES];
+
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
@@ -266,8 +271,9 @@ reloads the table (performing a new mysql-query)
 {
 	NSMutableDictionary *tempRow;
 
-	if ( ![tableSourceView numberOfSelectedRows] )
-		return;
+	if ( ![tableSourceView numberOfSelectedRows] ) {
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableSourceView numberOfRows]-1] byExtendingSelection:NO];
+	}
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -1092,15 +1098,16 @@ would result in a position change.
         if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow ) {
             [self saveRowOnDeselect];
         }
+        [copyFieldButton setEnabled:YES];
         
         // check if there is currently a field selected
         // and change button state accordingly
         if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
             [removeFieldButton setEnabled:YES];
-            [copyFieldButton setEnabled:YES];
+            // [copyFieldButton setEnabled:YES];
         } else {
             [removeFieldButton setEnabled:NO];
-            [copyFieldButton setEnabled:NO];
+            // [copyFieldButton setEnabled:YES];
         }
     }
     else if ([aNotification object] == indexView) {

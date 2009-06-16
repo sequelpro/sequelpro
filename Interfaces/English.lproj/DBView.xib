@@ -8,7 +8,6 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="604"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6137,7 +6136,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{560, 200}</string>
 				<object class="NSView" key="NSWindowView" id="999543752">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">4370</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6586,29 +6585,6 @@
 										<object class="NSTextView" id="1011820278">
 											<reference key="NSNextResponder" ref="134546146"/>
 											<int key="NSvFlags">2322</int>
-											<object class="NSMutableSet" key="NSDragTypes">
-												<bool key="EncodedWithXMLCoder">YES</bool>
-												<object class="NSMutableArray" key="set.sortedObjects">
-													<bool key="EncodedWithXMLCoder">YES</bool>
-													<string>Apple HTML pasteboard type</string>
-													<string>Apple PDF pasteboard type</string>
-													<string>Apple PICT pasteboard type</string>
-													<string>Apple PNG pasteboard type</string>
-													<string>Apple URL pasteboard type</string>
-													<string>CorePasteboardFlavorType 0x6D6F6F76</string>
-													<string>CorePasteboardFlavorType 0x75726C20</string>
-													<string>NSColor pasteboard type</string>
-													<string>NSFilenamesPboardType</string>
-													<string>NSStringPboardType</string>
-													<string>NeXT Encapsulated PostScript v1.2 pasteboard type</string>
-													<string>NeXT RTFD pasteboard type</string>
-													<string>NeXT Rich Text Format v1.0 pasteboard type</string>
-													<string>NeXT TIFF v4.0 pasteboard type</string>
-													<string>NeXT font pasteboard type</string>
-													<string>NeXT ruler pasteboard type</string>
-													<string>WebURLsWithTitlesPboardType</string>
-												</object>
-											</object>
 											<string key="NSFrameSize">{667, 14}</string>
 											<reference key="NSSuperview" ref="134546146"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="609699272">
@@ -6746,7 +6722,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{667, 416}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{560, 222}</string>
@@ -25419,7 +25394,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="996552255"/>
-							<string key="toolTip">Delete selected field(s)</string>
+							<string type="base64-UTF8" key="toolTip">RGVsZXRlIHNlbGVjdGVkIGZpZWxkICjijKspA</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -25429,7 +25404,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="338754831"/>
-							<string type="base64-UTF8" key="toolTip">RHVwbGljYXRlIHNlbGVjdGVkIGZpZWxkICjijJhEKQ</string>
+							<string type="base64-UTF8" key="toolTip">RHVwbGljYXRlIHNlbGVjdGVkIG9yIGxhc3QgZmllbGQgZGVmaW5pdGlvbiAo4oyYRCk</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
