@@ -473,10 +473,11 @@
 				[errors setString:[mySQLConnection getLastErrorMessage]];
 			}
 		} else {
-			// Check if table list needs an update
-			if(!tableListNeedsReload && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)^\\s*(create|alter|drop|rename)\\s"])
+			// Check if table/db list needs an update
+			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
+			if(!tableListNeedsReload && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)\\b(create|alter|drop|rename)\\b\\s+."])
 				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)^\\s*(use|drop\\s+database|drop\\s+schema)\\s"])
+			if(!databaseWasChanged && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
 				databaseWasChanged = YES;
 		}
 	}
