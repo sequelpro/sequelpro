@@ -72,6 +72,9 @@
 	NSDate *lastKeepAliveSuccess;
 	
 	BOOL retryAllowed;
+	
+	BOOL delegateResponseToWillQueryString;
+	
 }
 
 - (id) init;

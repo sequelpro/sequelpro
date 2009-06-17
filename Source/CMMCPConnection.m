@@ -261,6 +261,7 @@ static void forcePingTimeout(int signalNumber);
 	[self timeZone]; // Getting the timezone used by the server.
 	
 	isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
+
 	if (![self fetchMaxAllowedPacket]) {
 		[self setLastErrorMessage:nil];
 		if (connectionTunnel) {
@@ -699,7 +700,7 @@ static void forcePingTimeout(int signalNumber);
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult		*theResult = nil;
-	NSDate			*queryStartDate;
+	float			queryStartTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
@@ -722,9 +723,11 @@ static void forcePingTimeout(int signalNumber);
 	}
 
 	[self stopKeepAliveTimer];
+	
+	queryStartTime = clock();
 
 	// Inform the delegate about the query
-	if (delegate && [delegate respondsToSelector:@selector(willQueryString:)]) {
+	if (delegateResponseToWillQueryString) {
 		[delegate willQueryString:query];
 	}
 
@@ -736,11 +739,11 @@ static void forcePingTimeout(int signalNumber);
 	// Check query length against max_allowed_packet; if it is larger, the
 	// query would error, so if max_allowed_packet is editable for the user
 	// increase it for the current session and reconnect.
-	if([self getMaxAllowedPacket] < theCQueryLength) {
+	if(maxAllowedPacketSize < theCQueryLength) {
 
 		if(isMaxAllowedPacketEditable) {
 
-			currentMaxAllowedPacket = [self getMaxAllowedPacket];
+			currentMaxAllowedPacket = maxAllowedPacketSize;
 			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
 			[self reconnect];
 
@@ -748,7 +751,7 @@ static void forcePingTimeout(int signalNumber);
 
 			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %d bytes is larger than max_allowed_packet size (%d).", 
 				@"error message if max_allowed_packet < query size"),
-				theCQueryLength, [self getMaxAllowedPacket]];
+				theCQueryLength, maxAllowedPacketSize];
 
 			// Write a log entry and update the connection error messages for those uses that check it
 			if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:errorMessage];
@@ -779,9 +782,8 @@ static void forcePingTimeout(int signalNumber);
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
-		queryStartDate = [NSDate date];
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
-		lastQueryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+		lastQueryExecutionTime = (clock() - queryStartTime)/CLOCKS_PER_SEC;
 
 		// On success, capture the results
 		if (0 == queryResultCode) {
@@ -929,6 +931,7 @@ static void forcePingTimeout(int signalNumber);
 - (void)setDelegate:(id)object
 {
 	delegate = object;
+	delegateResponseToWillQueryString = (delegate && [delegate respondsToSelector:@selector(willQueryString:)]);
 }
 
 /* Getting the currently used time zone (in communication with the DB server). */
@@ -1130,7 +1133,11 @@ static void forcePingTimeout(int signalNumber)
  */
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding
 {
-	NSMutableData	*theData;
+
+	if(encoding == NSUTF8StringEncoding)
+		return [theString UTF8String];
+
+	NSMutableData *theData;
 	
 	if (! theString) {
 		return (const char *)NULL;
@@ -1226,7 +1233,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset
 {
-	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return [self getMaxAllowedPacket];
+	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return maxAllowedPacketSize;
 
 	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
 	// Inform the user via a log entry about that change according to reset value
@@ -1236,7 +1243,7 @@ static void forcePingTimeout(int signalNumber)
 		else
 			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize]];
 
-	return [self getMaxAllowedPacket];
+	return maxAllowedPacketSize;
 }
 
 
