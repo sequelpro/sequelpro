@@ -52,6 +52,8 @@
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
+	int maxAllowedPacketSize;
+	unsigned long connectionThreadId;
 	int connectionTimeout;
 	int currentSSHTunnelState;
 	BOOL useKeepAlive;
@@ -60,6 +62,7 @@
 	float lastQueryExecutionTime;
 	NSString *lastQueryErrorMessage;
 	unsigned int lastQueryErrorId;
+	my_ulonglong lastQueryAffectedRows;
 
 	BOOL isMaxAllowedPacketEditable;
 	
@@ -91,7 +94,7 @@
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
-- (void) restoreEncodingDetails;
+- (void) restoreConnectionDetails;
 - (void) setDelegate:(id)object;
 - (NSTimeZone *) timeZone;
 - (BOOL) pingConnection;
@@ -100,6 +103,8 @@
 - (void) keepAlive:(NSTimer *)theTimer;
 - (void) threadedKeepAlive;
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding;
+- (void) setLastErrorMessage:(NSString *)theErrorMessage;
+- (BOOL) fetchMaxAllowedPacket;
 - (int) getMaxAllowedPacket;
 - (BOOL) isMaxAllowedPacketEditable;
 - (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;

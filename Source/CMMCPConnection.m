@@ -39,7 +39,7 @@ static void forcePingTimeout(int signalNumber);
 {
 	if( mConnected ) {
 		CMMCPResult *theResult;
-		theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
+		theResult = [self queryString:@"SHOW VARIABLES LIKE 'version'"];
 		if ([theResult numOfRows]) {
 			[theResult dataSeek:0];
 			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
@@ -129,9 +129,12 @@ static void forcePingTimeout(int signalNumber);
 	keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
 	if (!keepAliveInterval) keepAliveInterval = 0;
 	lastKeepAliveSuccess = nil;
+	connectionThreadId = 0;
+	maxAllowedPacketSize = -1;
 	lastQueryExecutionTime = 0;
 	lastQueryErrorId = 0;
 	lastQueryErrorMessage = nil;
+	lastQueryAffectedRows = 0;
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
@@ -244,6 +247,7 @@ static void forcePingTimeout(int signalNumber);
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
 	if (theRet != mConnection) {
+		[self setLastErrorMessage:nil];
 		if (connectionTunnel) {
 			[connectionTunnel disconnect];
 			[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
@@ -253,9 +257,18 @@ static void forcePingTimeout(int signalNumber);
 
 	mConnected = YES;
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	connectionThreadId = mConnection->thread_id;
 	[self timeZone]; // Getting the timezone used by the server.
 	
 	isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
+	if (![self fetchMaxAllowedPacket]) {
+		[self setLastErrorMessage:nil];
+		if (connectionTunnel) {
+			[connectionTunnel disconnect];
+			[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+		}
+		return mConnected = NO;
+	}
 	
 	// Register notification if a query was sent to the MySQL connection
 	// to be able to identify the sender of that query
@@ -430,6 +443,7 @@ static void forcePingTimeout(int signalNumber);
 			}
 		}
 	} else if (parentWindow) {
+		[self setLastErrorMessage:nil];
 
 		// If the connection was not successfully established, ask how to proceed.
 		[NSApp beginSheet:connectionErrorDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -488,7 +502,7 @@ static void forcePingTimeout(int signalNumber);
 
 
 /*
- * Ends and existing modal session
+ * Ends an existing modal session
  */
 - (IBAction) closeSheet:(id)sender
 {
@@ -640,6 +654,7 @@ static void forcePingTimeout(int signalNumber);
 		[self startKeepAliveTimerResettingState:YES];
 		return YES;
 	}
+	[self setLastErrorMessage:nil];
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
 		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
@@ -689,20 +704,20 @@ static void forcePingTimeout(int signalNumber);
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
 	int				queryErrorId = 0;
+	my_ulonglong	queryAffectedRows = 0;
 	int				currentMaxAllowedPacket = -1;
 	BOOL			isQueryRetry = NO;
-	unsigned long 	threadid = mConnection->thread_id;
 	NSString		*queryErrorMessage = nil;
 
 	// If no connection is present, return nil.
 	if (!mConnected) {
 		// Write a log entry
-		[delegate queryGaveError:@"No conncetion available!"];
+		if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:@"No connection available!"];
 		// Notify that the query has been performed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		// Show an error alert while resetting
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No conncetion available!", 
-			nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No conncetion available!");
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No connection available!", 
+			nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No connection available!");
 		return nil;
 	}
 
@@ -718,8 +733,8 @@ static void forcePingTimeout(int signalNumber);
 	// Set the length of the current query + 1 (\0)
 	theCQueryLength = strlen(theCQuery)+1;
 
-	// Check query lenght against max_allowed_packet
-	// If max_allowed_packet is editable for the user
+	// Check query length against max_allowed_packet; if it is larger, the
+	// query would error, so if max_allowed_packet is editable for the user
 	// increase it for the current session and reconnect.
 	if([self getMaxAllowedPacket] < theCQueryLength) {
 
@@ -735,8 +750,10 @@ static void forcePingTimeout(int signalNumber);
 				@"error message if max_allowed_packet < query size"),
 				theCQueryLength, [self getMaxAllowedPacket]];
 
-			// Write a log entry
-			[delegate queryGaveError:errorMessage];
+			// Write a log entry and update the connection error messages for those uses that check it
+			if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:errorMessage];
+			[self setLastErrorMessage:errorMessage];
+
 			// Notify that the query has been performed
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 			// Show an error alert while resetting
@@ -753,16 +770,11 @@ static void forcePingTimeout(int signalNumber);
 		// If this query has failed once already, check the connection
 		if (isQueryRetry) {
 			if (![self checkConnection]) {
+
 				// Notify that the query has been performed
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 				return nil;
 			}
-
-			// If the connection thread is still the same as at the start, the
-			// connection wasn't the issue - don't retry.
-			if (threadid == mConnection->thread_id) break;
-			
-			threadid = mConnection->thread_id;
 		}
 
 		// Run (or re-run) the query, timing the execution time of the query - note
@@ -774,11 +786,20 @@ static void forcePingTimeout(int signalNumber);
 		// On success, capture the results
 		if (0 == queryResultCode) {
 
-			if (mysql_field_count(mConnection) != 0)
+			if (mysql_field_count(mConnection) != 0) {
 				theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+
+				// Ensure no problem occurred during the result fetch
+				if (mysql_errno(mConnection) != 0) {
+					queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+					queryErrorId = mysql_errno(mConnection);
+					break;
+				}
+			}
 
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
+			queryAffectedRows = mysql_affected_rows(mConnection);
 
 		// On failure, set the error messages and IDs
 		} else {
@@ -798,17 +819,17 @@ static void forcePingTimeout(int signalNumber);
 	
 	// If the mysql thread id has changed as a result of a connection error,
 	// ensure connection details are still correct
-	if (threadid != mConnection->thread_id) [self restoreEncodingDetails];
+	if (connectionThreadId != mConnection->thread_id) [self restoreConnectionDetails];
 
 	// If max_allowed_packet was changed, reset it to default
 	if(currentMaxAllowedPacket > -1)
 		[self setMaxAllowedPacketTo:currentMaxAllowedPacket resetSize:YES];
 
 	// Update error strings and IDs
-	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
 	lastQueryErrorId = queryErrorId;
-	lastQueryErrorMessage = [[NSString alloc] initWithString:queryErrorMessage?queryErrorMessage:@""];
+	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
 	if (queryErrorMessage) [queryErrorMessage release]; 
+	lastQueryAffectedRows = queryAffectedRows;
 	
 	// If an error occurred, inform the delegate
 	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)])
@@ -851,14 +872,9 @@ static void forcePingTimeout(int signalNumber);
  */
 - (BOOL)checkConnection
 {
-	unsigned long threadid;
-
 	if (!mConnected) return NO;
 
 	BOOL connectionVerified = FALSE;
-
-	// Get the current thread ID for this connection
-	threadid = mConnection->thread_id;
 
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
@@ -889,7 +905,7 @@ static void forcePingTimeout(int signalNumber);
 
 	// If a connection exists, check whether the thread id differs; if so, the connection has
 	// probably been reestablished and we need to reset the connection encoding
-	} else if (threadid != mConnection->thread_id) [self restoreEncodingDetails];
+	} else if (connectionThreadId != mConnection->thread_id) [self restoreConnectionDetails];
 
 	return connectionVerified;
 }
@@ -898,8 +914,10 @@ static void forcePingTimeout(int signalNumber);
  * Restore the connection encoding details as necessary based on the delegate-provided
  * details.
  */
-- (void) restoreEncodingDetails
+- (void) restoreConnectionDetails
 {
+	connectionThreadId = mConnection->thread_id;
+	[self fetchMaxAllowedPacket];
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
 		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
@@ -1125,6 +1143,8 @@ static void forcePingTimeout(int signalNumber)
 
 /*
  * Returns a string for the last MySQL error message on the connection.
+ * This is cached within the object to allow helper queries to be performed
+ * without affecting the state that the GUI is querying.
  */
 - (NSString *) getLastErrorMessage
 {
@@ -1132,11 +1152,61 @@ static void forcePingTimeout(int signalNumber)
 }
 
 /*
+ * Sets the string for the last MySQL error message on the connection,
+ * managing memory as appropriate.  Supply a nil string to store the
+ * last error on the connection.
+ */
+- (void) setLastErrorMessage:(NSString *)theErrorMessage
+{
+	if (!theErrorMessage) theErrorMessage = [self stringWithCString:mysql_error(mConnection)];
+
+	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
+	lastQueryErrorMessage = [[NSString alloc] initWithString:theErrorMessage];
+}
+
+/*
  * Returns the ErrorID of the last MySQL error on the connection.
+ * This is cached within the object to allow helper queries to be performed
+ * without affecting the state that the GUI is querying.
  */
 - (unsigned int) getLastErrorID
 {
 	return lastQueryErrorId;
+}
+
+/*
+ * Returns the number of affected rows by the last query.
+ * This is cached within the object to allow helper queries to be performed
+ * without affecting the state that the GUI is querying.
+ */
+- (my_ulonglong) affectedRows
+{
+	return lastQueryAffectedRows;
+}
+
+/*
+ * Retrieve the max_allowed_packet size from the server; returns
+ * false if the query fails.
+ */
+- (BOOL) fetchMaxAllowedPacket
+{
+	char *queryString;
+	
+	if ([self serverMajorVersion] == 3) queryString = "SHOW VARIABLES LIKE 'max_allowed_packet'";
+	else queryString = "SELECT @@global.max_allowed_packet";
+	if (0 == mysql_query(mConnection, queryString)) {
+		if (mysql_field_count(mConnection) != 0) {
+			CMMCPResult *r = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			NSArray *a = [r fetchRowAsArray];
+			[r autorelease];
+			if([a count]) {
+				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] intValue];
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 /*
@@ -1145,19 +1215,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (int) getMaxAllowedPacket
 {
-
-	if (0 == mysql_query(mConnection, "SELECT @@global.max_allowed_packet")) {
-		if (mysql_field_count(mConnection) != 0) {
-			CMMCPResult *r = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-			NSArray *a = [r fetchRowAsArray];
-			[r autorelease];
-			if([a count]) return [[a objectAtIndex:0] intValue];
-		}
-	}
-
-	NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
-
-	return -1;
+	return maxAllowedPacketSize;
 }
 
 /*
