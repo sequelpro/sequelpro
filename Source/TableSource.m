@@ -242,6 +242,7 @@ reloads the table (performing a new mysql-query)
 }
 
 
+#pragma mark -
 #pragma mark Edit methods
 
 /**
@@ -408,6 +409,7 @@ reloads the table (performing a new mysql-query)
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeindex"];
 }
 
+#pragma mark -
 #pragma mark Index sheet methods
 
 /*
@@ -451,11 +453,11 @@ opens the indexSheet
 	//code == 0 -> error while adding index
 	//code == 1 -> index added with succes OR sheet closed without adding index
 	if ( code == 0 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"Couldn't add index.\nMySQL said: %@", @"message of panel when index cannot be created"), [mySQLConnection getLastErrorMessage]]);
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, 
+		nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't add index.\nMySQL said: %@", @"message of panel when index cannot be created"), [mySQLConnection getLastErrorMessage]]);
 	} else if ( code == -1 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, @selector(closeAlertSheet), nil,
-			   NSLocalizedString(@"Please insert the columns you want to index.", @"message of panel when no columns are specified to be indexed"));
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, 
+		@selector(closeAlertSheet), nil, NSLocalizedString(@"Please insert the columns you want to index.", @"message of panel when no columns are specified to be indexed"));
 	}
 }
 
@@ -499,6 +501,7 @@ closes the keySheet
 }
 
 
+#pragma mark -
 #pragma mark Additional methods
 
 /*
@@ -714,15 +717,17 @@ fetches the result as an array with a dictionary for each row in it
 		[keySheet orderOut:nil];
 		
 		if ( code ) {
-			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) {
+			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) { // User wants to add PRIMARY KEY
 				[queryString appendString:@" PRIMARY KEY"];
-				//[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
+				if(isEditingNewRow) // Add AFTER ... only if the user added a new field
+					[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 			} else {
-				[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
+				if(isEditingNewRow) // Add AFTER ... only if the user added a new field
+					[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
-	} else if(isEditingNewRow){ // Add AFTER ... only if the user added a new field
+	} else if(isEditingNewRow) { // Add AFTER ... only if the user added a new field
 		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 	}
 
@@ -762,6 +767,7 @@ fetches the result as an array with a dictionary for each row in it
 	 if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
 	 if contextInfo == removefield: removes row from mysql-db if user hits ok
 	 if contextInfo == removeindex: removes index from mysql-db if user hits ok
+	 if contextInfo == cannotremovefield: do nothing
 	 */
 
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
@@ -827,7 +833,7 @@ fetches the result as an array with a dictionary for each row in it
 }
 
 /**
- * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ * This method is called as part of Key Value Observing which is used to watch for preference changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
@@ -837,6 +843,7 @@ fetches the result as an array with a dictionary for each row in it
 	}
 }
 
+#pragma mark -
 #pragma mark Getter methods
 
 /*
@@ -901,6 +908,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	return tempResult;
 }
 
+#pragma mark -
 #pragma mark TableView datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
@@ -1091,6 +1099,7 @@ would result in a position change.
 	return YES;
 }
 
+#pragma mark -
 #pragma mark TableView delegate methods
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
@@ -1192,6 +1201,7 @@ traps enter and esc and make/cancel editing without entering next row
 	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
 }
 
+#pragma mark -
 #pragma mark SplitView delegate methods
 
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
