@@ -59,7 +59,7 @@
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
-	float lastQueryExecutionTime;
+	int lastQueryExecutionTime;
 	NSString *lastQueryErrorMessage;
 	unsigned int lastQueryErrorId;
 	my_ulonglong lastQueryAffectedRows;
@@ -74,6 +74,8 @@
 	BOOL retryAllowed;
 	
 	BOOL delegateResponseToWillQueryString;
+	
+	IMP willQueryStringPtr;
 	
 }
 

@@ -665,15 +665,6 @@ static void forcePingTimeout(int signalNumber);
 
 
 /*
- * Override the standard queryString: method to default to the connection encoding, as before,
- * before pssing on to queryString: usingEncoding:.
- */
-- (CMMCPResult *)queryString:(NSString *) query
-{
-	return [self queryString:query usingEncoding:mEncoding];
-}
-
-/*
  * Via that method the current mySQLConnection will be informed
  * which object sent the current query.
  */
@@ -690,6 +681,15 @@ static void forcePingTimeout(int signalNumber);
 
 }
 
+/*
+ * Override the standard queryString: method to default to the connection encoding, as before,
+ * before pssing on to queryString: usingEncoding:.
+ */
+- (CMMCPResult *)queryString:(NSString *) query
+{
+	return [self queryString:query usingEncoding:mEncoding];
+}
+
 
 /*
  * Modified version of queryString to be used in Sequel Pro.
@@ -700,7 +700,7 @@ static void forcePingTimeout(int signalNumber);
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult		*theResult = nil;
-	float			queryStartTime;
+	int				queryStartTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
@@ -724,12 +724,11 @@ static void forcePingTimeout(int signalNumber);
 
 	[self stopKeepAliveTimer];
 	
-	queryStartTime = clock();
+	// queryStartTime = clock();
 
 	// Inform the delegate about the query
-	if (delegateResponseToWillQueryString) {
-		[delegate willQueryString:query];
-	}
+	if (delegateResponseToWillQueryString)
+		(void)(NSString*)(*willQueryStringPtr)(delegate, @selector(willQueryString:), query);
 
 	// Derive the query string in the correct encoding
 	theCQuery = [self cStringFromString:query usingEncoding:encoding];
@@ -782,8 +781,9 @@ static void forcePingTimeout(int signalNumber);
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
+		queryStartTime = clock();
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
-		lastQueryExecutionTime = (clock() - queryStartTime)/CLOCKS_PER_SEC;
+		lastQueryExecutionTime = (clock() - queryStartTime);
 
 		// On success, capture the results
 		if (0 == queryResultCode) {
@@ -932,6 +932,7 @@ static void forcePingTimeout(int signalNumber);
 {
 	delegate = object;
 	delegateResponseToWillQueryString = (delegate && [delegate respondsToSelector:@selector(willQueryString:)]);
+	willQueryStringPtr = [delegate methodForSelector:@selector(willQueryString:)];
 }
 
 /* Getting the currently used time zone (in communication with the DB server). */
@@ -1133,9 +1134,6 @@ static void forcePingTimeout(int signalNumber)
  */
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding
 {
-
-	if(encoding == NSUTF8StringEncoding)
-		return [theString UTF8String];
 
 	NSMutableData *theData;
 	

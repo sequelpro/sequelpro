@@ -985,7 +985,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)toggleConsole:(id)sender
 {
 	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
-	
+
+	// If the Console window is not visible data are not reloaded (for speed).
+	// Due to that update list if user opens the Console window.
+	if(!isConsoleVisible) {
+		[[SPQueryConsole sharedQueryConsole] updateEntries];
+	}
+
 	// Show or hide the console
 	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:(!isConsoleVisible)];
 	

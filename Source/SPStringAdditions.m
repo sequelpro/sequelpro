@@ -74,10 +74,13 @@
 //
 // Returns a human readable version string of the supplied time interval.
 // -------------------------------------------------------------------------------
-+ (NSString *)stringForTimeInterval:(float)timeInterval
++ (NSString *)stringForTimeInterval:(float)timeInterval intervalInClocks:(BOOL)inClocks
 {
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	
+
+	if(inClocks)
+		timeInterval = timeInterval/CLOCKS_PER_SEC;
+
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 	if (timeInterval < 0.001) {

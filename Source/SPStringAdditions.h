@@ -28,7 +28,7 @@
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
++ (NSString *)stringForTimeInterval:(float)timeInterval intervalInClocks:(BOOL)inClocks;
 
 - (NSString *)backtickQuotedString;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;

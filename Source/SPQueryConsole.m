@@ -365,6 +365,12 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	return [[self window] validateMenuItem:menuItem];
 }
 
+- (void)updateEntries
+{
+	[consoleTableView reloadData];
+	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+}
+
 /**
  * Standard dealloc.
  */
@@ -494,9 +500,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		[clearConsoleButton setEnabled:YES];
 	}
 
-	// Reload the table and scroll to the new message
-	[consoleTableView reloadData];
-	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	// Reload the table and scroll to the new message if it's visible (for speed)
+	if ( [[self window] isVisible] ) {
+		[consoleTableView reloadData];
+		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	}
 }
 
 /**
