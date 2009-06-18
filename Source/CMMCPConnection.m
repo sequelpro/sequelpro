@@ -278,6 +278,9 @@ static void forcePingTimeout(int signalNumber);
 	
 	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
 	
+	// Init 'consoleLoggingEnabled'
+	consoleLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"];
+	
 	return mConnected;
 }
 
