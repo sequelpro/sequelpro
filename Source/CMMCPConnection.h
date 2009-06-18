@@ -74,6 +74,7 @@
 	BOOL retryAllowed;
 	
 	BOOL delegateResponseToWillQueryString;
+	BOOL consoleLoggingEnabled;
 	
 	IMP willQueryStringPtr;
 	

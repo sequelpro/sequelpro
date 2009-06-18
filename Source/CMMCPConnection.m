@@ -276,6 +276,7 @@ static void forcePingTimeout(int signalNumber);
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
 												 name:@"SMySQLQueryWillBePerformed" object:nil];
 	
+	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
 	
 	return mConnected;
 }
@@ -681,6 +682,16 @@ static void forcePingTimeout(int signalNumber);
 
 }
 
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
+		consoleLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"];
+	}
+}
+
 /*
  * Override the standard queryString: method to default to the connection encoding, as before,
  * before pssing on to queryString: usingEncoding:.
@@ -726,8 +737,9 @@ static void forcePingTimeout(int signalNumber);
 	
 	// queryStartTime = clock();
 
-	// Inform the delegate about the query
-	if (delegateResponseToWillQueryString)
+	// Inform the delegate about the query if logging is enabled and 
+	// delegate responds to willQueryString:
+	if (consoleLoggingEnabled && delegateResponseToWillQueryString)
 		(void)(NSString*)(*willQueryStringPtr)(delegate, @selector(willQueryString:), query);
 
 	// Derive the query string in the correct encoding
