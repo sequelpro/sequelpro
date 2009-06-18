@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "CMMCPConnection.h"
+#import "SPStringAdditions.h"
 #include <unistd.h>
 #include <setjmp.h>
 
@@ -140,6 +141,7 @@ static void forcePingTimeout(int signalNumber);
 	}
 	
 	cStringPtr = [self methodForSelector:@selector(cStringFromString:usingEncoding:)];
+
 }
 
 /*
@@ -446,7 +448,7 @@ static void forcePingTimeout(int signalNumber);
 			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
 			[self setEncoding:[CMMCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
 			if (currentEncodingUsesLatin1Transport) {
-				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
 			}
 		}
 	} else if (parentWindow) {
@@ -750,10 +752,10 @@ static void forcePingTimeout(int signalNumber);
 	// Derive the query string in the correct encoding
 	switch(encoding) {
 		case NSUTF8StringEncoding:
-		theCQuery = [query UTF8String];
-		break;
+			theCQuery = NSStringUTF8String(query);
+			break;
 		default:
-		theCQuery = (const char*)(NSString*)(int)(*cStringPtr)(self, @selector(cStringFromString:), query, encoding);
+			theCQuery = (const char*)(NSString*)(int)(*cStringPtr)(self, @selector(cStringFromString:), query, encoding);
 		//[self cStringFromString:query usingEncoding:encoding];
 	}
 

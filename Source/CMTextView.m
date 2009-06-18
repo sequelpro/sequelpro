@@ -2185,7 +2185,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	//initialise flex
 	yyuoffset = textRange.location; yyuleng = 0;
-	yy_switch_to_buffer(yy_scan_string([[[self string] substringWithRange:textRange] UTF8String]));
+	// yy_switch_to_buffer(yy_scan_string([[[self string] substringWithRange:textRange] UTF8String]));
+	yy_switch_to_buffer(yy_scan_string(NSStringUTF8String([[self string] substringWithRange:textRange])));
 
 	//now loop through all the tokens
 	while (token=yylex()){
