@@ -138,6 +138,8 @@ static void forcePingTimeout(int signalNumber);
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
+	
+	cStringPtr = [self methodForSelector:@selector(cStringFromString:usingEncoding:)];
 }
 
 /*
@@ -746,9 +748,17 @@ static void forcePingTimeout(int signalNumber);
 		(void)(NSString*)(*willQueryStringPtr)(delegate, @selector(willQueryString:), query);
 
 	// Derive the query string in the correct encoding
-	theCQuery = [self cStringFromString:query usingEncoding:encoding];
-	// Set the length of the current query + 1 (\0)
-	theCQueryLength = strlen(theCQuery)+1;
+	switch(encoding) {
+		case NSUTF8StringEncoding:
+		theCQuery = [query UTF8String];
+		break;
+		default:
+		theCQuery = (const char*)(NSString*)(int)(*cStringPtr)(self, @selector(cStringFromString:), query, encoding);
+		//[self cStringFromString:query usingEncoding:encoding];
+	}
+
+	// Set the length of the current query
+	theCQueryLength = strlen(theCQuery);
 
 	// Check query length against max_allowed_packet; if it is larger, the
 	// query would error, so if max_allowed_packet is editable for the user
@@ -849,7 +859,7 @@ static void forcePingTimeout(int signalNumber);
 	lastQueryAffectedRows = queryAffectedRows;
 	
 	// If an error occurred, inform the delegate
-	if (0 != queryResultCode && delegate && [delegate respondsToSelector:@selector(queryGaveError:)])
+	if (queryResultCode & delegateResponseToWillQueryString)
 		[delegate queryGaveError:lastQueryErrorMessage];
 
 	[self startKeepAliveTimerResettingState:YES];

@@ -76,6 +76,7 @@
 	BOOL delegateResponseToWillQueryString;
 	BOOL consoleLoggingEnabled;
 	
+	IMP cStringPtr;
 	IMP willQueryStringPtr;
 	
 }
