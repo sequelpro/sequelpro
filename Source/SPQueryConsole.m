@@ -25,6 +25,7 @@
 
 #import "SPQueryConsole.h"
 #import "SPConsoleMessage.h"
+#import "SPArrayAdditions.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
@@ -147,7 +148,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		while (i != NSNotFound) 
 		{
 			if (i < [messagesVisibleSet count]) {
-				SPConsoleMessage *message = [messagesVisibleSet objectAtIndex:i];
+				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
 
 				NSString *consoleMessage = [message message];
 

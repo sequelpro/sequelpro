@@ -53,7 +53,7 @@
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES], [[queryResult fetchRowAsArray] objectAtIndex:0], nil]];
+						   [NSNumber numberWithBool:YES], NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), nil]];
 	}
 	
 	[exportDumpTableView reloadData];
@@ -481,10 +481,9 @@
 		if (importSQLAsUTF8)
 			for ( i = 0 ; i < queryCount ; i++ ) {
 				[singleProgressBar setDoubleValue:(i*100/queryCount)];
-				// [singleProgressBar displayIfNeeded];
 			
 				// Skip blank or whitespace-only queries to avoid errors
-				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				NSString *q = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewline];
 				if (![q length]) continue;
 
 				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding];
@@ -496,10 +495,9 @@
 		else
 			for ( i = 0 ; i < queryCount ; i++ ) {
 				[singleProgressBar setDoubleValue:(i*100/queryCount)];
-				// [singleProgressBar displayIfNeeded];
 		
 				// Skip blank or whitespace-only queries to avoid errors
-				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				NSString *q = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewline];
 				if (![q length]) continue;
 					
 				[mySQLConnection queryString:q];
@@ -591,7 +589,7 @@
 		theResult = (CMMCPResult *) [mySQLConnection listTables];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-			[fieldMappingPopup addItemWithTitle:[[theResult fetchRowAsArray] objectAtIndex:0]];
+			[fieldMappingPopup addItemWithTitle:NSArrayObjectAtIndex([theResult fetchRowAsArray], 0)];
 		}
 		
 		if ([tableDocumentInstance table] != nil && ![(NSString *)[tableDocumentInstance table] isEqualToString:@""]) {
@@ -655,19 +653,20 @@
 				
 				// get fields to be imported
 				for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
-					if ([[fieldMappingArray objectAtIndex:i] intValue] > 0) {
+					if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
 						if ( [fNames length] )
 							[fNames appendString:@","];
 						
-						[fNames appendString:[[[tableSourceInstance fieldNames] objectAtIndex:i] backtickQuotedString]];
+						[fNames appendString:[NSArrayObjectAtIndex([tableSourceInstance fieldNames], i) backtickQuotedString]];
 					}
 				}
 				
 				//import array
-				for ( i = 0 ; i < [importArray count] ; i++ ) {
+				long importArrayCount = [importArray count];
+				for ( i = 0 ; i < importArrayCount ; i++ ) {
 					//show progress bar
-					[singleProgressBar setDoubleValue:((i+1)*100/[importArray count])];
-					[singleProgressBar displayIfNeeded];
+					[singleProgressBar setDoubleValue:((i+1)*100/importArrayCount)];
+					// [singleProgressBar displayIfNeeded];
 					
 					if ( !([importFieldNamesSwitch state] && (i == 0)) ) {
 						//put values in string
@@ -675,14 +674,14 @@
 						
 						for ( j = 0 ; j < [fieldMappingArray count] ; j++ ) {
 							
-							if ([[fieldMappingArray objectAtIndex:j] intValue] > 0) {
+							if ([NSArrayObjectAtIndex(fieldMappingArray,j) intValue] > 0) {
 								if ( [fValues length] )
 									[fValues appendString:@","];
 								
-								if ([[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
+								if ([[NSArrayObjectAtIndex(importArray, i) objectAtIndex:([NSArrayObjectAtIndex(fieldMappingArray, j) intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
 									[fValues appendString:@"NULL"];
 								} else {
-									[fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)]]]];
+									[fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[NSArrayObjectAtIndex(importArray ,i) objectAtIndex:([NSArrayObjectAtIndex(fieldMappingArray ,j) intValue] - 1)]]]];
 								}
 							}
 						}
@@ -694,7 +693,7 @@
 													  fValues]];
 						
 						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-							[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];				
+							[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];
 						}
 					}
 				}
@@ -759,8 +758,8 @@
     if (!fieldMappingArray) {
         fieldMappingArray = [NSMutableArray array];
 		
-		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {			
-			if (i < [[importArray objectAtIndex:currentRow] count] && ![[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]]) {
+		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
+			if (i < [NSArrayObjectAtIndex(importArray, currentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, currentRow), i) isKindOfClass:[NSNull class]]) {
 				value = i + 1;
 			} else {
 				value = 0;
@@ -785,7 +784,7 @@
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"NullValue"]]];
 		} else {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [fieldMappingButtonOptions objectAtIndex:i]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 		}
 	}
 }
@@ -855,8 +854,8 @@
 	
 	// Copy over the selected table names into a table in preparation for iteration
 	for ( i = 0 ; i < [tables count] ; i++ ) {
-		if ( [[[tables objectAtIndex:i] objectAtIndex:0] boolValue] ) {
-			[selectedTables addObject:[NSString stringWithString:[[tables objectAtIndex:i] objectAtIndex:1]]];
+		if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
+			[selectedTables addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 1)]];
 		}
 	}
 	
@@ -899,7 +898,7 @@
 		lastProgressValue = 0;
 		
 		// Update the progress text and reset the progress bar to indeterminate status while fetching data
-		tableName = [selectedTables objectAtIndex:i];
+		tableName = NSArrayObjectAtIndex(selectedTables, i);
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [selectedTables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
@@ -958,7 +957,7 @@
 			colCount = [[tableDetails objectForKey:@"columns"] count];
 			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
 			for ( j = 0; j < colCount ; j++ ) {
-				tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
+				tableColumnTypeGrouping = [NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j) objectForKey:@"typegrouping"];
 				if ([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"]
 					|| [tableColumnTypeGrouping isEqualToString:@"float"]) {
 					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
@@ -1212,19 +1211,19 @@
 		cinfo = [tinfo objectForKey:@"constraints"];
 		for( int j = 0; j < [cinfo count]; j++ ) {
 			// get the column refs. these can be comma separated.
-			NSString *ccol = [[cinfo objectAtIndex:j] objectForKey:@"columns"];
-			NSString *rcol = [[cinfo objectAtIndex:j] objectForKey:@"ref_columns"];
+			NSString *ccol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"columns"];
+			NSString *rcol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_columns"];
 			NSString *extra = @"";
 			NSArray *tc = [ccol componentsSeparatedByString:@","];
 			if( [tc count] > 1 ) {
 				extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
-				ccol = [tc objectAtIndex:0];
-				rcol = [[ccol componentsSeparatedByString:@","] objectAtIndex:0];
+				ccol = NSArrayObjectAtIndex(tc, 0);
+				rcol = NSArrayObjectAtIndex([ccol componentsSeparatedByString:@","], 0);
 			}
 			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@",
 							   tableName,
 							   ccol,
-							   [[cinfo objectAtIndex:j] objectForKey:@"ref_table"],
+							   [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_table"],
 							   rcol,
 							   extra
 							   ]];
@@ -1328,7 +1327,7 @@
 		
 		// Set the progress text
 		[singleProgressText setStringValue:NSLocalizedString(@"Exporting...", @"text showing that app is exporting to text file")];
-		[singleProgressText displayIfNeeded];
+		// [singleProgressText displayIfNeeded];
 		
 		
 		// Open progress sheet
@@ -1372,7 +1371,7 @@
 				[csvRow setArray:[queryResult fetchRowAsArray]];
 			}
 		} else {
-			[csvRow setArray:[array objectAtIndex:i]];		
+			[csvRow setArray:NSArrayObjectAtIndex(array, i)];
 		}
 		
 		[csvString setString:@""];
@@ -1386,14 +1385,14 @@
 			}
 			
 			// Retrieve the contents of this cell
-			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
-				dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:tableEncoding];
+			if ([NSArrayObjectAtIndex(csvRow, j) isKindOfClass:[NSData class]]) {
+				dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:tableEncoding];
 				if (dataConversionString == nil)
-					dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:NSASCIIStringEncoding];
+					dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:NSASCIIStringEncoding];
 				[csvCell setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
 			} else {
-				[csvCell setString:[[csvRow objectAtIndex:j] description]];
+				[csvCell setString:[NSArrayObjectAtIndex(csvRow, j) description]];
 			}
 			
 			// For NULL values supplied via an array add the unenclosed null string as set in preferences
@@ -1408,12 +1407,12 @@
 			} else {
 				
 				// Test whether this cell contains a number
-				if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
+				if ([NSArrayObjectAtIndex(csvRow, j) isKindOfClass:[NSData class]]) {
 					csvCellIsNumeric = FALSE;
 
 				// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
 				} else if (tableColumnNumericStatus != nil) {
-					csvCellIsNumeric = [[tableColumnNumericStatus objectAtIndex:j] boolValue];
+					csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, j) boolValue];
 
 				// Or fall back to testing numeric content via an NSScanner.
 				} else {

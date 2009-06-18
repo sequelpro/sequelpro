@@ -40,6 +40,7 @@
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 #import "SPQueryConsole.h"
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
@@ -794,7 +795,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 	{
-		[chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+		[chooseDatabaseButton addItemWithTitle:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0)];
 	}
 	
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
@@ -951,7 +952,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		int r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		for ( i = 0 ; i < r ; i++ ) {
-			dbName = [[theResult fetchRowAsArray] objectAtIndex:0];
+			dbName = NSArrayObjectAtIndex([theResult fetchRowAsArray], 0);
 		}
 		if(![dbName isKindOfClass:[NSNull class]]) {
 			if(![dbName isEqualToString:selectedDatabase]) {

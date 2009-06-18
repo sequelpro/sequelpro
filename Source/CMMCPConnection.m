@@ -140,7 +140,14 @@ static void forcePingTimeout(int signalNumber);
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
 	
-	cStringPtr = [self methodForSelector:@selector(cStringFromString:usingEncoding:)];
+	willQueryStringSEL = @selector(willQueryString:);
+	stopKeepAliveTimerSEL = @selector(stopKeepAliveTimer);
+	startKeepAliveTimerResettingStateSEL = @selector(startKeepAliveTimerResettingState:);
+	cStringSEL = @selector(cStringFromString:);
+
+	cStringPtr = [self methodForSelector:cStringSEL];
+	stopKeepAliveTimerPtr = [self methodForSelector:stopKeepAliveTimerSEL];
+	startKeepAliveTimerResettingStatePtr = [self methodForSelector:startKeepAliveTimerResettingStateSEL];
 
 }
 
@@ -740,14 +747,14 @@ static void forcePingTimeout(int signalNumber);
 		return nil;
 	}
 
-	[self stopKeepAliveTimer];
+	(void)(*stopKeepAliveTimerPtr)(self, stopKeepAliveTimerSEL);
 	
 	// queryStartTime = clock();
 
 	// Inform the delegate about the query if logging is enabled and 
 	// delegate responds to willQueryString:
 	if (consoleLoggingEnabled && delegateResponseToWillQueryString)
-		(void)(NSString*)(*willQueryStringPtr)(delegate, @selector(willQueryString:), query);
+		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
 
 	// Derive the query string in the correct encoding
 	switch(encoding) {
@@ -755,7 +762,7 @@ static void forcePingTimeout(int signalNumber);
 			theCQuery = NSStringUTF8String(query);
 			break;
 		default:
-			theCQuery = (const char*)(NSString*)(int)(*cStringPtr)(self, @selector(cStringFromString:), query, encoding);
+			theCQuery = (const char*)(NSString*)(int)(*cStringPtr)(self, cStringSEL, query, encoding);
 		//[self cStringFromString:query usingEncoding:encoding];
 	}
 
@@ -864,7 +871,7 @@ static void forcePingTimeout(int signalNumber);
 	if (queryResultCode & delegateResponseToWillQueryString)
 		[delegate queryGaveError:lastQueryErrorMessage];
 
-	[self startKeepAliveTimerResettingState:YES];
+	(void)(int)(*startKeepAliveTimerResettingStatePtr)(self, startKeepAliveTimerResettingStateSEL, YES);
 
 	if (!theResult) return nil;
 	return [theResult autorelease];
@@ -950,7 +957,7 @@ static void forcePingTimeout(int signalNumber);
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
 		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
-			if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];			
+			if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
 		}
 	}
 }
@@ -958,8 +965,11 @@ static void forcePingTimeout(int signalNumber);
 - (void)setDelegate:(id)object
 {
 	delegate = object;
-	delegateResponseToWillQueryString = (delegate && [delegate respondsToSelector:@selector(willQueryString:)]);
-	willQueryStringPtr = [delegate methodForSelector:@selector(willQueryString:)];
+	
+	delegateResponseToWillQueryString = (delegate && [delegate respondsToSelector:willQueryStringSEL]);
+	
+	willQueryStringPtr = [delegate methodForSelector:willQueryStringSEL];
+	
 }
 
 /* Getting the currently used time zone (in communication with the DB server). */

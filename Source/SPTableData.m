@@ -31,6 +31,7 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 
 @implementation SPTableData
@@ -339,10 +340,13 @@
 	tableColumn = [[NSMutableDictionary alloc] init];
 	definitionParts = [[NSMutableArray alloc] init];
 	fieldParser = [[SPSQLParser alloc] init];
+	
+	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	
 	for (i = 0; i < [fieldStrings count]; i++) {
 
 		// Take this field/key string, trim whitespace from both ends and remove comments
-		[fieldsParser setString:[[fieldStrings objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		[fieldsParser setString:[NSArrayObjectAtIndex(fieldStrings, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet]];
 		[fieldsParser deleteComments];
 		if (![fieldsParser length]) {
 			continue;
@@ -411,60 +415,60 @@
 					// NOTE: this won't get SET NULL | NO ACTION
 					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
 						//NSLog( @"update: %@", [parts objectAtIndex:10] );
-						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
 							nextOffs = 13;
-						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"update"];
 							nextOffs = 13;
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:10]
-												  forKey:@"update"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
+												  forKey:@"update"];
 						}
 					} 
-					else if( [[parts objectAtIndex:9] hasPrefix:@"DELETE"] ) {
-						//NSLog( @"delete: %@", [parts objectAtIndex:10] );						
-						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+					else if( [NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:10] );
+						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
 							nextOffs = 13;
-						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"delete"];
 							nextOffs = 13;
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:10]
-												  forKey:@"delete"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
+												  forKey:@"delete"];
 						}
 					}
 				}
 				if( [parts count] > nextOffs - 1 ) {
-					if( [[parts objectAtIndex:nextOffs] hasPrefix:@"UPDATE"] ) {
+					if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
 						//NSLog( @"update: %@", [parts objectAtIndex:13] );
-						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
-						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"update"];
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
-												  forKey:@"update"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
+												  forKey:@"update"];
 						}
 					} 
-					else if( [[parts objectAtIndex:nextOffs] hasPrefix:@"DELETE"] ) {
-						//NSLog( @"delete: %@", [parts objectAtIndex:13] );						
-						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+					else if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:13] );
+						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
-						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"delete"];
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
-												  forKey:@"delete"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
+												  forKey:@"delete"];
 						}
 					}
 				}
@@ -472,11 +476,11 @@
 				[constraintDetails release];
 			}
 			// primary key
-			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {
-				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] ) {
+				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );
 			}
 			// key
-			else if( [[parts objectAtIndex:0] hasPrefix:@"KEY"] ) {
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"KEY"] ) {
 				/*
 				 NSLog( @"key %@.%@", 
 				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],

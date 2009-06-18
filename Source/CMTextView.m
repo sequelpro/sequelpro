@@ -26,6 +26,7 @@
 #import "CustomQuery.h"
 #import "TableDocument.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
 
@@ -138,7 +139,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[queryResult dataSeek:0];
 		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 		{
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:0], @"display", @"table-small-square", @"image", nil]];
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"table-small-square", @"image", nil]];
 			//[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 		}
 
@@ -158,7 +159,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 		{
 			// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:0], @"display", @"database-small", @"image", nil]];
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"database-small", @"image", nil]];
 		}
 
 		// Add proc/func only for MySQL version 5 or higher
@@ -170,7 +171,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 			{
 				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:1], @"display", @"proc-small", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"proc-small", @"image", nil]];
 			}
 
 			// Add all function to completions list for currently selected table
@@ -180,7 +181,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 			{
 				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:1], @"display", @"func-small", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"func-small", @"image", nil]];
 			}
 		}
 		
@@ -988,7 +989,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	for (i = 0; i < [matchingCompletions count]; i++)
 	{
-		NSString* obj = [matchingCompletions objectAtIndex:i];
+		NSString* obj = NSArrayObjectAtIndex(matchingCompletions, i);
 		if(![compl containsObject:obj])
 			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
 				// Matches case --> Insert at beginning of completion list

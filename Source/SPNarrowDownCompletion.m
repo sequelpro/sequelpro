@@ -27,6 +27,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPNarrowDownCompletion.h"
+#import "SPArrayAdditions.h"
 #import "ImageAndTextCell.h"
 #import <Foundation/NSObjCRuntime.h>
 
@@ -268,9 +269,9 @@
 		for(i=0; i<[newFiltered count]; i++)
 		{
 			if(dictMode)
-				item = [newFiltered objectAtIndex:i];
+				item = NSArrayObjectAtIndex([newFiltered objectAtIndex:i], 0);
 			else
-				item = [[newFiltered objectAtIndex:i] objectForKey:@"display"];
+				item = [NSArrayObjectAtIndex([newFiltered objectAtIndex:i], 0) objectForKey:@"display"];
 			// If space in suggestion add space to allowed input chars
 			if(!spaceInSuggestion && [item rangeOfString:@" "].length) {
 				[textualInputCharacters addCharactersInString:@" "];

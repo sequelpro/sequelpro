@@ -24,6 +24,7 @@
 
 #import "SPExportController.h"
 #import "TablesList.h"
+#import "SPArrayAdditions.h"
 
 @implementation SPExportController
 
@@ -78,7 +79,7 @@
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		[tables addObject:[NSMutableArray arrayWithObjects:
 						   [NSNumber numberWithBool:YES],
-						   [[queryResult fetchRowAsArray] objectAtIndex:0],
+						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
 						   nil
 						   ]];
 	}
@@ -118,9 +119,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	id returnObject = nil;
 	
 	if ( [[aTableColumn identifier] isEqualToString:@"switch"] ) {
-		returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:0];
+		returnObject = NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], 0);
 	} else {
-		returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:1];
+		returnObject = NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], 1);
 	}
 	
 	return returnObject;

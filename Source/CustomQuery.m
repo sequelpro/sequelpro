@@ -28,6 +28,7 @@
 #import "SPGrowlController.h"
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
+#import "SPArrayAdditions.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "RegexKitLite.h"
@@ -410,14 +411,16 @@
 	// Remove all the columns
 	theColumns = [customQueryView tableColumns];
 	while ([theColumns count]) {
-		[customQueryView removeTableColumn:[theColumns objectAtIndex:0]];
+		[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 	}
 
+	long queryCount = [queries count];
+
 	// Perform the supplied queries in series
-	for ( i = 0 ; i < [queries count] ; i++ ) {
+	for ( i = 0 ; i < queryCount ; i++ ) {
 
 		// Don't run blank queries, or queries which only contain whitespace.
-		if ([[[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length] == 0)
+		if ([[NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length] == 0)
 			continue;
 
 		// Run the query, timing execution (note this also includes network and overhead)
@@ -433,7 +436,7 @@
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 
 			// If the query errored, append error to the error log for display at the end
-			if ( [queries count] > 1 ) {
+			if ( queryCount > 1 ) {
 				if(firstErrorOccuredInQuery == -1)
 					firstErrorOccuredInQuery = i+1;
 
@@ -705,7 +708,7 @@
 	// the extra semicolon at the end of each query
 	for (i = 0; i < queryCount; i++ ) {
 
-		queryRange = [[queries objectAtIndex:i] rangeValue];
+		queryRange = [NSArrayObjectAtIndex(queries, i) rangeValue];
 		queryPosition = NSMaxRange(queryRange);
 		queryStartPosition = queryRange.location;
 
@@ -722,7 +725,7 @@
 				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
 				
 				// If the caret is in between a user-defined delimiter whose length is >1, always associate
-				if (!positionAssociatedWithPreviousQuery && i && NSMaxRange([[queries objectAtIndex:i-1] rangeValue]) < position && position < queryStartPosition) positionAssociatedWithPreviousQuery = YES;
+				if (!positionAssociatedWithPreviousQuery && i && NSMaxRange([NSArrayObjectAtIndex(queries, i-1) rangeValue]) < position && position < queryStartPosition) positionAssociatedWithPreviousQuery = YES;
 				
 				// Otherwise associate if only whitespace since previous, and a newline before next.
 				if (!positionAssociatedWithPreviousQuery) {
@@ -742,7 +745,7 @@
 				}
 
 				// If there is a previous query and the position should be associated with it, do so.
-				if (i && positionAssociatedWithPreviousQuery && [[[[textView string] substringWithRange:[[queries objectAtIndex:i-1] rangeValue]] stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length]) {
+				if (i && positionAssociatedWithPreviousQuery && [[[[textView string] substringWithRange:[NSArrayObjectAtIndex(queries, i-1) rangeValue]] stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length]) {
 					queryRange = [[queries objectAtIndex:i-1] rangeValue];
 					break;
 				}
@@ -1053,8 +1056,8 @@
 				NSRunAlertPanel(@"Query already exists", @"The query you are adding to your favorites already exists.", @"OK", nil, nil);
 				
 				//remove row if it was a (blank) new row or a copied row
-				if ( [[queryFavorites objectAtIndex:rowIndex] isEqualToString:@""] ||
-						[[queryFavorites objectAtIndex:rowIndex] isEqualToString:anObject] ) {
+				if ( [NSArrayObjectAtIndex(queryFavorites, rowIndex) isEqualToString:@""] ||
+						[NSArrayObjectAtIndex(queryFavorites, rowIndex) isEqualToString:anObject] ) {
 					[queryFavoritesView deselectAll:self];
 					[queryFavorites removeObjectAtIndex:rowIndex];
 					[queryFavoritesView reloadData];

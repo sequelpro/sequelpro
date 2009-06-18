@@ -101,7 +101,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		if(withHeaders) {
 			int i;
 			for( i = 0; i < numColumns; i++ ){
-				[result appendString:[NSString stringWithFormat:@"%@\t", [[[columns objectAtIndex:i] headerCell] stringValue]]];
+				[result appendString:[NSString stringWithFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]]];
 			}
 			[result appendString:[NSString stringWithFormat:@"\n"]];
 		}
@@ -119,7 +119,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			rowData = nil;
 			for ( c = 0; c < numColumns; c++)
 			{
-				col = [columns objectAtIndex:c];
+				col = NSArrayObjectAtIndex(columns, c);
 				rowData = [dataSource tableView:self 
 					  objectValueForTableColumn:col 
 											row:[row intValue] ];

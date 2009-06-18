@@ -109,7 +109,7 @@
 	theColumns = [tableContentView tableColumns];
 	
 	while ([theColumns count]) {
-		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
+		[tableContentView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 	}
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
@@ -167,7 +167,7 @@
 	
 	// Add the new columns to the table
 	for ( i = 0 ; i < [theColumns count] ; i++ ) {
-		columnDefinition = [theColumns objectAtIndex:i];
+		columnDefinition = NSArrayObjectAtIndex(theColumns, i);
 
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"name"]];
@@ -718,7 +718,7 @@
 
 	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
 	for ( i = 0 ; i < [columns count] ; i++ ) {
-		column = [columns objectAtIndex:i];
+		column = NSArrayObjectAtIndex(columns, i);
 		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
 			[newRow setObject:[prefs stringForKey:@"NullValue"] forKey:[column objectForKey:@"name"]];
 		} else {
@@ -1438,8 +1438,8 @@
 		// Add values for hidden blob and text fields if appropriate
 		if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 			for ( j = 0 ; j < [columns count] ; j++ ) {
-				if ( [tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:j] objectForKey:@"name"] ] ) {
-					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
+				if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"] ] ) {
+					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"]];
 				}
 			}
 		}
@@ -1489,7 +1489,7 @@
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
-		rowObject = [[filteredResult objectAtIndex:currentlyEditingRow] objectForKey:[columnNames objectAtIndex:i]];
+		rowObject = [NSArrayObjectAtIndex(filteredResult, currentlyEditingRow) objectForKey:NSArrayObjectAtIndex(columnNames, i)];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -1510,7 +1510,7 @@
 			} else {
 				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
-				} else if ([[[theColumns objectAtIndex:i] objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+				} else if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
 				} else {
 					[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
@@ -1533,7 +1533,7 @@
 				[queryString appendString:@", "];
 			}
 			[queryString appendString:[NSString stringWithFormat:@"%@=%@",
-									   [[columnNames objectAtIndex:i] backtickQuotedString], [fieldValues objectAtIndex:i]]];
+									   [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString], [fieldValues objectAtIndex:i]]];
 		}
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
 	}
@@ -1570,9 +1570,9 @@
 
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [theColumns count] ; i++ ) {
-					if ([[[theColumns objectAtIndex:i] objectForKey:@"autoincrement"] intValue]) {
+					if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"autoincrement"] intValue]) {
 						[[filteredResult objectAtIndex:currentlyEditingRow] setObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]
-																	forKey:[columnNames objectAtIndex:i]];
+																	forKey:NSArrayObjectAtIndex(columnNames, i)];
 					}
 				}
 				[fullResult addObject:[filteredResult objectAtIndex:currentlyEditingRow]];
@@ -1710,11 +1710,11 @@
 
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			tempValue = [[filteredResult objectAtIndex:row] objectForKey:[keys objectAtIndex:i]];
+			tempValue = [NSArrayObjectAtIndex(filteredResult, row) objectForKey:NSArrayObjectAtIndex(keys, i)];
 
 		// Otherwise use the oldRow
 		} else {
-			tempValue = [oldRow objectForKey:[keys objectAtIndex:i]];
+			tempValue = [oldRow objectForKey:NSArrayObjectAtIndex(keys, i)];
 		}
 
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
@@ -1728,7 +1728,7 @@
 		}
 
 		if ( [value isEqualToString:[prefs stringForKey:@"NullValue"]] ) {
-			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [[keys objectAtIndex:i] backtickQuotedString]]];
+			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
 		} else {
 
 			// Escape special characters (in WHERE statement!)
@@ -1750,9 +1750,9 @@
 
 			columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
 			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
-				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [[keys objectAtIndex:i] backtickQuotedString], value]];
+				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 			} else {
-				[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [[keys objectAtIndex:i] backtickQuotedString], value]];
+				[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 			}
 		}
 	}
@@ -1772,7 +1772,7 @@
 	NSArray *tableColumns = [tableDataInstance columns];
 
 	for ( i = 0 ; i < [tableColumns count]; i++ ) {
-		if ( [tableDataInstance columnIsBlobOrText:[[tableColumns objectAtIndex:i] objectForKey:@"name"]] ) {
+		if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(tableColumns, i) objectForKey:@"name"]] ) {
 			return YES;
 		}
 	}
@@ -1793,14 +1793,14 @@
 	
 	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
-			if (![tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:i] objectForKey:@"name"]] ) {
-				[fields addObject:[columnNames objectAtIndex:i]];
+			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, i) objectForKey:@"name"]] ) {
+				[fields addObject:NSArrayObjectAtIndex(columnNames, i)];
 			}
 		}
 
 		// Always select at least one field - the first if there are no non-blob fields.
 		if ( [fields count] == 0 ) {
-			return [[columnNames objectAtIndex:0] backtickQuotedString];
+			return [NSArrayObjectAtIndex(columnNames, 0) backtickQuotedString];
 		} else {
 			return [fields componentsJoinedAndBacktickQuoted];
 		}
@@ -1893,7 +1893,7 @@
 			} else {
 				for ( i = 0 ; i < [filteredResult count] ; i++ ) {
 					if ( ![tempArray containsObject:[NSNumber numberWithInt:i]] )
-						[tempResult addObject:[filteredResult objectAtIndex:i]];
+						[tempResult addObject:NSArrayObjectAtIndex(filteredResult, i)];
 				}
 				[filteredResult setArray:tempResult];
 				numRows = [self getNumberOfRows];
@@ -2431,7 +2431,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Check if next column is a blob column, and skip to the next non-blob column
 			i = 1;
 			while (
-				(fieldType = [[tableDataInstance columnWithName:[[[tableContentView tableColumns] objectAtIndex:column+i] identifier]] objectForKey:@"typegrouping"])
+				(fieldType = [[tableDataInstance columnWithName:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] objectForKey:@"typegrouping"])
 				&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
 			) {
 				i++;

@@ -33,6 +33,7 @@
 #import "CMMCPConnection.h"
 #import "CMMCPResult.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
 
 @implementation TablesList
@@ -105,21 +106,21 @@
 			
 			if( [theResult numOfFields] == 1 ) {
 				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:3]];
-					if( [[[theResult fetchRowAsArray] objectAtIndex:4] isEqualToString:@"PROCEDURE"]) {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];						
+					[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
+					if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
 					} else {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];						
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
 					}
 				}
 			} else {
 				for( i = 0; i < [theResult numOfRows]; i++ ) {
 					resultRow = [theResult fetchRowAsArray];
-					[tables addObject:[resultRow objectAtIndex:3]];
-					if( [[resultRow objectAtIndex:4] isEqualToString:@"PROCEDURE"] ) {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];						
+					[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
+					if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
 					} else {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];						
+						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
 					}
 				}	
 			}

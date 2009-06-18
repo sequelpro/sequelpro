@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "CMMCPResult.h"
+#import "SPArrayAdditions.h"
 
 @implementation CMMCPResult
 
@@ -295,7 +296,7 @@ modified version for use with sequel-pro
 
 		switch (aType) {
 			case MCPTypeDictionary :
-				[theReturn setObject:theCurrentObj forKey:[mNames objectAtIndex:i]];
+				[theReturn setObject:theCurrentObj forKey:NSArrayObjectAtIndex(mNames, i)];
 				break;
 
 			case MCPTypeArray :

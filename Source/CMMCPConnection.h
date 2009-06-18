@@ -78,7 +78,13 @@
 	
 	IMP cStringPtr;
 	IMP willQueryStringPtr;
+	IMP stopKeepAliveTimerPtr;
+	IMP startKeepAliveTimerResettingStatePtr;
 	
+	SEL cStringSEL;
+	SEL willQueryStringSEL;
+	SEL stopKeepAliveTimerSEL;
+	SEL startKeepAliveTimerResettingStateSEL;
 }
 
 - (id) init;
