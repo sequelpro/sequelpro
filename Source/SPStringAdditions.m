@@ -83,9 +83,13 @@
 
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
-	if (timeInterval < 0.001) {
-		timeInterval = (timeInterval * 1000000);
-		[numberFormatter setFormat:@"#,##0 µs"];
+	if (timeInterval < 0.0001) {
+		return @"< 0,1 ms";
+	}
+
+	if (timeInterval < 0.1) {
+		timeInterval = (timeInterval * 1000);
+		[numberFormatter setFormat:@"#,##0.0 ms"];
 
 		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
 	}
