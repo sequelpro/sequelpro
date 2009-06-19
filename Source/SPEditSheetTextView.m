@@ -73,6 +73,10 @@
 {
 	NSPasteboard *pboard = [sender draggingPasteboard];
 
+	if ( [[pboard types] containsObject:NSFilenamesPboardType] && [[pboard types] containsObject:@"CorePasteboardFlavorType 0x54455854"])
+		return [super performDragOperation:sender];
+
+
 	if ( [[pboard types] containsObject:NSFilenamesPboardType] ) {
 		NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
 
@@ -196,7 +200,12 @@
 	[task release];
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
-	if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result hasPrefix:@"text/plain"] || [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"])
+	if( [result hasPrefix:@"text/plain"] 
+		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"] 
+		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"txt"]
+		|| [result hasPrefix:@"audio/mpeg"] 
+		|| [result hasPrefix:@"application/octet-stream"]
+	)
 	{
 		// if UTF16/32 cocoa will try to find the correct encoding
 		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)

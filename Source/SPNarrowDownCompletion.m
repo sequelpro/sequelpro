@@ -269,9 +269,9 @@
 		for(i=0; i<[newFiltered count]; i++)
 		{
 			if(dictMode)
-				item = NSArrayObjectAtIndex([newFiltered objectAtIndex:i], 0);
+				item = NSArrayObjectAtIndex(newFiltered, i);
 			else
-				item = [NSArrayObjectAtIndex([newFiltered objectAtIndex:i], 0) objectForKey:@"display"];
+				item = [NSArrayObjectAtIndex(newFiltered, i) objectForKey:@"display"];
 			// If space in suggestion add space to allowed input chars
 			if(!spaceInSuggestion && [item rangeOfString:@" "].length) {
 				[textualInputCharacters addCharactersInString:@" "];
