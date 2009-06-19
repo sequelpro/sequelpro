@@ -38,6 +38,17 @@ static inline const char* NSStringUTF8String(NSString* self) {
 	return to_return;
 }
 
+/*
+ * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
+ */
+static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encoding, int lossy) {
+	typedef NSData* (*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, int, int);
+	static SPStringDataUsingLossyEncodingMethodPtr SPNSStringDataUsingLossyEncoding;
+	if (!SPNSStringDataUsingLossyEncoding) SPNSStringDataUsingLossyEncoding = (SPStringDataUsingLossyEncodingMethodPtr)[self methodForSelector:@selector(dataUsingEncoding:allowLossyConversion:)];
+	NSData* to_return = SPNSStringDataUsingLossyEncoding(self, @selector(dataUsingEncoding:allowLossyConversion:), encoding, lossy);
+	return to_return;
+}
+
 
 @interface NSString (SPStringAdditions)
 

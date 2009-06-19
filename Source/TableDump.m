@@ -451,7 +451,7 @@
 		
 		//import dump file
 		NSArray *queries;
-		int i;
+		int i=0;
 		
 		//open progress sheet
 		[NSApp beginSheet:singleProgressSheet
@@ -485,9 +485,9 @@
 				// Skip blank or whitespace-only queries to avoid errors
 				NSString *q = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewline];
 				if (![q length]) continue;
-
+			
 				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding];
-
+			
 				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
 				}
@@ -640,6 +640,7 @@
 				NSMutableString *fNames = [NSMutableString string];
 				//NSMutableArray *fValuesIndexes = [NSMutableArray array];
 				NSMutableString *fValues = [NSMutableString string];
+				NSString *insertFormatString = nil;
 				int i,j;
 				
 				//open progress sheet
@@ -663,37 +664,41 @@
 				
 				//import array
 				long importArrayCount = [importArray count];
+				long fieldMappingArrayCount = [fieldMappingArray count];
+				insertFormatString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%%@)", 
+											[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString], fNames];
+				int fieldMappingIntValue;
+				Class nullClass = [NSNull class];
+
 				for ( i = 0 ; i < importArrayCount ; i++ ) {
 					//show progress bar
 					[singleProgressBar setDoubleValue:((i+1)*100/importArrayCount)];
-					// [singleProgressBar displayIfNeeded];
-					
+
 					if ( !([importFieldNamesSwitch state] && (i == 0)) ) {
 						//put values in string
 						[fValues setString:@""];
-						
-						for ( j = 0 ; j < [fieldMappingArray count] ; j++ ) {
-							
-							if ([NSArrayObjectAtIndex(fieldMappingArray,j) intValue] > 0) {
+
+						for ( j = 0 ; j < fieldMappingArrayCount ; j++ ) {
+							fieldMappingIntValue = [NSArrayObjectAtIndex(fieldMappingArray,j) intValue];
+							if ( fieldMappingIntValue > 0 ) {
+								
 								if ( [fValues length] )
 									[fValues appendString:@","];
-								
-								if ([[NSArrayObjectAtIndex(importArray, i) objectAtIndex:([NSArrayObjectAtIndex(fieldMappingArray, j) intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
-									[fValues appendString:@"NULL"];
-								} else {
-									[fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[NSArrayObjectAtIndex(importArray ,i) objectAtIndex:([NSArrayObjectAtIndex(fieldMappingArray ,j) intValue] - 1)]]]];
-								}
+
+								id c = NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, i), (fieldMappingIntValue - 1));
+
+								[fValues appendString: ([c isMemberOfClass:nullClass]) ? 
+									@"NULL" : [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:c]]];
 							}
 						}
 						
 						//perform query
-						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
-													  [[fieldMappingPopup titleOfSelectedItem] backtickQuotedString],
-													  fNames,
-													  fValues]];
+						[mySQLConnection queryString:[NSString stringWithFormat:insertFormatString, fValues]];
 						
 						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-							[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];
+							[errors appendString:[NSString stringWithFormat:
+									NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"),
+									(i+1),[mySQLConnection getLastErrorMessage]]];
 						}
 					}
 				}

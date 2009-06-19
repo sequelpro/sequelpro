@@ -757,17 +757,10 @@ static void forcePingTimeout(int signalNumber);
 		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
 
 	// Derive the query string in the correct encoding
-	switch(encoding) {
-		case NSUTF8StringEncoding:
-			theCQuery = NSStringUTF8String(query);
-			break;
-		default:
-			theCQuery = (const char*)(NSString*)(int)(*cStringPtr)(self, cStringSEL, query, encoding);
-		//[self cStringFromString:query usingEncoding:encoding];
-	}
-
+	NSData *d = NSStringDataUsingLossyEncoding(query, encoding, 1);
+	theCQuery = [d bytes];
 	// Set the length of the current query
-	theCQueryLength = strlen(theCQuery);
+	theCQueryLength = [d length];
 
 	// Check query length against max_allowed_packet; if it is larger, the
 	// query would error, so if max_allowed_packet is editable for the user
