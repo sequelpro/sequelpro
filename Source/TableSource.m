@@ -617,13 +617,14 @@ fetches the result as an array with a dictionary for each row in it
 	NSDictionary *theRow;
 	NSMutableString *queryString;
 
-	if ( !isEditingRow || currentlyEditingRow == -1 )
+	if (!isEditingRow || currentlyEditingRow == -1)
 		return YES;
-	if ( alertSheetOpened )
+	
+	if (alertSheetOpened)
 		return NO;
 
 	theRow = [tableFields objectAtIndex:currentlyEditingRow];
-
+	
 	if (isEditingNewRow) {
 		// ADD syntax
 		if ([[theRow objectForKey:@"Length"] isEqualToString:@""] || ![theRow objectForKey:@"Length"]) {
@@ -671,72 +672,105 @@ fetches the result as an array with a dictionary for each row in it
 		}
 	}
 	
-	//field specification
-	if ( [[theRow objectForKey:@"unsigned"] intValue] == 1 ) {
+	// Field specification
+	if ([[theRow objectForKey:@"unsigned"] intValue] == 1) {
 		[queryString appendString:@" UNSIGNED"];
 	}
-	if ( [[theRow objectForKey:@"zerofill"] intValue] == 1 ) {
+	
+	if ( [[theRow objectForKey:@"zerofill"] intValue] == 1) {
 		[queryString appendString:@" ZEROFILL"];
 	}
-	if ( [[theRow objectForKey:@"binary"] intValue] == 1 ) {
+	
+	if ( [[theRow objectForKey:@"binary"] intValue] == 1) {
 		[queryString appendString:@" BINARY"];
 	}
-//	if ( [[theRow objectForKey:@"Null"] isEqualToString:@"NO"] || [[theRow objectForKey:@"Null"] isEqualToString:@"NOT NULL"]
-//			|| [[theRow objectForKey:@"Null"] isEqualToString:@"no"] || [[theRow objectForKey:@"Null"] isEqualToString:@"not null"])
-	if ( [[theRow objectForKey:@"Null"] isEqualToString:@"NO"] )
+
+	if ([[theRow objectForKey:@"Null"] isEqualToString:@"NO"]) {
 		[queryString appendString:@" NOT NULL"];
-	if ( ![[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"] && !([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && [[theRow objectForKey:@"Default"] isEqualToString:@"NULL"]) ) {
-		if ( [[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]] ) {
-			if ([[theRow objectForKey:@"Null"] isEqualToString:@"YES"] ) {
+	}
+	else {
+		[queryString appendString:@" NULL"];
+	}
+		
+	if ((![[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) && 
+		([[theRow objectForKey:@"Default"] isEqualToString:@"NULL"])) 
+	{
+		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
+			if ([[theRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
-		} else if ( [[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && ([[theRow objectForKey:@"Default"] isEqualToString:@"CURRENT_TIMESTAMP"] || [[theRow objectForKey:@"Default"] isEqualToString:@"current_timestamp"]) ) {
-				[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
-		} else {
-	//		[queryString appendString:[NSString stringWithFormat:@" DEFAULT \"%@\" ", [theRow objectForKey:@"Default"]]];
+		} 
+		else if ([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && 
+				([[theRow objectForKey:@"Default"] isEqualToString:@"CURRENT_TIMESTAMP"] || 
+				 [[theRow objectForKey:@"Default"] isEqualToString:@"current_timestamp"]) ) 
+		{
+			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
+		} 
+		else {
 			[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"Default"]]]];
 		}
-	} else {
+	} 
+	else {
 		[queryString appendString:@" "];
 	}
 	
-	if ( ![[theRow objectForKey:@"Extra"] isEqualToString:@""] && ![[theRow objectForKey:@"Extra"] isEqualToString:@"None"] && [theRow objectForKey:@"Extra"] ) {
+	if (![[theRow objectForKey:@"Extra"] isEqualToString:@""] && 
+		![[theRow objectForKey:@"Extra"] isEqualToString:@"None"] && 
+		[theRow objectForKey:@"Extra"] ) 
+	{
 		[queryString appendString:[theRow objectForKey:@"Extra"]];
 	}
 	
-	//asks to add an index to query if auto_increment is set and field isn't indexed
-	if ( [[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]
-				&& ([[theRow objectForKey:@"Key"] isEqualToString:@""] || ![theRow objectForKey:@"Key"]) ) {
+	// Asks the user to add an index to query if auto_increment is set and field isn't indexed
+	if ([[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"] && 
+		([[theRow objectForKey:@"Key"] isEqualToString:@""] || 
+		![theRow objectForKey:@"Key"])) 
+	{
 		[chooseKeyButton selectItemAtIndex:0];
-		[NSApp beginSheet:keySheet
-				modalForWindow:tableWindow modalDelegate:self
-				didEndSelector:nil contextInfo:nil];
+		
+		[NSApp beginSheet:keySheet 
+		   modalForWindow:tableWindow modalDelegate:self 
+		   didEndSelector:nil 
+			  contextInfo:nil];
+		
 		code = [NSApp runModalForWindow:keySheet];
 		
 		[NSApp endSheet:keySheet];
 		[keySheet orderOut:nil];
 		
-		if ( code ) {
-			if ( [chooseKeyButton indexOfSelectedItem] == 0 ) { // User wants to add PRIMARY KEY
+		if (code) {
+			// User wants to add PRIMARY KEY
+			if ([chooseKeyButton indexOfSelectedItem] == 0 ) { 
 				[queryString appendString:@" PRIMARY KEY"];
-				if(isEditingNewRow) // Add AFTER ... only if the user added a new field
+				
+				// Add AFTER ... only if the user added a new field
+				if (isEditingNewRow) {
 					[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
-			} else {
-				if(isEditingNewRow) // Add AFTER ... only if the user added a new field
+				}
+			} 
+			else {
+				// Add AFTER ... only if the user added a new field
+				if (isEditingNewRow) {
 					[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
+				} 
+				
 				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
 			}
 		}
-	} else if(isEditingNewRow) { // Add AFTER ... only if the user added a new field
+	} 
+	// Add AFTER ... only if the user added a new field
+	else if (isEditingNewRow) {
 		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 	}
 
+	// Execute query
 	[mySQLConnection queryString:queryString];
 
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
+		
 		[self loadTable:selectedTable];
 
 		// Mark the content table and column caches for refresh
@@ -744,17 +778,24 @@ fetches the result as an array with a dictionary for each row in it
 		[tableDataInstance resetColumnData];
 
 		return YES;
-	} else {
+	} 
+	else {
 		alertSheetOpened = YES;
-		//problem: alert sheet doesn't respond to first click
-		if ( isEditingNewRow ) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-					nil, @"addrow", [NSString stringWithFormat:NSLocalizedString(@"Couldn't add field %@.\nMySQL said: %@", @"message of panel when field cannot be added"),
-						[theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
-		} else {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:),
-					nil, @"addrow", [NSString stringWithFormat:NSLocalizedString(@"Couldn't change field %@.\nMySQL said: %@", @"message of panel when field cannot be changed"),
-						[theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
+		
+		// Problem: alert sheet doesn't respond to first click
+		if (isEditingNewRow) {
+			NSBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
+							  NSLocalizedString(@"OK", @"OK button"), 
+							  NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@'.\n\nMySQL said: %@", @"error adding field informative message"), 
+							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
+		} 
+		else {
+			NSBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"), 
+							  NSLocalizedString(@"OK", @"OK button"), 
+							  NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@'.\n\nMySQL said: %@", @"error changing field informative message"), 
+							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		}
 		
 		return NO;
