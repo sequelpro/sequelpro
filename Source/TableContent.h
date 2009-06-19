@@ -110,8 +110,6 @@
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResult;
 
-- (NSString *) base64EncodingOfData:(NSData*)data withLineLength:(unsigned int)lineLength;
-
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (IBAction)setCompareTypes:(id)sender;
