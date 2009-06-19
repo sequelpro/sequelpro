@@ -2387,9 +2387,17 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 {	
 	if ( tableView == tableContentView )
 	{
-		NSString *tmp = [tableContentView draggedRowsAsTabString:rows];
+
+		NSString *tmp;
 		
-		if ( nil != tmp )
+		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
+		// otherwise \t delimited lines
+		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
+			tmp = [tableContentView selectedRowsAsSqlInserts];
+		else
+			tmp = [tableContentView draggedRowsAsTabString:rows];
+		
+		if ( nil != tmp && [tmp length] )
 		{
 			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
 								  NSStringPboardType, nil]
