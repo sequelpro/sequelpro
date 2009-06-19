@@ -225,7 +225,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1 ){
 		if([[tableContentInstance currentResult] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
-					[[tableContentInstance currentResult] objectsAtIndexes:
+					[[tableContentInstance currentDataResult] objectsAtIndexes:
 					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count]-1)]
 					 ]
 					];

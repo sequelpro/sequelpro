@@ -40,6 +40,15 @@
 #import "SPTextViewAdditions.h"
 #import "QLPreviewPanel.h"
 
+
+static char encodingTable[64] = {
+'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
+'Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f',
+'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
+'w','x','y','z','0','1','2','3','4','5','6','7','8','9','+','/' };
+
+
+
 @implementation TableContent
 
 /**
@@ -1248,6 +1257,114 @@
 	}
 	
 	return retVal;
+}
+
+//getter methods
+- (NSArray *)currentDataResult
+/*
+ returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+ */
+{
+	NSArray *tableColumns;
+	NSEnumerator *enumerator;
+	id tableColumn;
+	NSMutableArray *currentResult = [NSMutableArray array];
+	NSMutableArray *tempRow = [NSMutableArray array];
+	int i;
+	
+	//load table if not already done
+	if ( ![tablesListInstance contentLoaded] ) {
+		[self loadTable:[tablesListInstance tableName]];
+	}
+	
+	tableColumns = [tableContentView tableColumns];
+	enumerator = [tableColumns objectEnumerator];
+	
+	//set field names as first line
+	while ( (tableColumn = [enumerator nextObject]) ) {
+		[tempRow addObject:[[tableColumn headerCell] stringValue]];
+	}
+	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
+	
+	//add rows
+	for ( i = 0 ; i < [self numberOfRowsInTableView:nil] ; i++) {
+		[tempRow removeAllObjects];
+		enumerator = [tableColumns objectEnumerator];
+		while ( (tableColumn = [enumerator nextObject]) ) {
+			id o = [[fullResult objectAtIndex:i] objectForKey:[[tableColumn headerCell] stringValue]];
+			if([o isKindOfClass:[NSNull class]])
+				[tempRow addObject:@"NULL"];
+			else if([o isKindOfClass:[NSString class]])
+				[tempRow addObject:[o description]];
+			else {
+				NSImage *image = [[NSImage alloc] initWithData:o];
+				if(image) {
+					[tempRow addObject:[NSString stringWithFormat:@"<IMG WIDTH='100' SRC=\"data:image/auto;base64,%@\">", [self base64EncodingOfData: o withLineLength:0]]];
+				} else {
+					[tempRow addObject:@"&lt;BLOB&gt;"];
+				}
+				if(image) [image release];
+			}
+		}
+		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
+	}
+	return currentResult;
+}
+
+- (NSString *) base64EncodingOfData:(NSData*)data withLineLength:(unsigned int)lineLength {
+	const unsigned char    *bytes = [data bytes];
+	NSMutableString *result = [NSMutableString stringWithCapacity:[data length]];
+	unsigned long ixtext = 0;
+	unsigned long lentext = [data length];
+	long ctremaining = 0;
+	unsigned char inbuf[3], outbuf[4];
+	short i = 0;
+	short charsonline = 0, ctcopy = 0;
+	unsigned long ix = 0;
+
+	while( YES ) {
+		ctremaining = lentext - ixtext;
+		if( ctremaining <= 0 ) break;
+
+		for( i = 0; i < 3; i++ ) {
+			ix = ixtext + i;
+			if( ix < lentext ) inbuf[i] = bytes[ix];
+			else inbuf [i] = 0;
+		}
+
+		outbuf [0] = (inbuf [0] & 0xFC) >> 2;
+		outbuf [1] = ((inbuf [0] & 0x03) << 4) | ((inbuf [1] & 0xF0) >> 4);
+		outbuf [2] = ((inbuf [1] & 0x0F) << 2) | ((inbuf [2] & 0xC0) >> 6);
+		outbuf [3] = inbuf [2] & 0x3F;
+		ctcopy = 4;
+
+		switch( ctremaining ) {
+			case 1: 
+			ctcopy = 2; 
+			break;
+			case 2: 
+			ctcopy = 3; 
+			break;
+		}
+
+		for( i = 0; i < ctcopy; i++ )
+			[result appendFormat:@"%c", encodingTable[outbuf[i]]];
+
+		for( i = ctcopy; i < 4; i++ )
+			[result appendFormat:@"%c",'='];
+
+		ixtext += 3;
+		charsonline += 4;
+
+		if( lineLength > 0 ) {
+			if (charsonline >= lineLength) {
+				charsonline = 0;
+				[result appendString:@"\n"];
+			}
+		}
+	}
+
+	return result;
 }
 
 //getter methods
