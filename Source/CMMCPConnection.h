@@ -91,6 +91,7 @@
 - (id) initToHost:(NSString *) host withLogin:(NSString *) login usingPort:(int) port;
 - (id) initToSocket:(NSString *) socket withLogin:(NSString *) login;
 - (void) initSPExtensions;
+- (BOOL) setPort:(int) thePort;
 - (BOOL) setPassword:(NSString *)thePassword;
 - (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 - (BOOL) setSSHTunnel:(SPSSHTunnel *)theTunnel;

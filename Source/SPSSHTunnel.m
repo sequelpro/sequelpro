@@ -45,15 +45,13 @@
 	sshHost = [[NSString alloc] initWithString:theHost];
 	sshLogin = [[NSString alloc] initWithString:(theLogin?theLogin:@"")];
 	sshPort = thePort;
-	if ([theHost isEqualToString:targetHost]) {
-		remoteHost = [[NSString alloc] initWithString:@"127.0.0.1"];
-	} else {
-		remoteHost = [[NSString alloc] initWithString:targetHost];
-	}
+	useHostFallback = [theHost isEqualToString:targetHost];
+	remoteHost = [[NSString alloc] initWithString:targetHost];
 	remotePort = targetPort;
 	delegate = nil;
 	stateChangeSelector = nil;
 	lastError = nil;
+	debugMessages = [[NSMutableArray alloc] init];
 
 	// Set up a connection for use by the tunnel process
 	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -149,11 +147,20 @@
 }
 
 /*
+ * Returns all the debug text for this tunnel as a string, separated
+ * by line endings.
+ */
+- (NSString *) debugMessages {
+	return [debugMessages componentsJoinedByString:@"\n"];
+}
+
+/*
  * Initiate the SSH tunnel connection, launching the task in a background thread.
  */
 - (void) connect
 {
 	localPort = 0;
+	[debugMessages removeAllObjects];
 	if (connectionState != SPSSH_STATE_IDLE || (!passwordInKeychain && !password)) return;
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
 }
@@ -208,8 +215,24 @@
 			close(tempSocket);
 		}
 		
+		if (useHostFallback) {
+			if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
+				memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
+				tempSocketAddress.sin_family = AF_INET;
+				tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+				tempSocketAddress.sin_port = 0;
+				if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, addressLength) >= 0) {
+					if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
+						localPortFallback = ntohs(tempSocketAddress.sin_port);
+					}
+				}
+				close(tempSocket);
+			}
+		
+		}
+		
 		// Abort if no local free port could be allocated
-		if (!localPort) {
+		if (!localPort || (useHostFallback && !localPortFallback)) {
 			connectionState = SPSSH_STATE_IDLE;
 			if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			if (lastError) [lastError release];
@@ -242,7 +265,12 @@
 	} else {
 		[taskArguments addObject:sshHost];
 	}
-	[taskArguments addObject:[NSString stringWithFormat:@"-L %i/%@/%i", localPort, remoteHost, remotePort]];
+	if (useHostFallback) {
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %i/127.0.0.1/%i", localPort, remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %i/%@/%i", localPortFallback, remoteHost, remotePort]];
+	} else {
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %i/%@/%i", localPort, remoteHost, remotePort]];
+	}
 	[task setArguments:taskArguments];
 
 	// Set up the environment for the task
@@ -337,7 +365,9 @@
 	if ([notificationText length]) {
 		messages = [notificationText componentsSeparatedByString:@"\n"];
 		enumerator = [messages objectEnumerator];
-		while (message = [enumerator nextObject]) {
+		while (message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {
+			if (![message length]) continue;
+			[debugMessages addObject:[NSString stringWithString:message]];
 
 			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound) {
 				connectionState = SPSSH_STATE_CONNECTED;
@@ -363,6 +393,11 @@
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel could not authenticate with the remote host.  Please check your password and ensure you still have access.", @"SSH tunnel authentication failed message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
+			if ([message rangeOfString:@"connect failed: Connection refused" ].location != NSNotFound) {
+				connectionState = SPSSH_STATE_FORWARDING_FAILED;
+				if (lastError) [lastError release];
+				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was established successfully, but could not forward data to the remote port as the remote port refused the connection.", @"SSH tunnel forwarding port connection refused message")];
+			}
 			if ([message rangeOfString:@"Operation timed out" ].location != NSNotFound) {
 				connectionState = SPSSH_STATE_IDLE;
 				[task terminate];
@@ -386,6 +421,15 @@
 - (int) localPort
 {
 	return localPort;
+}
+
+/*
+ * Returns the local port assigned for fallback use by the tunnel, if any
+ */
+- (int) localPortFallback
+{
+	if (!useHostFallback) return 0;
+	return localPortFallback;
 }
 
 /*
@@ -519,12 +563,14 @@
 
 - (void)dealloc
 {
+	if (connectionState != SPSSH_STATE_IDLE) [self disconnect];
 	[sshHost release];
 	[sshLogin release];
 	[remoteHost release];
 	[tunnelConnectionName release];
 	[tunnelConnectionVerifyHash release];
 	[tunnelConnection release];
+	[debugMessages release];
 	if (password) [password release];
 	if (keychainName) [keychainName release];
 	if (keychainAccount) [keychainAccount release];

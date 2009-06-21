@@ -182,6 +182,15 @@ static void forcePingTimeout(int signalNumber);
 	return YES;
 }
 
+/*
+ * Sets or updates the connection port - for use with tunnels.
+ */
+- (BOOL) setPort:(int) thePort
+{
+	connectionPort = thePort;
+
+	return YES;
+}
 
 /*
  * Set a SSH tunnel object to connect through.  This object will be retained locally,
@@ -215,9 +224,6 @@ static void forcePingTimeout(int signalNumber);
 	// Ensure that a password method has been provided
 	if (connectionKeychainName == nil && connectionPassword == nil) return NO;
 	
-	// Start the keepalive timer
-	[self startKeepAliveTimerResettingState:YES];
-
 	// Disconnect if a connection is already active
 	if (mConnected) {
 		[self disconnect];
@@ -259,10 +265,6 @@ static void forcePingTimeout(int signalNumber);
 	thePass = NULL;
 	if (theRet != mConnection) {
 		[self setLastErrorMessage:nil];
-		if (connectionTunnel) {
-			[connectionTunnel disconnect];
-			[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
-		}
 		return mConnected = NO;
 	}
 
@@ -275,10 +277,6 @@ static void forcePingTimeout(int signalNumber);
 
 	if (![self fetchMaxAllowedPacket]) {
 		[self setLastErrorMessage:nil];
-		if (connectionTunnel) {
-			[connectionTunnel disconnect];
-			[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
-		}
 		return mConnected = NO;
 	}
 	
@@ -291,6 +289,9 @@ static void forcePingTimeout(int signalNumber);
 	
 	// Init 'consoleLoggingEnabled'
 	consoleLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"];
+
+	// Start the keepalive timer
+	[self startKeepAliveTimerResettingState:YES];
 	
 	return mConnected;
 }

@@ -280,6 +280,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)connectToDB:(id)sender
 {
+	[self clearStatusIcon];
 	
 	// load the details of the currently selected favorite into the text boxes in connect sheet
 	[self chooseFavorite:self];
@@ -312,11 +313,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	// Error-check required fields before starting a connection
 	if (![[hostField stringValue] length] && ![[socketField stringValue] length]) {
-		[self failConnectionWithErrorMessage:NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message")];
+		[self failConnectionWithErrorMessage:NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message") withDetail:nil];
 		return;
 	}
 	if ([sshCheckbox state] == NSOnState && ![[sshHostField stringValue] length]) {
-		[self failConnectionWithErrorMessage:NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete")];
+		[self failConnectionWithErrorMessage:NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete") withDetail:nil];
 		return;
 	}
 
@@ -397,7 +398,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	if (newState == SPSSH_STATE_IDLE) {
 		[self setStatusIconToImageWithName:@"ssh-disconnected"];
-		[self failConnectionWithErrorMessage:[theTunnel lastError]];
+		[self failConnectionWithErrorMessage:[theTunnel lastError] withDetail:[sshTunnel debugMessages]];
 	} else if (newState == SPSSH_STATE_CONNECTED) {
 		[self setStatusIconToImageWithName:@"ssh-connected"];
 		[self initiateMySQLConnection];
@@ -435,7 +436,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 														withLogin:[userField stringValue]
 														usingPort:[sshTunnel localPort]];
 			[mySQLConnection setSSHTunnel:sshTunnel];
-			[sshTunnel release], sshTunnel = nil;
 		} else {
 			mySQLConnection = [[CMMCPConnection alloc] initToHost:[hostField stringValue]
 														withLogin:[userField stringValue]
@@ -455,15 +455,45 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[mySQLConnection connect];
 
 	if (![mySQLConnection isConnected]) {
-		[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]]];
-		return;
+		if (sshTunnel) {
+
+			// If an SSH tunnel is running, temporarily block to allow the tunnel to register changes in state
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+
+			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
+			if ([sshTunnel state] == SPSSH_STATE_FORWARDING_FAILED) {
+				if ([sshTunnel localPortFallback]) {
+					[mySQLConnection setPort:[sshTunnel localPortFallback]];
+					[mySQLConnection connect];
+					if (![mySQLConnection isConnected]) {
+						[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+					}
+				}
+			}
+		}
+		
+		if (![mySQLConnection isConnected]) {
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]];
+			if (sshTunnel && [sshTunnel state] == SPSSH_STATE_FORWARDING_FAILED) {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@", @"message of panel when SSH port forwarding failed"), [hostField stringValue], [mySQLConnection getLastErrorMessage]];
+				[self failConnectionWithErrorMessage:errorMessage withDetail:[sshTunnel debugMessages]];
+			} else {
+				[self failConnectionWithErrorMessage:errorMessage withDetail:nil];
+			}
+			
+			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			[mySQLConnection release], mySQLConnection = nil;
+			return;
+		}
 	}
 	if (![[databaseField stringValue] isEqualToString:@""]) {
 		if ([mySQLConnection selectDB:[databaseField stringValue]]) {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			selectedDatabase = [[databaseField stringValue] retain];
 		} else {
-			[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]];
+			[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]] withDetail:nil];
+			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			[mySQLConnection release], mySQLConnection = nil;
 			return;
 		}
 	}
@@ -477,6 +507,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// Set up the connection.
 	// Register as a delegate
 	[mySQLConnection setDelegate:self];
+	
+	// Release the tunnel if set - will now be retained by the connection
+	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
 
 	// Set encoding
 	NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
@@ -529,7 +562,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  * message.  The button on the error message will open the connection
  * sheet again with the failed details.
  */
-- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage
+- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage withDetail:(NSString *)errorDetail
 {
 	// Clean up the interface
 	[connectProgressBar stopAnimation:self];
@@ -543,9 +576,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	// Release as appropriate
 	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+	
+	if (errorDetail) [errorDetailText setString:errorDetail];
 
 	// Display the connection error message
-	NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed title"), NSLocalizedString(@"OK", @"OK button"), errorDetail?NSLocalizedString(@"Show detail", @"Show detail button"):nil, nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 }
 
 - (IBAction)cancelConnectSheet:(id)sender
@@ -728,6 +763,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {	
 	if ([contextInfo isEqualToString:@"connect"]) {
 		[sheet orderOut:self];
+		if (returnCode == NSAlertAlternateReturn) [errorDetailWindow makeKeyAndOrderFront:self];
 		
 		// Restore the passwords from keychain for editing if appropriate
 		if (connectionKeychainItemName) {

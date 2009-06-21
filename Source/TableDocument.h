@@ -73,6 +73,8 @@
 	IBOutlet id sshUserField;
 	IBOutlet id sshPasswordField;
 	IBOutlet id sshPortField;
+	IBOutlet NSWindow *errorDetailWindow;
+	IBOutlet NSTextView *errorDetailText;
 
 	IBOutlet NSProgressIndicator *connectProgressBar;
 	IBOutlet NSTextField *connectProgressStatusText;
@@ -128,7 +130,7 @@
 - (void)initiateSSHTunnelConnection;
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
 - (void)initiateMySQLConnection;
-- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage;
+- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage withDetail:(NSString *)errorDetail;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
