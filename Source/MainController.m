@@ -186,9 +186,7 @@
  * sure that no sheets are currently open, which will prevent the app from being quit. 
  */
 - (void)updaterWillRelaunchApplication:(SUUpdater *)updater
-{
-	NSLog(@"Called");
-	
+{	
 	// Get all the currently open windows and their attached sheets if any
 	NSArray *windows = [NSApp windows];
 	
