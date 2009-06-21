@@ -8,7 +8,6 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="628"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2442,6 +2441,14 @@
 					</object>
 					<int key="connectionID">936</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="138191718"/>
+						<reference key="destination" ref="432083121"/>
+					</object>
+					<int key="connectionID">937</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -4371,7 +4378,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">936</int>
+			<int key="maxID">937</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4771,6 +4778,8 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>tableTabView</string>
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
+							<string>titleAccessoryView</string>
+							<string>titleImageView</string>
 							<string>userField</string>
 							<string>variablesSheet</string>
 							<string>variablesTableView</string>
@@ -4820,6 +4829,8 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSTabView</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
