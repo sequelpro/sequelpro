@@ -50,6 +50,9 @@
  */
 - (void)awakeFromNib
 {
+	// Set Sparkle delegate
+	[[SUUpdater sharedUpdater] setDelegate:self];
+	
 	prefsController = [[SPPreferenceController alloc] init];
 	
 	// Register MainController as services provider
@@ -69,7 +72,7 @@
  */
 - (IBAction)openPreferences:(id)sender
 {
-	[prefsController showWindow:self];
+	[prefsController showWindow:self];	
 }
 
 #pragma mark -
@@ -184,6 +187,8 @@
  */
 - (void)updaterWillRelaunchApplication:(SUUpdater *)updater
 {
+	NSLog(@"Called");
+	
 	// Get all the currently open windows and their attached sheets if any
 	NSArray *windows = [NSApp windows];
 	
