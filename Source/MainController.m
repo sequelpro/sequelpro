@@ -192,8 +192,8 @@
 		NSWindow *attachedSheet = [window attachedSheet];
 		
 		if (attachedSheet) {
-			[NSApp endSheet:window returnCode:0];
-			[window orderOut:nil];
+			[NSApp endSheet:attachedSheet returnCode:0];
+			[attachedSheet orderOut:nil];
 		}
 	}
 }
