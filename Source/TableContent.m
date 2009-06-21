@@ -167,6 +167,8 @@
 	numRows = [self getNumberOfRows];
 	areShowingAllRows = YES;
 	
+	NSString *nullValue = [prefs objectForKey:@"NullValue"];
+	
 	// Add the new columns to the table
 	for ( i = 0 ; i < [theColumns count] ; i++ ) {
 		columnDefinition = NSArrayObjectAtIndex(theColumns, i);
@@ -185,7 +187,9 @@
 			[dataCell setDrawsBackground:NO];
 			[dataCell setCompletes:YES];
 			[dataCell setControlSize:NSSmallControlSize];
-			[dataCell addItemWithObjectValue:@"NULL"];
+			// add prefs NULL value representation if NULL value is allowed for that field
+			if([[columnDefinition objectForKey:@"null"] boolValue])
+				[dataCell addItemWithObjectValue:nullValue];
 			[dataCell addItemsWithObjectValues:[columnDefinition objectForKey:@"values"]];
 		} else {
 			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
