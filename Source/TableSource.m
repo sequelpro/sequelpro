@@ -544,22 +544,25 @@ fetches the result as an array with a dictionary for each row in it
 */
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
-	NSMutableArray *tempResult = [NSMutableArray array];
+	unsigned long numOfRows = [theResult numOfRows];
+	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
 	id key;
 	int i;
+	Class nullClass = [NSNull class];
+	id prefsNullValue = [prefs objectForKey:@"NullValue"];
 
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+	if (numOfRows) [theResult dataSeek:0];
+	for ( i = 0 ; i < numOfRows ; i++ ) {
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
 		keys = [tempRow allKeys];
 		for (int i = 0; i < [keys count] ; i++) {
-			key = [keys objectAtIndex:i];
-			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] )
-				[tempRow setObject:[prefs objectForKey:@"NullValue"] forKey:key];
+			key = NSArrayObjectAtIndex(keys, i);
+			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] )
+				[tempRow setObject:prefsNullValue forKey:key];
 		}
 		// change some fields to be more human-readable or GUI compatible
 		if ( [[tempRow objectForKey:@"Extra"] isEqualToString:@""] ) {

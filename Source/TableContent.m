@@ -1472,31 +1472,37 @@
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
 	NSArray *columns;
-	NSMutableArray *tempResult = [NSMutableArray array];
+	unsigned long numOfRows = [theResult numOfRows];
+	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	NSEnumerator *enumerator;
 	id key;
 	int i, j;
-	
+	Class nullClass = [NSNull class];
+	id prefsNullValue = [prefs objectForKey:@"NullValue"];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+
 	columns = [tableDataInstance columns];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+	long columnsCount = [columns count];
+
+	if (numOfRows) [theResult dataSeek:0];
+	for ( i = 0 ; i < numOfRows ; i++ ) {
 		tempRow = [theResult fetchRowAsDictionary];
 		enumerator = [tempRow keyEnumerator];
 
 		while ( key = [enumerator nextObject] ) {
-			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] ) {
-				[modifiedRow setObject:[prefs stringForKey:@"NullValue"] forKey:key];
+			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] ) {
+				[modifiedRow setObject:prefsNullValue forKey:key];
 			} else {
 				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
 			}
 		}
 
 		// Add values for hidden blob and text fields if appropriate
-		if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
-			for ( j = 0 ; j < [columns count] ; j++ ) {
+		if ( prefsLoadBlobsAsNeeded ) {
+			for ( j = 0 ; j < columnsCount ; j++ ) {
 				if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"] ] ) {
 					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"]];
 				}
@@ -2043,55 +2049,55 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 }
 
 - (void)tableView: (CMCopyTable *)aTableView
-  willDisplayCell: (id)cell
-   forTableColumn: (NSTableColumn*)aTableColumn
-              row: (int)row
+	willDisplayCell: (id)cell
+	forTableColumn: (NSTableColumn*)aTableColumn
+	row: (int)row
 /*
- *  This function changes the text color of 
- *  text/blob fields which are not yet loaded to gray
- */
+	*  This function changes the text color of 
+	*  text/blob fields which are not yet loaded to gray
+*/
 {
-    // Check if loading of text/blob fields is disabled
-    // If not, all text fields are loaded and we don't have to make them gray
-    if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
-    {
-        // Make sure that the cell actually responds to setTextColor:
-        // In the future, we might use different cells for the table view
-        // that don't support this selector
-        if ([cell respondsToSelector:@selector(setTextColor:)])
-        {
-            NSArray    *columns             = [tableDataInstance columns];
-            NSArray    *columnNames         = [tableDataInstance columnNames];
-            NSString   *columnTypeGrouping;
-            NSUInteger  indexOfColumn;
-            
-            // We have to find the index of the current column
-            // Make sure we find it, otherwise return (We might decide in the future
-            // to add a column to the TableView that doesn't correspond to a column
-            // of the Mysql table...)
-            indexOfColumn = [columnNames indexOfObject:[aTableColumn identifier]];
-            if (indexOfColumn ==  NSNotFound) return;
-            
-            // Test if the current column is a text or a blob field
-            columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
-            if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
-                
-                // now check if the field has been loaded already or not
-                if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
-                {
-                    // change the text color of the cell to gray
-                    [cell setTextColor: [NSColor grayColor]];
-                }
-                else
-                {
-                    // Change the text color back to black
-                    // This is necessary because NSTableView reuses
-                    // the NSCell to draw further rows in the column
-                    [cell setTextColor: [NSColor blackColor]];
-                }
-            }
-        }
-    }
+	// Check if loading of text/blob fields is disabled
+	// If not, all text fields are loaded and we don't have to make them gray
+	if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
+	{
+		// Make sure that the cell actually responds to setTextColor:
+		// In the future, we might use different cells for the table view
+		// that don't support this selector
+		if ([cell respondsToSelector:@selector(setTextColor:)])
+		{
+			NSArray    *columns             = [tableDataInstance columns];
+			NSArray    *columnNames         = [tableDataInstance columnNames];
+			NSString   *columnTypeGrouping;
+			NSUInteger  indexOfColumn;
+
+			// We have to find the index of the current column
+			// Make sure we find it, otherwise return (We might decide in the future
+			// to add a column to the TableView that doesn't correspond to a column
+			// of the Mysql table...)
+			indexOfColumn = [columnNames indexOfObject:[aTableColumn identifier]];
+			if (indexOfColumn ==  NSNotFound) return;
+
+			// Test if the current column is a text or a blob field
+			columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
+			if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
+
+				// now check if the field has been loaded already or not
+				if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
+				{
+					// change the text color of the cell to gray
+					[cell setTextColor: [NSColor grayColor]];
+				}
+				else
+				{
+					// Change the text color back to black
+					// This is necessary because NSTableView reuses
+					// the NSCell to draw further rows in the column
+					[cell setTextColor: [NSColor blackColor]];
+				}
+			}
+		}
+	}
 }
 
 - (void)tableView:(NSTableView *)aTableView

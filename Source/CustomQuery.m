@@ -396,7 +396,7 @@
 	BOOL suppressErrorSheet = NO;
 	BOOL tableListNeedsReload = NO;
 	BOOL databaseWasChanged = NO;
-	BOOL queriesSeparatedByDelimiter = NO;
+	// BOOL queriesSeparatedByDelimiter = NO;
 	
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
@@ -415,16 +415,22 @@
 	}
 
 	long queryCount = [queries count];
+	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
 	// Perform the supplied queries in series
 	for ( i = 0 ; i < queryCount ; i++ ) {
 
+		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
+
 		// Don't run blank queries, or queries which only contain whitespace.
-		if ([[NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet] length] == 0)
+		if (![query length])
 			continue;
 
+		// store trimmed queries for usedQueries and history
+		[tempQueries addObject:query];
+
 		// Run the query, timing execution (note this also includes network and overhead)
-		theResult = [mySQLConnection queryString:[queries objectAtIndex:i]];
+		theResult = [mySQLConnection queryString:query];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
 
@@ -462,9 +468,9 @@
 						case NSAlertSecondButtonReturn:
 							break;
 						default:
-							if(i < [queries count]-1) // output that message only if it was not the last one
+							if(i < queryCount-1) // output that message only if it was not the last one
 								[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
-							i = [queries count]; // break for loop; for safety reasons stop the execution of the following queries
+							i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
 					}
 
 				} else {
@@ -478,9 +484,9 @@
 		} else {
 			// Check if table/db list needs an update
 			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
-			if(!tableListNeedsReload && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)\\b(create|alter|drop|rename)\\b\\s+."])
+			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)\\b(create|alter|drop|rename)\\b\\s+."])
 				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [[queries objectAtIndex:i] isMatchedByRegex:@"(?i)\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
+			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
 				databaseWasChanged = YES;
 		}
 	}
@@ -500,13 +506,12 @@
 	
 	if(usedQuery)
 		[usedQuery release];
-	if(!queriesSeparatedByDelimiter)
-		usedQuery = [[NSString stringWithString:[queries componentsJoinedByString:@";\n"]] retain];
-	else // TODO how to combine the query array if “delimiter command” was used? 
-		usedQuery = @"";
+	
+	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
+	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 	
 	//perform empty query if no query is given
-	if ( [queries count] == 0 ) {
+	if ( !queryCount ) {
 		theResult = [mySQLConnection queryString:@""];
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
@@ -525,17 +530,19 @@
 	}
 
 	//add query to history
-	if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-		[queryHistoryButton insertItemWithTitle:[queries componentsJoinedByString:@"; "] atIndex:1];
-		while ( [queryHistoryButton numberOfItems] > [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue] + 1 ) {
-			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-		}
-		for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
-		{
-			[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
-		}
-		[prefs setObject:menuItems forKey:@"queryHistory"];
-	}
+	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
+	[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
+
+	int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
+
+	while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 1 )
+		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+
+	for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
+		[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
+
+	[prefs setObject:menuItems forKey:@"queryHistory"];
+
 
 	// Error checking
 	if ( [errors length] ) {
