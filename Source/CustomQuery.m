@@ -637,11 +637,28 @@
 	}
 
 
+	// get column definitions for the result array
 	columnDefinition = [theResult fetchResultFieldsStructure];
+
+	// set datasource
 	[fullResult removeAllObjects];
 	[fullResult setArray:[self fetchResultAsArray:theResult]];
 
-	// Otherwise add columns corresponding to the query result
+	// Find result table name for copying as SQL INSERT.
+	// If more than one table name is found set resultTableName to nil.
+	// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
+	// and the resultTableName can differ due to case-sensitive/insensitive settings!.
+	BOOL resultShowsColumnsFromOneTable = YES;
+	NSString *resultTableName = [[columnDefinition objectAtIndex:0] objectForKey:@"org_table"];
+	for(id field in columnDefinition) {
+		if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
+			resultShowsColumnsFromOneTable = NO;
+			resultTableName = nil;
+			break;
+		}
+	}
+
+	// Add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
 	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
@@ -655,7 +672,7 @@
 		}
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[theCol setDataCell:dataCell];
-		[[theCol headerCell] setStringValue:[theColumns objectAtIndex:i]];
+		[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
 
 		[customQueryView addTableColumn:theCol];
 		[theCol release];
@@ -671,7 +688,7 @@
 	[customQueryView reloadData];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withTableData:fullResult withColumns:columnDefinition withTableName:nil withConnection:mySQLConnection];
+	[customQueryView setTableInstance:self withTableData:fullResult withColumns:columnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 	
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -695,13 +712,13 @@
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	NSEnumerator *enumerator;
 	id key;
-	int i, j;
+	int i;
 	Class nullClass = [NSNull class];
 	id prefsNullValue = [prefs objectForKey:@"NullValue"];
-	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+	// BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
 
 	// columns = [customQueryView columns];
-	long columnsCount = [columnDefinition count];
+	// long columnsCount = [columnDefinition count];
 
 	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < numOfRows ; i++ ) {
