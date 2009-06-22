@@ -293,6 +293,7 @@
 	NSMutableDictionary *tableColumn, *tableData;
 	NSString *encodingString;
 	unsigned i, stringStart;
+	unichar quoteCharacter;
 
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
@@ -342,6 +343,8 @@
 	fieldParser = [[SPSQLParser alloc] init];
 	
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
+	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
 	
 	for (i = 0; i < [fieldStrings count]; i++) {
 
@@ -354,27 +357,28 @@
 		[tableColumn removeAllObjects];
 		[definitionParts removeAllObjects];
 
-		// If the first character is a backtick, this is a field definition.
-		if ([fieldsParser characterAtIndex:0] =='`') {
-        
-            // Capture the area between the two backticks as the name
-            NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: '`' 
-                                                                     toCharacter: '`' 
-                                                             trimmingInclusively: YES 
-                                                            returningInclusively: NO 
-                                                           ignoringQuotedStrings: NO];
-            //if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
-			while ([fieldsParser characterAtIndex:0] =='`') {
-                fieldName = [fieldName stringByAppendingFormat: @"`%@",
-                                                                [fieldsParser trimAndReturnStringFromCharacter: '`' 
-                                                                                                   toCharacter: '`' 
-                                                                                           trimmingInclusively: YES 
-                                                                                          returningInclusively: NO 
-                                                                                         ignoringQuotedStrings: NO]
-                                                                 ];
-            }
-            
-            [tableColumn setObject:fieldName forKey:@"name"];
+		// If the first character is a quote character, this is a field definition.
+		if ([quoteSet characterIsMember:[fieldsParser characterAtIndex:0]]) {
+			quoteCharacter = [fieldsParser characterAtIndex:0];
+
+			// Capture the area between the two backticks as the name
+			NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
+																	 toCharacter: quoteCharacter
+															 trimmingInclusively: YES
+															returningInclusively: NO
+														   ignoringQuotedStrings: NO];
+			//if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
+			while ([fieldsParser characterAtIndex:0] == quoteCharacter) {
+				fieldName = [fieldName stringByAppendingFormat: @"`%@",
+																[fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
+																								   toCharacter: quoteCharacter
+																						   trimmingInclusively: YES
+																						  returningInclusively: NO
+																						 ignoringQuotedStrings: NO]
+																];
+			}
+			
+			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
@@ -390,26 +394,24 @@
 		// TODO: Otherwise it's a key definition, constraint, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
 			NSArray *parts = [fieldsParser splitStringByCharacter:' ' skippingBrackets:YES ignoringQuotedStrings:YES];
-			NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:@"`()"];
-			// constraints
+
+			// Constraints
 			if( [[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"] ) {
 				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
-				/*
-				 NSLog( @"constraint %@ on %@ ref %@.%@", 
-				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
-				 [[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk], 
-				 [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk], 
-				 [[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk] );
-				 */
-				[constraintDetails setObject:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk]
-									  forKey:@"name"];
-				[constraintDetails setObject:[[parts objectAtIndex:4] stringByRemovingCharactersInSet:junk]
-									  forKey:@"columns"];
-				[constraintDetails setObject:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk]
-									  forKey:@"ref_table"];
-				[constraintDetails setObject:[[parts objectAtIndex:7] stringByRemovingCharactersInSet:junk]
-									  forKey:@"ref_columns"];
-				
+
+				// Extract the relevant details from the constraint string
+				[fieldsParser setString:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"name"];
+
+				[fieldsParser setString:[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"columns"];
+
+				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+
+				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
+
 				int nextOffs = 12;
 				if( [parts count] > 8 ) {
 					// NOTE: this won't get SET NULL | NO ACTION
