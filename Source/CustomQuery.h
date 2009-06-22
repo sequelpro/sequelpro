@@ -90,7 +90,9 @@
 	NSString *helpHTMLTemplate;
 	
 	NSMutableArray *fullResult;
-	NSArray *columnDefinition;
+	NSArray *cqColumnDefinition;
+	NSString *lastExecutedQuery;
+	BOOL tempAlertWasShown; // a temp value for nightly builts
 		
 }
 
@@ -143,6 +145,7 @@
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;
 - (NSString *)usedQuery;
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
 
 
 @end
