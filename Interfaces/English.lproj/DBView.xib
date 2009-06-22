@@ -1365,7 +1365,7 @@
 																						<string key="NSResourceName">button_edit</string>
 																					</object>
 																					<string key="NSAlternateContents"/>
-																					<string key="NSKeyEquivalent">r</string>
+																					<string key="NSKeyEquivalent">4</string>
 																					<int key="NSPeriodicDelay">400</int>
 																					<int key="NSPeriodicInterval">75</int>
 																				</object>
@@ -2243,8 +2243,8 @@
 																			<bool key="NS.raise.underflow">YES</bool>
 																			<bool key="NS.raise.dividebyzero">YES</bool>
 																		</object>
-																		<string key="NS.decimal">.</string>
-																		<string key="NS.thousand">,</string>
+																		<string key="NS.decimal">,</string>
+																		<string key="NS.thousand">.</string>
 																		<bool key="NS.hasthousands">NO</bool>
 																		<bool key="NS.localized">YES</bool>
 																		<bool key="NS.allowsfloats">NO</bool>
@@ -5618,6 +5618,7 @@
 									</object>
 									<string key="NSFrameSize">{588, 316}</string>
 									<reference key="NSSuperview" ref="541887300"/>
+									<reference key="NSNextKeyView" ref="798764405"/>
 									<reference key="NSDocView" ref="798764405"/>
 									<object class="NSColor" key="NSBGColor">
 										<int key="NSColorSpace">1</int>
@@ -5649,6 +5650,7 @@
 							</object>
 							<string key="NSFrame">{{0, 34}, {588, 316}}</string>
 							<reference key="NSSuperview" ref="661948784"/>
+							<reference key="NSNextKeyView" ref="593223452"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="142711676"/>
 							<reference key="NSHScroller" ref="705947940"/>
@@ -10197,13 +10199,14 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 												<nil key="NSDefaultParagraphStyle"/>
 											</object>
 											<int key="NSTVFlags">6</int>
-											<string key="NSMaxSize">{1176, 1e+07}</string>
+											<string key="NSMaxSize">{1472, 1e+07}</string>
 											<string key="NSMinize">{83, 0}</string>
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
 									<string key="NSFrameSize">{736, 488}</string>
 									<reference key="NSSuperview" ref="354268322"/>
+									<reference key="NSNextKeyView" ref="105927324"/>
 									<reference key="NSDocView" ref="105927324"/>
 									<object class="NSColor" key="NSBGColor">
 										<int key="NSColorSpace">1</int>
@@ -10235,6 +10238,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							</object>
 							<string key="NSFrame">{{0, 20}, {736, 488}}</string>
 							<reference key="NSSuperview" ref="893535515"/>
+							<reference key="NSNextKeyView" ref="231365684"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="589641065"/>
 							<reference key="NSHScroller" ref="747613041"/>
@@ -25546,8 +25550,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{143, 63}, {944, 550}}</string>
-					<string>{{143, 63}, {944, 550}}</string>
+					<string>{{89, 140}, {944, 550}}</string>
+					<string>{{89, 140}, {944, 550}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{62, 352}, {845, 504}}</string>
