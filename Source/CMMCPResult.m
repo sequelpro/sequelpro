@@ -370,7 +370,7 @@ modified version for use with sequel-pro
 
 		/* Div flags */
 		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].flags] forKey:@"flags"];
-		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & NOT_NULL_FLAG) ? YES : NO] forKey:@"NOT_NULL_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & NOT_NULL_FLAG) ? YES : NO] forKey:@"null"];
 		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & PRI_KEY_FLAG) ? YES : NO] forKey:@"PRI_KEY_FLAG"];
 		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & UNIQUE_KEY_FLAG) ? YES : NO] forKey:@"UNIQUE_KEY_FLAG"];
 		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & MULTIPLE_KEY_FLAG) ? YES : NO] forKey:@"MULTIPLE_KEY_FLAG"];
@@ -423,6 +423,7 @@ modified version for use with sequel-pro
 {
 	// BOOL isUnsigned = (flags & UNSIGNED_FLAG) != 0;
 	// BOOL isZerofill = (flags & ZEROFILL_FLAG) != 0;
+	
 	switch (type) {
 		case FIELD_TYPE_BIT:
 			return @"BIT";
@@ -473,7 +474,14 @@ modified version for use with sequel-pro
 				case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
 				case 4294967295: return isBlob? @"LONGBLOB":@"LONGTEXT";
 				default:
-					return @"UNKNOWN";
+				switch (length) {
+					case 255: return isBlob? @"TINYBLOB":@"TINYTEXT";
+					case 65535: return isBlob? @"BLOB":@"TEXT";
+					case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
+					case 4294967295: return isBlob? @"LONGBLOB":@"LONGTEXT";
+					default:
+						return @"UNKNOWN";
+				}
 			}
 		}
 		case MYSQL_TYPE_VAR_STRING:

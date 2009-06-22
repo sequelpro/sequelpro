@@ -637,6 +637,10 @@
 	}
 
 
+	columnDefinition = [theResult fetchResultFieldsStructure];
+	[fullResult removeAllObjects];
+	[fullResult setArray:[self fetchResultAsArray:theResult]];
+
 	// Otherwise add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
 	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
@@ -656,7 +660,7 @@
 		[customQueryView addTableColumn:theCol];
 		[theCol release];
 	}
-	
+
 	[customQueryView sizeLastColumnToFit];
 	//tries to fix problem with last row (otherwise to small)
 	//sets last column to width of the first if smaller than 30
@@ -666,6 +670,9 @@
 				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
 	[customQueryView reloadData];
 	
+	// Init copyTable with necessary information for copying selected rows as SQL INSERT
+	[customQueryView setTableInstance:self withTableData:fullResult withColumns:columnDefinition withTableName:nil withConnection:mySQLConnection];
+	
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 	
@@ -674,6 +681,57 @@
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
                                               notificationName:@"Query Finished"];
 }
+
+/*
+ * Fetches the result as an array with a dictionary for each row in it
+ */
+- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
+{
+	// NSArray *columns;
+	unsigned long numOfRows = [theResult numOfRows];
+	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
+
+	NSDictionary *tempRow;
+	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
+	NSEnumerator *enumerator;
+	id key;
+	int i, j;
+	Class nullClass = [NSNull class];
+	id prefsNullValue = [prefs objectForKey:@"NullValue"];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+
+	// columns = [customQueryView columns];
+	long columnsCount = [columnDefinition count];
+
+	if (numOfRows) [theResult dataSeek:0];
+	for ( i = 0 ; i < numOfRows ; i++ ) {
+		tempRow = [theResult fetchRowAsDictionary];
+		enumerator = [tempRow keyEnumerator];
+
+		while ( key = [enumerator nextObject] ) {
+			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] ) {
+				[modifiedRow setObject:prefsNullValue forKey:key];
+			} else {
+				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
+			}
+		}
+
+		// Add values for hidden blob and text fields if appropriate
+		// if ( prefsLoadBlobsAsNeeded ) {
+		// 	for ( j = 0 ; j < columnsCount ; j++ ) {
+		// 		if ( [[NSArrayObjectAtIndex(columnDefinition, j) objectForKey:@"typegrouping"] isEqualToString:@"blobdata"] ||
+		// 		 	[[NSArrayObjectAtIndex(columnDefinition, j) objectForKey:@"typegrouping"] isEqualToString:@"textdata"]) {
+		// 			[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[NSArrayObjectAtIndex(columnDefinition, j) objectForKey:@"name"]];
+		// 		}
+		// 	}
+		// }
+
+		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
+	}
+
+	return tempResult;
+}
+
 
 /*
  * Retrieve the range of the query at a position specified 
@@ -1030,15 +1088,23 @@
 				tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
 											encoding:NSASCIIStringEncoding];
 			}
-			return [tmp autorelease];
+			// If field contains binary data show only the first 255 bytes for speed
+			if([tmp length] > 255) {
+				return [[tmp autorelease] substringToIndex:255];
+			} else
+				return [tmp autorelease];
 		}
 		if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] )
 			return [prefs objectForKey:@"NullValue"];
 	
 		return [theRow objectAtIndex:[theIdentifier intValue]];
-	} else if ( aTableView == queryFavoritesView ) {
+	}
+	
+	else if ( aTableView == queryFavoritesView ) {
 		return [queryFavorites objectAtIndex:rowIndex];
-	} else {
+	}
+	
+	else {
 		return @"";
 	}
 }
@@ -1914,6 +1980,8 @@
 		// init search history
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
+		
+		fullResult = [[NSMutableArray alloc] init];
 	}
 
 	return self;
@@ -1930,6 +1998,7 @@
 	[queryResult release];
 	[queryFavorites release];
 	[usedQuery release];
+	[fullResult release];
 	
 	[super dealloc];
 }

@@ -26,6 +26,7 @@
 #import "SPArrayAdditions.h"
 #import "CMMCPConnection.h"
 #import "TableContent.h"
+#import "CustomQuery.h"
 
 int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 int MENU_EDIT_COPY_AS_SQL      = 2002;
@@ -240,7 +241,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							[mySQLConnection prepareString:[rowData description]]]];
 						break;
 					case 2: // blob
-						if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
 							if (![[tableInstance argumentForRow:row] length] || selectedTable == nil)
@@ -260,7 +261,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						}
 						break;
 					case 3: // long text data
-						if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
 							if (![[tableInstance argumentForRow:row] length] || selectedTable == nil)

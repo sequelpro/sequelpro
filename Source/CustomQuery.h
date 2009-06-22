@@ -88,6 +88,9 @@
 	int helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
+	
+	NSMutableArray *fullResult;
+	NSArray *columnDefinition;
 		
 }
 
@@ -123,6 +126,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
+- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
 
 // MySQL Help
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;
