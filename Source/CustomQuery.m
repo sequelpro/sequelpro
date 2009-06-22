@@ -1271,20 +1271,20 @@
 	[fieldIDQueryString setString:@"WHERE ("];
 	
 	for(field in columnsForFieldTableName) {
-		[fieldIDQueryString appendFormat:@"`%@`=", [field objectForKey:@"org_name"]];
 		id aValue = [[fullResult objectAtIndex:rowIndex] objectForKey:[field objectForKey:@"name"]];
-		if ([aValue isKindOfClass:[NSNull class]])
-			[fieldIDQueryString appendString:@"NULL"];
-		else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
-			[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
-		else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-			[fieldIDQueryString appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
-		else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
-			[fieldIDQueryString appendFormat:@"%@", [aValue description]];
-		else if ([[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]])
-			[fieldIDQueryString appendString:@"NULL"];
-		else
-			[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
+			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
+		} else {
+			[fieldIDQueryString appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
+				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
+				[fieldIDQueryString appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
+				[fieldIDQueryString appendFormat:@"%@", [aValue description]];
+			else
+				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+		}
 		
 		[fieldIDQueryString appendString:@" AND "];
 	}
