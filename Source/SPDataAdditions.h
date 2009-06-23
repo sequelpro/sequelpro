@@ -28,6 +28,6 @@
 @interface NSData (SPDataAdditions)
 
 - (NSString *) base64EncodingWithLineLength:(unsigned int)lineLength;
-
+- (NSString *) dataToFormattedHexString;
 
 @end

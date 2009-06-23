@@ -104,7 +104,6 @@
 - (void)processUpdatedImageData:(NSData *)data;
 - (IBAction)dropImage:(id)sender;
 - (void)textViewDidChangeSelection:(NSNotification *)aNotification;
-- (NSString *)dataToHex:(NSData *)data;
 
 //getter methods
 - (NSArray *)currentResult;
