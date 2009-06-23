@@ -187,5 +187,27 @@ static char base64encodingTable[64] = {
 	return retVal;
 }
 
+/*
+ * Convert data objects to their string representation (max 255 chars) 
+ * in the current encoding, falling back to ascii. (Mainly used for displaying
+ * large blob data in a tableView)
+ */
+- (NSString *) shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding
+{
+	NSString *tmp = [[NSString alloc] initWithData:self encoding:encoding];
+	NSString *shortString;
+	if (tmp == nil)
+		tmp = [[NSString alloc] initWithData:self encoding:NSASCIIStringEncoding];
+	if (tmp == nil)
+		return @"- cannot be displayed -";
+	else {
+		if([tmp length]>255)
+			shortString = [[NSString stringWithString:tmp] substringToIndex:255];
+		else
+			shortString = [NSString stringWithString:tmp];
+	}
+	[tmp release];
+	return shortString;
+}
 
 @end

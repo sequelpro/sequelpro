@@ -1971,26 +1971,13 @@
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-	id theRow, theValue;
-    
-	theRow = [filteredResult objectAtIndex:rowIndex];
-	theValue = [theRow objectForKey:[aTableColumn identifier]];
-    
-	// Convert data objects to their string representation in the current encoding, falling back to ascii
-	if ( [theValue isKindOfClass:[NSData class]] ) {
-		NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
-		if (dataRepresentation == nil)
-			dataRepresentation = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
-		if (dataRepresentation == nil) theValue = @"- cannot be displayed -";
-		else {
-			if([dataRepresentation length]>255)
-				theValue = [[NSString stringWithString:dataRepresentation] substringToIndex:255];
-			else
-				theValue = [NSString stringWithString:dataRepresentation];
-		}
-		if (dataRepresentation) [dataRepresentation release];
-	}
-    return theValue;
+
+	id theValue = [NSArrayObjectAtIndex(filteredResult, rowIndex) objectForKey:[aTableColumn identifier]];
+
+	if ( [theValue isKindOfClass:[NSData class]] )
+		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+
+	return theValue;
 }
 
 - (void)tableView: (CMCopyTable *)aTableView
@@ -2054,15 +2041,16 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
-		[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
+		[oldRow setDictionary:NSArrayObjectAtIndex(filteredResult, rowIndex)];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
-	if ( anObject ) {
-		[[filteredResult objectAtIndex:rowIndex] setObject:anObject forKey:[aTableColumn identifier]];
-	} else {
-		[[filteredResult objectAtIndex:rowIndex] setObject:@"" forKey:[aTableColumn identifier]];
-	}
+	
+	if ( anObject )
+		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:anObject forKey:[aTableColumn identifier]];
+	else
+		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:@"" forKey:[aTableColumn identifier]];
+
 }
 
 #pragma mark -

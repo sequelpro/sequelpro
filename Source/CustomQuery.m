@@ -29,6 +29,7 @@
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPDataAdditions.h"
 #import "SPDataCellFormatter.h"
 #import "TableDocument.h"
 #import "TablesList.h"
@@ -1147,50 +1148,19 @@
 			objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-	id theRow;
 
 	if ( aTableView == customQueryView ) {
-		// theRow = [fullResult objectAtIndex:rowIndex];
-		// theValue = [theRow objectForKey:[[aTableColumn headerCell] stringValue]];
-		// // Convert data objects to their string representation in the current encoding, falling back to ascii
-		// if ( [theValue isKindOfClass:[NSData class]] ) {
-		// 	NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
-		// 	if (dataRepresentation == nil)
-		// 		dataRepresentation = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
-		// 	if (dataRepresentation == nil) {
-		// 		theValue = @"- cannot be displayed -";
-		// 	} else {
-		// 		if([theValue length] > 255)
-		// 			theValue = [NSString stringWithString:dataRepresentation];
-		// 		else
-		// 			theValue = [NSString stringWithString:dataRepresentation];
-		// 		// if([theValue length] > 255)
-		// 		// 	theValue = [theValue substringToIndex:255];
-		// 	}
-		// 	if (dataRepresentation) [dataRepresentation release];
-		// }
-		// 	    return theValue;
-		
-		int theIdentifier = [[aTableColumn identifier] intValue];
-		theRow = [queryResult objectAtIndex:rowIndex];
-		
-		if ( [[theRow objectAtIndex:theIdentifier] isKindOfClass:[NSData class]] ) {
-			NSString *tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:theIdentifier]
-												  encoding:[mySQLConnection encoding]];
-			if (tmp == nil) {
-				tmp = [[NSString alloc] initWithData:[theRow objectAtIndex:theIdentifier]
-											encoding:NSASCIIStringEncoding];
-			}
-			// If field contains binary data show only the first 255 bytes for speed
-			if([tmp length] > 255) {
-				return [[tmp autorelease] substringToIndex:255];
-			} else
-				return [tmp autorelease];
-		}
-		if ( [[theRow objectAtIndex:theIdentifier] isMemberOfClass:[NSNull class]] )
+
+		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(queryResult, rowIndex), [[aTableColumn identifier] intValue]);
+
+		if ( [theValue isKindOfClass:[NSData class]] )
+			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+
+		if ( [theValue isMemberOfClass:[NSNull class]] )
 			return [prefs objectForKey:@"NullValue"];
-			
-		return [theRow objectAtIndex:theIdentifier];
+
+	    return theValue;
+
 	}
 	
 	else if ( aTableView == queryFavoritesView ) {
