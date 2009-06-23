@@ -51,6 +51,7 @@
 	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
+	IBOutlet id multipleLineEditingButton;
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *clearHistoryMenuItem;
