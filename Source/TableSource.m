@@ -717,8 +717,10 @@ fetches the result as an array with a dictionary for each row in it
 		[queryString appendString:@" "];
 	}
 	
-	if (![[theRow objectForKey:@"Extra"] isEqualToString:@""] && 
-		![[theRow objectForKey:@"Extra"] isEqualToString:@"None"] && 
+	if (!(
+			[[theRow objectForKey:@"Extra"] isEqualToString:@""] || 
+			[[theRow objectForKey:@"Extra"] isEqualToString:@"None"]
+		) && 
 		[theRow objectForKey:@"Extra"] ) 
 	{
 		[queryString appendString:[theRow objectForKey:@"Extra"]];
@@ -1118,6 +1120,10 @@ would result in a position change.
 	if ([[originalRow objectForKey:@"Null"] isEqualToString:@"NO"] ) {
 		[queryString appendString:@" NOT NULL"];
 	}
+	if (![[originalRow objectForKey:@"Extra"] isEqualToString:@"None"] ) {
+		[queryString appendString:@" "];
+		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
+	}
 
 	// Add the default value
 	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
@@ -1167,32 +1173,34 @@ would result in a position change.
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-    //check for which table view the selection changed
-    if ([aNotification object] == tableSourceView) {
-        // If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
-        if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow ) {
-            [self saveRowOnDeselect];
-        }
-        [copyFieldButton setEnabled:YES];
-        
-        // check if there is currently a field selected
-        // and change button state accordingly
-        if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
-            [removeFieldButton setEnabled:YES];
-        } else {
-            [removeFieldButton setEnabled:NO];
-            [copyFieldButton setEnabled:NO];
-        }
-    }
-    else if ([aNotification object] == indexView) {
-        // check if there is currently an index selected
-        // and change button state accordingly
-        if ([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
-            [removeIndexButton setEnabled:YES];
-        } else {
-            [removeIndexButton setEnabled:NO];
-        }
-    }
+
+	//check for which table view the selection changed
+	if ([aNotification object] == tableSourceView) {
+		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
+		if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow ) {
+			[self saveRowOnDeselect];
+			isEditingRow = NO;
+		}
+		[copyFieldButton setEnabled:YES];
+
+		// check if there is currently a field selected
+		// and change button state accordingly
+		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+			[removeFieldButton setEnabled:YES];
+		} else {
+			[removeFieldButton setEnabled:NO];
+			[copyFieldButton setEnabled:NO];
+		}
+	}
+	else if ([aNotification object] == indexView) {
+		// check if there is currently an index selected
+		// and change button state accordingly
+		if ([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+			[removeIndexButton setEnabled:YES];
+		} else {
+			[removeIndexButton setEnabled:NO];
+		}
+	}
 }
 
 /*
