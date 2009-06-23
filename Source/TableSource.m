@@ -847,10 +847,13 @@ fetches the result as an array with a dictionary for each row in it
 				[tablesListInstance setContentRequiresReload:YES];
 				[tableDataInstance resetColumnData];
 			} else {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
-						[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
-						[mySQLConnection getLastErrorMessage]]);
+				[self performSelector:@selector(showErrorSheetWithTitle:) 
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+											[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
+											[mySQLConnection getLastErrorMessage]],
+								nil] 
+					afterDelay:0.3];
 			}
 		}
 	} else if ( [contextInfo isEqualToString:@"removeindex"] ) {
@@ -866,14 +869,30 @@ fetches the result as an array with a dictionary for each row in it
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self loadTable:selectedTable];
 			} else {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove index.\nMySQL said: %@", @"message of panel when index cannot be removed"), [mySQLConnection getLastErrorMessage]]);
+				[self performSelector:@selector(showErrorSheetWithTitle:) 
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove index.\nMySQL said: %@", @"message of panel when index cannot be removed"), 
+											[mySQLConnection getLastErrorMessage]],
+								nil] 
+					afterDelay:0.3];
 			}
 		}
 	} else if ( [contextInfo isEqualToString:@"cannotremovefield"]) {
 		;
 	}
 	
+}
+
+/*
+ * Show Error sheet (can be called from inside of a endSheet selector)
+ * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
+ */
+-(void)showErrorSheetWithTitle:(id)error
+{
+	// error := first object is the title , second the message, only one button OK
+	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+			nil, nil, tableWindow, self, nil, nil, nil,
+			[error objectAtIndex:1]);
 }
 
 /**

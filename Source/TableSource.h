@@ -63,6 +63,8 @@
 	NSUserDefaults *prefs;
 }
 
+-(void)showErrorSheetWithTitle:(id)error;
+
 //table methods
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;
