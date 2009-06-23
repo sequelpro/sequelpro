@@ -1838,9 +1838,12 @@
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self reloadTable:self];
 			} else {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\nMySQL said: %@", @"message of panel when field cannot be removed"),
-								   [mySQLConnection getLastErrorMessage]]);
+				[self performSelector:@selector(showErrorSheetWith:)
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+						   [mySQLConnection getLastErrorMessage]],
+						nil]
+					afterDelay:0.3];
 			}
 		}
 	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
@@ -1869,9 +1872,13 @@
 			}
 			
 			if ( errors ) {
-				NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"%d rows have not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors]);
+				[self performSelector:@selector(showErrorSheetWith:)
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+						[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+						nil]
+					afterDelay:0.3];
 			}
-			
+
 			//do deleting (after enumerating)
 			if ( [prefs boolForKey:@"ReloadAfterRemovingRow"] ) {
 				[self reloadTableValues:self];
@@ -1917,6 +1924,19 @@
 		}
 	}
 }
+
+/*
+ * Show Error sheet (can be called from inside of a endSheet selector)
+ * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
+ */
+-(void)showErrorSheetWith:(id)error
+{
+	// error := first object is the title , second the message, only one button OK
+	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+			nil, nil, tableWindow, self, nil, nil, nil,
+			[error objectAtIndex:1]);
+}
+
 
 /*
  * Returns the number of rows in the selected table

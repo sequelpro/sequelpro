@@ -849,7 +849,7 @@ fetches the result as an array with a dictionary for each row in it
 				[tablesListInstance setContentRequiresReload:YES];
 				[tableDataInstance resetColumnData];
 			} else {
-				[self performSelector:@selector(showErrorSheetWithTitle:) 
+				[self performSelector:@selector(showErrorSheetWith:) 
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
 									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
 											[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
@@ -871,7 +871,7 @@ fetches the result as an array with a dictionary for each row in it
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self loadTable:selectedTable];
 			} else {
-				[self performSelector:@selector(showErrorSheetWithTitle:) 
+				[self performSelector:@selector(showErrorSheetWith:) 
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
 									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove index.\nMySQL said: %@", @"message of panel when index cannot be removed"), 
 											[mySQLConnection getLastErrorMessage]],
@@ -889,7 +889,7 @@ fetches the result as an array with a dictionary for each row in it
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
--(void)showErrorSheetWithTitle:(id)error
+-(void)showErrorSheetWith:(id)error
 {
 	// error := first object is the title , second the message, only one button OK
 	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 

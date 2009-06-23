@@ -784,7 +784,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			// error while deleting db
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), [mySQLConnection getLastErrorMessage]]);
+			[self performSelector:@selector(showErrorSheetWith:) 
+				withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+								[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), 
+									[mySQLConnection getLastErrorMessage]],
+							nil] 
+				afterDelay:0.3];
 			return;
 		}
 		
@@ -795,6 +800,18 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[tableDumpInstance setConnection:mySQLConnection];
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/", mySQLVersion, [self name]]];
 	}
+}
+
+/*
+ * Show Error sheet (can be called from inside of a endSheet selector)
+ * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
+ */
+-(void)showErrorSheetWith:(id)error
+{
+	// error := first object is the title , second the message, only one button OK
+	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+			nil, nil, tableWindow, self, nil, nil, nil,
+			[error objectAtIndex:1]);
 }
 
 - (IBAction)connectSheetShowHelp:(id)sender
