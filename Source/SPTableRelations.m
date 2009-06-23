@@ -33,6 +33,7 @@
 
 @interface SPTableRelations (PrivateAPI)
 
+- (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
 
 @end
@@ -170,7 +171,7 @@
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
 	} 
 	else {
-		[self refreshRelations:nil];		
+		[self _refreshRelationDataForcingCacheRefresh:YES];
 	}
 }
 
@@ -214,40 +215,17 @@
 				row = [selectedSet indexLessThanIndex:row];
 			}
 			
-			[self refreshRelations:nil];
+			[self _refreshRelationDataForcingCacheRefresh:YES];
 		}
 	}
 }
 
 /**
- * Refreshes the displayed relations.
+ * Trigger a refresh of the displayed relations via the interface.
  */
 - (IBAction)refreshRelations:(id)sender
 {
-	[relationData removeAllObjects];
-	
-	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
-		
-		[tableDataInstance updateInformationForCurrentTable];
-				
-		NSArray *constraints = [tableDataInstance getConstraints];
-		
-		for (NSDictionary *constraint in constraints) 
-		{
-			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[tablesListInstance tableName], @"table",
-									[constraint objectForKey:@"name"], @"name",
-									[constraint objectForKey:@"columns"], @"columns",
-									[constraint objectForKey:@"ref_table"], @"fk_table",
-									[constraint objectForKey:@"ref_columns"], @"fk_columns",
-									[constraint objectForKey:@"update"], @"on_update",
-									[constraint objectForKey:@"delete"], @"on_delete",
-									nil]];
-			
-		}
-	} 
-	
-	[relationsTableView reloadData];
+	[self _refreshRelationDataForcingCacheRefresh:YES];
 }
 
 /**
@@ -280,7 +258,7 @@
 		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
 	}	
 	
-	[self refreshRelations:self];
+	[self _refreshRelationDataForcingCacheRefresh:NO];
 }
 
 #pragma mark -
@@ -323,6 +301,37 @@
 @end
 
 @implementation SPTableRelations (PrivateAPI)
+
+/**
+ * Refresh the displayed relations, optionally forcing a refresh of the underlying cache.
+ */
+- (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches
+{
+	[relationData removeAllObjects];
+	
+	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+		
+		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
+				
+		NSArray *constraints = [tableDataInstance getConstraints];
+		
+		for (NSDictionary *constraint in constraints) 
+		{
+			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									[tablesListInstance tableName], @"table",
+									[constraint objectForKey:@"name"], @"name",
+									[constraint objectForKey:@"columns"], @"columns",
+									[constraint objectForKey:@"ref_table"], @"fk_table",
+									[constraint objectForKey:@"ref_columns"], @"fk_columns",
+									[constraint objectForKey:@"update"], @"on_update",
+									[constraint objectForKey:@"delete"], @"on_delete",
+									nil]];
+			
+		}
+	} 
+	
+	[relationsTableView reloadData];
+}
 
 /**
  * Updates the available table columns that the reference is pointing to. Available columns are those that are
