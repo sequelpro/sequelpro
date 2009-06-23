@@ -92,6 +92,7 @@
 	NSMutableArray *fullResult;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
+	
 	BOOL tempAlertWasShown; // a temp value for nightly builts
 		
 }

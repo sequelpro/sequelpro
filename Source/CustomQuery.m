@@ -1073,6 +1073,55 @@
 	return usedQuery;
 }
 
+#pragma mark
+#pragma mark Field Editing
+
+/*
+ * Collect all columns for a given 'tableForColumn' table and
+ * return a WHERE clause for identifying the field in quesyion.
+ */
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn
+{
+
+	id field;
+
+	//Look for all columns which are coming from "tableForColumn"
+	NSMutableArray *columnsForFieldTableName = [NSMutableArray array];
+	for(field in cqColumnDefinition) {
+		if([[field objectForKey:@"org_table"] isEqualToString:tableForColumn])
+			[columnsForFieldTableName addObject:field];
+	}
+
+	// Try to identify the field bijectively
+	NSMutableString *fieldIDQueryString = [NSMutableString string];
+	[fieldIDQueryString setString:@"WHERE ("];
+	
+	// Build WHERE clause
+	for(field in columnsForFieldTableName) {
+		id aValue = [[fullResult objectAtIndex:rowIndex] objectForKey:[field objectForKey:@"name"]];
+		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
+			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
+		} else {
+			[fieldIDQueryString appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
+				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
+				[fieldIDQueryString appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
+				[fieldIDQueryString appendFormat:@"%@", [aValue description]];
+			else
+				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+		}
+		
+		[fieldIDQueryString appendString:@" AND "];
+	}
+	// Remove last " AND "
+	if([fieldIDQueryString length]>12)
+		[fieldIDQueryString replaceCharactersInRange:NSMakeRange([fieldIDQueryString length]-5,5) withString:@")"];
+	
+	return fieldIDQueryString;
+}
+
 
 #pragma mark -
 #pragma mark TableView datasource methods
@@ -1186,6 +1235,8 @@
 	}
 	else if ( aTableView == customQueryView ) {
 
+		// Field editing
+
 		int columnIdentifier = [[aTableColumn identifier] intValue];
 		NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:columnIdentifier];
 
@@ -1203,8 +1254,8 @@
 
 		NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
 		
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM `%@` %@", tableForColumn, fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
-
+		// Check if the IDstring identifies the current field bijectively
+		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 		if(numberOfPossibleUpdateRows == 1) {
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 			
@@ -1215,11 +1266,12 @@
 				newObject = [NSString stringWithFormat:@"'%@'", [anObject description]];
 			
 			[mySQLConnection queryString:
-				[NSString stringWithFormat:@"UPDATE `%@` SET `%@`= %@ %@ LIMIT 1", 
-					tableForColumn, columnName, newObject, fieldIDQueryString]];
+				[NSString stringWithFormat:@"UPDATE %@ SET %@=%@ %@ LIMIT 1", 
+					[tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
+				// Check for errors while UPDATE
 				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
@@ -1228,6 +1280,7 @@
 				}
 
 
+			// This shouldn't happen – for safety reasons
 			if ( ![mySQLConnection affectedRows] ) {
 				if ( [prefs boolForKey:@"ShowNoAffectedRowsError"] ) {
 					NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -1237,13 +1290,10 @@
 				}
 				return;
 			}
-			// if ( anObject ) {
-			// 	[[fullResult objectAtIndex:rowIndex] setObject:anObject forKey:columnName];
-			// } else {
-			// 	[[fullResult objectAtIndex:rowIndex] setObject:@"" forKey:columnName];
-			// }
-			// [customQueryView reloadData];
+
+			// On success reload table data by executing the last query
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery]];
+			
 		} else {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%d match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
@@ -1254,45 +1304,6 @@
 	}
 }
 
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn
-{
-
-	id field;
-
-	//Look for all columns which are coming from "tableForColumn"
-	NSMutableArray *columnsForFieldTableName = [NSMutableArray array];
-	for(field in cqColumnDefinition) {
-		if([[field objectForKey:@"org_table"] isEqualToString:tableForColumn])
-			[columnsForFieldTableName addObject:field];
-	}
-
-	// Try to identify the field bijectively
-	NSMutableString *fieldIDQueryString = [NSMutableString string];
-	[fieldIDQueryString setString:@"WHERE ("];
-	
-	for(field in columnsForFieldTableName) {
-		id aValue = [[fullResult objectAtIndex:rowIndex] objectForKey:[field objectForKey:@"name"]];
-		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
-			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
-		} else {
-			[fieldIDQueryString appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
-			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
-				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-				[fieldIDQueryString appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
-				[fieldIDQueryString appendFormat:@"%@", [aValue description]];
-			else
-				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
-		}
-		
-		[fieldIDQueryString appendString:@" AND "];
-	}
-	if([fieldIDQueryString length]>12)
-		[fieldIDQueryString replaceCharactersInRange:NSMakeRange([fieldIDQueryString length]-5,5) withString:@")"];
-	
-	return fieldIDQueryString;
-}
 
 #pragma mark -
 #pragma mark TableView Drag & Drop datasource methods
@@ -1391,13 +1402,15 @@
 #pragma mark TableView delegate methods
 
 /*
- * Opens sheet with value when double clicking on a field
+ * Double-click action on a field
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 
 	// Check if the field can identified bijectively
 	if ( aTableView == customQueryView ) {
+
+		// TODO: only for testing
 		if([[NSApp currentEvent] modifierFlags] & NSCommandKeyMask) {
 			if(!tempAlertWasShown) {
 				NSRunCriticalAlertPanel (
@@ -1412,6 +1425,7 @@
 			int columnIdentifier = [[aTableColumn identifier] intValue];
 			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:columnIdentifier];
 
+			// Check if current field is a blob
 			if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
 				|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
 				[errorText setStringValue:@"Editing blob data not yet supported."];
@@ -1422,6 +1436,8 @@
 			// Resolve the original table name for current column if AS was used
 			NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 			
+			// No table name found indicates that the field's column contains data from more than one table as for UNION
+			// or the field data are not bound to any table as in SELECT 1
 			if(!tableForColumn || ![tableForColumn length]) {
 				[errorText setStringValue:[NSString stringWithFormat:@"Couldn't identify field origin unambiguously. The column '%@' contains data from more or less than one table.", [columnDefinition objectForKey:@"name"]]];
 				NSBeep();
@@ -1430,7 +1446,8 @@
 		
 			NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
 		
-			int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM `%@` %@", tableForColumn, fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+			// Actual check whether field can be identified bijectively
+			int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 			if (numberOfPossibleUpdateRows == 1)
 				return YES;
 			else {
@@ -1438,7 +1455,9 @@
 				NSBeep();
 				return NO;
 			}
-		} else {
+		} 
+		// TODO: keep old behaviour for testing
+		else {
 			NSArray *theRow;
 			NSString *theValue;
 			NSNumber *theIdentifier = [aTableColumn identifier];
@@ -2174,6 +2193,7 @@
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
 		
+		// init tableView's data source
 		fullResult = [[NSMutableArray alloc] init];
 
 	}

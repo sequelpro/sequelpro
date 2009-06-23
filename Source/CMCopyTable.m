@@ -24,6 +24,7 @@
 
 #import "CMCopyTable.h"
 #import "SPArrayAdditions.h"
+#import "SPStringAdditions.h"
 #import "CMMCPConnection.h"
 #import "TableContent.h"
 #import "CustomQuery.h"
@@ -208,8 +209,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
 	}
 
-	[result appendString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@)\nVALUES\n", 
-		(selectedTable == nil)?@"<table>":selectedTable, [tbHeader componentsJoinedAndBacktickQuoted]]];
+	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
+		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 
 	//this is really deprecated in 10.3, but the new method is really weird
 	NSEnumerator *enumerator = [self selectedRowEnumerator]; 
@@ -249,8 +250,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
-								[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", 
-									selectedTable, [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
+								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
 							if([[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
@@ -269,8 +270,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
-								[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", 
-									selectedTable, [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
+								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
 							if([[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
@@ -302,8 +303,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			// Add a new INSERT starter command every ~250k of data.
 			if ( valueLength > 250000 ) {
 				[result appendString:value];
-				[result appendString:[NSString stringWithFormat:@");\n\nINSERT INTO `%@` (%@)\nVALUES\n", 
-					(selectedTable == nil)?@"<table>":selectedTable, [tbHeader componentsJoinedAndBacktickQuoted]]];
+				[result appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n", 
+					[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 				[value setString:@""];
 				valueLength = 0;
 			} else {
