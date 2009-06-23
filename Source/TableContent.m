@@ -1645,7 +1645,7 @@
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
 	NSMutableString *argument = [NSMutableString string];
-	NSString *columnType;
+	// NSString *columnType;
 	NSArray *columnNames;
 	int i,j;
 	
@@ -1701,11 +1701,12 @@
 		}
 
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
-			NSString *tmpString = [[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]];
-			if (tmpString == nil)
-				tmpString = [[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding];
-			[value setString:[NSString stringWithString:tmpString]];
-			[tmpString release];
+			// NSString *tmpString = [[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]];
+			// if (tmpString == nil)
+			// 	tmpString = [[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding];
+			// [value setString:[NSString stringWithString:tmpString]];
+			// [tmpString release];
+			[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 		} else {
 			[value setString:[tempValue description]];
 		}
@@ -1714,29 +1715,30 @@
 			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
 		} else {
 
-			// Escape special characters (in WHERE statement!)
-			for ( j = 0 ; j < [value length] ; j++ ) {
-				if ( [value characterAtIndex:j] == '\\' ) {
-					[value insertString:@"\\" atIndex:j];
-					j++;
+			if (! [tempValue isKindOfClass:[NSData class]] ) {
+				// Escape special characters (in WHERE statement!)
+				for ( j = 0 ; j < [value length] ; j++ ) {
+					if ( [value characterAtIndex:j] == '\\' ) {
+						[value insertString:@"\\" atIndex:j];
+						j++;
+					}
 				}
-			}
-			[value setString:[mySQLConnection prepareString:value]];
-			for ( j = 0 ; j < [value length] ; j++ ) {
-				if ( [value characterAtIndex:j] == '%' ||
-					[value characterAtIndex:j] == '_' ) {
-					[value insertString:@"\\" atIndex:j];
-					j++;
+				[value setString:[mySQLConnection prepareString:value]];
+				for ( j = 0 ; j < [value length] ; j++ ) {
+					if ( [value characterAtIndex:j] == '%' ||
+						[value characterAtIndex:j] == '_' ) {
+						[value insertString:@"\\" atIndex:j];
+						j++;
+					}
 				}
+				[value setString:[NSString stringWithFormat:@"'%@'", value]];
 			}
-			[value setString:[NSString stringWithFormat:@"'%@'", value]];
-
-			columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
-			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
+			// columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
+			// if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
 				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
-			} else {
-				[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
-			}
+			// } else {
+			// 	[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
+			// }
 		}
 	}
 	if ( setLimit )
@@ -1960,7 +1962,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		if (dataRepresentation == nil)
 			dataRepresentation = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		if (dataRepresentation == nil) theValue = @"- cannot be displayed -";
-		else theValue = [NSString stringWithString:dataRepresentation];
+		else {
+			if([dataRepresentation length]>255)
+				theValue = [[NSString stringWithString:dataRepresentation] substringToIndex:255];
+			else
+				theValue = [NSString stringWithString:dataRepresentation];
+		}
 		if (dataRepresentation) [dataRepresentation release];
 	}
     return theValue;

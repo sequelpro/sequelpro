@@ -29,6 +29,7 @@
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPDataCellFormatter.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "RegexKitLite.h"
@@ -668,6 +669,7 @@
 		[theCol setResizingMask:NSTableColumnUserResizingMask];
 		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		[dataCell setEditable:YES];
+		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
