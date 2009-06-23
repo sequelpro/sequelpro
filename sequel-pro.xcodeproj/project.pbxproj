@@ -130,6 +130,8 @@
 		B58A32480F6509D60003C243 /* button_duplicate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32410F6509D60003C243 /* button_duplicate.tiff */; };
 		B58A32490F6509D60003C243 /* button_info_pane_hide.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32420F6509D60003C243 /* button_info_pane_hide.tiff */; };
 		B58A324A0F6509D60003C243 /* button_info_pane_show.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32430F6509D60003C243 /* button_info_pane_show.tiff */; };
+		B59F5DFA0FF0C7020070AE8A /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */; };
+		B59F5E2B0FF0C7070070AE8A /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */; };
 		B5A601730F74930F00EE5FBA /* button_remove.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601720F74930F00EE5FBA /* button_remove.tiff */; };
 		B5A601870F749C1600EE5FBA /* dimple.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601860F749C1600EE5FBA /* dimple.tiff */; };
 		B5A601970F74C1CE00EE5FBA /* button_refresh.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */; };
@@ -178,6 +180,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				B59F5E2B0FF0C7070070AE8A /* BWToolkitFramework.framework in CopyFiles */,
 				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
 				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
 				4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */,
@@ -383,6 +386,7 @@
 		B58A32410F6509D60003C243 /* button_duplicate.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate.tiff; sourceTree = "<group>"; };
 		B58A32420F6509D60003C243 /* button_info_pane_hide.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_info_pane_hide.tiff; sourceTree = "<group>"; };
 		B58A32430F6509D60003C243 /* button_info_pane_show.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_info_pane_show.tiff; sourceTree = "<group>"; };
+		B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BWToolkitFramework.framework; path = Frameworks/BWToolkitFramework.framework; sourceTree = "<group>"; };
 		B5A601720F74930F00EE5FBA /* button_remove.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_remove.tiff; sourceTree = "<group>"; };
 		B5A601860F749C1600EE5FBA /* dimple.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = dimple.tiff; sourceTree = "<group>"; };
 		B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_refresh.tiff; sourceTree = "<group>"; };
@@ -440,6 +444,7 @@
 				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
+				B59F5DFA0FF0C7020070AE8A /* BWToolkitFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -451,6 +456,7 @@
 			children = (
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
+				B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */,
 				4DECC3320EC2A170008D359E /* Sparkle.framework */,
 				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
 				4DECC3340EC2A170008D359E /* Growl.framework */,
@@ -1374,6 +1380,7 @@
 					"\"$(SRCROOT)/Frameworks\"",
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
+					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1459,6 +1466,7 @@
 					"\"$(SRCROOT)/Frameworks\"",
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
+					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -1481,6 +1489,7 @@
 					"\"$(SRCROOT)/Frameworks\"",
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
+					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

@@ -2437,59 +2437,59 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 /**
  * defines max position of splitView
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-{
-	if (sender == contentViewSplitter) {
-		return 300;
-	} else {
-		// 
-		return proposedMax;//([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
-	}
-}
+//- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+//{
+//	if (sender == contentViewSplitter) {
+//		return 300;
+//	} else {
+//		// 
+//		return proposedMax;//([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
+//	}
+//}
 
 /**
  * defines min position of splitView
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-{
-	if (sender == tableListSplitter) {
-		return [sender frame].size.height - [sender dividerThickness] - 145;
-		//return [sender frame].size.height - [sender dividerThickness] - ([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
-	} else {
-		return 160;
-	}
-}
+//- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+//{
+//	if (sender == tableListSplitter) {
+//		return [sender frame].size.height - [sender dividerThickness] - 145;
+//		//return [sender frame].size.height - [sender dividerThickness] - ([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
+//	} else {
+//		return 160;
+//	}
+//}
 
--(void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize
-{
-	[sender adjustSubviews];
-	
-	if (sender == tableListSplitter && 
-		![tableListSplitter isSubviewCollapsed:[[sender subviews] objectAtIndex:1]]) {
-		
-		CGFloat dividerThickness = [sender dividerThickness];
-		NSRect topRect = [[[sender subviews] objectAtIndex:0] frame];
-		NSRect bottomRect = [[[sender subviews] objectAtIndex:1] frame];
-		NSRect newFrame = [sender frame];
-		
-		topRect.size.height = newFrame.size.height - 145 - dividerThickness;
-		topRect.size.width = newFrame.size.width;
-		topRect.origin = NSMakePoint(0, 0);
-		
-		bottomRect.size.height = newFrame.size.height - topRect.size.height - dividerThickness;
-		bottomRect.size.width = newFrame.size.width;
-		bottomRect.origin.y = topRect.size.height + dividerThickness;
-		
-		[[[sender subviews] objectAtIndex:0] setFrame:topRect];
-		[[[sender subviews] objectAtIndex:1] setFrame:bottomRect];
-	}
-}
+//-(void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize
+//{
+//	[sender adjustSubviews];
+//	
+//	if (sender == tableListSplitter && 
+//		![tableListSplitter isSubviewCollapsed:[[sender subviews] objectAtIndex:1]]) {
+//		
+//		CGFloat dividerThickness = [sender dividerThickness];
+//		NSRect topRect = [[[sender subviews] objectAtIndex:0] frame];
+//		NSRect bottomRect = [[[sender subviews] objectAtIndex:1] frame];
+//		NSRect newFrame = [sender frame];
+//		
+//		topRect.size.height = newFrame.size.height - 145 - dividerThickness;
+//		topRect.size.width = newFrame.size.width;
+//		topRect.origin = NSMakePoint(0, 0);
+//		
+//		bottomRect.size.height = newFrame.size.height - topRect.size.height - dividerThickness;
+//		bottomRect.size.width = newFrame.size.width;
+//		bottomRect.origin.y = topRect.size.height + dividerThickness;
+//		
+//		[[[sender subviews] objectAtIndex:0] setFrame:topRect];
+//		[[[sender subviews] objectAtIndex:1] setFrame:bottomRect];
+//	}
+//}
 
 
-- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex
-{
-	return NO;//splitView == tableListSplitter;
-}
+//- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex
+//{
+//	return splitView == tableListSplitter;
+//}
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
