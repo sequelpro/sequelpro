@@ -26,10 +26,9 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
+
 #import "CMCopyTable.h"
 #import "CMTextView.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "RegexKitLite.h"
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
@@ -75,7 +74,7 @@
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
 	
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
 	NSRange currentQueryRange;
@@ -134,7 +133,7 @@
 
 
 // Other
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;

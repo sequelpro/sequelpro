@@ -188,7 +188,6 @@ static NSArray    *MCPRecognisedInternalType;
 		[[NSNotificationCenter defaultCenter] postNotificationName:MCPClassDescriptionChangedNotification object:classDescription];
 		[[NSNotificationCenter defaultCenter] postNotificationName:MCPAttributeChangedNotification object:self];
 	}
-#warning Should be coupled with the internal type, and the external type
 }
 
 - (void) setInternalType:(NSString *) iInternalType
@@ -208,7 +207,6 @@ static NSArray    *MCPRecognisedInternalType;
 		[[NSNotificationCenter defaultCenter] postNotificationName:MCPClassDescriptionChangedNotification object:classDescription];
 		[[NSNotificationCenter defaultCenter] postNotificationName:MCPAttributeChangedNotification object:self];
 	}
-#warning Should be coupled with the value class, and the external type
 }
 
 - (void) setExternalType:(NSString *) iExternalType
@@ -220,7 +218,6 @@ static NSArray    *MCPRecognisedInternalType;
 		[[NSNotificationCenter defaultCenter] postNotificationName:MCPClassDescriptionChangedNotification object:classDescription];
 		[[NSNotificationCenter defaultCenter] postNotificationName:MCPAttributeChangedNotification object:self];
 	}
-#warning Should be coupled with the internal type, and the value class
 }
 
 - (void) setExternalName:(NSString *) iExternalName

@@ -25,8 +25,6 @@
 
 #import "SPTableInfo.h"
 #import "ImageAndTextCell.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPTableData.h"

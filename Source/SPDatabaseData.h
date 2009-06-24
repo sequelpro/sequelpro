@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class CMMCPConnection;
+@class MCPConnection;
 
 @interface SPDatabaseData : NSObject 
 {
@@ -36,10 +36,10 @@
 	NSMutableArray *storageEngines;
 	NSMutableArray *characterSetEncodings;
 	
-	CMMCPConnection *connection;
+	MCPConnection *connection;
 }
 
-@property (readwrite, assign) CMMCPConnection *connection;
+@property (readwrite, assign) MCPConnection *connection;
 
 - (void)resetAllData;
 

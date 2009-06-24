@@ -30,8 +30,6 @@
 #import "TablesList.h"
 #import "CMImageView.h"
 #import "CMCopyTable.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 #import "SPQueryConsole.h"
@@ -83,7 +81,7 @@
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
 	NSString	*query;
-	CMMCPResult	*queryResult;
+	MCPResult	*queryResult;
 	BOOL		preserveCurrentView = [aTable isEqualToString:selectedTable];
 	NSString	*preservedFilterField = nil, *preservedFilterComparison, *preservedFilterValue;
 
@@ -378,7 +376,7 @@
 - (IBAction)reloadTableValues:(id)sender
 {
 	NSString *queryString;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -441,7 +439,7 @@
  */
 - (IBAction)filterTable:(id)sender
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	int tag = [[compareField selectedItem] tag];
 	NSString *compareOperator = @"";
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
@@ -740,7 +738,7 @@
  */
 {
 	NSMutableDictionary *tempRow;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	NSDictionary *row, *dbDataRow = nil;
 	int i;
 	
@@ -903,7 +901,7 @@
 		} else {
 			[[editData description] writeToFile:fileName
 									 atomically:YES
-									   encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+									   encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 										  error:NULL];
 		}
 	}
@@ -927,7 +925,7 @@
 
 	// Process the provided image
 	editData = [[NSData alloc] initWithData:data];
-	NSString *contents = [[NSString alloc] initWithData:data encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+	NSString *contents = [[NSString alloc] initWithData:data encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
 
 	// Set the string contents and hex representation
 	[editTextView setString:contents];
@@ -1096,7 +1094,7 @@
 
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 /*
  sets the connection (received from TableDocument) and makes things that have to be done only once 
  */
@@ -1215,7 +1213,7 @@
 /*
  * Fetches the result as an array with a dictionary for each row in it
  */
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	NSArray *columns;
 	NSMutableArray *tempResult = [NSMutableArray array];
@@ -1266,7 +1264,7 @@
 	NSArray *theColumns, *columnNames;
 	NSMutableString *queryString;
 	NSString *query;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	id rowObject;
 	NSMutableString *rowValue = [NSMutableString string];
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
@@ -1455,7 +1453,7 @@
  */
 - (NSString *)argumentForRow:(int)row
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	NSDictionary *theRow;
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
@@ -1618,7 +1616,7 @@
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempResult = [NSMutableArray array];
 	NSString *queryString, *wherePart;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	int i, errors;
 	
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
@@ -1863,7 +1861,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
  */
 {
 	NSString *queryString;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
 		return;
@@ -2019,7 +2017,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	id key, theValue;
-	CMMCPResult *tempResult;
+	MCPResult *tempResult;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
 	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow ) {

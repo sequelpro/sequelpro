@@ -23,12 +23,11 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import "NoodleLineNumberView.h"
 #import <MCPKit/MCPKit.h>
+
+#import "NoodleLineNumberView.h"
 #import "CMCopyTable.h"
 #import "CMTextView.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
@@ -47,7 +46,7 @@
 	
 	NSUserDefaults *prefs;
 
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	int mySQLmajorVersion;
 
 }
@@ -81,7 +80,7 @@
 - (unsigned int) characterIndexOfPoint:(NSPoint)aPoint;
 - (void) makeTextSizeLarger;
 - (void) makeTextSizeSmaller;
-- (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion;
+- (void) setConnection:(MCPConnection *)theConnection withVersion:(int)majorVersion;
 - (void) doCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
 - (void) selectCurrentQuery;

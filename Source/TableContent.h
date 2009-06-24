@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMMCPConnection, CMMCPResult, CMCopyTable;
+@class CMCopyTable;
 
 @interface TableContent : NSObject 
 {	
@@ -57,7 +57,7 @@
 	IBOutlet id limitRowsStepper;
 	IBOutlet id limitRowsText;
 	
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	
 	id editData;
 	NSString *selectedTable, *usedQuery;
@@ -98,10 +98,10 @@
 - (NSArray *)currentResult;
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (IBAction)setCompareTypes:(id)sender;
 - (IBAction)stepLimitRows:(id)sender;
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(int)row;
 - (BOOL)tableContainsBlobOrTextColumns;

@@ -26,12 +26,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 
-
-@interface TableDump : NSObject {
-
+@interface TableDump : NSObject 
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
@@ -93,7 +90,7 @@
     IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
 
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 
 	NSMutableArray *tables;
 	NSArray *importArray;
@@ -133,12 +130,12 @@
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
 - (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle;
-- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
+- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(MCPResult *)queryResult
 	toFileHandle:(NSFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
 	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus silently:(BOOL)silently;
-- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult
+- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(MCPResult *)queryResult
 	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
@@ -151,7 +148,7 @@
 - (IBAction)switchInput:(id)sender;
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 
 // Import/export delegate notifications
 - (void)panelSelectionDidChange:(id)sender;

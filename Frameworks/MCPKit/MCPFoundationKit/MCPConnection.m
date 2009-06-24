@@ -31,50 +31,758 @@
 #import "MCPNumber.h"
 #import "MCPNull.h"
 
+#include <unistd.h>
+#include <setjmp.h>
+
+static jmp_buf pingTimeoutJumpLocation;
+static void forcePingTimeout(int signalNumber);
+
 #define LOG_ALL_QUERIES 1
 
-const unsigned int	kMCPConnectionDefaultOption = CLIENT_COMPRESS;
-const char           *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
-const unsigned int	kMCPConnection_Not_Inited = 1000;
-const unsigned int	kLengthOfTruncationForLog = 100;
+const unsigned int kMCPConnectionDefaultOption = CLIENT_COMPRESS;
+const char         *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
+const unsigned int kMCPConnection_Not_Inited = 1000;
+const unsigned int kLengthOfTruncationForLog = 100;
 
-static BOOL				sTruncateLongFieldInLogs = YES;
+static BOOL	sTruncateLongFieldInLogs = YES;
 
 #if LOG_ALL_QUERIES == 1
-static BOOL				sDebugQueries = NO;
+static BOOL	sDebugQueries = NO;
 #endif
 
-// For debugging:
-//static FILE		*MCPConnectionLogFile;
+// Debug
+// static FILE *MCPConnectionLogFile;
+
+@interface MCPConnection (PrivateAPI)
+
+- (void)_getServerVersionString;
+
+- (const char *)_cStringFromString:(NSString *)theString;
+- (const char *)_cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding;
+- (NSString *)_stringWithCString:(const char *)theCString;
+- (NSString *)_stringWithText:(NSData *)theTextData;
+
+@end
 
 @implementation MCPConnection
-/*
- This class is used to keep a connection with a MySQL server, it correspond to the MYSQL structure of the C API, or the database handle of the PERL DBI/DBD interface.
- 
- You have to start any work on a MySQL server by getting a working MCPConnection object.
- 
- Most likely you will use this kind of code:
- 
- !{
-    MCPConnection	*theConnec = [MCPConnection alloc];
-    MCPResult	*theRes;
-    
-    theConnec = [theConnec initToHost:@"albert.com" withLogin:@"toto" password:@"albert" usingPort:0];
-    [theConnec selectDB:@"db1"];
-    theRes = [theConnec queryString:@"select * from table1"];
-    ...
- }
- 
-#{NOTE} Failing to properly release your MCPConnection(s) object might cause a MySQL crash!!! (recovered if the
-																															  server was started using mysqld_safe).
- 
- "*/
 
-+ (NSDictionary *) getMySQLLocales
-	/*"
-	Gets a proper Locale dictionary to use formater to parse strings from MySQL.
-	 For example strings representing dates should give a proper Locales for use with methods such as NSDate::dateWithNaturalLanguageString: locales:
-	 "*/
+@synthesize delegate;
+
+/**
+ * Initialize the class version to 3.0.1
+ */
++ (void)initialize
+{
+	if (self = [MCPConnection class]) {
+		[self setVersion:030001]; // Ma.Mi.Re -> MaMiRe
+#if LOG_ALL_QUERIES == 1
+		[self setLogQueries:NO];
+#endif
+	}
+}
+
+#pragma mark -
+#pragma mark Initialisation
+
+/**
+ * Initialise a MySQLConnection without making a connection, most likely useless, except with !{setConnectionOption:withArgument:}.
+ *
+ * Because this method is not making a connection to any MySQL server, it can not know already what the DB server encoding will be,
+ * hence the encoding is set to some default (at present this is NSISOLatin1StringEncoding). Obviously this is reset to a proper
+ * value as soon as a DB connection is performed.
+ */
+- (id)init
+{
+	if ((self = [super init])) {
+		mConnection = mysql_init(NULL);
+		mConnected = NO;
+		
+		if (mConnection ==  NULL) {
+			[self autorelease];
+			
+			return nil;
+		}
+		
+		mEncoding = NSISOLatin1StringEncoding;
+		mConnectionFlags = kMCPConnectionDefaultOption;
+		
+		parentWindow = nil;
+		connectionHost = nil;
+		connectionLogin = nil;
+		connectionSocket = nil;
+		connectionPassword = nil;
+		connectionKeychainName = nil;
+		connectionKeychainAccount = nil;
+		keepAliveTimer = nil;
+		connectionTunnel = nil;
+		connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
+		if (!connectionTimeout) connectionTimeout = 10;
+		useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
+		keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
+		if (!keepAliveInterval) keepAliveInterval = 0;
+		lastKeepAliveSuccess = nil;
+		connectionThreadId = 0;
+		maxAllowedPacketSize = -1;
+		lastQueryExecutionTime = 0;
+		lastQueryErrorId = 0;
+		lastQueryErrorMessage = nil;
+		lastQueryAffectedRows = 0;
+		
+		if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
+			NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+		}
+		
+		willQueryStringSEL = @selector(willQueryString:);
+		stopKeepAliveTimerSEL = @selector(stopKeepAliveTimer);
+		startKeepAliveTimerResettingStateSEL = @selector(startKeepAliveTimerResettingState:);
+		cStringSEL = @selector(cStringFromString:);
+		
+		cStringPtr = [self methodForSelector:cStringSEL];
+		stopKeepAliveTimerPtr = [self methodForSelector:stopKeepAliveTimerSEL];
+		startKeepAliveTimerResettingStatePtr = [self methodForSelector:startKeepAliveTimerResettingStateSEL];
+	}
+	
+	return self;
+}
+
+/**
+ * Inialize connection using the supplied host details.
+ */
+- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port
+{
+	if ((self = [self init])) {
+		connectionHost = [[NSString alloc] initWithString:host];
+		connectionLogin = [[NSString alloc] initWithString:login];
+		connectionPort = port;
+		connectionSocket = nil;
+	}
+	
+	return self;
+}
+
+/**
+ * Inialize connection using the supplied socket details.
+ */
+- (id)initToSocket:(NSString *)socket withLogin:(NSString *)login
+{
+	if ((self = [self init])) {
+		connectionHost = nil;
+		connectionLogin = [[NSString alloc] initWithString:login];
+		connectionSocket = [[NSString alloc] initWithString:socket];
+		connectionPort = 0;
+	}
+	
+	return self;
+}
+
+#pragma mark -
+#pragma mark Connection details
+
+/**
+ * Sets or updates the connection port - for use with tunnels.
+ */
+- (BOOL)setPort:(int)thePort
+{
+	connectionPort = thePort;
+	
+	return YES;
+}
+
+/**
+ * Sets the password to be stored locally.
+ * Providing a keychain name is much more secure.
+ */
+- (BOOL)setPassword:(NSString *)thePassword
+{
+	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
+	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
+	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
+	
+	connectionPassword = [[NSString alloc] initWithString:thePassword];
+	
+	return YES;
+}
+
+/**
+ * Sets the keychain name to use to retrieve the password.  This is the recommended and
+ * secure way of supplying a password to the SSH tunnel.
+ */
+- (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
+{
+	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
+	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
+	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
+	
+	connectionKeychainName = [[NSString alloc] initWithString:theName];
+	connectionKeychainAccount = [[NSString alloc] initWithString:theAccount];
+	
+	return YES;
+}
+
+#pragma mark -
+#pragma mark SSH
+
+/*
+ * Set a SSH tunnel object to connect through.  This object will be retained locally,
+ * and will be automatically connected/connection checked/reconnected/disconnected
+ * together with the main connection.
+ */
+- (BOOL)setSSHTunnel:(SPSSHTunnel *)theTunnel
+{
+	connectionTunnel = theTunnel;
+	[connectionTunnel retain];
+	
+	currentSSHTunnelState = [connectionTunnel state];
+	[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
+	
+	return YES;
+}
+
+/**
+ * Handle any state changes in the associated SSH Tunnel.
+ */
+- (void)sshTunnelStateChange:(SPSSHTunnel *)theTunnel
+{
+	int newState = [theTunnel state];
+	
+	// Restart the tunnel if it dies
+	if (mConnected && newState == SPSSH_STATE_IDLE && currentSSHTunnelState == SPSSH_STATE_CONNECTED) {
+		currentSSHTunnelState = newState;
+		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
+		[self reconnect];
+		
+		return;
+	}
+	
+	currentSSHTunnelState = newState;
+}
+
+#pragma mark -
+#pragma mark Connection
+
+/**
+ * Add a new connection method, intended for use with the init methods above.
+ * Uses the stored details to instantiate a connection to the specified server,
+ * including custom timeouts - used for pings, not for long-running commands.
+ */
+- (BOOL)connect
+{
+	const char	*theLogin = [self _cStringFromString:connectionLogin];
+	const char	*theHost;
+	const char	*thePass;
+	const char	*theSocket;
+	void		*theRet;
+	
+	// Ensure that a password method has been provided
+	if (connectionKeychainName == nil && connectionPassword == nil) return NO;
+	
+	// Disconnect if a connection is already active
+	if (mConnected) {
+		[self disconnect];
+		mConnection = mysql_init(NULL);
+		if (mConnection == NULL) return NO;
+	}
+
+	// Ensure the custom timeout option is set
+	if (mConnection != NULL) {
+		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+	}
+	
+	// Set the host as appropriate
+	if (!connectionHost || ![connectionHost length]) {
+		theHost = NULL;
+		
+		
+	} else {
+		theHost = [self _cStringFromString:connectionHost];
+	}
+	
+	// Use the default socket if none is set, or set appropriately
+	if (connectionSocket == nil || ![connectionSocket length]) {
+		theSocket = kMCPConnectionDefaultSocket;
+	} else {
+		theSocket = [self _cStringFromString:connectionSocket];
+	}
+	
+	// Select the password from the provided method
+	if (connectionKeychainName) {
+		KeyChain *keychain;
+		keychain = [[KeyChain alloc] init];
+		thePass = [self _cStringFromString:[keychain getPasswordForName:connectionKeychainName account:connectionKeychainAccount]];
+		[keychain release];
+	} else {
+		thePass = [self _cStringFromString:connectionPassword];
+	}
+	
+	// Connect
+	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+	thePass = NULL;
+	if (theRet != mConnection) {
+		[self setLastErrorMessage:nil];
+		return mConnected = NO;
+	}
+	
+	mConnected = YES;
+	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	connectionThreadId = mConnection->thread_id;
+	[self timeZone]; // Getting the timezone used by the server.
+	
+	isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
+	
+	if (![self fetchMaxAllowedPacket]) {
+		[self setLastErrorMessage:nil];
+		return mConnected = NO;
+	}
+	
+	// Register notification if a query was sent to the MySQL connection
+	// to be able to identify the sender of that query
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed" object:nil];
+	
+	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	
+	// Init 'consoleLoggingEnabled'
+	consoleLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"];
+	
+	// Start the keepalive timer
+	[self startKeepAliveTimerResettingState:YES];
+	
+	return mConnected;
+}
+
+
+/**
+ * Disconnect the current connection.
+ */
+- (void)disconnect
+{
+	if (mConnected) {
+		mysql_close(mConnection);
+		mConnection = NULL;
+	}
+	
+	mConnected = NO;
+	
+	if (connectionTunnel) {
+		[connectionTunnel disconnect];
+		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+	}
+	
+	if (serverVersionString != nil) {
+		[serverVersionString release];
+		serverVersionString = nil;
+	}
+	
+	[self stopKeepAliveTimer];
+}
+
+/**
+ * Reconnect to the currently "active" - but possibly disconnected - connection, using the
+ * stored details.
+ * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
+ * on the status, not returning control until either a connection has been established or
+ * the connection and document have been closed.
+ */
+- (BOOL)reconnect
+{
+	NSString *currentEncoding = nil;
+	BOOL currentEncodingUsesLatin1Transport = NO;
+	NSString *currentDatabase = nil;
+	
+	// Store the current database and encoding so they can be re-set if reconnection was successful
+	if (delegate && [delegate valueForKey:@"selectedDatabase"]) {
+		currentDatabase = [NSString stringWithString:[delegate valueForKey:@"selectedDatabase"]];
+	}
+	if (delegate && [delegate valueForKey:@"_encoding"]) {
+		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	}
+	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1];
+	}
+	
+	// Close the connection if it exists.
+	if (mConnected) {
+		mysql_close(mConnection);
+		mConnection = NULL;
+	}
+	mConnected = NO;
+	
+	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
+	if (connectionTunnel) {
+		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
+		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
+		[connectionTunnel connect];
+		[delegate setStatusIconToImageWithName:@"ssh-connecting"];
+		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
+		
+		// Allow the tunnel to attempt to connect in a loop
+		while (1) {
+			if ([connectionTunnel state] == SPSSH_STATE_CONNECTED) {
+				[delegate setStatusIconToImageWithName:@"ssh-connected"];
+				connectionPort = [connectionTunnel localPort];
+				break;
+			}
+			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
+				[connectionTunnel disconnect];
+				[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+				break;
+			}
+			
+			// Process events for a short time, allowing dialogs to be shown but waiting for the tunnel
+			interfaceInteractionTimer = [NSDate date];
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			tunnelStartDate = [tunnelStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
+		}
+		currentSSHTunnelState = [connectionTunnel state];
+		[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
+	}
+	
+	if (!connectionTunnel || [connectionTunnel state] == SPSSH_STATE_CONNECTED) {
+		
+		// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
+		if (mConnection == NULL) {
+			mConnection = mysql_init(NULL);
+		}
+		
+		if (mConnection != NULL) {
+			
+			// Set a connection timeout for the new connection
+			mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+			
+			// Attempt to reestablish the connection
+			[self connect];
+		}
+	}
+	
+	// If the connection was successfully established, reselect the old database and encoding if appropriate.
+	if (mConnected) {
+		if (currentDatabase) {
+			[self selectDB:currentDatabase];
+		}
+		if (currentEncoding) {
+			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
+			[self setEncoding:[MCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
+			if (currentEncodingUsesLatin1Transport) {
+				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
+			}
+		}
+	} else if (parentWindow) {
+		[self setLastErrorMessage:nil];
+		
+		// If the connection was not successfully established, ask how to proceed.
+		[NSApp beginSheet:connectionErrorDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+		[NSApp endSheet:connectionErrorDialog];
+		[connectionErrorDialog orderOut:nil];
+		
+		switch (connectionErrorCode) {
+				
+				// Should disconnect
+			case 2:
+				[parentWindow close];
+				return NO;
+				
+				// Should retry
+			default:
+				return [self reconnect];
+		}
+	}
+	
+	return mConnected;
+}
+
+/**
+ * Returns YES if the MCPConnection is connected to a DB, NO otherwise.
+ */
+- (BOOL)isConnected
+{
+	return mConnected;
+}
+
+/**
+ * Checks if the connection to the server is still on.
+ * If not, tries to reconnect (changing no parameters from the MYSQL pointer).
+ * This method just uses mysql_ping().
+ */
+- (BOOL)checkConnection
+{
+	if (!mConnected) return NO;
+	
+	BOOL connectionVerified = FALSE;
+	
+	// Check whether the connection is still operational via a wrapped version of MySQL ping.
+	connectionVerified = [self pingConnection];
+	
+	// If the connection doesn't appear to be responding, show a dialog asking how to proceed
+	if (!connectionVerified) {
+		[NSApp beginSheet:connectionErrorDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		int responseCode = [NSApp runModalForWindow:connectionErrorDialog];
+		[NSApp endSheet:connectionErrorDialog];
+		[connectionErrorDialog orderOut:nil];
+		
+		switch (responseCode) {
+				
+				// "Reconnect" has been selected.  Request a reconnect, and retry.
+			case 1:
+				[self reconnect];
+				return [self checkConnection];
+				
+				// "Disconnect" has been selected.  Close the parent window, which will handle disconnections, and return false.
+			case 2:
+				[parentWindow close];
+				return FALSE;
+				
+				// "Retry" has been selected - return a recursive call.
+			default:
+				return [self checkConnection];
+		}
+		
+		// If a connection exists, check whether the thread id differs; if so, the connection has
+		// probably been reestablished and we need to reset the connection encoding
+	} else if (connectionThreadId != mConnection->thread_id) [self restoreConnectionDetails];
+	
+	return connectionVerified;
+}
+
+/**
+ * The current versions of MCPKit (and up to and including 3.0.1) use MySQL 4.1.12; this has an issue with
+ * mysql_ping where a connection which is terminated will cause mysql_ping never to respond, even when
+ * connection timeouts are set.  Full details of this issue are available at http://bugs.mysql.com/bug.php?id=9678 ;
+ * this bug was fixed in 4.1.22 and later versions.
+ * This issue can be replicated by connecting to a remote host, and then configuring a firewall on that host
+ * to drop all packets on the connected port - mysql_ping and so Sequel Pro will hang.
+ * Until the client libraries are updated, this provides a drop-in wrapper for mysql_ping, which calls mysql_ping
+ * while running a SIGALRM to enforce the specified connection time.  This is low-level but effective.
+ * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
+ */
+- (BOOL) pingConnection
+{
+	struct sigaction timeoutAction;
+	NSDate *startDate = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+	BOOL pingSuccess = FALSE;
+	
+	// Construct the SIGALRM to fire after the connection timeout if it isn't cleared, calling the forcePingTimeout function.
+	timeoutAction.sa_handler = forcePingTimeout;
+	sigemptyset(&timeoutAction.sa_mask);
+	timeoutAction.sa_flags = 0;
+	sigaction(SIGALRM, &timeoutAction, NULL);
+	alarm(connectionTimeout+1);
+	
+	// Set up a "restore point", returning 0; if longjmp is used later with this reference, execution
+	// jumps back to this point and returns a nonzero value, so this function evaluates to false when initially
+	// set and true if it's called again.
+	if (setjmp(pingTimeoutJumpLocation)) {
+		
+		// The connection timed out - we want to return false.
+		pingSuccess = FALSE;
+		
+		// On direct execution:
+	} else {
+		
+		// Run mysql_ping, which returns 0 on success, and otherwise an error.
+		pingSuccess = (BOOL)(! mysql_ping(mConnection));
+		
+		// If the ping failed within a second, try another one; this is because a terminated-but-then
+		// restored connection is at times restored or functional after a ping, but the ping still returns
+		// an error.  This additional check ensures the returned status is correct with minimal other effect.
+		if (!pingSuccess && ([startDate timeIntervalSinceNow] > -1)) {
+			pingSuccess = (BOOL)(! mysql_ping(mConnection));
+		}
+	}
+	
+	// Reset and clear the SIGALRM used to check connection timeouts.
+	alarm(0);
+	timeoutAction.sa_handler = SIG_IGN;
+	sigemptyset(&timeoutAction.sa_mask);
+	timeoutAction.sa_flags = 0;
+	sigaction(SIGALRM, &timeoutAction, NULL);
+	
+	[startDate release];
+	
+	return pingSuccess;
+}
+
+/**
+ * This function is paired with pingConnection, and provides a method of enforcing the connection
+ * timeout when mysql_ping does not respect the specified limits.
+ */
+static void forcePingTimeout(int signalNumber)
+{
+	longjmp(pingTimeoutJumpLocation, 1);
+}
+
+/**
+ * Restarts a keepalive to fire in the future.
+ */
+- (void)startKeepAliveTimerResettingState:(BOOL)resetState
+{
+	if (keepAliveTimer) [self stopKeepAliveTimer];
+	if (!mConnected) return;
+	
+	if (resetState && lastKeepAliveSuccess) {
+		[lastKeepAliveSuccess release];
+		lastKeepAliveSuccess = nil;
+	}
+	
+	if (useKeepAlive && keepAliveInterval) {
+		keepAliveTimer = [NSTimer
+						  scheduledTimerWithTimeInterval:keepAliveInterval
+						  target:self
+						  selector:@selector(keepAlive:)
+						  userInfo:nil
+						  repeats:NO];
+		[keepAliveTimer retain];
+	}
+}
+
+/**
+ * Stops a keepalive if one is set for the future.
+ */
+- (void)stopKeepAliveTimer
+{
+	if (!keepAliveTimer) return;
+	[keepAliveTimer invalidate];
+	[keepAliveTimer release];
+	keepAliveTimer = nil;
+}
+
+/**
+ * Keeps a connection alive by running a ping.
+ */
+- (void)keepAlive:(NSTimer *)theTimer
+{
+	if (!mConnected) return;
+	
+	// If there a successful keepalive record exists, and it was more than 5*keepaliveinterval ago,
+	// abort.  This prevents endless spawning of threads in a state where the connection has been
+	// cut but mysql doesn't pick up on the fact - see comment for pingConnection above.  The same
+	// forced-timeout approach cannot be used here on a background thread.
+	// When the connection is disconnected in code, these 5 "hanging" threads are automatically cleaned.
+	if (lastKeepAliveSuccess && [lastKeepAliveSuccess timeIntervalSinceNow] < -5 * keepAliveInterval) return;
+	
+	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
+	[self startKeepAliveTimerResettingState:NO];
+}
+
+/**
+ * A threaded keepalive to avoid blocking the interface
+ */
+- (void)threadedKeepAlive
+{
+	if (!mConnected) return;
+	
+	mysql_ping(mConnection);
+	
+	if (lastKeepAliveSuccess) {
+		[lastKeepAliveSuccess release];
+		lastKeepAliveSuccess = nil;
+	}
+	
+	lastKeepAliveSuccess = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
+}
+
+/**
+ * Restore the connection encoding details as necessary based on the delegate-provided
+ * details.
+ */
+- (void) restoreConnectionDetails
+{
+	connectionThreadId = mConnection->thread_id;
+	[self fetchMaxAllowedPacket];
+	
+	if (delegate && [delegate valueForKey:@"_encoding"]) {
+		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
+			if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
+		}
+	}
+}
+
+#pragma mark -
+#pragma mark Server versions
+
+/**
+ * rReturn the server major version or -1 on fail
+ */
+- (int)serverMajorVersion
+{
+	
+	if (mConnected) {
+		if (serverVersionString == nil) {
+			[self _getServerVersionString];
+		}
+		
+		if (serverVersionString != nil) {
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
+		} 
+	} 
+	
+	return -1;
+}
+
+/**
+ * Return the server minor version or -1 on fail
+ */
+- (int)serverMinorVersion
+{
+	
+	if (mConnected) {
+		if (serverVersionString == nil) {
+			[self _getServerVersionString];
+		}
+		
+		if(serverVersionString != nil) {
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] intValue];
+		}
+	}
+	
+	return -1;
+}
+
+/**
+ * Return the server release version or -1 on fail
+ */
+- (int)serverReleaseVersion
+{
+	if (mConnected) {
+		if (serverVersionString == nil) {
+			[self _getServerVersionString];
+		}
+		
+		if (serverVersionString != nil) {
+			NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
+			return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] intValue];
+		}
+	}
+	
+	return -1;
+}
+
+#pragma mark -
+#pragma mark MySQL defaults
+
+/**
+ * This class is used to keep a connection with a MySQL server, it correspond to the MYSQL structure of the C API, or the database handle of the PERL DBI/DBD interface.
+ *
+ * You have to start any work on a MySQL server by getting a working MCPConnection object.
+ *
+ * Most likely you will use this kind of code:
+ * 
+ *
+ *   MCPConnection	*theConnec = [MCPConnection alloc];
+ *   MCPResult	*theRes;
+ *   
+ *   theConnec = [theConnec initToHost:@"albert.com" withLogin:@"toto" password:@"albert" usingPort:0];
+ *   [theConnec selectDB:@"db1"];
+ *   theRes = [theConnec queryString:@"select * from table1"];
+ *   ...
+ *
+ * Failing to properly release your MCPConnection(s) object might cause a MySQL crash!!! (recovered if the server was started using mysqld_safe).
+ *
+ * Gets a proper Locale dictionary to use formater to parse strings from MySQL.
+ * For example strings representing dates should give a proper Locales for use with methods such as NSDate::dateWithNaturalLanguageString: locales:
+ */
++ (NSDictionary *)getMySQLLocales
 {
 	NSMutableDictionary	*theLocalDict = [NSMutableDictionary dictionaryWithCapacity:12];
 	
@@ -83,25 +791,20 @@ static BOOL				sDebugQueries = NO;
 	return [NSDictionary dictionaryWithDictionary:theLocalDict];
 }
 
-
-+ (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding
-	/*"
-	Gets a proper NSStringEncoding according to the given MySQL charset.
-	 
-	 MySQL 4.0 offers this charsets:
-	 big5 cp1251 cp1257 croat czech danish dec8 dos estonia euc_kr gb2312 gbk german1 greek hebrew hp8 hungarian koi8_ru koi8_ukr latin1 latin1_de latin2 latin5 sjis swe7 tis620 ujis usa7 win1250 win1251ukr
-	 
-	 WARNING : incomplete implementation. Please, send your fixes.
-	 "*/
+/**
+ * Gets a proper NSStringEncoding according to the given MySQL charset.
+ */
++ (NSStringEncoding) encodingForMySQLEncoding:(const char *)mysqlEncoding
 {
-// UTF :
+	// Unicode encodings:
 	if (!strncmp(mysqlEncoding, "utf8", 4)) {
 		return NSUTF8StringEncoding;
 	}
 	if (!strncmp(mysqlEncoding, "ucs2", 4)) {
 		return NSUnicodeStringEncoding;
 	}	
-// Romans :
+	
+	// Roman alphabet encodings:
 	if (!strncmp(mysqlEncoding, "ascii", 5)) {
 		return NSASCIIStringEncoding;
 	}
@@ -111,7 +814,8 @@ static BOOL				sDebugQueries = NO;
 	if (!strncmp(mysqlEncoding, "macroman", 8)) {
 		return NSMacOSRomanStringEncoding;
 	}
-	// Additions for central/east european :
+	
+	// Roman alphabet with central/east european additions:
 	if (!strncmp(mysqlEncoding, "latin2", 6)) {
 		return NSISOLatin2StringEncoding;
 	}
@@ -124,15 +828,18 @@ static BOOL				sDebugQueries = NO;
 	if (!strncmp(mysqlEncoding, "cp1257", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsBalticRim);
 	}
-	// Additions for Turkish :
+	
+	// Additions for Turkish:
 	if (!strncmp(mysqlEncoding, "latin5", 6)) {
 		return NSWindowsCP1254StringEncoding;
 	}
-// Greek :
+	
+	// Greek:
 	if (!strncmp(mysqlEncoding, "greek", 5)) {
 		return NSWindowsCP1253StringEncoding;
 	}
-// Cyrillic :	
+	
+	// Cyrillic:	
 	if (!strncmp(mysqlEncoding, "win1251ukr", 6)) {
 		return NSWindowsCP1251StringEncoding;
 	}
@@ -146,15 +853,17 @@ static BOOL				sDebugQueries = NO;
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingKOI8_R);
 	}
 	 
-// Arabic :
+	// Arabic:
 	if (!strncmp(mysqlEncoding, "cp1256", 6)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingWindowsArabic);
 	}
-// Hebrew :
+	
+	// Hebrew:
 	if (!strncmp(mysqlEncoding, "hebrew", 6)) {
 		CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatinHebrew);
 	}
-// Asian :
+	
+	// Asian:
 	if (!strncmp(mysqlEncoding, "ujis", 4)) {
 		return NSJapaneseEUCStringEncoding;
 	}
@@ -164,208 +873,107 @@ static BOOL				sDebugQueries = NO;
 	if (!strncmp(mysqlEncoding, "big5", 4)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5);
 	}
-	if (!strncmp(mysqlEncoding, "euc_kr", 4)) {
+	if (!strncmp(mysqlEncoding, "euc_kr", 6)) {
+		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
+	}
+	if (!strncmp(mysqlEncoding, "euckr", 5)) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingEUC_KR);
 	}
 	
-// default to iso latin 1, even if it is not exact (throw an exception?)    
-	NSLog(@"WARNING : unknown name for MySQL encoding '%s'!\n\t\tFalling back to iso-latin1.", mysqlEncoding);
+	// Default to iso latin 1, even if it is not exact (throw an exception?)    
+	NSLog(@"WARNING: unknown name for MySQL encoding '%s'!\n\t\tFalling back to iso-latin1.", mysqlEncoding);
+	
 	return NSISOLatin1StringEncoding;
 }
 
-
-+ (NSStringEncoding) defaultMySQLEncoding
-	/*"
-	Returns the default charset of the library mysqlclient used.
-	 "*/
+/**
+ * Returns the default charset of the library mysqlclient used.
+ */
++ (NSStringEncoding)defaultMySQLEncoding
 {
 	return [MCPConnection encodingForMySQLEncoding:"utf8_general_ci"];
 }
 
+#pragma mark -
+#pragma mark MySQL defaults
 
-+ (void) initialize
-	/*"
-	Initialize the class version to 3.0.1
-	 "*/
-{
-	if (self = [MCPConnection class]) {
-		[self setVersion:030001]; // Ma.Mi.Re -> MaMiRe
-#if LOG_ALL_QUERIES == 1
-		[self setLogQueries:NO];
-#endif
-	}
-	return;
-}
-
-+ (void) setLogQueries:(BOOL) iLogFlag
+/**
+ *
+ */
++ (void)setLogQueries:(BOOL)iLogFlag
 {
 #if LOG_ALL_QUERIES == 1
 	sDebugQueries = iLogFlag;
 #endif
 }
 
-+ (void) setTruncateLongFieldInLogs:(BOOL) iTruncFlag
+/**
+ *
+ */
++ (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag
 {
 	sTruncateLongFieldInLogs = iTruncFlag;
 }
 
-+ (BOOL) truncateLongField
+/**
+ *
+ */
++ (BOOL)truncateLongField
 {
 	return sTruncateLongFieldInLogs;
 }
 
-- (id) init
-	/*"
-	Initialise a MySQLConnection without making a connection, most likely useless, except with !{setConnectionOption:withArgument:}.
-	 
-	 Because this method is not making a connection to any MySQL server, it can not know already what the DB server encoding will be,
-	 hence the encoding is set to some default (at present this is NSISOLatin1StringEncoding). Obviously this is reset to a proper
-	 value as soon as a DB connection is performed.
-	 
-#{I AM CURRENTLY NOT TESTING THIS METHOD, so it is likely to be buggy}... I'd be SUPER happy to ear/read your feed-back on this.
-	 "*/
+/**
+ * This method is to be used for getting special option for a connection, in which case the MCPConnection 
+ * has to be inited with the init method, then option are selected, finally connection is done using one 
+ * of the connect methods:
+ *
+ * MCPConnection	*theConnect = [[MCPConnection alloc] init];
+ *
+ * [theConnect setConnectionOption: option toValue: value];
+ * [theConnect connectToHost:albert.com withLogin:@"toto" password:@"albert" port:0];
+ *
+ */
+- (BOOL)setConnectionOption:(int)option toValue:(BOOL)value
 {
-	self = [super init];
-	mConnection = mysql_init(NULL);
-	mConnected = NO;
-	if (mConnection ==  NULL) {
-		[self autorelease];
-		return nil;
-	}
-	mEncoding = NSISOLatin1StringEncoding;
-	mConnectionFlags = kMCPConnectionDefaultOption;
-//    mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
-	return self;
-}
-
-
-- (id) initToHost:(NSString *) host withLogin:(NSString *) login password:(NSString *) pass usingPort:(int) port
-	/*"
-	Initialise a connection using a #{TCP/IP connection} with the given parameters (except if host is set to !{localhost}, in which case uses the default)
-	 
-	 - host is the hostname or IP adress
-	 - login is the user name
-	 - pass is the password corresponding to the user name
-	 - port is the TCP port to use to connect. If port = 0, uses the default port from mysql.h
-	 
-	 NB : This is a init... method, so it should be called only ONCE per instance!!	
-	 "*/
-{
-	self = [super init];
-	mEncoding = NSISOLatin1StringEncoding;
-	if (mConnected) {
-// If a the connection is on, disconnect and reset it to default
-		mysql_close(mConnection);
-		mConnection = NULL;
-	}
-	else {
-	}
-	
-	mConnection = mysql_init(mConnection);
-	mConnected = NO;
-	
-	if (mConnection == NULL) {
-		[self autorelease];
-		return nil;
-	}
-	
-	mConnectionFlags = kMCPConnectionDefaultOption;
-	
-	[self connectWithLogin:login password:pass host:host port:port socket:nil];
-	return self;    
-}
-
-
-- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login password:(NSString *) pass
-	/*"
-	Initialise a connection using a #{unix socket} with the given parameters
-	 
-	 - socket is the path to the socket
-	 - login is the user name
-	 - pass is the password corresponding to the user name
-	 
-	 NB : This is a init... method, so it should be called only ONCE per instance!!	
-	 "*/
-{
-	self = [super init];
-	mEncoding = NSISOLatin1StringEncoding;
-	if (mConnected) {
-// If a the connection is on, disconnect and reset it to default
-		mysql_close(mConnection);
-		mConnection = NULL;
-	}
-	else {
-	}
-	
-	mConnection = mysql_init(mConnection);
-	mConnected = NO;
-	
-	if (mConnection == NULL) {
-		[self autorelease];
-		return nil;
-	}
-	
-	mConnectionFlags = kMCPConnectionDefaultOption;
-	
-	[self connectWithLogin:login password:pass host:NULL port:0 socket:socket];
-	return self;
-}
-
-
-- (BOOL) setConnectionOption:(int) option toValue:(BOOL) value
-	/*"
-#{IMPLEMENTED BUT NOT TESTED!!}
-	 
-	 This method is to be used for getting special option for a connection, in which case the MCPConnection has to be inited with the init method, then option are selected, finally connection is done using one of the connect methods:
-	 
-	 !{
-		 MCPConnection	*theConnect = [[MCPConnection alloc] init];
-		 [theConnect setConnectionOption: option toValue: value];
-		 [theConnect connectToHost:albert.com withLogin:@"toto" password:@"albert" port:0];
-		 ....
-}
-
-"*/
-{
-// So far do nothing except for testing if it's proper time for setting option 
-// What about if some option where setted and a connection is made again with connectTo...
+	// So far do nothing except for testing if it's proper time for setting option 
+	// What about if some option where setted and a connection is made again with connectTo...
 	if ((mConnected)  || (! mConnection)) {
 		return FALSE;
 	}
-#warning Have to check the syntax of the following assignements:
+	
 	if (value) { //Set this option to true
 		mConnectionFlags |= option;
 	}
 	else { //Set this option to false
 		mConnectionFlags &= (! option);
 	}
+	
 	return YES;
 }
 
-
-- (BOOL) connectWithLogin:(NSString *) login password:(NSString *) pass host:(NSString *) host port:(int) port socket:(NSString *) socket
-/*"
-The method used by !{initToHost:withLogin:password:usingPort:} and !{initToSocket:withLogin:password:}. Same information and use of the parameters:
-	 
-	 - login is the user name
-	 - pass is the password corresponding to the user name
-	 - host is the hostname or IP adress
-	 - port is the TCP port to use to connect. If port = 0, uses the default port from mysql.h
-	 - socket is the path to the socket (for the localhost)
-	 
-The socket is used if the host is set to !{@"localhost"}, to an empty or a !{nil} string
-For the moment the implementation might not be safe if you have a nil pointer to one of the NSString* variables (underestand: I don't know what the result will be).
-"*/
+/**
+ * The method used by !{initToHost:withLogin:password:usingPort:} and !{initToSocket:withLogin:password:}. Same information and use of the parameters:
+ *
+ * - login is the user name
+ * - pass is the password corresponding to the user name
+ * - host is the hostname or IP adress
+ * - port is the TCP port to use to connect. If port = 0, uses the default port from mysql.h
+ * - socket is the path to the socket (for the localhost)
+ *
+ * The socket is used if the host is set to !{@"localhost"}, to an empty or a !{nil} string
+ * For the moment the implementation might not be safe if you have a nil pointer to one of the NSString* variables (underestand: I don't know what the result will be).
+ */
+- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(int)port socket:(NSString *)socket
 {
-#warning What to do if one of the string is a nil pointer?
-	const char	*theLogin = [self cStringFromString:login];
-	const char	*theHost = [self cStringFromString:host];
-	const char	*thePass = [self cStringFromString:pass];
-	const char	*theSocket = [self cStringFromString:socket];
+	const char	*theLogin = [self _cStringFromString:login];
+	const char	*theHost = [self _cStringFromString:host];
+	const char	*thePass = [self _cStringFromString:pass];
+	const char	*theSocket = [self _cStringFromString:socket];
 	void	*theRet;
 	
 	if (mConnected) {
-// Disconnect if it was already connected
+		// Disconnect if it was already connected
 		mysql_close(mConnection);
 		mConnection = NULL;
 		mConnected = NO;
@@ -389,78 +997,116 @@ For the moment the implementation might not be safe if you have a nil pointer to
 	return mConnected;
 }
 
-
-- (BOOL) selectDB:(NSString *) dbName
-/*"
-Selects a database to work with.
-The MCPConnection object needs to be properly inited and connected to a server.
-If a connection is not yet set or the selection of the database didn't work, returns NO. Returns YES in normal cases where the database is properly selected.
-	 
-So far, if dbName is a nil pointer it will return NO (as if it cannot connect), most likely this will throw an exception in the future.
-"*/
+/**
+ * Selects a database to work with.
+ *
+ * The MCPConnection object needs to be properly inited and connected to a server.
+ * If a connection is not yet set or the selection of the database didn't work, returns NO. Returns YES in normal cases where the database is properly selected.
+ *
+ * So far, if dbName is a nil pointer it will return NO (as if it cannot connect), most likely this will throw an exception in the future.
+ */
+- (BOOL)selectDB:(NSString *) dbName
 {
-	if (dbName == nil) {
-#warning Should throw an exception, illegal string pointer (nil)
-// Here we should throw an exception, impossible to select a databse if the string is indeed a nil pointer
+	if (!mConnected) return NO;
+	
+	[self stopKeepAliveTimer];
+	
+	if (![self checkConnection]) {
 		return NO;
 	}
+	
+	if (dbName == nil) {
+		// Here we should throw an exception, impossible to select a databse if the string is indeed a nil pointer
+		return NO;
+	}
+	
 	if (mConnected) {
-		const char	 *theDBName = [self cStringFromString:dbName];
+		const char	 *theDBName = [self _cStringFromString:dbName];
 		if (0 == mysql_select_db(mConnection, theDBName)) {
+			[self startKeepAliveTimerResettingState:YES];
+			
 			return YES;
 		}
 	}
+	
+	[self setLastErrorMessage:nil];
+	
+	if (connectionTunnel) {
+		[connectionTunnel disconnect];
+		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+	}
+	
 	return NO;
 }
 
+#pragma mark -
+#pragma mark Error information
 
-- (NSString *) getLastErrorMessage
-/*"
-	Returns a string with the last MySQL error message on the connection.
-"*/
+/**
+ * Returns a string with the last MySQL error message on the connection.
+ */
+- (NSString *)getLastErrorMessage
 {
-	if (mConnection) {
-		return [self stringWithCString:mysql_error(mConnection)];
+	return lastQueryErrorMessage;
+}
+
+/**
+ * Sets the string for the last MySQL error message on the connection,
+ * managing memory as appropriate.  Supply a nil string to store the
+ * last error on the connection.
+ */
+- (void)setLastErrorMessage:(NSString *)theErrorMessage
+{
+	if (!theErrorMessage) theErrorMessage = [self stringWithCString:mysql_error(mConnection)];
+	
+	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
+	lastQueryErrorMessage = [[NSString alloc] initWithString:theErrorMessage];
+}
+
+/**
+ * Returns the ErrorID of the last MySQL error on the connection.
+ */
+- (unsigned int)getLastErrorID
+{
+	return lastQueryErrorId;
+}
+
+/**
+ * Determines whether a supplied error number can be classed as a connection error.
+ */
++ (BOOL)isErrorNumberConnectionError:(int)theErrorNumber
+{
+	
+	switch (theErrorNumber) {
+		case 2001: // CR_SOCKET_CREATE_ERROR
+		case 2002: // CR_CONNECTION_ERROR
+		case 2003: // CR_CONN_HOST_ERROR
+		case 2004: // CR_IPSOCK_ERROR
+		case 2005: // CR_UNKNOWN_HOST
+		case 2006: // CR_SERVER_GONE_ERROR
+		case 2007: // CR_VERSION_ERROR
+		case 2009: // CR_WRONG_HOST_INFO
+		case 2012: // CR_SERVER_HANDSHAKE_ERR
+		case 2013: // CR_SERVER_LOST
+		case 2027: // CR_MALFORMED_PACKET
+		case 2032: // CR_DATA_TRUNCATED
+		case 2047: // CR_CONN_UNKNOW_PROTOCOL
+		case 2048: // CR_INVALID_CONN_HANDLE
+		case 2050: // CR_FETCH_CANCELED
+		case 2055: // CR_SERVER_LOST_EXTENDED
+			return YES;
 	}
-	else {
-		return [NSString stringWithString:@"No connection initailized yet (MYSQL* still NULL)\n"];
-	}
+	
+	return NO;
 }
 
-- (unsigned int) getLastErrorID
-	/*"
-	Returns the ErrorID of the last MySQL error on the connection.
-	 "*/
-{
-	if (mConnection) {
-		return mysql_errno(mConnection);
-	}
-	return kMCPConnection_Not_Inited;
-}
+#pragma mark -
+#pragma mark Queries
 
-- (BOOL) isConnected
-/*"
-Returns YES if the MCPConnection is connected to a DB, NO otherwise.
-"*/
-{
-	return mConnected;
-}
-
-- (BOOL)checkConnection
-/*"
-Checks if the connection to the server is still on.
-If not, tries to reconnect (changing no parameters from the MYSQL pointer).
-This method just uses mysql_ping().
-"*/
-{
-	return (BOOL)(! mysql_ping(mConnection));
-}
-
-
-- (NSString *) prepareBinaryData:(NSData *) theData
-/*"
-Takes a NSData object and transform it in a proper string for sending to the server in between quotes.
-"*/
+/**
+ * Takes a NSData object and transform it in a proper string for sending to the server in between quotes.
+ */
+- (NSString *)prepareBinaryData:(NSData *)theData
 {
 	const char			*theCDataBuffer = [theData bytes];
 	unsigned long		theLength = [theData length];
@@ -476,155 +1122,325 @@ Takes a NSData object and transform it in a proper string for sending to the ser
 	return theReturn;
 }
 
-
-- (NSString *) prepareString:(NSString *) theString
-/*"
-Takes a string and escape any special character (like single quote : ') so that the string can be used directly in a query.
-"*/
+/**
+ * Takes a string and escape any special character (like single quote : ') so that the string can be used directly in a query.
+ */
+- (NSString *)prepareString:(NSString *)theString
 {
 	NSData				*theCData = [theString dataUsingEncoding:mEncoding allowLossyConversion:YES];
 	unsigned long		theLength = [theCData length];
-//	const char			*theCStringBuffer = [self cStringFromString:theString];
-//	unsigned long		theLength = [theString length];
+	// const char			*theCStringBuffer = [self cStringFromString:theString];
+	// unsigned long		theLength = [theString length];
 	char					*theCEscBuffer;
 	NSString				*theReturn;
 	unsigned long		theEscapedLength;
 	
 	if (theString == nil) {
-#pragma warning This is not the best solution, here we loose difference between NULL and empty string.
-// In the mean time, no one should call this method on a nil string, the test should be done before by the user of this method.
+		// In the mean time, no one should call this method on a nil string, the test should be done before by the user of this method.
 		return @"";
 	}
-//	theLength = strlen(theCStringBuffer);
+	
+	// theLength = strlen(theCStringBuffer);
 	theCEscBuffer = (char *)calloc(sizeof(char),(theLength * 2) + 1);
 	theEscapedLength = mysql_real_escape_string(mConnection, theCEscBuffer, [theCData bytes], theLength);
 	theReturn = [[NSString alloc] initWithData:[NSData dataWithBytes:theCEscBuffer length:theEscapedLength] encoding:mEncoding];
-//	theReturn = [self stringWithCString:theCEscBuffer];
-	free (theCEscBuffer);
+	// theReturn = [self stringWithCString:theCEscBuffer];
+	free(theCEscBuffer);
+	
 	return theReturn;    
 }
 
-
-- (NSString *) quoteObject:(id) theObject
-	/*" Use the class of the theObject to know how it should be prepared for usage with the database.
-	If theObject is a string, this method will put single quotes to both its side and escape any necessary
-character using prepareString: method. If theObject is NSData, the prepareBinaryData: method will be
-	used instead.
-	For NSNumber object, the number is just quoted, for calendar dates, the calendar date is formatted in
-	the preferred format for the database.
-   "*/
+/** 
+ * Use the class of the theObject to know how it should be prepared for usage with the database.
+ * If theObject is a string, this method will put single quotes to both its side and escape any necessary
+ * character using prepareString: method. If theObject is NSData, the prepareBinaryData: method will be
+ * used instead.
+ *
+ * For NSNumber object, the number is just quoted, for calendar dates, the calendar date is formatted in
+ * the preferred format for the database.
+ */
+- (NSString *)quoteObject:(id)theObject
 {
-   if ((! theObject) || ([theObject isNSNull])) {
-      return @"NULL";
-   }
-   if ([theObject isKindOfClass:[NSData class]]) {
-      return [NSString stringWithFormat:@"X'%@'", [self prepareBinaryData:(NSData *) theObject]];
-   }
-   if ([theObject isKindOfClass:[NSString class]]) {
-      return [NSString stringWithFormat:@"'%@'", [self prepareString:(NSString *) theObject]];
-   }
-   if ([theObject isKindOfClass:[NSNumber class]]) {
-      return [NSString stringWithFormat:@"%@", theObject];
-   }
-   if ([theObject isKindOfClass:[NSCalendarDate class]]) {
-      return [NSString stringWithFormat:@"'%@'", [(NSCalendarDate *)theObject descriptionWithCalendarFormat:@"%Y-%m-%d %H:%M:%S"]];
-   }
-// Default : quote as string:
-   return [NSString stringWithFormat:@"'%@'", [self prepareString:[theObject description]]];
+	if ((! theObject) || ([theObject isNSNull])) {
+		return @"NULL";
+	}
+	
+	if ([theObject isKindOfClass:[NSData class]]) {
+		return [NSString stringWithFormat:@"X'%@'", [self prepareBinaryData:(NSData *) theObject]];
+	}
+	
+	if ([theObject isKindOfClass:[NSString class]]) {
+		return [NSString stringWithFormat:@"'%@'", [self prepareString:(NSString *) theObject]];
+	}
+	
+	if ([theObject isKindOfClass:[NSNumber class]]) {
+		return [NSString stringWithFormat:@"%@", theObject];
+	}
+	
+	if ([theObject isKindOfClass:[NSCalendarDate class]]) {
+		return [NSString stringWithFormat:@"'%@'", [(NSCalendarDate *)theObject descriptionWithCalendarFormat:@"%Y-%m-%d %H:%M:%S"]];
+	}
+
+	return [NSString stringWithFormat:@"'%@'", [self prepareString:[theObject description]]];
 }
 
-
-- (MCPResult *) queryString:(NSString *) query
-/*"
-Takes a query string and return an MCPResult object holding the result of the query.
-The returned MCPResult is not retained, the client is responsible for that (it's autoreleased before being returned). If no field are present in the result (like in an insert query), will return nil (#{difference from previous version implementation}). Though, if their is at least one field the result will be non nil (even if no row are selected).
-	 
-Note that if you want to use this method with binary data (in the query), you should use !{prepareBinaryData:} to include the binary data in the query string. Also if you want to include in your query a string containing any special character (\, ', " ...) then you should use !{prepareString}.
-"*/
+/**
+ * Takes a query string and return an MCPResult object holding the result of the query.
+ * The returned MCPResult is not retained, the client is responsible for that (it's autoreleased before being returned). If no field are present in the result (like in an insert query), will return nil (#{difference from previous version implementation}). Though, if their is at least one field the result will be non nil (even if no row are selected).
+ *
+ * Note that if you want to use this method with binary data (in the query), you should use !{prepareBinaryData:} to include the binary data in the query string. Also if you want to include in your query a string containing any special character (\, ', " ...) then you should use !{prepareString}.
+ */
+- (MCPResult *)queryString:(NSString *)query
 {
-	MCPResult     *theResult;
-	const char    *theCQuery = [self cStringFromString:query];
-	int           theQueryCode;
+	return [self queryString:query usingEncoding:mEncoding];
+}
 
-#if LOG_ALL_QUERIES == 1
-	if (sDebugQueries) {
-		if ([query length] < 1024) {
-			NSLog(@"LOGGING QUERY : %@", query);
-		}
-		else {
-			NSLog(@"LOGGING QUERY (truncated) : %@", [query substringToIndex:1024]);
-		}
+/**
+ * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
+ * proceed and loop depending on the status, not returning control until either the query has been executed
+ * and the result can be returned or the connection and document have been closed.
+ */
+- (MCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
+{
+	MCPResult		*theResult = nil;
+	int				queryStartTime;
+	const char		*theCQuery;
+	unsigned long	theCQueryLength;
+	int				queryResultCode;
+	int				queryErrorId = 0;
+	my_ulonglong	queryAffectedRows = 0;
+	int				currentMaxAllowedPacket = -1;
+	BOOL			isQueryRetry = NO;
+	NSString		*queryErrorMessage = nil;
+	
+	// If no connection is present, return nil.
+	if (!mConnected) {
+		// Write a log entry
+		if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:@"No connection available!"];
+		// Notify that the query has been performed
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		// Show an error alert while resetting
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No connection available!", 
+						  nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No connection available!");
+		return nil;
 	}
-#endif
-	if (0 == (theQueryCode = mysql_query(mConnection, theCQuery))) {
-		if (mysql_field_count(mConnection) != 0) {
-			theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-		}
-		else {
+	
+	(void)(*stopKeepAliveTimerPtr)(self, stopKeepAliveTimerSEL);
+	
+	// queryStartTime = clock();
+	
+	// Inform the delegate about the query if logging is enabled and 
+	// delegate responds to willQueryString:
+	if (consoleLoggingEnabled && delegateResponseToWillQueryString)
+		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
+	
+	// Derive the query string in the correct encoding
+	NSData *d = NSStringDataUsingLossyEncoding(query, encoding, 1);
+	theCQuery = [d bytes];
+	// Set the length of the current query
+	theCQueryLength = [d length];
+	
+	// Check query length against max_allowed_packet; if it is larger, the
+	// query would error, so if max_allowed_packet is editable for the user
+	// increase it for the current session and reconnect.
+	if(maxAllowedPacketSize < theCQueryLength) {
+		
+		if(isMaxAllowedPacketEditable) {
+			
+			currentMaxAllowedPacket = maxAllowedPacketSize;
+			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
+			[self reconnect];
+			
+		} else {
+			
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %d bytes is larger than max_allowed_packet size (%d).", 
+																				  @"error message if max_allowed_packet < query size"),
+									  theCQueryLength, maxAllowedPacketSize];
+			
+			// Write a log entry and update the connection error messages for those uses that check it
+			if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:errorMessage];
+			[self setLastErrorMessage:errorMessage];
+			
+			// Notify that the query has been performed
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+			// Show an error alert while resetting
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, errorMessage);
+			
 			return nil;
 		}
 	}
-	else {
-		if ([query length] < 1024) {
-			NSLog (@"Problem in queryString error code is : %d, query is : %@-\n", theQueryCode, query);
+	
+	// In a loop to allow one reattempt, perform the query.
+	while (1) {
+		
+		// If this query has failed once already, check the connection
+		if (isQueryRetry) {
+			if (![self checkConnection]) {
+				
+				// Notify that the query has been performed
+				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+				return nil;
+			}
 		}
-		else {
-			NSLog (@"Problem in queryString error code is : %d, query is (truncated) : %@-\n", theQueryCode, [query substringToIndex:1024]);
+		
+		// Run (or re-run) the query, timing the execution time of the query - note
+		// that this time will include network lag.
+		queryStartTime = clock();
+		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
+		lastQueryExecutionTime = (clock() - queryStartTime);
+		
+		// On success, capture the results
+		if (0 == queryResultCode) {
+			
+			if (mysql_field_count(mConnection) != 0) {
+				theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+				
+				// Ensure no problem occurred during the result fetch
+				if (mysql_errno(mConnection) != 0) {
+					queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+					queryErrorId = mysql_errno(mConnection);
+					break;
+				}
+			}
+			
+			queryErrorMessage = [[NSString alloc] initWithString:@""];
+			queryErrorId = 0;
+			queryAffectedRows = mysql_affected_rows(mConnection);
+			
+			// On failure, set the error messages and IDs
+		} else {
+			
+			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+			queryErrorId = mysql_errno(mConnection);
+			
+			// If the error was a connection error, retry once
+			if (!isQueryRetry && retryAllowed && [MCPConnection isErrorNumberConnectionError:queryErrorId]) {
+				isQueryRetry = YES;
+				continue;
+			}
 		}
-		NSLog(@"Error message is : %@\n", [self getLastErrorMessage]);
-		return nil;
+		
+		break;
 	}
-#if LOG_ALL_QUERIES == 1
-	if (sDebugQueries) {
-		NSLog(@"LOGGING RESULT : %@", theResult);
-	}
-#endif
+	
+	// If the mysql thread id has changed as a result of a connection error,
+	// ensure connection details are still correct
+	if (connectionThreadId != mConnection->thread_id) [self restoreConnectionDetails];
+	
+	// If max_allowed_packet was changed, reset it to default
+	if(currentMaxAllowedPacket > -1)
+		[self setMaxAllowedPacketTo:currentMaxAllowedPacket resetSize:YES];
+	
+	// Update error strings and IDs
+	lastQueryErrorId = queryErrorId;
+	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
+	if (queryErrorMessage) [queryErrorMessage release]; 
+	lastQueryAffectedRows = queryAffectedRows;
+	
+	// If an error occurred, inform the delegate
+	if (queryResultCode & delegateResponseToWillQueryString)
+		[delegate queryGaveError:lastQueryErrorMessage];
+	
+	(void)(int)(*startKeepAliveTimerResettingStatePtr)(self, startKeepAliveTimerResettingStateSEL, YES);
+	
+	if (!theResult) return nil;
 	return [theResult autorelease];
 }
 
-- (my_ulonglong) affectedRows
-/*"
-Returns the number of affected rows by the last query.
-"*/
+/**
+ * Perform a query in threaded mode.
+ */
+- (void) workerPerformQuery:(NSString *)query
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	const char *theCQuery;
+	NSDate *queryStartDate;
+	float queryExecutionTime;
+	int theQueryCode;
+	
+	theCQuery = [self _cStringFromString:query usingEncoding:workerStringEncoding];
+	
+	queryStartDate = [NSDate date];
+	theQueryCode = mysql_query(mConnection, theCQuery);
+	queryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+	
+	// If the thread has already been cancelled, this is a timed-out result.
+	if ([[NSThread currentThread] isCancelled]) {
+		[pool release];
+		return;
+	}
+	
+	workerQueryResultCode = theQueryCode;
+	lastQueryExecutionTime = queryExecutionTime;
+	workerQueryComplete = YES;
+	
+	[pool release];
+}
+
+/**
+ * Return the time taken to execute the last query.  This should be close to the time it took
+ * the server to run the query, but will include network lag and some client library overhead.
+ */
+- (float) lastQueryExecutionTime
+{
+	return lastQueryExecutionTime;
+}
+
+/**
+ * Returns the number of affected rows by the last query.
+ */
+- (my_ulonglong)affectedRows
 {
 	if (mConnected) {
 		return mysql_affected_rows(mConnection);
 	}
+	
 	return 0;
 }
 
-
-- (my_ulonglong) insertId
-	/*"
-	If the last query was an insert in a table having a autoindex column, returns the id (autoindexed field) of the last row inserted.
-	 "*/
+/**
+ * If the last query was an insert in a table having a autoindex column, returns the ID 
+ * (autoindexed field) of the last row inserted.
+ */
+- (my_ulonglong)insertId
 {
 	if (mConnected) {
 		return mysql_insert_id(mConnection);
 	}
+	
 	return 0;
 }
 
+#pragma mark -
+#pragma mark Database structure
 
-- (MCPResult *) listDBs
-	/*"
-	Just a fast wrapper for the more complex !{listDBsWithPattern:} method.
-	 "*/
+/**
+ * Just a fast wrapper for the more complex !{listDBsWithPattern:} method.
+ */
+- (MCPResult *)listDBs
 {
 	return [self listDBsLike:nil];
 }
 
-
-- (MCPResult *) listDBsLike:(NSString *) dbsName
-	/*"
-	Returns a list of database which name correspond to the SQL regular expression in 'pattern'.
-	 The comparison is done with wild card extension : % and _.
-	 The result should correspond to the queryString:@"SHOW databases [LIKE wild]"; but implemented with mysql_list_dbs.
-	 If an empty string or nil is passed as pattern, all databases will be shown.
-	 "*/
+/**
+ * Returns a list of database which name correspond to the SQL regular expression in 'pattern'.
+ * The comparison is done with wild card extension : % and _.
+ * The result should correspond to the queryString:@"SHOW databases [LIKE wild]"; but implemented with mysql_list_dbs.
+ * If an empty string or nil is passed as pattern, all databases will be shown.
+ */
+- (MCPResult *)listDBsLike:(NSString *)dbsName
 {
-	MCPResult	*theResult = [MCPResult alloc];
-	MYSQL_RES		*theResPtr;
+	if (!mConnected) return NO;
+	
+	MCPResult *theResult = [MCPResult alloc];
+	MYSQL_RES *theResPtr;
+	
+	[self stopKeepAliveTimer];
+	
+	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
+	
+	[self startKeepAliveTimerResettingState:YES];
 	
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_dbs(mConnection, NULL)) {
@@ -635,8 +1451,8 @@ Returns the number of affected rows by the last query.
 		}
 	}
 	else {
-//        const char	*theCDBsName = (const char *)[[dbsName dataUsingEncoding: mEncoding allowLossyConversion: YES] bytes];
-		const char		*theCDBsName = (const char *)[self cStringFromString:dbsName];
+		const char *theCDBsName = (const char *)[self _cStringFromString:dbsName];
+		
 		if (theResPtr = mysql_list_dbs(mConnection, theCDBsName)) {
 			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
 		}
@@ -644,31 +1460,42 @@ Returns the number of affected rows by the last query.
 			[theResult init];
 		}        
 	}
+	
 	if (theResult) {
 		[theResult autorelease];
 	}
+	
 	return theResult;    
 }
 
-
-- (MCPResult *) listTables
-	/*"
-	Make sure a DB is selected (with !{selectDB:} method) first.
-	 "*/
+/**
+ * Make sure a DB is selected (with !{selectDB:} method) first.
+ */
+- (MCPResult *)listTables
 {
 	return [self listTablesLike:nil];
 }
 
-
-- (MCPResult *) listTablesLike:(NSString *) tablesName
-	/*"
-From within a database, give back the list of table which name correspond to tablesName (with wild card %, _ extension). Correspond to queryString:@"SHOW tables [LIKE wild]"; uses mysql_list_tables function.
-	 If an empty string or nil is passed as tablesName, all tables will be shown.
-	 WARNING: #{produce an error if no databases are selected} (with !{selectDB:} for example).
-	 "*/
+/**
+ * From within a database, give back the list of table which name correspond to tablesName 
+ * (with wild card %, _ extension). Correspond to queryString:@"SHOW tables [LIKE wild]"; uses mysql_list_tables function.
+ *
+ * If an empty string or nil is passed as tablesName, all tables will be shown.
+ *
+ * WARNING: #{produce an error if no databases are selected} (with !{selectDB:} for example).
+ */
+- (MCPResult *)listTablesLike:(NSString *) tablesName
 {
-	MCPResult		*theResult = [MCPResult alloc];
-	MYSQL_RES		*theResPtr;
+	if (!mConnected) return NO;
+	
+	MCPResult *theResult = [MCPResult alloc];
+	MYSQL_RES *theResPtr;
+	
+	[self stopKeepAliveTimer];
+	
+	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
+	
+	[self startKeepAliveTimerResettingState:YES];
 	
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_tables(mConnection, NULL)) {
@@ -679,7 +1506,7 @@ From within a database, give back the list of table which name correspond to tab
 		}
 	}
 	else {
-		const char	*theCTablesName = (const char *)[self cStringFromString:tablesName];
+		const char	*theCTablesName = (const char *)[self _cStringFromString:tablesName];
 		if (theResPtr = mysql_list_tables(mConnection, theCTablesName)) {
 			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
 		}
@@ -693,15 +1520,14 @@ From within a database, give back the list of table which name correspond to tab
 	return theResult;
 }
 
-
-- (MCPResult *) listTablesFromDB:(NSString *) dbName like:(NSString *) tablesName
-	/*"
-	List tables in DB specified by dbName and corresponding to pattern.
-	 This method indeed issues a !{SHOW TABLES FROM dbName LIKE ...} query to the server.
-	 This is done this way to make sure the selected DB is not changed by this method.
-	 "*/
+/**
+ * List tables in DB specified by dbName and corresponding to pattern.
+ * This method indeed issues a !{SHOW TABLES FROM dbName LIKE ...} query to the server.
+ * This is done this way to make sure the selected DB is not changed by this method.
+ */
+- (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName
 {
-	MCPResult	*theResult;
+	MCPResult *theResult;
 	
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@", dbName];
@@ -711,27 +1537,26 @@ From within a database, give back the list of table which name correspond to tab
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@ LIKE '%@'", dbName, tablesName];
 		theResult = [self queryString:theQuery];
 	}
+	
 	return theResult;
 }
 
-
+/**
+ * Just a fast wrapper for the more complex list !{listFieldsWithPattern:forTable:} method.
+ */
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName
-	/*"
-	Just a fast wrapper for the more complex list !{listFieldsWithPattern:forTable:} method.
-	 "*/
 {
 	return [self listFieldsFromTable:tableName like:nil];
 }
 
-
-- (MCPResult *) listFieldsFromTable:(NSString *) tableName like:(NSString *) fieldsName
-	/*"
-	Show all the fields of the table tableName which name correspond to pattern (with wild card expansion : %,_).
-	 Indeed, and as recommanded from mysql reference, this method is NOT using mysql_list_fields but the !{queryString:} method.
-	 If an empty string or nil is passed as fieldsName, all fields (of tableName) will be returned.
-	 "*/
+/**
+ * Show all the fields of the table tableName which name correspond to pattern (with wild card expansion : %,_).
+ * Indeed, and as recommanded from mysql reference, this method is NOT using mysql_list_fields but the !{queryString:} method.
+ * If an empty string or nil is passed as fieldsName, all fields (of tableName) will be returned.
+ */
+- (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName
 {
-	MCPResult	*theResult;
+	MCPResult *theResult;
 	
 	if ((fieldsName == nil) || ([fieldsName isEqualToString:@""])) {
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@", tableName];
@@ -741,213 +1566,118 @@ From within a database, give back the list of table which name correspond to tab
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@ LIKE '%@'", tableName, fieldsName];
 		theResult = [self queryString:theQuery];
 	}
+	
 	return theResult;
 }
 
+#pragma mark -
+#pragma mark Server information
 
-- (NSString *) clientInfo
-	/*"
-	Returns a string giving the client library version.
-	 "*/
+/**
+ * Returns a string giving the client library version.
+ */
+- (NSString *)clientInfo
 {
-	return [self stringWithCString:mysql_get_client_info()];
+	return [self _stringWithCString:mysql_get_client_info()];
 }
 
-
-- (NSString *) hostInfo
-	/*"
-	Returns a string giving information on the host of the DB server.
-	 "*/
+/**
+ * Returns a string giving information on the host of the DB server.
+ */
+- (NSString *)hostInfo
 {
-	return [self stringWithCString:mysql_get_host_info(mConnection)];
+	return [self _stringWithCString:mysql_get_host_info(mConnection)];
 }
 
-
-- (NSString *) serverInfo
-	/*"
-	Returns a string giving the server version.
-	 "*/
+/**
+ * Returns a string giving the server version.
+ */
+- (NSString *)serverInfo
 {
 	if (mConnected) {
-		return [self stringWithCString: mysql_get_server_info(mConnection)];
+		return [self _stringWithCString: mysql_get_server_info(mConnection)];
 	}
+	
 	return @"";
 }
 
-
-- (NSNumber *) protoInfo
-	/*"
-	Returns the number of the protocole used to transfer info from server to client
-	 "*/
+/**
+ * Returns the number of the protocole used to transfer info from server to client
+ */
+- (NSNumber *)protoInfo
 {
 	return [MCPNumber numberWithUnsignedInt:mysql_get_proto_info(mConnection)];
 }
 
-
-- (MCPResult *) listProcesses
-	/*"
-	Lists active process
-	 "*/
+/**
+ * Lists active process
+ */
+- (MCPResult *)listProcesses
 {
-	MCPResult	*theResult = [MCPResult alloc];
-	MYSQL_RES		*theResPtr;
+	MCPResult *theResult = [MCPResult alloc];
+	MYSQL_RES *theResPtr;
 	
 	if (theResPtr = mysql_list_processes(mConnection)) {
 		[theResult initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
-	} else {
+	} 
+	else {
 		[theResult init];
 	}
 	
 	if (theResult) {
 		[theResult autorelease];
 	}
+	
 	return theResult;
 }
 
-
-/*
- - (BOOL)createDBWithName:(NSString *)dbName
- {
-    const char	*theDBName = [dbName UTF8String];
-    if ((mConnected) && (! mysql_create_db(mConnection, theDBName))) {
-		 return YES;
-    }
-    return NO;
- }
- 
- - (BOOL)dropDBWithName:(NSString *)dbName
- {
-    const char	*theDBName = [dbName UTF8String];
-    if ((mConnected) && (! mysql_drop_db(mConnection, theDBName))) {
-		 return YES;
-    }
-    return NO;
- }
+/**
+ * Kills the process with the given pid.
+ * The users needs the !{Process_priv} privilege.
  */
+- (BOOL)killProcess:(unsigned long)pid
+{	
+	int theErrorCode = mysql_kill(mConnection, pid);
 
-
-- (BOOL) killProcess:(unsigned long) pid
-	/*"
-	Kills the process with the given pid.
-	 The users needs the !{Process_priv} privilege.
-	 "*/
-{
-	int		theErrorCode;
-	
-	theErrorCode = mysql_kill(mConnection, pid);
 	return (theErrorCode) ? NO : YES;
 }
 
+#pragma mark -
+#pragma mark Encoding
 
-- (void) disconnect
-	/*"
-	Disconnects a connected MCPConnection object; used by !{dealloc:} method.
-	 "*/
-{
-	if (mConnected) {
-		mysql_close(mConnection);
-		mConnection = NULL;
-	}
-	mConnected = NO;
-	return;
-}
-
-- (void)dealloc
-	/*"
-	The standard deallocation method for MCPConnection objects.
-	 "*/
-{
-	[self disconnect];
-	[super dealloc];
-	return;
-}
-
-
-- (void) setEncoding:(NSStringEncoding) theEncoding
-	/*"
-	Sets the encoding used by the server for data transfert.
-	 Used to make sure the output of the query result is ok even for non-ascii characters
-	 The character set (encoding) used by the db is passed to the MCPConnection object upon connection,
-	 so most likely the encoding (from -encoding) method is already the proper one.
-	 That is to say : It's unlikely you will need to call this method directly, and #{if ever you use it, do it at your own risks}.
-	 "*/
+/**
+ * Sets the encoding used by the server for data transfert.
+ * Used to make sure the output of the query result is ok even for non-ascii characters
+ * The character set (encoding) used by the db is passed to the MCPConnection object upon connection,
+ * so most likely the encoding (from -encoding) method is already the proper one.
+ * That is to say : It's unlikely you will need to call this method directly, and #{if ever you use it, do it at your own risks}.
+ */
+- (void)setEncoding:(NSStringEncoding)theEncoding
 {
 	mEncoding = theEncoding;
 }
 
-
-- (NSStringEncoding) encoding
-	/*"
-	Gets the encoding for the connection
-	 "*/
+/**
+ * Gets the encoding for the connection
+ */
+- (NSStringEncoding)encoding
 {
 	return mEncoding;
 }
 
+#pragma mark -
+#pragma mark Time Zone
 
-- (const char *) cStringFromString:(NSString *) theString
-/*"
-For internal use only. Transforms a NSString to a C type string (ending with \0) using the character set from the MCPConnection.
-Lossy conversions are enabled.
-"*/
-{
-	NSMutableData	*theData;
-	
-	if (! theString) {
-		return (const char *)NULL;
-	}
-	
-	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:mEncoding allowLossyConversion:YES]];
-	[theData increaseLengthBy:1];
-	return (const char *)[theData bytes];
-}
-
-
-- (NSString *) stringWithCString:(const char *) theCString
-/*"
-Returns a NSString from a C style string encoded with the character set of theMCPConnection.
-"*/
-{
-	NSData		* theData;
-	NSString		* theString;
-	
-	if (theCString == NULL) {
-		return @"";
-	}
-	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
-	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
-	if (theString) {
-		[theString autorelease];
-	}
-	return theString;
-}
-
-
-- (NSString *) stringWithText:(NSData *) theTextData
-/*"
-Use the string encoding to convert the returned NSData to a string (for a Text field)
-"*/
-{
-	NSString		* theString;
-	
-	if (theTextData == nil) {
-		return nil;
-	}
-	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
-	if (theString) {
-		[theString autorelease];
-	}
-	return theString;
-}
-
-
-- (void) setTimeZone:(NSTimeZone *) iTimeZone
-/*" Setting the time zone to be used with the server. "*/
+/**
+ * Setting the time zone to be used with the server. 
+ */
+- (void)setTimeZone:(NSTimeZone *)iTimeZone
 {
 	if (iTimeZone != mTimeZone) {
 		[mTimeZone release];
 		mTimeZone = [iTimeZone retain];
 	}
+	
 	if ([self checkConnection]) {
 		if (mTimeZone) {
 			[self queryString:[NSString stringWithFormat:@"SET time_zone = '%@'", [mTimeZone name]]];
@@ -958,49 +1688,258 @@ Use the string encoding to convert the returned NSData to a string (for a Text f
 	}
 }
 
-- (NSTimeZone *) timeZone
-/*" Getting the currently used time zone (in communication with the DB server). "*/
+/**
+ * Getting the currently used time zone (in communication with the DB server).
+ */
+- (NSTimeZone *)timeZone
 {
 	if ([self checkConnection]) {
-		MCPResult		*theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE '%time_zone'"];
-		NSArray			*theRow;
-		NSString			*theTZName;
-		NSTimeZone		*theTZ;
+		MCPResult	*theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE '%time_zone'"];
+		NSArray		*theRow;
+		id			theTZName;
+		NSTimeZone	*theTZ;
 		
 		[theSessionTZ dataSeek:1ULL];
 		theRow = [theSessionTZ fetchRowAsArray];
 		theTZName = [theRow objectAtIndex:1];
+		
+		if ( [theTZName isKindOfClass:[NSData class]] ) {
+			// MySQL 4.1.14 returns the mysql variables as NSData
+			theTZName = [self _stringWithText:theTZName];
+		}
+		
 		if ([theTZName isEqualToString:@"SYSTEM"]) {
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
+			
+			if ( [theTZName isKindOfClass:[NSData class]] ) {
+				// MySQL 4.1.14 returns the mysql variables as NSData
+				theTZName = [self _stringWithText:theTZName];
+			}
 		}
+		
 		if (theTZName) { // Old versions of the server does not support there own time zone ?
 			theTZ = [NSTimeZone timeZoneWithName:theTZName];
-		}
-		else { // By default set the time zone to the local one..
+		} else {
+			// By default set the time zone to the local one..
 			// Try to get the name using the previously available variable:
-//			NSLog(@"Fecthing time-zone on 'old' DB server : variable name is : timezone");
 			theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE 'timezone'"];
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
-			if (theTZName) { // Finally we found one ...
-//				NSLog(@"Result is : %@", theTZName);
+			if (theTZName) {
+				// Finally we found one ...
 				theTZ = [NSTimeZone timeZoneWithName:theTZName];
-			}
-			else {
+			} else {
 				theTZ = [NSTimeZone defaultTimeZone];
-//			theTZ = [NSTimeZone systemTimeZone];
+				//theTZ = [NSTimeZone systemTimeZone];
 				NSLog(@"The time zone is not defined on the server, set it to the default one : %@", theTZ);
 			}
 		}
+		
 		if (theTZ != mTimeZone) {
 			[mTimeZone release];
 			mTimeZone = [theTZ retain];
 		}
 	}
+	
 	return mTimeZone;
+}
+
+#pragma mark -
+#pragma mark Packet size
+
+/**
+ * Retrieve the max_allowed_packet size from the server; returns
+ * false if the query fails.
+ */
+- (BOOL) fetchMaxAllowedPacket
+{
+	char *queryString;
+	
+	if ([self serverMajorVersion] == 3) queryString = "SHOW VARIABLES LIKE 'max_allowed_packet'";
+	else queryString = "SELECT @@global.max_allowed_packet";
+	
+	if (0 == mysql_query(mConnection, queryString)) {
+		if (mysql_field_count(mConnection) != 0) {
+			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			NSArray *a = [r fetchRowAsArray];
+			[r autorelease];
+			if([a count]) {
+				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] intValue];
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+/**
+ * Retrieves max_allowed_packet size set as global variable.
+ * It returns -1 if it fails.
+ */
+- (int)getMaxAllowedPacket
+{
+	MCPResult *r;
+	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding];
+	if (![[self getLastErrorMessage] isEqualToString:@""]) {
+		if ([self isConnected])
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
+		return -1;
+	}
+	NSArray *a = [r fetchRowAsArray];
+	if([a count])
+		return [[a objectAtIndex:0] intValue];
+	
+	return -1;
+}
+
+/*
+ * It sets max_allowed_packet size to newSize and it returns
+ * max_allowed_packet after setting it to newSize for cross-checking 
+ * if the maximal size was reached (e.g. set it to 4GB it'll return 1GB up to now).
+ * If something failed it return -1;
+ */
+- (int)setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset
+{
+	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return maxAllowedPacketSize;
+	
+	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
+	// Inform the user via a log entry about that change according to reset value
+	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:)])
+		if(reset)
+			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %d for new session", newSize]];
+		else
+			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize]];
+	
+	return maxAllowedPacketSize;
+}
+
+/**
+ * It returns whether max_allowed_packet is setable for the user.
+ */
+- (BOOL) isMaxAllowedPacketEditable
+{
+	return(!mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet"));
+}
+
+#pragma mark -
+
+/**
+ * Object deallocation.
+ */
+- (void) dealloc
+{
+	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
+	if (connectionHost) [connectionHost release];
+	if (connectionLogin) [connectionLogin release];
+	if (connectionSocket) [connectionSocket release];
+	if (connectionPassword) [connectionPassword release];
+	if (connectionKeychainName) [connectionKeychainName release];
+	if (connectionKeychainAccount) [connectionKeychainAccount release];
+	if (lastKeepAliveSuccess) [lastKeepAliveSuccess release];
+	
+	[super dealloc];
+}
+
+@end
+
+@implementation MCPConnection (PrivateAPI)
+
+/**
+ * Get the server's version string
+ */
+- (void)_getServerVersionString
+{
+	if (mConnected) {
+		MCPResult *theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
+		
+		if ([theResult numOfRows]) {
+			[theResult dataSeek:0];
+			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
+		}
+	}
+}
+
+/**
+ * For internal use only. Transforms a NSString to a C type string (ending with \0) using the character set from the MCPConnection.
+ * Lossy conversions are enabled.
+ */
+- (const char *)_cStringFromString:(NSString *)theString
+{
+	NSMutableData *theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:mEncoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	
+	return (const char *)[theData bytes];
+}
+
+/**
+ * Modified version of the original to support a supplied encoding.
+ * For internal use only. Transforms a NSString to a C type string (ending with \0).
+ * Lossy conversions are enabled.
+ */
+- (const char *)_cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding
+{
+	NSMutableData *theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	
+	return (const char *)[theData bytes];
+}
+
+/**
+ * Returns a NSString from a C style string encoded with the character set of theMCPConnection.
+ */
+- (NSString *)_stringWithCString:(const char *)theCString
+{
+	NSData	 *theData;
+	NSString *theString;
+	
+	if (theCString == NULL) {
+		return @"";
+	}
+	
+	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
+	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
+}
+
+/**
+ * Use the string encoding to convert the returned NSData to a string (for a Text field).
+ */
+- (NSString *)_stringWithText:(NSData *)theTextData
+{
+	NSString *theString;
+	
+	if (theTextData == nil) {
+		return nil;
+	}
+	
+	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
 }
 
 @end

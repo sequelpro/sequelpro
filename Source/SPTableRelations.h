@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMMCPConnection, CMMCPResult, CMCopyTable;
+@class MCPConnection, MCPResult, CMCopyTable;
 
 @interface SPTableRelations : NSObject 
 {	
@@ -52,12 +52,12 @@
 	IBOutlet NSPopUpButton *onDeletePopUpButton;
 	IBOutlet NSButton      *confirmAddRelationButton;
 		
-	CMMCPConnection *connection;
+	MCPConnection *connection;
 
 	NSMutableArray *relationData;
 }
 
-@property (readwrite, assign) CMMCPConnection *connection;
+@property (readwrite, assign) MCPConnection *connection;
 
 // IB action methods
 - (IBAction)addRelation:(id)sender;

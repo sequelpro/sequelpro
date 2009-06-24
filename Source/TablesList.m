@@ -23,6 +23,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "TablesList.h"
 #import "TableDocument.h"
 #import "TableSource.h"
@@ -30,8 +32,6 @@
 #import "SPTableData.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
@@ -44,7 +44,7 @@
  */
 - (IBAction)updateTables:(id)sender
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	NSArray *resultRow;
 	int i;
 	BOOL containsViews = NO;
@@ -208,7 +208,7 @@
 	// Populate the table type (engine) popup button
 	[tableTypeButton removeAllItems];
 	
-	CMMCPResult *engines = [mySQLConnection queryString:@"SELECT engine FROM information_schema.engines"];
+	MCPResult *engines = [mySQLConnection queryString:@"SELECT engine FROM information_schema.engines"];
 	
 	[engines dataSeek:0];
 	
@@ -395,7 +395,7 @@
  */
 - (IBAction)copyTable:(id)sender
 {
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 //	NSArray *fieldNames;
 //	NSArray *theRow;
 //	NSMutableString *rowValue = [NSMutableString string];
@@ -493,7 +493,7 @@
 		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
 		{
 			// get the create syntax
-			CMMCPResult *theResult;
+			MCPResult *theResult;
 			if([self tableType] == SP_TABLETYPE_PROC)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[tables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]]];
 			else if([self tableType] == SP_TABLETYPE_FUNC)
@@ -630,7 +630,7 @@
 	} else {
 		// procedures and functions can only be renamed if one creates the new one and delete the old one
 		// get the create syntax
-		CMMCPResult *theResult;
+		MCPResult *theResult;
 		if([self tableType] == SP_TABLETYPE_PROC)
 			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self tableName] backtickQuotedString]]];
 		else if([self tableType] == SP_TABLETYPE_FUNC)
@@ -774,7 +774,7 @@
 /**
  * Sets the connection (received from TableDocument) and makes things that have to be done only once 
  */
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[self updateTables:self];
@@ -963,7 +963,7 @@
 				tableType = @"FUNCTION";
 				break;
 			}
-			CMMCPResult *theResult;
+			MCPResult *theResult;
 			if([self tableType] == SP_TABLETYPE_PROC)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[tables objectAtIndex:rowIndex] backtickQuotedString]]];
 			else if([self tableType] == SP_TABLETYPE_FUNC)

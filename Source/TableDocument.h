@@ -30,8 +30,6 @@
 #import <WebKit/WebKit.h>
 #import "SPSSHTunnel.h"
 
-@class CMMCPConnection, CMMCPResult;
-
 /**
  * The TableDocument class controls the primary database view window.
  */
@@ -91,7 +89,7 @@
 	IBOutlet id syntaxViewContent;
 	IBOutlet NSWindow *createTableSyntaxWindow;
 
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	SPSSHTunnel *sshTunnel;
 
 	NSArray *variables;
@@ -144,7 +142,7 @@
 - (NSString *)getHTMLforPrint;
 
 //connection getter
-- (CMMCPConnection *)sharedConnection;
+- (MCPConnection *)sharedConnection;
 
 //database methods
 - (IBAction)setDatabases:(id)sender;

@@ -35,7 +35,7 @@ enum sp_table_types
 	SP_TABLETYPE_FUNC = 3
 };
 
-@class CMMCResult, CMMCPConnection;
+@class CMMCResult, MCPConnection;
 
 @interface TablesList : NSObject {
 
@@ -70,7 +70,7 @@ enum sp_table_types
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	
 	NSMutableArray *tables;
 	NSMutableArray *tableTypes;
@@ -91,7 +91,7 @@ enum sp_table_types
 
 // Additional methods
 - (void)removeTable;
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 
 // Getters

@@ -41,8 +41,6 @@
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPQueryConsole.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "MainController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPPreferenceController.h"
@@ -239,7 +237,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	return result;
 }
 
-- (CMMCPConnection *)sharedConnection
+- (MCPConnection *)sharedConnection
 {
 	return mySQLConnection;
 }
@@ -387,7 +385,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (void)initiateMySQLConnection
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	id version;
 
 	if (sshTunnel)
@@ -400,20 +398,20 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// Note it is currently possible to connect to a socket with a useless SSH tunnel set
 	// up; this will be improved upon in future UI/code work.
 	if (![[socketField stringValue] isEqualToString:@""]) {
-		mySQLConnection = [[CMMCPConnection alloc] initToSocket:[socketField stringValue]
+		mySQLConnection = [[MCPConnection alloc] initToSocket:[socketField stringValue]
 													  withLogin:[userField stringValue]];
 		[hostField setStringValue:@"localhost"];
 
 	// Otherwise, initialise to host, using tunnel if appropriate
 	} else {
 		if (sshTunnel) {
-			mySQLConnection = [[CMMCPConnection alloc] initToHost:@"127.0.0.1"
+			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
 														withLogin:[userField stringValue]
 														usingPort:[sshTunnel localPort]];
 			[mySQLConnection setSSHTunnel:sshTunnel];
 			[sshTunnel release], sshTunnel = nil;
 		} else {
-			mySQLConnection = [[CMMCPConnection alloc] initToHost:[hostField stringValue]
+			mySQLConnection = [[MCPConnection alloc] initToHost:[hostField stringValue]
 														withLogin:[userField stringValue]
 														usingPort:[portField intValue]];
 		}
@@ -921,7 +919,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
-	CMMCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
+	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		int i;
 		int r = [theResult numOfRows];
@@ -1003,7 +1001,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
-		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
+		[mySQLConnection setEncoding:[MCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
 		[_encoding autorelease];
 		_encoding = [mysqlEncoding retain];
 	} else {
@@ -1208,7 +1206,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if( query == nil )
 		return;
 	
-	CMMCPResult *theResult = [mySQLConnection queryString:query];
+	MCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1263,7 +1261,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if( query == nil )
 		return;	
 	
-	CMMCPResult *theResult = [mySQLConnection queryString:query];
+	MCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1319,7 +1317,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)checkTable:(id)sender
 {	
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1364,7 +1362,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)analyzeTable:(id)sender
 {
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1409,7 +1407,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)optimizeTable:(id)sender
 {
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1454,7 +1452,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)repairTable:(id)sender
 {
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1535,7 +1533,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)checksumTable:(id)sender
 {	
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1621,7 +1619,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (void)showVariables:(id)sender
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	NSMutableArray *tempResult = [NSMutableArray array];
 	int i;
 	
@@ -2289,7 +2287,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 #pragma mark -
-#pragma mark SMySQL delegate methods
+#pragma mark MCPKit delegate methods
 
 /**
  * Invoked when framework will perform a query
@@ -2305,6 +2303,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)queryGaveError:(NSString *)error
 {	
 	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
+}
+
+- (MCPReconnect)shouldReconnectAfterConnectionFailure
+{
+	return MCPConnectYes;
 }
 
 #pragma mark -

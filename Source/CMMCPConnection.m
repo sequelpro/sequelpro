@@ -38,7 +38,7 @@ static void forcePingTimeout(int signalNumber);
 - (void)getServerVersionString
 {
 	if( mConnected ) {
-		CMMCPResult *theResult;
+		MCPResult *theResult;
 		theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
 		if ([theResult numOfRows]) {
 			[theResult dataSeek:0];
@@ -620,7 +620,7 @@ static void forcePingTimeout(int signalNumber);
  * Override the standard queryString: method to default to the connection encoding, as before,
  * before pssing on to queryString: usingEncoding:.
  */
-- (CMMCPResult *)queryString:(NSString *) query
+- (MCPResult *)queryString:(NSString *) query
 {
 	return [self queryString:query usingEncoding:mEncoding];
 }
@@ -632,9 +632,9 @@ static void forcePingTimeout(int signalNumber);
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
  */
-- (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
+- (MCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
-	CMMCPResult	*theResult;
+	MCPResult	*theResult;
 	NSDate		*queryStartDate;
 	NSThread	*queryThread;
 	BOOL connectionHasTimedOut = NO, connectionChecked = NO;
@@ -695,8 +695,8 @@ static void forcePingTimeout(int signalNumber);
 	if (0 == workerQueryResultCode) {
 		if (mysql_field_count(mConnection) != 0) {
 
-			// Use CMMCPResult instead of MCPResult
-			theResult = [[CMMCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			// Use MCPResult instead of MCPResult
+			theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
 		} else {
 			return nil;
 		}

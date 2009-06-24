@@ -23,9 +23,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "SPDatabaseData.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "SPStringAdditions.h"
 
 @interface SPDatabaseData (PrivateAPI)
@@ -155,7 +155,7 @@
 {
 	NSMutableArray *array = [NSMutableArray array];
 	
-	CMMCPResult *result = [connection queryString:query];
+	MCPResult *result = [connection queryString:query];
 	
 	// Log any errors
 	if (![[connection getLastErrorMessage] isEqualToString:@""]) {

@@ -34,198 +34,365 @@
 
 NSCalendarDate *MCPYear0000;
 
-@implementation MCPResult
-/*" 
- Hold the results of a query to a MySQL database server. It correspond to the MYSQL_RES structure of the C API, and to the statement handle of the PERL DBI/DBD.
- 
- Uses the !{mysql_store_result()} function from the C API. 
- 
- This object is generated only by a MCPConnection object, in this way (see #{MCPConnection} documentation):
- 
- !{
-	 MCPConnection	*theConnec = [MCPConnection alloc];
-	 MCPResult	*theRes;
-	 NSDictionary	*theDict;
-	 NSArray		*theColNames;
-	 int		i, j;
-	 
-	 theConnec = [theConnec initToHost:@"albert.com" withLogin:@"toto" password:@"albert" usingPort:0];
-	 [theConnec selectDB:@"db1"];
-	 theRes = [theConnec queryString:@"select * from table1"];
-	 theColNames = [theRes fetchFiedlsName];
-	 i = 0;
-	 while (theDict = [theRes fetchRowAsDictionary]){
-		 NSLog(@"Row : %d\n", i);
-		 for (j=0; j<[theColNames count]; j++) {
-			 NSLog(@"  Field : %@, contain : %@\n", [theColNames objectAtIndex:j], [theDict objectForKey:[theColNames objectAtIndex:j]]);
-		 }
-		 i++;
-	 }
- }
- 
- "*/
+const OUR_CHARSET our_charsets60[] =
+{
+	{1,   "big5","big5_chinese_ci", 1, 2},
+	{3,   "dec8", "dec8_swedisch_ci", 1, 1},
+	{4,   "cp850", "cp850_general_ci", 1, 1},
+	{6,   "hp8", "hp8_english_ci", 1, 1},
+	{7,   "koi8r", "koi8r_general_ci", 1, 1},
+	{8,   "latin1", "latin1_swedish_ci", 1, 1},
+	{9,   "latin2", "latin2_general_ci", 1, 1},
+	{10,  "swe7", "swe7_swedish_ci", 1, 1},
+	{11,  "ascii", "ascii_general_ci", 1, 1},
+	{12,  "ujis", "ujis_japanese_ci", 1, 3},
+	{13,  "sjis", "sjis_japanese_ci", 1, 2},
+	{16,  "hebrew", "hebrew_general_ci", 1, 1},
+	{18,  "tis620", "tis620_thai_ci", 1, 1},
+	{19,  "euckr", "euckr_korean_ci", 1, 2},
+	{22,  "koi8u", "koi8u_general_ci", 1, 1},
+	{24,  "gb2312", "gb2312_chinese_ci", 1, 2},
+	{25,  "greek", "greek_general_ci", 1, 1},
+	{26,  "cp1250", "cp1250_general_ci", 1, 1},
+	{28,  "gbk", "gbk_chinese_ci", 1, 2},
+	{30,  "latin5", "latin5_turkish_ci", 1, 1},
+	{32,  "armscii8", "armscii8_general_ci", 1, 1},
+	{33,  "utf8", "utf8_general_ci", 1, 3},
+	{35,  "ucs2", "ucs2_general_ci", 2, 2},
+	{36,  "cp866", "cp866_general_ci", 1, 1},
+	{37,  "keybcs2", "keybcs2_general_ci", 1, 1},
+	{38,  "macce", "macce_general_ci", 1, 1},
+	{39,  "macroman", "macroman_general_ci", 1, 1},
+	{40,  "cp852", "cp852_general_ci", 1, 1},
+	{41,  "latin7", "latin7_general_ci", 1, 1},
+	{51,  "cp1251", "cp1251_general_ci", 1, 1},
+	{57,  "cp1256", "cp1256_general_ci", 1, 1},
+	{59,  "cp1257", "cp1257_general_ci", 1, 1},
+	{63,  "binary", "binary", 1, 1},
+	{92,  "geostd8", "geostd8_general_ci", 1, 1},
+	{95,  "cp932", "cp932_japanese_ci", 1, 2},
+	{97,  "eucjpms", "eucjpms_japanese_ci", 1, 3},
+	{2,   "latin2", "latin2_czech_cs", 1, 1},
+	{5,   "latin1", "latin1_german_ci", 1, 1},
+	{14,  "cp1251", "cp1251_bulgarian_ci", 1, 1},
+	{15,  "latin1", "latin1_danish_ci", 1, 1},
+	{17,  "filename", "filename", 1, 5},
+	{20,  "latin7", "latin7_estonian_cs", 1, 1},
+	{21,  "latin2", "latin2_hungarian_ci", 1, 1},
+	{23,  "cp1251", "cp1251_ukrainian_ci", 1, 1},
+	{27,  "latin2", "latin2_croatian_ci", 1, 1},
+	{29,  "cp1257", "cp1257_lithunian_ci", 1, 1},
+	{31,  "latin1", "latin1_german2_ci", 1, 1},
+	{34,  "cp1250", "cp1250_czech_cs", 1, 1},
+	{42,  "latin7", "latin7_general_cs", 1, 1},
+	{43,  "macce", "macce_bin", 1, 1},
+	{44,  "cp1250", "cp1250_croatian_ci", 1, 1},
+	{45,  "utf8", "utf8_general_ci", 1, 1},
+	{46,  "utf8", "utf8_bin", 1, 1},
+	{47,  "latin1", "latin1_bin", 1, 1},
+	{48,  "latin1", "latin1_general_ci", 1, 1},
+	{49,  "latin1", "latin1_general_cs", 1, 1},
+	{50,  "cp1251", "cp1251_bin", 1, 1},
+	{52,  "cp1251", "cp1251_general_cs", 1, 1},
+	{53,  "macroman", "macroman_bin", 1, 1},
+	{58,  "cp1257", "cp1257_bin", 1, 1},
+	{60,  "armascii8", "armascii8_bin", 1, 1},
+	{65,  "ascii", "ascii_bin", 1, 1},
+	{66,  "cp1250", "cp1250_bin", 1, 1},
+	{67,  "cp1256", "cp1256_bin", 1, 1},
+	{68,  "cp866", "cp866_bin", 1, 1},
+	{69,  "dec8", "dec8_bin", 1, 1},
+	{70,  "greek", "greek_bin", 1, 1},
+	{71,  "hebew", "hebrew_bin", 1, 1},
+	{72,  "hp8", "hp8_bin", 1, 1},
+	{73,  "keybcs2", "keybcs2_bin", 1, 1},
+	{74,  "koi8r", "koi8r_bin", 1, 1},
+	{75,  "koi8u", "koi8u_bin", 1, 1},
+	{77,  "latin2", "latin2_bin", 1, 1},
+	{78,  "latin5", "latin5_bin", 1, 1},
+	{79,  "latin7", "latin7_bin", 1, 1},
+	{80,  "cp850", "cp850_bin", 1, 1},
+	{81,  "cp852", "cp852_bin", 1, 1},
+	{82,  "swe7", "swe7_bin", 1, 1},
+	{93,  "geostd8", "geostd8_bin", 1, 1},
+	{83,  "utf8", "utf8_bin", 1, 3},
+	{84,  "big5", "big5_bin", 1, 2},
+	{85,  "euckr", "euckr_bin", 1, 2},
+	{86,  "gb2312", "gb2312_bin", 1, 2},
+	{87,  "gbk", "gbk_bin", 1, 2},
+	{88,  "sjis", "sjis_bin", 1, 2},
+	{89,  "tis620", "tis620_bin", 1, 1},
+	{90,  "ucs2", "ucs2_bin", 2, 2},
+	{91,  "ujis", "ujis_bin", 1, 3},
+	{94,  "latin1", "latin1_spanish_ci", 1, 1},
+	{96,  "cp932", "cp932_bin", 1, 2},
+	{99,  "cp1250", "cp1250_polish_ci", 1, 1},
+	{98,  "eucjpms", "eucjpms_bin", 1, 3},
+	{128, "ucs2", "ucs2_unicode_ci", 2, 2},
+	{129, "ucs2", "ucs2_icelandic_ci", 2, 2},
+	{130, "ucs2", "ucs2_latvian_ci", 2, 2},
+	{131, "ucs2", "ucs2_romanian_ci", 2, 2},
+	{132, "ucs2", "ucs2_slovenian_ci", 2, 2},
+	{133, "ucs2", "ucs2_polish_ci", 2, 2},
+	{134, "ucs2", "ucs2_estonian_ci", 2, 2},
+	{135, "ucs2", "ucs2_spanish_ci", 2, 2},
+	{136, "ucs2", "ucs2_swedish_ci", 2, 2},
+	{137, "ucs2", "ucs2_turkish_ci", 2, 2},
+	{138, "ucs2", "ucs2_czech_ci", 2, 2},
+	{139, "ucs2", "ucs2_danish_ci", 2, 2},
+	{140, "ucs2", "ucs2_lithunian_ci", 2, 2},
+	{141, "ucs2", "ucs2_slovak_ci", 2, 2},
+	{142, "ucs2", "ucs2_spanish2_ci", 2, 2},
+	{143, "ucs2", "ucs2_roman_ci", 2, 2},
+	{144, "ucs2", "ucs2_persian_ci", 2, 2},
+	{145, "ucs2", "ucs2_esperanto_ci", 2, 2},
+	{146, "ucs2", "ucs2_hungarian_ci", 2, 2},
+	{147, "ucs2", "ucs2_sinhala_ci", 2, 2},
+	{192, "utf8mb3", "utf8mb3_general_ci", 1, 3},
+	{193, "utf8mb3", "utf8mb3_icelandic_ci", 1, 3},
+	{194, "utf8mb3", "utf8mb3_latvian_ci", 1, 3},
+	{195, "utf8mb3", "utf8mb3_romanian_ci", 1, 3},
+	{196, "utf8mb3", "utf8mb3_slovenian_ci", 1, 3},
+	{197, "utf8mb3", "utf8mb3_polish_ci", 1, 3},
+	{198, "utf8mb3", "utf8mb3_estonian_ci", 1, 3},
+	{119, "utf8mb3", "utf8mb3_spanish_ci", 1, 3},
+	{200, "utf8mb3", "utf8mb3_swedish_ci", 1, 3},
+	{201, "utf8mb3", "utf8mb3_turkish_ci", 1, 3},
+	{202, "utf8mb3", "utf8mb3_czech_ci", 1, 3},
+	{203, "utf8mb3", "utf8mb3_danish_ci", 1, 3},
+	{204, "utf8mb3", "utf8mb3_lithunian_ci", 1, 3},
+	{205, "utf8mb3", "utf8mb3_slovak_ci", 1, 3},
+	{206, "utf8mb3", "utf8mb3_spanish2_ci", 1, 3},
+	{207, "utf8mb3", "utf8mb3_roman_ci", 1, 3},
+	{208, "utf8mb3", "utf8mb3_persian_ci", 1, 3},
+	{209, "utf8mb3", "utf8mb3_esperanto_ci", 1, 3},
+	{210, "utf8mb3", "utf8mb3_hungarian_ci", 1, 3},
+	{211, "utf8mb3", "utf8mb3_sinhala_ci", 1, 3},
+	{224, "utf8", "utf8_unicode_ci", 1, 3},
+	{225, "utf8", "utf8_icelandic_ci", 1, 3},
+	{226, "utf8", "utf8_latvian_ci", 1, 3},
+	{227, "utf8", "utf8_romanian_ci", 1, 3},
+	{228, "utf8", "utf8_slovenian_ci", 1, 3},
+	{229, "utf8", "utf8_polish_ci", 1, 3},
+	{230, "utf8", "utf8_estonian_ci", 1, 3},
+	{231, "utf8", "utf8_spanish_ci", 1, 3},
+	{232, "utf8", "utf8_swedish_ci", 1, 3},
+	{233, "utf8", "utf8_turkish_ci", 1, 3},
+	{234, "utf8", "utf8_czech_ci", 1, 3},
+	{235, "utf8", "utf8_danish_ci", 1, 3},
+	{236, "utf8", "utf8_lithuanian_ci", 1, 3},
+	{237, "utf8", "utf8_slovak_ci", 1, 3},
+	{238, "utf8", "utf8_spanish2_ci", 1, 3},
+	{239, "utf8", "utf8_roman_ci", 1, 3},
+	{240, "utf8", "utf8_persian_ci", 1, 3},
+	{241, "utf8", "utf8_esperanto_ci", 1, 3},
+	{242, "utf8", "utf8_hungarian_ci", 1, 3},
+	{243, "utf8", "utf8_sinhala_ci", 1, 3},
+	{254, "utf8mb3", "utf8mb3_general_cs", 1, 3},
+	{0, NULL, NULL, 0, 0}
+};
 
-+ (void) initialize
-	/*"
-	Initialize the class version to 3.0.1
-	 "*/
+@implementation MCPResult
+
+/**
+ * Hold the results of a query to a MySQL database server. It correspond to the MYSQL_RES structure of the C API, and to the statement handle of the PERL DBI/DBD.
+ *
+ * Uses the !{mysql_store_result()} function from the C API. 
+ *
+ * This object is generated only by a MCPConnection object, in this way (see #{MCPConnection} documentation):
+ *
+ *	 MCPConnection *theConnec = [MCPConnection alloc];
+ *	 MCPResult *theRes;
+ *	 NSDictionary *theDict; 
+ *	 NSArray *theColNames; 
+ *	 int i, j; 
+ *	 
+ *	 theConnec = [theConnec initToHost:@"albert.com" withLogin:@"toto" password:@"albert" usingPort:0]; 
+ *	 [theConnec selectDB:@"db1"];
+ *	 theRes = [theConnec queryString:@"select * from table1"];
+ *	 theColNames = [theRes fetchFiedlsName];
+ *	 i = 0;
+ *
+ * 	 while (theDict = [theRes fetchRowAsDictionary]) {
+ *		 NSLog(@"Row : %d\n", i); 
+ *		 for (j=0; j<[theColNames count]; j++) {
+ *			 NSLog(@"  Field : %@, contain : %@\n", [theColNames objectAtIndex:j], [theDict objectForKey:[theColNames objectAtIndex:j]]);
+ * 		 }
+ *		 i++; 
+ *	 }
+ */
+
+/**
+ * Initialize the class version to 3.0.1
+ */
++ (void)initialize
 {
 	if (self = [MCPResult class]) {
 		[self setVersion:030001]; // Ma.Mi.Re -> MaMiRe
 		MCPYear0000 = [[NSCalendarDate dateWithTimeIntervalSinceReferenceDate:-63146822400.0] retain];
 		[MCPYear0000 setCalendarFormat:@"%Y"];
 	}
-	return;
 }
 
+#pragma mark -
+#pragma mark Initialisation
 
-- (id) initWithMySQLPtr:(MYSQL *) mySQLPtr encoding:(NSStringEncoding) iEncoding timeZone:(NSTimeZone *) iTimeZone
-/*"
-initialise a MCPResult, it is used internally by MCPConnection !{queryString:} method: the only proper way to get a running MCPResult object.
-"*/
+/**
+ * Empty init, normaly of NO use to the user, again, MCPResult should be made through calls to MCPConnection
+ */
+- (id)init
 {
-	self = [super init];
-	mEncoding = iEncoding;
-	mTimeZone = [iTimeZone retain];
-	if (mResult) {
-		mysql_free_result(mResult);
-		mResult = NULL;
-	}
-	if (mNames) {
-		[mNames release];
-		mNames = NULL;
-	}
-	mResult = mysql_store_result(mySQLPtr);
-	if (mResult) {
-		mNumOfFields = mysql_num_fields(mResult);
-	}
-	else {
+	if ((self = [super init])) {
+		mEncoding = [MCPConnection defaultMySQLEncoding];
+		
+		if (mResult) {
+			mysql_free_result(mResult);
+			mResult = NULL;
+		}
+		
+		if (mNames) {
+			[mNames release];
+			mNames = NULL;
+		}
+		
+		if (mMySQLLocales == NULL) {
+			mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
+		}
+		
 		mNumOfFields = 0;
 	}
-	/*
-	 if (mResult == NULL) {
-		 [self autorelease];
-		 return nil;
-	 }
-	 */
-	if (mMySQLLocales == NULL) {
-		mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
+	
+	return self;    
+}
+
+/**
+ * Initialise a MCPResult, it is used internally by MCPConnection !{queryString:} method: the only proper 
+ * way to get a running MCPResult object.
+ */
+- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)iEncoding timeZone:(NSTimeZone *)iTimeZone
+{
+	if ((self = [super init])) {
+		mEncoding = iEncoding;
+		mTimeZone = [iTimeZone retain];
+		
+		if (mResult) {
+			mysql_free_result(mResult);
+			mResult = NULL;
+		}
+		
+		if (mNames) {
+			[mNames release];
+			mNames = NULL;
+		}
+		
+		mResult = mysql_store_result(mySQLPtr);
+		
+		if (mResult) {
+			mNumOfFields = mysql_num_fields(mResult);
+		}
+		else {
+			mNumOfFields = 0;
+		}
+		
+		if (mMySQLLocales == NULL) {
+			mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
+		}
 	}
+	
 	return self;
 }
 
-
-- (id) initWithResPtr:(MYSQL_RES *) mySQLResPtr encoding:(NSStringEncoding) iEncoding timeZone:(NSTimeZone *) iTimeZone
-/*"
-This metod is used internally by MCPConnection object when it have already a MYSQL_RES object to initialise MCPResult object.
-Initialise a MCPResult with the MYSQL_RES pointer (returned by such a function as mysql_list_dbs).
-NB: MCPResult should be made by using one of the method of MCPConnection.
-"*/
+/**
+ * This metod is used internally by MCPConnection object when it have already a MYSQL_RES object to initialise 
+ * MCPResult object. Initialise a MCPResult with the MYSQL_RES pointer (returned by such a function as mysql_list_dbs).
+ * NB: MCPResult should be made by using one of the method of MCPConnection.
+ */
+- (id)initWithResPtr:(MYSQL_RES *)mySQLResPtr encoding:(NSStringEncoding)iEncoding timeZone:(NSTimeZone *)iTimeZone
 {
-	self = [super init];
-	mEncoding = iEncoding;
-	mTimeZone = [iTimeZone retain];
-	if (mResult) {
-		mysql_free_result(mResult);
-		mResult = NULL;
+	if ((self = [super init])) {
+		mEncoding = iEncoding;
+		mTimeZone = [iTimeZone retain];
+		
+		if (mResult) {
+			mysql_free_result(mResult);
+			mResult = NULL;
+		}
+		
+		if (mNames) {
+			[mNames release];
+			mNames = NULL;
+		}
+		
+		mResult = mySQLResPtr;
+		
+		if (mResult) {
+			mNumOfFields = mysql_num_fields(mResult);
+		}
+		else {
+			mNumOfFields = 0;
+		}
+
+		if (mMySQLLocales == NULL) {
+			mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
+		}
 	}
-	if (mNames) {
-		[mNames release];
-		mNames = NULL;
-	}
-	mResult = mySQLResPtr;
-	if (mResult) {
-		mNumOfFields = mysql_num_fields(mResult);
-	}
-	else {
-		mNumOfFields = 0;
-	}
-	/*
-	 if (mResult == NULL) {
-		 [self autorelease];
-		 return nil;
-    }
-	 */
-	if (mMySQLLocales == NULL) {
-		mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
-	}
+	
 	return self;    
 }
 
-- (id) init
-	/*"
-	Empty init, normaly of NO use to the user, again, MCPResult should be made through calls to MCPConnection
-	 "*/
-{
-	self = [super init];
-	mEncoding = [MCPConnection defaultMySQLEncoding];
-	if (mResult) {
-		mysql_free_result(mResult);
-		mResult = NULL;
-	}
-	if (mNames) {
-		[mNames release];
-		mNames = NULL;
-	}
-	if (mMySQLLocales == NULL) {
-		mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
-	}
-	mNumOfFields = 0;
-	return self;    
-}
+#pragma mark -
+#pragma mark Result info
 
-
-- (my_ulonglong) numOfRows
-	/*"
-	Return the number of rows selected by the query.
-	 "*/
+/**
+ * Return the number of rows selected by the query.
+ */
+- (my_ulonglong)numOfRows
 {
 	if (mResult) {
 		return mysql_num_rows(mResult);
 	}
+	
 	return 0;
 }
 
-
-- (unsigned int) numOfFields
-	/*"
-	Return the number of fields selected by the query. As a side effect it forces an update of the number of fields.
-	 "*/
+/**
+ * Return the number of fields selected by the query. As a side effect it forces an update of the number of fields.
+ */
+- (unsigned int)numOfFields
 {
 	if (mResult) {
 		return mNumOfFields = mysql_num_fields(mResult);
 	}
+	
 	return mNumOfFields = 0;
 }
 
+#pragma mark -
+#pragma mark Rows
 
-- (void) dataSeek:(my_ulonglong) row
-	/*"
-	Go to a precise row in the selected result. 0 is the very first row
-	 "*/
+/**
+ * Go to a precise row in the selected result. 0 is the very first row.
+ */
+- (void)dataSeek:(my_ulonglong)row
 {
-	my_ulonglong	theRow = (row < 0)? 0 : row;
-	theRow = (theRow < [self numOfRows])? theRow : ([self numOfRows]-1);
+	my_ulonglong theRow = (row < 0)? 0 : row;
+	theRow = (theRow < [self numOfRows]) ? theRow : ([self numOfRows] - 1);
 	mysql_data_seek(mResult,theRow);
-	return;
 }
 
-
-- (id) fetchRowAsType:(MCPReturnType) aType
-	/*"
-	Return the next row of the result as a collection of type defined by aType (namely MCPTypeArray or MCPTypeDictionary). Each field of the row is made into a proper object to hold the info (NSNumber -indeed MCPNumber, to keep signedness-, NSString...).
-	 
-	 This method returned directly the #{mutable} object generated while going through all the columns
-	 "*/
+/**
+ *
+ */
+- (id)fetchRowAsType:(MCPReturnType)aType
 {
-	MYSQL_ROW			theRow;
-	unsigned long		*theLengths;
+	MYSQL_ROW		theRow;
+	unsigned long	*theLengths;
 	MYSQL_FIELD		*theField;
-	int					i;
-	id					theReturn;
+	int				i;
+	id				theReturn;
 	
 	if (mResult == NULL) {
-// If there is no results, returns nil, as after the last row...
+		// If there is no results, returns nil, as after the last row...
 		return nil;
 	}
 	
@@ -252,15 +419,15 @@ NB: MCPResult should be made by using one of the method of MCPConnection.
 	
 	theLengths = mysql_fetch_lengths(mResult);
 	theField = mysql_fetch_fields(mResult);
+	
 	for (i=0; i<mNumOfFields; i++) {
 		id	theCurrentObj;
 		
 		if (theRow[i] == NULL) {
 			theCurrentObj = [NSNull null];
-		}
-		else {
-			char	*theData = calloc(sizeof(char),theLengths[i]+1);
-//			   char  *theUselLess;
+		} else {
+			char *theData = calloc(sizeof(char),theLengths[i]+1);
+			//char *theUselLess;
 			memcpy(theData, theRow[i],theLengths[i]);
 			theData[theLengths[i]] = '\0';
 			
@@ -269,66 +436,27 @@ NB: MCPResult should be made by using one of the method of MCPConnection.
 				case FIELD_TYPE_SHORT:
 				case FIELD_TYPE_INT24:
 				case FIELD_TYPE_LONG:
-					theCurrentObj = (theField[i].flags & UNSIGNED_FLAG) ? [MCPNumber numberWithUnsignedLong:strtoul(theData, NULL, 0)] : [MCPNumber numberWithLong:strtol(theData, NULL, 0)];
-					/*
-					 if (theField[i].flags & UNSIGNED_FLAG) { // Signed integer (32b or less)
-						 theCurrentObj = [NSNumber numberWithUnsignedLong:strtoul(theData, NULL, 0)];
-					 }
-					 else { // Signed integer (32b or less)
-							  //                       theCurrentObj = [NSNumber numberWithLong:atol(theData)];
-						 theCurrentObj = [NSNumber numberWithLong:strtol(theData, NULL, 0)];
-					 }
-#warning Should check for UNSIGNED (using theField[i].flag UNSIGNED_FLAG)
-					 */
-					break;
 				case FIELD_TYPE_LONGLONG:
-					theCurrentObj = (theField[i].flags & UNSIGNED_FLAG) ? [MCPNumber numberWithUnsignedLongLong:strtoull(theData, NULL, 0)] : [MCPNumber numberWithLongLong:strtoll(theData, NULL, 0)];
-					/*
-					 theCurrentObj = [NSNumber numberWithLongLong:strtoq(theData, &theUselLess, 0)];
-#warning Should check for UNSIGNED (using theField[i].flag UNSIGNED_FLAG)
-					 */
-					break;
 				case FIELD_TYPE_DECIMAL:
-					theCurrentObj = [NSDecimalNumber decimalNumberWithString:[self stringWithCString:theData]];
-					break;
 				case FIELD_TYPE_FLOAT:
-					theCurrentObj = [MCPNumber numberWithFloat:atof(theData)];
-					break;
 				case FIELD_TYPE_DOUBLE:
-					theCurrentObj = [MCPNumber numberWithDouble:atof(theData)];
-					break;
 				case FIELD_TYPE_TIMESTAMP:
-// Indeed one should check which format it is (14,12...2) and get the corresponding format string
-// a switch on theLength[i] would do that...
-// Here it will crash if it's not default presentation : TIMESTAMP(14)
-					theCurrentObj = [NSCalendarDate dateWithString:[NSString stringWithFormat:@"%@ %@",[self stringWithCString:theData], [mTimeZone name]] calendarFormat:@"%Y-%m-%d %H:%M:%S %Z"];
-					[theCurrentObj setCalendarFormat:@"%Y-%m-%d %H:%M:%S"];
-					break;
 				case FIELD_TYPE_DATE:
-					theCurrentObj = [NSCalendarDate dateWithString:[NSString stringWithCString:theData] calendarFormat:@"%Y-%m-%d"];
-					[theCurrentObj setCalendarFormat:@"%Y-%m-%d"];
-					break;
 				case FIELD_TYPE_TIME:
-// Pass them back as string for the moment... no TIME object in Cocoa (so far)
-					theCurrentObj = [NSString stringWithUTF8String:theData];
-					break;
 				case FIELD_TYPE_DATETIME:
-					theCurrentObj = [NSCalendarDate dateWithString:[NSString stringWithCString:theData] calendarFormat:@"%Y-%m-%d %H:%M:%S"];
-					[theCurrentObj setCalendarFormat:@"%Y-%m-%d %H:%M:%S"];
-					break;
 				case FIELD_TYPE_YEAR:
-					theCurrentObj = [NSCalendarDate dateWithString:[NSString stringWithCString:theData] calendarFormat:@"%Y"];
-					[theCurrentObj setCalendarFormat:@"%Y"];
-// MySQL is not able to save years before 1900, and then gives a column of 0000, unfortunately, NSCalendarDate
-//  doesn't accept the string @"0000" in the method datewithString: calendarFormat:@"%Y"...
-					if (! theCurrentObj) {
-						theCurrentObj = MCPYear0000;
-					}
-						break;
 				case FIELD_TYPE_VAR_STRING:
 				case FIELD_TYPE_STRING:
+				case FIELD_TYPE_SET:
+				case FIELD_TYPE_ENUM:
+				case FIELD_TYPE_NEWDATE: // Don't know what the format for this type is...
 					theCurrentObj = [self stringWithCString:theData];
 					break;
+					
+				case FIELD_TYPE_BIT:
+					theCurrentObj = [NSString stringWithFormat:@"%u", theData[0]];
+					break;
+					
 				case FIELD_TYPE_TINY_BLOB:
 				case FIELD_TYPE_BLOB:
 				case FIELD_TYPE_MEDIUM_BLOB:
@@ -336,39 +464,33 @@ NB: MCPResult should be made by using one of the method of MCPConnection.
 					theCurrentObj = [NSData dataWithBytes:theData length:theLengths[i]];
 					if (!(theField[i].flags & BINARY_FLAG)) { // It is TEXT and NOT BLOB...
 						theCurrentObj = [self stringWithText:theCurrentObj];
-					}
+					} // #warning Should check for TEXT (using theField[i].flag BINARY_FLAG)
 					break;
-				case FIELD_TYPE_SET:
-					theCurrentObj = [self stringWithCString:theData];
-					break;
-				case FIELD_TYPE_ENUM:
-					theCurrentObj = [self stringWithCString:theData];
-					break;
+					
 				case FIELD_TYPE_NULL:
-				   theCurrentObj = [NSNull null];
+					theCurrentObj = [NSNull null];
 					break;
-				case FIELD_TYPE_NEWDATE:
-// Don't know what the format for this type is...
-					theCurrentObj = [self stringWithCString:theData];
-					break;
+					
 				default:
-					NSLog (@"in fetchRowAsDictionary : Unknown type : %d for column %d, send back a NSData object", (int)theField[i].type, (int)i);
+					NSLog (@"in fetchRowAsType : Unknown type : %d for column %d, send back a NSData object", (int)theField[i].type, (int)i);
 					theCurrentObj = [NSData dataWithBytes:theData length:theLengths[i]];
 					break;
 			}
+			
 			free(theData);
-// Some of the creators return nil object...
+			
+			// Some of the creators return nil object...
 			if (theCurrentObj == nil) {
 				theCurrentObj = [NSNull null];
 			}
 		}
+		
 		switch (aType) {
-			case MCPTypeArray :
-				[theReturn addObject:theCurrentObj];
-				break;
 			case MCPTypeDictionary :
-				[theReturn setObject:theCurrentObj forKey:[mNames objectAtIndex:i]];
+				[theReturn setObject:theCurrentObj forKey:NSArrayObjectAtIndex(mNames, i)];
 				break;
+				
+			case MCPTypeArray :
 			default :
 				[theReturn addObject:theCurrentObj];
 				break;
@@ -378,69 +500,64 @@ NB: MCPResult should be made by using one of the method of MCPConnection.
 	return theReturn;
 }
 
-
-- (NSArray *) fetchRowAsArray
-	/*"
-	Return the next row of the result as an array, the index in select field order, the object a proper object for handling the information in the field (NSString, NSNumber ...).
-	 
-	 Just a #{typed} wrapper for method !{fetchRosAsType:} (with arg MCPTypeArray).
-	 
-	 
-	 NB: Returned object is immutable.
-	 "*/
+/**
+ * Return the next row of the result as an array, the index in select field order, the object a proper object 
+ * for handling the information in the field (NSString, NSNumber ...).
+ *
+ * Just a #{typed} wrapper for method !{fetchRosAsType:} (with arg MCPTypeArray).
+ *
+ * NB: Returned object is immutable.
+ */
+- (NSArray *)fetchRowAsArray
 {
-	NSMutableArray		*theArray = [self fetchRowAsType:MCPTypeArray];
-	if (theArray) {
-		return [NSArray arrayWithArray:theArray];
-	}
-	else {
-		return nil;
-	}
+	NSMutableArray *theArray = [self fetchRowAsType:MCPTypeArray];
+			
+	return (theArray) ? [NSArray arrayWithArray:theArray] : nil;
 }
 
-
-- (NSDictionary *) fetchRowAsDictionary
-	/*"
-	Return the next row of the result as a dictionary, the key being the field name, the object a proper object for handling the information in the field (NSString, NSNumber ...).
-	 
-	 Just a #{typed} wrapper for method !{fetchRosAsType:} (with arg MCPTypeDictionary).
-	 
-	 
-	 NB: Returned object is immutable.
-	 "*/
+/**
+ * Return the next row of the result as a dictionary, the key being the field name, the object a proper object 
+ * for handling the information in the field (NSString, NSNumber ...).
+ *
+ * Just a #{typed} wrapper for method !{fetchRosAsType:} (with arg MCPTypeDictionary).
+ *
+ * NB: Returned object is immutable.
+ */
+- (NSDictionary *)fetchRowAsDictionary
 {
-	NSMutableDictionary		*theDict = [self fetchRowAsType:MCPTypeDictionary];
-	if (theDict) {
-		return [NSDictionary dictionaryWithDictionary:theDict];
-	}
-	else {
-		return nil;
-	}
+	NSMutableDictionary	*theDict = [self fetchRowAsType:MCPTypeDictionary];
+
+	return (theDict) ? [NSDictionary dictionaryWithDictionary:theDict] : nil;
 }
 
+#pragma mark -
+#pragma mark Columns
 
-- (NSArray *) fetchFieldNames
-/*" Generate the mNames if not already generated, and return it.
-
-mNames is a NSArray holding the names of the fields(columns) of the results
-"*/
+/**
+ * Generate the mNames if not already generated, and return it.
+ *
+ * mNames is a NSArray holding the names of the fields(columns) of the results.
+ */
+- (NSArray *)fetchFieldNames
 {
-	unsigned int		theNumFields;
-	int				i;
-	NSMutableArray		*theNamesArray;
-	MYSQL_FIELD			*theField;
+	int	i;
+	unsigned int theNumFields;
+	NSMutableArray *theNamesArray;
+	MYSQL_FIELD	*theField;
 	
 	if (mNames) {
 		return mNames;
 	}
+	
 	if (mResult == NULL) {
-// If no results, give an empty array. Maybe it's better to give a nil pointer?
+		// If no results, give an empty array. Maybe it's better to give a nil pointer?
 		return (mNames = [[NSArray array] retain]);
 	}
 	
 	theNumFields = [self numOfFields];
 	theNamesArray = [NSMutableArray arrayWithCapacity: theNumFields];
-	theField = mysql_fetch_fields(mResult);    
+	theField = mysql_fetch_fields(mResult);   
+	
 	for (i=0; i<theNumFields; i++) {
 		NSString	*theName = [self stringWithCString:theField[i].name];
 		if ((theName) && (![theName isEqualToString:@""])) {
@@ -454,19 +571,20 @@ mNames is a NSArray holding the names of the fields(columns) of the results
 	return (mNames = [[NSArray arrayWithArray:theNamesArray] retain]);
 }
 
-
-- (id) fetchTypesAsType:(MCPReturnType) aType
-/*" Return a collection of the fields's type. The type of collection is choosen by the aType variable (MCPTypeArray or MCPTypeDictionary).
-	 
-This method returned directly the #{mutable} object generated while going through all the columns
-"*/
+/**
+ * Return a collection of the fields's type. The type of collection is choosen by the aType variable 
+ * (MCPTypeArray or MCPTypeDictionary).
+ *
+ * This method returned directly the #{mutable} object generated while going through all the columns
+ */
+- (id)fetchTypesAsType:(MCPReturnType)aType
 {
-	int				i;
-	id				theTypes;
-	MYSQL_FIELD			*theField;
+	int i;
+	id theTypes;
+	MYSQL_FIELD	*theField;
 	
 	if (mResult == NULL) {
-// If no results, give an empty array. Maybe it's better to give a nil pointer?
+		// If no results, give an empty array. Maybe it's better to give a nil pointer?
 		return nil;
 	}
 	
@@ -485,7 +603,9 @@ This method returned directly the #{mutable} object generated while going throug
 			theTypes = [NSMutableArray arrayWithCapacity:mNumOfFields];
 			break;
 	}
+	
 	theField = mysql_fetch_fields(mResult);
+	
 	for (i=0; i<mNumOfFields; i++) {
 		NSString	*theType;
 		switch (theField[i].type) {
@@ -563,6 +683,7 @@ This method returned directly the #{mutable} object generated while going throug
 				NSLog (@"in fetchTypesAsArray : Unknown type for column %d of the MCPResult, type = %d", (int)i, (int)theField[i].type);
 				break;
 		}
+		
 		switch (aType) {
 			case MCPTypeArray :
 				[theTypes addObject:theType];
@@ -579,75 +700,69 @@ This method returned directly the #{mutable} object generated while going throug
 	return theTypes;
 }
 
-
-- (NSArray *) fetchTypesAsArray
-	/*"
-	Return an array of the fields' types.
-	 
-	 NB: Returned object is immutable.
-	 "*/
+/**
+ * Return an array of the fields' types.
+ *
+ * NB: Returned object is immutable.
+ */
+- (NSArray *)fetchTypesAsArray
 {
-	NSMutableArray		*theArray = [self fetchTypesAsType:MCPTypeArray];
-	if (theArray) {
-		return [NSArray arrayWithArray:theArray];
-	}
-	else {
-		return nil;
-	}
+	NSMutableArray *theArray = [self fetchTypesAsType:MCPTypeArray];
+	
+	return (theArray) ? [NSArray arrayWithArray:theArray] : nil;
 }
 
-
+/**
+ * Return a dictionnary of the fields' types (keys are the fields' names).
+ *
+ * NB: Returned object is immutable.
+ */
 - (NSDictionary*) fetchTypesAsDictionary
-	/*"
-	Return a dictionnary of the fields' types (keys are the fields' names).
-	 
-	 NB: Returned object is immutable.
-	 "*/
 {
-	NSMutableDictionary		*theDict = [self fetchTypesAsType:MCPTypeDictionary];
+	NSMutableDictionary *theDict = [self fetchTypesAsType:MCPTypeDictionary];
 		
-	if (theDict) {
-		return [NSDictionary dictionaryWithDictionary:theDict];
-	}
-	else {
-		return nil;
-	}
+	return (theDict) ? [NSDictionary dictionaryWithDictionary:theDict] : nil;
 }
 
-
-- (unsigned int) fetchFlagsAtIndex:(unsigned int) index
-	/*" Return the MySQL flags of the column at the given index... Can be used to check if a number is signed or not...
-	"*/
+/**
+ * Return the MySQL flags of the column at the given index... Can be used to check if a number is signed or not...
+ */
+- (unsigned int)fetchFlagsAtIndex:(unsigned int)index
 {
-   unsigned int      theRet;
-   unsigned int		theNumFields;
-   MYSQL_FIELD			*theField;
+   unsigned int theRet;
+   unsigned int theNumFields;
+   MYSQL_FIELD *theField;
    
    if (mResult == NULL) {
-// If no results, give an empty array. Maybe it's better to give a nil pointer?
+	   // If no results, give an empty array. Maybe it's better to give a nil pointer?
       return (0);
    }
    
    theNumFields = [self numOfFields];
    theField = mysql_fetch_fields(mResult);
+	
    if (index >= theNumFields) {
-// Out of range... should raise an exception
+	   // Out of range... should raise an exception
       theRet = 0;
    }
    else {
       theRet = theField[index].flags;
    }
+	
    return theRet;
 }
 
-- (unsigned int) fetchFlagsForKey:(NSString *) key
+/**
+ *
+ */
+- (unsigned int)fetchFlagsForKey:(NSString *)key
 {
-   unsigned int      theRet;
-   unsigned int		theNumFields, index;
-   MYSQL_FIELD			*theField;
+   unsigned int theRet;
+   unsigned int theNumFields, index;
+   MYSQL_FIELD *theField;
 	
    if (mResult == NULL) {
-// If no results, give an empty array. Maybe it's better to give a nil pointer?
+	   // If no results, give an empty array. Maybe it's better to give a nil pointer?
       return (0);
    }
 	
@@ -657,38 +772,44 @@ This method returned directly the #{mutable} object generated while going throug
 	
    theNumFields = [self numOfFields];
    theField = mysql_fetch_fields(mResult);
+	
    if ((index = [mNames indexOfObject:key]) == NSNotFound) {
-// Non existent key... should raise an exception
+	   // Non existent key... should raise an exception
       theRet = 0;
    }
    else {
       theRet = theField[index].flags;
    }
+	
    return theRet;
 }
 
-- (BOOL) isBlobAtIndex:(unsigned int) index
-	/*"
-	Return YES if the field with the given index is a BLOB. It should be used to discriminates between BLOBs and TEXTs.
-	 
-#{DEPRECATED}, This method is not consistent with the C API which is supposed to return YES for BOTH text and blob (and BTW is also deprecated)...
-	 
-#{NOTE} That the current version handles properly TEXT, and returns those as NSString (and not NSData as it used to be).
-	 "*/
+/**
+ * Return YES if the field with the given index is a BLOB. It should be used to discriminates between BLOBs 
+ * and TEXTs.
+ *
+ * #{DEPRECATED}, This method is not consistent with the C API which is supposed to return YES for BOTH 
+ * text and blob (and BTW is also deprecated)...
+ *
+ * #{NOTE} That the current version handles properly TEXT, and returns those as NSString (and not NSData as 
+ * it used to be).
+ */
+- (BOOL)isBlobAtIndex:(unsigned int)index
 {
-	BOOL			theRet;
-	unsigned int		theNumFields;
-	MYSQL_FIELD			*theField;
+	BOOL theRet;
+	unsigned int theNumFields;
+	MYSQL_FIELD	*theField;
 	
 	if (mResult == NULL) {
-// If no results, give an empty array. Maybe it's better to give a nil pointer?
+		// If no results, give an empty array. Maybe it's better to give a nil pointer?
 		return (NO);
 	}
 	
 	theNumFields = [self numOfFields];
 	theField = mysql_fetch_fields(mResult);
+	
 	if (index >= theNumFields) {
-// Out of range... should raise an exception
+		// Out of range... should raise an exception
 		theRet = NO;
 	}
 	else {
@@ -697,7 +818,6 @@ This method returned directly the #{mutable} object generated while going throug
 			case FIELD_TYPE_BLOB:
 			case FIELD_TYPE_MEDIUM_BLOB:
 			case FIELD_TYPE_LONG_BLOB:
-//                theRet = YES;
 				theRet = (theField[index].flags & BINARY_FLAG);
 				break;
 			default:
@@ -705,24 +825,28 @@ This method returned directly the #{mutable} object generated while going throug
 				break;
 		}
 	}
+	
 	return theRet;
 }
 
-- (BOOL) isBlobForKey:(NSString *) key
-	/*"
-	Return YES if the field (by name) with the given index is a BLOB. It should be used to discriminates between BLOBs and TEXTs.
-	 
-#{DEPRECATED}, This method is not consistent with the C API which is supposed to return YES for BOTH text and blob (and BTW is also deprecated)...
-	 
-#{NOTE} That the current version handles properly TEXT, and returns those as NSString (and not NSData as it used to be).
-	 "*/
+/**
+ * Return YES if the field (by name) with the given index is a BLOB. It should be used to discriminates 
+ * between BLOBs and TEXTs.
+ *
+ * #{DEPRECATED}, This method is not consistent with the C API which is supposed to return YES for BOTH 
+ * text and blob (and BTW is also deprecated)...
+ *
+ * #{NOTE} That the current version handles properly TEXT, and returns those as NSString (and not NSData 
+ * as it used to be).
+ */
+- (BOOL)isBlobForKey:(NSString *)key
 {
-	BOOL			theRet;
-	unsigned int		theNumFields, index;
-	MYSQL_FIELD			*theField;
+	BOOL theRet;
+	unsigned int theNumFields, index;
+	MYSQL_FIELD *theField;
 	
 	if (mResult == NULL) {
-// If no results, give an empty array. Maybe it's better to give a nil pointer?
+		// If no results, give an empty array. Maybe it's better to give a nil pointer?
 		return (NO);
 	}
 	
@@ -732,8 +856,9 @@ This method returned directly the #{mutable} object generated while going throug
 	
 	theNumFields = [self numOfFields];
 	theField = mysql_fetch_fields(mResult);
+	
 	if ((index = [mNames indexOfObject:key]) == NSNotFound) {
-// Non existent key... should raise an exception
+		// Non existent key... should raise an exception
 		theRet = NO;
 	}
 	else {
@@ -742,7 +867,6 @@ This method returned directly the #{mutable} object generated while going throug
 			case FIELD_TYPE_BLOB:
 			case FIELD_TYPE_MEDIUM_BLOB:
 			case FIELD_TYPE_LONG_BLOB:
-//                theRet = YES;
 				theRet = (theField[index].flags & BINARY_FLAG);
 				break;
 			default:
@@ -750,32 +874,38 @@ This method returned directly the #{mutable} object generated while going throug
 				break;
 		}
 	}
+	
 	return theRet;
 }
 
+#pragma mark -
+#pragma mark Conversion
 
-- (NSString *) stringWithText:(NSData *) theTextData
-	/*"
-	Use the string encoding to convert the returned NSData to a string (for a TEXT field)
-	 "*/
+/**
+ * Use the string encoding to convert the returned NSData to a string (for a TEXT field).
+ */
+- (NSString *)stringWithText:(NSData *)theTextData
 {
-	NSString		* theString;
+	NSString *theString;
 	
 	if (theTextData == nil) {
 		return nil;
 	}
+	
 	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
+	
 	if (theString) {
 		[theString autorelease];
 	}
+	
 	return theString;
 }
 
-
-- (NSString *) description
-/*"
-Return a (long) string containing the table of results, first line being the fields name, next line(s) the row(s). Useful to have NSLog logging a MCPResult (example).
-"*/
+/**
+ * Return a (long) string containing the table of results, first line being the fields name, next line(s) 
+ * the row(s). Useful to have NSLog logging a MCPResult (example).
+ */
+- (NSString *)description
 {
 	if (mResult == NULL) {
 		return @"This is an empty MCPResult\n";
@@ -787,19 +917,23 @@ Return a (long) string containing the table of results, first line being the fie
 		MYSQL_ROW_OFFSET		thePosition;
 		BOOL						trunc = [MCPConnection truncateLongField];
 		
-// First line, saying we are displaying a MCPResult
+		// First line, saying we are displaying a MCPResult
 		[theString appendFormat:@"MCPResult: (encoding : %d, dim %d x %d)\n", (long)mEncoding, (long)mNumOfFields, (long)[self numOfRows]];
-// Second line: the field names, tab separated
+		// Second line: the field names, tab separated
 		[self fetchFieldNames];
+		
 		for (i=0; i<(mNumOfFields-1); i++) {
 			[theString appendFormat:@"%@\t", [mNames objectAtIndex:i]];
 		}
+		
 		[theString appendFormat:@"%@\n", [mNames objectAtIndex:i]];
-// Next lines, the records (saving current position to put it back after the full display)
+		// Next lines, the records (saving current position to put it back after the full display)
 		thePosition = mysql_row_tell(mResult);
 		[self dataSeek:0];
-		while (theRow = [self fetchRowAsArray]) {
-			id			theField = [theRow objectAtIndex:i];
+		
+		while (theRow = [self fetchRowAsArray]) 
+		{
+			id theField = [theRow objectAtIndex:i];
 			
 			if (trunc) {
 				if (([theField isKindOfClass:[NSString class]]) && (kLengthOfTruncationForLog < [(NSString *)theField length])) {
@@ -810,62 +944,46 @@ Return a (long) string containing the table of results, first line being the fie
 				}
 			}
 				
-			for (i=0; i<(mNumOfFields - 1); i++) {
+			for (i=0; i<(mNumOfFields - 1); i++) 
+			{
 				[theString appendFormat:@"%@\t", theField];
 			}
+			
 			[theString appendFormat:@"%@\n", theField];
 		}
-// Returning to the proper row
-		mysql_row_seek(mResult,thePosition);
+		
+		// Returning to the proper row
+		mysql_row_seek(mResult, thePosition);
+		
 		return theString;
 	}
 }
 
-
-- (void) dealloc
-	/*
-	 Do one really needs an explanation for this method? Which by the way you should not use...
-	 */
+/**
+ * For internal use only. Transform a NSString to a C type string (ended with \0) using ethe character set 
+ * from the MCPConnection. Lossy conversions are enabled.
+ */
+- (const char *)cStringFromString:(NSString *)theString
 {
-	if (mResult) {
-		mysql_free_result(mResult);
-	}
-	if (mNames) {
-		[mNames autorelease];
-	}
-	if (mMySQLLocales) {
-		[mMySQLLocales autorelease];
-	}
+	NSMutableData *theData;
 	
-	[super dealloc];
-	return;
-}
-
-- (const char *) cStringFromString:(NSString *) theString
-	/*"
-	For internal use only. Transform a NSString to a C type string (ended with \0) using ethe character set from the MCPConnection.
-	 Lossy conversions are enabled.
-	 "*/
-{
-	NSMutableData	*theData;
-	
-	if (! theString) {
+	if (!theString) {
 		return (const char *)NULL;
 	}
 	
 	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:mEncoding allowLossyConversion:YES]];
 	[theData increaseLengthBy:1];
+	
 	return (const char *)[theData bytes];
 }
 
-
-- (NSString *) stringWithCString:(const char *) theCString
-	/*"
-	Return a NSString from a C style string encoded with the character set of theMCPConnection.
-	 "*/
+/**
+ * Return a NSString from a C style string encoded with the character set of theMCPConnection.
+ */
+- (NSString *)stringWithCString:(const char *)theCString
 {
-	NSData		* theData;
-	NSString		* theString;
+	NSData *theData;
+	NSString *theString;
 	
 	if (theCString == NULL) {
 		return @"";
@@ -873,10 +991,34 @@ Return a (long) string containing the table of results, first line being the fie
 		
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
 	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
+	
 	if (theString) {
 		[theString autorelease];
 	}
+	
 	return theString;
+}
+
+#pragma mark -
+
+/**
+ * Do one really needs an explanation for this method? Which by the way you should not use...
+ */
+- (void) dealloc
+{
+	if (mResult) {
+		mysql_free_result(mResult);
+	}
+	
+	if (mNames) {
+		[mNames autorelease];
+	}
+	
+	if (mMySQLLocales) {
+		[mMySQLLocales autorelease];
+	}
+	
+	[super dealloc];
 }
 
 @end

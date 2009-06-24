@@ -25,9 +25,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
-
 
 @interface TableSource : NSObject {
 
@@ -51,9 +48,9 @@
 	IBOutlet id tableTypeButton;
 	IBOutlet id structureGrabber;
 
-	CMMCPConnection *mySQLConnection;
-	CMMCPResult *tableSourceResult;
-	CMMCPResult *indexResult;
+	MCPConnection *mySQLConnection;
+	MCPResult *tableSourceResult;
+	MCPResult *indexResult;
 
 	NSString *selectedTable;
 	NSString *tableType;
@@ -87,8 +84,8 @@
 - (IBAction)closeKeySheet:(id)sender;
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection;
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (void)setConnection:(MCPConnection *)theConnection;
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;

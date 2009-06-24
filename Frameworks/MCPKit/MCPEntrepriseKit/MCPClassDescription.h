@@ -45,7 +45,6 @@
 	Class			representedClass; // the class object that the description represents.
 }
 
-#warning hasSingleIntAutoGenKey should be a method returning the obvious (from the name).
 // This correspond to the method singleIntAutoGenKey in the category MCPEntreprise... which name should I change...
 
 #pragma mark Class methods

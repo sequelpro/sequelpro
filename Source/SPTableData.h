@@ -38,10 +38,10 @@
 	NSString *tableEncoding;
 	NSString *tableCreateSyntax;
 	
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 }
 
-- (void) setConnection:(CMMCPConnection *)theConnection;
+- (void) setConnection:(MCPConnection *)theConnection;
 - (NSString *) tableEncoding;
 - (NSString *) tableCreateSyntax;
 - (NSArray *) columns;

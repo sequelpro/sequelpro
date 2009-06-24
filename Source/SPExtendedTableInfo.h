@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class SPTableData, SPDatabaseData, CMMCPConnection;
+@class SPTableData, SPDatabaseData, MCPConnection;
 
 @interface SPExtendedTableInfo : NSObject
 {
@@ -52,10 +52,10 @@
 	
 	NSString *selectedTable;
 	
-	CMMCPConnection *connection;
+	MCPConnection *connection;
 }
 
-@property (readwrite, assign) CMMCPConnection *connection;
+@property (readwrite, assign) MCPConnection *connection;
 
 // IBAction methods
 - (IBAction)reloadTable:(id)sender;

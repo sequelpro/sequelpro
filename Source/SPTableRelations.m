@@ -23,11 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "SPTableRelations.h"
 #import "TableDocument.h"
 #import "TablesList.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 
@@ -140,7 +140,7 @@
 	[refTablePopUpButton removeAllItems];
 	
 	// Get all InnoDB tables in the current database
-	CMMCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = '%@' AND table_name != '%@'", [tableDocumentInstance database], [tablesListInstance tableName]]];
+	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = '%@' AND table_name != '%@'", [tableDocumentInstance database], [tablesListInstance tableName]]];
 	
 	[result dataSeek:0];
 	

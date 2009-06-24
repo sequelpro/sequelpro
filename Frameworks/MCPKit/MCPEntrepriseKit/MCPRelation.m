@@ -253,7 +253,6 @@ static NSArray *MCPexistingDeleteRules;
 
 - (void) setInverseRelation:(MCPRelation *) iInverseRelation
 {
-#warning Should perform some checking here!!!
 	if (iInverseRelation != inverseRelation) {
 		[inverseRelation release];
 		inverseRelation = [iInverseRelation retain];
@@ -369,7 +368,6 @@ static NSArray *MCPexistingDeleteRules;
 
 - (MCPAttribute *) destinationAttributeForOrigin:(MCPAttribute *) iFrom
 {
-#warning This method assume that a given attribute (origin) is present only once in the relation (returns first occurence)
 	unsigned int      i;
 	
 	for (i=0; ([joins count] != i) && ([[(MCPJoin *)[joins objectAtIndex:i] origin] isEqual:iFrom]); ++i) {
@@ -379,7 +377,6 @@ static NSArray *MCPexistingDeleteRules;
 
 - (MCPAttribute *) originAttributeForDestination:(MCPAttribute *) iTo
 {
-#warning This method assume that a given attribute (destination) is present only once in the relation (returns first occurence)
 	unsigned int      i;
 	
 	for (i=0; ([joins count] != i) && ([[(MCPJoin *)[joins objectAtIndex:i] destination] isEqual:iTo]); ++i) {

@@ -27,132 +27,217 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/Foundation.h>
-#import "mysql.h"
 #import "MCPConstants.h"
 
-@class MCPResult;
+#import "mysql.h"
+
+@class MCPResult, SPSSHTunnel;
 
 // Deafult connection option
-extern const unsigned int	kMCPConnectionDefaultOption;
+extern const unsigned int kMCPConnectionDefaultOption;
 
 // Default socket (from the mysql.h used at compile time)
-extern const char		*kMCPConnectionDefaultSocket;
+extern const char *kMCPConnectionDefaultSocket;
 
-// Added to mysql error code
-extern const unsigned int 	kMCPConnectionNotInited;
+// Added to MySQL error code
+extern const unsigned int kMCPConnectionNotInited;
 
-// The length of the truncation if required:
-extern const unsigned int	kLengthOfTruncationForLog;
+// The length of the truncation if required
+extern const unsigned int kLengthOfTruncationForLog;
 
-@interface MCPConnection : NSObject {
-@protected
-   MYSQL						*mConnection;	/*"The inited MySQL connection."*/
-	BOOL						mConnected;	/*"Reflect the fact that the connection is already in place or not."*/
-	NSStringEncoding		mEncoding;	/*"The encoding used by MySQL server, to ISO-1 default."*/
-	NSTimeZone				*mTimeZone;  /*"The time zone of the session."*/
-	unsigned int			mConnectionFlags; /*"The flags to be used for the connection to the database."*/
+typedef enum _MCPReconnect {
+	MCPReconnectYes = 0,
+	MCPReconnectNo
+} MCPReconnect;
+
+@interface NSObject (MCPConnectionDelegate)
+
+- (void)willQueryString:(NSString *)query;
+- (void)queryGaveError:(NSString *)error;
+- (BOOL)connectionEncodingViaLatin1;
+- (void)setStatusIconToImageWithName:(NSString *)imagePath;
+- (MCPReconnect)shouldReconnectAfterConnectionFailure;
+
+@end
+
+@interface MCPConnection : NSObject 
+{
+	MYSQL			 *mConnection;     /* The inited MySQL connection. */
+	BOOL			 mConnected;       /* Reflect the fact that the connection is already in place or not. */
+	NSStringEncoding mEncoding;        /* The encoding used by MySQL server, to ISO-1 default. */
+	NSTimeZone		 *mTimeZone;       /* The time zone of the session. */
+	unsigned int	 mConnectionFlags; /* The flags to be used for the connection to the database. */
+	id				 delegate;         /* Connection delegate */
+	
+	IBOutlet NSWindow *connectionErrorDialog;
+	NSWindow *parentWindow;
+	
+	BOOL nibLoaded;
+	SPSSHTunnel *connectionTunnel;
+	NSString *connectionLogin;
+	NSString *connectionKeychainName;
+	NSString *connectionKeychainAccount;
+	NSString *connectionPassword;
+	NSString *connectionHost;
+	int connectionPort;
+	NSString *connectionSocket;
+	int maxAllowedPacketSize;
+	unsigned long connectionThreadId;
+	int connectionTimeout;
+	int currentSSHTunnelState;
+	BOOL useKeepAlive;
+	float keepAliveInterval;
+	
+	int lastQueryExecutionTime;
+	NSString *lastQueryErrorMessage;
+	unsigned int lastQueryErrorId;
+	my_ulonglong lastQueryAffectedRows;
+	
+	BOOL isMaxAllowedPacketEditable;
+	
+	NSString *serverVersionString;
+	
+	NSTimer *keepAliveTimer;
+	NSDate *lastKeepAliveSuccess;
+	
+	BOOL retryAllowed;
+	
+	BOOL delegateResponseToWillQueryString;
+	BOOL consoleLoggingEnabled;
+	
+	IMP cStringPtr;
+	IMP willQueryStringPtr;
+	IMP stopKeepAliveTimerPtr;
+	IMP startKeepAliveTimerResettingStatePtr;
+	
+	SEL cStringSEL;
+	SEL willQueryStringSEL;
+	SEL stopKeepAliveTimerSEL;
+	SEL startKeepAliveTimerResettingStateSEL;
 }
-/*"
-Getting default of MySQL
-"*/
-+ (NSDictionary *) getMySQLLocales;
-+ (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding;
-+ (NSStringEncoding) defaultMySQLEncoding;
 
-/*"
-Class maintenance
-"*/
-+ (void) initialize;
-+ (void) setLogQueries:(BOOL) iLogFlag;
-+ (void) setTruncateLongFieldInLogs:(BOOL) iTruncFlag;
-+ (BOOL) truncateLongField;
+@property (readwrite, assign) id *delegate;
 
-/*"
-Initialisation
-"*/
-- (id) init;
-// Port to 0 to use the default port
-- (id) initToHost:(NSString *) host withLogin:(NSString *) login password:(NSString *) pass usingPort:(int) port;
-- (id) initToSocket:(NSString *) socket withLogin:(NSString *) login password:(NSString *) pass;
+/**
+ * Initialisation
+ */
+- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port;
+- (id)initToSocket:(NSString *)socket withLogin:(NSString *)login;
 
-- (BOOL) setConnectionOption:(int) option toValue:(BOOL) value;
-// Port to 0 to use the default port
-- (BOOL) connectWithLogin:(NSString *) login password:(NSString *) pass host:(NSString *) host port:(int) port socket:(NSString *) socket;
+/**
+ * Connection details
+ */
+- (BOOL)setPort:(int)thePort;
+- (BOOL)setPassword:(NSString *)thePassword;
+- (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 
-- (BOOL) selectDB:(NSString *) dbName;
+/**
+ * SSH
+ */
+- (BOOL)setSSHTunnel:(SPSSHTunnel *)theTunnel;
+- (void)sshTunnelStateChange:(SPSSHTunnel *)theTunnel;
 
-/*"
-Errors information
-"*/
+/**
+ * Connection
+ */
+- (BOOL)connect;
+- (void)disconnect;
+- (BOOL)reconnect;
+- (BOOL)isConnected;
+- (BOOL)checkConnection;
+- (BOOL)pingConnection;
+- (void)startKeepAliveTimerResettingState:(BOOL)resetState;
+- (void)stopKeepAliveTimer;
+- (void)keepAlive:(NSTimer *)theTimer;
+- (void)threadedKeepAlive;
+- (void)restoreConnectionDetails;
 
-- (NSString *) getLastErrorMessage;
-- (unsigned int) getLastErrorID;
-- (BOOL) isConnected;
-- (BOOL) checkConnection;
+/**
+ * Server versions
+ */
+- (int)serverMajorVersion;
+- (int)serverMinorVersion;
+- (int)serverReleaseVersion;
 
-/*"
-Queries
-"*/
+/**
+ * MySQL defaults
+ */
++ (NSDictionary *)getMySQLLocales;
++ (NSStringEncoding)encodingForMySQLEncoding:(const char *)mysqlEncoding;
++ (NSStringEncoding)defaultMySQLEncoding;
++ (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
 
-- (NSString *) prepareBinaryData:(NSData *) theData;
-- (NSString *) prepareString:(NSString *) theString;
-- (NSString *) quoteObject:(id) theObject;
+/**
+ * Class maintenance
+ */
++ (void)setLogQueries:(BOOL)iLogFlag;
++ (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag;
++ (BOOL)truncateLongField;
+- (BOOL)setConnectionOption:(int)option toValue:(BOOL)value;
+- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(int)port socket:(NSString *)socket;
 
-- (MCPResult *) queryString:(NSString *) query;
+- (BOOL)selectDB:(NSString *)dbName;
 
-- (my_ulonglong) affectedRows;
-- (my_ulonglong) insertId;
+/**
+ * Error information
+ */
+- (NSString *)getLastErrorMessage;
+- (void)setLastErrorMessage:(NSString *)theErrorMessage;
+- (unsigned int)getLastErrorID;
++ (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
 
+/**
+ * Queries
+ */
+- (NSString *)prepareBinaryData:(NSData *)theData;
+- (NSString *)prepareString:(NSString *)theString;
+- (NSString *)quoteObject:(id)theObject;
+- (MCPResult *)queryString:(NSString *)query;
+- (MCPResult *)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding;
+- (void)workerPerformQuery:(NSString *)query;
+- (float)lastQueryExecutionTime;
+- (my_ulonglong)affectedRows;
+- (my_ulonglong)insertId;
 
-/*"
-Getting description of the database structure
-"*/
-- (MCPResult *) listDBs;
-- (MCPResult *) listDBsLike:(NSString *) dbsName;
-- (MCPResult *) listTables;
-- (MCPResult *) listTablesLike:(NSString *) tablesName;
-// Next method uses SHOW TABLES FROM db to be sure that the db is not changed during this call.
-- (MCPResult *) listTablesFromDB:(NSString *) dbName like:(NSString *) tablesName;
-- (MCPResult *) listFieldsFromTable:(NSString *) tableName;
-- (MCPResult *) listFieldsFromTable:(NSString *) tableName like:(NSString *) fieldsName;
+/**
+ * Database structure
+ */
+- (MCPResult *)listDBs;
+- (MCPResult *)listDBsLike:(NSString *)dbsName;
+- (MCPResult *)listTables;
+- (MCPResult *)listTablesLike:(NSString *)tablesName;
+- (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
+- (MCPResult *)listFieldsFromTable:(NSString *)tableName;
+- (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
 
-/*"
-Server information and control
-"*/
+/**
+ * Server information
+ */
+- (NSString *)clientInfo;
+- (NSString *)hostInfo;
+- (NSString *)serverInfo;
+- (NSNumber *)protoInfo;
+- (MCPResult *)listProcesses;
+- (BOOL)killProcess:(unsigned long)pid;
 
-- (NSString *) clientInfo;
-- (NSString *) hostInfo;
-- (NSString *) serverInfo;
-- (NSNumber *) protoInfo;
-- (MCPResult *) listProcesses;
-- (BOOL) killProcess:(unsigned long) pid;
+/**
+ * Encoding
+ */
+- (void)setEncoding:(NSStringEncoding)theEncoding;
+- (NSStringEncoding)encoding;
 
-//- (BOOL)createDBWithName:(NSString *)dbName;
-//- (BOOL)dropDBWithName:(NSString *)dbName;
+/**
+ * Time zone
+ */
+- (void)setTimeZone:(NSTimeZone *)iTimeZone;
+- (NSTimeZone *)timeZone;
 
-/*"
-Disconnection
-"*/
-- (void) disconnect;
-- (void) dealloc;
-
-/*"
-String encoding concerns (C string type to NSString).
-It's unlikely that users of the framework needs to use these methods which are used internally
-"*/
-- (void) setEncoding:(NSStringEncoding) theEncoding;
-- (NSStringEncoding) encoding;
-
-- (const char *) cStringFromString:(NSString *) theString;
-- (NSString *) stringWithCString:(const char *) theCString;
-
-/*"
-Text data convertion to string
-"*/
-- (NSString *) stringWithText:(NSData *) theTextData;
-
-/*" Time Zone handling ."*/
-- (void) setTimeZone:(NSTimeZone *) iTimeZone;
-- (NSTimeZone *) timeZone;
+/**
+ * Packet size
+ */
+- (BOOL)fetchMaxAllowedPacket;
+- (int)getMaxAllowedPacket;
+- (BOOL)isMaxAllowedPacketEditable;
+- (int)setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
 
 @end

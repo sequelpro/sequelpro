@@ -24,7 +24,6 @@
 
 #import "mcpKitTest.h"
 
-
 @implementation mcpKitTest
 
 - (void)setUp
@@ -35,7 +34,7 @@
 	// set up a user called 'sakila' with no password that has all privs on the 
 	// database 'sakila'
 	
-	mySQLConnection = [[CMMCPConnection alloc] initToSocket:@"/var/mysql/mysql.sock"
+	mySQLConnection = [[MCPConnection alloc] initToSocket:@"/var/mysql/mysql.sock"
 												  withLogin:@"sakila"
 												   password:@""];
 	
@@ -75,7 +74,7 @@
 	if( mySQLConnection == nil )
 		return;
 	
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 
 	NSString *pQuery = @"SELECT * FROM actor";
 	theResult = [mySQLConnection queryString:pQuery];

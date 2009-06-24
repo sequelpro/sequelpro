@@ -72,7 +72,6 @@
 		17CF7A4A0FDEF93400A5C558 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A330FDEF8D400A5C558 /* mcpKitTest.m */; };
 		17CF7A4B0FDEF93400A5C558 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A350FDEF8D400A5C558 /* stringCategoryAdditionsTest.m */; };
 		17CF7A5D0FDEF99B00A5C558 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
-		17CF7A600FDEF9FC00A5C558 /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17CF7A5F0FDEF9FC00A5C558 /* libicucore.A.dylib */; };
 		17CF7A610FDEFA1400A5C558 /* TunnelPassphraseRequester.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A060FDEF82F00A5C558 /* TunnelPassphraseRequester.m */; };
 		17CF7A620FDEFA2400A5C558 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
 		17CF7A630FDEFA2E00A5C558 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
@@ -88,6 +87,7 @@
 		17CF7A850FDEFA8300A5C558 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = 17CF7A7B0FDEFA8300A5C558 /* toolbar-switch-to-table-relations.png */; };
 		17CF7A880FDEFACA00A5C558 /* Unit Tests-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 17CF7A870FDEFACA00A5C558 /* Unit Tests-Info.plist */; };
 		17CF7A8B0FDEFAFD00A5C558 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17CF7A8A0FDEFAFD00A5C558 /* sequel-pro-mysql-help-template.html */; };
+		17CF7AFC0FDF028D00A5C558 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* MainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* MainController.m */; };
@@ -101,8 +101,6 @@
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
 		17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */; };
 		17E641750EF01F80001BC333 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
-		17E6417A0EF01F95001BC333 /* CMMCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641770EF01F95001BC333 /* CMMCPConnection.m */; };
-		17E6417B0EF01F95001BC333 /* CMMCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641790EF01F95001BC333 /* CMMCPResult.m */; };
 		17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417D0EF01FA8001BC333 /* CMCopyTable.m */; };
 		17E641830EF01FA8001BC333 /* CMImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417F0EF01FA8001BC333 /* CMImageView.m */; };
 		17E641840EF01FA8001BC333 /* CMTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641810EF01FA8001BC333 /* CMTextView.m */; };
@@ -144,7 +142,6 @@
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
-		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
 		5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */ = {isa = PBXBuildFile; fileRef = 5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */; };
@@ -217,7 +214,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 17CF7A570FDEF98800A5C558 /* TunnelPassphraseRequester */;
+			remoteGlobalIDString = 17CF7A570FDEF98800A5C558;
 			remoteInfo = TunnelPassphraseRequester;
 		};
 /* End PBXContainerItemProxy section */
@@ -340,7 +337,6 @@
 		17CF7A350FDEF8D400A5C558 /* stringCategoryAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = stringCategoryAdditionsTest.m; sourceTree = "<group>"; };
 		17CF7A3F0FDEF90500A5C558 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		17CF7A580FDEF98800A5C558 /* TunnelPassphraseRequester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TunnelPassphraseRequester; sourceTree = BUILT_PRODUCTS_DIR; };
-		17CF7A5F0FDEF9FC00A5C558 /* libicucore.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.A.dylib; path = /usr/lib/libicucore.A.dylib; sourceTree = "<absolute>"; };
 		17CF7A720FDEFA8300A5C558 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
 		17CF7A730FDEFA8300A5C558 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
 		17CF7A740FDEFA8300A5C558 /* dummy-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dummy-small.png"; sourceTree = "<group>"; };
@@ -379,10 +375,6 @@
 		17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
 		17E641730EF01F80001BC333 /* KeyChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyChain.h; sourceTree = "<group>"; };
 		17E641740EF01F80001BC333 /* KeyChain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeyChain.m; sourceTree = "<group>"; };
-		17E641760EF01F95001BC333 /* CMMCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPConnection.h; sourceTree = "<group>"; };
-		17E641770EF01F95001BC333 /* CMMCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMMCPConnection.m; sourceTree = "<group>"; };
-		17E641780EF01F95001BC333 /* CMMCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPResult.h; sourceTree = "<group>"; };
-		17E641790EF01F95001BC333 /* CMMCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMMCPResult.m; sourceTree = "<group>"; };
 		17E6417C0EF01FA8001BC333 /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
 		17E6417D0EF01FA8001BC333 /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
 		17E6417E0EF01FA8001BC333 /* CMImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMImageView.h; sourceTree = "<group>"; };
@@ -530,7 +522,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				17CF7A5D0FDEF99B00A5C558 /* Security.framework in Frameworks */,
-				17CF7A600FDEF9FC00A5C558 /* libicucore.A.dylib in Frameworks */,
+				17CF7AFC0FDF028D00A5C558 /* libicucore.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -859,7 +851,6 @@
 			children = (
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
 				17E6416F0EF01F4C001BC333 /* Keychain */,
-				17E641700EF01F52001BC333 /* MCPKit */,
 				58FEF15E0F23D60A00518E8E /* Parsing */,
 				17E641710EF01F5C001BC333 /* GUI */,
 				17E641720EF01F6B001BC333 /* SSHTunnel */,
@@ -875,17 +866,6 @@
 				17E641740EF01F80001BC333 /* KeyChain.m */,
 			);
 			name = Keychain;
-			sourceTree = "<group>";
-		};
-		17E641700EF01F52001BC333 /* MCPKit */ = {
-			isa = PBXGroup;
-			children = (
-				17E641760EF01F95001BC333 /* CMMCPConnection.h */,
-				17E641770EF01F95001BC333 /* CMMCPConnection.m */,
-				17E641780EF01F95001BC333 /* CMMCPResult.h */,
-				17E641790EF01F95001BC333 /* CMMCPResult.m */,
-			);
-			name = MCPKit;
 			sourceTree = "<group>";
 		};
 		17E641710EF01F5C001BC333 /* GUI */ = {
@@ -1032,7 +1012,6 @@
 		2A37F4AAFDCFA73011CA2CEA /* sequel-pro */ = {
 			isa = PBXGroup;
 			children = (
-				17CF7A5F0FDEF9FC00A5C558 /* libicucore.A.dylib */,
 				17E641420EF01E8A001BC333 /* Source */,
 				1728B69D0F82D58E00E12957 /* MCPKit */,
 				17CF7A300FDEF89500A5C558 /* UnitTests */,
@@ -1251,7 +1230,6 @@
 				17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */,
 				1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */,
 				B5E2C5FA0F2353B5007446E0 /* table-property.png in Resources */,
-				58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */,
 				584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */,
 				B58A32440F6509D60003C243 /* button_action.tiff in Resources */,
 				B58A32450F6509D60003C243 /* button_add.tiff in Resources */,
@@ -1400,8 +1378,6 @@
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
 				17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */,
 				17E641750EF01F80001BC333 /* KeyChain.m in Sources */,
-				17E6417A0EF01F95001BC333 /* CMMCPConnection.m in Sources */,
-				17E6417B0EF01F95001BC333 /* CMMCPResult.m in Sources */,
 				17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */,
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
 				17E641840EF01FA8001BC333 /* CMTextView.m in Sources */,

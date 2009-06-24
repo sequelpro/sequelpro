@@ -384,7 +384,7 @@
 	
 	NSArray         *theColumns;
 	NSTableColumn   *theCol;
-	CMMCPResult     *theResult  = nil;
+	MCPResult     *theResult  = nil;
 	NSMutableArray  *menuItems  = [NSMutableArray array];
 	NSMutableArray  *tempResult = [NSMutableArray array];
 	NSMutableString *errors     = [NSMutableString string];
@@ -889,7 +889,7 @@
 /*
  * Sets the connection (received from TableDocument) and makes things that have to be done only once 
  */
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	NSArray *tableColumns = [queryFavoritesView tableColumns];
 	NSEnumerator *enumerator = [tableColumns objectEnumerator];
@@ -1624,7 +1624,7 @@
 	if(![searchString length]) return @"";
 	
 	NSRange         aRange;
-	CMMCPResult     *theResult = nil;
+	MCPResult     *theResult = nil;
 	NSDictionary    *tableDetails;
 	NSMutableString *theHelp = [NSMutableString string];
 

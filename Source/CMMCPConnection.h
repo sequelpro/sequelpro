@@ -25,7 +25,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-#import "CMMCPResult.h"
 #import "KeyChain.h"
 #import "SPSSHTunnel.h"
 
@@ -82,8 +81,8 @@
 + (BOOL) isErrorNumberConnectionError:(int)theErrorNumber;
 + (NSStringEncoding) encodingForMySQLEncoding:(const char *) mysqlEncoding;
 - (BOOL) selectDB:(NSString *) dbName;
-- (CMMCPResult *) queryString:(NSString *) query;
-- (CMMCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;
+- (MCPResult *) queryString:(NSString *) query;
+- (MCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;
 - (void) workerPerformQuery:(NSString *)theQuery;
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;

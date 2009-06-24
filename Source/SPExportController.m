@@ -52,18 +52,18 @@
 #pragma mark -
 #pragma mark Utility Methods
 
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 }
 
 - (void)loadTables
 {
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	int i;
 	
 	[tables removeAllObjects];
-	queryResult = (CMMCPResult *)[mySQLConnection listTables];
+	queryResult = (MCPResult *)[mySQLConnection listTables];
 	
 	if ([queryResult numOfRows])
 		[queryResult dataSeek:0];
