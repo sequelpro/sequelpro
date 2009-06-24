@@ -73,6 +73,8 @@
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
+	tableReloadAfterEdting = NO;
+
 	[self performQueries:queries];
 	// If no error was selected reconstruct a given selection
 	if([textView selectedRange].length == 0)
@@ -124,6 +126,8 @@
 	[textView setSelectedRange:NSMakeRange(selectedRange.location,0)];
 	[textView insertText:@""];
 	[textView setSelectedRange:selectedRange];
+
+	tableReloadAfterEdting = NO;
 
 	[self performQueries:queries];
 }
@@ -389,7 +393,6 @@
 	NSTableColumn   *theCol;
 	CMMCPResult     *theResult  = nil;
 	NSMutableArray  *menuItems  = [NSMutableArray array];
-	NSMutableArray  *tempResult = [NSMutableArray array];
 	NSMutableString *errors     = [NSMutableString string];
 	
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
@@ -411,11 +414,13 @@
 	[customQueryView scrollColumnToVisible:0];
 
 	// Remove all the columns
-	theColumns = [customQueryView tableColumns];
-	while ([theColumns count]) {
-		[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
+	if(!tableReloadAfterEdting) {
+		theColumns = [customQueryView tableColumns];
+		while ([theColumns count]) {
+			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
+		}
 	}
-
+	
 	long queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
@@ -520,20 +525,6 @@
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
 	
-	//put result in array
-	if(queryResult)
-		[queryResult release];
-
-	if ( nil != theResult )
-	{
-		int r = [theResult numOfRows];
-		if (r) [theResult dataSeek:0];
-		for ( i = 0 ; i < r ; i++ ) {
-			[tempResult addObject:[theResult fetchRowAsArray]];
-		}
-		queryResult = [[NSArray arrayWithArray:tempResult] retain];
-	}
-
 	//add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
 	[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
@@ -665,32 +656,35 @@
 
 	// Add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
-	for ( i = 0 ; i < [theResult numOfFields] ; i++) {
-		theCol = [[NSTableColumn alloc] initWithIdentifier:[NSNumber numberWithInt:i]];
-		[theCol setResizingMask:NSTableColumnUserResizingMask];
-		NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
-		[dataCell setEditable:YES];
-		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
-			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		} else {
-			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	if(!tableReloadAfterEdting) {
+		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
+			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"name"]];
+			[theCol setResizingMask:NSTableColumnUserResizingMask];
+			NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
+			[dataCell setEditable:YES];
+			[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+			if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+				[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
+			} else {
+				[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			}
+			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+			[theCol setDataCell:dataCell];
+			[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
+
+			[customQueryView addTableColumn:theCol];
+			[theCol release];
 		}
-		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		[theCol setDataCell:dataCell];
-		[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
 
-		[customQueryView addTableColumn:theCol];
-		[theCol release];
+		[customQueryView sizeLastColumnToFit];
+		//tries to fix problem with last row (otherwise to small)
+		//sets last column to width of the first if smaller than 30
+		//problem not fixed for resizing window
+		if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
+			[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
+					setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
+	
 	}
-
-	[customQueryView sizeLastColumnToFit];
-	//tries to fix problem with last row (otherwise to small)
-	//sets last column to width of the first if smaller than 30
-	//problem not fixed for resizing window
-	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
-		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
-				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
 	[customQueryView reloadData];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
@@ -1132,10 +1126,10 @@
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if ( aTableView == customQueryView ) {
-		if ( nil == queryResult ) {
+		if ( nil == fullResult ) {
 			return 0;
 		} else {
-			return [queryResult count];
+			return [fullResult count];
 		}
 	} else if ( aTableView == queryFavoritesView ) {
 		return [queryFavorites count];
@@ -1151,7 +1145,7 @@
 
 	if ( aTableView == customQueryView ) {
 
-		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(queryResult, rowIndex), [[aTableColumn identifier] intValue]);
+		id theValue = [NSArrayObjectAtIndex(fullResult, rowIndex) objectForKey:[aTableColumn identifier]];
 
 		if ( [theValue isKindOfClass:[NSData class]] )
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
@@ -1209,8 +1203,15 @@
 
 		// Field editing
 
-		int columnIdentifier = [[aTableColumn identifier] intValue];
-		NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:columnIdentifier];
+		NSDictionary *columnDefinition;
+
+		// Retrieve the column defintion
+		for(id c in cqColumnDefinition) {
+			if([[c objectForKey:@"name"] isEqualToString:[aTableColumn identifier]]) {
+				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+				break;
+			}
+		}
 
 		// Resolve the original table name for current column if AS was used
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
@@ -1264,6 +1265,7 @@
 			}
 
 			// On success reload table data by executing the last query
+			tableReloadAfterEdting = YES;
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery]];
 			
 		} else {
@@ -1393,9 +1395,17 @@
 				   nil);
 				tempAlertWasShown = YES;
 			}
-		
-			int columnIdentifier = [[aTableColumn identifier] intValue];
-			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:columnIdentifier];
+
+			NSDictionary *columnDefinition;
+
+			// Retrieve the column defintion
+			for(id c in cqColumnDefinition) {
+				if([[c objectForKey:@"name"] isEqualToString:[aTableColumn identifier]]) {
+					columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+					break;
+				}
+			}
+
 
 			// Check if current field is a blob
 			if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
@@ -1430,25 +1440,24 @@
 		} 
 		// TODO: keep old behaviour for testing
 		else {
-			NSArray *theRow;
+			id theRow;
 			NSString *theValue;
-			NSNumber *theIdentifier = [aTableColumn identifier];
-	
+			
 		//get the value
-			theRow = [queryResult objectAtIndex:rowIndex];
+			theRow = [fullResult objectAtIndex:rowIndex];
 	
-			if ( [[theRow objectAtIndex:[theIdentifier intValue]] isKindOfClass:[NSData class]] ) {
-				theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
+			if ( [[theRow objectForKey:[aTableColumn identifier]] isKindOfClass:[NSData class]] ) {
+				theValue = [[NSString alloc] initWithData:[theRow objectForKey:[aTableColumn identifier]]
 									encoding:[mySQLConnection encoding]];
 				if (theValue == nil) {
-					theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[theIdentifier intValue]]
+					theValue = [[NSString alloc] initWithData:[theRow objectForKey:[aTableColumn identifier]]
 													 encoding:NSASCIIStringEncoding];
 				}
 				[theValue autorelease];
-			} else if ( [[theRow objectAtIndex:[theIdentifier intValue]] isMemberOfClass:[NSNull class]] ) {
+			} else if ( [[theRow objectForKey:[aTableColumn identifier]] isMemberOfClass:[NSNull class]] ) {
 				theValue = [prefs objectForKey:@"NullValue"];
 			} else {
-				theValue = [theRow objectAtIndex:[theIdentifier intValue]];
+				theValue = [theRow objectForKey:[aTableColumn identifier]];
 			}
 	
 			[valueTextField setString:[theValue description]];
@@ -2181,7 +2190,6 @@
 
 - (void)dealloc
 {
-	[queryResult release];
 	[queryFavorites release];
 	[usedQuery release];
 	[fullResult release];

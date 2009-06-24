@@ -72,7 +72,6 @@
 	IBOutlet NSSegmentedControl *helpTargetSelector;
 
 
-	NSArray *queryResult;
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
 	
@@ -94,6 +93,7 @@
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 	
+	BOOL tableReloadAfterEdting;
 	BOOL tempAlertWasShown; // a temp value for nightly builts
 		
 }
