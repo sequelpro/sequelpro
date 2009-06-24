@@ -312,7 +312,10 @@
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving table information.\nMySQL said: %@", @"message of panel when retrieving table information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
 	}
@@ -600,7 +603,10 @@
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
 	}
@@ -621,7 +627,10 @@
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving view information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
 	}
@@ -703,7 +712,10 @@
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table status:\n\n%@", [mySQLConnection getLastErrorMessage]],  @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving table status.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return FALSE;
 	}

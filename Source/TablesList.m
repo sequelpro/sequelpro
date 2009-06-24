@@ -499,7 +499,8 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
-					NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+						[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), [tables objectAtIndex:[tablesListView selectedRow]], [mySQLConnection getLastErrorMessage]]);
 				}
 				return;
 			}
@@ -612,9 +613,9 @@
 		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[self tableName] backtickQuotedString], [[tableRenameField stringValue] backtickQuotedString]]];
 	
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Unable to rename table", @"rename table error message"), 
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"The table '%@' was unable to be renamed because an error occurred.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while renaming table '%@'.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
 		}
 		else {
 			// If there was no error, rename the table in our list and reload the table view's data
@@ -636,7 +637,9 @@
 		// Check for errors, only displaying if the connection hasn't been terminated
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			if ([mySQLConnection isConnected]) {
-				NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+								  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+								  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving create syntax for '%@'.\n\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), [self tableName], [mySQLConnection getLastErrorMessage]]);
 			}
 			return;
 		}
@@ -683,11 +686,11 @@
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {		
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to truncate the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete ALL table records in the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
 	else {
 		[alert setMessageText:NSLocalizedString(@"Truncate selected tables?", @"truncate tables message")];
-		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to truncate the selected tables. This operation cannot be undone.", @"truncate tables informative message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL table records in the selected tables. This operation cannot be undone.", @"truncate tables informative message")];
 	}
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
@@ -1019,7 +1022,10 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
-					NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+									  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving create syntax for '%@'.\n\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), [self tableName], [mySQLConnection getLastErrorMessage]]);
+
 				}
 				return;
 			}
