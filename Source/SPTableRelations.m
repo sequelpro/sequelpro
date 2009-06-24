@@ -182,41 +182,15 @@
 {
 	if ([relationsTableView numberOfSelectedRows] > 0) {
 		
-		int response = NSRunAlertPanel(NSLocalizedString(@"Delete relation", @"delete relation message"),
-									   NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone", @"delete selected relation informative message"),
-									   NSLocalizedString(@"Delete", @"delete button"), 
-									   NSLocalizedString(@"Cancel", @"cancel button"), nil );
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete relation", @"delete relation message") 
+										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+										   otherButton:nil 
+							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone.", @"delete selected relation informative message")];
 		
-		if (response == NSAlertDefaultReturn) {
-			
-			NSString *thisTable = [tablesListInstance tableName];
-			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
-			
-			unsigned int row = [selectedSet lastIndex];
-			
-			while (row != NSNotFound) 
-			{
-				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
-				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
-				
-				[connection queryString:query];
-				
-				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
-					
-					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
-					
-					// Abort loop
-					break;
-				} 
-				
-				row = [selectedSet indexLessThanIndex:row];
-			}
-			
-			[self _refreshRelationDataForcingCacheRefresh:YES];
-		}
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
 	}
 }
 
@@ -287,6 +261,46 @@
 
 #pragma mark -
 #pragma mark Other
+
+/**
+ * NSAlert didEnd method.
+ */
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+{
+	if ([contextInfo isEqualToString:@"removeRelation"]) {
+		
+		if (returnCode == NSAlertDefaultReturn) {
+			
+			NSString *thisTable = [tablesListInstance tableName];
+			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
+			
+			unsigned int row = [selectedSet lastIndex];
+			
+			while (row != NSNotFound) 
+			{
+				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
+				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
+				
+				[connection queryString:query];
+				
+				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
+					
+					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+									  NSLocalizedString(@"OK", @"OK button"),
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
+					
+					// Abort loop
+					break;
+				} 
+				
+				row = [selectedSet indexLessThanIndex:row];
+			}
+			
+			[self _refreshRelationDataForcingCacheRefresh:YES];
+		}
+	} 
+}
 
 /*
  * Dealloc.
