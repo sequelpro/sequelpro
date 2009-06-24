@@ -109,6 +109,9 @@
 		B52460DB0F8EF93B00171639 /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52460D90F8EF93B00171639 /* Console.xib */; };
 		B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B53857330F9CC3B600EB2354 /* button_clear.tiff */; };
 		B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */; };
+		B5538AAE0FF251EE00219803 /* button_duplicate_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */; };
+		B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */; };
+		B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */; };
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
 		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
@@ -362,6 +365,9 @@
 		B52460DA0F8EF93B00171639 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
 		B53857330F9CC3B600EB2354 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
 		B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-relations.png"; sourceTree = "<group>"; };
+		B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate_icon.tif; sourceTree = "<group>"; };
+		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
+		B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show_icon.tif; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
@@ -740,6 +746,9 @@
 				B58A32430F6509D60003C243 /* button_info_pane_show.tiff */,
 				B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */,
 				B5A601720F74930F00EE5FBA /* button_remove.tiff */,
+				B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */,
+				B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */,
+				B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */,
 				17E6418D0EF02036001BC333 /* clearconsole.tiff */,
 				B577483A0F7A8B57003B34F9 /* database.png */,
 				B5A601860F749C1600EE5FBA /* dimple.tiff */,
@@ -1067,6 +1076,9 @@
 				588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */,
 				588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */,
 				588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */,
+				B5538AAE0FF251EE00219803 /* button_duplicate_icon.tif in Resources */,
+				B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */,
+				B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1389,6 +1401,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Sequel Pro";
+				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
 			};
 			name = Distribution;
@@ -1479,6 +1492,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Sequel Pro";
+				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
 			};
 			name = Debug;
@@ -1501,6 +1515,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Sequel Pro";
+				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
 			};
 			name = Release;
