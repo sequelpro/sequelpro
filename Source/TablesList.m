@@ -960,6 +960,14 @@
 	contentLoaded = !reload;
 }
 
+/**
+ * Mark the exteded table info for refresh when it's next switched to
+ */
+- (void)setStatusRequiresReload:(BOOL)reload
+{
+	statusLoaded = !reload;
+}
+
 #pragma mark Datasource methods
 
 /**

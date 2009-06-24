@@ -122,6 +122,13 @@
  */
 - (NSDictionary *) columnWithName:(NSString *)colName
 {
+	if ([columns count] == 0) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} else {
+			[self updateInformationForCurrentTable];
+		}
+	}
 	int columnIndex = [columnNames indexOfObject:colName];
 	if (columnIndex == NSNotFound) return nil;
 	return [columns objectAtIndex:columnIndex];

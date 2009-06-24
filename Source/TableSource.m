@@ -246,6 +246,8 @@ reloads the table (performing a new mysql-query)
 */
 - (IBAction)reloadTable:(id)sender
 {
+	[tableDataInstance resetColumnData];
+	[tablesListInstance setStatusRequiresReload:YES];
 	[self loadTable:selectedTable];
 }
 
@@ -346,6 +348,8 @@ reloads the table (performing a new mysql-query)
 				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 
 		if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			[tableDataInstance resetColumnData];
+			[tablesListInstance setStatusRequiresReload:YES];
 			[self loadTable:selectedTable];
 			[NSApp stopModalWithCode:1];
 		} else {
@@ -784,11 +788,12 @@ fetches the result as an array with a dictionary for each row in it
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
 		
+		[tableDataInstance resetColumnData];
+		[tablesListInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
 
-		// Mark the content table and column caches for refresh
+		// Mark the content table for refresh
 		[tablesListInstance setContentRequiresReload:YES];
-		[tableDataInstance resetColumnData];
 
 		return YES;
 	} 
@@ -851,11 +856,12 @@ fetches the result as an array with a dictionary for each row in it
 					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 			
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				[tableDataInstance resetColumnData];
+				[tablesListInstance setStatusRequiresReload:YES];
 				[self loadTable:selectedTable];
 
-				// Mark the content table and column cache for refresh
+				// Mark the content table cache for refresh
 				[tablesListInstance setContentRequiresReload:YES];
-				[tableDataInstance resetColumnData];
 			} else {
 				[self performSelector:@selector(showErrorSheetWith:) 
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
@@ -877,6 +883,8 @@ fetches the result as an array with a dictionary for each row in it
 			}
 		
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				[tableDataInstance resetColumnData];
+				[tablesListInstance setStatusRequiresReload:YES];
 				[self loadTable:selectedTable];
 			} else {
 				[self performSelector:@selector(showErrorSheetWith:) 
@@ -1158,7 +1166,13 @@ would result in a position change.
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
 	} else {
+		[tableDataInstance resetColumnData];
+		[tablesListInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
+
+		// Mark the content table cache for refresh
+		[tablesListInstance setContentRequiresReload:YES];
+
 		if ( originalRowIndex < destinationRowIndex ) {
 			[tableSourceView selectRow:destinationRowIndex-1 byExtendingSelection:NO];
 		} else {
@@ -1167,10 +1181,6 @@ would result in a position change.
 	}
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-
-	// Mark the content table and column caches for refresh
-	[tablesListInstance setContentRequiresReload:YES];
-	[tableDataInstance resetColumnData];
 	
 	[originalRow release];
 	return YES;
