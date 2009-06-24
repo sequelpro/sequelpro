@@ -684,7 +684,7 @@
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	if ([tablesListView numberOfSelectedRows] == 1) {		
+	if ([tablesListView numberOfSelectedRows] == 1) {
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete ALL records in the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
@@ -1153,6 +1153,7 @@
 		[tableDataInstance resetAllData];
 
 		[separatorTableMenuItem setHidden:NO];
+		[separatorTableContextMenuItem setHidden:NO];
 
 		if( [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_VIEW ||
 		   [[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
@@ -1228,6 +1229,13 @@
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 			[truncateTableButton setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+
+			[renameTableContextMenuItem setHidden:NO]; // we don't have to check the mysql version
+			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
+			[duplicateTableContextMenuItem setHidden:NO];
+			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
+			[truncateTableContextButton setHidden:YES];
+			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 		} 
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_TABLE) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
@@ -1250,6 +1258,15 @@
 			[truncateTableButton setHidden:NO];
 			[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+
+			[renameTableContextMenuItem setHidden:NO];
+			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
+			[duplicateTableContextMenuItem setHidden:NO];
+			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
+			[truncateTableContextButton setHidden:NO];
+			[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
+			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+
 		} 
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_PROC) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
@@ -1269,6 +1286,14 @@
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 			[truncateTableButton setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
+
+			[renameTableContextMenuItem setHidden:NO];
+			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
+			[duplicateTableContextMenuItem setHidden:NO];
+			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
+			[truncateTableContextButton setHidden:YES];
+			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
+
 		}
 		else if([[tableTypes objectAtIndex:[tablesListView selectedRow]] intValue] == SP_TABLETYPE_FUNC) {
 			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
@@ -1288,6 +1313,14 @@
 			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 			[truncateTableButton setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
+
+			[renameTableContextMenuItem setHidden:NO];
+			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
+			[duplicateTableContextMenuItem setHidden:NO];
+			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
+			[truncateTableContextButton setHidden:YES];
+			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
+
 		}
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
@@ -1328,25 +1361,46 @@
 					case SP_TABLETYPE_TABLE:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
 					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
+					[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+					[truncateTableButton setHidden:NO];
+					[truncateTableContextButton setHidden:NO];
 					break;
 					case SP_TABLETYPE_VIEW:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
+					[truncateTableButton setHidden:YES];
+					[truncateTableContextButton setHidden:YES];
 					break;
 					case SP_TABLETYPE_PROC:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
+					[truncateTableButton setHidden:YES];
+					[truncateTableContextButton setHidden:YES];
 					break;
 					case SP_TABLETYPE_FUNC:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
+					[truncateTableButton setHidden:YES];
+					[truncateTableContextButton setHidden:YES];
 					break;
 				}
 			
 			} else {
 				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
+				[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
+				[truncateTableButton setHidden:YES];
+				[truncateTableContextButton setHidden:YES];
 			}
 		}
+		[renameTableContextMenuItem setHidden:YES];
+		[duplicateTableContextMenuItem setHidden:YES];
+		[separatorTableContextMenuItem setHidden:YES];
+
 		[renameTableMenuItem setHidden:YES];
 		[duplicateTableMenuItem setHidden:YES];
 		[separatorTableMenuItem setHidden:YES];
+		[separatorTableContextMenuItem setHidden:YES];
 		// set window title
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database]]];

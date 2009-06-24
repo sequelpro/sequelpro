@@ -65,11 +65,18 @@ enum sp_table_types
 	IBOutlet id tableRenameText;
 	IBOutlet id renameTableButton;
 	IBOutlet id truncateTableButton;
+	IBOutlet id truncateTableContextButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
+
+	IBOutlet NSMenuItem *removeTableContextMenuItem;
+	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
+	IBOutlet NSMenuItem *renameTableContextMenuItem;
+	IBOutlet NSMenuItem *separatorTableContextMenuItem;
+
 
 	CMMCPConnection *mySQLConnection;
 	
