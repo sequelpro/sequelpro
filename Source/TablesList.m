@@ -329,7 +329,7 @@
 	
 	[tableWindow endEditingFor:nil];
 	
-	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Cancel", @"cancel button") alternateButton:NSLocalizedString(@"Delete", @"delete button") otherButton:nil informativeTextWithFormat:@""];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -680,17 +680,17 @@
 	
 	[tableWindow endEditingFor:nil];
 	
-	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Truncate", @"truncate button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Cancel", @"cancel button") alternateButton:NSLocalizedString(@"Truncate", @"truncate button") otherButton:nil informativeTextWithFormat:@""];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {		
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete ALL table records in the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete ALL records in the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
 	else {
 		[alert setMessageText:NSLocalizedString(@"Truncate selected tables?", @"truncate tables message")];
-		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL table records in the selected tables. This operation cannot be undone.", @"truncate tables informative message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL records in the selected tables. This operation cannot be undone.", @"truncate tables informative message")];
 	}
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
@@ -709,14 +709,14 @@
 	else if ([contextInfo isEqualToString:@"removeRow"]) {
 		[[sheet window] orderOut:nil];
 		
-		if (returnCode == NSAlertDefaultReturn) {
+		if (returnCode == NSAlertAlternateReturn) {
 			[self removeTable];
 		}
 	}
 	else if ([contextInfo isEqualToString:@"truncateTable"]) {
 		[[sheet window] orderOut:nil];
 		
-		if (returnCode == NSAlertDefaultReturn) {
+		if (returnCode == NSAlertAlternateReturn) {
 			[self truncateTable];
 		}
 	}
@@ -1223,9 +1223,9 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
 
 			[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View", @"rename view menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View", @"duplicate view menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 			[truncateTableButton setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 		} 
@@ -1244,9 +1244,9 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:NO];
 
 			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table", @"rename table menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table", @"duplicate table menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
 			[truncateTableButton setHidden:NO];
 			[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
@@ -1264,9 +1264,9 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];
 			
 			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure", @"rename proc menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure", @"duplicate proc menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 			[truncateTableButton setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
 		}
@@ -1283,9 +1283,9 @@
 			[[tableSubMenu itemAtIndex:9] setHidden:YES];	
 			
 			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function", @"rename func menu title")];
+			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
 			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function", @"duplicate func menu title")];
+			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 			[truncateTableButton setHidden:YES];
 			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
 		}

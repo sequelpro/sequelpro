@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="672"/>
+			<integer value="4814"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -129,7 +129,7 @@
 														<reference ref="486381768"/>
 														<object class="NSMenuItem" id="938900701">
 															<reference key="NSMenu" ref="23713489"/>
-															<string key="NSTitle">Rename Table</string>
+															<string key="NSTitle">Rename Table...</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<object class="NSCustomResource" key="NSOnImage" id="285877316">
@@ -145,7 +145,7 @@
 														</object>
 														<object class="NSMenuItem" id="924446696">
 															<reference key="NSMenu" ref="23713489"/>
-															<string key="NSTitle">Duplicate Table</string>
+															<string key="NSTitle">Duplicate Table...</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<reference key="NSOnImage" ref="285877316"/>
@@ -187,6 +187,7 @@
 														</object>
 													</object>
 												</object>
+												<int key="NSSelectedIndex">2</int>
 												<bool key="NSPullDown">YES</bool>
 												<int key="NSPreferredEdge">1</int>
 												<bool key="NSUsesItemFromMenu">YES</bool>
@@ -5726,6 +5727,7 @@
 									</object>
 									<string key="NSFrameSize">{574, 310}</string>
 									<reference key="NSSuperview" ref="175919909"/>
+									<reference key="NSNextKeyView" ref="101244177"/>
 									<reference key="NSDocView" ref="101244177"/>
 									<reference key="NSBGColor" ref="449903125"/>
 									<reference key="NSCursor" ref="32917531"/>
@@ -5756,6 +5758,7 @@
 							</object>
 							<string key="NSFrame">{{1, 34}, {586, 310}}</string>
 							<reference key="NSSuperview" ref="661948784"/>
+							<reference key="NSNextKeyView" ref="297779328"/>
 							<int key="NSsFlags">16</int>
 							<reference key="NSVScroller" ref="939193757"/>
 							<reference key="NSHScroller" ref="330171019"/>
@@ -25743,7 +25746,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{188, -4}, {175, 113}}</string>
+					<string>{{147, 140}, {188, 113}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -25765,8 +25768,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{59, 306}, {944, 550}}</string>
-					<string>{{59, 306}, {944, 550}}</string>
+					<string>{{138, 228}, {944, 550}}</string>
+					<string>{{138, 228}, {944, 550}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{62, 352}, {845, 504}}</string>
