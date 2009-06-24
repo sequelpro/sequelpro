@@ -517,7 +517,8 @@
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 	
-	lastExecutedQuery = [[tempQueries lastObject] retain];
+	if(!tableReloadAfterEdting)
+		lastExecutedQuery = [[tempQueries lastObject] retain];
 	
 	//perform empty query if no query is given
 	if ( !queryCount ) {
@@ -527,18 +528,19 @@
 	
 	//add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
+	if(!tableReloadAfterEdting) {
+		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
 
-	int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
+		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
 
-	while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 1 )
-		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 1 )
+			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
-	for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
-		[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
+		for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
+			[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
 
-	[prefs setObject:menuItems forKey:@"queryHistory"];
-
+		[prefs setObject:menuItems forKey:@"queryHistory"];
+	}
 
 	// Error checking
 	if ( [errors length] ) {
@@ -660,6 +662,7 @@
 		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
 			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"name"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
+			[theCol setEditable:YES];
 			NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 			[dataCell setEditable:YES];
 			[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
@@ -1276,6 +1279,45 @@
 		}
 
 	}
+}
+
+/*
+ * Change the sort order by clicking at a column header
+ */
+- (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
+{
+
+	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
+
+	//sets order descending if a header is clicked twice
+	if ( [[tableColumn identifier] isEqualTo:sortField] ) {
+		isDesc = !isDesc;
+	} else {
+		isDesc = NO;
+		[customQueryView setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
+	}
+
+	if (sortField) [sortField release];
+	sortField = [[NSString alloc] initWithString:[tableColumn identifier]];
+	
+	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %@ %@ ", [sortField backtickQuotedString], (isDesc)?@"DESC":@"ASC"];
+	
+	//make queryString and perform query
+	if([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
+		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))" withString:newOrder];
+	else
+		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?" withString:newOrder];
+	
+	tableReloadAfterEdting = YES;
+	[self performQueries:[NSArray arrayWithObject:queryString]];
+		
+	//sets highlight and indicatorImage
+	[customQueryView setHighlightedTableColumn:tableColumn];
+	if ( isDesc )
+		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+	else
+		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+
 }
 
 
@@ -2155,7 +2197,10 @@
 	if ((self = [super init])) {
 		
 		usedQuery = [[NSString stringWithString:@""] retain];
-		
+
+		sortField = nil;
+		isDesc = NO;
+
 		// init helpHTMLTemplate
 		NSError *error;
 		
@@ -2193,7 +2238,7 @@
 	[queryFavorites release];
 	[usedQuery release];
 	[fullResult release];
-	
+	if (sortField) [sortField release];
 	[super dealloc];
 }
 	
