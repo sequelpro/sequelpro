@@ -112,6 +112,8 @@
 		B5538AAE0FF251EE00219803 /* button_duplicate_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */; };
 		B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */; };
 		B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */; };
+		B5538E730FF279F300219803 /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */; };
+		B5538EA00FF27CD400219803 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */; };
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
 		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
@@ -133,8 +135,6 @@
 		B58A32480F6509D60003C243 /* button_duplicate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32410F6509D60003C243 /* button_duplicate.tiff */; };
 		B58A32490F6509D60003C243 /* button_info_pane_hide.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32420F6509D60003C243 /* button_info_pane_hide.tiff */; };
 		B58A324A0F6509D60003C243 /* button_info_pane_show.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32430F6509D60003C243 /* button_info_pane_show.tiff */; };
-		B59F5DFA0FF0C7020070AE8A /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */; };
-		B59F5E2B0FF0C7070070AE8A /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */; };
 		B5A601730F74930F00EE5FBA /* button_remove.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601720F74930F00EE5FBA /* button_remove.tiff */; };
 		B5A601870F749C1600EE5FBA /* dimple.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601860F749C1600EE5FBA /* dimple.tiff */; };
 		B5A601970F74C1CE00EE5FBA /* button_refresh.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */; };
@@ -174,6 +174,27 @@
 			remoteGlobalIDString = 58CDB3350FCE13C900F8ACA3;
 			remoteInfo = TunnelPassphraseRequester;
 		};
+		B5538CE00FF279AD00219803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8D1AC9740486D14A00FE50C9 /* BWToolkit.ibplugin */;
+			remoteInfo = BWToolkit;
+		};
+		B5538CE20FF279AD00219803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 53DF68FD067E5B5A0090B5B0 /* BWToolkitFramework.framework */;
+			remoteInfo = BWToolkitFramework;
+		};
+		B5538E7B0FF27A2200219803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0 /* BWToolkitFramework */;
+			remoteInfo = BWToolkitFramework;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -183,10 +204,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B59F5E2B0FF0C7070070AE8A /* BWToolkitFramework.framework in CopyFiles */,
-				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
-				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
+				B5538E730FF279F300219803 /* BWToolkitFramework.framework in CopyFiles */,
 				4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */,
+				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
+				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,6 +389,7 @@
 		B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate_icon.tif; sourceTree = "<group>"; };
 		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
 		B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show_icon.tif; sourceTree = "<group>"; };
+		B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = Frameworks/BWToolkitFramework.framework/BWToolkit.xcodeproj; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
@@ -392,7 +414,6 @@
 		B58A32410F6509D60003C243 /* button_duplicate.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate.tiff; sourceTree = "<group>"; };
 		B58A32420F6509D60003C243 /* button_info_pane_hide.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_info_pane_hide.tiff; sourceTree = "<group>"; };
 		B58A32430F6509D60003C243 /* button_info_pane_show.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_info_pane_show.tiff; sourceTree = "<group>"; };
-		B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BWToolkitFramework.framework; path = Frameworks/BWToolkitFramework.framework; sourceTree = "<group>"; };
 		B5A601720F74930F00EE5FBA /* button_remove.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_remove.tiff; sourceTree = "<group>"; };
 		B5A601860F749C1600EE5FBA /* dimple.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = dimple.tiff; sourceTree = "<group>"; };
 		B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_refresh.tiff; sourceTree = "<group>"; };
@@ -443,14 +464,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
-				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
-				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
-				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
-				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
-				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
-				B59F5DFA0FF0C7020070AE8A /* BWToolkitFramework.framework in Frameworks */,
+				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
+				B5538EA00FF27CD400219803 /* BWToolkitFramework.framework in Frameworks */,
+				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
+				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
+				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
+				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
+				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,12 +482,12 @@
 			isa = PBXGroup;
 			children = (
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
-				296DC89E0F8FD336002A3258 /* WebKit.framework */,
-				B59F5DF90FF0C7020070AE8A /* BWToolkitFramework.framework */,
-				4DECC3320EC2A170008D359E /* Sparkle.framework */,
-				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
-				4DECC3340EC2A170008D359E /* Growl.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
+				B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */,
+				4DECC3340EC2A170008D359E /* Growl.framework */,
+				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
+				4DECC3320EC2A170008D359E /* Sparkle.framework */,
+				296DC89E0F8FD336002A3258 /* WebKit.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -474,9 +495,9 @@
 		1058C7A8FEA54F5311CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
 				2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */,
 				2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */,
+				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
 			);
 			name = "Other Frameworks";
 			sourceTree = "<group>";
@@ -890,6 +911,15 @@
 			name = Parsing;
 			sourceTree = "<group>";
 		};
+		B5538CD80FF279AD00219803 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B5538CE10FF279AD00219803 /* BWToolkit.ibplugin */,
+				B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		B57747D60F7A8990003B34F9 /* Category Additions */ = {
 			isa = PBXGroup;
 			children = (
@@ -959,6 +989,7 @@
 			);
 			dependencies = (
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
+				B5538E7C0FF27A2200219803 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -976,6 +1007,12 @@
 			hasScannedForEncodings = 1;
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* sequel-pro */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = B5538CD80FF279AD00219803 /* Products */;
+					ProjectRef = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
@@ -984,6 +1021,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		B5538CE10FF279AD00219803 /* BWToolkit.ibplugin */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = BWToolkit.ibplugin;
+			remoteRef = B5538CE00FF279AD00219803 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = BWToolkitFramework.framework;
+			remoteRef = B5538CE20FF279AD00219803 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		380F4ED40FC0B50500B0BFD7 /* Resources */ = {
@@ -1201,6 +1255,11 @@
 			isa = PBXTargetDependency;
 			target = 58CDB3350FCE13C900F8ACA3 /* TunnelPassphraseRequester */;
 			targetProxy = 58CDB34A0FCE144000F8ACA3 /* PBXContainerItemProxy */;
+		};
+		B5538E7C0FF27A2200219803 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BWToolkitFramework;
+			targetProxy = B5538E7B0FF27A2200219803 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

@@ -1,0 +1,14 @@
+{
+	Actions = {
+		"openSheet:" = id;
+		"closeSheet:" = id;
+		"messageDelegateAndCloseSheet:" = id;
+	};
+	Outlets = {
+		sheet = NSWindow;
+		parentWindow = NSWindow;
+		delegate = id;
+	};
+    ClassName = BWSheetController; 
+    SuperClass = NSObject; 
+}
