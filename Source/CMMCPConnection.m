@@ -306,7 +306,8 @@ static void forcePingTimeout(int signalNumber);
 	
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+		[delegate setTitlebarStatus:@"SSH Disconnected"];
+		//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	
 	if( serverVersionString != nil ) {
@@ -405,19 +406,24 @@ static void forcePingTimeout(int signalNumber);
 		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
 		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
 		[connectionTunnel connect];
-		[delegate setStatusIconToImageWithName:@"ssh-connecting"];
+		
+		[delegate setTitlebarStatus:@"SSH Connecting…"];
+		//[delegate setStatusIconToImageWithName:@"ssh-connecting"];
+		
 		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
 		
 		// Allow the tunnel to attempt to connect in a loop
 		while (1) {
 			if ([connectionTunnel state] == SPSSH_STATE_CONNECTED) {
-				[delegate setStatusIconToImageWithName:@"ssh-connected"];
+				[delegate setTitlebarStatus:@"SSH Connected"];
+				//[delegate setStatusIconToImageWithName:@"ssh-connected"];
 				connectionPort = [connectionTunnel localPort];
 				break;
 			}
 			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
 				[connectionTunnel disconnect];
-				[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+				[delegate setTitlebarStatus:@"SSH Disconnected"];
+				//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 				break;
 			}
 			
@@ -501,9 +507,14 @@ static void forcePingTimeout(int signalNumber);
 	int newState = [theTunnel state];
 
 	if (delegate && [delegate respondsToSelector:@selector(setStatusIconToImageWithName:)]) {
-		if (newState == SPSSH_STATE_IDLE) [delegate setStatusIconToImageWithName:@"ssh-disconnected"];
-		else if (newState == SPSSH_STATE_CONNECTED) [delegate setStatusIconToImageWithName:@"ssh-connected"];
-		else [delegate setStatusIconToImageWithName:@"ssh-connecting"];
+		if (newState == SPSSH_STATE_IDLE) [delegate setTitlebarStatus:@"SSH Disconnected"];
+		else if (newState == SPSSH_STATE_CONNECTED) [delegate setTitlebarStatus:@"SSH Connected"];
+		else [delegate setTitlebarStatus:@"SSH Connecting…"];
+		
+		
+//		if (newState == SPSSH_STATE_IDLE) [delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+//		else if (newState == SPSSH_STATE_CONNECTED) [delegate setStatusIconToImageWithName:@"ssh-connected"];
+//		else [delegate setStatusIconToImageWithName:@"ssh-connecting"];
 	}
 
 	// Restart the tunnel if it dies
@@ -674,7 +685,8 @@ static void forcePingTimeout(int signalNumber);
 	[self setLastErrorMessage:nil];
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
+		[delegate setTitlebarStatus:@"SSH Disconnected"];
+		//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	return NO;
 }

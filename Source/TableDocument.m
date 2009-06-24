@@ -120,7 +120,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	NSView *windowFrame = [[tableWindow contentView] superview];
 	NSRect av = [titleAccessoryView frame];
 	NSRect initialAccessoryViewFrame = NSMakeRect(
-											[windowFrame frame].size.width - av.size.width - 20,
+											[windowFrame frame].size.width - av.size.width - 30,
 											[windowFrame frame].size.height - av.size.height,
 											av.size.width,
 											av.size.height);
@@ -397,13 +397,16 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	int newState = [theTunnel state];
 
 	if (newState == SPSSH_STATE_IDLE) {
-		[self setStatusIconToImageWithName:@"ssh-disconnected"];
+		[self setTitlebarStatus:@"SSH Disconnected"];
+		//[self setStatusIconToImageWithName:@"ssh-disconnected"];
 		[self failConnectionWithErrorMessage:[theTunnel lastError] withDetail:[sshTunnel debugMessages]];
 	} else if (newState == SPSSH_STATE_CONNECTED) {
-		[self setStatusIconToImageWithName:@"ssh-connected"];
+		[self setTitlebarStatus:@"SSH Connected"];
+		//[self setStatusIconToImageWithName:@"ssh-connected"];
 		[self initiateMySQLConnection];
 	} else {
-		[self setStatusIconToImageWithName:@"ssh-connecting"];
+		[self setTitlebarStatus:@"SSH Connecting…"];
+		//[self setStatusIconToImageWithName:@"ssh-connecting"];
 	}
 }
 
@@ -2081,6 +2084,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[titleImageView setImage:image];
 }
 
+- (void)setTitlebarStatus:(NSString *)status
+{
+	[self clearStatusIcon];
+	[titleStringView setStringValue:status];
+}
+
 /**
  * Clear the connection status icon in the titlebar
  */
@@ -2088,6 +2097,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {
 	[titleImageView setImage:nil];
 }
+
+
+
+
 
 #pragma mark -
 #pragma mark Toolbar Methods

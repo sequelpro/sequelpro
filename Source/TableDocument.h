@@ -51,8 +51,11 @@
 	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
+	
 	IBOutlet id titleAccessoryView;
 	IBOutlet id titleImageView;
+	IBOutlet id titleStringView;
+	
 	IBOutlet id connectSheet;
 	IBOutlet id databaseSheet;
 	IBOutlet id variablesSheet;
@@ -221,6 +224,7 @@
 
 // titlebar methods
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
+- (void)setTitlebarStatus:(NSString *)status;
 - (void)clearStatusIcon;
 
 //toolbar methods
