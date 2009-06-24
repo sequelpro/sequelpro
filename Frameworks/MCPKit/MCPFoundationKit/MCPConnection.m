@@ -66,7 +66,11 @@ static BOOL	sDebugQueries = NO;
 
 @implementation MCPConnection
 
+// Synthesize ivars
 @synthesize delegate;
+@synthesize useKeepAlive;
+@synthesize connectionTimeout;
+@synthesize keepAliveInterval;
 
 /**
  * Initialize the class version to 3.0.1
@@ -97,7 +101,7 @@ static BOOL	sDebugQueries = NO;
 		mConnection = mysql_init(NULL);
 		mConnected = NO;
 		
-		if (mConnection ==  NULL) {
+		if (mConnection == NULL) {
 			[self autorelease];
 			
 			return nil;
@@ -115,28 +119,27 @@ static BOOL	sDebugQueries = NO;
 		connectionKeychainAccount = nil;
 		keepAliveTimer = nil;
 		connectionTunnel = nil;
-		connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
-		if (!connectionTimeout) connectionTimeout = 10;
-		useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
-		keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
-		if (!keepAliveInterval) keepAliveInterval = 0;
 		lastKeepAliveSuccess = nil;
-		connectionThreadId = 0;
-		maxAllowedPacketSize = -1;
+		
+		// Initialize ivar defaults
+		connectionTimeout = 10;
+		useKeepAlive      = YES; 
+		keepAliveInterval = 0;   
+		
+		connectionThreadId     = 0;
+		maxAllowedPacketSize   = -1;
 		lastQueryExecutionTime = 0;
-		lastQueryErrorId = 0;
-		lastQueryErrorMessage = nil;
-		lastQueryAffectedRows = 0;
+		lastQueryErrorId       = 0;
+		lastQueryErrorMessage  = nil;
+		lastQueryAffectedRows  = 0;
 		
-		if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
-			NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
-		}
-		
+		// Obtain SEL references
 		willQueryStringSEL = @selector(willQueryString:);
 		stopKeepAliveTimerSEL = @selector(stopKeepAliveTimer);
 		startKeepAliveTimerResettingStateSEL = @selector(startKeepAliveTimerResettingState:);
 		cStringSEL = @selector(cStringFromString:);
 		
+		// Obtain pointers
 		cStringPtr = [self methodForSelector:cStringSEL];
 		stopKeepAliveTimerPtr = [self methodForSelector:stopKeepAliveTimerSEL];
 		startKeepAliveTimerResettingStatePtr = [self methodForSelector:startKeepAliveTimerResettingStateSEL];
@@ -350,7 +353,6 @@ static BOOL	sDebugQueries = NO;
 	return mConnected;
 }
 
-
 /**
  * Disconnect the current connection.
  */
@@ -405,6 +407,7 @@ static BOOL	sDebugQueries = NO;
 		mysql_close(mConnection);
 		mConnection = NULL;
 	}
+	
 	mConnected = NO;
 	
 	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
@@ -433,6 +436,7 @@ static BOOL	sDebugQueries = NO;
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
 			tunnelStartDate = [tunnelStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
 		}
+		
 		currentSSHTunnelState = [connectionTunnel state];
 		[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
 	}
@@ -1057,7 +1061,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (void)setLastErrorMessage:(NSString *)theErrorMessage
 {
-	if (!theErrorMessage) theErrorMessage = [self stringWithCString:mysql_error(mConnection)];
+	if (!theErrorMessage) theErrorMessage = [self _stringWithCString:mysql_error(mConnection)];
 	
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
 	lastQueryErrorMessage = [[NSString alloc] initWithString:theErrorMessage];
@@ -1298,7 +1302,7 @@ static void forcePingTimeout(int signalNumber)
 				
 				// Ensure no problem occurred during the result fetch
 				if (mysql_errno(mConnection) != 0) {
-					queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+					queryErrorMessage = [[NSString alloc] initWithString:[self _stringWithCString:mysql_error(mConnection)]];
 					queryErrorId = mysql_errno(mConnection);
 					break;
 				}
@@ -1311,7 +1315,7 @@ static void forcePingTimeout(int signalNumber)
 			// On failure, set the error messages and IDs
 		} else {
 			
-			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+			queryErrorMessage = [[NSString alloc] initWithString:[self _stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);
 			
 			// If the error was a connection error, retry once
@@ -1351,7 +1355,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * Perform a query in threaded mode.
  */
-- (void) workerPerformQuery:(NSString *)query
+/*- (void)workerPerformQuery:(NSString *)query
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	const char *theCQuery;
@@ -1376,13 +1380,13 @@ static void forcePingTimeout(int signalNumber)
 	workerQueryComplete = YES;
 	
 	[pool release];
-}
+}*/
 
 /**
  * Return the time taken to execute the last query.  This should be close to the time it took
  * the server to run the query, but will include network lag and some client library overhead.
  */
-- (float) lastQueryExecutionTime
+- (float)lastQueryExecutionTime
 {
 	return lastQueryExecutionTime;
 }
@@ -1484,7 +1488,7 @@ static void forcePingTimeout(int signalNumber)
  *
  * WARNING: #{produce an error if no databases are selected} (with !{selectDB:} for example).
  */
-- (MCPResult *)listTablesLike:(NSString *) tablesName
+- (MCPResult *)listTablesLike:(NSString *)tablesName
 {
 	if (!mConnected) return NO;
 	
@@ -1754,7 +1758,7 @@ static void forcePingTimeout(int signalNumber)
  * Retrieve the max_allowed_packet size from the server; returns
  * false if the query fails.
  */
-- (BOOL) fetchMaxAllowedPacket
+- (BOOL)fetchMaxAllowedPacket
 {
 	char *queryString;
 	
@@ -1820,7 +1824,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * It returns whether max_allowed_packet is setable for the user.
  */
-- (BOOL) isMaxAllowedPacketEditable
+- (BOOL)isMaxAllowedPacketEditable
 {
 	return(!mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet"));
 }

@@ -69,10 +69,13 @@ typedef enum _MCPReconnect {
 	unsigned int	 mConnectionFlags; /* The flags to be used for the connection to the database. */
 	id				 delegate;         /* Connection delegate */
 	
+	BOOL useKeepAlive;
+	int connectionTimeout;
+	float keepAliveInterval;
+	
 	IBOutlet NSWindow *connectionErrorDialog;
 	NSWindow *parentWindow;
 	
-	BOOL nibLoaded;
 	SPSSHTunnel *connectionTunnel;
 	NSString *connectionLogin;
 	NSString *connectionKeychainName;
@@ -83,10 +86,8 @@ typedef enum _MCPReconnect {
 	NSString *connectionSocket;
 	int maxAllowedPacketSize;
 	unsigned long connectionThreadId;
-	int connectionTimeout;
+	
 	int currentSSHTunnelState;
-	BOOL useKeepAlive;
-	float keepAliveInterval;
 	
 	int lastQueryExecutionTime;
 	NSString *lastQueryErrorMessage;
@@ -105,18 +106,23 @@ typedef enum _MCPReconnect {
 	BOOL delegateResponseToWillQueryString;
 	BOOL consoleLoggingEnabled;
 	
+	// Pointers
 	IMP cStringPtr;
 	IMP willQueryStringPtr;
 	IMP stopKeepAliveTimerPtr;
 	IMP startKeepAliveTimerResettingStatePtr;
 	
+	// Selectors
 	SEL cStringSEL;
 	SEL willQueryStringSEL;
 	SEL stopKeepAliveTimerSEL;
 	SEL startKeepAliveTimerResettingStateSEL;
 }
 
-@property (readwrite, assign) id *delegate;
+@property (readwrite, assign) id delegate;
+@property (readwrite, assign) BOOL useKeepAlive;
+@property (readwrite, assign) int connectionTimeout;
+@property (readwrite, assign) float keepAliveInterval;
 
 /**
  * Initialisation
@@ -194,7 +200,7 @@ typedef enum _MCPReconnect {
 - (NSString *)quoteObject:(id)theObject;
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPResult *)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding;
-- (void)workerPerformQuery:(NSString *)query;
+//- (void)workerPerformQuery:(NSString *)query;
 - (float)lastQueryExecutionTime;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;

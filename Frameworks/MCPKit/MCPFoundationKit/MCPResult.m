@@ -725,6 +725,113 @@ const OUR_CHARSET our_charsets60[] =
 }
 
 /**
+ * Return an array of dicts containg column data of the last executed query
+ */
+- (NSArray *)fetchResultFieldsStructure
+{
+	MYSQL_FIELD *theField;
+	
+	NSMutableArray *structureResult = [NSMutableArray array];
+	
+	unsigned int i;
+	unsigned int numFields = mysql_num_fields(mResult);
+	
+	if (mResult == NULL) return nil;
+	
+	theField = mysql_fetch_fields(mResult);
+	
+	for (i=0; i < numFields; i++)
+	{
+		NSMutableDictionary *fieldStructure = [NSMutableDictionary dictionaryWithCapacity:38];
+		
+		/* Name of column */
+		[fieldStructure setObject:[self stringWithCString:theField[i].name] forKey:@"name"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].name_length] forKey:@"name_length"];
+		
+		/* Original column name, if an alias */ 
+		[fieldStructure setObject:[self stringWithCString:theField[i].org_name] forKey:@"org_name"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].org_name_length] forKey:@"org_name_length"];
+		
+		/* Table of column if column was a field */
+		[fieldStructure setObject:[self stringWithCString:theField[i].table] forKey:@"table"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].table_length] forKey:@"table_length"];
+		
+		/* Org table name, if table was an alias */
+		[fieldStructure setObject:[self stringWithCString:theField[i].org_table] forKey:@"org_table"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].org_table_length] forKey:@"org_table_length"];
+		
+		/* Database for table */
+		[fieldStructure setObject:[self stringWithCString:theField[i].db] forKey:@"db"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].db_length] forKey:@"db_length"];
+		
+		/* Catalog for table */
+		// [fieldStructure setObject:[self stringWithCString:theField[i].catalog] forKey:@"catalog"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].catalog_length] forKey:@"catalog_length"];
+		
+		/* Default value (set by mysql_list_fields) */
+		// [fieldStructure setObject:[self stringWithCString:theField[i].def] forKey:@"def"];
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].def_length] forKey:@"def_length"];
+		
+		/* Width of column (real length in bytes) */
+		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].length] forKey:@"byte_length"];
+		/* Width of column (as in create)*/
+		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].length/[self find_charsetMaxByteLengthPerChar:theField[i].charsetnr]] 
+						   forKey:@"char_length"];
+		/* Max width (bytes) for selected set */
+		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].max_length] forKey:@"max_byte_length"];
+		/* Max width (chars) for selected set */
+		// [fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].max_length/[self find_charsetMaxByteLengthPerChar:theField[i].charsetnr]] 
+		// 		forKey:@"max_char_length"];
+		
+		/* Div flags */
+		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].flags] forKey:@"flags"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & NOT_NULL_FLAG) ? YES : NO] forKey:@"null"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & PRI_KEY_FLAG) ? YES : NO] forKey:@"PRI_KEY_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & UNIQUE_KEY_FLAG) ? YES : NO] forKey:@"UNIQUE_KEY_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & MULTIPLE_KEY_FLAG) ? YES : NO] forKey:@"MULTIPLE_KEY_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & BLOB_FLAG) ? YES : NO] forKey:@"BLOB_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & UNSIGNED_FLAG) ? YES : NO] forKey:@"UNSIGNED_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & ZEROFILL_FLAG) ? YES : NO] forKey:@"ZEROFILL_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & BINARY_FLAG) ? YES : NO] forKey:@"BINARY_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & ENUM_FLAG) ? YES : NO] forKey:@"ENUM_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & AUTO_INCREMENT_FLAG) ? YES : NO] forKey:@"AUTO_INCREMENT_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & SET_FLAG) ? YES : NO] forKey:@"SET_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & NUM_FLAG) ? YES : NO] forKey:@"NUM_FLAG"];
+		[fieldStructure setObject:[NSNumber numberWithBool:(theField[i].flags & PART_KEY_FLAG) ? YES : NO] forKey:@"PART_KEY_FLAG"];
+		// [fieldStructure setObject:[NSNumber numberWithInt:(theField[i].flags & GROUP_FLAG) ? 1 : 0] forKey:@"GROUP_FLAG"];
+		// [fieldStructure setObject:[NSNumber numberWithInt:(theField[i].flags & UNIQUE_FLAG) ? 1 : 0] forKey:@"UNIQUE_FLAG"];
+		// [fieldStructure setObject:[NSNumber numberWithInt:(theField[i].flags & BINCMP_FLAG) ? 1 : 0] forKey:@"BINCMP_FLAG"];
+		
+		/* Number of decimals in field */
+		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].decimals] forKey:@"decimals"];
+		
+		/* Character set */
+		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].charsetnr] forKey:@"charsetnr"];
+		[fieldStructure setObject:[self find_charsetName:theField[i].charsetnr] forKey:@"charset_name"];
+		[fieldStructure setObject:[self find_charsetCollation:theField[i].charsetnr] forKey:@"charset_collation"];
+		
+		/* Table type */
+		[fieldStructure setObject:[self mysqlTypeToStringForType:theField[i].type 
+												   withCharsetNr:theField[i].charsetnr 
+													   withFlags:theField[i].flags
+													  withLength:theField[i].length 
+								   ] forKey:@"type"];
+		
+		/* Table type group*/
+		[fieldStructure setObject:[self mysqlTypeToGroupForType:theField[i].type 
+												  withCharsetNr:theField[i].charsetnr 
+													  withFlags:theField[i].flags
+								   ] forKey:@"typegrouping"];
+		
+		[structureResult addObject:fieldStructure];
+		
+	}
+	
+	return structureResult;
+	
+}
+
+/**
  * Return the MySQL flags of the column at the given index... Can be used to check if a number is signed or not...
  */
 - (unsigned int)fetchFlagsAtIndex:(unsigned int)index
@@ -997,6 +1104,229 @@ const OUR_CHARSET our_charsets60[] =
 	}
 	
 	return theString;
+}
+
+#pragma mark -
+#pragma mark Other
+
+/**
+ * Convert a mysql_type to a string
+ */
+- (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length
+{
+	// BOOL isUnsigned = (flags & UNSIGNED_FLAG) != 0;
+	// BOOL isZerofill = (flags & ZEROFILL_FLAG) != 0;
+	
+	switch (type) {
+		case FIELD_TYPE_BIT:
+			return @"BIT";
+		case MYSQL_TYPE_DECIMAL:
+		case FIELD_TYPE_NEW_DECIMAL:
+			//return isUnsigned ? (isZerofill? @"DECIMAL UNSIGNED ZEROFILL" : @"DECIMAL UNSIGNED"): 
+			return @"DECIMAL";
+		case MYSQL_TYPE_TINY:
+			// return isUnsigned ? (isZerofill? @"TINYINT UNSIGNED ZEROFILL" : @"TINYINT UNSIGNED"): 
+			return @"TINYINT";
+		case MYSQL_TYPE_SHORT:
+			// return isUnsigned ? (isZerofill? @"SMALLINT UNSIGNED ZEROFILL" : @"SMALLINT UNSIGNED"): 
+			return @"SMALLINT";
+		case MYSQL_TYPE_LONG:
+			// return isUnsigned ? (isZerofill? @"INT UNSIGNED ZEROFILL" : @"INT UNSIGNED"): 
+			return @"INT";
+		case MYSQL_TYPE_FLOAT:
+			// return isUnsigned ? (isZerofill? @"FLOAT UNSIGNED ZEROFILL" : @"FLOAT UNSIGNED"): 
+			return @"FLOAT";
+		case MYSQL_TYPE_DOUBLE:
+			// return isUnsigned ? (isZerofill? @"DOUBLE UNSIGNED ZEROFILL" : @"DOUBLE UNSIGNED"): 
+			return @"DOUBLE";
+		case MYSQL_TYPE_NULL:
+			return @"NULL";
+		case MYSQL_TYPE_TIMESTAMP:
+			return @"TIMESTAMP";
+		case MYSQL_TYPE_LONGLONG:
+			// return isUnsigned ? (isZerofill? @"BIGINT UNSIGNED ZEROFILL" : @"BIGINT UNSIGNED") : 
+			return @"BIGINT";
+		case MYSQL_TYPE_INT24:
+			// return isUnsigned ? (isZerofill? @"MEDIUMINT UNSIGNED ZEROFILL" : @"MEDIUMINT UNSIGNED") : 
+			return @"MEDIUMINT";
+		case MYSQL_TYPE_DATE:
+			return @"DATE";
+		case MYSQL_TYPE_TIME:
+			return @"TIME";
+		case MYSQL_TYPE_DATETIME:
+			return @"DATETIME";
+		case MYSQL_TYPE_TINY_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_MEDIUM_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_LONG_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_BLOB:
+		{
+			BOOL isBlob = (charsetnr == MAGIC_BINARY_CHARSET_NR);
+			switch ((int)length/[self find_charsetMaxByteLengthPerChar:charsetnr]) {
+				case 255: return isBlob? @"TINYBLOB":@"TINYTEXT";
+				case 65535: return isBlob? @"BLOB":@"TEXT";
+				case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
+				case 4294967295: return isBlob? @"LONGBLOB":@"LONGTEXT";
+				default:
+					switch (length) {
+						case 255: return isBlob? @"TINYBLOB":@"TINYTEXT";
+						case 65535: return isBlob? @"BLOB":@"TEXT";
+						case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
+						case 4294967295: return isBlob? @"LONGBLOB":@"LONGTEXT";
+						default:
+							return @"UNKNOWN";
+					}
+			}
+		}
+		case MYSQL_TYPE_VAR_STRING:
+			if (flags & ENUM_FLAG) {
+				return @"ENUM";
+			}
+			if (flags & SET_FLAG) {
+				return @"SET";
+			}
+			if (charsetnr == MAGIC_BINARY_CHARSET_NR) {
+				return @"VARBINARY";
+			}
+			return @"VARCHAR";
+		case MYSQL_TYPE_STRING:
+			if (flags & ENUM_FLAG) {
+				return @"ENUM";
+			}
+			if (flags & SET_FLAG) {
+				return @"SET";
+			}
+			if ((flags & BINARY_FLAG) && charsetnr == MAGIC_BINARY_CHARSET_NR) {
+				return @"BINARY";
+			}
+			return @"CHAR";
+		case MYSQL_TYPE_ENUM:
+			/* This should never happen */
+			return @"ENUM";
+		case MYSQL_TYPE_YEAR:
+			return @"YEAR";
+		case MYSQL_TYPE_SET:
+			/* This should never happen */
+			return @"SET";
+		case MYSQL_TYPE_GEOMETRY:
+			return @"GEOMETRY";
+		default:
+			return @"UNKNOWN";
+	}
+}
+
+/**
+ * Merge mysql_types into type groups
+ */
+- (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags
+{
+	switch(type){
+		case FIELD_TYPE_BIT:
+			return @"bit";
+		case MYSQL_TYPE_TINY:
+		case MYSQL_TYPE_SHORT:
+		case MYSQL_TYPE_LONG:
+		case MYSQL_TYPE_LONGLONG:
+		case MYSQL_TYPE_INT24:
+			return @"integer";
+		case MYSQL_TYPE_FLOAT:
+		case MYSQL_TYPE_DOUBLE:
+		case MYSQL_TYPE_DECIMAL:
+		case FIELD_TYPE_NEW_DECIMAL:
+			return @"float";
+		case MYSQL_TYPE_YEAR:
+		case MYSQL_TYPE_DATETIME:
+		case MYSQL_TYPE_TIME:
+		case MYSQL_TYPE_DATE:
+		case MYSQL_TYPE_TIMESTAMP:
+			return @"date";
+		case MYSQL_TYPE_VAR_STRING:
+			if (flags & ENUM_FLAG) {
+				return @"enum";
+			}
+			if (flags & SET_FLAG) {
+				return @"enum";
+			}
+			if (charsetnr == MAGIC_BINARY_CHARSET_NR) {
+				return @"binary";
+			}
+			return @"string";
+		case MYSQL_TYPE_STRING:
+			if (flags & ENUM_FLAG) {
+				return @"enum";
+			}
+			if (flags & SET_FLAG) {
+				return @"enum";
+			}
+			if ((flags & BINARY_FLAG) && charsetnr == MAGIC_BINARY_CHARSET_NR) {
+				return @"binary";
+			}
+			return @"string";
+		case MYSQL_TYPE_TINY_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_MEDIUM_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_LONG_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_BLOB:
+		{
+			if (charsetnr == MAGIC_BINARY_CHARSET_NR) {
+				return @"blobdata";
+			} else {
+				return @"textdata";
+			}
+		}
+		case MYSQL_TYPE_GEOMETRY:
+			return @"geometry";
+		default:
+			return @"blobdata";
+			
+	}
+}
+
+/**
+ * Convert a mysql_charsetnr into a charset name as string
+ */
+- (NSString *)find_charsetName:(unsigned int)charsetnr
+{
+	const OUR_CHARSET * c = our_charsets60;
+	
+	do {
+		if (c->nr == charsetnr)
+			return [self stringWithCString:c->name];
+		++c;
+	} while (c[0].nr != 0);
+	
+	return @"UNKNOWN";
+}
+
+/**
+ * Convert a mysql_charsetnr into a collation name as string
+ */
+- (NSString *)find_charsetCollation:(unsigned int)charsetnr
+{
+	const OUR_CHARSET * c = our_charsets60;
+	
+	do {
+		if (c->nr == charsetnr)
+			return [self stringWithCString:c->collation];
+		++c;
+	} while (c[0].nr != 0);
+	
+	return @"UNKNOWN";
+}
+
+/**
+ * Return the max byte length to store a char by using
+ * a specific mysql_charsetnr
+ */
+- (unsigned int)find_charsetMaxByteLengthPerChar:(unsigned int)charsetnr
+{
+	const OUR_CHARSET * c = our_charsets60;
+	
+	do {
+		if (c->nr == charsetnr)
+			return c->char_maxlen;
+		++c;
+	} while (c[0].nr != 0);
+	
+	return 1;
 }
 
 #pragma mark -

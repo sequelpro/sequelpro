@@ -416,6 +416,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 														usingPort:[portField intValue]];
 		}
 	}
+	
 	[mySQLConnection setParentWindow:tableWindow];
 
 	// Set the password as appropriate
@@ -449,8 +450,10 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[connectProgressStatusText setHidden:YES];
 	
 	// Set up the connection.
-	// Register as a delegate
 	[mySQLConnection setDelegate:self];
+	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:@"ConnectionTimeout"] intValue]];
+	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:@"UseKeepAlive"] doubleValue]];
+	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:@"KeepAliveInterval"] doubleValue]];
 
 	// Set encoding
 	NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];

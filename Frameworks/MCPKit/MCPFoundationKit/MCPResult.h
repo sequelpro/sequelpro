@@ -92,6 +92,9 @@ typedef struct st_our_charset
 - (const char *)cStringFromString:(NSString *)theString;
 - (NSString *)stringWithCString:(const char *)theCString;
 
+/**
+ * Other
+ */
 - (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length;
 - (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags;
 - (NSString *)find_charsetName:(unsigned int)charsetnr;
