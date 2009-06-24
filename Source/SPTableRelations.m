@@ -318,7 +318,6 @@
 		for (NSDictionary *constraint in constraints) 
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[tablesListInstance tableName], @"table",
 									[constraint objectForKey:@"name"], @"name",
 									[constraint objectForKey:@"columns"], @"columns",
 									[constraint objectForKey:@"ref_table"], @"fk_table",

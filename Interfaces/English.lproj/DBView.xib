@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="672"/>
+			<integer value="5548"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -614,7 +614,7 @@
 												<object class="NSTabViewItem" id="831053945">
 													<string key="NSIdentifier">source</string>
 													<object class="NSView" key="NSView" id="461236772">
-														<reference key="NSNextResponder" ref="714795046"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1932,7 +1932,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 7}, {700, 544}}</string>
-														<reference key="NSSuperview" ref="714795046"/>
 													</object>
 													<string key="NSLabel">Structure</string>
 													<reference key="NSColor" ref="62854682"/>
@@ -2958,7 +2957,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<object class="NSCustomResource" key="NSNormalImage">
+																					<object class="NSCustomResource" key="NSNormalImage" id="307737083">
 																						<string key="NSClassName">NSImage</string>
 																						<string key="NSResourceName">button_action</string>
 																					</object>
@@ -2973,10 +2972,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<object class="NSCustomResource" key="NSImage">
-																							<string key="NSClassName">NSImage</string>
-																							<string key="NSResourceName">button_action</string>
-																						</object>
+																						<reference key="NSImage" ref="307737083"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -3978,7 +3974,7 @@
 												<object class="NSTabViewItem" id="986490149">
 													<string key="NSIdentifier">relations</string>
 													<object class="NSView" key="NSView" id="49633996">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="714795046"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4036,33 +4032,6 @@
 																							<reference key="NSSupport" ref="26"/>
 																							<reference key="NSControlView" ref="952375340"/>
 																							<reference key="NSBackgroundColor" ref="449903125"/>
-																							<reference key="NSTextColor" ref="454249633"/>
-																						</object>
-																						<int key="NSResizingMask">3</int>
-																						<bool key="NSIsResizeable">YES</bool>
-																						<bool key="NSIsEditable">YES</bool>
-																						<reference key="NSTableView" ref="952375340"/>
-																					</object>
-																					<object class="NSTableColumn" id="409592372">
-																						<string key="NSIdentifier">table</string>
-																						<double key="NSWidth">1.000000e+02</double>
-																						<double key="NSMinWidth">1.000000e+01</double>
-																						<double key="NSMaxWidth">3.402823e+38</double>
-																						<object class="NSTableHeaderCell" key="NSHeaderCell">
-																							<int key="NSCellFlags">75628032</int>
-																							<int key="NSCellFlags2">0</int>
-																							<string key="NSContents">Table</string>
-																							<reference key="NSSupport" ref="26"/>
-																							<reference key="NSBackgroundColor" ref="299403355"/>
-																							<reference key="NSTextColor" ref="222976159"/>
-																						</object>
-																						<object class="NSTextFieldCell" key="NSDataCell" id="5584">
-																							<int key="NSCellFlags">337772096</int>
-																							<int key="NSCellFlags2">133120</int>
-																							<string key="NSContents">Text Cell</string>
-																							<reference key="NSSupport" ref="26"/>
-																							<reference key="NSControlView" ref="952375340"/>
-																							<reference key="NSBackgroundColor" ref="1024678221"/>
 																							<reference key="NSTextColor" ref="454249633"/>
 																						</object>
 																						<int key="NSResizingMask">3</int>
@@ -4381,20 +4350,21 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 7}, {700, 544}}</string>
+														<reference key="NSSuperview" ref="714795046"/>
 													</object>
 													<string key="NSLabel">Relations</string>
 													<reference key="NSColor" ref="62854682"/>
 													<reference key="NSTabView" ref="714795046"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="831053945"/>
+											<reference key="NSSelectedTabViewItem" ref="986490149"/>
 											<reference key="NSFont" ref="26"/>
 											<int key="NSTvFlags">134217731</int>
 											<bool key="NSAllowTruncatedLabels">YES</bool>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="461236772"/>
+												<reference ref="49633996"/>
 											</object>
 										</object>
 									</object>
@@ -21126,7 +21096,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="658265380"/>
-							<reference ref="409592372"/>
 							<reference ref="648716804"/>
 							<reference ref="672854605"/>
 							<reference ref="5320"/>
@@ -21210,20 +21179,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="object" ref="885866030"/>
 						<reference key="parent" ref="1043842561"/>
 						<string key="objectName">SPTableRelations</string>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">5576</int>
-						<reference key="object" ref="409592372"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="5584"/>
-						</object>
-						<reference key="parent" ref="952375340"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">5577</int>
-						<reference key="object" ref="5584"/>
-						<reference key="parent" ref="409592372"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5578</int>
@@ -24333,8 +24288,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>5567.IBPluginDependency</string>
 					<string>557.IBPluginDependency</string>
 					<string>557.ImportedFromIB2</string>
-					<string>5576.IBPluginDependency</string>
-					<string>5577.IBPluginDependency</string>
 					<string>5578.IBPluginDependency</string>
 					<string>5579.IBPluginDependency</string>
 					<string>5580.IBPluginDependency</string>
@@ -25831,8 +25784,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{306, 323}, {944, 550}}</string>
-					<string>{{306, 323}, {944, 550}}</string>
+					<string>{{187, 237}, {944, 550}}</string>
+					<string>{{187, 237}, {944, 550}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{62, 352}, {845, 504}}</string>
@@ -26202,8 +26155,6 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
