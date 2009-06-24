@@ -880,6 +880,8 @@
 
 		NSImage *image = [[NSImage alloc] initWithData:editData];
 		contents = [[NSString alloc] initWithData:editData encoding:[mySQLConnection encoding]];
+		if (contents == nil)
+			contents = [[NSString alloc] initWithData:editData encoding:NSASCIIStringEncoding];
 
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
@@ -890,7 +892,9 @@
 		else
 			[editTextView setString:@""];
 		
-		[hexTextView setString:[editData dataToFormattedHexString]];
+		// Load hex data only if user has already displayed them
+		if(![[hexTextView string] isEqualToString:@""])
+			[hexTextView setString:[editData dataToFormattedHexString]];
 
 		// If the image cell now contains a valid image, select the image view
 		if (image) {
@@ -925,26 +929,34 @@
 - (IBAction)segmentControllerChanged:(id)sender
 {
 	switch([sender selectedSegment]){
-		case 0:
+		case 0: // text
 		[editTextView setHidden:NO];
 		[editTextScrollView setHidden:NO];
 		[editImage setHidden:YES];
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
+		[editSheet makeFirstResponder:editTextView];
 		break;
-		case 1:
+		case 1: // image
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
 		[editImage setHidden:NO];
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
+		[editSheet makeFirstResponder:editImage];
 		break;
-		case 2:
+		case 2: // hex - load on demand
+		if([editData length] && [[hexTextView string] isEqualToString:@""]) {
+			[editSheetProgressBar startAnimation:self];
+			[hexTextView setString:[editData dataToFormattedHexString]];
+			[editSheetProgressBar stopAnimation:self];
+		}
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
 		[hexTextView setHidden:NO];
 		[hexTextScrollView setHidden:NO];
+		[editSheet makeFirstResponder:hexTextView];
 		break;
 	}
 }
@@ -1097,7 +1109,37 @@
 
 }
 
+-(void)processPasteImageData
+{
+	editSheetWillBeInitialized = YES;
 
+	NSImage *image = nil;
+	
+	image = [[[NSImage alloc] initWithPasteboard:[NSPasteboard generalPasteboard]] autorelease];
+	if (image) {
+
+		if (nil != editData) [editData release];
+
+		[editImage setImage:image];
+
+		editData = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
+
+		NSString *contents = [[NSString alloc] initWithData:editData encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+		if (contents == nil)
+			contents = [[NSString alloc] initWithData:editData encoding:NSASCIIStringEncoding];
+
+		// Set the string contents and hex representation
+		if(contents)
+			[editTextView setString:contents];
+		if(![[hexTextView string] isEqualToString:@""])
+			[hexTextView setString:[editData dataToFormattedHexString]];
+
+		[contents release];
+		
+	}
+
+	editSheetWillBeInitialized = NO;
+}
 /*
  * Invoked when the imageView in the connection sheet has the contents deleted
  * or a file dragged and dropped onto it.
@@ -1121,11 +1163,14 @@
 	// Process the provided image
 	editData = [[NSData alloc] initWithData:data];
 	NSString *contents = [[NSString alloc] initWithData:data encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+	if (contents == nil)
+		contents = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
 
 	// Set the string contents and hex representation
 	if(contents)
 		[editTextView setString:contents];
-	[hexTextView setString:[editData dataToFormattedHexString]];
+	if(![[hexTextView string] isEqualToString:@""])
+		[hexTextView setString:[editData dataToFormattedHexString]];
 	
 	[contents release];
 	editSheetWillBeInitialized = NO;
@@ -1701,11 +1746,6 @@
 		}
 
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
-			// NSString *tmpString = [[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]];
-			// if (tmpString == nil)
-			// 	tmpString = [[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding];
-			// [value setString:[NSString stringWithString:tmpString]];
-			// [tmpString release];
 			[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 		} else {
 			[value setString:[tempValue description]];
@@ -2279,8 +2319,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		if ( [theValue isKindOfClass:[NSData class]] ) {
 			image = [[[NSImage alloc] initWithData:theValue] autorelease];
 
-			[hexTextView setString:[theValue dataToFormattedHexString]];
-
+			// Set hex view to "" - load on demand only
+			[hexTextView setString:@""];
+			
 			stringValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 			if (stringValue == nil)
 				stringValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
