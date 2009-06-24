@@ -690,31 +690,31 @@ fetches the result as an array with a dictionary for each row in it
 
 	if ([[theRow objectForKey:@"Null"] isEqualToString:@"NO"]) {
 		[queryString appendString:@" NOT NULL"];
-	}
-	else {
+	} else {
 		[queryString appendString:@" NULL"];
 	}
-		
-	if ((![[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) && 
-		([[theRow objectForKey:@"Default"] isEqualToString:@"NULL"])) 
-	{
+	
+	// Don't provide any defaults for auto-increment fields
+	if ([[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
+		[queryString appendString:@" "];
+	} else {
+
+		// If a null value has been specified, and null is allowed, specify DEFAULT NULL
 		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
 			if ([[theRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
-		} 
-		else if ([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && 
-				([[theRow objectForKey:@"Default"] isEqualToString:@"CURRENT_TIMESTAMP"] || 
-				 [[theRow objectForKey:@"Default"] isEqualToString:@"current_timestamp"]) ) 
+		
+		// Otherwise, if current_timestamp was specified for timestamps, use that
+		} else if ([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] &&
+					[[[theRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
 		{
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
-		} 
-		else {
+
+		// Otherwise, use the provided default
+		} else {
 			[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"Default"]]]];
 		}
-	} 
-	else {
-		[queryString appendString:@" "];
 	}
 	
 	if (!(
