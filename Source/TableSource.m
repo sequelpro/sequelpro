@@ -149,6 +149,14 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 			[possibleValues release];
 			[valueParser release];
 		}
+		
+		// For timestamps check to see whether "on update CURRENT_TIMESTAMP" - not returned
+		// by SHOW COLUMNS - should be set from the table data store
+		if ([type isEqualToString:@"timestamp"]
+			&& [[[tableDataInstance columnWithName:[field objectForKey:@"Field"]] objectForKey:@"onupdatetimestamp"] intValue])
+		{
+			[field setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
+		}
 
 		// scan extras for values like unsigned, zerofill, binary
 		extrasArray = [extras componentsSeparatedByString:@" "];

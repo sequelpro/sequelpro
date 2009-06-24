@@ -123,6 +123,7 @@
 - (NSDictionary *) columnWithName:(NSString *)colName
 {
 	int columnIndex = [columnNames indexOfObject:colName];
+	if (columnIndex == NSNotFound) return nil;
 	return [columns objectAtIndex:columnIndex];
 }
 
@@ -835,6 +836,7 @@
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"binary"];
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"zerofill"];
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"autoincrement"];
+	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"onupdatetimestamp"];
 
 	// Walk through the remaining column definition parts storing recognised details
 	partsArrayLength = [definitionParts count];
@@ -893,6 +895,13 @@
 			[fieldDetails setValue:[detailParser unquotedString] forKey:@"default"];
 			[detailParser release];
 			definitionPartsIndex++;
+
+		// Special timestamp case - Whether fields are set to update the current timestamp
+		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"UPDATE"]
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"onupdatetimestamp"];
+			definitionPartsIndex += 2;
 		}
 
 		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COMMENT 'foo' | COLUMN_FORMAT bar | STORAGE q | REFERENCES...
