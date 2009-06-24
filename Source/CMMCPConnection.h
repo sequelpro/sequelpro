@@ -34,6 +34,7 @@
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
+- (void)setTitlebarStatus:(NSString *)status;
 - (BOOL)connectionEncodingViaLatin1;
 
 @end
