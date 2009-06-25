@@ -12,6 +12,7 @@
 - (void)awakeFromNib
 {
 	[self setView:printAccessoryView];
+	[[WebPreferences standardPreferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue] ];
 	[defaultsController addObserver:self forKeyPath:@"values.PrintBackground" options:NSKeyValueObservingOptionNew context:@"PrinterSettingsChanged"];
 }	
 
