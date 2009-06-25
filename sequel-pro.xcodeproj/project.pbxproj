@@ -178,21 +178,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8D1AC9740486D14A00FE50C9 /* BWToolkit.ibplugin */;
+			remoteGlobalIDString = 8D1AC9740486D14A00FE50C9;
 			remoteInfo = BWToolkit;
 		};
 		B5538CE20FF279AD00219803 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 53DF68FD067E5B5A0090B5B0 /* BWToolkitFramework.framework */;
+			remoteGlobalIDString = 53DF68FD067E5B5A0090B5B0;
 			remoteInfo = BWToolkitFramework;
 		};
 		B5538E7B0FF27A2200219803 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0 /* BWToolkitFramework */;
+			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0;
 			remoteInfo = BWToolkitFramework;
 		};
 /* End PBXContainerItemProxy section */
@@ -1583,6 +1583,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -1595,6 +1596,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
 		};
