@@ -17,14 +17,126 @@
 @implementation SPFieldEditor
 
 
-- (void)setEditData:(id)data
+- (void)initWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding isObjectBlob:(BOOL)isFieldBlob
 {
+
+	// hide all views in editSheet
+	[hexTextView setHidden:YES];
+	[hexTextScrollView setHidden:YES];
+	[editImage setHidden:YES];
+	[editTextView setHidden:YES];
+	[editTextScrollView setHidden:YES];
+
+	editSheetWillBeInitialized = YES;
+
+	encoding = anEncoding;
+
+	isBlob = isFieldBlob;
+
 	editData = [data retain];
+
+	// hide all views in editSheet
+	[hexTextView setHidden:YES];
+	[hexTextScrollView setHidden:YES];
+	[editImage setHidden:YES];
+	[editTextView setHidden:YES];
+	[editTextScrollView setHidden:YES];
+
+	// Hide QuickLook button and text/iamge/hex control for text data
+	[editSheetQuickLookButton setHidden:(!isBlob)];
+	[editSheetSegmentControl setHidden:(!isBlob)];
+
+	[editSheetProgressBar startAnimation:self];
+	NSImage *image = nil;
+	if ( [editData isKindOfClass:[NSData class]] ) {
+		image = [[[NSImage alloc] initWithData:editData] autorelease];
+
+		// Set hex view to "" - load on demand only
+		[hexTextView setString:@""];
+		
+		stringValue = [[NSString alloc] initWithData:editData encoding:encoding];
+		if (stringValue == nil)
+			stringValue = [[NSString alloc] initWithData:editData encoding:NSASCIIStringEncoding];
+
+		[hexTextView setHidden:NO];
+		[hexTextScrollView setHidden:NO];
+		[editImage setHidden:YES];
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+		[editSheetSegmentControl setSelectedSegment:2];
+	} else {
+		stringValue = [editData retain];
+
+		[hexTextView setString:@""];
+
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editImage setHidden:YES];
+		[editTextView setHidden:NO];
+		[editTextScrollView setHidden:NO];
+		[editSheetSegmentControl setSelectedSegment:0];
+	}
+
+	if (image) {
+		[editImage setImage:image];
+
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editImage setHidden:NO];
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+		[editSheetSegmentControl setSelectedSegment:1];
+	} else {
+		[editImage setImage:nil];
+	}
+	if (stringValue) {
+		[editTextView setString:stringValue];
+
+		if(image == nil) {
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
+			[editSheetSegmentControl setSelectedSegment:0];
+		 }
+
+		// Locate the caret in editTextView
+		// (to select all takes a bit time for large data)
+		[editTextView setSelectedRange:NSMakeRange(0,0)];
+
+		// Set focus
+		if(image == nil)
+			[self makeFirstResponder:editTextView];
+		else
+			[self makeFirstResponder:editImage];
+
+		[stringValue release];
+	}
+	
+	
+	
+	editSheetWillBeInitialized = NO;
+
+	[editSheetProgressBar stopAnimation:self];
+
+
 }
 
-- (void)setMySQLConnectionEncoding:(NSStringEncoding)anEncoding;
+- (void)clean
 {
-	encoding = anEncoding;
+	[hexTextView setString:@""];
+	[editTextView setString:@""];
+	[editImage setImage:nil];
+	if ( editData ) {
+		[editData release];
+	}
+	
+}
+
+- (id)editData
+{
+	return editData;
 }
 
 
@@ -366,6 +478,49 @@
 	}
 }
 
+- (void)textViewDidChangeSelection:(NSNotification *)notification
+/*
+ invoked when the user changes the string in the editSheet
+ */
+{
+
+	// Do nothing if user really didn't changed text (e.g. for font size changing return)
+	if(editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))
+		return;
+
+	// clear the image and hex (since i doubt someone can "type" a gif)
+	[editImage setImage:nil];
+	[hexTextView setString:@""];
+	
+	// free old data
+	if ( editData != nil ) {
+		[editData release];
+	}
+	
+	// set edit data to text
+	editData = [[editTextView string] retain];
+
+}
+
+// TextView delegate methods
+
+/**
+ * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
+ */
+- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
+{
+	if ( aTextView == editTextView ) {
+		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
+			[[[NSApp currentEvent] characters] isEqualToString:@"\003"] )
+		{
+			[NSApp stopModalWithCode:1];
+			return YES;
+		} 
+		else
+			return NO;
+	}
+	return NO;
+}
 
 
 @end
