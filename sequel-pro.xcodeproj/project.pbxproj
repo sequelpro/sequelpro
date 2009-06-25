@@ -195,6 +195,13 @@
 			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0;
 			remoteInfo = BWToolkitFramework;
 		};
+		B5B90FDB0FF3BBC900E7B012 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D1AC9600486D14A00FE50C9 /* BWToolkit */;
+			remoteInfo = BWToolkit;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -990,6 +997,7 @@
 			dependencies = (
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
 				B5538E7C0FF27A2200219803 /* PBXTargetDependency */,
+				B5B90FDC0FF3BBC900E7B012 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -1260,6 +1268,11 @@
 			isa = PBXTargetDependency;
 			name = BWToolkitFramework;
 			targetProxy = B5538E7B0FF27A2200219803 /* PBXContainerItemProxy */;
+		};
+		B5B90FDC0FF3BBC900E7B012 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BWToolkit;
+			targetProxy = B5B90FDB0FF3BBC900E7B012 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

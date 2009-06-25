@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5548"/>
+			<integer value="6142"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -437,8 +437,12 @@
 													<bool key="NSEnabled">YES</bool>
 													<object class="BWAnchoredPopUpButtonCell" key="NSCell" id="321871356">
 														<int key="NSCellFlags">71433792</int>
-														<int key="NSCellFlags2">134350848</int>
-														<reference key="NSSupport" ref="26"/>
+														<int key="NSCellFlags2">134219776</int>
+														<object class="NSFont" key="NSSupport" id="244931163">
+															<string key="NSName">LucidaGrande</string>
+															<double key="NSSize">1.300000e+01</double>
+															<int key="NSfFlags">1044</int>
+														</object>
 														<reference key="NSControlView" ref="960207750"/>
 														<int key="NSButtonFlags">-2038284033</int>
 														<int key="NSButtonFlags2">163</int>
@@ -1249,11 +1253,7 @@
 																					<int key="NSCellFlags">-1543373312</int>
 																					<int key="NSCellFlags2">134217728</int>
 																					<string key="NSContents"/>
-																					<object class="NSFont" key="NSSupport" id="244931163">
-																						<string key="NSName">LucidaGrande</string>
-																						<double key="NSSize">1.300000e+01</double>
-																						<int key="NSfFlags">1044</int>
-																					</object>
+																					<reference key="NSSupport" ref="244931163"/>
 																					<reference key="NSControlView" ref="362371286"/>
 																					<int key="NSButtonFlags">-2042347265</int>
 																					<int key="NSButtonFlags2">402653219</int>
@@ -2957,7 +2957,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<object class="NSCustomResource" key="NSNormalImage" id="307737083">
+																					<object class="NSCustomResource" key="NSNormalImage" id="296546674">
 																						<string key="NSClassName">NSImage</string>
 																						<string key="NSResourceName">button_action</string>
 																					</object>
@@ -2972,7 +2972,7 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="307737083"/>
+																						<reference key="NSImage" ref="296546674"/>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -4011,7 +4011,7 @@
 																					<bool key="EncodedWithXMLCoder">YES</bool>
 																					<object class="NSTableColumn" id="658265380">
 																						<string key="NSIdentifier">name</string>
-																						<double key="NSWidth">1.170000e+02</double>
+																						<double key="NSWidth">1.350000e+02</double>
 																						<double key="NSMinWidth">8.000000e+00</double>
 																						<double key="NSMaxWidth">1.000000e+03</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -4041,7 +4041,7 @@
 																					</object>
 																					<object class="NSTableColumn" id="648716804">
 																						<string key="NSIdentifier">columns</string>
-																						<double key="NSWidth">1.020000e+02</double>
+																						<double key="NSWidth">1.190000e+02</double>
 																						<double key="NSMinWidth">1.000000e+01</double>
 																						<double key="NSMaxWidth">3.402823e+38</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -4068,7 +4068,7 @@
 																					</object>
 																					<object class="NSTableColumn" id="672854605">
 																						<string key="NSIdentifier">fk_table</string>
-																						<double key="NSWidth">8.700000e+01</double>
+																						<double key="NSWidth">1.040000e+02</double>
 																						<double key="NSMinWidth">1.000000e+01</double>
 																						<double key="NSMaxWidth">3.402823e+38</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -4095,7 +4095,7 @@
 																					</object>
 																					<object class="NSTableColumn" id="5320">
 																						<string key="NSIdentifier">fk_columns</string>
-																						<double key="NSWidth">1.220000e+02</double>
+																						<double key="NSWidth">1.390000e+02</double>
 																						<double key="NSMinWidth">1.000000e+01</double>
 																						<double key="NSMaxWidth">3.402823e+38</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -4122,7 +4122,7 @@
 																					</object>
 																					<object class="NSTableColumn" id="866215663">
 																						<string key="NSIdentifier">on_update</string>
-																						<double key="NSWidth">6.800000e+01</double>
+																						<double key="NSWidth">8.500000e+01</double>
 																						<double key="NSMinWidth">1.000000e+01</double>
 																						<double key="NSMaxWidth">3.402823e+38</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -4149,7 +4149,7 @@
 																					</object>
 																					<object class="NSTableColumn" id="998929204">
 																						<string key="NSIdentifier">on_delete</string>
-																						<double key="NSWidth">7.100000e+01</double>
+																						<double key="NSWidth">8.800000e+01</double>
 																						<double key="NSMinWidth">1.000000e+01</double>
 																						<double key="NSMaxWidth">3.402823e+38</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">

@@ -258,14 +258,14 @@ static float scaleFactor = 1.0f;
 	}
 }
 
-- (NSControlSize)controlSize
-{
-	return NSSmallControlSize;
-}
-
-- (void)setControlSize:(NSControlSize)size
-{
-	
-}
+//- (NSControlSize)controlSize
+//{
+//	return [super controlSize];
+//}
+//
+//- (void)setControlSize:(NSControlSize)size
+//{
+//	
+//}
 
 @end
