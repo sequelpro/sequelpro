@@ -693,7 +693,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	}
-
+	
+	// break down the undo grouping level for better undo behavior
+	[self breakUndoCoalescing];
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
 
