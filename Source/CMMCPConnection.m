@@ -466,7 +466,11 @@ static void forcePingTimeout(int signalNumber);
 			}
 		}
 	} else if (parentWindow) {
-		[self setLastErrorMessage:nil];
+		if (connectionTunnel && [connectionTunnel state] != SPSSH_STATE_CONNECTED) {
+			[self setLastErrorMessage:@"(Could not connect because the Sequel Pro SSH Tunnel could not be reestablished)"];
+		} else {
+			[self setLastErrorMessage:nil];
+		}
 
 		// If the connection was not successfully established, ask how to proceed.
 		[NSApp beginSheet:connectionErrorDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
