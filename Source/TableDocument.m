@@ -157,6 +157,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
 	[printAccessory initWithNibName:@"printAccessory" bundle:nil];
+	[printAccessory setPrintView:printWebView];
 	[printPanel addAccessoryController:printAccessory];
 	
 	NSPageLayout *pageLayout = [NSPageLayout pageLayout];

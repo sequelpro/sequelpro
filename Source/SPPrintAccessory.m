@@ -1,18 +1,17 @@
 #import "SPPrintAccessory.h"
-#import <WebKit/WebKit.h>
 
 @implementation SPPrintAccessory
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
 	defaultsController = [NSUserDefaultsController sharedUserDefaultsController];
+	printWebView = nil;
     return [super initWithNibName:@"printAccessory" bundle:nibBundleOrNil];
 }
 
 - (void)awakeFromNib
 {
 	[self setView:printAccessoryView];
-	[[WebPreferences standardPreferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue] ];
 	[defaultsController addObserver:self forKeyPath:@"values.PrintBackground" options:NSKeyValueObservingOptionNew context:@"PrinterSettingsChanged"];
 }	
 
@@ -32,10 +31,20 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
 	if ([(NSString *)context isEqualToString:@"PrinterSettingsChanged"]) {
-		[[WebPreferences standardPreferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue] ];
+		if (printWebView) [[printWebView preferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue]];
 	} else {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 	}
+}
+
+/*
+ * Set the print view that the print accessory controls; set initial 
+ * preferences based on user defaults.
+ */
+- (void) setPrintView:(WebView *)theWebView
+{
+	printWebView = theWebView;
+	[[printWebView preferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue]];
 }
 
 - (void)dealloc
