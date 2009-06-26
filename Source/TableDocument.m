@@ -1308,11 +1308,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 
-	[syntaxViewContent setEditable:YES];
 	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
 		[syntaxViewContent setString:[tableSyntax createViewSyntaxPrettifier]];
 	else
 		[syntaxViewContent setString:tableSyntax];
+
 	[syntaxViewContent setEditable:NO];
 	
 	[createTableSyntaxWindow setTitle:createWindowTitle];
