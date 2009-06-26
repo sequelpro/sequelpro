@@ -177,6 +177,56 @@
 	}
 }
 
+- (IBAction)previousQueryFromHistory:(id)sender
+{
+	// calculate new index
+	NSInteger newIndex = [queryHistoryButton indexOfSelectedItem] + 1;
+	
+	// if was nothing selected and is now button, or if was last item and is now > last item, use first query
+	if (newIndex < 1 || newIndex >= [queryHistoryButton numberOfItems])
+		newIndex = 1;
+	
+	// if content of query item doesn't match the current item, we always use the newest history item
+	if (![[queryHistoryButton titleOfSelectedItem] isEqualToString:[textView string]])
+		newIndex = 1;
+	
+	// verify our value is legal
+	if (newIndex < 1 || newIndex >= [queryHistoryButton numberOfItems]) {
+		NSBeep();
+		return;
+	}
+	
+	// apply new selection
+	[queryHistoryButton selectItemAtIndex:newIndex];
+	
+	// choose query
+	[self chooseQueryHistory:self];
+}
+
+- (IBAction)nextQueryFromHistory:(id)sender
+{
+	// calculate new index
+	NSInteger newIndex = [queryHistoryButton indexOfSelectedItem] - 1;
+	if (newIndex < 1)
+		newIndex = [queryHistoryButton numberOfItems] - 1;
+	
+	// if content of query item doesn't match the current item, we always use the oldest history item
+	if (![[queryHistoryButton titleOfSelectedItem] isEqualToString:[textView string]])
+		newIndex = [queryHistoryButton numberOfItems] - 1;
+	
+	// verify our value is legal
+	if (newIndex < 1 || newIndex >= [queryHistoryButton numberOfItems]) {
+		NSBeep();
+		return;
+	}
+	
+	// apply new selection
+	[queryHistoryButton selectItemAtIndex:newIndex];
+	
+	// choose query
+	[self chooseQueryHistory:self];
+}
+
 /*
  * Insert the choosen history query in the query textView
  */
@@ -540,6 +590,8 @@
 			[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
 
 		[prefs setObject:menuItems forKey:@"queryHistory"];
+		
+		[queryHistoryButton selectItemAtIndex:1];
 	}
 
 	// Error checking
