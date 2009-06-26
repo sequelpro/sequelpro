@@ -1305,9 +1305,11 @@
 	//make queryString and perform query
 	if([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
 		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))" withString:newOrder];
-	else
+	else if ([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"])
 		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?" withString:newOrder];
-	
+	else
+		[queryString appendFormat:@" %@", newOrder];
+		
 	tableReloadAfterEdting = YES;
 	[self performQueries:[NSArray arrayWithObject:queryString]];
 		
