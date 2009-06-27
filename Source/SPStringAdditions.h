@@ -53,7 +53,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval intervalInClocks:(BOOL)inClocks;
++ (NSString *)stringForTimeInterval:(float)timeInterval;
 
 - (NSString *)backtickQuotedString;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
