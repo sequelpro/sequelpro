@@ -12,6 +12,7 @@
 #import "SPUserMO.h"
 #import "CMMCPResult.h"
 #import "ImageAndTextCell.h"
+#import "SPArrayAdditions.h"
 
 #define COLUMNIDNAME @"NameColumn"
 
@@ -23,6 +24,7 @@
 - (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
 - (void)_selectParentFromSelection;
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
+- (BOOL)insertUsers:(NSArray *)newUsers;
 @end
 
 @implementation SPUserManager
@@ -100,8 +102,6 @@
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
-	[[self managedObjectContext] setUndoManager:nil];
-	
 	[[self connection] selectDB:@"mysql"];
 	CMMCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
 	int rows = [result numOfRows];
@@ -158,44 +158,13 @@
 
 			[self initializeChild:child withItem:item];
 		}
+		// Save the initialized objects so that any new changes will be tracked.
 		NSError *error = nil;
 		[[self managedObjectContext] save:&error];
 		if (error != nil)
 		{
 			[[NSApplication sharedApplication] presentError:error];
 		}
-		/*
-		 if ([[users valueForKey:@"username"] containsObject:username])
-		 {
-		 int parentIndex = [[users valueForKey:@"username"] indexOfObject:username];
-		 SPUser *parent = [users objectAtIndex:parentIndex];
-		 SPUser *childItem = ;
-		 
-		 [childItem setUsername: [[items objectAtIndex:i] valueForKey:@"User"]];
-		 [childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
-		 [childItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
-		 [self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
-		 [childItem setLeaf:TRUE];
-		 [parent addChild:childItem];
-		 }
-		 else
-		 {
-		 SPUserItem *userItem = [[[SPUserItem alloc] init] autorelease];
-		 [userItem setUsername:username];
-		 [userItem setPassword:[[items objectAtIndex:i] valueForKey:@"Password"]];
-		 [userItem setLeaf:FALSE];
-		 
-		 SPUserItem *childItem = [[[SPUserItem alloc] init] autorelease];
-		 [childItem setUsername: username];
-		 [childItem setPassword: [[items objectAtIndex:i] valueForKey:@"Password"]];
-		 [childItem setHost:[[items objectAtIndex:i] valueForKey:@"Host"]];
-		 [self _initializeGlobalPrivilegesWithItem:[items objectAtIndex:i] intoChildItem:childItem];
-		 [childItem setLeaf:TRUE];
-		 [userItem addChild:childItem];
-		 
-		 [treeController insertObject:userItem atArrangedObjectIndexPath:[NSIndexPath indexPathWithIndex:[users count]]];			
-		 }
-		 */
 	}
 }
 
@@ -209,6 +178,11 @@
 		{
 			BOOL value = [[item valueForKey:key] boolValue];
 			[child setValue:[NSNumber numberWithBool:value] forKey:key];
+		} 
+		else if ([key hasPrefix:@"max"])
+		{
+			NSNumber *value = [NSNumber numberWithInt:[[item valueForKey:key] intValue]];
+			[child setValue:value forKey:key];
 		}
 		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
 		{
@@ -469,8 +443,11 @@
 	NSIndexPath *indexPath = [NSIndexPath indexPathWithIndex:[[[self managedObjectContext] registeredObjects] count]];
 	NSManagedObject *newItem = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
 															 inManagedObjectContext:[self managedObjectContext]];
+	NSManagedObject *newChild = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser"
+															  inManagedObjectContext:[self managedObjectContext]];
+	[newChild setValue:@"localhost" forKey:@"host"];
+	[newItem addChildrenObject:newChild];
 	[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
-	
 }
 
 - (IBAction)removeUser:(id)sender
@@ -535,14 +512,66 @@
 	} 
 	else
 	{
-		NSLog(@"ContextDidSave: %@", [notification userInfo]);		
+		NSLog(@"ContextDidSave: %@", [notification userInfo]);
+		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
+		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
+		NSArray *deleted = [[notification userInfo] valueForKey:NSDeletedObjectsKey];
+		
+		NSLog(@"updated: %@", updated);
+		NSLog(@"inserted: %@", inserted);
+		NSLog(@"deleted: %@", deleted);
+		
+		[self insertUsers:inserted];
 	}
 }
 
+- (BOOL)insertUsers:(NSArray *)insertedUsers
+{
+	[[self connection] selectDB:@"mysql"];
+	for(NSManagedObject *user in insertedUsers)
+	{
+		if ([user valueForKey:@"parent"] != nil)
+		{
+			NSMutableString *insertStatement = nil;
+			NSDictionary *attributesDict = [[user entity] attributesByName];
+			NSMutableArray *values = [NSMutableArray array];
+			NSString *valuesString = nil;
+			NSMutableString *columns = [NSMutableString stringWithCapacity:10];
+			for(NSString *key in [attributesDict allKeys])
+			{
+				if (key == @"user")
+				{
+					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
+				}
+				else if (key == @"password")
+				{
+					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
+				}
+				else
+				{
+					[values addObject:[user valueForKey:key]];
+				}
+				[columns appendString:[NSString stringWithFormat:@"%@,", key]];
+			}
+			valuesString = [values componentsJoinedAndBacktickQuoted];
+			columns = [[columns substringToIndex:[columns length] -1] mutableCopy];
+			insertStatement = [NSMutableString stringWithFormat:@"insert into user(%@) values(%@)",columns,valuesString];
+			NSLog(@"columns = %@, values = %@", columns, values);
+			NSLog(@"insert statement = %@", insertStatement);		
+		}
+		
+		
+//		CMMCPResult *result = [[[self connection] queryString:[NSString stringWithFormat:insertStatement,[[user attributes retain];
+		
+	}
+
+	return FALSE;
+		
+}
 - (NSArray *)_fetchUserWithUserName:(NSString *)username
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"user LIKE[cd] %@", username];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"user == %@", username];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
 														 inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
@@ -552,7 +581,7 @@
 	
 	NSError *error = nil;
 	NSArray *array = [moc executeFetchRequest:request error:&error];
-	if (array == nil)
+	if (error != nil)
 	{
 		[[NSApplication sharedApplication] presentError:error];
 	}

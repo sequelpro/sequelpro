@@ -25,6 +25,7 @@
 
 #import "SPQueryConsole.h"
 #import "SPConsoleMessage.h"
+#import "SPArrayAdditions.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
@@ -147,7 +148,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		while (i != NSNotFound) 
 		{
 			if (i < [messagesVisibleSet count]) {
-				SPConsoleMessage *message = [messagesVisibleSet objectAtIndex:i];
+				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
 
 				NSString *consoleMessage = [message message];
 
@@ -365,6 +366,12 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	return [[self window] validateMenuItem:menuItem];
 }
 
+- (void)updateEntries
+{
+	[consoleTableView reloadData];
+	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+}
+
 /**
  * Standard dealloc.
  */
@@ -494,9 +501,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		[clearConsoleButton setEnabled:YES];
 	}
 
-	// Reload the table and scroll to the new message
-	[consoleTableView reloadData];
-	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	// Reload the table and scroll to the new message if it's visible (for speed)
+	if ( [[self window] isVisible] ) {
+		[consoleTableView reloadData];
+		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	}
 }
 
 /**

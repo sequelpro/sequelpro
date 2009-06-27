@@ -23,6 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPStringAdditions.h"
+#import "SPTextViewAdditions.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -383,5 +384,54 @@
 		[self setSelectedRange:curRange];
 	}
 }
+
+
+/*
+ * Increase the textView's font size by 1
+ */
+- (void)makeTextSizeLarger
+{
+	NSFont *aFont = [self font];
+	BOOL editableStatus = [self isEditable];
+	[self setEditable:YES];
+	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:[aFont pointSize]+1]];
+	[self setEditable:editableStatus];
+}
+
+/*
+ * Decrease the textView's font size by 1 but not smaller than 4pt
+ */
+- (void)makeTextSizeSmaller
+{
+	NSFont *aFont = [self font];
+	int newSize = ([aFont pointSize]-1 < 4) ? [aFont pointSize] : [aFont pointSize]-1;
+	BOOL editableStatus = [self isEditable];
+	[self setEditable:YES];
+	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:newSize]];
+	[self setEditable:editableStatus];
+}
+
+
+#pragma mark -
+#pragma mark multi-touch trackpad support
+
+/*
+ * Trackpad two-finger zooming gesture in/decreases the font size
+ */
+- (void) magnifyWithEvent:(NSEvent *)anEvent
+{
+
+	//Avoid font resizing for NSTextViews in CMCopyTable or NSTableView
+	if([[[[self delegate] class] description] isEqualToString:@"CMCopyTable"] 
+		|| [[[[self delegate] class] description] isEqualToString:@"NSTableView"]) return;
+
+	if([anEvent deltaZ]>5.0)
+		[self makeTextSizeLarger];
+	else if([anEvent deltaZ]<-5.0)
+		[self makeTextSizeSmaller];
+
+	[self insertText:@""];
+}
+
 
 @end

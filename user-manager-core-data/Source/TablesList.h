@@ -64,11 +64,19 @@ enum sp_table_types
 	IBOutlet id tableRenameField;
 	IBOutlet id tableRenameText;
 	IBOutlet id renameTableButton;
+	IBOutlet id truncateTableButton;
+	IBOutlet id truncateTableContextButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
+
+	IBOutlet NSMenuItem *removeTableContextMenuItem;
+	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
+	IBOutlet NSMenuItem *renameTableContextMenuItem;
+	IBOutlet NSMenuItem *separatorTableContextMenuItem;
+
 
 	CMMCPConnection *mySQLConnection;
 	
@@ -85,12 +93,14 @@ enum sp_table_types
 - (IBAction)removeTable:(id)sender;
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
+- (IBAction)truncateTable:(id)sender;
 
 // copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;
 
 // Additional methods
 - (void)removeTable;
+- (void)truncateTable;
 - (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 
@@ -105,5 +115,6 @@ enum sp_table_types
 
 // Setters
 - (void)setContentRequiresReload:(BOOL)reload;
+- (void)setStatusRequiresReload:(BOOL)reload;
 
 @end

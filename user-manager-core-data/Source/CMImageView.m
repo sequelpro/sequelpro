@@ -104,4 +104,25 @@
 	return NO;
 }
 
+- (void)paste:(id)sender
+{
+	
+	// [super paste:sender];
+	id delegateForUse = nil;
+
+	// If the delegate or the delegate's content instance doesn't implement processUpdatedImageData:,
+	// return the super's implementation
+	if (delegate) {
+		if ([delegate respondsToSelector:@selector(processUpdatedImageData:)]) {
+			delegateForUse = delegate;
+		} else if ( [delegate valueForKey:@"tableContentInstance"]
+					&& [[delegate valueForKey:@"tableContentInstance"] respondsToSelector:@selector(processUpdatedImageData:)] ) {
+			delegateForUse = [delegate valueForKey:@"tableContentInstance"];
+		}
+	}
+	if (delegateForUse)
+		[delegateForUse processPasteImageData];
+	
+}
+
 @end

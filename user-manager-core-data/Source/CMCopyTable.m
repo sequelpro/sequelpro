@@ -24,8 +24,10 @@
 
 #import "CMCopyTable.h"
 #import "SPArrayAdditions.h"
+#import "SPStringAdditions.h"
 #import "CMMCPConnection.h"
 #import "TableContent.h"
+#import "CustomQuery.h"
 
 int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 int MENU_EDIT_COPY_AS_SQL      = 2002;
@@ -101,7 +103,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		if(withHeaders) {
 			int i;
 			for( i = 0; i < numColumns; i++ ){
-				[result appendString:[NSString stringWithFormat:@"%@\t", [[[columns objectAtIndex:i] headerCell] stringValue]]];
+				[result appendString:[NSString stringWithFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]]];
 			}
 			[result appendString:[NSString stringWithFormat:@"\n"]];
 		}
@@ -119,7 +121,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			rowData = nil;
 			for ( c = 0; c < numColumns; c++)
 			{
-				col = [columns objectAtIndex:c];
+				col = NSArrayObjectAtIndex(columns, c);
 				rowData = [dataSource tableView:self 
 					  objectValueForTableColumn:col 
 											row:[row intValue] ];
@@ -207,8 +209,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
 	}
 
-	[result appendString:[NSString stringWithFormat:@"INSERT INTO `%@` (%@)\nVALUES\n", 
-		(selectedTable == nil)?@"<table>":selectedTable, [tbHeader componentsJoinedAndBacktickQuoted]]];
+	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
+		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 
 	//this is really deprecated in 10.3, but the new method is really weird
 	NSEnumerator *enumerator = [self selectedRowEnumerator]; 
@@ -240,7 +242,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							[mySQLConnection prepareString:[rowData description]]]];
 						break;
 					case 2: // blob
-						if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
 							if (![[tableInstance argumentForRow:row] length] || selectedTable == nil)
@@ -248,8 +250,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
-								[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", 
-									selectedTable, [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
+								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
 							if([[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
@@ -260,7 +262,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						}
 						break;
 					case 3: // long text data
-						if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
 							if (![[tableInstance argumentForRow:row] length] || selectedTable == nil)
@@ -268,8 +270,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
-								[NSString stringWithFormat:@"SELECT * FROM `%@` WHERE %@", 
-									selectedTable, [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
+								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
 							if([[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
@@ -301,8 +303,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			// Add a new INSERT starter command every ~250k of data.
 			if ( valueLength > 250000 ) {
 				[result appendString:value];
-				[result appendString:[NSString stringWithFormat:@");\n\nINSERT INTO `%@` (%@)\nVALUES\n", 
-					(selectedTable == nil)?@"<table>":selectedTable, [tbHeader componentsJoinedAndBacktickQuoted]]];
+				[result appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n", 
+					[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 				[value setString:@""];
 				valueLength = 0;
 			} else {

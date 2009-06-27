@@ -26,6 +26,7 @@
 #import "CustomQuery.h"
 #import "TableDocument.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
 
@@ -138,7 +139,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[queryResult dataSeek:0];
 		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 		{
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:0], @"display", @"table-small-square", @"image", nil]];
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"table-small-square", @"image", nil]];
 			//[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 		}
 
@@ -158,7 +159,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 		{
 			// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:0], @"display", @"database-small", @"image", nil]];
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"database-small", @"image", nil]];
 		}
 
 		// Add proc/func only for MySQL version 5 or higher
@@ -170,7 +171,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 			{
 				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:1], @"display", @"proc-small", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"proc-small", @"image", nil]];
 			}
 
 			// Add all function to completions list for currently selected table
@@ -180,7 +181,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 			{
 				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[queryResult fetchRowAsArray] objectAtIndex:1], @"display", @"func-small", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"func-small", @"image", nil]];
 			}
 		}
 		
@@ -692,7 +693,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	}
-
+	
+	// break down the undo grouping level for better undo behavior
+	[self breakUndoCoalescing];
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
 
@@ -988,7 +991,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	for (i = 0; i < [matchingCompletions count]; i++)
 	{
-		NSString* obj = [matchingCompletions objectAtIndex:i];
+		NSString* obj = NSArrayObjectAtIndex(matchingCompletions, i);
 		if(![compl containsObject:obj])
 			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
 				// Matches case --> Insert at beginning of completion list
@@ -1003,30 +1006,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return [compl autorelease];
 }
 
-/*
- * Increase the textView's font size by 1
- */
-- (void)makeTextSizeLarger
-{
-	NSFont *aFont = [self font];
-	BOOL editableStatus = [self isEditable];
-	[self setEditable:YES];
-	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:[aFont pointSize]+1]];
-	[self setEditable:editableStatus];
-}
-
-/*
- * Decrease the textView's font size by 1 but not smaller than 4pt
- */
-- (void)makeTextSizeSmaller
-{
-	NSFont *aFont = [self font];
-	int newSize = ([aFont pointSize]-1 < 4) ? [aFont pointSize] : [aFont pointSize]-1;
-	BOOL editableStatus = [self isEditable];
-	[self setEditable:YES];
-	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:newSize]];
-	[self setEditable:editableStatus];
-}
 
 /*
  * Hook to invoke the auto-uppercasing of SQL keywords after pasting
@@ -2124,6 +2103,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	NSTextStorage *textStore = [self textStorage];
+	NSString *selfstr        = [self string];
+	long strlength           = [selfstr length];
+
 	NSRange textRange;
 		
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
@@ -2131,7 +2113,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// The approach is to take the middle position of the current view port
 	// and highlight only ±SP_SYNTAX_HILITE_BIAS of that middle position
 	// considering of line starts resp. ends
-	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	if(strlength > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 	{
 
 		// Cancel all doSyntaxHighlighting requests
@@ -2147,8 +2129,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Take roughly the middle position in the current view port
 		int curPos = visibleRange.location+(int)(visibleRange.length/2);
 
-		int strlength = [[self string] length];
-
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
 		int end = curPos + SP_SYNTAX_HILITE_BIAS;
 		if (end > strlength )
@@ -2157,7 +2137,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		} else {
 			while(end < strlength)
 			{
-				if([[self string] characterAtIndex:end]=='\n')
+				if([selfstr characterAtIndex:end]=='\n')
 					break;
 				end++;
 			}
@@ -2168,7 +2148,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if (start > 0)
 			while(start>-1)
 			{
-				if([[self string] characterAtIndex:start]=='\n')
+				if([selfstr characterAtIndex:start]=='\n')
 					break;
 				start--;
 			}
@@ -2184,34 +2164,34 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	} else {
 		// If text size is less SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 		// process syntax highlighting for the entire text view buffer
-		textRange = NSMakeRange(0,[[self string] length]);
+		textRange = NSMakeRange(0,strlength);
 	}
 	
 	NSColor *tokenColor;
 	
-	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCommentColor"]] retain];//[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000];
-	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorQuoteColor"]] retain];//[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000];
-	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorSQLKeywordColor"]] retain];//[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000];
-	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBacktickColor"]] retain];//[NSColor colorWithDeviceRed:0.0 green:0.0 blue:0.658 alpha:1.000];
-	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorNumericColor"]] retain];//[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.0 alpha:1.000];
-	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorVariableColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
-	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]] retain];//[NSColor colorWithDeviceRed:0.5 green:0.5 blue:0.5 alpha:1.000];
+	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCommentColor"]] retain];
+	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorQuoteColor"]] retain];
+	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorSQLKeywordColor"]] retain];
+	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBacktickColor"]] retain];
+	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorNumericColor"]] retain];
+	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorVariableColor"]] retain];
+	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]] retain];
 		
 	BOOL autouppercaseKeywords = [prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"];
 
 	unsigned long tokenEnd, token;
 	NSRange tokenRange;
 
-	//first remove the old colors and kQuote
+	// first remove the old colors and kQuote
 	[textStore removeAttribute:NSForegroundColorAttributeName range:textRange];
 	// mainly for suppressing auto-pairing in 
 	[textStore removeAttribute:kLEXToken range:textRange];
 
-	//initialise flex
+	// initialise flex
 	yyuoffset = textRange.location; yyuleng = 0;
-	yy_switch_to_buffer(yy_scan_string([[[self string] substringWithRange:textRange] UTF8String]));
+	yy_switch_to_buffer(yy_scan_string(NSStringUTF8String([selfstr substringWithRange:textRange])));
 
-	//now loop through all the tokens
+	// now loop through all the tokens
 	while (token=yylex()){
 		switch (token) {
 			case SPT_SINGLE_QUOTED_TEXT:
@@ -2253,57 +2233,49 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
 		if (autouppercaseKeywords && !delBackwardsWasPressed
-			&& [[[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
+			&& [[textStore attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
 			{
 
-				NSString* curTokenString = [[self string] substringWithRange:tokenRange];
+				NSString* curTokenString = [selfstr substringWithRange:tokenRange];
+				NSString* upperCaseCurTokenString = [curTokenString uppercaseString];
 				BOOL doIt = NO;
 				@try
 				{
-					doIt = ![[[self textStorage] attribute:kSQLkeyword atIndex:tokenEnd+1 effectiveRange:nil] isEqualToString:kValue];
+					doIt = ![[textStore attribute:kSQLkeyword atIndex:tokenEnd+1 effectiveRange:nil] isEqualToString:kValue];
 				} @catch(id ae) { doIt = NO; }
 
-				if(doIt && ![[curTokenString uppercaseString] isEqualToString:curTokenString])
+				if(doIt && ![upperCaseCurTokenString isEqualToString:curTokenString])
 				{
 					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
 					[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
-					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
+					[self replaceCharactersInRange:tokenRange withString:upperCaseCurTokenString];
 				}
 			}
 
-		[textStore addAttribute: NSForegroundColorAttributeName
-						  value: tokenColor
-						  range: tokenRange ];
+		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
 
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
 		if(token < 6)
-		[textStore addAttribute: kLEXToken 
-						  value: kLEXTokenValue 
-						  range: tokenRange ];
-		
+			NSMutableAttributedStringAddAttributeValueRange(textStore, kLEXToken, kLEXTokenValue, tokenRange);
 
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
-			[textStore addAttribute: kSQLkeyword
-							  value: kValue
-							  range: tokenRange ];
+			NSMutableAttributedStringAddAttributeValueRange(textStore, kSQLkeyword, kValue, tokenRange);
+
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
 		else if(token < 4)
-			[textStore addAttribute: kQuote
-							  value: kQuoteValue
-							  range: tokenRange ];
+			NSMutableAttributedStringAddAttributeValueRange(textStore, kQuote, kQuoteValue, tokenRange);
+
 		//distinguish backtick quoted word for completion
 		else if(token == SPT_BACKTICK_QUOTED_TEXT)
-			[textStore addAttribute: kBTQuote
-							  value: kBTQuoteValue
-							  range: tokenRange ];
+			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
 
@@ -2488,17 +2460,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSPasteboard *pboard = [sender draggingPasteboard];
 
+	if ( [[pboard types] containsObject:NSFilenamesPboardType] && [[pboard types] containsObject:@"CorePasteboardFlavorType 0x54455854"])
+		return [super performDragOperation:sender];
+
 	if ( [[pboard types] containsObject:NSFilenamesPboardType] ) {
 		NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
 
 		// Only one file path is allowed
 		if([files count] > 1) {
 			NSLog(@"%@", NSLocalizedString(@"Only one dragged item allowed.",@"Only one dragged item allowed."));
-			NSBeep();
 			return YES;
 		}
 
 		NSString *filepath = [[pboard propertyListForType:NSFilenamesPboardType] objectAtIndex:0];
+		// if (([filenamesAttributes fileHFSTypeCode] == 'clpt' && [filenamesAttributes fileHFSCreatorCode] == 'MACS') || [[filename pathExtension] isEqualToString:@"textClipping"] == YES) {
+		// 	
+		// }
+
 
 		// Set the new insertion point
 		NSPoint draggingLocation = [sender draggingLocation];
@@ -2612,7 +2590,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[task release];
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
-	if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result hasPrefix:@"text/plain"] || [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"])
+	if( [result hasPrefix:@"text/plain"] 
+		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"] 
+		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"txt"]
+		|| [result hasPrefix:@"audio/mpeg"] 
+		|| [result hasPrefix:@"application/octet-stream"]
+	)
 	{
 		// if UTF16/32 cocoa will try to find the correct encoding
 		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)
@@ -2652,23 +2635,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[result release];
 
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
-	NSBeep();
-}
-
-#pragma mark -
-#pragma mark multi-touch trackpad support
-
-/*
- * Trackpad two-finger zooming gesture in/decreases the font size
- */
-- (void) magnifyWithEvent:(NSEvent *)anEvent
-{
-	if([anEvent deltaZ]>5.0)
-		[self makeTextSizeLarger];
-	else if([anEvent deltaZ]<-5.0)
-		[self makeTextSizeSmaller];
-
-	[self insertText:@""];
 }
 
 - (void) dealloc

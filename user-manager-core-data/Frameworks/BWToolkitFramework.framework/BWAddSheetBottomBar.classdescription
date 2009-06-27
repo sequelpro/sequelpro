@@ -1,0 +1,12 @@
+{
+	Actions = {
+		// Define action descriptions here, for example
+		// "myAction:" = id;
+	};
+	Outlets = {
+		// Define outlet descriptions here, for example
+		// myOutlet = NSView;
+	};
+    ClassName = BWAddSheetBottomBar; 
+    SuperClass = NSView; 
+}

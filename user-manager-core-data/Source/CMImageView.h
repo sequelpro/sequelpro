@@ -28,6 +28,7 @@
 @interface NSObject (CMImageViewDelegate)
 
 - (void)processUpdatedImageData:(NSData *)data;
+- (void)processPasteImageData;
 
 @end
 

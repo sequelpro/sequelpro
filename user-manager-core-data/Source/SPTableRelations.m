@@ -33,6 +33,7 @@
 
 @interface SPTableRelations (PrivateAPI)
 
+- (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
 
 @end
@@ -170,7 +171,7 @@
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
 	} 
 	else {
-		[self refreshRelations:nil];		
+		[self _refreshRelationDataForcingCacheRefresh:YES];
 	}
 }
 
@@ -181,73 +182,24 @@
 {
 	if ([relationsTableView numberOfSelectedRows] > 0) {
 		
-		int response = NSRunAlertPanel(NSLocalizedString(@"Delete relation", @"delete relation message"),
-									   NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone", @"delete selected relation informative message"),
-									   NSLocalizedString(@"Delete", @"delete button"), 
-									   NSLocalizedString(@"Cancel", @"cancel button"), nil );
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete relation", @"delete relation message") 
+										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+										   otherButton:nil 
+							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone.", @"delete selected relation informative message")];
 		
-		if (response == NSAlertDefaultReturn) {
-			
-			NSString *thisTable = [tablesListInstance tableName];
-			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
-			
-			unsigned int row = [selectedSet lastIndex];
-			
-			while (row != NSNotFound) 
-			{
-				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
-				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
-				
-				[connection queryString:query];
-				
-				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
-					
-					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
-					
-					// Abort loop
-					break;
-				} 
-				
-				row = [selectedSet indexLessThanIndex:row];
-			}
-			
-			[self refreshRelations:nil];
-		}
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
 	}
 }
 
 /**
- * Refreshes the displayed relations.
+ * Trigger a refresh of the displayed relations via the interface.
  */
 - (IBAction)refreshRelations:(id)sender
 {
-	[relationData removeAllObjects];
-	
-	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
-		
-		[tableDataInstance updateInformationForCurrentTable];
-				
-		NSArray *constraints = [tableDataInstance getConstraints];
-		
-		for (NSDictionary *constraint in constraints) 
-		{
-			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[tablesListInstance tableName], @"table",
-									[constraint objectForKey:@"name"], @"name",
-									[constraint objectForKey:@"columns"], @"columns",
-									[constraint objectForKey:@"ref_table"], @"fk_table",
-									[constraint objectForKey:@"ref_columns"], @"fk_columns",
-									[constraint objectForKey:@"update"], @"on_update",
-									[constraint objectForKey:@"delete"], @"on_delete",
-									nil]];
-			
-		}
-	} 
-	
-	[relationsTableView reloadData];
+	[self _refreshRelationDataForcingCacheRefresh:YES];
 }
 
 /**
@@ -280,7 +232,7 @@
 		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
 	}	
 	
-	[self refreshRelations:self];
+	[self _refreshRelationDataForcingCacheRefresh:NO];
 }
 
 #pragma mark -
@@ -310,6 +262,46 @@
 #pragma mark -
 #pragma mark Other
 
+/**
+ * NSAlert didEnd method.
+ */
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+{
+	if ([contextInfo isEqualToString:@"removeRelation"]) {
+		
+		if (returnCode == NSAlertDefaultReturn) {
+			
+			NSString *thisTable = [tablesListInstance tableName];
+			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
+			
+			unsigned int row = [selectedSet lastIndex];
+			
+			while (row != NSNotFound) 
+			{
+				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
+				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
+				
+				[connection queryString:query];
+				
+				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
+					
+					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+									  NSLocalizedString(@"OK", @"OK button"),
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
+					
+					// Abort loop
+					break;
+				} 
+				
+				row = [selectedSet indexLessThanIndex:row];
+			}
+			
+			[self _refreshRelationDataForcingCacheRefresh:YES];
+		}
+	} 
+}
+
 /*
  * Dealloc.
  */
@@ -323,6 +315,36 @@
 @end
 
 @implementation SPTableRelations (PrivateAPI)
+
+/**
+ * Refresh the displayed relations, optionally forcing a refresh of the underlying cache.
+ */
+- (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches
+{
+	[relationData removeAllObjects];
+	
+	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+		
+		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
+				
+		NSArray *constraints = [tableDataInstance getConstraints];
+		
+		for (NSDictionary *constraint in constraints) 
+		{
+			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									[constraint objectForKey:@"name"], @"name",
+									[constraint objectForKey:@"columns"], @"columns",
+									[constraint objectForKey:@"ref_table"], @"fk_table",
+									[constraint objectForKey:@"ref_columns"], @"fk_columns",
+									[constraint objectForKey:@"update"], @"on_update",
+									[constraint objectForKey:@"delete"], @"on_delete",
+									nil]];
+			
+		}
+	} 
+	
+	[relationsTableView reloadData];
+}
 
 /**
  * Updates the available table columns that the reference is pointing to. Available columns are those that are

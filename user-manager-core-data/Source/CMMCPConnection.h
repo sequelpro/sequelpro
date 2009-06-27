@@ -33,6 +33,8 @@
 
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
+- (void)setStatusIconToImageWithName:(NSString *)imagePath;
+- (void)setTitlebarStatus:(NSString *)status;
 - (BOOL)connectionEncodingViaLatin1;
 
 @end
@@ -51,24 +53,46 @@
 	NSString *connectionHost;
 	int connectionPort;
 	NSString *connectionSocket;
-	float lastQueryExecutionTime;
+	int maxAllowedPacketSize;
+	unsigned long connectionThreadId;
 	int connectionTimeout;
 	int currentSSHTunnelState;
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
+	int lastQueryExecutionTime;
+	NSString *lastQueryErrorMessage;
+	unsigned int lastQueryErrorId;
+	my_ulonglong lastQueryAffectedRows;
+
 	BOOL isMaxAllowedPacketEditable;
 	
 	NSString *serverVersionString;
 	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
+	
+	BOOL retryAllowed;
+	
+	BOOL delegateResponseToWillQueryString;
+	BOOL consoleLoggingEnabled;
+	
+	IMP cStringPtr;
+	IMP willQueryStringPtr;
+	IMP stopKeepAliveTimerPtr;
+	IMP startKeepAliveTimerResettingStatePtr;
+	
+	SEL cStringSEL;
+	SEL willQueryStringSEL;
+	SEL stopKeepAliveTimerSEL;
+	SEL startKeepAliveTimerResettingStateSEL;
 }
 
 - (id) init;
 - (id) initToHost:(NSString *) host withLogin:(NSString *) login usingPort:(int) port;
 - (id) initToSocket:(NSString *) socket withLogin:(NSString *) login;
 - (void) initSPExtensions;
+- (BOOL) setPort:(int) thePort;
 - (BOOL) setPassword:(NSString *)thePassword;
 - (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 - (BOOL) setSSHTunnel:(SPSSHTunnel *)theTunnel;
@@ -85,6 +109,7 @@
 - (float) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
+- (void) restoreConnectionDetails;
 - (void) setDelegate:(id)object;
 - (NSTimeZone *) timeZone;
 - (BOOL) pingConnection;
@@ -93,9 +118,13 @@
 - (void) keepAlive:(NSTimer *)theTimer;
 - (void) threadedKeepAlive;
 - (const char *) cStringFromString:(NSString *) theString usingEncoding:(NSStringEncoding) encoding;
+- (void) setLastErrorMessage:(NSString *)theErrorMessage;
+- (BOOL) fetchMaxAllowedPacket;
 - (int) getMaxAllowedPacket;
 - (BOOL) isMaxAllowedPacketEditable;
-- (int) setMaxAllowedPacketTo:(int)newSize;
+- (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
+
+- (void)willPerformQuery:(NSNotification *)notification;
 
 /* return server major version number or -1 on fail */
 - (int)serverMajorVersion;

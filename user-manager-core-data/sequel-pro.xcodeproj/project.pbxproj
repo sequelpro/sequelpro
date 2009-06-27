@@ -96,6 +96,9 @@
 		586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
 		586F457E0FDB280100B428D7 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */ = {isa = PBXBuildFile; fileRef = 5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */; };
+		588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */; };
+		588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */; };
+		588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
 		58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
@@ -111,6 +114,11 @@
 		B52460DB0F8EF93B00171639 /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52460D90F8EF93B00171639 /* Console.xib */; };
 		B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B53857330F9CC3B600EB2354 /* button_clear.tiff */; };
 		B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */; };
+		B5538AAE0FF251EE00219803 /* button_duplicate_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */; };
+		B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */; };
+		B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */; };
+		B5538E730FF279F300219803 /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */; };
+		B5538EA00FF27CD400219803 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */; };
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
 		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
@@ -150,7 +158,10 @@
 		B5E92F400F75B32100012500 /* toolbar-export-xml.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
+		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
+		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC99296E0FF3D001008B79AB /* SPFieldEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = BC99296D0FF3D001008B79AB /* SPFieldEditor.m */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
 
@@ -169,6 +180,34 @@
 			remoteGlobalIDString = 58CDB3350FCE13C900F8ACA3;
 			remoteInfo = TunnelPassphraseRequester;
 		};
+		B5538CE00FF279AD00219803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8D1AC9740486D14A00FE50C9;
+			remoteInfo = BWToolkit;
+		};
+		B5538CE20FF279AD00219803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 53DF68FD067E5B5A0090B5B0;
+			remoteInfo = BWToolkitFramework;
+		};
+		B5538E7B0FF27A2200219803 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0;
+			remoteInfo = BWToolkitFramework;
+		};
+		B5B90FDB0FF3BBC900E7B012 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D1AC9600486D14A00FE50C9;
+			remoteInfo = BWToolkit;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -178,9 +217,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
-				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
+				B5538E730FF279F300219803 /* BWToolkitFramework.framework in CopyFiles */,
 				4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */,
+				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
+				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,6 +251,7 @@
 		1703EF3E0F0B0742005BBE7E /* sequel-pro_logo.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "sequel-pro_logo.jpg"; sourceTree = "<group>"; };
 		1703EF3F0F0B0742005BBE7E /* syntax.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = syntax.html; sourceTree = "<group>"; };
 		1703EF400F0B0742005BBE7E /* tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = tables.html; sourceTree = "<group>"; };
+		17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QLPreviewPanel.h; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseData.h; sourceTree = "<group>"; };
@@ -343,6 +384,9 @@
 		586F432A0FD74CFC00B428D7 /* SSHQuestionDialog.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SSHQuestionDialog.xib; sourceTree = "<group>"; };
 		588593F30F7AEC9500ED0E67 /* package-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "package-application.sh"; sourceTree = "<group>"; };
 		5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "sparkle-public-key.pem"; sourceTree = "<group>"; };
+		588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-connected.png"; sourceTree = "<group>"; };
+		588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-connecting.png"; sourceTree = "<group>"; };
+		588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-disconnected.png"; sourceTree = "<group>"; };
 		58C56EF30F438E120035701E /* SPDataCellFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataCellFormatter.h; sourceTree = "<group>"; };
 		58C56EF40F438E120035701E /* SPDataCellFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataCellFormatter.m; sourceTree = "<group>"; };
 		58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_edit_mode_selected.tiff; sourceTree = "<group>"; };
@@ -363,6 +407,10 @@
 		B52460DA0F8EF93B00171639 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
 		B53857330F9CC3B600EB2354 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
 		B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-relations.png"; sourceTree = "<group>"; };
+		B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate_icon.tif; sourceTree = "<group>"; };
+		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
+		B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show_icon.tif; sourceTree = "<group>"; };
+		B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = Frameworks/BWToolkitFramework.framework/BWToolkit.xcodeproj; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
@@ -406,7 +454,13 @@
 		B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xml.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
+		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
+		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
+		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
+		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC99296C0FF3D001008B79AB /* SPFieldEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldEditor.h; sourceTree = "<group>"; };
+		BC99296D0FF3D001008B79AB /* SPFieldEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldEditor.m; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -433,13 +487,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
-				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
-				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
-				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
-				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
-				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
+				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
+				B5538EA00FF27CD400219803 /* BWToolkitFramework.framework in Frameworks */,
+				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
+				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
+				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
+				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
+				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,11 +505,12 @@
 			isa = PBXGroup;
 			children = (
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
-				296DC89E0F8FD336002A3258 /* WebKit.framework */,
-				4DECC3320EC2A170008D359E /* Sparkle.framework */,
-				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
-				4DECC3340EC2A170008D359E /* Growl.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
+				B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */,
+				4DECC3340EC2A170008D359E /* Growl.framework */,
+				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
+				4DECC3320EC2A170008D359E /* Sparkle.framework */,
+				296DC89E0F8FD336002A3258 /* WebKit.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -462,9 +518,9 @@
 		1058C7A8FEA54F5311CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
 				2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */,
 				2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */,
+				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
 			);
 			name = "Other Frameworks";
 			sourceTree = "<group>";
@@ -504,6 +560,14 @@
 				1703EF400F0B0742005BBE7E /* tables.html */,
 			);
 			path = topics;
+			sourceTree = "<group>";
+		};
+		17128B890FE6DFFA0035DD75 /* QuickLook */ = {
+			isa = PBXGroup;
+			children = (
+				17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */,
+			);
+			name = QuickLook;
 			sourceTree = "<group>";
 		};
 		1740F8350FC3069700CF3699 /* Templates */ = {
@@ -651,6 +715,7 @@
 			isa = PBXGroup;
 			children = (
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
+				17128B890FE6DFFA0035DD75 /* QuickLook */,
 				17E6416F0EF01F4C001BC333 /* Keychain */,
 				17E641700EF01F52001BC333 /* MCPKit */,
 				58FEF15E0F23D60A00518E8E /* Parsing */,
@@ -694,6 +759,10 @@
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */,
 				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
+				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
+				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
+				BC99296C0FF3D001008B79AB /* SPFieldEditor.h */,
+				BC99296D0FF3D001008B79AB /* SPFieldEditor.m */,
 			);
 			name = GUI;
 			sourceTree = "<group>";
@@ -730,6 +799,9 @@
 				B58A32430F6509D60003C243 /* button_info_pane_show.tiff */,
 				B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */,
 				B5A601720F74930F00EE5FBA /* button_remove.tiff */,
+				B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */,
+				B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */,
+				B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */,
 				17E6418D0EF02036001BC333 /* clearconsole.tiff */,
 				B577483A0F7A8B57003B34F9 /* database.png */,
 				B5A601860F749C1600EE5FBA /* dimple.tiff */,
@@ -742,6 +814,9 @@
 				17E641B10EF02036001BC333 /* showconsole.tiff */,
 				17E641B20EF02036001BC333 /* showvariables.tiff */,
 				17E641B30EF02036001BC333 /* spyglass.tiff */,
+				588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */,
+				588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */,
+				588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */,
 				B5E2C5F90F2353B5007446E0 /* table-property.png */,
 				17E641B40EF02036001BC333 /* table-small.tiff */,
 				584F5F8E0F50ACD800036517 /* table-view-small.tiff */,
@@ -869,6 +944,15 @@
 			name = Parsing;
 			sourceTree = "<group>";
 		};
+		B5538CD80FF279AD00219803 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B5538CE10FF279AD00219803 /* BWToolkit.ibplugin */,
+				B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		B57747D60F7A8990003B34F9 /* Category Additions */ = {
 			isa = PBXGroup;
 			children = (
@@ -880,6 +964,8 @@
 				B52460D60F8EF92300171639 /* SPTextViewAdditions.m */,
 				B57747D70F7A8990003B34F9 /* SPWindowAdditions.h */,
 				B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */,
+				BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */,
+				BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -936,6 +1022,8 @@
 			);
 			dependencies = (
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
+				B5538E7C0FF27A2200219803 /* PBXTargetDependency */,
+				B5B90FDC0FF3BBC900E7B012 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -953,6 +1041,12 @@
 			hasScannedForEncodings = 1;
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* sequel-pro */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = B5538CD80FF279AD00219803 /* Products */;
+					ProjectRef = B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
@@ -961,6 +1055,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		B5538CE10FF279AD00219803 /* BWToolkit.ibplugin */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = BWToolkit.ibplugin;
+			remoteRef = B5538CE00FF279AD00219803 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B5538CE30FF279AD00219803 /* BWToolkitFramework.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = BWToolkitFramework.framework;
+			remoteRef = B5538CE20FF279AD00219803 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		380F4ED40FC0B50500B0BFD7 /* Resources */ = {
@@ -1051,6 +1162,12 @@
 				586F432B0FD74CFC00B428D7 /* SSHQuestionDialog.xib in Resources */,
 				B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */,
 				4D6FC5350FE219ED00C16714 /* UserManagerView.xib in Resources */,
+				588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */,
+				588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */,
+				588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */,
+				B5538AAE0FF251EE00219803 /* button_duplicate_icon.tif in Resources */,
+				B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */,
+				B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1160,6 +1277,9 @@
 				4D6FC52F0FE219A700C16714 /* SPUserItem.m in Sources */,
 				4D6FC5300FE219A700C16714 /* SPUserManager.xcdatamodel in Sources */,
 				4D6FC5310FE219A700C16714 /* SPUserMO.m in Sources */,
+				BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */,
+				BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */,
+				BC99296E0FF3D001008B79AB /* SPFieldEditor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1175,6 +1295,16 @@
 			isa = PBXTargetDependency;
 			target = 58CDB3350FCE13C900F8ACA3 /* TunnelPassphraseRequester */;
 			targetProxy = 58CDB34A0FCE144000F8ACA3 /* PBXContainerItemProxy */;
+		};
+		B5538E7C0FF27A2200219803 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BWToolkitFramework;
+			targetProxy = B5538E7B0FF27A2200219803 /* PBXContainerItemProxy */;
+		};
+		B5B90FDC0FF3BBC900E7B012 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BWToolkit;
+			targetProxy = B5B90FDB0FF3BBC900E7B012 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1369,11 +1499,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Frameworks\"",
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
+					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1381,6 +1513,8 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Sequel Pro";
+				SEPARATE_STRIP = NO;
+				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
 			};
 			name = Distribution;
 		};
@@ -1459,6 +1593,7 @@
 					"\"$(SRCROOT)/Frameworks\"",
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
+					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -1469,6 +1604,8 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Sequel Pro";
+				SEPARATE_STRIP = NO;
+				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
 			};
 			name = Debug;
 		};
@@ -1476,11 +1613,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Frameworks\"",
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
+					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1488,6 +1627,8 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Sequel Pro";
+				SEPARATE_STRIP = NO;
+				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
 			};
 			name = Release;
 		};
@@ -1495,8 +1636,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_FLATTEN_NIBS = NO;
@@ -1507,6 +1649,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
 		};

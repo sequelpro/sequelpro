@@ -30,7 +30,7 @@
 
 @interface SPDatabaseData (PrivateAPI)
 
-- (NSArray *)_getDatabaseDataForQuery:(NSString *)query;
+- (NSMutableArray *)_getDatabaseDataForQuery:(NSString *)query;
 
 @end
 
@@ -102,12 +102,81 @@
 }
 
 /**
- * Returns all of the database's currently availale storage engines by querying information_schema.engines.
+ * Returns all of the database's available storage engines.
  */
 - (NSArray *)getDatabaseStorageEngines
 {
 	if ([storageEngines count] == 0) {
-		[storageEngines addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM information_schema.engines"]];
+		if ([connection serverMajorVersion] < 5) {
+			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
+			
+			// Check if InnoDB support is enabled
+			CMMCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			
+			if ([result numOfRows] == 1) {
+				if ([[[result fetchRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {
+					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"InnoDB" forKey:@"Engine"]];
+				}
+			}
+			
+			// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was included
+			if (([connection serverMajorVersion] <= 4) && ([connection serverMinorVersion] < 100)) {
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"HEAP" forKey:@"Engine"]];
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ISAM" forKey:@"Engine"]];
+			}
+			else {
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MEMORY" forKey:@"Engine"]];
+			}
+			
+			// BLACKHOLE storage engine was added in MySQL 4.1.11
+			if (([connection serverMajorVersion]   >= 4) &&
+				([connection serverMinorVersion]   >= 1) &&
+				([connection serverReleaseVersion] >= 11))
+			{
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"BLACKHOLE" forKey:@"Engine"]];
+				
+				// ARCHIVE storage engine was added in MySQL 4.1.3
+				if ([connection serverReleaseVersion] >= 3) {
+					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ARCHIVE" forKey:@"Engine"]];
+				}
+				
+				// CSV storage engine was added in MySQL 4.1.4
+				if ([connection serverReleaseVersion] >= 4) {
+					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"CSV" forKey:@"Engine"]];
+				}
+			}			
+		}
+		// The table information_schema.engines didn't exist until MySQL 5.1.5
+		else {
+			if (([connection serverMajorVersion]   >= 5) &&
+				([connection serverMinorVersion]   >= 1) &&
+				([connection serverReleaseVersion] >= 5))
+			{
+				// Check the information_schema.engines table is accessible
+				CMMCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'engines'"];
+				
+				if ([result numOfRows] == 1) {
+					// Table is accessible so get available storage engines
+					[storageEngines addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT Engine, Support FROM information_schema.engines WHERE support IN ('DEFAULT', 'YES');"]];				
+				}
+			}
+			else {				
+				// Get storage engines
+				NSMutableArray *engines = [self _getDatabaseDataForQuery:@"SHOW STORAGE ENGINES"];
+				
+				// We only want to include engines that are supported
+				for (int i = 0; i < [engines count]; i++) 
+				{
+					NSDictionary *engine = [engines objectAtIndex:i];
+				
+					if (([[engine objectForKey:@"Support"] isEqualToString:@"DEFAULT"]) ||
+						([[engine objectForKey:@"Support"] isEqualToString:@"YES"]))
+					{
+						[storageEngines addObject:engine];
+					}
+				}				
+			}
+		}
 	}
 	
 	return storageEngines;
@@ -151,7 +220,7 @@
  * Executes the supplied query against the current connection and returns the result as an array of 
  * NSDictionarys, one for each row.
  */
-- (NSArray *)_getDatabaseDataForQuery:(NSString *)query
+- (NSMutableArray *)_getDatabaseDataForQuery:(NSString *)query
 {
 	NSMutableArray *array = [NSMutableArray array];
 	

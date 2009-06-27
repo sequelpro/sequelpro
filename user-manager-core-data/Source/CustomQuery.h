@@ -51,6 +51,7 @@
 	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
+	IBOutlet id multipleLineEditingButton;
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *clearHistoryMenuItem;
@@ -71,7 +72,6 @@
 	IBOutlet NSSegmentedControl *helpTargetSelector;
 
 
-	NSArray *queryResult;
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
 	
@@ -88,6 +88,15 @@
 	int helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
+	
+	NSMutableArray *fullResult;
+	NSArray *cqColumnDefinition;
+	NSString *lastExecutedQuery;
+	
+	BOOL tableReloadAfterEdting;
+	BOOL isDesc;
+	NSString *sortField;
+	BOOL tempAlertWasShown; // a temp value for nightly builts
 		
 }
 
@@ -123,6 +132,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
+- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
 
 // MySQL Help
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;
@@ -139,6 +149,7 @@
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;
 - (NSString *)usedQuery;
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
 
 
 @end

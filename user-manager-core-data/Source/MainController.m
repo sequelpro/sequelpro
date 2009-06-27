@@ -28,6 +28,8 @@
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
 
+#import <Sparkle/Sparkle.h>
+
 #define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
 #define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
 #define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
@@ -48,6 +50,9 @@
  */
 - (void)awakeFromNib
 {
+	// Set Sparkle delegate
+	[[SUUpdater sharedUpdater] setDelegate:self];
+	
 	prefsController = [[SPPreferenceController alloc] init];
 	
 	// Register MainController as services provider
@@ -67,7 +72,7 @@
  */
 - (IBAction)openPreferences:(id)sender
 {
-	[prefsController showWindow:self];
+	[prefsController showWindow:self];	
 }
 
 #pragma mark -
@@ -174,6 +179,26 @@
 	
 	// Suppress warning
 	return nil;
+}
+
+/**
+ * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
+ * sure that no sheets are currently open, which will prevent the app from being quit. 
+ */
+- (void)updaterWillRelaunchApplication:(SUUpdater *)updater
+{	
+	// Get all the currently open windows and their attached sheets if any
+	NSArray *windows = [NSApp windows];
+	
+	for (NSWindow *window in windows)
+	{
+		NSWindow *attachedSheet = [window attachedSheet];
+		
+		if (attachedSheet) {
+			[NSApp endSheet:attachedSheet returnCode:0];
+			[attachedSheet orderOut:nil];
+		}
+	}
 }
 
 /**
