@@ -86,6 +86,8 @@
 	SEL willQueryStringSEL;
 	SEL stopKeepAliveTimerSEL;
 	SEL startKeepAliveTimerResettingStateSEL;
+	
+	NSLock *queryLock;
 }
 
 - (id) init;

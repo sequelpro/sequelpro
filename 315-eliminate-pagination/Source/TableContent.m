@@ -1483,7 +1483,7 @@
 
 		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
 	}
-
+	
 	return tempResult;
 }
 
@@ -2013,7 +2013,7 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return 420000;
+	return 29140;
 	return [filteredResult count];
 }
 
@@ -2025,7 +2025,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	if (!row) {
 		[self tableViewSetNeedsDBValue:YES forTableRow:rowIndex];
-		return @"...";
+		return @"";
 	} else {
 		return [row objectForKey:[aTableColumn identifier]];
 	}
@@ -2198,7 +2198,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			
 			// fetch values for this row
 			didFindRowsToUpdate = YES;
-			[NSThread sleepForTimeInterval:0.5]; // debug delay to simulate slow connection
+//			[NSThread sleepForTimeInterval:0.5]; // debug delay to simulate slow connection
 			rows = [self fetchDbValuesFromDatabaseNearRow:rowIndex firstRowReturned:&firstRowReturned];
 			
 			// store new values, and remove them from the queue if they're in there
@@ -2237,6 +2237,20 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	(*firstRowReturned) = rowIndex - (TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK / 2);
 	if ((*firstRowReturned) < 0)
 		(*firstRowReturned) = 0;
+	
+	NSString *table = @"test";
+	int limitStart = (*firstRowReturned);
+	int limitLength = TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK;
+	
+	NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ LIMIT %d,%d", table, limitStart, limitLength];
+	CMMCPResult	*queryResult = [mySQLConnection queryString:query];
+	
+	if (queryResult == nil) {
+		NSLog(@"Loading table data for %@ failed, query string was: %@", table, query);
+		return [NSArray array];
+	}
+	
+	return [self fetchResultAsArray:queryResult];
 	
 	/*
 	 * number of rows to fetch: TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK

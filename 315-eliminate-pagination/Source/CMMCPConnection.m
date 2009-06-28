@@ -63,6 +63,9 @@ static void forcePingTimeout(int signalNumber);
 	[self initSPExtensions];
 	self = [super init];
 	serverVersionString = nil;
+	
+	queryLock = [[NSLock alloc] init];
+	
 	return self;
 }
 - (id) initToHost:(NSString *) host withLogin:(NSString *) login usingPort:(int) port
@@ -84,6 +87,8 @@ static void forcePingTimeout(int signalNumber);
 	connectionLogin = [[NSString alloc] initWithString:login];
 	connectionPort = port;
 	connectionSocket = nil;
+	
+	queryLock = [[NSLock alloc] init];
 
 	return self;
 }
@@ -105,6 +110,8 @@ static void forcePingTimeout(int signalNumber);
 	connectionLogin = [[NSString alloc] initWithString:login];
 	connectionSocket = [[NSString alloc] initWithString:socket];
 	connectionPort = 0;
+	
+	queryLock = [[NSLock alloc] init];
 
 	return self;
 }
@@ -741,6 +748,8 @@ static void forcePingTimeout(int signalNumber);
  */
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
+	[queryLock lock];
+	
 	CMMCPResult		*theResult = nil;
 	int				queryStartTime;
 	const char		*theCQuery;
@@ -761,6 +770,7 @@ static void forcePingTimeout(int signalNumber);
 		// Show an error alert while resetting
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No connection available!", 
 			nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No connection available!");
+		[queryLock unlock];
 		return nil;
 	}
 
@@ -805,7 +815,8 @@ static void forcePingTimeout(int signalNumber);
 			// Show an error alert while resetting
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 				nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, errorMessage);
-
+			
+			[queryLock unlock];
 			return nil;
 		}
 	}
@@ -819,6 +830,7 @@ static void forcePingTimeout(int signalNumber);
 
 				// Notify that the query has been performed
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+				[queryLock unlock];
 				return nil;
 			}
 		}
@@ -883,6 +895,7 @@ static void forcePingTimeout(int signalNumber);
 
 	(void)(int)(*startKeepAliveTimerResettingStatePtr)(self, startKeepAliveTimerResettingStateSEL, YES);
 
+	[queryLock unlock];
 	if (!theResult) return nil;
 	return [theResult autorelease];
 }
@@ -1311,6 +1324,8 @@ static void forcePingTimeout(int signalNumber)
 	if (connectionKeychainName) [connectionKeychainName release];
 	if (connectionKeychainAccount) [connectionKeychainAccount release];
 	if (lastKeepAliveSuccess) [lastKeepAliveSuccess release];
+	
+	[queryLock release];
 
 	[super dealloc];
 }
