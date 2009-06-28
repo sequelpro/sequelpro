@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
-#define TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK 100 // high numbers will break! best to leave at 100
+#define TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK 300
 
 @class CMMCPConnection, CMMCPResult, CMCopyTable;
 

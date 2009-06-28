@@ -2024,7 +2024,35 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	NSDictionary *row = [self tableViewRowDataForRow:rowIndex];
 	
 	if (!row) {
+		// load this value on another thread
 		[self tableViewSetNeedsDBValue:YES forTableRow:rowIndex];
+		
+		// wait a (very) breif moment, and see if the value has loaded. This eliminates screen
+		// flicker when connection is fast, and improves performance on those servers without
+		// noticably hurting performance when connection is slower.
+		static BOOL shouldWaitForData = YES;
+		static NSDate *dateWaitForDataWasDisabled = nil;
+		
+		if (dateWaitForDataWasDisabled && [dateWaitForDataWasDisabled timeIntervalSinceNow] < -5) {
+			shouldWaitForData = YES;
+			[dateWaitForDataWasDisabled release];
+			NSLog(@"enabling 'wait for data'");
+		}
+		
+		if (shouldWaitForData) {
+			[NSThread sleepForTimeInterval:0.01]; // debug delay to simulate slow connection
+			row = [self tableViewRowDataForRow:rowIndex];
+			if (row) {
+				shouldWaitForData = YES;
+				return [row objectForKey:[aTableColumn identifier]];
+			} else {
+				shouldWaitForData = NO;
+				dateWaitForDataWasDisabled = [[NSDate alloc] init];
+				NSLog(@"disabling 'wait for data'");
+			}
+		} 
+// */
+		
 		return @"";
 	} else {
 		return [row objectForKey:[aTableColumn identifier]];
@@ -2224,7 +2252,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			[self performSelectorOnMainThread:@selector(tableContentViewReloadData:) withObject:self waitUntilDone:YES];
 			
 			// log the row we just loaded
-			NSLog(@"loaded rows: %d to %d", rowIndex, (rowIndex + rowIndexDelta - 1));
+			//NSLog(@"loaded rows: %d to %d", rowIndex, (rowIndex + rowIndexDelta - 1));
 		}
 	}
 	
