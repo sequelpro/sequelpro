@@ -28,6 +28,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
+#define TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK 100 // must be an integer!
+
 @class CMMCPConnection, CMMCPResult, CMCopyTable;
 
 @interface TableContent : NSObject 
@@ -77,6 +79,12 @@
 	BOOL editSheetWillBeInitialized;
 	
 	int quickLookCloseMarker;
+	
+	NSThread *tableViewDataLoaderThread;
+	NSLock *tableViewDataLoaderLock;
+	int tableViewRowsWhichNeedData[TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK];
+	int tableViewRowsWhichNeedDataNextSlot;
+	NSMutableDictionary *tableViewRowData;
 }
 
 //table methods
@@ -132,6 +140,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	 setObjectValue:(id)anObject
 	 forTableColumn:(NSTableColumn *)aTableColumn
 							row:(int)rowIndex;
+
+// tableView threaded data fetching methods
+- (NSDictionary *)tableViewRowDataForRow:(int)rowIndex;
+- (void)tableViewSetNeedsDBValue:(BOOL)needValue forTableRow:(int)rowIndex;
+- (void)fetchAllNeededDbValues:(id)ignored;
+- (NSArray *)fetchDbValuesFromDatabaseNearRow:(int)rowIndex firstRowReturned:(int *)firstRowReturned;
 
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;

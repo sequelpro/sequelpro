@@ -64,6 +64,15 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		
 		usedQuery = [[NSString stringWithString:@""] retain];
+		
+		int i;
+		for (i = 0; i < TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK; i++) {
+			tableViewRowsWhichNeedData[i] = -1;
+		}
+		tableViewRowsWhichNeedDataNextSlot = 0;
+		tableViewDataLoaderThread = [[NSThread alloc] initWithTarget:self selector:@selector(fetchAllNeededDbValues:) object:nil];
+		tableViewDataLoaderLock = [[NSLock alloc] init];
+		tableViewRowData = [[NSMutableDictionary alloc] init];
 	}
 	
 	return self;
@@ -2004,6 +2013,7 @@
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
+	return 420000;
 	return [filteredResult count];
 }
 
@@ -2011,7 +2021,15 @@
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-
+	NSDictionary *row = [self tableViewRowDataForRow:rowIndex];
+	
+	if (!row) {
+		[self tableViewSetNeedsDBValue:YES forTableRow:rowIndex];
+		return @"...";
+	} else {
+		return [row objectForKey:[aTableColumn identifier]];
+	}
+	
 	id theValue = [NSArrayObjectAtIndex(filteredResult, rowIndex) objectForKey:[aTableColumn identifier]];
 
 	if ( [theValue isKindOfClass:[NSData class]] )
@@ -2091,6 +2109,640 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	else
 		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:@"" forKey:[aTableColumn identifier]];
 
+}
+	
+#pragma mark -
+#pragma mark tableView threaded data fetching
+
+- (NSDictionary *)tableViewRowDataForRow:(int)rowIndex
+{
+	NSDictionary *row;
+	NSNumber *rowIndexNumber = [NSNumber numberWithInt:rowIndex];
+	
+	[tableViewDataLoaderLock lock];
+	row = [tableViewRowData objectForKey:rowIndexNumber];
+	[tableViewDataLoaderLock unlock];
+	
+	return row;
+}
+
+- (void)tableViewSetNeedsDBValue:(BOOL)needValue forTableRow:(int)rowIndex
+{
+	[tableViewDataLoaderLock lock];
+	
+	// is this row already in the queue?
+	BOOL alreadyNeedRow = NO;
+	int i;
+	for (i = 0; i < TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK; i++) {
+		if (tableViewRowsWhichNeedData[i] != rowIndex)
+			continue;
+		
+		alreadyNeedRow = YES;
+		break;
+	}
+	
+	// add this row to queue
+	if (!alreadyNeedRow) {
+		tableViewRowsWhichNeedData[tableViewRowsWhichNeedDataNextSlot] = rowIndex;
+		tableViewRowsWhichNeedDataNextSlot++;
+		if (tableViewRowsWhichNeedDataNextSlot >= TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK)
+			tableViewRowsWhichNeedDataNextSlot = 0;
+	}
+	
+	[tableViewDataLoaderLock unlock];
+	
+	// start the thread, if it isn't already running
+	[tableViewDataLoaderLock lock];
+	if (![tableViewDataLoaderThread isExecuting]) {
+		if ([tableViewDataLoaderThread isFinished]) { // if thread was running, but has stopped, re-create it
+			[tableViewDataLoaderThread release];
+			tableViewDataLoaderThread = [[NSThread alloc] initWithTarget:self selector:@selector(fetchAllNeededDbValues:) object:nil];
+		}
+		
+		[tableViewDataLoaderThread start];
+	}
+	[tableViewDataLoaderLock unlock];
+}
+
+/**
+ * used by data loader thread to reload the tableview
+ */
+- (void)tableContentViewReloadData:(id)sender
+{
+	[tableContentView reloadData];
+}
+
+- (void)fetchAllNeededDbValues:(id)ignored
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
+	int rowIndex, rowIndexDelta, firstRowReturned;
+	NSArray *rows;
+	NSArray *row;
+	NSEnumerator *rowsEn;
+	NSNumber *rowIndexNumber;
+	
+	int i, ii;
+	BOOL didFindRowsToUpdate = YES;
+	while (didFindRowsToUpdate) {
+		didFindRowsToUpdate = NO;
+		for (i = 0; i < TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK; i++) {
+			// what value are we fetching?
+			[tableViewDataLoaderLock lock];
+			rowIndex = tableViewRowsWhichNeedData[i];
+			[tableViewDataLoaderLock unlock];
+			
+			// empty slot?
+			if (rowIndex == -1)
+				continue;
+			
+			// fetch values for this row
+			didFindRowsToUpdate = YES;
+			[NSThread sleepForTimeInterval:0.5]; // debug delay to simulate slow connection
+			rows = [self fetchDbValuesFromDatabaseNearRow:rowIndex firstRowReturned:&firstRowReturned];
+			
+			// store new values, and remove them from the queue if they're in there
+			[tableViewDataLoaderLock lock];
+			rowsEn = [rows objectEnumerator];
+			rowIndexDelta = 0;
+			while (row = [rowsEn nextObject]) {
+				rowIndexNumber = [NSNumber numberWithInt:(firstRowReturned + rowIndexDelta)];
+				
+				if (![tableViewRowData objectForKey:rowIndexNumber])
+					[tableViewRowData setObject:row forKey:rowIndexNumber];
+				
+				for (ii = 0; ii < TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK; ii++) {
+					if (tableViewRowsWhichNeedData[ii] == (firstRowReturned + rowIndexDelta))
+						tableViewRowsWhichNeedData[ii] = -1;
+				}
+				
+				rowIndexDelta++;
+			}
+			[tableViewDataLoaderLock unlock];
+			
+			// update view on main thread
+			[self performSelectorOnMainThread:@selector(tableContentViewReloadData:) withObject:self waitUntilDone:YES];
+			
+			// log the row we just loaded
+			NSLog(@"loaded rows: %d to %d", rowIndex, (rowIndex + rowIndexDelta - 1));
+		}
+	}
+	
+	[pool release];
+}
+
+
+- (NSArray *)fetchDbValuesFromDatabaseNearRow:(int)rowIndex firstRowReturned:(int *)firstRowReturned
+{
+	(*firstRowReturned) = rowIndex - (TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK / 2);
+	if ((*firstRowReturned) < 0)
+		(*firstRowReturned) = 0;
+	
+	/*
+	 * number of rows to fetch: TABLE_VIEW_CONTENT_ROW_LOAD_BLOCK
+	 */
+	return [NSArray arrayWithObjects:
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"2", @"id",
+					 @"Donec dapibus diam pulvinar urna euismod scelerisque.", @"decimal",
+					 @"Praesent at lacus quam, at mattis risus.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"3", @"id",
+					 @"Phasellus quis elit nec nunc accumsan bibendum.", @"decimal",
+					 @"Vivamus facilisis leo in est fringilla accumsan.", @"foobar",
+					 nil],
+					[NSDictionary dictionaryWithObjectsAndKeys:
+					 @"1", @"id",
+					 @"Praesent nec nisi a justo tristique tempus vel eget odio.", @"decimal",
+					 @"Pellentesque malesuada mauris sit amet urna ullamcorper rutrum scelerisque sapien imperdiet.", @"foobar",
+					 nil],
+					nil];
 }
 
 #pragma mark -
