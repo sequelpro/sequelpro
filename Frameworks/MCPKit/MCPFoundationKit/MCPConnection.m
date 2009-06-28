@@ -33,6 +33,7 @@
 
 #include <unistd.h>
 #include <setjmp.h>
+#include <mach/mach_time.h>
 
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
@@ -56,11 +57,6 @@ static BOOL	sDebugQueries = NO;
 @interface MCPConnection (PrivateAPI)
 
 - (void)_getServerVersionString;
-
-- (const char *)_cStringFromString:(NSString *)theString;
-- (const char *)_cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding;
-- (NSString *)_stringWithCString:(const char *)theCString;
-- (NSString *)_stringWithText:(NSData *)theTextData;
 
 @end
 
@@ -110,7 +106,6 @@ static BOOL	sDebugQueries = NO;
 		mEncoding = NSISOLatin1StringEncoding;
 		mConnectionFlags = kMCPConnectionDefaultOption;
 		
-		parentWindow = nil;
 		connectionHost = nil;
 		connectionLogin = nil;
 		connectionSocket = nil;
@@ -270,7 +265,7 @@ static BOOL	sDebugQueries = NO;
  */
 - (BOOL)connect
 {
-	const char	*theLogin = [self _cStringFromString:connectionLogin];
+	const char	*theLogin = [self cStringFromString:connectionLogin];
 	const char	*theHost;
 	const char	*thePass;
 	const char	*theSocket;
@@ -297,24 +292,24 @@ static BOOL	sDebugQueries = NO;
 		
 		
 	} else {
-		theHost = [self _cStringFromString:connectionHost];
+		theHost = [self cStringFromString:connectionHost];
 	}
 	
 	// Use the default socket if none is set, or set appropriately
 	if (connectionSocket == nil || ![connectionSocket length]) {
 		theSocket = kMCPConnectionDefaultSocket;
 	} else {
-		theSocket = [self _cStringFromString:connectionSocket];
+		theSocket = [self cStringFromString:connectionSocket];
 	}
 	
 	// Select the password from the provided method
 	if (connectionKeychainName) {
 		KeyChain *keychain;
 		keychain = [[KeyChain alloc] init];
-		thePass = [self _cStringFromString:[keychain getPasswordForName:connectionKeychainName account:connectionKeychainAccount]];
+		thePass = [self cStringFromString:[keychain getPasswordForName:connectionKeychainName account:connectionKeychainAccount]];
 		[keychain release];
 	} else {
-		thePass = [self _cStringFromString:connectionPassword];
+		thePass = [self cStringFromString:connectionPassword];
 	}
 	
 	// Connect
@@ -470,24 +465,22 @@ static BOOL	sDebugQueries = NO;
 				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
 			}
 		}
-	} else if (parentWindow) {
+	}
+	else {
 		[self setLastErrorMessage:nil];
 		
-		// If the connection was not successfully established, ask how to proceed.
-		[NSApp beginSheet:connectionErrorDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
-		[NSApp endSheet:connectionErrorDialog];
-		[connectionErrorDialog orderOut:nil];
+		// Default to retry
+		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
-		switch (connectionErrorCode) {
-				
-				// Should disconnect
-			case 2:
-				[parentWindow close];
-				return NO;
-				
-				// Should retry
-			default:
+		// Ask delegate what to do
+		if ([delegate respondsToSelector:@selector(decisionAfterConnectionFailure)]) {
+			failureDecision = [delegate decisionAfterConnectionFailure];
+		}
+		
+		switch (failureDecision) {				
+			case MCPConnectionCheckDisconnect:
+				return NO;				
+			case MCPConnectionCheckReconnect:
 				return [self reconnect];
 		}
 	}
@@ -519,25 +512,28 @@ static BOOL	sDebugQueries = NO;
 	
 	// If the connection doesn't appear to be responding, show a dialog asking how to proceed
 	if (!connectionVerified) {
-		[NSApp beginSheet:connectionErrorDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		int responseCode = [NSApp runModalForWindow:connectionErrorDialog];
-		[NSApp endSheet:connectionErrorDialog];
-		[connectionErrorDialog orderOut:nil];
 		
-		switch (responseCode) {
-				
-				// "Reconnect" has been selected.  Request a reconnect, and retry.
-			case 1:
+		// Default to retry
+		MCPConnectionCheck failureDecision = MCPConnectionCheckRetry;
+		
+		// Ask delegate what to do
+		if ([delegate respondsToSelector:@selector(decisionAfterConnectionFailure)]) {
+			failureDecision = [delegate decisionAfterConnectionFailure];
+		}
+		
+		switch (failureDecision) {
+			// "Reconnect" has been selected.  Request a reconnect, and retry.
+			case MCPConnectionCheckReconnect:
 				[self reconnect];
+				
 				return [self checkConnection];
 				
-				// "Disconnect" has been selected.  Close the parent window, which will handle disconnections, and return false.
-			case 2:
-				[parentWindow close];
-				return FALSE;
+			// "Disconnect" has been selected.  Close the parent window, which will handle disconnections, and return false.
+			case MCPConnectionCheckDisconnect:
+				return NO;
 				
-				// "Retry" has been selected - return a recursive call.
-			default:
+			// "Retry" has been selected - return a recursive call.
+			case MCPConnectionCheckRetry:
 				return [self checkConnection];
 		}
 		
@@ -970,10 +966,10 @@ static void forcePingTimeout(int signalNumber)
  */
 - (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(int)port socket:(NSString *)socket
 {
-	const char	*theLogin = [self _cStringFromString:login];
-	const char	*theHost = [self _cStringFromString:host];
-	const char	*thePass = [self _cStringFromString:pass];
-	const char	*theSocket = [self _cStringFromString:socket];
+	const char	*theLogin = [self cStringFromString:login];
+	const char	*theHost = [self cStringFromString:host];
+	const char	*thePass = [self cStringFromString:pass];
+	const char	*theSocket = [self cStringFromString:socket];
 	void	*theRet;
 	
 	if (mConnected) {
@@ -1025,7 +1021,7 @@ static void forcePingTimeout(int signalNumber)
 	}
 	
 	if (mConnected) {
-		const char	 *theDBName = [self _cStringFromString:dbName];
+		const char	 *theDBName = [self cStringFromString:dbName];
 		if (0 == mysql_select_db(mConnection, theDBName)) {
 			[self startKeepAliveTimerResettingState:YES];
 			
@@ -1061,7 +1057,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (void)setLastErrorMessage:(NSString *)theErrorMessage
 {
-	if (!theErrorMessage) theErrorMessage = [self _stringWithCString:mysql_error(mConnection)];
+	if (!theErrorMessage) theErrorMessage = [self stringWithCString:mysql_error(mConnection)];
 	
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
 	lastQueryErrorMessage = [[NSString alloc] initWithString:theErrorMessage];
@@ -1207,7 +1203,8 @@ static void forcePingTimeout(int signalNumber)
 - (MCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	MCPResult		*theResult = nil;
-	int				queryStartTime;
+	uint64_t		queryStartTime, queryExecutionTime_t;
+	Nanoseconds		queryExecutionTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
@@ -1247,7 +1244,7 @@ static void forcePingTimeout(int signalNumber)
 	// Check query length against max_allowed_packet; if it is larger, the
 	// query would error, so if max_allowed_packet is editable for the user
 	// increase it for the current session and reconnect.
-	if(maxAllowedPacketSize < theCQueryLength) {
+	if (maxAllowedPacketSize < theCQueryLength) {
 		
 		if(isMaxAllowedPacketEditable) {
 			
@@ -1290,9 +1287,10 @@ static void forcePingTimeout(int signalNumber)
 		
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
-		queryStartTime = clock();
+		queryStartTime = mach_absolute_time();
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
-		lastQueryExecutionTime = (clock() - queryStartTime);
+		queryExecutionTime_t = (mach_absolute_time() - queryStartTime);
+		queryExecutionTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(queryExecutionTime_t));
 		
 		// On success, capture the results
 		if (0 == queryResultCode) {
@@ -1302,7 +1300,7 @@ static void forcePingTimeout(int signalNumber)
 				
 				// Ensure no problem occurred during the result fetch
 				if (mysql_errno(mConnection) != 0) {
-					queryErrorMessage = [[NSString alloc] initWithString:[self _stringWithCString:mysql_error(mConnection)]];
+					queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 					queryErrorId = mysql_errno(mConnection);
 					break;
 				}
@@ -1315,7 +1313,7 @@ static void forcePingTimeout(int signalNumber)
 			// On failure, set the error messages and IDs
 		} else {
 			
-			queryErrorMessage = [[NSString alloc] initWithString:[self _stringWithCString:mysql_error(mConnection)]];
+			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);
 			
 			// If the error was a connection error, retry once
@@ -1341,6 +1339,7 @@ static void forcePingTimeout(int signalNumber)
 	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
 	if (queryErrorMessage) [queryErrorMessage release]; 
 	lastQueryAffectedRows = queryAffectedRows;
+	lastQueryExecutionTime = (((double)UnsignedWideToUInt64(queryExecutionTime)) * 1e-9);
 	
 	// If an error occurred, inform the delegate
 	if (queryResultCode & delegateResponseToWillQueryString)
@@ -1386,7 +1385,7 @@ static void forcePingTimeout(int signalNumber)
  * Return the time taken to execute the last query.  This should be close to the time it took
  * the server to run the query, but will include network lag and some client library overhead.
  */
-- (float)lastQueryExecutionTime
+- (double)lastQueryExecutionTime
 {
 	return lastQueryExecutionTime;
 }
@@ -1455,7 +1454,7 @@ static void forcePingTimeout(int signalNumber)
 		}
 	}
 	else {
-		const char *theCDBsName = (const char *)[self _cStringFromString:dbsName];
+		const char *theCDBsName = (const char *)[self cStringFromString:dbsName];
 		
 		if (theResPtr = mysql_list_dbs(mConnection, theCDBsName)) {
 			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
@@ -1510,7 +1509,7 @@ static void forcePingTimeout(int signalNumber)
 		}
 	}
 	else {
-		const char	*theCTablesName = (const char *)[self _cStringFromString:tablesName];
+		const char	*theCTablesName = (const char *)[self cStringFromString:tablesName];
 		if (theResPtr = mysql_list_tables(mConnection, theCTablesName)) {
 			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
 		}
@@ -1582,7 +1581,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (NSString *)clientInfo
 {
-	return [self _stringWithCString:mysql_get_client_info()];
+	return [self stringWithCString:mysql_get_client_info()];
 }
 
 /**
@@ -1590,7 +1589,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (NSString *)hostInfo
 {
-	return [self _stringWithCString:mysql_get_host_info(mConnection)];
+	return [self stringWithCString:mysql_get_host_info(mConnection)];
 }
 
 /**
@@ -1599,7 +1598,7 @@ static void forcePingTimeout(int signalNumber)
 - (NSString *)serverInfo
 {
 	if (mConnected) {
-		return [self _stringWithCString: mysql_get_server_info(mConnection)];
+		return [self stringWithCString: mysql_get_server_info(mConnection)];
 	}
 	
 	return @"";
@@ -1709,7 +1708,7 @@ static void forcePingTimeout(int signalNumber)
 		
 		if ( [theTZName isKindOfClass:[NSData class]] ) {
 			// MySQL 4.1.14 returns the mysql variables as NSData
-			theTZName = [self _stringWithText:theTZName];
+			theTZName = [self stringWithText:theTZName];
 		}
 		
 		if ([theTZName isEqualToString:@"SYSTEM"]) {
@@ -1719,7 +1718,7 @@ static void forcePingTimeout(int signalNumber)
 			
 			if ( [theTZName isKindOfClass:[NSData class]] ) {
 				// MySQL 4.1.14 returns the mysql variables as NSData
-				theTZName = [self _stringWithText:theTZName];
+				theTZName = [self stringWithText:theTZName];
 			}
 		}
 		
@@ -1830,6 +1829,88 @@ static void forcePingTimeout(int signalNumber)
 }
 
 #pragma mark -
+#pragma mark Data conversion
+
+/**
+ * For internal use only. Transforms a NSString to a C type string (ending with \0) using the character set from the MCPConnection.
+ * Lossy conversions are enabled.
+ */
+- (const char *)cStringFromString:(NSString *)theString
+{
+	NSMutableData *theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:mEncoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	
+	return (const char *)[theData bytes];
+}
+
+/**
+ * Modified version of the original to support a supplied encoding.
+ * For internal use only. Transforms a NSString to a C type string (ending with \0).
+ * Lossy conversions are enabled.
+ */
+- (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding
+{
+	NSMutableData *theData;
+	
+	if (! theString) {
+		return (const char *)NULL;
+	}
+	
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	[theData increaseLengthBy:1];
+	
+	return (const char *)[theData bytes];
+}
+
+/**
+ * Returns a NSString from a C style string encoded with the character set of theMCPConnection.
+ */
+- (NSString *)stringWithCString:(const char *)theCString
+{
+	NSData	 *theData;
+	NSString *theString;
+	
+	if (theCString == NULL) {
+		return @"";
+	}
+	
+	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
+	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
+}
+
+/**
+ * Use the string encoding to convert the returned NSData to a string (for a Text field).
+ */
+- (NSString *)stringWithText:(NSData *)theTextData
+{
+	NSString *theString;
+	
+	if (theTextData == nil) {
+		return nil;
+	}
+	
+	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
+}
+
+#pragma mark -
 
 /**
  * Object deallocation.
@@ -1865,85 +1946,6 @@ static void forcePingTimeout(int signalNumber)
 			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
 		}
 	}
-}
-
-/**
- * For internal use only. Transforms a NSString to a C type string (ending with \0) using the character set from the MCPConnection.
- * Lossy conversions are enabled.
- */
-- (const char *)_cStringFromString:(NSString *)theString
-{
-	NSMutableData *theData;
-	
-	if (! theString) {
-		return (const char *)NULL;
-	}
-	
-	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:mEncoding allowLossyConversion:YES]];
-	[theData increaseLengthBy:1];
-	
-	return (const char *)[theData bytes];
-}
-
-/**
- * Modified version of the original to support a supplied encoding.
- * For internal use only. Transforms a NSString to a C type string (ending with \0).
- * Lossy conversions are enabled.
- */
-- (const char *)_cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding
-{
-	NSMutableData *theData;
-	
-	if (! theString) {
-		return (const char *)NULL;
-	}
-	
-	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
-	[theData increaseLengthBy:1];
-	
-	return (const char *)[theData bytes];
-}
-
-/**
- * Returns a NSString from a C style string encoded with the character set of theMCPConnection.
- */
-- (NSString *)_stringWithCString:(const char *)theCString
-{
-	NSData	 *theData;
-	NSString *theString;
-	
-	if (theCString == NULL) {
-		return @"";
-	}
-	
-	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
-	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
-	
-	if (theString) {
-		[theString autorelease];
-	}
-	
-	return theString;
-}
-
-/**
- * Use the string encoding to convert the returned NSData to a string (for a Text field).
- */
-- (NSString *)_stringWithText:(NSData *)theTextData
-{
-	NSString *theString;
-	
-	if (theTextData == nil) {
-		return nil;
-	}
-	
-	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
-	
-	if (theString) {
-		[theString autorelease];
-	}
-	
-	return theString;
 }
 
 @end

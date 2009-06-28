@@ -417,8 +417,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		}
 	}
 	
-	[mySQLConnection setParentWindow:tableWindow];
-
 	// Set the password as appropriate
 	if (connectionKeychainItemName) {
 		[mySQLConnection setPasswordKeychainName:connectionKeychainItemName account:connectionKeychainItemAccount];
@@ -2308,9 +2306,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
 }
 
-- (MCPReconnect)shouldReconnectAfterConnectionFailure
+- (MCPConnectionCheck)decisionAfterConnectionFailure
 {
-	return MCPConnectYes;
+	return MCPConnectionCheckReconnect;
 }
 
 #pragma mark -

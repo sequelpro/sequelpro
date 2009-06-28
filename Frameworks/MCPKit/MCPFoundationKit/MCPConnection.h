@@ -45,10 +45,11 @@ extern const unsigned int kMCPConnectionNotInited;
 // The length of the truncation if required
 extern const unsigned int kLengthOfTruncationForLog;
 
-typedef enum _MCPReconnect {
-	MCPReconnectYes = 0,
-	MCPReconnectNo
-} MCPReconnect;
+typedef enum _MCPConnectionCheck {
+	MCPConnectionCheckReconnect = 1,
+	MCPConnectionCheckDisconnect,
+	MCPConnectionCheckRetry
+} MCPConnectionCheck;
 
 @interface NSObject (MCPConnectionDelegate)
 
@@ -56,7 +57,7 @@ typedef enum _MCPReconnect {
 - (void)queryGaveError:(NSString *)error;
 - (BOOL)connectionEncodingViaLatin1;
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
-- (MCPReconnect)shouldReconnectAfterConnectionFailure;
+- (MCPConnectionCheck)decisionAfterConnectionFailure;
 
 @end
 
@@ -73,9 +74,6 @@ typedef enum _MCPReconnect {
 	int connectionTimeout;
 	float keepAliveInterval;
 	
-	IBOutlet NSWindow *connectionErrorDialog;
-	NSWindow *parentWindow;
-	
 	SPSSHTunnel *connectionTunnel;
 	NSString *connectionLogin;
 	NSString *connectionKeychainName;
@@ -89,7 +87,7 @@ typedef enum _MCPReconnect {
 	
 	int currentSSHTunnelState;
 	
-	int lastQueryExecutionTime;
+	double lastQueryExecutionTime;
 	NSString *lastQueryErrorMessage;
 	unsigned int lastQueryErrorId;
 	my_ulonglong lastQueryAffectedRows;
@@ -201,7 +199,7 @@ typedef enum _MCPReconnect {
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPResult *)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding;
 //- (void)workerPerformQuery:(NSString *)query;
-- (float)lastQueryExecutionTime;
+- (double)lastQueryExecutionTime;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;
 
@@ -245,5 +243,13 @@ typedef enum _MCPReconnect {
 - (int)getMaxAllowedPacket;
 - (BOOL)isMaxAllowedPacketEditable;
 - (int)setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
+
+/**
+ * Data conversion
+ */
+- (const char *)cStringFromString:(NSString *)theString;
+- (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding;
+- (NSString *)stringWithCString:(const char *)theCString;
+- (NSString *)stringWithText:(NSData *)theTextData;
 
 @end

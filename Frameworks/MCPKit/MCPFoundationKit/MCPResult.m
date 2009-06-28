@@ -1261,9 +1261,9 @@ const OUR_CHARSET our_charsets60[] =
 				return @"binary";
 			}
 			return @"string";
-		case MYSQL_TYPE_TINY_BLOB:// should no appear over the wire
-		case MYSQL_TYPE_MEDIUM_BLOB:// should no appear over the wire
-		case MYSQL_TYPE_LONG_BLOB:// should no appear over the wire
+		case MYSQL_TYPE_TINY_BLOB:   // should no appear over the wire
+		case MYSQL_TYPE_MEDIUM_BLOB: // should no appear over the wire
+		case MYSQL_TYPE_LONG_BLOB:   // should no appear over the wire
 		case MYSQL_TYPE_BLOB:
 		{
 			if (charsetnr == MAGIC_BINARY_CHARSET_NR) {
