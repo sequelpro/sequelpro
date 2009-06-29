@@ -27,6 +27,7 @@
 #import "SPStringAdditions.h"
 #include <unistd.h>
 #include <setjmp.h>
+#include <mach/mach_time.h>
 
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
@@ -742,7 +743,8 @@ static void forcePingTimeout(int signalNumber);
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult		*theResult = nil;
-	int				queryStartTime;
+	uint64_t		queryStartTime, queryExecutionTime_t;
+	Nanoseconds		queryExecutionTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
@@ -825,9 +827,10 @@ static void forcePingTimeout(int signalNumber);
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
-		queryStartTime = clock();
+		queryStartTime = mach_absolute_time();
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
-		lastQueryExecutionTime = (clock() - queryStartTime);
+		queryExecutionTime_t = mach_absolute_time() - queryStartTime;
+		queryExecutionTime = AbsoluteToNanoseconds( *(AbsoluteTime *) &(queryExecutionTime_t) );
 
 		// On success, capture the results
 		if (0 == queryResultCode) {
@@ -876,6 +879,7 @@ static void forcePingTimeout(int signalNumber);
 	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
 	if (queryErrorMessage) [queryErrorMessage release]; 
 	lastQueryAffectedRows = queryAffectedRows;
+	lastQueryExecutionTime = ((double) UnsignedWideToUInt64( queryExecutionTime )) * 1e-9;
 	
 	// If an error occurred, inform the delegate
 	if (queryResultCode & delegateResponseToWillQueryString)
@@ -892,7 +896,7 @@ static void forcePingTimeout(int signalNumber);
  * Return the time taken to execute the last query.  This should be close to the time it took
  * the server to run the query, but will include network lag and some client library overhead.
  */
-- (float) lastQueryExecutionTime
+- (double) lastQueryExecutionTime
 {
 	return lastQueryExecutionTime;
 }

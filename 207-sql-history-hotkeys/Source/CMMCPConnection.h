@@ -60,7 +60,7 @@
 	BOOL useKeepAlive;
 	float keepAliveInterval;
 	
-	int lastQueryExecutionTime;
+	double lastQueryExecutionTime;
 	NSString *lastQueryErrorMessage;
 	unsigned int lastQueryErrorId;
 	my_ulonglong lastQueryAffectedRows;
@@ -106,7 +106,7 @@
 - (BOOL) selectDB:(NSString *) dbName;
 - (CMMCPResult *) queryString:(NSString *) query;
 - (CMMCPResult *) queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding;
-- (float) lastQueryExecutionTime;
+- (double) lastQueryExecutionTime;
 - (MCPResult *) listDBsLike:(NSString *) dbsName;
 - (BOOL) checkConnection;
 - (void) restoreConnectionDetails;

@@ -70,7 +70,6 @@
 		296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		296DC8D20F90950C002A3258 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */; };
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
-		29A1B7EB0FD12E55000B88E8 /* printAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = 29A1B7EA0FD12E55000B88E8 /* printAccessory.xib */; };
 		380F4EF50FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */; };
 		380F4F250FC0C3D300B0BFD7 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */; };
 		380F4F270FC0C51C00B0BFD7 /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
@@ -87,7 +86,6 @@
 		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
-		586F432B0FD74CFC00B428D7 /* SSHQuestionDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 586F432A0FD74CFC00B428D7 /* SSHQuestionDialog.xib */; };
 		586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
 		586F457E0FDB280100B428D7 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */ = {isa = PBXBuildFile; fileRef = 5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */; };
@@ -135,6 +133,8 @@
 		B58A32480F6509D60003C243 /* button_duplicate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32410F6509D60003C243 /* button_duplicate.tiff */; };
 		B58A32490F6509D60003C243 /* button_info_pane_hide.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32420F6509D60003C243 /* button_info_pane_hide.tiff */; };
 		B58A324A0F6509D60003C243 /* button_info_pane_show.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B58A32430F6509D60003C243 /* button_info_pane_show.tiff */; };
+		B58DA73A0FF8BB9E00FDDACD /* SSHQuestionDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = B58DA7390FF8BB9E00FDDACD /* SSHQuestionDialog.xib */; };
+		B58DA73C0FF8BBA500FDDACD /* printAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = B58DA73B0FF8BBA500FDDACD /* printAccessory.xib */; };
 		B5A601730F74930F00EE5FBA /* button_remove.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601720F74930F00EE5FBA /* button_remove.tiff */; };
 		B5A601870F749C1600EE5FBA /* dimple.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601860F749C1600EE5FBA /* dimple.tiff */; };
 		B5A601970F74C1CE00EE5FBA /* button_refresh.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5A601960F74C1CE00EE5FBA /* button_refresh.tiff */; };
@@ -348,7 +348,7 @@
 		296DC8D10F90950C002A3258 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-print-template.html"; sourceTree = "<group>"; };
 		29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = SPPrintAccessory.h; sourceTree = "<group>"; };
 		29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrintAccessory.m; sourceTree = "<group>"; wrapsLines = 1; };
-		29A1B7EA0FD12E55000B88E8 /* printAccessory.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = printAccessory.xib; path = English.lproj/printAccessory.xib; sourceTree = "<group>"; };
+		29A1B7EA0FD12E55000B88E8 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/printAccessory.xib; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -368,7 +368,7 @@
 		5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberView.h; sourceTree = "<group>"; };
 		5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoodleLineNumberView.m; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
-		586F432A0FD74CFC00B428D7 /* SSHQuestionDialog.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SSHQuestionDialog.xib; sourceTree = "<group>"; };
+		586F432A0FD74CFC00B428D7 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SSHQuestionDialog.xib; sourceTree = "<group>"; };
 		588593F30F7AEC9500ED0E67 /* package-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "package-application.sh"; sourceTree = "<group>"; };
 		5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "sparkle-public-key.pem"; sourceTree = "<group>"; };
 		588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-connected.png"; sourceTree = "<group>"; };
@@ -836,8 +836,8 @@
 				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
 				B57747D00F7A891A003B34F9 /* Preferences.xib */,
 				B5E92F170F75B2D100012500 /* ExportDialog.xib */,
-				29A1B7EA0FD12E55000B88E8 /* printAccessory.xib */,
-				586F432A0FD74CFC00B428D7 /* SSHQuestionDialog.xib */,
+				B58DA73B0FF8BBA500FDDACD /* printAccessory.xib */,
+				B58DA7390FF8BB9E00FDDACD /* SSHQuestionDialog.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -1137,8 +1137,8 @@
 				177E792E0FCB54EC00E9E122 /* database-small.png in Resources */,
 				177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */,
 				177E79300FCB54EC00E9E122 /* table-small-square.tiff in Resources */,
-				29A1B7EB0FD12E55000B88E8 /* printAccessory.xib in Resources */,
-				586F432B0FD74CFC00B428D7 /* SSHQuestionDialog.xib in Resources */,
+				B58DA73C0FF8BBA500FDDACD /* printAccessory.xib in Resources */,
+				B58DA73A0FF8BB9E00FDDACD /* SSHQuestionDialog.xib in Resources */,
 				B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */,
 				588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */,
 				588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */,
@@ -1346,6 +1346,22 @@
 				B57747D10F7A891A003B34F9 /* English */,
 			);
 			name = Preferences.xib;
+			sourceTree = "<group>";
+		};
+		B58DA7390FF8BB9E00FDDACD /* SSHQuestionDialog.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				586F432A0FD74CFC00B428D7 /* English */,
+			);
+			name = SSHQuestionDialog.xib;
+			sourceTree = "<group>";
+		};
+		B58DA73B0FF8BBA500FDDACD /* printAccessory.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				29A1B7EA0FD12E55000B88E8 /* English */,
+			);
+			name = printAccessory.xib;
 			sourceTree = "<group>";
 		};
 		B5E92F170F75B2D100012500 /* ExportDialog.xib */ = {

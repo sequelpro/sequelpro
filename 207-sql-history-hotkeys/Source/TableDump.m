@@ -833,12 +833,14 @@
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
+	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
 	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
 	NSMutableString *sqlString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSDictionary *tableDetails;
 	NSMutableArray *tableColumnNumericStatus;
+	NSEnumerator *viewSyntaxEnumerator;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	id createTableSyntax = nil;
 	BOOL previousConnectionEncodingViaLatin1;
@@ -920,7 +922,8 @@
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {
-				createTableSyntax = [[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier];
+				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
+				createTableSyntax = [self createViewPlaceholderSyntaxForView:tableName];
 				tableType = SP_TABLETYPE_VIEW;
 			} else {
 				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
@@ -1088,6 +1091,15 @@
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
+	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
+	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
+	while (tableName = [viewSyntaxEnumerator nextObject]) {
+		[metaString setString:@"\n\n"];
+		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
+		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
+		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	}
+
 	// Restore unique checks, foreign key checks, and other settings saved at the start
 	[metaString setString:@"\n\n\n"];
 	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
@@ -1980,6 +1992,71 @@
 	return [NSString stringWithString:mutableString];
 }
 
+/*
+ * Retrieve information for a view and use that to construct a CREATE TABLE
+ * string for an equivalent basic table.  Allows the construction of
+ * placeholder tables to resolve view interdependencies in dumps.
+ */
+- (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName
+{
+	NSDictionary *viewInformation;
+	NSMutableString *placeholderSyntax, *fieldString;
+	NSArray *viewColumns;
+	NSDictionary *column;
+	int i;
+
+	// Get structured information for the view via the SPTableData parsers
+	viewInformation = [tableDataInstance informationForView:viewName];
+	if (!viewInformation) return nil;
+	viewColumns = [viewInformation objectForKey:@"columns"];
+	
+	// Set up the start of the placeholder string and initialise an empty field string
+	placeholderSyntax = [[NSMutableString alloc] initWithFormat:@"CREATE TABLE %@ (\n", [viewName backtickQuotedString]];
+	fieldString = [[NSMutableString alloc] init];
+
+	// Loop through the columns, creating an appropriate column definition for each and appending it to the syntax string
+	for (i = 0; i < [viewColumns count]; i++) {
+		column = [viewColumns objectAtIndex:i];
+		[fieldString setString:[[column objectForKey:@"name"] backtickQuotedString]];
+
+		// Add the type and length information as appropriate
+		if ([column objectForKey:@"length"]) {
+			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], [column objectForKey:@"length"]];
+		} else {
+			[fieldString appendFormat:@" %@", [column objectForKey:@"type"]];
+		}
+	
+		// Field specification details
+		if ([[column objectForKey:@"unsigned"] intValue] == 1) [fieldString appendString:@" UNSIGNED"];
+		if ([[column objectForKey:@"zerofill"] intValue] == 1) [fieldString appendString:@" ZEROFILL"];
+		if ([[column objectForKey:@"binary"] intValue] == 1) [fieldString appendString:@" BINARY"];
+		if ([[column objectForKey:@"null"] intValue] == 0) [fieldString appendString:@" NOT NULL"];
+
+		// Provide the field default if appropriate
+		if ([column objectForKey:@"default"]) {
+			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
+				[fieldString appendString:@" DEFAULT NULL"];
+			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
+						&& [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+			} else {
+				[fieldString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[column objectForKey:@"default"]]];
+			}
+		}
+		
+		// Extras aren't required for the temp table.
+		// Add the field string to the syntax string
+		[placeholderSyntax appendFormat:@"   %@%@\n", fieldString, (i == [viewColumns count]-1)?@"":@","];
+	}
+
+	// Append the remainder of the table string
+	[placeholderSyntax appendString:@") ENGINE=MyISAM;"];
+
+	// Clean up and return.
+	[fieldString release];
+	return [placeholderSyntax autorelease];
+}
+ 
 /*
  * Split a string by the terminated-character if this is not escaped
  * if enclosed-character is given, ignores characters inside enclosed-characters
