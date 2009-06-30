@@ -13,6 +13,7 @@
 #import "CMMCPResult.h"
 #import "ImageAndTextCell.h"
 #import "SPArrayAdditions.h"
+#import "SPStringAdditions.h"
 
 #define COLUMNIDNAME @"NameColumn"
 
@@ -550,11 +551,11 @@
 			NSMutableString *columns = [NSMutableString stringWithCapacity:10];
 			for(NSString *key in [attributesDict allKeys])
 			{
-				if (key == @"user")
+				if ([key isEqualToString:@"user"])
 				{
 					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
 				}
-				else if (key == @"password")
+				else if ([key isEqualToString:@"password"])
 				{
 					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
 				}
@@ -584,20 +585,24 @@
 			}
 			valuesString = [values componentsJoinedAndBacktickQuoted];
 			columns = [[columns substringToIndex:[columns length] -2] mutableCopy];
-			insertStatement = [NSMutableString stringWithFormat:@"insert into user (%@) values (%@)",columns,valuesString];
-			NSLog(@"columns = %@, values = %@", columns, values);
+			insertStatement = [NSMutableString stringWithFormat:@"CREATE USER %@@%@", [[[user parent] valueForKey:@"user"] backtickQuotedString], [[user valueForKey:@"host"] backtickQuotedString]];
 			NSLog(@"insert statement = %@", insertStatement);
 			
 			[[self connection] queryString:[NSString stringWithFormat:insertStatement]];
 			if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
 			{
-				NSLog(@"%@", [[self connection] getLastErrorMessage]);
+				NSLog(@"%d-%@", [[self connection] getLastErrorID], [[self connection] getLastErrorMessage]);
+			} 
+			else
+			{	
+				[[self connection] queryString:[NSString stringWithFormat:@"SET PASSWORD FOR %@@%@ = PASSWORD(%@)", 
+				 [[[user parent] valueForKey:@"user"] backtickQuotedString], 
+				 [[user valueForKey:@"host"] backtickQuotedString], 
+				 [[[user parent] valueForKey:@"password"] backtickQuotedString]]];
+				
 			}
+			
 		}
-		
-		
-
-		
 	}
 
 	return FALSE;
