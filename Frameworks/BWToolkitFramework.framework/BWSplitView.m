@@ -331,6 +331,7 @@ static float scaleFactor = 1.0f;
 		NSMutableDictionary *tempMinValues = [[self minValues] mutableCopy];
 		[tempMinValues setObject:minSize forKey:[NSNumber numberWithInt:[[self subviews] indexOfObject:[self collapsibleSubview]]]];
 		[self setMinValues:tempMinValues];
+        [tempMinValues release];
 	}
 }
 
@@ -341,6 +342,7 @@ static float scaleFactor = 1.0f;
 		NSMutableDictionary *tempMinValues = [[self minValues] mutableCopy];
 		[tempMinValues removeObjectForKey:[NSNumber numberWithInt:[[self subviews] indexOfObject:[self collapsibleSubview]]]];
 		[self setMinValues:tempMinValues];
+        [tempMinValues release];
 	}
 }
 
@@ -935,6 +937,9 @@ static float scaleFactor = 1.0f;
 		[self clearPreferredProportionsAndSizes];
 		[self recalculatePreferredProportionsAndSizes];
 	}
+
+    [preferredProportions release];
+    [preferredSizes release];
 }
 
 - (void)validateAndCalculatePreferredProportionsAndSizes;
