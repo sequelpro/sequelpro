@@ -8,9 +8,9 @@
 - (NSString *)displayName
 {
 	if ([self valueForKey:@"parent"] == nil) {
-		return [self valueForKey:@"user"];
+		return self.user;
 	} else {
-		return [self valueForKey:@"host"];
+		return self.host;
 	}
 }
 

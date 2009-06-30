@@ -172,7 +172,6 @@
 {
 	for (NSString *key in item)
 	{
-		NSLog(@"Key: %@", key);
 		NS_DURING
 		if ([key hasSuffix:@"_priv"])
 		{
@@ -190,7 +189,6 @@
 			[child setValue:value forKey:key];
 		}
 		NS_HANDLER
-		NSLog(@"%@", [localException reason]);
 		NSLog(@"%@ not implemented yet.", key);
 		NS_ENDHANDLER
 	}
@@ -401,6 +399,7 @@
 // General Action Methods 
 - (IBAction)doCancel:(id)sender
 {
+	[[self managedObjectContext] rollback];
 	[window close];
 }
 
@@ -447,7 +446,10 @@
 															  inManagedObjectContext:[self managedObjectContext]];
 	[newChild setValue:@"localhost" forKey:@"host"];
 	[newItem addChildrenObject:newChild];
-	[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
+//	[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
+	[treeController addObject:newItem];
+	[outlineView expandItem:newItem];
+	
 }
 
 - (IBAction)removeUser:(id)sender
@@ -512,16 +514,25 @@
 	} 
 	else
 	{
-		NSLog(@"ContextDidSave: %@", [notification userInfo]);
 		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
 		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
 		NSArray *deleted = [[notification userInfo] valueForKey:NSDeletedObjectsKey];
 		
-		NSLog(@"updated: %@", updated);
-		NSLog(@"inserted: %@", inserted);
-		NSLog(@"deleted: %@", deleted);
+		if ([inserted count] > 0)
+		{
+			[self insertUsers:inserted];			
+		}
 		
-		[self insertUsers:inserted];
+		if ([updated count] > 0)
+		{
+			
+		}
+		
+		if ([deleted count] > 0)
+		{
+			
+		}
+
 	}
 }
 
@@ -547,21 +558,45 @@
 				{
 					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
 				}
-				else
+				else if ([user valueForKey:key] == nil)
 				{
-					[values addObject:[user valueForKey:key]];
+					[values addObject:@"NULL"];	
 				}
-				[columns appendString:[NSString stringWithFormat:@"%@,", key]];
+				else 
+				{
+					if ([key hasSuffix:@"_priv"])
+					{
+						if ([[user valueForKey:key] boolValue] == TRUE)
+						{
+							[values addObject:@"Y"];
+						}
+						else
+						{
+							[values addObject:@"N"];
+						}
+					}
+					else
+					{
+						[values addObject:[NSString stringWithFormat:@"%@", [user valueForKey:key]]];
+					}
+				}
+				[columns appendString:[NSString stringWithFormat:@"%@, ", key]];
 			}
 			valuesString = [values componentsJoinedAndBacktickQuoted];
-			columns = [[columns substringToIndex:[columns length] -1] mutableCopy];
-			insertStatement = [NSMutableString stringWithFormat:@"insert into user(%@) values(%@)",columns,valuesString];
+			columns = [[columns substringToIndex:[columns length] -2] mutableCopy];
+			insertStatement = [NSMutableString stringWithFormat:@"insert into user (%@) values (%@)",columns,valuesString];
 			NSLog(@"columns = %@, values = %@", columns, values);
-			NSLog(@"insert statement = %@", insertStatement);		
+			NSLog(@"insert statement = %@", insertStatement);
+			
+			[[self connection] queryString:[NSString stringWithFormat:insertStatement]];
+			if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
+			{
+				NSLog(@"%@", [[self connection] getLastErrorMessage]);
+			}
 		}
 		
 		
-//		CMMCPResult *result = [[[self connection] queryString:[NSString stringWithFormat:insertStatement,[[user attributes retain];
+
 		
 	}
 

@@ -410,7 +410,7 @@
 		B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate_icon.tif; sourceTree = "<group>"; };
 		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
 		B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show_icon.tif; sourceTree = "<group>"; };
-		B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = Frameworks/BWToolkitFramework.framework/BWToolkit.xcodeproj; sourceTree = "<group>"; };
+		B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; explicitFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = Frameworks/BWToolkitFramework.framework/BWToolkit.xcodeproj; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
