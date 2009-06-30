@@ -478,7 +478,7 @@
 // tableView:validateDrop:proposedRow:proposedDropOperation:
 // -------------------------------------------------------------------------------
 - (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)operation
-{	
+{
 	int originalRow;
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
@@ -499,28 +499,32 @@
 // tableView:acceptDrop:row:dropOperation:
 // -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation
-{	
+{
 	int originalRow;
 	int destinationRow;
+	int lastFavoriteIndexCached;
 	NSMutableDictionary *draggedRow;
 	
 	originalRow = [[[info draggingPasteboard] stringForType:FAVORITES_PB_DRAG_TYPE] intValue];
 	destinationRow = row;
-	
+
 	if (destinationRow > originalRow) {
 		destinationRow--;
 	}
 	
 	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:originalRow]];
+	//Before deleting this favorite, we need to save the current index.
+	//because removeObjectAtArrangedObjectIndex will set prefs LastFavoriteIndex to 0
+	lastFavoriteIndexCached = [prefs integerForKey:@"LastFavoriteIndex"];
 	
 	[favoritesController removeObjectAtArrangedObjectIndex:originalRow];
 	[favoritesController insertObject:draggedRow atArrangedObjectIndex:destinationRow];
-	
+
 	[favoritesTableView reloadData];
 	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
 	
 	// Update default favorite to take on new value
-	if ([prefs integerForKey:@"LastFavoriteIndex"] == originalRow) {
+	if (lastFavoriteIndexCached == originalRow) {
 		[prefs setInteger:destinationRow forKey:@"LastFavoriteIndex"];
 	}
 	
