@@ -35,6 +35,7 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
+#import "SPDatabaseData.h"
 
 @implementation TablesList
 
@@ -209,17 +210,15 @@
 	// Populate the table type (engine) popup button
 	[tableTypeButton removeAllItems];
 	
-	CMMCPResult *engines = [mySQLConnection queryString:@"SELECT engine FROM information_schema.engines"];
-	
-	[engines dataSeek:0];
-	
+	NSArray *engines = [databaseDataInstance getDatabaseStorageEngines];
+		
 	// Add default menu item
 	[tableTypeButton addItemWithTitle:@"Default"];
 	[[tableTypeButton menu] addItem:[NSMenuItem separatorItem]];
 	
-	for (int i = 0; i < [engines numOfRows]; i++)
+	for (NSDictionary *engine in engines)
 	{
-		[tableTypeButton addItemWithTitle:[[engines fetchRowAsArray] objectAtIndex:0]];
+		[tableTypeButton addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
 	
 	[NSApp beginSheet:tableSheet
