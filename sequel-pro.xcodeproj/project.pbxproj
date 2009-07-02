@@ -1090,6 +1090,7 @@
 				171625460F86EA94000E3AF5 /* MCPNumber.h in Headers */,
 				171625470F86EA94000E3AF5 /* MCPResult.h in Headers */,
 				171625480F86EA94000E3AF5 /* MCPResultPlus.h in Headers */,
+				177462370FFD09600046C37C /* MCPSSHProtocol.h in Headers */,
 				171625490F86EAA2000E3AF5 /* my_alloc.h in Headers */,
 				1716254A0F86EAA2000E3AF5 /* my_list.h in Headers */,
 				1716254B0F86EAA2000E3AF5 /* mysql.h in Headers */,
@@ -1098,7 +1099,6 @@
 				1716254E0F86EAA2000E3AF5 /* mysql_time.h in Headers */,
 				1716254F0F86EAA2000E3AF5 /* mysql_version.h in Headers */,
 				171625500F86EAA2000E3AF5 /* typelib.h in Headers */,
-				177462370FFD09600046C37C /* MCPSSHProtocol.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

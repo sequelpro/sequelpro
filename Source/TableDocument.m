@@ -1039,14 +1039,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 /**
- * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility
- */
-- (BOOL)connectionEncodingViaLatin1
-{
-	return _encodingViaLatin1;
-}
-
-/**
  * updates the currently selected item in the encoding menu
  * 
  * @param NSString *encoding - the title of the menu item which will be selected
@@ -2288,7 +2280,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 #pragma mark -
-#pragma mark MCPKit delegate methods
+#pragma mark MCPKit connection delegate methods
 
 /**
  * Invoked when framework will perform a query
@@ -2306,8 +2298,34 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
 }
 
+/**
+ * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility.
+ */
+- (BOOL)connectionEncodingViaLatin1
+{
+	return _encodingViaLatin1;
+}
+
+/**
+ * Returns the password in the associated Keychain item.
+ */
+- (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account
+{
+	KeyChain *keychain = [[KeyChain alloc] init];
+	
+	NSString *password = [keychain getPasswordForName:name account:account];
+	
+	[keychain release];
+	
+	return password;
+}
+
+/**
+ * Invoked when the connection fails for whatever reason and the framework needs to know how to proceed.
+ */
 - (MCPConnectionCheck)decisionAfterConnectionFailure
 {
+	// TODO: Actually implement giving the user the option of how to proceed
 	return MCPConnectionCheckReconnect;
 }
 

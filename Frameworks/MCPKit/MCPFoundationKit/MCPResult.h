@@ -30,6 +30,8 @@
 #import "mysql.h"
 #import "MCPConstants.h"
 
+#define MAGIC_BINARY_CHARSET_NR 63
+
 typedef struct st_our_charset
 {
 	unsigned int	nr;

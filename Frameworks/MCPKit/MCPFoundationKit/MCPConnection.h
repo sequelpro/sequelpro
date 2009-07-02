@@ -57,6 +57,7 @@ typedef enum _MCPConnectionCheck {
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 - (BOOL)connectionEncodingViaLatin1;
+- (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account;
 - (MCPConnectionCheck)decisionAfterConnectionFailure;
 
 @end

@@ -75,7 +75,7 @@
 	requestedResponse = NO;
 	task = nil;
 	localPort = 0;
-	connectionState = SPSSH_STATE_IDLE;
+	connectionState = SSH_STATE_IDLE;
 
 	return self;
 }
@@ -154,7 +154,7 @@
 - (void) connect
 {
 	localPort = 0;
-	if (connectionState != SPSSH_STATE_IDLE || (!passwordInKeychain && !password)) return;
+	if (connectionState != SSH_STATE_IDLE || (!passwordInKeychain && !password)) return;
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
 }
 
@@ -165,13 +165,13 @@
  */
 - (void) launchTask:(id) dummy
 {
-	if (connectionState != SPSSH_STATE_IDLE || task) return;
+	if (connectionState != SSH_STATE_IDLE || task) return;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSMutableArray *taskArguments;
 	NSMutableDictionary *taskEnvironment;
 	NSString *authenticationAppPath;
 
-	connectionState = SPSSH_STATE_CONNECTING;
+	connectionState = SSH_STATE_CONNECTING;
 	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 
 	// Enforce a parent window being present for dialogs
@@ -316,7 +316,7 @@
  */
 - (void)disconnect
 {
-    if (connectionState == SPSSH_STATE_IDLE) return;
+    if (connectionState == SSH_STATE_IDLE) return;
     [task terminate];
     connectionState = SPSSH_STATE_IDLE;
 	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
@@ -340,31 +340,31 @@
 		while (message = [enumerator nextObject]) {
 
 			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound) {
-				connectionState = SPSSH_STATE_CONNECTED;
+				connectionState = SSH_STATE_CONNECTED;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 
 			if ([message rangeOfString:@"Connection established"].location != NSNotFound) {
-				connectionState = SPSSH_STATE_WAITING_FOR_AUTH;
+				connectionState = SSH_STATE_WAITING_FOR_AUTH;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 
 			if ([message rangeOfString:@"closed by remote host." ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_IDLE;
+				connectionState = SSH_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was closed 'by the remote host'.  This may indicate a networking issue or a network timeout.", @"SSH tunnel was closed by remote host message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"Permission denied (" ].location != NSNotFound || [message rangeOfString:@"No more authentication methods to try" ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_IDLE;
+				connectionState = SSH_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel could not authenticate with the remote host.  Please check your password and ensure you still have access.", @"SSH tunnel authentication failed message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"Operation timed out" ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_IDLE;
+				connectionState = SSH_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).", @"SSH tunnel failed or timed out message"), sshHost, [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue]];

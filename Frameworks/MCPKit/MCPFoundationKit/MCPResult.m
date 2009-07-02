@@ -1121,7 +1121,6 @@ const OUR_CHARSET our_charsets60[] =
 		case FIELD_TYPE_BIT:
 			return @"BIT";
 		case MYSQL_TYPE_DECIMAL:
-		case FIELD_TYPE_NEW_DECIMAL:
 			//return isUnsigned ? (isZerofill? @"DECIMAL UNSIGNED ZEROFILL" : @"DECIMAL UNSIGNED"): 
 			return @"DECIMAL";
 		case MYSQL_TYPE_TINY:
@@ -1231,7 +1230,6 @@ const OUR_CHARSET our_charsets60[] =
 		case MYSQL_TYPE_FLOAT:
 		case MYSQL_TYPE_DOUBLE:
 		case MYSQL_TYPE_DECIMAL:
-		case FIELD_TYPE_NEW_DECIMAL:
 			return @"float";
 		case MYSQL_TYPE_YEAR:
 		case MYSQL_TYPE_DATETIME:

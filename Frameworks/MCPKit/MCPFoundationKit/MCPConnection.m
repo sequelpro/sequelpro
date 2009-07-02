@@ -306,10 +306,7 @@ static BOOL	sDebugQueries = NO;
 	
 	// Select the password from the provided method
 	if (connectionKeychainName) {
-		KeyChain *keychain;
-		keychain = [[KeyChain alloc] init];
-		thePass = [self cStringFromString:[keychain getPasswordForName:connectionKeychainName account:connectionKeychainAccount]];
-		[keychain release];
+		thePass = [self cStringFromString:[delegate passwordForKeychainItemName:connectionKeychainName account:connectionKeychainAccount]];
 	} else {
 		thePass = [self cStringFromString:connectionPassword];
 	}
@@ -317,6 +314,7 @@ static BOOL	sDebugQueries = NO;
 	// Connect
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
+	
 	if (theRet != mConnection) {
 		[self setLastErrorMessage:nil];
 		return mConnected = NO;

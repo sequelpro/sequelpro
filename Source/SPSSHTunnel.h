@@ -1,12 +1,6 @@
 #import <Cocoa/Cocoa.h>
 
-enum spsshtunnel_states
-{
-	SPSSH_STATE_IDLE = 0,
-	SPSSH_STATE_CONNECTING = 1,
-	SPSSH_STATE_WAITING_FOR_AUTH = 2,
-	SPSSH_STATE_CONNECTED = 3
-};
+#import <MCPKit/MCPSSHProtocol.h>
 
 enum spsshtunnel_password_modes
 {
@@ -14,8 +8,7 @@ enum spsshtunnel_password_modes
 	SPSSH_PASSWORD_ASKS_UI = 1
 };
 
-
-@interface SPSSHTunnel : NSObject
+@interface SPSSHTunnel : NSObject <MCPSSHProtocol>
 {
 	IBOutlet NSWindow *sshQuestionDialog;
 	IBOutlet NSTextField *sshQuestionText;

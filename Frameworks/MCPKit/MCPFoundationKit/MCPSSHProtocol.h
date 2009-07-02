@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-enum sshtunnel_states
+enum SSH_TUNNEL_STATES
 {
 	SSH_STATE_IDLE = 0,
 	SSH_STATE_CONNECTING = 1,
@@ -38,12 +38,29 @@ enum sshtunnel_states
 
 @protocol MCPSSHProtocol <NSObject>
 
+/**
+ * Connect the SSH tunnel.
+ */
 - (void)connect;
+
+/**
+ * Disconnect the SSH tunnel.
+ */
 - (void)disconnect;
 
+/**
+ * Get the current state of the SSH tunnel.
+ */
 - (int)state;
+
+/**
+ * Get the local port being used by the SSH tunnel.
+ */ 
 - (int)localPort;
 
+/**
+ * Sets the method the SSH tunnel should call whenever the state of the connection changes.
+ */
 - (BOOL)setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
 
 @end
