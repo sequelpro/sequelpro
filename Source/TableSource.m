@@ -442,7 +442,7 @@ opens the indexSheet
 	[indexSheet makeFirstResponder:indexedColumnsField];
 	
 	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
-	for (i = 0; i < [indexes count]; i++) {
+	for (i = 0; i < [tableFields count]; i++) {
 		if ([[[tableFields objectAtIndex:i] objectForKey:@"Key"] isEqualToString:@"PRI"]) {
 			[indexTypeField selectItemAtIndex:1];
 			[indexNameField setEnabled:YES];
