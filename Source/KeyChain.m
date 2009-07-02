@@ -111,9 +111,9 @@
 	
 	status = SecKeychainFindGenericPassword(
 											NULL,						// default keychain
-											strlen([name UTF8String]),		// length of service name
+											strlen([name UTF8String]),		// length of service name (bytes)
 											[name UTF8String],				// service name
-											strlen([account UTF8String]),	// length of account name
+											strlen([account UTF8String]),	// length of account name (bytes)
 											[account UTF8String],			// account name
 											&passwordLength,			// length of password
 											&passwordData,				// pointer to password data
@@ -178,12 +178,12 @@
 	SecKeychainAttribute attributes[2];
 	
 	attributes[0].tag    = kSecAccountItemAttr;
-	attributes[0].data   = (void *)[account UTF8String];
-	attributes[0].length = [account length];
+	attributes[0].data   = (void *)[account UTF8String];	// Account name
+	attributes[0].length = strlen([account UTF8String]);	// Length of account name (bytes)
 	
 	attributes[1].tag    = kSecServiceItemAttr;
-    attributes[1].data   = (void *)[name UTF8String];
-    attributes[1].length = [name length];
+    attributes[1].data   = (void *)[name UTF8String];	// Service name
+    attributes[1].length = strlen([name UTF8String]);	// Length of service name (bytes)
 	
     list.count = 2;
     list.attr  = attributes;

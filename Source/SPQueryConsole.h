@@ -30,6 +30,7 @@
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
 	IBOutlet NSSearchField *consoleSearchField;
+	IBOutlet NSTextField *loggingDisabledTextField;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSButton *includeTimeStampsButton, *saveConsoleButton, *clearConsoleButton;
 	IBOutlet NSMenuItem *showTimeStampsMenuItem, *showSelectShowStatementsMenuItem, *showHelpMenuItem;
@@ -39,6 +40,7 @@
 	BOOL showSelectStatementsAreDisabled;
 	BOOL showHelpStatementsAreDisabled;
 	BOOL filterIsActive;
+
 	NSMutableString *activeFilterString;
 }
 
@@ -53,6 +55,7 @@
 - (IBAction)toggleShowSelectShowStatements:(id)sender;
 - (IBAction)toggleShowHelpStatements:(id)sender;
 
+- (void)updateEntries;
 
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;

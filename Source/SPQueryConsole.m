@@ -25,6 +25,7 @@
 
 #import "SPQueryConsole.h"
 #import "SPConsoleMessage.h"
+#import "SPArrayAdditions.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
@@ -118,11 +119,16 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (void)awakeFromNib
 {
+	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+	
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowTimestamps"]];
-	showSelectStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowSelectsAndShows"];
-	showHelpStatementsAreDisabled = ![[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleShowHelps"];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:@"ConsoleShowTimestamps"]];
+	showSelectStatementsAreDisabled = ![prefs boolForKey:@"ConsoleShowSelectsAndShows"];
+	showHelpStatementsAreDisabled = ![prefs boolForKey:@"ConsoleShowHelps"];
+	
 	[self _updateFilterState];
+	
+	[loggingDisabledTextField setStringValue:([prefs boolForKey:@"ConsoleEnableLogging"]) ? @"" : @"Query logging is currently disabled"];
 }
 
 /**
@@ -142,7 +148,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		while (i != NSNotFound) 
 		{
 			if (i < [messagesVisibleSet count]) {
-				SPConsoleMessage *message = [messagesVisibleSet objectAtIndex:i];
+				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
 
 				NSString *consoleMessage = [message message];
 
@@ -335,6 +341,16 @@ static SPQueryConsole *sharedQueryConsole = nil;
 }
 
 /**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
+		[loggingDisabledTextField setStringValue:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? @"" : @"Query logging is currently disabled"];
+	}
+}
+
+/**
  * Menu item validation for console table view contextual menu.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
@@ -348,6 +364,12 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	}
 
 	return [[self window] validateMenuItem:menuItem];
+}
+
+- (void)updateEntries
+{
+	[consoleTableView reloadData];
+	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 }
 
 /**
@@ -479,9 +501,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		[clearConsoleButton setEnabled:YES];
 	}
 
-	// Reload the table and scroll to the new message
-	[consoleTableView reloadData];
-	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	// Reload the table and scroll to the new message if it's visible (for speed)
+	if ( [[self window] isVisible] ) {
+		[consoleTableView reloadData];
+		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	}
 }
 
 /**

@@ -31,6 +31,16 @@
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
+
+static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAttributedString* self, NSString* aStr, id aValue, NSRange aRange) {
+	typedef void (*SPMutableAttributedStringAddAttributeValueRangeMethodPtr)(NSMutableAttributedString*, SEL, NSString*, id, NSRange);
+	static SPMutableAttributedStringAddAttributeValueRangeMethodPtr SPMutableAttributedStringAddAttributeValueRange;
+	if (!SPMutableAttributedStringAddAttributeValueRange) SPMutableAttributedStringAddAttributeValueRange = (SPMutableAttributedStringAddAttributeValueRangeMethodPtr)[self methodForSelector:@selector(addAttribute:value:range:)];
+	SPMutableAttributedStringAddAttributeValueRange(self, @selector(addAttribute:value:range:), aStr, aValue, aRange);
+	return;
+}
+
+
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
 	BOOL autopairEnabled;
@@ -76,13 +86,12 @@
 - (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
-- (void) insertFileContentOfFile:(NSString *)aPath;
-- (unsigned int) characterIndexOfPoint:(NSPoint)aPoint;
-- (void) makeTextSizeLarger;
-- (void) makeTextSizeSmaller;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(int)majorVersion;
 - (void) doCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
 - (void) selectCurrentQuery;
+
+- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (void)insertFileContentOfFile:(NSString *)aPath;
 
 @end

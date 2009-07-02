@@ -25,6 +25,19 @@
 
 #import <Cocoa/Cocoa.h>
 
+/*
+ * NSStringUTF8String(@"a String") function can be used to speed up
+ * the convertion from a NSString to NSData or const char* resp.
+ * NSData *d = [aStr UTF8String];  :== NSData *d = NSStringUTF8String(aStr);
+ */
+static inline const char* NSStringUTF8String(NSString* self) {
+	typedef const char* (*SPUTF8StringMethodPtr)(NSString*, SEL);
+	static SPUTF8StringMethodPtr SPNSStringGetUTF8String;
+	if (!SPNSStringGetUTF8String) SPNSStringGetUTF8String = (SPUTF8StringMethodPtr)[NSString instanceMethodForSelector:@selector(UTF8String)];
+	const char* to_return = SPNSStringGetUTF8String(self, @selector(UTF8String));
+	return to_return;
+}
+
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(int)byteSize;

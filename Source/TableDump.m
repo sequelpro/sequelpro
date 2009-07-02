@@ -53,7 +53,7 @@
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES], [[queryResult fetchRowAsArray] objectAtIndex:0], nil]];
+						   [NSNumber numberWithBool:YES], NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), nil]];
 	}
 	
 	[exportDumpTableView reloadData];
@@ -451,7 +451,7 @@
 		
 		//import dump file
 		NSArray *queries;
-		int i;
+		int i=0;
 		
 		//open progress sheet
 		[NSApp beginSheet:singleProgressSheet
@@ -481,14 +481,13 @@
 		if (importSQLAsUTF8)
 			for ( i = 0 ; i < queryCount ; i++ ) {
 				[singleProgressBar setDoubleValue:(i*100/queryCount)];
-				// [singleProgressBar displayIfNeeded];
 			
 				// Skip blank or whitespace-only queries to avoid errors
-				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				NSString *q = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewline];
 				if (![q length]) continue;
-
+			
 				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding];
-
+			
 				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
 				}
@@ -496,10 +495,9 @@
 		else
 			for ( i = 0 ; i < queryCount ; i++ ) {
 				[singleProgressBar setDoubleValue:(i*100/queryCount)];
-				// [singleProgressBar displayIfNeeded];
 		
 				// Skip blank or whitespace-only queries to avoid errors
-				NSString *q = [[queries objectAtIndex:i] stringByTrimmingCharactersInSet:whitespaceAndNewline];
+				NSString *q = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewline];
 				if (![q length]) continue;
 					
 				[mySQLConnection queryString:q];
@@ -591,7 +589,7 @@
 		theResult = (MCPResult *) [mySQLConnection listTables];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-			[fieldMappingPopup addItemWithTitle:[[theResult fetchRowAsArray] objectAtIndex:0]];
+			[fieldMappingPopup addItemWithTitle:NSArrayObjectAtIndex([theResult fetchRowAsArray], 0)];
 		}
 		
 		if ([tableDocumentInstance table] != nil && ![(NSString *)[tableDocumentInstance table] isEqualToString:@""]) {
@@ -642,6 +640,7 @@
 				NSMutableString *fNames = [NSMutableString string];
 				//NSMutableArray *fValuesIndexes = [NSMutableArray array];
 				NSMutableString *fValues = [NSMutableString string];
+				NSString *insertFormatString = nil;
 				int i,j;
 				
 				//open progress sheet
@@ -655,46 +654,51 @@
 				
 				// get fields to be imported
 				for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
-					if ([[fieldMappingArray objectAtIndex:i] intValue] > 0) {
+					if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
 						if ( [fNames length] )
 							[fNames appendString:@","];
 						
-						[fNames appendString:[[[tableSourceInstance fieldNames] objectAtIndex:i] backtickQuotedString]];
+						[fNames appendString:[NSArrayObjectAtIndex([tableSourceInstance fieldNames], i) backtickQuotedString]];
 					}
 				}
 				
 				//import array
-				for ( i = 0 ; i < [importArray count] ; i++ ) {
+				long importArrayCount = [importArray count];
+				long fieldMappingArrayCount = [fieldMappingArray count];
+				insertFormatString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%%@)", 
+											[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString], fNames];
+				int fieldMappingIntValue;
+				Class nullClass = [NSNull class];
+
+				for ( i = 0 ; i < importArrayCount ; i++ ) {
 					//show progress bar
-					[singleProgressBar setDoubleValue:((i+1)*100/[importArray count])];
-					[singleProgressBar displayIfNeeded];
-					
+					[singleProgressBar setDoubleValue:((i+1)*100/importArrayCount)];
+
 					if ( !([importFieldNamesSwitch state] && (i == 0)) ) {
 						//put values in string
 						[fValues setString:@""];
-						
-						for ( j = 0 ; j < [fieldMappingArray count] ; j++ ) {
-							
-							if ([[fieldMappingArray objectAtIndex:j] intValue] > 0) {
+
+						for ( j = 0 ; j < fieldMappingArrayCount ; j++ ) {
+							fieldMappingIntValue = [NSArrayObjectAtIndex(fieldMappingArray,j) intValue];
+							if ( fieldMappingIntValue > 0 ) {
+								
 								if ( [fValues length] )
 									[fValues appendString:@","];
-								
-								if ([[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)] isMemberOfClass:[NSNull class]] ) {
-									[fValues appendString:@"NULL"];
-								} else {
-									[fValues appendString:[NSString stringWithFormat:@"'%@'",[mySQLConnection prepareString:[[importArray objectAtIndex:i] objectAtIndex:([[fieldMappingArray objectAtIndex:j] intValue] - 1)]]]];
-								}
+
+								id c = NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, i), (fieldMappingIntValue - 1));
+
+								[fValues appendString: ([c isMemberOfClass:nullClass]) ? 
+									@"NULL" : [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:c]]];
 							}
 						}
 						
 						//perform query
-						[mySQLConnection queryString:[NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
-													  [[fieldMappingPopup titleOfSelectedItem] backtickQuotedString],
-													  fNames,
-													  fValues]];
+						[mySQLConnection queryString:[NSString stringWithFormat:insertFormatString, fValues]];
 						
 						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-							[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"), (i+1),[mySQLConnection getLastErrorMessage]]];				
+							[errors appendString:[NSString stringWithFormat:
+									NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"),
+									(i+1),[mySQLConnection getLastErrorMessage]]];
 						}
 					}
 				}
@@ -759,8 +763,8 @@
     if (!fieldMappingArray) {
         fieldMappingArray = [NSMutableArray array];
 		
-		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {			
-			if (i < [[importArray objectAtIndex:currentRow] count] && ![[[importArray objectAtIndex:currentRow] objectAtIndex:i] isKindOfClass:[NSNull class]]) {
+		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
+			if (i < [NSArrayObjectAtIndex(importArray, currentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, currentRow), i) isKindOfClass:[NSNull class]]) {
 				value = i + 1;
 			} else {
 				value = 0;
@@ -785,7 +789,7 @@
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"NullValue"]]];
 		} else {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [fieldMappingButtonOptions objectAtIndex:i]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 		}
 	}
 }
@@ -829,12 +833,14 @@
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
+	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
 	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
 	NSMutableString *sqlString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSDictionary *tableDetails;
 	NSMutableArray *tableColumnNumericStatus;
+	NSEnumerator *viewSyntaxEnumerator;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	id createTableSyntax = nil;
 	BOOL previousConnectionEncodingViaLatin1;
@@ -855,8 +861,8 @@
 	
 	// Copy over the selected table names into a table in preparation for iteration
 	for ( i = 0 ; i < [tables count] ; i++ ) {
-		if ( [[[tables objectAtIndex:i] objectAtIndex:0] boolValue] ) {
-			[selectedTables addObject:[NSString stringWithString:[[tables objectAtIndex:i] objectAtIndex:1]]];
+		if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
+			[selectedTables addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 1)]];
 		}
 	}
 	
@@ -899,7 +905,7 @@
 		lastProgressValue = 0;
 		
 		// Update the progress text and reset the progress bar to indeterminate status while fetching data
-		tableName = [selectedTables objectAtIndex:i];
+		tableName = NSArrayObjectAtIndex(selectedTables, i);
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [selectedTables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
@@ -916,7 +922,8 @@
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {
-				createTableSyntax = [[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier];
+				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
+				createTableSyntax = [self createViewPlaceholderSyntaxForView:tableName];
 				tableType = SP_TABLETYPE_VIEW;
 			} else {
 				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
@@ -958,7 +965,7 @@
 			colCount = [[tableDetails objectForKey:@"columns"] count];
 			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
 			for ( j = 0; j < colCount ; j++ ) {
-				tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
+				tableColumnTypeGrouping = [NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j) objectForKey:@"typegrouping"];
 				if ([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"]
 					|| [tableColumnTypeGrouping isEqualToString:@"float"]) {
 					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
@@ -1084,6 +1091,15 @@
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
+	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
+	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
+	while (tableName = [viewSyntaxEnumerator nextObject]) {
+		[metaString setString:@"\n\n"];
+		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
+		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
+		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	}
+
 	// Restore unique checks, foreign key checks, and other settings saved at the start
 	[metaString setString:@"\n\n\n"];
 	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
@@ -1172,41 +1188,64 @@
 	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
 	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
 	
+	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
 	// tables here
 	for ( int i = 0 ; i < [tables count] ; i++ ) {
 
 		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
-		
+		NSDictionary *tinfo = [tableDataInstance informationForTable:tableName];
+
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [tables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
 		
+		NSString *hdrColor = @"#DDDDDD";
+		if( [[tinfo objectForKey:@"type"] isEqualToString:@"View"] ) {
+			hdrColor = @"#DDDDFF";
+		}
 		
 		[metaString setString:[NSString stringWithFormat:@"\tsubgraph \"table_%@\" {\n", tableName]];
 		[metaString appendString:@"\t\tnode = [ shape = \"plaintext\" ];\n"];
 		[metaString appendString:[NSString stringWithFormat:@"\t\t\"%@\" [ label=<\n", tableName]];
 		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
-		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"#DDDDDD\">%@</TD></TR>\n", tableName]];
+		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"%@\">%@</TD></TR>\n", hdrColor, tableName]];
 		
 		// grab column info
-		MCPResult *theResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [tableName backtickQuotedString]]] retain];		
-		
-		if ([theResult numOfRows]) 
-			[theResult dataSeek:0];
-		for ( int j = 0 ; j < [theResult numOfRows] ; j++ ) {
-			NSMutableDictionary *tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
-			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Field"], [tempRow objectForKey:@"Type"]]];
+		NSArray *cinfo = [tinfo objectForKey:@"columns"];
+		for( int j = 0; j < [cinfo count]; j++ ) {
+			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"type"]]];
 		}
-		
-		[theResult release];
 		
 		[metaString appendString:@"\t\t\t</TABLE>>\n"];
 		[metaString appendString:@"\t\t];\n"];
 		[metaString appendString:@"\t}\n"];
 		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+		
+		// see about relations
+		cinfo = [tinfo objectForKey:@"constraints"];
+		for( int j = 0; j < [cinfo count]; j++ ) {
+			// get the column refs. these can be comma separated.
+			NSString *ccol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"columns"];
+			NSString *rcol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_columns"];
+			NSString *extra = @"";
+			NSArray *tc = [ccol componentsSeparatedByString:@","];
+			if( [tc count] > 1 ) {
+				extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
+				ccol = NSArrayObjectAtIndex(tc, 0);
+				rcol = NSArrayObjectAtIndex([ccol componentsSeparatedByString:@","], 0);
+			}
+			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@",
+							   tableName,
+							   ccol,
+							   [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_table"],
+							   rcol,
+							   extra
+							   ]];
+		}
+		
 	}
 
 	[singleProgressText setStringValue:NSLocalizedString(@"Fetching relations...", @"text showing that app is fetching data")];
@@ -1218,17 +1257,11 @@
 	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
 	
 	// grab the relations
-	MCPResult *theResult = [[mySQLConnection queryString:
-							   [NSString stringWithFormat:@"SELECT CONCAT( table_name, ':' , column_name, ' -> ', referenced_table_name, ':', referenced_column_name ) AS list_of_fks FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = ('%@') AND REFERENCED_TABLE_NAME is not null ORDER BY TABLE_NAME, COLUMN_NAME", 
-								[tableDocumentInstance database]]] retain];		
-
-	if ([theResult numOfRows]) 
-		[theResult dataSeek:0];
-	for ( int i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [[theResult fetchRowAsDictionary] objectForKey:@"list_of_fks"]]];
+	for( int i = 0; i < [fkInfo count]; i++ ) {
+		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [fkInfo objectAtIndex:i]]];
 	}
 	
-	[theResult release];
+	[fkInfo release];
 	
 	// done
 	[metaString appendString:@"}\n"];
@@ -1311,7 +1344,7 @@
 		
 		// Set the progress text
 		[singleProgressText setStringValue:NSLocalizedString(@"Exporting...", @"text showing that app is exporting to text file")];
-		[singleProgressText displayIfNeeded];
+		// [singleProgressText displayIfNeeded];
 		
 		
 		// Open progress sheet
@@ -1355,7 +1388,7 @@
 				[csvRow setArray:[queryResult fetchRowAsArray]];
 			}
 		} else {
-			[csvRow setArray:[array objectAtIndex:i]];		
+			[csvRow setArray:NSArrayObjectAtIndex(array, i)];
 		}
 		
 		[csvString setString:@""];
@@ -1369,14 +1402,14 @@
 			}
 			
 			// Retrieve the contents of this cell
-			if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
-				dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:tableEncoding];
+			if ([NSArrayObjectAtIndex(csvRow, j) isKindOfClass:[NSData class]]) {
+				dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:tableEncoding];
 				if (dataConversionString == nil)
-					dataConversionString = [[NSString alloc] initWithData:[csvRow objectAtIndex:j] encoding:NSASCIIStringEncoding];
+					dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:NSASCIIStringEncoding];
 				[csvCell setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
 			} else {
-				[csvCell setString:[[csvRow objectAtIndex:j] description]];
+				[csvCell setString:[NSArrayObjectAtIndex(csvRow, j) description]];
 			}
 			
 			// For NULL values supplied via an array add the unenclosed null string as set in preferences
@@ -1391,12 +1424,12 @@
 			} else {
 				
 				// Test whether this cell contains a number
-				if ([[csvRow objectAtIndex:j] isKindOfClass:[NSData class]]) {
+				if ([NSArrayObjectAtIndex(csvRow, j) isKindOfClass:[NSData class]]) {
 					csvCellIsNumeric = FALSE;
 
 				// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
 				} else if (tableColumnNumericStatus != nil) {
-					csvCellIsNumeric = [[tableColumnNumericStatus objectAtIndex:j] boolValue];
+					csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, j) boolValue];
 
 				// Or fall back to testing numeric content via an NSScanner.
 				} else {
@@ -1959,6 +1992,71 @@
 	return [NSString stringWithString:mutableString];
 }
 
+/*
+ * Retrieve information for a view and use that to construct a CREATE TABLE
+ * string for an equivalent basic table.  Allows the construction of
+ * placeholder tables to resolve view interdependencies in dumps.
+ */
+- (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName
+{
+	NSDictionary *viewInformation;
+	NSMutableString *placeholderSyntax, *fieldString;
+	NSArray *viewColumns;
+	NSDictionary *column;
+	int i;
+
+	// Get structured information for the view via the SPTableData parsers
+	viewInformation = [tableDataInstance informationForView:viewName];
+	if (!viewInformation) return nil;
+	viewColumns = [viewInformation objectForKey:@"columns"];
+	
+	// Set up the start of the placeholder string and initialise an empty field string
+	placeholderSyntax = [[NSMutableString alloc] initWithFormat:@"CREATE TABLE %@ (\n", [viewName backtickQuotedString]];
+	fieldString = [[NSMutableString alloc] init];
+
+	// Loop through the columns, creating an appropriate column definition for each and appending it to the syntax string
+	for (i = 0; i < [viewColumns count]; i++) {
+		column = [viewColumns objectAtIndex:i];
+		[fieldString setString:[[column objectForKey:@"name"] backtickQuotedString]];
+
+		// Add the type and length information as appropriate
+		if ([column objectForKey:@"length"]) {
+			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], [column objectForKey:@"length"]];
+		} else {
+			[fieldString appendFormat:@" %@", [column objectForKey:@"type"]];
+		}
+	
+		// Field specification details
+		if ([[column objectForKey:@"unsigned"] intValue] == 1) [fieldString appendString:@" UNSIGNED"];
+		if ([[column objectForKey:@"zerofill"] intValue] == 1) [fieldString appendString:@" ZEROFILL"];
+		if ([[column objectForKey:@"binary"] intValue] == 1) [fieldString appendString:@" BINARY"];
+		if ([[column objectForKey:@"null"] intValue] == 0) [fieldString appendString:@" NOT NULL"];
+
+		// Provide the field default if appropriate
+		if ([column objectForKey:@"default"]) {
+			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
+				[fieldString appendString:@" DEFAULT NULL"];
+			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
+						&& [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+			} else {
+				[fieldString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[column objectForKey:@"default"]]];
+			}
+		}
+		
+		// Extras aren't required for the temp table.
+		// Add the field string to the syntax string
+		[placeholderSyntax appendFormat:@"   %@%@\n", fieldString, (i == [viewColumns count]-1)?@"":@","];
+	}
+
+	// Append the remainder of the table string
+	[placeholderSyntax appendString:@") ENGINE=MyISAM;"];
+
+	// Clean up and return.
+	[fieldString release];
+	return [placeholderSyntax autorelease];
+}
+ 
 /*
  * Split a string by the terminated-character if this is not escaped
  * if enclosed-character is given, ignores characters inside enclosed-characters

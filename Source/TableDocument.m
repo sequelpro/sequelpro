@@ -40,11 +40,13 @@
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 #import "SPQueryConsole.h"
 #import "MainController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPPreferenceController.h"
 #import "SPPrintAccessory.h"
+#import "QLPreviewPanel.h"
 
 // Used for printing
 #import "MGTemplateEngine.h"
@@ -95,6 +97,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[prefs addObserver:tableContentInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:customQueryInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
 	
+	// Register observers for when the preference changes
+	[prefs addObserver:[SPQueryConsole sharedQueryConsole] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	
 	// Register double click for the favorites view (double click favorite to connect)
 	[connectFavoritesTableView setTarget:self];
 	[connectFavoritesTableView setDoubleAction:@selector(initiateConnection:)];
@@ -104,6 +109,18 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
+	[tableListSplitter setDividerStyle:NSSplitViewDividerStyleThin];
+
+	// Add the icon accessory view to the title bar
+	NSView *windowFrame = [[tableWindow contentView] superview];
+	NSRect av = [titleAccessoryView frame];
+	NSRect initialAccessoryViewFrame = NSMakeRect(
+											[windowFrame frame].size.width - av.size.width - 30,
+											[windowFrame frame].size.height - av.size.height,
+											av.size.width,
+											av.size.height);
+	[titleAccessoryView setFrame:initialAccessoryViewFrame];
+	[windowFrame addSubview:titleAccessoryView];
 }
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -138,6 +155,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
 	[printAccessory initWithNibName:@"printAccessory" bundle:nil];
+	[printAccessory setPrintView:printWebView];
 	[printPanel addAccessoryController:printAccessory];
 	
 	NSPageLayout *pageLayout = [NSPageLayout pageLayout];
@@ -203,7 +221,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1 ){
 		if([[tableContentInstance currentResult] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
-					[[tableContentInstance currentResult] objectsAtIndexes:
+					[[tableContentInstance currentDataResult] objectsAtIndexes:
 					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count]-1)]
 					 ]
 					];
@@ -232,7 +250,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	// Process the template and display the results.
 	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
-	NSLog(@"result %@", result);
+	//NSLog(@"result %@", result);
 
 	return result;
 }
@@ -258,6 +276,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (IBAction)connectToDB:(id)sender
 {
+	[self clearStatusIcon];
 	
 	// load the details of the currently selected favorite into the text boxes in connect sheet
 	[self chooseFavorite:self];
@@ -290,11 +309,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 
 	// Error-check required fields before starting a connection
 	if (![[hostField stringValue] length] && ![[socketField stringValue] length]) {
-		[self failConnectionWithErrorMessage:NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message")];
+		[self failConnectionWithErrorMessage:NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host or socket.", @"insufficient details informative message") withDetail:nil];
 		return;
 	}
 	if ([sshCheckbox state] == NSOnState && ![[sshHostField stringValue] length]) {
-		[self failConnectionWithErrorMessage:NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete")];
+		[self failConnectionWithErrorMessage:NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete") withDetail:nil];
 		return;
 	}
 
@@ -373,10 +392,17 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {
 	int newState = [theTunnel state];
 
-	if (newState == SPSSH_STATE_IDLE) {
-		[self failConnectionWithErrorMessage:[theTunnel lastError]];
-	} else if (newState == SPSSH_STATE_CONNECTED) {
+	if (newState == SSH_STATE_IDLE) {
+		[self setTitlebarStatus:@"SSH Disconnected"];
+		//[self setStatusIconToImageWithName:@"ssh-disconnected"];
+		[self failConnectionWithErrorMessage:[theTunnel lastError] withDetail:[sshTunnel debugMessages]];
+	} else if (newState == SSH_STATE_CONNECTED) {
+		[self setTitlebarStatus:@"SSH Connected"];
+		//[self setStatusIconToImageWithName:@"ssh-connected"];
 		[self initiateMySQLConnection];
+	} else {
+		[self setTitlebarStatus:@"SSH Connecting…"];
+		//[self setStatusIconToImageWithName:@"ssh-connecting"];
 	}
 }
 
@@ -409,7 +435,6 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 														withLogin:[userField stringValue]
 														usingPort:[sshTunnel localPort]];
 			[mySQLConnection setSSHTunnel:sshTunnel];
-			[sshTunnel release], sshTunnel = nil;
 		} else {
 			mySQLConnection = [[MCPConnection alloc] initToHost:[hostField stringValue]
 														withLogin:[userField stringValue]
@@ -424,19 +449,51 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[mySQLConnection setPassword:[passwordField stringValue]];
 	}
 
+	[mySQLConnection setDelegate:self];
+	
 	// Connect
 	[mySQLConnection connect];
 
 	if (![mySQLConnection isConnected]) {
-		[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]]];
-		return;
+		if (sshTunnel) {
+
+			// If an SSH tunnel is running, temporarily block to allow the tunnel to register changes in state
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+
+			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
+			if ([sshTunnel state] == SSH_STATE_FORWARDING_FAILED) {
+				if ([sshTunnel localPortFallback]) {
+					[mySQLConnection setPort:[sshTunnel localPortFallback]];
+					[mySQLConnection connect];
+					if (![mySQLConnection isConnected]) {
+						[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+					}
+				}
+			}
+		}
+		
+		if (![mySQLConnection isConnected]) {
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [hostField stringValue], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]];
+			if (sshTunnel && [sshTunnel state] == SSH_STATE_FORWARDING_FAILED) {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@", @"message of panel when SSH port forwarding failed"), [hostField stringValue], [mySQLConnection getLastErrorMessage]];
+				[self failConnectionWithErrorMessage:errorMessage withDetail:[sshTunnel debugMessages]];
+			} else {
+				[self failConnectionWithErrorMessage:errorMessage withDetail:nil];
+			}
+			
+			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			[mySQLConnection release], mySQLConnection = nil;
+			return;
+		}
 	}
 	if (![[databaseField stringValue] isEqualToString:@""]) {
 		if ([mySQLConnection selectDB:[databaseField stringValue]]) {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			selectedDatabase = [[databaseField stringValue] retain];
 		} else {
-			[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]]];
+			[self failConnectionWithErrorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [databaseField stringValue], [mySQLConnection getLastErrorMessage]] withDetail:nil];
+			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			[mySQLConnection release], mySQLConnection = nil;
 			return;
 		}
 	}
@@ -448,10 +505,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	[connectProgressStatusText setHidden:YES];
 	
 	// Set up the connection.
-	[mySQLConnection setDelegate:self];
 	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:@"ConnectionTimeout"] intValue]];
 	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:@"UseKeepAlive"] doubleValue]];
 	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:@"KeepAliveInterval"] doubleValue]];
+	
+	// Release the tunnel if set - will now be retained by the connection
+	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
 
 	// Set encoding
 	NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
@@ -504,7 +563,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  * message.  The button on the error message will open the connection
  * sheet again with the failed details.
  */
-- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage
+- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage withDetail:(NSString *)errorDetail
 {
 	// Clean up the interface
 	[connectProgressBar stopAnimation:self];
@@ -518,9 +577,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	// Release as appropriate
 	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+	
+	if (errorDetail) [errorDetailText setString:errorDetail];
 
 	// Display the connection error message
-	NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	NSBeginAlertSheet(NSLocalizedString(@"Connection failed!", @"connection failed title"), NSLocalizedString(@"OK", @"OK button"), errorDetail?NSLocalizedString(@"Show detail", @"Show detail button"):nil, nil, tableWindow, self, nil, @selector(sheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 }
 
 - (IBAction)cancelConnectSheet:(id)sender
@@ -633,6 +694,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)connectSheetAddToFavorites:(id)sender
 {
 	[self addToFavoritesName:[nameField stringValue] host:[hostField stringValue] socket:[socketField stringValue] user:[userField stringValue] password:[passwordField stringValue] port:[portField stringValue] database:[databaseField stringValue] useSSH:([sshCheckbox state] == NSOnState) sshHost:[sshHostField stringValue] sshUser:[sshUserField stringValue] sshPassword:[sshPasswordField stringValue] sshPort:[sshPortField stringValue]];
+	[connectFavoritesTableView scrollRowToVisible:[connectFavoritesTableView selectedRow]];
 }
 
 /**
@@ -702,6 +764,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 {	
 	if ([contextInfo isEqualToString:@"connect"]) {
 		[sheet orderOut:self];
+		if (returnCode == NSAlertAlternateReturn) [errorDetailWindow makeKeyAndOrderFront:self];
 		
 		// Restore the passwords from keychain for editing if appropriate
 		if (connectionKeychainItemName) {
@@ -722,7 +785,12 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			// error while deleting db
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), [mySQLConnection getLastErrorMessage]]);
+			[self performSelector:@selector(showErrorSheetWith:) 
+				withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+								[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), 
+									[mySQLConnection getLastErrorMessage]],
+							nil] 
+				afterDelay:0.3];
 			return;
 		}
 		
@@ -733,6 +801,18 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		[tableDumpInstance setConnection:mySQLConnection];
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/", mySQLVersion, [self name]]];
 	}
+}
+
+/*
+ * Show Error sheet (can be called from inside of a endSheet selector)
+ * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
+ */
+-(void)showErrorSheetWith:(id)error
+{
+	// error := first object is the title , second the message, only one button OK
+	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+			nil, nil, tableWindow, self, nil, nil, nil,
+			[error objectAtIndex:1]);
 }
 
 - (IBAction)connectSheetShowHelp:(id)sender
@@ -769,7 +849,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	
 	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
 	{
-		[chooseDatabaseButton addItemWithTitle:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+		[chooseDatabaseButton addItemWithTitle:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0)];
 	}
 	
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
@@ -926,7 +1006,7 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 		int r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		for ( i = 0 ; i < r ; i++ ) {
-			dbName = [[theResult fetchRowAsArray] objectAtIndex:0];
+			dbName = NSArrayObjectAtIndex([theResult fetchRowAsArray], 0);
 		}
 		if(![dbName isKindOfClass:[NSNull class]]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
@@ -960,7 +1040,13 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 - (void)toggleConsole:(id)sender
 {
 	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
-	
+
+	// If the Console window is not visible data are not reloaded (for speed).
+	// Due to that update list if user opens the Console window.
+	if(!isConsoleVisible) {
+		[[SPQueryConsole sharedQueryConsole] updateEntries];
+	}
+
 	// Show or hide the console
 	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:(!isConsoleVisible)];
 	
@@ -1214,11 +1300,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
 
-	[syntaxViewContent setEditable:YES];
 	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
 		[syntaxViewContent setString:[tableSyntax createViewSyntaxPrettifier]];
 	else
 		[syntaxViewContent setString:tableSyntax];
+
 	[syntaxViewContent setEditable:NO];
 	
 	[createTableSyntaxWindow setTitle:createWindowTitle];
@@ -1974,6 +2060,39 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
 }
 
 #pragma mark -
+#pragma mark Titlebar Methods
+
+/**
+ * Set the connection status icon in the titlebar
+ */
+- (void)setStatusIconToImageWithName:(NSString *)imageName
+{
+	NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:@"png"];
+	if (!imagePath) return;
+
+	NSImage *image = [[NSImage alloc] initByReferencingFile:imagePath];
+	[titleImageView setImage:image];
+}
+
+- (void)setTitlebarStatus:(NSString *)status
+{
+	[self clearStatusIcon];
+	[titleStringView setStringValue:status];
+}
+
+/**
+ * Clear the connection status icon in the titlebar
+ */
+- (void)clearStatusIcon
+{
+	[titleImageView setImage:nil];
+}
+
+
+
+
+
+#pragma mark -
 #pragma mark Toolbar Methods
 
 /**
@@ -2287,7 +2406,9 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (void)willQueryString:(NSString *)query
 {		
-	[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"]) {
+		[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+	}
 }
 
 /**
@@ -2310,11 +2431,11 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  * Returns the password in the associated Keychain item.
  */
 - (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account
-{
+{	
 	KeyChain *keychain = [[KeyChain alloc] init];
 	
 	NSString *password = [keychain getPasswordForName:name account:account];
-	
+		
 	[keychain release];
 	
 	return password;
@@ -2360,28 +2481,71 @@ NSString *TableDocumentFavoritesControllerSelectionIndexDidChange = @"TableDocum
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
-	return NO;
+
+	return subview == [[tableInfoTable superview] superview];
 }
 
 /**
  * defines max position of splitView
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-{
-	return proposedMax - 600;
-}
+//- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+//{
+//	if (sender == contentViewSplitter) {
+//		return 300;
+//	} else {
+//		// 
+//		return proposedMax;//([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
+//	}
+//}
 
 /**
  * defines min position of splitView
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-{
-	return proposedMin + 140;
-}
+//- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+//{
+//	if (sender == tableListSplitter) {
+//		return [sender frame].size.height - [sender dividerThickness] - 145;
+//		//return [sender frame].size.height - [sender dividerThickness] - ([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
+//	} else {
+//		return 160;
+//	}
+//}
+
+//-(void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize
+//{
+//	[sender adjustSubviews];
+//	
+//	if (sender == tableListSplitter && 
+//		![tableListSplitter isSubviewCollapsed:[[sender subviews] objectAtIndex:1]]) {
+//		
+//		CGFloat dividerThickness = [sender dividerThickness];
+//		NSRect topRect = [[[sender subviews] objectAtIndex:0] frame];
+//		NSRect bottomRect = [[[sender subviews] objectAtIndex:1] frame];
+//		NSRect newFrame = [sender frame];
+//		
+//		topRect.size.height = newFrame.size.height - 145 - dividerThickness;
+//		topRect.size.width = newFrame.size.width;
+//		topRect.origin = NSMakePoint(0, 0);
+//		
+//		bottomRect.size.height = newFrame.size.height - topRect.size.height - dividerThickness;
+//		bottomRect.size.width = newFrame.size.width;
+//		bottomRect.origin.y = topRect.size.height + dividerThickness;
+//		
+//		[[[sender subviews] objectAtIndex:0] setFrame:topRect];
+//		[[[sender subviews] objectAtIndex:1] setFrame:bottomRect];
+//	}
+//}
+
+
+//- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex
+//{
+//	return splitView == tableListSplitter;
+//}
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
-	[self updateChooseDatabaseToolbarItemWidth];
+	if ([notification object] == contentViewSplitter)
+		[self updateChooseDatabaseToolbarItemWidth];
 }
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex

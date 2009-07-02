@@ -35,6 +35,10 @@
 #import "SPQueryConsole.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPTextViewAdditions.h"
+#import "SPDataAdditions.h"
+#import "QLPreviewPanel.h"
+
 
 @implementation TableContent
 
@@ -105,11 +109,12 @@
 	theColumns = [tableContentView tableColumns];
 	
 	while ([theColumns count]) {
-		[tableContentView removeTableColumn:[theColumns objectAtIndex:0]];
+		[tableContentView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 	}
 
-	// If no table has been supplied, reset the view to a blank table and disabled elements
-	if ( [aTable isEqualToString:@""] || !aTable )
+	// If no table has been supplied, reset the view to a blank table and disabled elements.
+	// [tableDataInstance tableEncoding] == nil indicates that an error occured while retrieving table data
+	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isKindOfClass:[NSNull class]] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
 	{
 		// Empty the stored data arrays
 		[fullResult removeAllObjects];
@@ -160,9 +165,11 @@
 	numRows = [self getNumberOfRows];
 	areShowingAllRows = YES;
 	
+	NSString *nullValue = [prefs objectForKey:@"NullValue"];
+	
 	// Add the new columns to the table
 	for ( i = 0 ; i < [theColumns count] ; i++ ) {
-		columnDefinition = [theColumns objectAtIndex:i];
+		columnDefinition = NSArrayObjectAtIndex(theColumns, i);
 
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"name"]];
@@ -178,7 +185,9 @@
 			[dataCell setDrawsBackground:NO];
 			[dataCell setCompletes:YES];
 			[dataCell setControlSize:NSSmallControlSize];
-			[dataCell addItemWithObjectValue:@"NULL"];
+			// add prefs NULL value representation if NULL value is allowed for that field
+			if([[columnDefinition objectForKey:@"null"] boolValue])
+				[dataCell addItemWithObjectValue:nullValue];
 			[dataCell addItemsWithObjectValues:[columnDefinition objectForKey:@"values"]];
 		} else {
 			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
@@ -713,7 +722,7 @@
 
 	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
 	for ( i = 0 ; i < [columns count] ; i++ ) {
-		column = [columns objectAtIndex:i];
+		column = NSArrayObjectAtIndex(columns, i);
 		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
 			[newRow setObject:[prefs stringForKey:@"NullValue"] forKey:[column objectForKey:@"name"]];
 		} else {
@@ -853,7 +862,12 @@
 	
 	if ( [panel runModal] == NSOKButton ) {
 		NSString *fileName = [panel filename];
-		
+		NSString *contents = nil;
+
+		editSheetWillBeInitialized = YES;
+
+		[editSheetProgressBar startAnimation:self];
+
 		// free old data
 		if ( editData != nil ) {
 			[editData release];
@@ -861,25 +875,87 @@
 		
 		// load new data/images
 		editData = [[NSData alloc] initWithContentsOfFile:fileName];
+
 		NSImage *image = [[NSImage alloc] initWithData:editData];
-		NSString *contents = [NSString stringWithContentsOfFile:fileName];
-		
+		contents = [[NSString alloc] initWithData:editData encoding:[mySQLConnection encoding]];
+		if (contents == nil)
+			contents = [[NSString alloc] initWithData:editData encoding:NSASCIIStringEncoding];
+
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
-		[editTextView setString:contents];
-		[hexTextView setString:[self dataToHex:editData]];
 
-		// If the image cell now contains a valid image, select the image tab
+		
+		if(contents)
+			[editTextView setString:contents];
+		else
+			[editTextView setString:@""];
+		
+		// Load hex data only if user has already displayed them
+		if(![[hexTextView string] isEqualToString:@""])
+			[hexTextView setString:[editData dataToFormattedHexString]];
+
+		// If the image cell now contains a valid image, select the image view
 		if (image) {
-			[editSheetTabView selectTabViewItemAtIndex:1];
+			[editSheetSegmentControl setSelectedSegment:1];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
 
-		// Otherwise deselect the image tab if it's selected but now not showing anything
+		// Otherwise deselect the image view
 		} else {
-			if ([editSheetTabView indexOfTabViewItem:[editSheetTabView selectedTabViewItem]] == 1)
-				[editSheetTabView selectTabViewItemAtIndex:0];
+			[editSheetSegmentControl setSelectedSegment:0];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
 		}
 		
 		[image release];
+		if(contents)
+			[contents release];
+		[editSheetProgressBar stopAnimation:self];
+		editSheetWillBeInitialized = NO;
+	}
+}
+
+/*
+ * Segement controller for text/image/hex buttons in editSheet
+ */
+- (IBAction)segmentControllerChanged:(id)sender
+{
+	switch([sender selectedSegment]){
+		case 0: // text
+		[editTextView setHidden:NO];
+		[editTextScrollView setHidden:NO];
+		[editImage setHidden:YES];
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editSheet makeFirstResponder:editTextView];
+		break;
+		case 1: // image
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+		[editImage setHidden:NO];
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editSheet makeFirstResponder:editImage];
+		break;
+		case 2: // hex - load on demand
+		if([editData length] && [[hexTextView string] isEqualToString:@""]) {
+			[editSheetProgressBar startAnimation:self];
+			[hexTextView setString:[editData dataToFormattedHexString]];
+			[editSheetProgressBar stopAnimation:self];
+		}
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+		[editImage setHidden:YES];
+		[hexTextView setHidden:NO];
+		[hexTextScrollView setHidden:NO];
+		[editSheet makeFirstResponder:hexTextView];
+		break;
 	}
 }
 
@@ -891,9 +967,13 @@
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	if ( [panel runModal] == NSOKButton ) {
+
+		[editSheetProgressBar startAnimation:self];
+
 		NSString *fileName = [panel filename];
 		
 		// Write binary field types directly to the file
+		//// || [editSheetBinaryButton state] == NSOnState
 		if ( [editData isKindOfClass:[NSData class]] ) {
 			[editData writeToFile:fileName atomically:YES];
 		
@@ -904,15 +984,169 @@
 									   encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 										  error:NULL];
 		}
+
+		[editSheetProgressBar stopAnimation:self];
+
 	}
 }
 
+#pragma mark -
+#pragma mark QuickLook
+
+- (IBAction)quickLookFormatButton:(id)sender
+{
+	switch([sender tag]) {
+		case 0: [self invokeQuickLookOfType:@"pict" treatAsText:NO];  break;
+		case 1: [self invokeQuickLookOfType:@"m4a"  treatAsText:NO];  break;
+		case 2: [self invokeQuickLookOfType:@"mp3"  treatAsText:NO];  break;
+		case 3: [self invokeQuickLookOfType:@"wav"  treatAsText:NO];  break;
+		case 4: [self invokeQuickLookOfType:@"mov"  treatAsText:NO];  break;
+		case 5: [self invokeQuickLookOfType:@"pdf"  treatAsText:NO];  break;
+		case 6: [self invokeQuickLookOfType:@"html" treatAsText:YES]; break;
+		case 7: [self invokeQuickLookOfType:@"doc"  treatAsText:NO];  break;
+		case 8: [self invokeQuickLookOfType:@"rtf"  treatAsText:YES]; break;
+	}
+}
+
+/*
+ * Opens QuickLook for current data if QuickLook is available
+ */
+- (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
+{
+
+	// Load private framework
+	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
+
+		[editSheetProgressBar startAnimation:self];
+
+		// Create a temporary file name to store the data as file
+		// since QuickLook only works on files.
+		NSString *tmpFileName = [NSString stringWithFormat:@"/tmp/SequelProQuickLook.%@", type];
+
+		// if data are binary
+		if ( [editData isKindOfClass:[NSData class]] || !isText) {
+			[editData writeToFile:tmpFileName atomically:YES];
+		
+		// write other field types' representations to the file via the current encoding
+		} else {
+			[[editData description] writeToFile:tmpFileName
+									 atomically:YES
+									   encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+										  error:NULL];
+		}
+
+		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
+
+		// Init QuickLook
+		[[ql delegate] setDelegate:self];
+		[ql setURLs:[NSArray arrayWithObject:
+			[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
+		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
+		// for superclass of class 'MainController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
+		[ql setShowsAddToiPhotoButton:NO];
+		[ql setShowsiChatTheaterButton:NO];
+		// Since we are inside of editSheet we have to avoid full-screen zooming
+		// otherwise QuickLook hangs
+		[ql setShowsFullscreenButton:NO];
+		[ql setEnableDragNDrop:NO];
+		// Order out QuickLook with animation effect according to self:previewPanel:frameForURL:
+		[ql makeKeyAndOrderFrontWithEffect:2];   // 1 = fade in
+
+		// quickLookCloseMarker == 1 break the modal session
+		quickLookCloseMarker = 0;
+
+		[editSheetProgressBar stopAnimation:self];
+
+		// Run QuickLook in its own modal seesion for event handling
+		NSModalSession session = [NSApp beginModalSessionForWindow:ql];
+		for (;;) {
+			// Conditions for closing QuickLook
+			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
+				|| quickLookCloseMarker == 1 
+				|| ![ql isVisible]) 
+				break;
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+										beforeDate:[NSDate distantFuture]];
+
+		}
+		[NSApp endModalSession:session];
+
+		// Remove temp file after closing the sheet to allow double-click event at the QuickLook preview.
+		// The afterDelay: time is a kind of dummy, because after double-clicking the model session loop
+		// will break (ql not visible) and returns the event handling back to the editSheet which by itself
+		// blocks the execution of removeQuickLooksTempFile: until the editSheet is closed.
+		[self performSelector:@selector(removeQuickLooksTempFile:) withObject:tmpFileName afterDelay:2];
+		
+		// [[NSFileManager defaultManager] removeItemAtPath:tmpFileName error:NULL];
+
+	}
+
+}
+
+- (void)removeQuickLooksTempFile:(NSString*)aPath
+{
+	[[NSFileManager defaultManager] removeItemAtPath:aPath error:NULL];
+}
+
+// This is the delegate method
+// It should return the frame for the item represented by the URL
+// If an empty frame is returned then the panel will fade in/out instead
+- (NSRect)previewPanel:(NSPanel*)panel frameForURL:(NSURL*)URL
+{
+
+	// Close modal session defined in invokeQuickLookOfType:
+	// if user closes the QuickLook view
+	quickLookCloseMarker = 1;
+
+	// Return the App's middle point
+	NSRect mwf = [[NSApp mainWindow] frame];
+	return NSMakeRect(
+		mwf.origin.x+mwf.size.width/2,
+		mwf.origin.y+mwf.size.height/2,
+		5, 5);
+
+}
+
+-(void)processPasteImageData
+{
+	editSheetWillBeInitialized = YES;
+
+	NSImage *image = nil;
+	
+	image = [[[NSImage alloc] initWithPasteboard:[NSPasteboard generalPasteboard]] autorelease];
+	if (image) {
+
+		if (nil != editData) [editData release];
+
+		[editImage setImage:image];
+
+		editData = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
+
+		NSString *contents = [[NSString alloc] initWithData:editData encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+		if (contents == nil)
+			contents = [[NSString alloc] initWithData:editData encoding:NSASCIIStringEncoding];
+
+		// Set the string contents and hex representation
+		if(contents)
+			[editTextView setString:contents];
+		if(![[hexTextView string] isEqualToString:@""])
+			[hexTextView setString:[editData dataToFormattedHexString]];
+
+		[contents release];
+		
+	}
+
+	editSheetWillBeInitialized = NO;
+}
 /*
  * Invoked when the imageView in the connection sheet has the contents deleted
  * or a file dragged and dropped onto it.
  */
 - (void)processUpdatedImageData:(NSData *)data
 {
+
+	editSheetWillBeInitialized = YES;
+
 	if (nil != editData) [editData release];
 
 	// If the image was not processed, set a blank string as the contents of the edit and hex views.
@@ -920,18 +1154,24 @@
 		editData = [[NSData alloc] init];
 		[editTextView setString:@""];
 		[hexTextView setString:@""];
+		editSheetWillBeInitialized = NO;
 		return;
 	}
 
 	// Process the provided image
 	editData = [[NSData alloc] initWithData:data];
 	NSString *contents = [[NSString alloc] initWithData:data encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+	if (contents == nil)
+		contents = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
 
 	// Set the string contents and hex representation
-	[editTextView setString:contents];
-	[hexTextView setString:[self dataToHex:editData]];
+	if(contents)
+		[editTextView setString:contents];
+	if(![[hexTextView string] isEqualToString:@""])
+		[hexTextView setString:[editData dataToFormattedHexString]];
 	
 	[contents release];
+	editSheetWillBeInitialized = NO;
 }
 
 - (IBAction)dropImage:(id)sender
@@ -948,11 +1188,16 @@
 	}
 }
 
-- (void)textDidChange:(NSNotification *)notification
+- (void)textViewDidChangeSelection:(NSNotification *)notification
 /*
  invoked when the user changes the string in the editSheet
  */
 {
+
+	// Do nothing if user really didn't changed text (e.g. for font size changing return)
+	if(editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))
+		return;
+
 	// clear the image and hex (since i doubt someone can "type" a gif)
 	[editImage setImage:nil];
 	[hexTextView setString:@""];
@@ -964,93 +1209,65 @@
 	
 	// set edit data to text
 	editData = [[editTextView string] retain];
+
 }
 
-- (NSString *)dataToHex:(NSData *)data
+
+//getter methods
+- (NSArray *)currentDataResult
 /*
- returns the hex representation of the given data
+ returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
  */
 {
-	unsigned i;
-	unsigned totalLength = [data length];
-	int bytesPerLine = 16;
-	NSMutableString *retVal = [NSMutableString string];
-	char *nodisplay = "\t\n\r\f";
+	NSArray *tableColumns;
+	NSEnumerator *enumerator;
+	id tableColumn;
+	NSMutableArray *currentResult = [NSMutableArray array];
+	NSMutableArray *tempRow = [NSMutableArray array];
+	int i;
 	
-	// get the length of the longest location
-	int longest = [(NSString *)[NSString stringWithFormat:@"%X", totalLength - ( totalLength % bytesPerLine )] length];
-	
-	for ( i = 0; i < totalLength; i += bytesPerLine ) {
-		int j;
-		NSMutableString *hex = [[NSMutableString alloc] initWithCapacity:(3 * bytesPerLine - 1)];
-		NSMutableString *location = [[NSMutableString alloc] initWithCapacity:(longest + 2)];
-		NSMutableString *chars = [[NSMutableString alloc] init];
-		unsigned char *buffer;
-		int buffLength = bytesPerLine;
-		
-		// add hex value of location
-		[location appendString:[NSString stringWithFormat:@"%X", i]];
-		
-		// pad it
-		while( longest > [location length] ) {
-			[location insertString:@"0" atIndex:0];
-		}
-		
-		// get the chars from the NSData obj
-		if ( i + buffLength >= totalLength ) {
-			buffLength = totalLength - i;
-		}
-		buffer = (unsigned char*) malloc( sizeof( unsigned char ) * buffLength );
-		NSRange range = { i, buffLength };
-		[data getBytes:buffer range:range];
-		
-		// build the hex string
-		for ( j = 0; j < buffLength; j++ ) {
-			unsigned char byte = *(buffer + j);
-			if ( byte < 16 ) {
-				[hex appendString:@"0"];
-			}
-			[hex appendString:[NSString stringWithFormat:@"%X", byte]];
-			[hex appendString:@" "];
-			
-			// if the char is undisplayable, replace it with "."
-			unsigned char current;
-			int count = 0;
-			while ( ( current = *(nodisplay + count++) ) > 0 ) {
-				if ( current == byte ) {
-					*(buffer + j) = '.';
-					break;
-				}
-			}
-		}
-		
-		// add padding to missing hex values.
-		for ( j = 0; j < bytesPerLine - buffLength; j++ ) {
-			[hex appendString:@"   "];
-		}
-		
-		// remove extra ghost characters
-		[chars appendString:[NSString stringWithCString:(char *)buffer]];
-		if ( [chars length] > bytesPerLine ) {
-			[chars deleteCharactersInRange:NSMakeRange( bytesPerLine, [chars length] - bytesPerLine )];
-		}
-		
-		// build line
-		[retVal appendString:location];
-		[retVal appendString:@"  "];
-		[retVal appendString:hex];
-		[retVal appendString:@" "];
-		[retVal appendString:chars];
-		[retVal appendString:@"\n"];
-		
-		// clean up
-		[hex release];
-		[chars release];
-		[location release];
-		free( buffer );
+	//load table if not already done
+	if ( ![tablesListInstance contentLoaded] ) {
+		[self loadTable:[tablesListInstance tableName]];
 	}
 	
-	return retVal;
+	tableColumns = [tableContentView tableColumns];
+	enumerator = [tableColumns objectEnumerator];
+	
+	//set field names as first line
+	while ( (tableColumn = [enumerator nextObject]) ) {
+		[tempRow addObject:[[tableColumn headerCell] stringValue]];
+	}
+	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
+	
+	//add rows
+	for ( i = 0 ; i < [self numberOfRowsInTableView:nil] ; i++) {
+		[tempRow removeAllObjects];
+		enumerator = [tableColumns objectEnumerator];
+		while ( (tableColumn = [enumerator nextObject]) ) {
+			id o = [NSArrayObjectAtIndex(fullResult, i) objectForKey:[[tableColumn headerCell] stringValue]];
+			if([o isKindOfClass:[NSNull class]])
+				[tempRow addObject:@"NULL"];
+			else if([o isKindOfClass:[NSString class]])
+				[tempRow addObject:[o description]];
+			else {
+				NSImage *image = [[NSImage alloc] initWithData:o];
+				if(image) {
+					int imageWidth = [image size].width;
+					if (imageWidth > 100) imageWidth = 100;
+					[tempRow addObject:[NSString stringWithFormat:
+						@"<IMG WIDTH='%d' SRC=\"data:image/auto;base64,%@\">", 
+						imageWidth, 
+						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0]]];
+				} else {
+					[tempRow addObject:@"&lt;BLOB&gt;"];
+				}
+				if(image) [image release];
+			}
+		}
+		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
+	}
+	return currentResult;
 }
 
 //getter methods
@@ -1216,33 +1433,39 @@
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	NSArray *columns;
-	NSMutableArray *tempResult = [NSMutableArray array];
+	unsigned long numOfRows = [theResult numOfRows];
+	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 
 	NSDictionary *tempRow;
 	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
 	NSEnumerator *enumerator;
 	id key;
 	int i, j;
-	
+	Class nullClass = [NSNull class];
+	id prefsNullValue = [prefs objectForKey:@"NullValue"];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+
 	columns = [tableDataInstance columns];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+	long columnsCount = [columns count];
+
+	if (numOfRows) [theResult dataSeek:0];
+	for ( i = 0 ; i < numOfRows ; i++ ) {
 		tempRow = [theResult fetchRowAsDictionary];
 		enumerator = [tempRow keyEnumerator];
 
 		while ( key = [enumerator nextObject] ) {
-			if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] ) {
-				[modifiedRow setObject:[prefs stringForKey:@"NullValue"] forKey:key];
+			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] ) {
+				[modifiedRow setObject:prefsNullValue forKey:key];
 			} else {
 				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
 			}
 		}
 
 		// Add values for hidden blob and text fields if appropriate
-		if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
-			for ( j = 0 ; j < [columns count] ; j++ ) {
-				if ( [tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:j] objectForKey:@"name"] ] ) {
-					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[[columns objectAtIndex:j] objectForKey:@"name"]];
+		if ( prefsLoadBlobsAsNeeded ) {
+			for ( j = 0 ; j < columnsCount ; j++ ) {
+				if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"] ] ) {
+					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"]];
 				}
 			}
 		}
@@ -1274,11 +1497,13 @@
 		return YES;
 	}
 
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
 	if (!isEditingNewRow && [oldRow isEqualToDictionary:[filteredResult objectAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return YES;
 	}
 
@@ -1290,7 +1515,7 @@
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
-		rowObject = [[filteredResult objectAtIndex:currentlyEditingRow] objectForKey:[columnNames objectAtIndex:i]];
+		rowObject = [NSArrayObjectAtIndex(filteredResult, currentlyEditingRow) objectForKey:NSArrayObjectAtIndex(columnNames, i)];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -1311,7 +1536,7 @@
 			} else {
 				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
-				} else if ([[[theColumns objectAtIndex:i] objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+				} else if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
 				} else {
 					[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
@@ -1334,7 +1559,7 @@
 				[queryString appendString:@", "];
 			}
 			[queryString appendString:[NSString stringWithFormat:@"%@=%@",
-									   [[columnNames objectAtIndex:i] backtickQuotedString], [fieldValues objectAtIndex:i]]];
+									   [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString], [fieldValues objectAtIndex:i]]];
 		}
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
 	}
@@ -1354,6 +1579,7 @@
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
 		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return YES;
 
 	// On success...
@@ -1370,9 +1596,9 @@
 
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [theColumns count] ; i++ ) {
-					if ([[[theColumns objectAtIndex:i] objectForKey:@"autoincrement"] intValue]) {
+					if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"autoincrement"] intValue]) {
 						[[filteredResult objectAtIndex:currentlyEditingRow] setObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]
-																	forKey:[columnNames objectAtIndex:i]];
+																	forKey:NSArrayObjectAtIndex(columnNames, i)];
 					}
 				}
 				[fullResult addObject:[filteredResult objectAtIndex:currentlyEditingRow]];
@@ -1407,12 +1633,16 @@
 			}
 		}
 		currentlyEditingRow = -1;
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		
 		return YES;
 
 	// Report errors which have occurred
 	} else {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write row.\nMySQL said: %@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return NO;
 	}
 }
@@ -1458,7 +1688,7 @@
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
 	NSMutableString *argument = [NSMutableString string];
-	NSString *columnType;
+	// NSString *columnType;
 	NSArray *columnNames;
 	int i,j;
 	
@@ -1506,50 +1736,47 @@
 
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			tempValue = [[filteredResult objectAtIndex:row] objectForKey:[keys objectAtIndex:i]];
+			tempValue = [NSArrayObjectAtIndex(filteredResult, row) objectForKey:NSArrayObjectAtIndex(keys, i)];
 
 		// Otherwise use the oldRow
 		} else {
-			tempValue = [oldRow objectForKey:[keys objectAtIndex:i]];
+			tempValue = [oldRow objectForKey:NSArrayObjectAtIndex(keys, i)];
 		}
 
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
-			NSString *tmpString = [[NSString alloc] initWithData:tempValue encoding:[mySQLConnection encoding]];
-			if (tmpString == nil)
-				tmpString = [[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding];
-			[value setString:[NSString stringWithString:tmpString]];
-			[tmpString release];
+			[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 		} else {
 			[value setString:[tempValue description]];
 		}
 
 		if ( [value isEqualToString:[prefs stringForKey:@"NullValue"]] ) {
-			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [[keys objectAtIndex:i] backtickQuotedString]]];
+			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
 		} else {
 
-			// Escape special characters (in WHERE statement!)
-			for ( j = 0 ; j < [value length] ; j++ ) {
-				if ( [value characterAtIndex:j] == '\\' ) {
-					[value insertString:@"\\" atIndex:j];
-					j++;
+			if (! [tempValue isKindOfClass:[NSData class]] ) {
+				// Escape special characters (in WHERE statement!)
+				for ( j = 0 ; j < [value length] ; j++ ) {
+					if ( [value characterAtIndex:j] == '\\' ) {
+						[value insertString:@"\\" atIndex:j];
+						j++;
+					}
 				}
-			}
-			[value setString:[mySQLConnection prepareString:value]];
-			for ( j = 0 ; j < [value length] ; j++ ) {
-				if ( [value characterAtIndex:j] == '%' ||
-					[value characterAtIndex:j] == '_' ) {
-					[value insertString:@"\\" atIndex:j];
-					j++;
+				[value setString:[mySQLConnection prepareString:value]];
+				for ( j = 0 ; j < [value length] ; j++ ) {
+					if ( [value characterAtIndex:j] == '%' ||
+						[value characterAtIndex:j] == '_' ) {
+						[value insertString:@"\\" atIndex:j];
+						j++;
+					}
 				}
+				[value setString:[NSString stringWithFormat:@"'%@'", value]];
 			}
-			[value setString:[NSString stringWithFormat:@"'%@'", value]];
-
-			columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
-			if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
-				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [[keys objectAtIndex:i] backtickQuotedString], value]];
-			} else {
-				[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [[keys objectAtIndex:i] backtickQuotedString], value]];
-			}
+			// columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
+			// if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
+				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
+			// } else {
+			// 	[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
+			// }
 		}
 	}
 	if ( setLimit )
@@ -1568,7 +1795,7 @@
 	NSArray *tableColumns = [tableDataInstance columns];
 
 	for ( i = 0 ; i < [tableColumns count]; i++ ) {
-		if ( [tableDataInstance columnIsBlobOrText:[[tableColumns objectAtIndex:i] objectForKey:@"name"]] ) {
+		if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(tableColumns, i) objectForKey:@"name"]] ) {
 			return YES;
 		}
 	}
@@ -1589,14 +1816,14 @@
 	
 	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
-			if (![tableDataInstance columnIsBlobOrText:[[columns objectAtIndex:i] objectForKey:@"name"]] ) {
-				[fields addObject:[columnNames objectAtIndex:i]];
+			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, i) objectForKey:@"name"]] ) {
+				[fields addObject:NSArrayObjectAtIndex(columnNames, i)];
 			}
 		}
 
 		// Always select at least one field - the first if there are no non-blob fields.
 		if ( [fields count] == 0 ) {
-			return [[columnNames objectAtIndex:0] backtickQuotedString];
+			return [NSArrayObjectAtIndex(columnNames, 0) backtickQuotedString];
 		} else {
 			return [fields componentsJoinedAndBacktickQuoted];
 		}
@@ -1649,9 +1876,12 @@
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self reloadTable:self];
 			} else {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\nMySQL said: %@", @"message of panel when field cannot be removed"),
-								   [mySQLConnection getLastErrorMessage]]);
+				[self performSelector:@selector(showErrorSheetWith:)
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+						   [mySQLConnection getLastErrorMessage]],
+						nil]
+					afterDelay:0.3];
 			}
 		}
 	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
@@ -1680,16 +1910,20 @@
 			}
 			
 			if ( errors ) {
-				NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"%d rows have not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors]);
+				[self performSelector:@selector(showErrorSheetWith:)
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+						[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+						nil]
+					afterDelay:0.3];
 			}
-			
+
 			//do deleting (after enumerating)
 			if ( [prefs boolForKey:@"ReloadAfterRemovingRow"] ) {
 				[self reloadTableValues:self];
 			} else {
 				for ( i = 0 ; i < [filteredResult count] ; i++ ) {
 					if ( ![tempArray containsObject:[NSNumber numberWithInt:i]] )
-						[tempResult addObject:[filteredResult objectAtIndex:i]];
+						[tempResult addObject:NSArrayObjectAtIndex(filteredResult, i)];
 				}
 				[filteredResult setArray:tempResult];
 				numRows = [self getNumberOfRows];
@@ -1730,6 +1964,19 @@
 }
 
 /*
+ * Show Error sheet (can be called from inside of a endSheet selector)
+ * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
+ */
+-(void)showErrorSheetWith:(id)error
+{
+	// error := first object is the title , second the message, only one button OK
+	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+			nil, nil, tableWindow, self, nil, nil, nil,
+			[error objectAtIndex:1]);
+}
+
+
+/*
  * Returns the number of rows in the selected table
  * Queries the number from MySQL if enabled in prefs and result is limited, otherwise just return the fullResult count.
  */
@@ -1762,73 +2009,65 @@
 objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-	id theRow, theValue;
-    
-	theRow = [filteredResult objectAtIndex:rowIndex];
-	theValue = [theRow objectForKey:[aTableColumn identifier]];
-    
-	// Convert data objects to their string representation in the current encoding, falling back to ascii
-	if ( [theValue isKindOfClass:[NSData class]] ) {
-		NSString *dataRepresentation = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
-		if (dataRepresentation == nil)
-			dataRepresentation = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
-		if (dataRepresentation == nil) theValue = @"- cannot be displayed -";
-		else theValue = [NSString stringWithString:dataRepresentation];
-		if (dataRepresentation) [dataRepresentation release];
-	}
-    return theValue;
+
+	id theValue = [NSArrayObjectAtIndex(filteredResult, rowIndex) objectForKey:[aTableColumn identifier]];
+
+	if ( [theValue isKindOfClass:[NSData class]] )
+		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+
+	return theValue;
 }
 
 - (void)tableView: (CMCopyTable *)aTableView
-  willDisplayCell: (id)cell
-   forTableColumn: (NSTableColumn*)aTableColumn
-              row: (int)row
+	willDisplayCell: (id)cell
+	forTableColumn: (NSTableColumn*)aTableColumn
+	row: (int)row
 /*
- *  This function changes the text color of 
- *  text/blob fields which are not yet loaded to gray
- */
+	*  This function changes the text color of 
+	*  text/blob fields which are not yet loaded to gray
+*/
 {
-    // Check if loading of text/blob fields is disabled
-    // If not, all text fields are loaded and we don't have to make them gray
-    if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
-    {
-        // Make sure that the cell actually responds to setTextColor:
-        // In the future, we might use different cells for the table view
-        // that don't support this selector
-        if ([cell respondsToSelector:@selector(setTextColor:)])
-        {
-            NSArray    *columns             = [tableDataInstance columns];
-            NSArray    *columnNames         = [tableDataInstance columnNames];
-            NSString   *columnTypeGrouping;
-            NSUInteger  indexOfColumn;
-            
-            // We have to find the index of the current column
-            // Make sure we find it, otherwise return (We might decide in the future
-            // to add a column to the TableView that doesn't correspond to a column
-            // of the Mysql table...)
-            indexOfColumn = [columnNames indexOfObject:[aTableColumn identifier]];
-            if (indexOfColumn ==  NSNotFound) return;
-            
-            // Test if the current column is a text or a blob field
-            columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
-            if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
-                
-                // now check if the field has been loaded already or not
-                if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
-                {
-                    // change the text color of the cell to gray
-                    [cell setTextColor: [NSColor grayColor]];
-                }
-                else
-                {
-                    // Change the text color back to black
-                    // This is necessary because NSTableView reuses
-                    // the NSCell to draw further rows in the column
-                    [cell setTextColor: [NSColor blackColor]];
-                }
-            }
-        }
-    }
+	// Check if loading of text/blob fields is disabled
+	// If not, all text fields are loaded and we don't have to make them gray
+	if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
+	{
+		// Make sure that the cell actually responds to setTextColor:
+		// In the future, we might use different cells for the table view
+		// that don't support this selector
+		if ([cell respondsToSelector:@selector(setTextColor:)])
+		{
+			NSArray    *columns             = [tableDataInstance columns];
+			NSArray    *columnNames         = [tableDataInstance columnNames];
+			NSString   *columnTypeGrouping;
+			NSUInteger  indexOfColumn;
+
+			// We have to find the index of the current column
+			// Make sure we find it, otherwise return (We might decide in the future
+			// to add a column to the TableView that doesn't correspond to a column
+			// of the Mysql table...)
+			indexOfColumn = [columnNames indexOfObject:[aTableColumn identifier]];
+			if (indexOfColumn ==  NSNotFound) return;
+
+			// Test if the current column is a text or a blob field
+			columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
+			if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
+
+				// now check if the field has been loaded already or not
+				if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
+				{
+					// change the text color of the cell to gray
+					[cell setTextColor: [NSColor grayColor]];
+				}
+				else
+				{
+					// Change the text color back to black
+					// This is necessary because NSTableView reuses
+					// the NSCell to draw further rows in the column
+					[cell setTextColor: [NSColor blackColor]];
+				}
+			}
+		}
+	}
 }
 
 - (void)tableView:(NSTableView *)aTableView
@@ -1840,15 +2079,16 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
-		[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
+		[oldRow setDictionary:NSArrayObjectAtIndex(filteredResult, rowIndex)];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
-	if ( anObject ) {
-		[[filteredResult objectAtIndex:rowIndex] setObject:anObject forKey:[aTableColumn identifier]];
-	} else {
-		[[filteredResult objectAtIndex:rowIndex] setObject:@"" forKey:[aTableColumn identifier]];
-	}
+	
+	if ( anObject )
+		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:anObject forKey:[aTableColumn identifier]];
+	else
+		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:@"" forKey:[aTableColumn identifier]];
+
 }
 
 #pragma mark -
@@ -2048,48 +2288,110 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 	}
 	
+	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]];
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-	if ( [multipleLineEditingButton state] == NSOnState || [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]] ) {
+	if ( [multipleLineEditingButton state] == NSOnState || isBlob ) {
+		
+		editSheetWillBeInitialized = YES;
+		
 		theValue = [[filteredResult objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 		NSImage *image = nil;
 		editData = [theValue retain];
-		
+
+		// hide all views in editSheet
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editImage setHidden:YES];
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+
+		// Hide QuickLook button and text/iamge/hex control for text data
+		[editSheetQuickLookButton setHidden:(!isBlob)];
+		[editSheetSegmentControl setHidden:(!isBlob)];
+
+		// order out editSheet to inform the user that SP is working
+		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+
+		[editSheetProgressBar startAnimation:self];
+
 		if ( [theValue isKindOfClass:[NSData class]] ) {
 			image = [[[NSImage alloc] initWithData:theValue] autorelease];
-			[hexTextView setString:[self dataToHex:theValue]];
+
+			// Set hex view to "" - load on demand only
+			[hexTextView setString:@""];
+			
 			stringValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 			if (stringValue == nil)
 				stringValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
+
+			[hexTextView setHidden:NO];
+			[hexTextScrollView setHidden:NO];
+			[editImage setHidden:YES];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editSheetSegmentControl setSelectedSegment:2];
 		} else {
+			stringValue = [theValue retain];
+
 			[hexTextView setString:@""];
-			stringValue = [[NSString alloc] initWithString:[theValue description]];
+
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
+			[editSheetSegmentControl setSelectedSegment:0];
 		}
 
 		if (image) {
 			[editImage setImage:image];
+
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editSheetSegmentControl setSelectedSegment:1];
 		} else {
-			[editImage setImage:nil];		
+			[editImage setImage:nil];
 		}
 		if (stringValue) {
 			[editTextView setString:stringValue];
-			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+
+			if(image == nil) {
+				[hexTextView setHidden:YES];
+				[hexTextScrollView setHidden:YES];
+				[editImage setHidden:YES];
+				[editTextView setHidden:NO];
+				[editTextScrollView setHidden:NO];
+				[editSheetSegmentControl setSelectedSegment:0];
+			 }
+
+			// Locate the caret in editTextView
+			// (to select all takes a bit time for large data)
+			[editTextView setSelectedRange:NSMakeRange(0,0)];
+
+			// Set focus
+			if(image == nil)
+				[editSheet makeFirstResponder:editTextView];
+			else
+				[editSheet makeFirstResponder:editImage];
+
 			[stringValue release];
 		}
 		
-		// If the cell contains a valid image, select the image tab
-		if (image) {
-			[editSheetTabView selectTabViewItemAtIndex:1];
+		editSheetWillBeInitialized = NO;
 
-		// Otherwise default to text tab
-		} else {
-			[editSheetTabView selectTabViewItemAtIndex:0];
-		}
+		[editSheetProgressBar stopAnimation:self];
 
-		[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		// wait for editSheet
 		code = [NSApp runModalForWindow:editSheet];
 
 		[NSApp endSheet:editSheet];
 		[editSheet orderOut:nil];
+
+		// For safety reasons inform QuickLook to quit
+		quickLookCloseMarker = 1;
 
 		if ( code ) {
 			if ( !isEditingRow ) {
@@ -2099,7 +2401,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			}
 			
 			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy] forKey:[aTableColumn identifier]];
-			
+
 			// Clean up
 			[editImage setImage:nil];
 			[editTextView setString:@""];
@@ -2122,9 +2424,17 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 {	
 	if ( tableView == tableContentView )
 	{
-		NSString *tmp = [tableContentView draggedRowsAsTabString:rows];
+
+		NSString *tmp;
 		
-		if ( nil != tmp )
+		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
+		// otherwise \t delimited lines
+		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
+			tmp = [tableContentView selectedRowsAsSqlInserts];
+		else
+			tmp = [tableContentView draggedRowsAsTabString:rows];
+		
+		if ( nil != tmp && [tmp length] )
 		{
 			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
 								  NSStringPboardType, nil]
@@ -2166,7 +2476,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Check if next column is a blob column, and skip to the next non-blob column
 			i = 1;
 			while (
-				(fieldType = [[tableDataInstance columnWithName:[[[tableContentView tableColumns] objectAtIndex:column+i] identifier]] objectForKey:@"typegrouping"])
+				(fieldType = [[tableDataInstance columnWithName:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] objectForKey:@"typegrouping"])
 				&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
 			) {
 				i++;
@@ -2222,9 +2532,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		{
 			[NSApp stopModalWithCode:1];
 			return YES;
-		} else {
+		} 
+		else
 			return NO;
-		}
 	}
 	return NO;
 }
@@ -2237,6 +2547,26 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
         [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
+}
+
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// Remove row
+	if ([menuItem action] == @selector(removeRow:)) {
+		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? @"Delete Rows" : @"Delete Row"];
+		
+		return ([tableContentView numberOfSelectedRows] > 0);
+	}
+	
+	// Duplicate row
+	if ([menuItem action] == @selector(copyRow:)) {		
+		return ([tableContentView numberOfSelectedRows] == 1);
+	}
+	
+	return [super validateMenuItem:menuItem];
 }
 
 // Last but not least

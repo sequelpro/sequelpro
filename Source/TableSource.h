@@ -45,15 +45,14 @@
 	IBOutlet id indexNameField;
 	IBOutlet id indexedColumnsField;
 	IBOutlet id chooseKeyButton;
-	IBOutlet id tableTypeButton;
 	IBOutlet id structureGrabber;
+	IBOutlet id editTableButton;
 
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
 	MCPResult *indexResult;
 
 	NSString *selectedTable;
-	NSString *tableType;
 	NSMutableArray *tableFields, *indexes;
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
@@ -61,6 +60,7 @@
 	int currentlyEditingRow;
 	NSUserDefaults *prefs;
 }
+
 
 //table methods
 - (void)loadTable:(NSString *)aTable;
@@ -72,7 +72,6 @@
 - (IBAction)addIndex:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (IBAction)removeIndex:(id)sender;
-- (IBAction)typeChanged:(id)sender;
 
 //index sheet methods
 - (IBAction)openIndexSheet:(id)sender;
@@ -88,23 +87,12 @@
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
 //getter methods
 - (NSString *)defaultValueForField:(NSString *)field;
 - (NSArray *)fieldNames;
 - (NSDictionary *)enumFields;
 - (NSArray *)tableStructureForPrint;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
 
 //tableView drag&drop datasource methods
 - (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
@@ -122,9 +110,5 @@
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

@@ -76,11 +76,17 @@
 	<true/>
 	<key>LastFavoriteIndex</key>
 	<integer>0</integer>
+	<key>ConsoleEnableLogging</key>
+	<true/>
 	<key>ConsoleShowTimestamps</key>
 	<true/>
 	<key>ConsoleShowSelectsAndShows</key>
 	<true/>
 	<key>ConsoleShowHelps</key>
+	<true/>
+	<key>PrintBackground</key>
+	<true/>
+	<key>PrintImagePreviews</key>
 	<true/>
 </dict>
 </plist>

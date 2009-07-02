@@ -33,11 +33,14 @@ enum spsshtunnel_password_modes
 	NSString *keychainName;
 	NSString *keychainAccount;
 	NSString *requestedPassphrase;
+	NSMutableArray *debugMessages;
+	BOOL useHostFallback;
 	BOOL requestedResponse;
 	BOOL passwordInKeychain;
 	int sshPort;
 	int remotePort;
 	int localPort;
+	int localPortFallback;
 	int connectionState;
 }
 
@@ -48,7 +51,9 @@ enum spsshtunnel_password_modes
 - (BOOL) setPassword:(NSString *)thePassword;
 - (int) state;
 - (NSString *) lastError;
+- (NSString *) debugMessages;
 - (int) localPort;
+- (int) localPortFallback;
 - (void) connect;
 - (void) launchTask:(id) dummy;
 - (void) disconnect;

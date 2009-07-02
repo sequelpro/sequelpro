@@ -30,6 +30,7 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPStringAdditions.h"
+#import "SPArrayAdditions.h"
 
 
 @implementation SPTableData
@@ -74,7 +75,7 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	return [NSString stringWithString:tableEncoding];
+	return (tableEncoding == nil) ? nil : [NSString stringWithString:tableEncoding];
 }
 
 /*
@@ -120,7 +121,15 @@
  */
 - (NSDictionary *) columnWithName:(NSString *)colName
 {
+	if ([columns count] == 0) {
+		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+			[self updateInformationForCurrentView];
+		} else {
+			[self updateInformationForCurrentTable];
+		}
+	}
 	int columnIndex = [columnNames indexOfObject:colName];
+	if (columnIndex == NSNotFound) return nil;
 	return [columns objectAtIndex:columnIndex];
 }
 
@@ -291,6 +300,7 @@
 	NSMutableDictionary *tableColumn, *tableData;
 	NSString *encodingString;
 	unsigned i, stringStart;
+	unichar quoteCharacter;
 
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
@@ -309,13 +319,17 @@
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving table information.\nMySQL said: %@", @"message of panel when retrieving table information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
 	}
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
+	NSArray *resultFieldNames = [theResult fetchFieldNames];
 	
 	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
 		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
@@ -337,10 +351,15 @@
 	tableColumn = [[NSMutableDictionary alloc] init];
 	definitionParts = [[NSMutableArray alloc] init];
 	fieldParser = [[SPSQLParser alloc] init];
+	
+	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
+	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
+	
 	for (i = 0; i < [fieldStrings count]; i++) {
 
 		// Take this field/key string, trim whitespace from both ends and remove comments
-		[fieldsParser setString:[[fieldStrings objectAtIndex:i] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		[fieldsParser setString:[NSArrayObjectAtIndex(fieldStrings, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet]];
 		[fieldsParser deleteComments];
 		if (![fieldsParser length]) {
 			continue;
@@ -348,27 +367,28 @@
 		[tableColumn removeAllObjects];
 		[definitionParts removeAllObjects];
 
-		// If the first character is a backtick, this is a field definition.
-		if ([fieldsParser characterAtIndex:0] =='`') {
-        
-            // Capture the area between the two backticks as the name
-            NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: '`' 
-                                                                     toCharacter: '`' 
-                                                             trimmingInclusively: YES 
-                                                            returningInclusively: NO 
-                                                           ignoringQuotedStrings: NO];
-            //if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
-			while ([fieldsParser characterAtIndex:0] =='`') {
-                fieldName = [fieldName stringByAppendingFormat: @"`%@",
-                                                                [fieldsParser trimAndReturnStringFromCharacter: '`' 
-                                                                                                   toCharacter: '`' 
-                                                                                           trimmingInclusively: YES 
-                                                                                          returningInclusively: NO 
-                                                                                         ignoringQuotedStrings: NO]
-                                                                 ];
-            }
-            
-            [tableColumn setObject:fieldName forKey:@"name"];
+		// If the first character is a quote character, this is a field definition.
+		if ([quoteSet characterIsMember:[fieldsParser characterAtIndex:0]]) {
+			quoteCharacter = [fieldsParser characterAtIndex:0];
+
+			// Capture the area between the two backticks as the name
+			NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
+																	 toCharacter: quoteCharacter
+															 trimmingInclusively: YES
+															returningInclusively: NO
+														   ignoringQuotedStrings: NO];
+			//if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
+			while ([fieldsParser characterAtIndex:0] == quoteCharacter) {
+				fieldName = [fieldName stringByAppendingFormat: @"`%@",
+																[fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
+																								   toCharacter: quoteCharacter
+																						   trimmingInclusively: YES
+																						  returningInclusively: NO
+																						 ignoringQuotedStrings: NO]
+																];
+			}
+			
+			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
@@ -384,85 +404,83 @@
 		// TODO: Otherwise it's a key definition, constraint, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
 			NSArray *parts = [fieldsParser splitStringByCharacter:' ' skippingBrackets:YES ignoringQuotedStrings:YES];
-			NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:@"`()"];
-			// constraints
+
+			// Constraints
 			if( [[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"] ) {
 				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
-				/*
-				 NSLog( @"constraint %@ on %@ ref %@.%@", 
-				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
-				 [[parts objectAtIndex:4] stringByTrimmingCharactersInSet:junk], 
-				 [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk], 
-				 [[parts objectAtIndex:7] stringByTrimmingCharactersInSet:junk] );
-				 */
-				[constraintDetails setObject:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk]
-									  forKey:@"name"];
-				[constraintDetails setObject:[[parts objectAtIndex:4] stringByRemovingCharactersInSet:junk]
-									  forKey:@"columns"];
-				[constraintDetails setObject:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:junk]
-									  forKey:@"ref_table"];
-				[constraintDetails setObject:[[parts objectAtIndex:7] stringByRemovingCharactersInSet:junk]
-									  forKey:@"ref_columns"];
-				
+
+				// Extract the relevant details from the constraint string
+				[fieldsParser setString:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"name"];
+
+				[fieldsParser setString:[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"columns"];
+
+				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+
+				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
+				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
+
 				int nextOffs = 12;
 				if( [parts count] > 8 ) {
 					// NOTE: this won't get SET NULL | NO ACTION
 					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
 						//NSLog( @"update: %@", [parts objectAtIndex:10] );
-						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
 							nextOffs = 13;
-						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"update"];
 							nextOffs = 13;
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:10]
-												  forKey:@"update"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
+												  forKey:@"update"];
 						}
 					} 
-					else if( [[parts objectAtIndex:9] hasPrefix:@"DELETE"] ) {
-						//NSLog( @"delete: %@", [parts objectAtIndex:10] );						
-						if( [[parts objectAtIndex:10] hasPrefix:@"SET"] ) {
+					else if( [NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:10] );
+						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
 							nextOffs = 13;
-						} else if( [[parts objectAtIndex:10] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"delete"];
 							nextOffs = 13;
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:10]
-												  forKey:@"delete"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
+												  forKey:@"delete"];
 						}
 					}
 				}
 				if( [parts count] > nextOffs - 1 ) {
-					if( [[parts objectAtIndex:nextOffs] hasPrefix:@"UPDATE"] ) {
+					if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
 						//NSLog( @"update: %@", [parts objectAtIndex:13] );
-						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
-						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"update"];
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
-												  forKey:@"update"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
+												  forKey:@"update"];
 						}
 					} 
-					else if( [[parts objectAtIndex:nextOffs] hasPrefix:@"DELETE"] ) {
-						//NSLog( @"delete: %@", [parts objectAtIndex:13] );						
-						if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"SET"] ) {
+					else if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"DELETE"] ) {
+						//NSLog( @"delete: %@", [parts objectAtIndex:13] );
+						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
-						} else if( [[parts objectAtIndex:nextOffs+1] hasPrefix:@"NO"] ) {
+						} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
 							[constraintDetails setObject:@"NO ACTION"
 												  forKey:@"delete"];
 						} else {
-							[constraintDetails setObject:[parts objectAtIndex:nextOffs+1]
-												  forKey:@"delete"];							
+							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
+												  forKey:@"delete"];
 						}
 					}
 				}
@@ -470,11 +488,11 @@
 				[constraintDetails release];
 			}
 			// primary key
-			else if( [[parts objectAtIndex:0] hasPrefix:@"PRIMARY"] ) {
-				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] ) {
+				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );
 			}
 			// key
-			else if( [[parts objectAtIndex:0] hasPrefix:@"KEY"] ) {
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"KEY"] ) {
 				/*
 				 NSLog( @"key %@.%@", 
 				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
@@ -519,8 +537,11 @@
 	[fieldParser release];
 
 	tableData = [NSMutableDictionary dictionary];
+	// this will be 'Table' or 'View'
+	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
+	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
 
 	[encodingString release];
 	[tableColumns release];
@@ -589,7 +610,10 @@
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
 	}
@@ -610,7 +634,10 @@
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving view information:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
 	}
@@ -692,7 +719,10 @@
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving table status:\n\n%@", [mySQLConnection getLastErrorMessage]],  @"OK", nil, nil);
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving table status.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return FALSE;
 	}
@@ -812,6 +842,7 @@
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"binary"];
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"zerofill"];
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"autoincrement"];
+	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"onupdatetimestamp"];
 
 	// Walk through the remaining column definition parts storing recognised details
 	partsArrayLength = [definitionParts count];
@@ -870,6 +901,13 @@
 			[fieldDetails setValue:[detailParser unquotedString] forKey:@"default"];
 			[detailParser release];
 			definitionPartsIndex++;
+
+		// Special timestamp case - Whether fields are set to update the current timestamp
+		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"UPDATE"]
+					&& [[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"onupdatetimestamp"];
+			definitionPartsIndex += 2;
 		}
 
 		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COMMENT 'foo' | COLUMN_FORMAT bar | STORAGE q | REFERENCES...

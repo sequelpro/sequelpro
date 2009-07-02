@@ -240,8 +240,10 @@
 																	   forKeys:[NSArray arrayWithObjects:@"name", @"host", @"socket", @"user", @"port", @"database", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
-	
+	[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
+
 	[favoritesTableView reloadData];
+	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 	[self updateDefaultFavoritePopup];
 }
 
@@ -323,6 +325,7 @@
 		[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
 
 		[favoritesTableView reloadData];
+		[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 		[self updateDefaultFavoritePopup];
 	}
 }
@@ -475,7 +478,7 @@
 // tableView:validateDrop:proposedRow:proposedDropOperation:
 // -------------------------------------------------------------------------------
 - (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)operation
-{	
+{
 	int originalRow;
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
@@ -496,28 +499,32 @@
 // tableView:acceptDrop:row:dropOperation:
 // -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation
-{	
+{
 	int originalRow;
 	int destinationRow;
+	int lastFavoriteIndexCached;
 	NSMutableDictionary *draggedRow;
 	
 	originalRow = [[[info draggingPasteboard] stringForType:FAVORITES_PB_DRAG_TYPE] intValue];
 	destinationRow = row;
-	
+
 	if (destinationRow > originalRow) {
 		destinationRow--;
 	}
 	
 	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:originalRow]];
+	//Before deleting this favorite, we need to save the current index.
+	//because removeObjectAtArrangedObjectIndex will set prefs LastFavoriteIndex to 0
+	lastFavoriteIndexCached = [prefs integerForKey:@"LastFavoriteIndex"];
 	
 	[favoritesController removeObjectAtArrangedObjectIndex:originalRow];
 	[favoritesController insertObject:draggedRow atArrangedObjectIndex:destinationRow];
-	
+
 	[favoritesTableView reloadData];
 	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
 	
 	// Update default favorite to take on new value
-	if ([prefs integerForKey:@"LastFavoriteIndex"] == originalRow) {
+	if (lastFavoriteIndexCached == originalRow) {
 		[prefs setInteger:destinationRow forKey:@"LastFavoriteIndex"];
 	}
 	
@@ -705,7 +712,7 @@
 		oldKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
 
 		// Set up the new keychain name and account strings
-		newKeychainName = [keychain nameForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
+		newKeychainName = [keychain nameForSSHForFavoriteName:[nameField stringValue] id:[favoritesController valueForKeyPath:@"selection.id"]];
 		newKeychainAccount = [keychain accountForSSHUser:[sshUserField stringValue] sshHost:[sshHostField stringValue]];
 
 		// Delete the old keychain item
@@ -891,7 +898,7 @@
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
 
-	[notificationsItem setLabel:NSLocalizedString(@"Alerts", @"")];
+	[notificationsItem setLabel:NSLocalizedString(@"Alerts & Logs", @"")];
 	[notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
 	[notificationsItem setTarget:self];
 	[notificationsItem setAction:@selector(displayNotificationPreferences:)];
@@ -905,12 +912,12 @@
 	[editorItem setAction:@selector(displayEditorPreferences:)];
 	
 	// Shortcut preferences
-	shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
+	/*shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
 	
 	[shortcutItem setLabel:NSLocalizedString(@"Shortcuts", @"")];
 	[shortcutItem setImage:[NSImage imageNamed:@"toolbar-preferences-shortcuts"]];
 	[shortcutItem setTarget:self];
-	[shortcutItem setAction:@selector(NSBeep)];
+	[shortcutItem setAction:@selector(NSBeep)];*/
 	
 	// AutoUpdate preferences
 	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];

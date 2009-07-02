@@ -487,7 +487,7 @@ const OUR_CHARSET our_charsets60[] =
 		
 		switch (aType) {
 			case MCPTypeDictionary :
-				[theReturn setObject:theCurrentObj forKey:NSArrayObjectAtIndex(mNames, i)];
+				[theReturn setObject:theCurrentObj forKey:[mNames objectAtIndex:i]];
 				break;
 				
 			case MCPTypeArray :

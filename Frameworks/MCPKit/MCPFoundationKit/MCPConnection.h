@@ -46,6 +46,17 @@ extern const unsigned int kMCPConnectionNotInited;
 // The length of the truncation if required
 extern const unsigned int kLengthOfTruncationForLog;
 
+/*
+ * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
+ */
+static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encoding, int lossy) {
+	typedef NSData* (*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, int, int);
+	static SPStringDataUsingLossyEncodingMethodPtr SPNSStringDataUsingLossyEncoding;
+	if (!SPNSStringDataUsingLossyEncoding) SPNSStringDataUsingLossyEncoding = (SPStringDataUsingLossyEncodingMethodPtr)[self methodForSelector:@selector(dataUsingEncoding:allowLossyConversion:)];
+	NSData* to_return = SPNSStringDataUsingLossyEncoding(self, @selector(dataUsingEncoding:allowLossyConversion:), encoding, lossy);
+	return to_return;
+}
+
 typedef enum _MCPConnectionCheck {
 	MCPConnectionCheckReconnect = 1,
 	MCPConnectionCheckDisconnect,

@@ -229,7 +229,7 @@
 		// Populate type popup button
 		for (NSDictionary *engine in engines)
 		{		
-			[tableTypePopUpButton addItemWithTitle:[engine objectForKey:@"ENGINE"]];
+			[tableTypePopUpButton addItemWithTitle:[engine objectForKey:@"Engine"]];
 		}	
 		
 		[tableTypePopUpButton selectItemWithTitle:[statusFields objectForKey:@"Engine"]];

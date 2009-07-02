@@ -41,4 +41,8 @@
 - (IBAction)doTranspose:(id)sender;
 - (IBAction)doRemoveDiacritics:(id)sender;
 
+- (void)makeTextSizeLarger;
+- (void)makeTextSizeSmaller;
+
+
 @end

@@ -31,6 +31,7 @@
 // functionality and adds selection by clicking on the ruler.
 
 #import "NoodleLineNumberView.h"
+#import "SPArrayAdditions.h"
 
 #define DEFAULT_THICKNESS	22.0
 #define RULER_MARGIN		5.0
@@ -207,7 +208,7 @@
 		
 		for (line = 0; line < count; line++)
 		{
-			index = [[lines objectAtIndex:line] unsignedIntValue];
+			index = [NSArrayObjectAtIndex(lines, line) unsignedIntValue];
 			
 			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
 								 withinSelectedCharacterRange:nullRange
@@ -299,7 +300,7 @@
     while ((right - left) > 1)
     {
         mid = (right + left) / 2;
-        lineStart = [[lines objectAtIndex:mid] unsignedIntValue];
+        lineStart = [NSArrayObjectAtIndex(lines, mid) unsignedIntValue];
         
         if (index < lineStart)
         {
@@ -405,7 +406,7 @@
         
         for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
         {
-            index = [[lines objectAtIndex:line] unsignedIntValue];
+            index = [NSArrayObjectAtIndex(lines, line) unsignedIntValue];
             
             if (NSLocationInRange(index, range))
             {

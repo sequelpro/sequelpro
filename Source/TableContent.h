@@ -36,13 +36,18 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 	
+	IBOutlet id editSheetProgressBar;
+	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
 	IBOutlet id editSheet;
-	IBOutlet id editSheetTabView;
+	IBOutlet id editSheetSegmentControl;
+	IBOutlet id editSheetQuickLookButton;
 	IBOutlet id editImage;
 	IBOutlet id editTextView;
 	IBOutlet id hexTextView;
+	IBOutlet id editTextScrollView;
+	IBOutlet id hexTextScrollView;
 	IBOutlet id fieldField;
 	IBOutlet id compareField;
 	IBOutlet id argumentField;
@@ -68,6 +73,10 @@
 	NSUserDefaults *prefs;
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
+	
+	BOOL editSheetWillBeInitialized;
+	
+	int quickLookCloseMarker;
 }
 
 //table methods
@@ -89,13 +98,16 @@
 - (IBAction)closeEditSheet:(id)sender;
 - (IBAction)openEditSheet:(id)sender;
 - (IBAction)saveEditSheet:(id)sender;
+- (IBAction)segmentControllerChanged:(id)sender;
+- (IBAction)quickLookFormatButton:(id)sender;
+- (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText;
 - (void)processUpdatedImageData:(NSData *)data;
 - (IBAction)dropImage:(id)sender;
-- (void)textDidChange:(NSNotification *)notification;
-- (NSString *)dataToHex:(NSData *)data;
+- (void)textViewDidChangeSelection:(NSNotification *)aNotification;
 
 //getter methods
 - (NSArray *)currentResult;
+- (NSArray *)currentDataResult;
 
 //additional methods
 - (void)setConnection:(MCPConnection *)theConnection;

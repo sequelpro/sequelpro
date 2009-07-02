@@ -306,11 +306,13 @@ static BOOL	sDebugQueries = NO;
 	
 	// Select the password from the provided method
 	if (connectionKeychainName) {
-		thePass = [self cStringFromString:[delegate passwordForKeychainItemName:connectionKeychainName account:connectionKeychainAccount]];
+		if (delegate && [delegate respondsToSelector:@selector(passwordForKeychainItemName:account:)]) {
+			thePass = [self cStringFromString:[delegate passwordForKeychainItemName:connectionKeychainName account:connectionKeychainAccount]];
+		}
 	} else {
 		thePass = [self cStringFromString:connectionPassword];
 	}
-	
+			
 	// Connect
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
@@ -334,8 +336,7 @@ static BOOL	sDebugQueries = NO;
 	
 	// Register notification if a query was sent to the MySQL connection
 	// to be able to identify the sender of that query
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:nil];
+	//[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:) name:@"SMySQLQueryWillBePerformed" object:nil];
 	
 	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
 	

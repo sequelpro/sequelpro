@@ -49,6 +49,11 @@
 	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
+	
+	IBOutlet id titleAccessoryView;
+	IBOutlet id titleImageView;
+	IBOutlet id titleStringView;
+	
 	IBOutlet id connectSheet;
 	IBOutlet id databaseSheet;
 	IBOutlet id variablesSheet;
@@ -69,6 +74,8 @@
 	IBOutlet id sshUserField;
 	IBOutlet id sshPasswordField;
 	IBOutlet id sshPortField;
+	IBOutlet NSWindow *errorDetailWindow;
+	IBOutlet NSTextView *errorDetailText;
 
 	IBOutlet NSProgressIndicator *connectProgressBar;
 	IBOutlet NSTextField *connectProgressStatusText;
@@ -79,6 +86,9 @@
 	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
 	
+	IBOutlet NSTableView *tableInfoTable;
+	IBOutlet NSSplitView *tableListSplitter;
+	IBOutlet NSSplitView *contentViewSplitter;
 	IBOutlet id sidebarGrabber;
 	
 	IBOutlet NSTextView *customQueryTextView;
@@ -121,7 +131,7 @@
 - (void)initiateSSHTunnelConnection;
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
 - (void)initiateMySQLConnection;
-- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage;
+- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage withDetail:(NSString *)errorDetail;
 - (IBAction)cancelConnectSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseFavorite:(id)sender;
@@ -209,6 +219,11 @@
 - (IBAction)viewStatus:(id)sender;
 - (IBAction)viewRelations:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
+
+// titlebar methods
+- (void)setStatusIconToImageWithName:(NSString *)imagePath;
+- (void)setTitlebarStatus:(NSString *)status;
+- (void)clearStatusIcon;
 
 //toolbar methods
 - (void)setupToolbar;

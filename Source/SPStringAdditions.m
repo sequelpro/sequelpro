@@ -77,9 +77,22 @@
 + (NSString *)stringForTimeInterval:(float)timeInterval
 {
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	
+
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
+	// For time periods of less than one millisecond, display a localised "< 0.1 ms"
+	if (timeInterval < 0.0001) {
+		[numberFormatter setFormat:@"< #,##0.0 ms"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:0.1]];
+	}
+
+	if (timeInterval < 0.1) {
+		timeInterval = (timeInterval * 1000);
+		[numberFormatter setFormat:@"#,##0.0 ms"];
+
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	}
 	if (timeInterval < 1) {
 		timeInterval = (timeInterval * 1000);
 		[numberFormatter setFormat:@"#,##0 ms"];

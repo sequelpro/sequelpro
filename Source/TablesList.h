@@ -46,6 +46,7 @@ enum sp_table_types
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
+	IBOutlet id databaseDataInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;
@@ -64,6 +65,8 @@ enum sp_table_types
 	IBOutlet id tableRenameField;
 	IBOutlet id tableRenameText;
 	IBOutlet id renameTableButton;
+	IBOutlet id truncateTableButton;
+	IBOutlet id truncateTableContextButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
@@ -72,6 +75,11 @@ enum sp_table_types
 
 	MCPConnection *mySQLConnection;
 	
+	IBOutlet NSMenuItem *removeTableContextMenuItem;
+	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
+	IBOutlet NSMenuItem *renameTableContextMenuItem;
+	IBOutlet NSMenuItem *separatorTableContextMenuItem;
+
 	NSMutableArray *tables;
 	NSMutableArray *tableTypes;
 
@@ -85,6 +93,7 @@ enum sp_table_types
 - (IBAction)removeTable:(id)sender;
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
+- (IBAction)truncateTable:(id)sender;
 
 // copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;
@@ -92,6 +101,7 @@ enum sp_table_types
 // Additional methods
 - (void)removeTable;
 - (void)setConnection:(MCPConnection *)theConnection;
+- (void)truncateTable;
 - (void)doPerformQueryService:(NSString *)query;
 
 // Getters
@@ -105,5 +115,6 @@ enum sp_table_types
 
 // Setters
 - (void)setContentRequiresReload:(BOOL)reload;
+- (void)setStatusRequiresReload:(BOOL)reload;
 
 @end

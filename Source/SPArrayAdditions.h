@@ -24,6 +24,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+static inline id NSArrayObjectAtIndex(NSArray* self, NSUInteger i) {
+	typedef id (*SPArrayObjectAtIndexMethodPtr)(NSArray*, SEL, NSUInteger);
+	static SPArrayObjectAtIndexMethodPtr SPNSArrayObjectAtIndex;
+	if (!SPNSArrayObjectAtIndex) SPNSArrayObjectAtIndex = (SPArrayObjectAtIndexMethodPtr)[self methodForSelector:@selector(objectAtIndex:)];
+	id to_return = SPNSArrayObjectAtIndex(self, @selector(objectAtIndex:), i);
+	return to_return;
+}
+
+
 @interface NSArray (SPArrayAdditions)
 
 - (NSString *)componentsJoinedAndBacktickQuoted;

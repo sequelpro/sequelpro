@@ -157,6 +157,12 @@
 	return [info objectAtIndex:rowIndex];
 }
 
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
+{
+	return (row == 0 ? 25 : [tableView rowHeight]);
+}
+
+
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
 	// row 1 and 6 should be editable - ie be able to rename the table and change the auto_increment value.
@@ -174,9 +180,12 @@
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
 		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
+		[(ImageAndTextCell*)aCell setDrawsBackground:NO];
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];
+		//[(ImageAndTextCell*)aCell setDrawsBackground:YES];
+		//[(ImageAndTextCell*)aCell setBackgroundColor:[NSColor colorWithDeviceRed:0.894 green:0.917 blue:0.945 alpha:1]];
 	}
 }
 
