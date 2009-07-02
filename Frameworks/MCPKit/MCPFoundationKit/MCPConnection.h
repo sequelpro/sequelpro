@@ -31,7 +31,8 @@
 
 #import "mysql.h"
 
-@class MCPResult, SPSSHTunnel;
+@class MCPResult;
+@protocol MCPSSHProtocol;
 
 // Deafult connection option
 extern const unsigned int kMCPConnectionDefaultOption;
@@ -56,7 +57,6 @@ typedef enum _MCPConnectionCheck {
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 - (BOOL)connectionEncodingViaLatin1;
-- (void)setStatusIconToImageWithName:(NSString *)imagePath;
 - (MCPConnectionCheck)decisionAfterConnectionFailure;
 
 @end
@@ -74,7 +74,7 @@ typedef enum _MCPConnectionCheck {
 	int connectionTimeout;
 	float keepAliveInterval;
 	
-	SPSSHTunnel *connectionTunnel;
+	id <MCPSSHProtocol> connectionTunnel;
 	NSString *connectionLogin;
 	NSString *connectionKeychainName;
 	NSString *connectionKeychainAccount;
@@ -138,8 +138,8 @@ typedef enum _MCPConnectionCheck {
 /**
  * SSH
  */
-- (BOOL)setSSHTunnel:(SPSSHTunnel *)theTunnel;
-- (void)sshTunnelStateChange:(SPSSHTunnel *)theTunnel;
+- (BOOL)setSSHTunnel:(id <MCPSSHProtocol>)theTunnel;
+- (void)sshTunnelStateChange:(id <MCPSSHProtocol>)theTunnel;
 
 /**
  * Connection

@@ -31,6 +31,8 @@
 #import "MCPNumber.h"
 #import "MCPNull.h"
 
+#import "MCPSSHProtocol.h"
+
 #include <unistd.h>
 #include <setjmp.h>
 #include <mach/mach_time.h>
@@ -225,7 +227,7 @@ static BOOL	sDebugQueries = NO;
  * and will be automatically connected/connection checked/reconnected/disconnected
  * together with the main connection.
  */
-- (BOOL)setSSHTunnel:(SPSSHTunnel *)theTunnel
+- (BOOL)setSSHTunnel:(id <MCPSSHProtocol>)theTunnel
 {
 	connectionTunnel = theTunnel;
 	[connectionTunnel retain];
@@ -239,12 +241,12 @@ static BOOL	sDebugQueries = NO;
 /**
  * Handle any state changes in the associated SSH Tunnel.
  */
-- (void)sshTunnelStateChange:(SPSSHTunnel *)theTunnel
+- (void)sshTunnelStateChange:(id <MCPSSHProtocol>)theTunnel
 {
 	int newState = [theTunnel state];
 	
 	// Restart the tunnel if it dies
-	if (mConnected && newState == SPSSH_STATE_IDLE && currentSSHTunnelState == SPSSH_STATE_CONNECTED) {
+	if (mConnected && newState == SSH_STATE_IDLE && currentSSHTunnelState == SSH_STATE_CONNECTED) {
 		currentSSHTunnelState = newState;
 		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
 		[self reconnect];
@@ -362,7 +364,6 @@ static BOOL	sDebugQueries = NO;
 	
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	
 	if (serverVersionString != nil) {
@@ -408,21 +409,18 @@ static BOOL	sDebugQueries = NO;
 	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionTunnel) {
 		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
-		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
+		if ([connectionTunnel state] != SSH_STATE_IDLE) [connectionTunnel disconnect];
 		[connectionTunnel connect];
-		[delegate setStatusIconToImageWithName:@"ssh-connecting"];
 		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
 		
 		// Allow the tunnel to attempt to connect in a loop
 		while (1) {
-			if ([connectionTunnel state] == SPSSH_STATE_CONNECTED) {
-				[delegate setStatusIconToImageWithName:@"ssh-connected"];
+			if ([connectionTunnel state] == SSH_STATE_CONNECTED) {
 				connectionPort = [connectionTunnel localPort];
 				break;
 			}
 			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
 				[connectionTunnel disconnect];
-				[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 				break;
 			}
 			
@@ -436,7 +434,7 @@ static BOOL	sDebugQueries = NO;
 		[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
 	}
 	
-	if (!connectionTunnel || [connectionTunnel state] == SPSSH_STATE_CONNECTED) {
+	if (!connectionTunnel || [connectionTunnel state] == SSH_STATE_CONNECTED) {
 		
 		// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
 		if (mConnection == NULL) {
@@ -1033,7 +1031,6 @@ static void forcePingTimeout(int signalNumber)
 	
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	
 	return NO;

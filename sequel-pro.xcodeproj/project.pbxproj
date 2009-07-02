@@ -60,6 +60,7 @@
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
 		1762A2C20F88163600FBDABF /* MCPKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 1762A2A00F88155200FBDABF /* MCPKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		177462370FFD09600046C37C /* MCPSSHProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 177462350FFD09600046C37C /* MCPSSHProtocol.h */; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17CF7A030FDEF80C00A5C558 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CF7A020FDEF80C00A5C558 /* SPTableRelations.m */; };
@@ -313,6 +314,7 @@
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
 		1762A2A00F88155200FBDABF /* MCPKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit.h; sourceTree = "<group>"; };
+		177462350FFD09600046C37C /* MCPSSHProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPSSHProtocol.h; sourceTree = "<group>"; };
 		1789343A0F30C1DD0097539A /* SPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditions.h; sourceTree = "<group>"; };
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
@@ -660,6 +662,7 @@
 				1728B7420F82D83900E12957 /* MCPResult.m */,
 				1728B7430F82D83900E12957 /* MCPResultPlus.h */,
 				1728B7440F82D83900E12957 /* MCPResultPlus.m */,
+				177462350FFD09600046C37C /* MCPSSHProtocol.h */,
 			);
 			path = MCPFoundationKit;
 			sourceTree = "<group>";
@@ -1095,6 +1098,7 @@
 				1716254E0F86EAA2000E3AF5 /* mysql_time.h in Headers */,
 				1716254F0F86EAA2000E3AF5 /* mysql_version.h in Headers */,
 				171625500F86EAA2000E3AF5 /* typelib.h in Headers */,
+				177462370FFD09600046C37C /* MCPSSHProtocol.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
