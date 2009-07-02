@@ -328,10 +328,16 @@
 	
 	[tableWindow endEditingFor:nil];
 	
-	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Cancel", @"cancel button") alternateButton:NSLocalizedString(@"Delete", @"delete button") otherButton:nil informativeTextWithFormat:@""];
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
 	NSString *tblTypes;
@@ -679,9 +685,15 @@
 	
 	[tableWindow endEditingFor:nil];
 	
-	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Cancel", @"cancel button") alternateButton:NSLocalizedString(@"Truncate", @"truncate button") otherButton:nil informativeTextWithFormat:@""];
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Truncate", @"truncate button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
@@ -708,14 +720,14 @@
 	else if ([contextInfo isEqualToString:@"removeRow"]) {
 		[[sheet window] orderOut:nil];
 		
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[self removeTable];
 		}
 	}
 	else if ([contextInfo isEqualToString:@"truncateTable"]) {
 		[[sheet window] orderOut:nil];
 		
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[self truncateTable];
 		}
 	}
