@@ -2550,6 +2550,27 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
         [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }
+
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// Remove row
+	if ([menuItem action] == @selector(removeRow:)) {
+		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? @"Delete Rows" : @"Delete Row"];
+		
+		return ([tableContentView numberOfSelectedRows] > 0);
+	}
+	
+	// Duplicate row
+	if ([menuItem action] == @selector(copyRow:)) {		
+		return ([tableContentView numberOfSelectedRows] == 1);
+	}
+	
+	return [super validateMenuItem:menuItem];
+}
+
 // Last but not least
 - (void)dealloc
 {	
