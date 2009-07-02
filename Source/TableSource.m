@@ -944,7 +944,7 @@ fetches the result as an array with a dictionary for each row in it
 		return ([indexView numberOfSelectedRows] == 1);
 	}
 	
-	return [super validateMenuItem:menuItem];
+	return YES;
 }
 
 #pragma mark -
