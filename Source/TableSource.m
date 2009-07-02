@@ -924,6 +924,29 @@ fetches the result as an array with a dictionary for each row in it
 	}
 }
 
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// Remove field
+	if ([menuItem action] == @selector(removeField:)) {
+		return (([tableSourceView numberOfSelectedRows] == 1) && ([tableSourceView numberOfRows] > 1));
+	}
+	
+	// Duplicate field
+	if ([menuItem action] == @selector(copyField:)) {
+		return ([tableSourceView numberOfSelectedRows] == 1);
+	}
+	
+	// Remove index
+	if ([menuItem action] == @selector(removeIndex:)) {
+		return ([indexView numberOfSelectedRows] == 1);
+	}
+	
+	return [super validateMenuItem:menuItem];
+}
+
 #pragma mark -
 #pragma mark Getter methods
 
