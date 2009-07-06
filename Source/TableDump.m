@@ -384,7 +384,7 @@
 	
 	//set up tableView
 	currentRow = 0;
-	fieldMappingArray = nil;
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([importArray count] > 1)];
@@ -588,6 +588,7 @@
 		int i;
 		theResult = (CMMCPResult *) [mySQLConnection listTables];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
+		[fieldMappingPopup removeAllItems];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 			[fieldMappingPopup addItemWithTitle:NSArrayObjectAtIndex([theResult fetchRowAsArray], 0)];
 		}
@@ -607,7 +608,7 @@
 			
 			//set up tableView
 			currentRow = 0;
-			fieldMappingArray = nil;
+			if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 			[self setupFieldMappingArray];
 			[rowDownButton setEnabled:NO];
 			[rowUpButton setEnabled:([importArray count] > 1)];
@@ -727,7 +728,7 @@
 		}
 		
 		//free arrays
-		fieldMappingArray = nil;
+		if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 		importArray = nil;
 	}
 	
@@ -761,7 +762,7 @@
 	int i, value;
 	
     if (!fieldMappingArray) {
-        fieldMappingArray = [NSMutableArray array];
+        fieldMappingArray = [[NSMutableArray alloc] init];
 		
 		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
 			if (i < [NSArrayObjectAtIndex(importArray, currentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, currentRow), i) isKindOfClass:[NSNull class]]) {
@@ -2293,6 +2294,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	tables = [[NSMutableArray alloc] init];
 	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
+	fieldMappingArray = nil;
 	
 	return self;
 }
@@ -2302,7 +2304,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[tables release];
 	[importArray release];
 	[fieldMappingButtonOptions release];
-	[fieldMappingArray release];
+	if (fieldMappingArray) [fieldMappingArray release];
 	[savePath release];
 	[openPath release];
 	[prefs release];
