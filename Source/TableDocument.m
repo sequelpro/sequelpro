@@ -172,7 +172,8 @@
 
 	[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [self user], [self host], [self database]]];
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], ([self database]?[self database]:@"")]];
-	
+	[self viewStructure:self];
+
 	// Connected Growl notification		
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
