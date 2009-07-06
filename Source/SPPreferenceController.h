@@ -44,15 +44,22 @@
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSArrayController *favoritesController;
 	
+	IBOutlet NSTabView *favoritesTabView;
 	IBOutlet NSTextField *nameField;
-	IBOutlet NSTextField *hostField;
-	IBOutlet NSTextField *userField;
-	IBOutlet NSTextField *databaseField;
-	IBOutlet NSSecureTextField *passwordField;
+	IBOutlet NSTextField *standardSQLHostField;
+	IBOutlet NSTextField *standardUserField;
+	IBOutlet NSSecureTextField *standardPasswordField;
+	IBOutlet NSTextField *standardDatabaseField;
+	IBOutlet NSTextField *socketUserField;
+	IBOutlet NSSecureTextField *socketPasswordField;
+	IBOutlet NSTextField *socketDatabaseField;
+	IBOutlet NSTextField *sshSQLHostField;
+	IBOutlet NSTextField *sshSQLUserField;
+	IBOutlet NSSecureTextField *sshSQLPasswordField;
+	IBOutlet NSTextField *sshDatabaseField;
 	IBOutlet NSTextField *sshHostField;
 	IBOutlet NSTextField *sshUserField;
 	IBOutlet NSSecureTextField *sshPasswordField;
-	IBOutlet NSTextField *sshPortField;
 	KeyChain *keychain;
 
 	IBOutlet NSTextField *editorFontName;
@@ -94,6 +101,8 @@
 // Other
 - (void)updateDefaultFavoritePopup;
 - (void)selectFavorites:(NSArray *)favorite;
+- (void)selectFavoriteAtIndex:(unsigned int)theIndex;
 - (void)changeFont:(id)sender;
+- (IBAction)favoriteTypeDidChange:(id)sender;
 
 @end
