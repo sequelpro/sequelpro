@@ -83,6 +83,7 @@
     IBOutlet id errorsView;
     IBOutlet id singleProgressSheet;
     IBOutlet id singleProgressBar;
+    IBOutlet id singleProgressTitle;
     IBOutlet id singleProgressText;
 	
     IBOutlet id fieldMappingSheet;
