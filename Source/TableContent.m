@@ -2566,7 +2566,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		return ([tableContentView numberOfSelectedRows] == 1);
 	}
 	
-	return [super validateMenuItem:menuItem];
+	return YES;
 }
 
 // Last but not least

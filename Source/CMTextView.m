@@ -2131,12 +2131,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
 		int end = curPos + SP_SYNTAX_HILITE_BIAS;
-		if (end > strlength )
-		{
+		if (end > strlength ) {
 			end = strlength;
 		} else {
-			while(end < strlength)
-			{
+			while(end < strlength) {
 				if([selfstr characterAtIndex:end]=='\n')
 					break;
 				end++;
@@ -2146,8 +2144,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
 		int start = end - (SP_SYNTAX_HILITE_BIAS*2);
 		if (start > 0)
-			while(start>-1)
-			{
+			while(start>-1) {
 				if([selfstr characterAtIndex:start]=='\n')
 					break;
 				start--;
@@ -2155,7 +2152,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		else
 			start = 0;
 
-	
 		textRange = NSMakeRange(start, end-start);
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
@@ -2278,8 +2274,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
-
+	
+	[commentColor release];
+	[quoteColor release];
+	[keywordColor release];
+	[backtickColor release];
+	[numericColor release];
+	[variableColor release];
+	[textColor release];
 }
+
 
 #pragma mark -
 #pragma mark context menu

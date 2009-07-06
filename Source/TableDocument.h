@@ -28,7 +28,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
-#import "SPSSHTunnel.h"
+
+@class SPConnectionController;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -36,7 +37,6 @@
 @interface TableDocument : NSDocument
 {
 	// IBOutlets
-	IBOutlet id keyChainInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
@@ -54,31 +54,12 @@
 	IBOutlet id titleImageView;
 	IBOutlet id titleStringView;
 	
-	IBOutlet id connectSheet;
 	IBOutlet id databaseSheet;
 	IBOutlet id variablesSheet;
 
 	IBOutlet id queryProgressBar;
 	IBOutlet id favoritesButton;
-	IBOutlet NSTableView *connectFavoritesTableView;
-	IBOutlet NSArrayController *favoritesController;
-	IBOutlet id nameField;
-	IBOutlet id hostField;
-	IBOutlet id socketField;
-	IBOutlet id userField;
-	IBOutlet id passwordField;
-	IBOutlet id portField;
-	IBOutlet id databaseField;
-	IBOutlet id sshCheckbox;
-	IBOutlet id sshHostField;
-	IBOutlet id sshUserField;
-	IBOutlet id sshPasswordField;
-	IBOutlet id sshPortField;
-	IBOutlet NSWindow *errorDetailWindow;
-	IBOutlet NSTextView *errorDetailText;
 
-	IBOutlet NSProgressIndicator *connectProgressBar;
-	IBOutlet NSTextField *connectProgressStatusText;
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;
@@ -99,24 +80,21 @@
 	IBOutlet id syntaxViewContent;
 	IBOutlet NSWindow *createTableSyntaxWindow;
 
+	SPConnectionController *connectionController;
+
 	MCPConnection *mySQLConnection;
-	SPSSHTunnel *sshTunnel;
 
 	NSArray *variables;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
 
-	NSString *connectionKeychainItemName;
-	NSString *connectionKeychainItemAccount;
-	NSString *connectionSSHKeychainItemName;
-	NSString *connectionSSHKeychainItemAccount;
-
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
 	BOOL _encodingViaLatin1;
 	BOOL _shouldOpenConnectionAutomatically;
+	BOOL _isConnected;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -124,35 +102,12 @@
 	WebView *printWebView;
 }
 
-//start sheet
-- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
-- (IBAction)connectToDB:(id)sender;
-- (IBAction)initiateConnection:(id)sender;
-- (void)initiateSSHTunnelConnection;
-- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
-- (void)initiateMySQLConnection;
-- (void)failConnectionWithErrorMessage:(NSString *)theErrorMessage withDetail:(NSString *)errorDetail;
-- (IBAction)cancelConnectSheet:(id)sender;
-- (IBAction)closeSheet:(id)sender;
-- (IBAction)chooseFavorite:(id)sender;
-- (IBAction)toggleUseSSH:(id)sender;
-- (IBAction)editFavorites:(id)sender;
-- (id)selectedFavorite;
-- (void)connectSheetAddToFavorites:(id)sender;
-- (void)addToFavoritesName:(NSString *)name host:(NSString *)host socket:(NSString *)socket 
-					  user:(NSString *)user password:(NSString *)password
-					  port:(NSString *)port database:(NSString *)database
-					useSSH:(BOOL)useSSH // no-longer in use
-				   sshHost:(NSString *)sshHost // no-longer in use
-				   sshUser:(NSString *)sshUser // no-longer in use
-			   sshPassword:(NSString *)sshPassword // no-longer in use
-				   sshPort:(NSString *)sshPort; // no-longer in use
-- (IBAction)connectSheetShowHelp:(id)sender;
-
 - (NSString *)getHTMLforPrint;
 
-//connection getter
-- (MCPConnection *)sharedConnection;
+// Connection callback and methods
+- (void) setConnection:(MCPConnection *)theConnection;
+- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
+- (BOOL)shouldAutomaticallyConnect;
 
 //database methods
 - (IBAction)setDatabases:(id)sender;
@@ -205,7 +160,6 @@
 - (void)willPerformQuery:(NSNotification *)notification;
 - (void)hasPerformedQuery:(NSNotification *)notification;
 - (void)applicationWillTerminate:(NSNotification *)notification;
-- (void)tunnelStatusChanged:(NSNotification *)notification;
 
 //menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
@@ -237,7 +191,6 @@
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 
-@end
+- (IBAction)closeSheet:(id)sender;
 
-extern NSString *TableDocumentFavoritesControllerSelectionIndexDidChange;
-extern NSString *TableDocumentFavoritesControllerFavoritesDidChange;
+@end
