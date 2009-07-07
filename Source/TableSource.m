@@ -1269,9 +1269,7 @@ traps enter and esc and make/cancel editing without entering next row
 			}
 		} else {
 			if ( column == 2 ) {
-				[tableSourceView editColumn:column+4 row:row withEvent:nil select:YES];
-			} else if ( column == 6 ) {
-				[tableSourceView editColumn:column+2 row:row withEvent:nil select:YES];
+				[tableSourceView editColumn:column+6 row:row withEvent:nil select:YES];
 			} else {
 				[tableSourceView editColumn:column+1 row:row withEvent:nil select:YES];
 			}
