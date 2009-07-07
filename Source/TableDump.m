@@ -2027,7 +2027,7 @@
 	NSMutableString *placeholderSyntax, *fieldString;
 	NSArray *viewColumns;
 	NSDictionary *column;
-	int i;
+	int i, j;
 
 	// Get structured information for the view via the SPTableData parsers
 	viewInformation = [tableDataInstance informationForView:viewName];
@@ -2046,6 +2046,12 @@
 		// Add the type and length information as appropriate
 		if ([column objectForKey:@"length"]) {
 			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], [column objectForKey:@"length"]];
+		} else if ([column objectForKey:@"values"]) {
+			[fieldString appendFormat:@" %@(", [column objectForKey:@"type"]];
+			for (j = 0; j < [[column objectForKey:@"values"] count]; j++) {
+				[fieldString appendFormat:@"'%@'%@", [mySQLConnection prepareString:[[column objectForKey:@"values"] objectAtIndex:j]], (j+1 == [[column objectForKey:@"values"] count])?@"":@","];
+			}
+			[fieldString appendString:@")"];
 		} else {
 			[fieldString appendFormat:@" %@", [column objectForKey:@"type"]];
 		}
