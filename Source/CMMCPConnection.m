@@ -266,6 +266,7 @@ static void forcePingTimeout(int signalNumber);
 	thePass = NULL;
 	if (theRet != mConnection) {
 		[self setLastErrorMessage:nil];
+		lastQueryErrorId = mysql_errno(mConnection);
 		return mConnected = NO;
 	}
 
@@ -278,6 +279,7 @@ static void forcePingTimeout(int signalNumber);
 
 	if (![self fetchMaxAllowedPacket]) {
 		[self setLastErrorMessage:nil];
+		lastQueryErrorId = mysql_errno(mConnection);
 		return mConnected = NO;
 	}
 	
@@ -688,6 +690,7 @@ static void forcePingTimeout(int signalNumber);
 		return YES;
 	}
 	[self setLastErrorMessage:nil];
+	lastQueryErrorId = mysql_errno(mConnection);
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
 		[delegate setTitlebarStatus:@"SSH Disconnected"];
