@@ -270,7 +270,7 @@
 	if([[self user] length])
 		[connection setValue:[self user] forKey:@"username"];
 	[connection setValue:[self host] forKey:@"hostname"];
-	if([[connectionController port] length])
+	if([connectionController port] &&[[connectionController port] length])
 		[connection setValue:[connectionController port] forKey:@"port"];
 	[connection setValue:selectedDatabase forKey:@"database"];
 	[connection setValue:versionForPrint forKey:@"version"];
@@ -1290,7 +1290,9 @@
 - (NSString *)host
 {
 	if ([connectionController type] == SP_CONNECTION_SOCKET) return @"localhost";
-	return [connectionController host];
+	NSString theHost = [connectionController host];
+	if (!theHost) theHost = @"";
+	return theHost;
 }
 
 /**
@@ -1298,13 +1300,13 @@
  */
 - (NSString *)name
 {
-	if ([[connectionController name] length]) {
+	if ([connectionController name] && [[connectionController name] length]) {
 		return [connectionController name];
 	}
 	if ([connectionController type] == SP_CONNECTION_SOCKET) {
-		return [NSString stringWithFormat:@"%@@%@", [connectionController user], [connectionController host]];
+		return [NSString stringWithFormat:@"%@@localhost", [connectionController user]?[connectionController user]:@""];
 	}
-	return [NSString stringWithFormat:@"%@@%@", [connectionController user], [connectionController host]];
+	return [NSString stringWithFormat:@"%@@%@", [connectionController user]?[connectionController user]:@"", [connectionController host]?[connectionController host]:@""];
 }
 
 /**
@@ -1336,7 +1338,9 @@
  */
 - (NSString *)user
 {
-	return [connectionController user];
+	NSString theUser = [connectionController user];
+	if (!theUser) theUser = @"";
+	return theUser;
 }
 
 #pragma mark -
