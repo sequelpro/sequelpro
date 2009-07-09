@@ -147,7 +147,7 @@
 	}
 
 	// Update the selected database if appropriate
-	if (![[connectionController database] isEqualToString:@""]) {
+	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 		selectedDatabase = [[connectionController database] retain];
 	}

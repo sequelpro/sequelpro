@@ -324,7 +324,7 @@
 			return;
 		}
 	}
-	if (![[self database] isEqualToString:@""]) {
+	if ([self database] && ![[self database] isEqualToString:@""]) {
 		if (![mySQLConnection selectDB:[self database]]) {
 			[self failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection getLastErrorMessage]] detail:nil];
 			if (sshTunnel) [sshTunnel release], sshTunnel = nil;

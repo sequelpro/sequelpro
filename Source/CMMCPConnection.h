@@ -123,6 +123,7 @@
 - (int) getMaxAllowedPacket;
 - (BOOL) isMaxAllowedPacketEditable;
 - (int) setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
+- (NSString *)findSocketPath;
 
 - (void)willPerformQuery:(NSNotification *)notification;
 
