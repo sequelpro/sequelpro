@@ -1567,9 +1567,10 @@
 	}
 	[mySQLConnection queryString:queryString];
 	[fieldValues release];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 	
-	// If no rows have been changed, show error if appropriate.	
-	if ( ![mySQLConnection affectedRows] ) {
+	// If no rows have been changed, show error if appropriate.
+	if ( ![mySQLConnection affectedRows] && ![mySQLConnection getLastErrorMessage] && ![[mySQLConnection getLastErrorMessage] length]) {
 		if ( [prefs boolForKey:@"ShowNoAffectedRowsError"] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
@@ -1581,7 +1582,6 @@
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
 		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		return YES;
 
 	// On success...
@@ -1635,16 +1635,13 @@
 			}
 		}
 		currentlyEditingRow = -1;
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		
 		return YES;
 
 	// Report errors which have occurred
 	} else {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write row.\nMySQL said: %@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
-
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		NSBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
+						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
 }
