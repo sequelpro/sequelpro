@@ -1540,6 +1540,9 @@
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
 				} else if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
+				} else if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"date"]
+							&& [[rowObject description] isEqualToString:@"NOW()"]) {
+					[rowValue setString:@"NOW()"];
 				} else {
 					[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
 				}
