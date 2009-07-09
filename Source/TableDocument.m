@@ -1290,7 +1290,7 @@
 - (NSString *)host
 {
 	if ([connectionController type] == SP_CONNECTION_SOCKET) return @"localhost";
-	NSString theHost = [connectionController host];
+	NSString *theHost = [connectionController host];
 	if (!theHost) theHost = @"";
 	return theHost;
 }
@@ -1338,7 +1338,7 @@
  */
 - (NSString *)user
 {
-	NSString theUser = [connectionController user];
+	NSString *theUser = [connectionController user];
 	if (!theUser) theUser = @"";
 	return theUser;
 }
