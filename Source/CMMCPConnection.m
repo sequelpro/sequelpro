@@ -81,6 +81,9 @@ static void forcePingTimeout(int signalNumber);
 
 	mConnectionFlags = kMCPConnectionDefaultOption;
 	
+	if (!host) host = @"";
+	if (!login) login = @"";
+	
 	connectionHost = [[NSString alloc] initWithString:host];
 	connectionLogin = [[NSString alloc] initWithString:login];
 	connectionPort = port;
@@ -101,6 +104,12 @@ static void forcePingTimeout(int signalNumber);
 	}
 	
 	mConnectionFlags = kMCPConnectionDefaultOption;
+
+	if (!socket || ![socket length]) {
+		socket = [self findSocketPath];
+		if (!socket) socket = @"";
+	}
+	if (!login) login = @"";
 	
 	connectionHost = nil;
 	connectionLogin = [[NSString alloc] initWithString:login];
@@ -161,6 +170,8 @@ static void forcePingTimeout(int signalNumber);
 	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
 	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
 	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
+
+	if (!thePassword) thePassword = @"";
 
 	connectionPassword = [[NSString alloc] initWithString:thePassword];
 	
@@ -1307,6 +1318,32 @@ static void forcePingTimeout(int signalNumber)
 	return(!mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet"));
 }
 
+/*
+ * Check some common locations for the presence of a MySQL socket file, returning
+ * it if successful.
+ */
+- (NSString *)findSocketPath
+{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSArray *possibleSocketLocations = [NSArray arrayWithObjects:
+										@"/tmp/mysql.sock",							// Default
+										@"/var/run/mysqld/mysqld.sock",				// As used on Debian/Gentoo
+										@"/var/tmp/mysql.sock",						// As used on FreeBSD
+										@"/var/lib/mysql/mysql.sock",				// As used by Fedora
+										@"/opt/local/lib/mysql/mysql.sock",			// Alternate fedora
+										@"/opt/local/var/run/mysqld/mysqld.sock",	// Darwinports MySQL
+										@"/opt/local/var/run/mysql4/mysqld.sock",	// Darwinports MySQL 4
+										@"/opt/local/var/run/mysql5/mysqld.sock",	// Darwinports MySQL 5
+										@"/Applications/MAMP/tmp/mysql/mysql.sock",	// MAMP default location
+										nil];
+	
+	for (int i = 0; i < [possibleSocketLocations count]; i++) {
+		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
+			return [possibleSocketLocations objectAtIndex:i];
+	}
+	
+	return nil;
+}
 
 - (void) dealloc
 {
