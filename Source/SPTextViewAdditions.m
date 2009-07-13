@@ -416,7 +416,7 @@
 #pragma mark multi-touch trackpad support
 
 /*
- * Trackpad two-finger zooming gesture in/decreases the font size
+ * Trackpad two-finger zooming gesture for in/decreasing the font size
  */
 - (void) magnifyWithEvent:(NSEvent *)anEvent
 {
@@ -430,7 +430,6 @@
 	else if([anEvent deltaZ]<-5.0)
 		[self makeTextSizeSmaller];
 
-	[self insertText:@""];
 }
 
 
