@@ -4,6 +4,7 @@
 
 @dynamic user, host;
 @dynamic parent;
+@dynamic children;
 
 - (NSString *)displayName
 {

@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="44"/>
+			<integer value="193"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -356,7 +356,7 @@
 												<reference key="NSControlView" ref="200332014"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage" id="523700861">
+												<object class="NSCustomResource" key="NSNormalImage">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -371,7 +371,10 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<reference key="NSImage" ref="523700861"/>
+													<object class="NSCustomResource" key="NSImage">
+														<string key="NSClassName">NSImage</string>
+														<string key="NSResourceName">button_action</string>
+													</object>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="190719524"/>
 												</object>
@@ -425,7 +428,7 @@
 												<object class="NSTabViewItem" id="820796939">
 													<string key="NSIdentifier">1</string>
 													<object class="NSView" key="NSView" id="143215913">
-														<reference key="NSNextResponder" ref="716372522"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -551,7 +554,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {507, 284}}</string>
-														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">General</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -560,7 +562,7 @@
 												<object class="NSTabViewItem" id="1024639412">
 													<string key="NSIdentifier">Item 3</string>
 													<object class="NSView" key="NSView" id="202198269">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="716372522"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1220,6 +1222,7 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {507, 284}}</string>
+														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Global Privileges</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -1804,13 +1807,13 @@
 													<reference key="NSTabView" ref="716372522"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="820796939"/>
+											<reference key="NSSelectedTabViewItem" ref="1024639412"/>
 											<reference key="NSFont" ref="746597359"/>
 											<int key="NSTvFlags">0</int>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="143215913"/>
+												<reference ref="202198269"/>
 											</object>
 										</object>
 										<object class="NSButton" id="445730006">
@@ -2651,39 +2654,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.user</string>
-						<reference key="source" ref="1021720165"/>
-						<reference key="destination" ref="889422316"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="1021720165"/>
-							<reference key="NSDestination" ref="889422316"/>
-							<string key="NSLabel">value: selection.user</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.user</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSMutableArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSContinuouslyUpdatesValue</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSRaisesForNotApplicableKeys</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<reference ref="5"/>
-									<string>No Selection</string>
-									<string>User Not Selected</string>
-									<reference ref="6"/>
-								</object>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">440</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: selection.password</string>
 						<reference key="source" ref="926329636"/>
 						<reference key="destination" ref="889422316"/>
@@ -2712,6 +2682,37 @@
 						</object>
 					</object>
 					<int key="connectionID">445</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.user</string>
+						<reference key="source" ref="1021720165"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1021720165"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.user</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.user</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSMutableArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSRaisesForNotApplicableKeys</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>No Selection</string>
+									<string>User Not Selected</string>
+									<reference ref="6"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">446</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4120,7 +4121,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">445</int>
+			<int key="maxID">446</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

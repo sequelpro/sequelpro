@@ -25,7 +25,12 @@
 - (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
 - (void)_selectParentFromSelection;
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
-- (BOOL)insertUsers:(NSArray *)newUsers;
+- (NSManagedObject *)_createNewSPUser;
+- (BOOL)insertUsers:(NSArray *)insertedUsers;
+- (BOOL)deleteUsers:(NSArray *)deletedUsers;
+- (BOOL)updateUsers:(NSArray *)updatedUsers;
+- (BOOL)checkAndDisplayMySqlError;
+
 @end
 
 @implementation SPUserManager
@@ -139,8 +144,7 @@
 		{
 			// Add Children
 			NSManagedObject *parent = [array objectAtIndex:0];
-			NSManagedObject *child = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
-																	 inManagedObjectContext:[self managedObjectContext]];
+			NSManagedObject *child = [self _createNewSPUser];
 			[child setParent:parent];
 			[parent addChildrenObject:child];
 			
@@ -148,15 +152,14 @@
 			
 		} else {
 			// Add Parent
-			NSManagedObject *parent = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
-																	 inManagedObjectContext:[self managedObjectContext]];
-			NSManagedObject *child = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
-																   inManagedObjectContext:[self managedObjectContext]];
+			NSManagedObject *parent = [self _createNewSPUser];
+			NSManagedObject *child = [self _createNewSPUser];
+			
 			[parent setValue:username forKey:@"user"];
 			[parent setValue:[item valueForKey:@"Password"] forKey:@"password"];
 			[parent addChildrenObject:child];
 			[child setParent:parent];
-
+			
 			[self initializeChild:child withItem:item];
 		}
 		// Save the initialized objects so that any new changes will be tracked.
@@ -184,7 +187,7 @@
 			NSNumber *value = [NSNumber numberWithInt:[[item valueForKey:key] intValue]];
 			[child setValue:value forKey:key];
 		}
-		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
+		else
 		{
 			NSString *value = [item valueForKey:key];
 			[child setValue:value forKey:key];
@@ -272,7 +275,6 @@
 	
     NSFileManager *fileManager;
     NSString *applicationSupportFolder = nil;
-//    NSURL *url;
     NSError *error;
     
     fileManager = [NSFileManager defaultManager];
@@ -281,7 +283,6 @@
         [fileManager createDirectoryAtPath:applicationSupportFolder attributes:nil];
     }
     
-//    url = [NSURL fileURLWithPath: [applicationSupportFolder stringByAppendingPathComponent: @"SequelProUserData.xml"]];
     persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
     if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error]){
         [[NSApplication sharedApplication] presentError:error];
@@ -396,6 +397,31 @@
 
 // Observer methods
 
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	NSLog(@"observeValueForKeyPath");
+	NSLog(@"%@", change);
+	if ([[object class] isKindOfClass:[NSManagedObject class]] && !isInitializing) {
+		NSManagedObject *parent = nil;
+		if ([(NSManagedObject *)object parent] != nil)
+		{
+			parent = [(NSManagedObject *)object parent];
+		} else {
+			parent = (NSManagedObject *)object;
+		}
+		
+		if (context == @"SPUser-user") {
+			for (NSManagedObject *child in [parent children]) {
+				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"user"];
+			}
+		} else if (context == @"SPUser-password") {
+			for (NSManagedObject *child in [parent children]) {
+				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"password"];
+			}
+		}
+	}
+}
+
 
 // General Action Methods 
 - (IBAction)doCancel:(id)sender
@@ -440,14 +466,11 @@
 			[self _selectParentFromSelection];
 		}
 	}	
-	NSIndexPath *indexPath = [NSIndexPath indexPathWithIndex:[[[self managedObjectContext] registeredObjects] count]];
-	NSManagedObject *newItem = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
-															 inManagedObjectContext:[self managedObjectContext]];
-	NSManagedObject *newChild = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser"
-															  inManagedObjectContext:[self managedObjectContext]];
+	NSManagedObject *newItem = [self _createNewSPUser];
+	NSManagedObject *newChild = [self _createNewSPUser];
 	[newChild setValue:@"localhost" forKey:@"host"];
 	[newItem addChildrenObject:newChild];
-//	[treeController insertObject:newItem atArrangedObjectIndexPath:indexPath];
+		
 	[treeController addObject:newItem];
 	[outlineView expandItem:newItem];
 	
@@ -455,15 +478,11 @@
 
 - (IBAction)removeUser:(id)sender
 {
-	
-	if ([[treeController selectedObjects] count] > 0)
+	NSArray *selectedObjects = [treeController selectedObjects];
+	for (NSManagedObject *user in selectedObjects)
 	{
-		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil)
-		{
-			[self _selectParentFromSelection];
-		}
-		[treeController removeObject:[[treeController selectedObjects] objectAtIndex:0]];
-	}	
+		[[self managedObjectContext] deleteObject:user];
+	}
 }
 
 - (IBAction)addHost:(id)sender
@@ -531,10 +550,34 @@
 		
 		if ([deleted count] > 0)
 		{
-			
+			[self deleteUsers:deleted];
 		}
-
+		
 	}
+}
+
+- (BOOL)updateUsers:(NSArray *)updatedUsers
+{
+	return FALSE;
+}
+
+- (BOOL)deleteUsers:(NSArray *)deletedUsers
+{
+	[[self connection] selectDB:@"mysql"];
+	NSMutableString *droppedUsers = [NSMutableString string];
+	for (NSManagedObject *user in deletedUsers)
+	{
+		if ([user host] != nil)
+		{
+			[droppedUsers appendString:[NSString stringWithFormat:@"%@@%@, ", 
+										[[user valueForKey:@"user"] backtickQuotedString], 
+										[[user valueForKey:@"host"] backtickQuotedString]]];
+		}
+	}
+	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
+	[[self connection] queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+	
+	return TRUE;
 }
 
 - (BOOL)insertUsers:(NSArray *)insertedUsers
@@ -542,71 +585,70 @@
 	[[self connection] selectDB:@"mysql"];
 	for(NSManagedObject *user in insertedUsers)
 	{
+		
 		if ([user valueForKey:@"parent"] != nil)
 		{
-			NSMutableString *insertStatement = nil;
+			NSLog(@"%@", user);
+
 			NSDictionary *attributesDict = [[user entity] attributesByName];
-			NSMutableArray *values = [NSMutableArray array];
-			NSString *valuesString = nil;
-			NSMutableString *columns = [NSMutableString stringWithCapacity:10];
+			NSMutableArray *grantPrivileges = [NSMutableArray array];
+			NSMutableArray *revokePrivileges = [NSMutableArray array];
+			
 			for(NSString *key in [attributesDict allKeys])
 			{
-				if ([key isEqualToString:@"user"])
+				if ([key hasSuffix:@"_priv"])
 				{
-					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
-				}
-				else if ([key isEqualToString:@"password"])
-				{
-					[values addObject:[NSString stringWithFormat:@"%@",[[user parent] valueForKey:key]]];
-				}
-				else if ([user valueForKey:key] == nil)
-				{
-					[values addObject:@"NULL"];	
-				}
-				else 
-				{
-					if ([key hasSuffix:@"_priv"])
+					NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
+					
+					if ([[user valueForKey:key] boolValue] == TRUE)
 					{
-						if ([[user valueForKey:key] boolValue] == TRUE)
-						{
-							[values addObject:@"Y"];
-						}
-						else
-						{
-							[values addObject:@"N"];
-						}
+						[grantPrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
 					}
 					else
 					{
-						[values addObject:[NSString stringWithFormat:@"%@", [user valueForKey:key]]];
+						[revokePrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
 					}
 				}
-				[columns appendString:[NSString stringWithFormat:@"%@, ", key]];
 			}
-			valuesString = [values componentsJoinedAndBacktickQuoted];
-			columns = [[columns substringToIndex:[columns length] -2] mutableCopy];
-			insertStatement = [NSMutableString stringWithFormat:@"CREATE USER %@@%@", [[[user parent] valueForKey:@"user"] backtickQuotedString], [[user valueForKey:@"host"] backtickQuotedString]];
-			NSLog(@"insert statement = %@", insertStatement);
 			
-			[[self connection] queryString:[NSString stringWithFormat:insertStatement]];
-			if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
+			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
+												[[[user parent] valueForKey:@"user"] tickQuotedString], 
+												[[user valueForKey:@"host"] tickQuotedString],
+												[[[user parent] valueForKey:@"password"] tickQuotedString]];
+			// Create user in database
+			[[self connection] queryString:[NSString stringWithFormat:createStatement]];
+			
+			if ([self checkAndDisplayMySqlError])
 			{
-				NSLog(@"%d-%@", [[self connection] getLastErrorID], [[self connection] getLastErrorMessage]);
-			} 
-			else
-			{	
-				[[self connection] queryString:[NSString stringWithFormat:@"SET PASSWORD FOR %@@%@ = PASSWORD(%@)", 
-				 [[[user parent] valueForKey:@"user"] backtickQuotedString], 
-				 [[user valueForKey:@"host"] backtickQuotedString], 
-				 [[[user parent] valueForKey:@"password"] backtickQuotedString]]];
+				// Grant privileges
+				if ([grantPrivileges count] > 0)
+				{
+					NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO '%@'@'%@';",
+												[grantPrivileges componentsJoinedByCommas],
+												[[[user parent] valueForKey:@"user"] tickQuotedString],
+												[[user valueForKey:@"host"] tickQuotedString]];
+					NSLog(@"%@", grantStatement);
+					[[self connection] queryString:[NSString stringWithFormat:grantStatement]];
+					[self checkAndDisplayMySqlError];
+				}
 				
+				// Revoke privileges
+				if ([revokePrivileges count] > 0)
+				{
+					NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* TO %@@%@;",
+												 [revokePrivileges componentsJoinedByCommas],
+												 [[[user parent] valueForKey:@"user"] tickQuotedString],
+												 [[user valueForKey:@"host"] tickQuotedString]];
+					NSLog(@"%@", revokeStatement);
+					[[self connection] queryString:[NSString stringWithFormat:revokeStatement]];
+					[self checkAndDisplayMySqlError];
+				}		
 			}
-			
 		}
 	}
-
+	
 	return FALSE;
-		
+	
 }
 - (NSArray *)_fetchUserWithUserName:(NSString *)username
 {
@@ -627,5 +669,27 @@
 	}
 	
 	return array;
+}
+
+- (NSManagedObject *)_createNewSPUser
+{
+	NSManagedObject *user = [[NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
+														  inManagedObjectContext:[self managedObjectContext]] autorelease];
+	
+	[user addObserver:self forKeyPath:@"user" options:NSKeyValueObservingOptionNew context:@"SPUser-user"];
+	[user addObserver:self forKeyPath:@"password" options:NSKeyValueObservingOptionNew context:@"SPUser-password"];
+	
+	return user;
+}
+
+- (BOOL)checkAndDisplayMySqlError
+{
+	if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
+	{
+		NSBeginAlertSheet(@"MySQL Error", @"OK", nil, nil, window, self, NULL, NULL, nil, [[self connection] getLastErrorMessage]);
+		return FALSE;
+	} else {
+		return TRUE;
+	}
 }
 @end

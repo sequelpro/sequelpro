@@ -159,6 +159,42 @@
 	return quotedString;
 }
 
+// -------------------------------------------------------------------------------
+// tickQuotedString
+//
+// Returns the string quoted with ticks as required for MySQL identifiers
+// eg.:  tablename    =>   'tablename'
+//       my'table     =>   'my''table'
+// -------------------------------------------------------------------------------
+- (NSString *)tickQuotedString
+{
+	// mutableCopy automatically retains the returned string, so don't forget to release it later...
+	NSMutableString *workingCopy = [self mutableCopy];
+	
+	// First double all backticks in the string to escape them
+	// I don't want to use "stringByReplacingOccurrencesOfString:withString:" because it's only available in 10.5
+	[workingCopy replaceOccurrencesOfString: @"'"  
+								 withString: @"''" 
+									options: NSLiteralSearch 
+									  range: NSMakeRange(0, [workingCopy length]) ];
+	
+	// Add the quotes around the string
+	NSString *quotedString = [NSString stringWithFormat: @"'%@'", workingCopy];
+	
+	[workingCopy release];
+	
+	return quotedString;
+}
+
+- (NSString *)replaceUnderscoreWithSpace
+{
+	NSMutableString *workingCopy = [self mutableCopy];
+	[workingCopy replaceOccurrencesOfString:@"_"
+								 withString:@" "
+									options:NSLiteralSearch
+									 range:NSMakeRange(0, [workingCopy length])];
+	return [workingCopy autorelease];
+}
 
 // -------------------------------------------------------------------------------
 // createViewSyntaxPrettifier

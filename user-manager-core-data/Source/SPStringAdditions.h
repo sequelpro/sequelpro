@@ -56,6 +56,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 + (NSString *)stringForTimeInterval:(float)timeInterval intervalInClocks:(BOOL)inClocks;
 
 - (NSString *)backtickQuotedString;
+- (NSString *)tickQuotedString;
+- (NSString *)replaceUnderscoreWithSpace;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 

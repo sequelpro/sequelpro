@@ -5,6 +5,7 @@
 @property(nonatomic, retain) NSString *user;
 @property(nonatomic, retain) NSString *host;
 @property(nonatomic, retain) NSManagedObject *parent;
+@property (nonatomic, retain) NSSet *children;
 
 - (NSString *)displayName;
 - (void)setDisplayName:(NSString *)value;

@@ -36,6 +36,7 @@ static inline id NSArrayObjectAtIndex(NSArray* self, NSUInteger i) {
 @interface NSArray (SPArrayAdditions)
 
 - (NSString *)componentsJoinedAndBacktickQuoted;
+- (NSString *)componentsJoinedByCommas;
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end
