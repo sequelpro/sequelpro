@@ -634,7 +634,6 @@
 		return;
 	}
 
-
 	// get column definitions for the result array
 	cqColumnDefinition = [[theResult fetchResultFieldsStructure] retain];
 
@@ -658,9 +657,10 @@
 
 	// Add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
+
 	if(!tableReloadAfterEdting) {
 		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
-			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"name"]];
+			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
 			[theCol setEditable:YES];
 			NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
@@ -703,7 +703,7 @@
 }
 
 /*
- * Fetches the result as an array with a dictionary for each row in it
+ * Fetches the result as an array, with an array for each row in it
  */
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
@@ -711,11 +711,9 @@
 	unsigned long numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 
-	NSDictionary *tempRow;
-	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
-	NSEnumerator *enumerator;
-	id key;
-	int i;
+	NSArray *tempRow;
+	NSMutableArray *modifiedRow = [NSMutableArray array];
+	int i, j, numOfFields;
 	Class nullClass = [NSNull class];
 	id prefsNullValue = [prefs objectForKey:@"NullValue"];
 	// BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
@@ -725,14 +723,15 @@
 
 	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < numOfRows ; i++ ) {
-		tempRow = [theResult fetchRowAsDictionary];
-		enumerator = [tempRow keyEnumerator];
+		tempRow = [theResult fetchRowAsArray];
 
-		while ( key = [enumerator nextObject] ) {
-			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] ) {
-				[modifiedRow setObject:prefsNullValue forKey:key];
+		if ( i == 0 ) numOfFields = [tempRow count];
+
+		for ( j = 0; j < numOfFields; j++) {
+			if ( [NSArrayObjectAtIndex(tempRow, j) isMemberOfClass:nullClass] ) {
+				[modifiedRow addObject:prefsNullValue];
 			} else {
-				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
+				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, j)];
 			}
 		}
 
@@ -746,7 +745,8 @@
 		// 	}
 		// }
 
-		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
+		[tempResult addObject:[NSArray arrayWithArray:modifiedRow]];
+		[modifiedRow removeAllObjects];
 	}
 
 	return tempResult;
@@ -1082,7 +1082,7 @@
  */
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn
 {
-
+	NSArray *dataRow;
 	id field;
 
 	//Look for all columns which are coming from "tableForColumn"
@@ -1097,8 +1097,9 @@
 	[fieldIDQueryString setString:@"WHERE ("];
 	
 	// Build WHERE clause
+	dataRow = [fullResult objectAtIndex:rowIndex];
 	for(field in columnsForFieldTableName) {
-		id aValue = [[fullResult objectAtIndex:rowIndex] objectForKey:[field objectForKey:@"name"]];
+		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
 			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
@@ -1148,7 +1149,7 @@
 
 	if ( aTableView == customQueryView ) {
 
-		id theValue = [NSArrayObjectAtIndex(fullResult, rowIndex) objectForKey:[aTableColumn identifier]];
+		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
 
 		if ( [theValue isKindOfClass:[NSData class]] )
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
@@ -1210,7 +1211,7 @@
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
-			if([[c objectForKey:@"name"] isEqualToString:[aTableColumn identifier]]) {
+			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 				break;
 			}
@@ -1239,7 +1240,7 @@
 			if([anObject isEqualToString:[prefs stringForKey:@"NullValue"]])
 				newObject = @"NULL";
 			else
-				newObject = [NSString stringWithFormat:@"'%@'", [anObject description]];
+				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
 			
 			[mySQLConnection queryString:
 				[NSString stringWithFormat:@"UPDATE %@ SET %@=%@ %@ LIMIT 1", 
@@ -1290,17 +1291,18 @@
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
 	//sets order descending if a header is clicked twice
-	if ( [[tableColumn identifier] isEqualTo:sortField] ) {
+	if ( sortField && [[tableColumn identifier] isEqualToNumber:sortField] ) {
 		isDesc = !isDesc;
 	} else {
 		isDesc = NO;
-		[customQueryView setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
+		if (sortField) [customQueryView setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
 	}
 
 	if (sortField) [sortField release];
-	sortField = [[NSString alloc] initWithString:[tableColumn identifier]];
+	sortField = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
 	
-	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %@ %@ ", [sortField backtickQuotedString], (isDesc)?@"DESC":@"ASC"];
+	// Order by the column position number to avoid ambiguous name errors
+	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %i %@ ", [[tableColumn identifier] intValue]+1, (isDesc)?@"DESC":@"ASC"];
 	
 	//make queryString and perform query
 	if([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
@@ -1444,7 +1446,7 @@
 
 			// Retrieve the column defintion
 			for(id c in cqColumnDefinition) {
-				if([[c objectForKey:@"name"] isEqualToString:[aTableColumn identifier]]) {
+				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 					columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 					break;
 				}
@@ -1490,18 +1492,18 @@
 		//get the value
 			theRow = [fullResult objectAtIndex:rowIndex];
 	
-			if ( [[theRow objectForKey:[aTableColumn identifier]] isKindOfClass:[NSData class]] ) {
-				theValue = [[NSString alloc] initWithData:[theRow objectForKey:[aTableColumn identifier]]
+			if ( [[theRow objectAtIndex:[[aTableColumn identifier] intValue]] isKindOfClass:[NSData class]] ) {
+				theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[[aTableColumn identifier] intValue]]
 									encoding:[mySQLConnection encoding]];
 				if (theValue == nil) {
-					theValue = [[NSString alloc] initWithData:[theRow objectForKey:[aTableColumn identifier]]
+					theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[[aTableColumn identifier] intValue]]
 													 encoding:NSASCIIStringEncoding];
 				}
 				[theValue autorelease];
-			} else if ( [[theRow objectForKey:[aTableColumn identifier]] isMemberOfClass:[NSNull class]] ) {
+			} else if ( [[theRow objectAtIndex:[[aTableColumn identifier] intValue]] isMemberOfClass:[NSNull class]] ) {
 				theValue = [prefs objectForKey:@"NullValue"];
 			} else {
-				theValue = [theRow objectForKey:[aTableColumn identifier]];
+				theValue = [theRow objectAtIndex:[[aTableColumn identifier] intValue]];
 			}
 	
 			[valueTextField setString:[theValue description]];

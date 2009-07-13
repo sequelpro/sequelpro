@@ -95,7 +95,7 @@
 	
 	BOOL tableReloadAfterEdting;
 	BOOL isDesc;
-	NSString *sortField;
+	NSNumber *sortField;
 	BOOL tempAlertWasShown; // a temp value for nightly builts
 		
 }

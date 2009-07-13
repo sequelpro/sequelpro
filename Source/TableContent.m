@@ -53,11 +53,12 @@
 		
 		fullResult     = [[NSMutableArray alloc] init];
 		filteredResult = [[NSMutableArray alloc] init];
-		oldRow         = [[NSMutableDictionary alloc] init];
+		oldRow         = [[NSMutableArray alloc] init];
 		
 		selectedTable = nil;
-		sortField     = nil;
-		
+		sortCol       = nil;
+		lastField     = nil;
+
 		areShowingAllRows = false;
 		currentlyEditingRow = -1;
 		
@@ -82,7 +83,7 @@
 - (void)loadTable:(NSString *)aTable
 {
 	int			i;
-	NSNumber	*colWidth;
+	NSNumber	*colWidth, *savedSortCol = nil;
 	NSArray		*theColumns, *columnNames;
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
@@ -174,7 +175,7 @@
 		columnDefinition = NSArrayObjectAtIndex(theColumns, i);
 
 		// Set up the column
-		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"name"]];
+		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
 		[theCol setEditable:YES];
 		
@@ -221,14 +222,20 @@
 			[theCol setWidth:[colWidth floatValue]];
 		}
 		
+		// Set the column to be reselected for sorting if appropriate
+		if (lastField && [lastField isEqualToString:[columnDefinition objectForKey:@"name"]])
+			savedSortCol = [columnDefinition objectForKey:@"datacolumnindex"];
+		
 		// Add the column to the table
 		[tableContentView addTableColumn:theCol];
 		[theCol release];
 	}
 
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it. 
-	if (preserveCurrentView && [columnNames containsObject:sortField]) {
-		theCol = [tableContentView tableColumnWithIdentifier:sortField];
+	if (preserveCurrentView && savedSortCol) {
+		theCol = [tableContentView tableColumnWithIdentifier:savedSortCol];
+		if (sortCol) [sortCol release];
+		sortCol = [savedSortCol copy];
 		[tableContentView setHighlightedTableColumn:theCol];
 		if ( isDesc ) {
 			[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:theCol];
@@ -238,9 +245,9 @@
 	
 	// Otherwise, clear sorting
 	} else {
-		if (sortField) {
-			[sortField release];
-			sortField = nil;
+		if (sortCol) {
+			[sortCol release];
+			sortCol = nil;
 		}
 		isDesc = NO;
 	}
@@ -308,8 +315,8 @@
 
 	// Perform the data query and store the result as an array containing a dictionary per result row
 	query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-	if ( sortField ) {
-		query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [sortField backtickQuotedString]];
+	if ( sortCol ) {
+		query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		if ( isDesc )
 			query = [query stringByAppendingString:@" DESC"];
 	}
@@ -409,8 +416,8 @@
 	
 	//	queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-	if ( sortField ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [sortField backtickQuotedString]];
+	if ( sortCol ) {
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		//		queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
@@ -628,8 +635,8 @@
 	}
 
 	// Add sorting details if appropriate
-	if ( sortField ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [sortField backtickQuotedString]];
+	if ( sortCol ) {
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
 	}
@@ -716,7 +723,8 @@
 - (IBAction)addRow:(id)sender
 {
 	NSArray *columns;
-	NSMutableDictionary *column, *newRow = [NSMutableDictionary dictionary];
+	NSMutableDictionary *column;
+	NSMutableArray *newRow = [NSMutableArray array];
 	int i;
 
 	// Check whether a save of the current row is required.
@@ -726,9 +734,9 @@
 	for ( i = 0 ; i < [columns count] ; i++ ) {
 		column = NSArrayObjectAtIndex(columns, i);
 		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
-			[newRow setObject:[prefs stringForKey:@"NullValue"] forKey:[column objectForKey:@"name"]];
+			[newRow addObject:[prefs stringForKey:@"NullValue"]];
 		} else {
-			[newRow setObject:[column objectForKey:@"default"] forKey:[column objectForKey:@"name"]];
+			[newRow addObject:[column objectForKey:@"default"]];
 		}
 	}
 	[filteredResult addObject:newRow];
@@ -748,9 +756,10 @@
  copies a row of the table-array and goes into edit mode
  */
 {
-	NSMutableDictionary *tempRow;
+	NSMutableArray *tempRow;
 	CMMCPResult *queryResult;
-	NSDictionary *row, *dbDataRow = nil;
+	NSDictionary *row;
+	NSArray *dbDataRow = nil;
 	int i;
 	
 	// Check whether a save of the current row is required.
@@ -764,7 +773,7 @@
 	}
 	
 	//copy row
-	tempRow = [NSMutableDictionary dictionaryWithDictionary:[filteredResult objectAtIndex:[tableContentView selectedRow]]];
+	tempRow = [NSMutableArray arrayWithArray:[filteredResult objectAtIndex:[tableContentView selectedRow]]];
 	[filteredResult insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
 	
 	//if we don't show blobs, read data for this duplicate column from db
@@ -775,7 +784,7 @@
 		}
 		//if we have indexes, use argumentForRow
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
-		dbDataRow = [queryResult fetchRowAsDictionary];
+		dbDataRow = [queryResult fetchRowAsArray];
 	}
 	
 	//set autoincrement fields to NULL
@@ -784,15 +793,15 @@
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
-			[tempRow setObject:[prefs stringForKey:@"NullValue"] forKey:[row objectForKey:@"Field"]];
+			[tempRow replaceObjectAtIndex:i withObject:[prefs stringForKey:@"NullValue"]];
 		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"LoadBlobsAsNeeded"] && dbDataRow) {
 			NSString *valueString = nil;
 			//if what we read from DB is NULL (NSNull), we replace it with the string NULL
-			if([[dbDataRow objectForKey:[row objectForKey:@"Field"]] isKindOfClass:[NSNull class]])
+			if([[dbDataRow objectAtIndex:i] isKindOfClass:[NSNull class]])
 				valueString = [prefs objectForKey:@"NullValue"];
 			else
-				valueString = [dbDataRow objectForKey:[row objectForKey:@"Field"]];
-			[tempRow setObject:valueString forKey:[row objectForKey:@"Field"]];
+				valueString = [dbDataRow objectAtIndex:i];
+			[tempRow replaceObjectAtIndex:i withObject:valueString];
 		}
 	}
 	
@@ -1247,7 +1256,7 @@
 		[tempRow removeAllObjects];
 		enumerator = [tableColumns objectEnumerator];
 		while ( (tableColumn = [enumerator nextObject]) ) {
-			id o = [NSArrayObjectAtIndex(fullResult, i) objectForKey:[[tableColumn headerCell] stringValue]];
+			id o = [NSArrayObjectAtIndex(fullResult, i) objectAtIndex:[[tableColumn identifier] intValue]];
 			if([o isKindOfClass:[NSNull class]])
 				[tempRow addObject:@"NULL"];
 			else if([o isKindOfClass:[NSString class]])
@@ -1430,7 +1439,7 @@
 }
 
 /*
- * Fetches the result as an array with a dictionary for each row in it
+ * Fetches the result as an array, with an array for each row in it
  */
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
@@ -1438,10 +1447,9 @@
 	unsigned long numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 
-	NSDictionary *tempRow;
-	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
-	NSEnumerator *enumerator;
-	id key;
+	NSArray *tempRow;
+	NSMutableArray *modifiedRow = [NSMutableArray array];
+	NSMutableArray *columnBlobStatuses = [NSMutableArray array];
 	int i, j;
 	Class nullClass = [NSNull class];
 	id prefsNullValue = [prefs objectForKey:@"NullValue"];
@@ -1450,29 +1458,34 @@
 	columns = [tableDataInstance columns];
 	long columnsCount = [columns count];
 
+	// Build up an array of which columns are blobs for faster iteration
+	for ( i = 0; i < columnsCount ; i++ ) {
+		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, i) objectForKey:@"name"] ]]];
+	}
+	
 	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < numOfRows ; i++ ) {
-		tempRow = [theResult fetchRowAsDictionary];
-		enumerator = [tempRow keyEnumerator];
+		[modifiedRow removeAllObjects];
+		tempRow = [theResult fetchRowAsArray];
 
-		while ( key = [enumerator nextObject] ) {
-			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] ) {
-				[modifiedRow setObject:prefsNullValue forKey:key];
+		for ( j = 0; j < columnsCount; j++ ) {
+			if ( [NSArrayObjectAtIndex(tempRow, j) isMemberOfClass:nullClass] ) {
+				[modifiedRow addObject:prefsNullValue];
 			} else {
-				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
+				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, j)];
 			}
 		}
 
 		// Add values for hidden blob and text fields if appropriate
 		if ( prefsLoadBlobsAsNeeded ) {
 			for ( j = 0 ; j < columnsCount ; j++ ) {
-				if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"] ] ) {
-					[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[NSArrayObjectAtIndex(columns, j) objectForKey:@"name"]];
+				if ( [NSArrayObjectAtIndex(columnBlobStatuses, j) boolValue] ) {
+					[modifiedRow replaceObjectAtIndex:j withObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				}
 			}
 		}
 
-		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
+		[tempResult addObject:[NSMutableArray arrayWithArray:modifiedRow]];
 	}
 
 	return tempResult;
@@ -1502,7 +1515,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
-	if (!isEditingNewRow && [oldRow isEqualToDictionary:[filteredResult objectAtIndex:currentlyEditingRow]]) {
+	if (!isEditingNewRow && [oldRow isEqualToArray:[filteredResult objectAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -1517,7 +1530,7 @@
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
-		rowObject = [NSArrayObjectAtIndex(filteredResult, currentlyEditingRow) objectForKey:NSArrayObjectAtIndex(columnNames, i)];
+		rowObject = [NSArrayObjectAtIndex(filteredResult, currentlyEditingRow) objectAtIndex:i];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -1580,7 +1593,7 @@
 		} else {
 			NSBeep();
 		}
-		[filteredResult replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+		[filteredResult replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableArray arrayWithArray:oldRow]];
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
@@ -1602,8 +1615,7 @@
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [theColumns count] ; i++ ) {
 					if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"autoincrement"] intValue]) {
-						[[filteredResult objectAtIndex:currentlyEditingRow] setObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]
-																	forKey:NSArrayObjectAtIndex(columnNames, i)];
+						[[filteredResult objectAtIndex:currentlyEditingRow] replaceObjectAtIndex:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
 					}
 				}
 				[fullResult addObject:[filteredResult objectAtIndex:currentlyEditingRow]];
@@ -1620,8 +1632,8 @@
 			// TODO: this probably needs looking at... it's reloading it all itself?
 			} else {
 				query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-				if ( sortField ) {
-					query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [sortField backtickQuotedString]];
+				if ( sortCol ) {
+					query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 					if ( isDesc )
 						query = [query stringByAppendingString:@" DESC"];
 				}
@@ -1738,11 +1750,11 @@
 
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			tempValue = [NSArrayObjectAtIndex(filteredResult, row) objectForKey:NSArrayObjectAtIndex(keys, i)];
+			tempValue = [NSArrayObjectAtIndex(filteredResult, row) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
 
 		// Otherwise use the oldRow
 		} else {
-			tempValue = [oldRow objectForKey:NSArrayObjectAtIndex(keys, i)];
+			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
 		}
 
 		if ( [tempValue isKindOfClass:[NSData class]] ) {
@@ -1819,16 +1831,15 @@
 	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, i) objectForKey:@"name"]] ) {
-				[fields addObject:NSArrayObjectAtIndex(columnNames, i)];
+				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
+			} else {
+			
+				// For blob/text fields, select a null placeholder so the column count is still correct
+				[fields addObject:@"NULL"];
 			}
 		}
 
-		// Always select at least one field - the first if there are no non-blob fields.
-		if ( [fields count] == 0 ) {
-			return [NSArrayObjectAtIndex(columnNames, 0) backtickQuotedString];
-		} else {
-			return [fields componentsJoinedAndBacktickQuoted];
-		}
+		return [fields componentsJoinedByString:@","];
 	} else {
 		return @"*";
 	}
@@ -1857,7 +1868,7 @@
 		} else {
 			if ( !isEditingNewRow ) {
 				[filteredResult replaceObjectAtIndex:[tableContentView selectedRow]
-										  withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+										  withObject:[NSMutableArray arrayWithArray:oldRow]];
 				isEditingRow = NO;
 			} else {
 				[filteredResult removeObjectAtIndex:[tableContentView selectedRow]];
@@ -1932,9 +1943,9 @@
 				if ( !areShowingAllRows ) {
 					//					queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
 					queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-					if ( sortField ) {
+					if ( sortCol ) {
 						//						queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
-						queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [sortField backtickQuotedString]];
+						queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 						if ( isDesc )
 							queryString = [queryString stringByAppendingString:@" DESC"];
 					}
@@ -2012,7 +2023,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
 
-	id theValue = [NSArrayObjectAtIndex(filteredResult, rowIndex) objectForKey:[aTableColumn identifier]];
+	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(filteredResult, rowIndex), [[aTableColumn identifier] intValue]);
 
 	if ( [theValue isKindOfClass:[NSData class]] )
 		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
@@ -2039,16 +2050,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		if ([cell respondsToSelector:@selector(setTextColor:)])
 		{
 			NSArray    *columns             = [tableDataInstance columns];
-			NSArray    *columnNames         = [tableDataInstance columnNames];
 			NSString   *columnTypeGrouping;
 			NSUInteger  indexOfColumn;
 
-			// We have to find the index of the current column
-			// Make sure we find it, otherwise return (We might decide in the future
-			// to add a column to the TableView that doesn't correspond to a column
-			// of the Mysql table...)
-			indexOfColumn = [columnNames indexOfObject:[aTableColumn identifier]];
-			if (indexOfColumn ==  NSNotFound) return;
+			indexOfColumn = [[aTableColumn identifier] intValue];
 
 			// Test if the current column is a text or a blob field
 			columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
@@ -2081,15 +2086,15 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
-		[oldRow setDictionary:NSArrayObjectAtIndex(filteredResult, rowIndex)];
+		[oldRow setArray:NSArrayObjectAtIndex(filteredResult, rowIndex)];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
 	
 	if ( anObject )
-		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:anObject forKey:[aTableColumn identifier]];
+		[NSArrayObjectAtIndex(filteredResult, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
 	else
-		[NSArrayObjectAtIndex(filteredResult, rowIndex) setObject:@"" forKey:[aTableColumn identifier]];
+		[NSArrayObjectAtIndex(filteredResult, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
 
 }
 
@@ -2115,7 +2120,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 		
 	//sets order descending if a header is clicked twice
-	if ( [[tableColumn identifier] isEqualTo:sortField] ) {
+	if ( [[tableColumn identifier] isEqualTo:sortCol] ) {
 		if ( isDesc ) {
 			isDesc = NO;
 		} else {
@@ -2123,14 +2128,18 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		}
 	} else {
 		isDesc = NO;
-		[tableContentView setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortField]];
+		[tableContentView setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
 	}
-	if (sortField) [sortField release];
-	sortField = [[NSString alloc] initWithString:[tableColumn identifier]];
+	if (sortCol) [sortCol release];
+	sortCol = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
+	
+	// Save the sort field name for use when refreshing the table
+	if (lastField) [lastField release];
+	lastField = [[NSString alloc] initWithString:[[[tableDataInstance columns] objectAtIndex:[[tableColumn identifier] intValue]] objectForKey:@"name"]];
 	
 	//make queryString and perform query
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@ ORDER BY %@", [self fieldListForQuery],
-				   [selectedTable backtickQuotedString], [sortField backtickQuotedString]];
+				   [selectedTable backtickQuotedString], [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 	if ( isDesc )
 		queryString = [queryString stringByAppendingString:@" DESC"];
 	if ( [prefs boolForKey:@"LimitResults"] ) {
@@ -2242,7 +2251,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 	}
 	// save column size
-	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier]];
+	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[[aNotification userInfo] objectForKey:@"NSTableColumn"] headerCell] stringValue]];
 	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
 }
 
@@ -2252,13 +2261,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-	int code;
+	int i, code;
 	NSString *query, *stringValue = nil, *wherePart = nil;
 
-	NSEnumerator *enumerator;
-	NSDictionary *tempRow;
-	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
-	id key, theValue;
+	NSArray *tempRow;
+	NSMutableArray *modifiedRow = [NSMutableArray array];
+	id theValue;
 	CMMCPResult *tempResult;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
@@ -2276,27 +2284,26 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 				return NO;
 			}
-			tempRow = [tempResult fetchRowAsDictionary];
-			enumerator = [tempRow keyEnumerator];
-			while ( key = [enumerator nextObject] ) {
-				if ( [[tempRow objectForKey:key] isMemberOfClass:[NSNull class]] ) {
-					[modifiedRow setObject:[prefs stringForKey:@"NullValue"] forKey:key];
+			tempRow = [tempResult fetchRowAsArray];
+			for ( i = 0; i < [tempRow count]; i++ ) {
+				if ( [[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]] ) {
+					[modifiedRow addObject:[prefs stringForKey:@"NullValue"]];
 				} else {
-					[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
+					[modifiedRow addObject:[tempRow objectAtIndex:i]];
 				}
 			}
-			[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
+			[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableArray arrayWithArray:modifiedRow]];
 			[tableContentView reloadData];
 		}
 	}
 	
-	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[aTableColumn identifier]];
+	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
 	if ( [multipleLineEditingButton state] == NSOnState || isBlob ) {
 		
 		editSheetWillBeInitialized = YES;
 		
-		theValue = [[filteredResult objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+		theValue = [[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
 		NSImage *image = nil;
 		editData = [theValue retain];
 
@@ -2397,12 +2404,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 		if ( code ) {
 			if ( !isEditingRow ) {
-				[oldRow setDictionary:[filteredResult objectAtIndex:rowIndex]];
+				[oldRow setArray:[filteredResult objectAtIndex:rowIndex]];
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
 			
-			[[filteredResult objectAtIndex:rowIndex] setObject:[editData copy] forKey:[aTableColumn identifier]];
+			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
 
 			// Clean up
 			[editImage setImage:nil];
@@ -2478,7 +2485,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			// Check if next column is a blob column, and skip to the next non-blob column
 			i = 1;
 			while (
-				(fieldType = [[tableDataInstance columnWithName:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] objectForKey:@"typegrouping"])
+				(fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) headerCell] stringValue]] objectForKey:@"typegrouping"])
 				&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
 			) {
 				i++;
@@ -2505,7 +2512,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
 			isEditingRow = NO;
-			[filteredResult replaceObjectAtIndex:row withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+			[filteredResult replaceObjectAtIndex:row withObject:[NSMutableArray arrayWithArray:oldRow]];
 		} else if ( isEditingNewRow ) {
 			isEditingRow = NO;
 			isEditingNewRow = NO;
@@ -2580,7 +2587,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	[keys release];
 	[oldRow release];
 	[compareType release];
-	if (sortField) [sortField release];
+	if (sortCol) [sortCol release];
+	if (lastField) [lastField release];
 	[usedQuery release];
 	
 	[super dealloc];
