@@ -168,12 +168,8 @@
 		[NSApp endSheet:queryFavoritesSheet];
 		[queryFavoritesSheet orderOut:nil];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] != 3) {
-//choose favorite
-		// Register the next action for undo
-		[textView shouldChangeTextInRange:[textView selectedRange] replacementString:[queryFavoritesButton titleOfSelectedItem]];
-		[textView replaceCharactersInRange:[textView selectedRange] withString:[queryFavoritesButton titleOfSelectedItem]];
-		// invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-		[textView insertText:@""];
+		//choose favorite
+		[textView insertText:[queryFavoritesButton titleOfSelectedItem]];
 	}
 }
 
@@ -182,12 +178,7 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
-	// Register the next action for undo
-	[textView shouldChangeTextInRange:NSMakeRange(0,[[textView string] length]) replacementString:[queryHistoryButton titleOfSelectedItem]];
-	[textView setString:[queryHistoryButton titleOfSelectedItem]];
-	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-	[textView insertText:@""];
-	[textView selectAll:self];
+	[textView insertText:[queryHistoryButton titleOfSelectedItem]];
 }
 
 /*
