@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5156"/>
+			<integer value="5168"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -275,7 +275,7 @@
 											<bool key="EncodedWithXMLCoder">YES</bool>
 											<object class="NSCustomView" id="735564334">
 												<reference key="NSNextResponder" ref="456162506"/>
-												<int key="NSvFlags">301</int>
+												<int key="NSvFlags">261</int>
 												<object class="NSMutableArray" key="NSSubviews">
 													<bool key="EncodedWithXMLCoder">YES</bool>
 													<object class="NSTabView" id="134031646">
@@ -1480,13 +1480,14 @@
 												<nil key="NSDefaultParagraphStyle"/>
 											</object>
 											<int key="NSTVFlags">6</int>
-											<string key="NSMaxSize">{1144, 1e+07}</string>
+											<string key="NSMaxSize">{1156, 1e+07}</string>
 											<string key="NSMinize">{228, 0}</string>
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
 									<string key="NSFrameSize">{578, 293}</string>
 									<reference key="NSSuperview" ref="699163511"/>
+									<reference key="NSNextKeyView" ref="59706192"/>
 									<reference key="NSDocView" ref="59706192"/>
 									<reference key="NSBGColor" ref="402194341"/>
 									<object class="NSCursor" key="NSCursor">
@@ -1520,6 +1521,7 @@
 							</object>
 							<string key="NSFrame">{{1, 20}, {578, 293}}</string>
 							<reference key="NSSuperview" ref="536120400"/>
+							<reference key="NSNextKeyView" ref="547900823"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="79422493"/>
 							<reference key="NSHScroller" ref="266224177"/>
@@ -3631,7 +3633,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{223, -4}, {882, 563}}</string>
+					<string>{{268, 209}, {882, 563}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
