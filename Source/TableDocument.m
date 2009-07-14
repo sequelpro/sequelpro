@@ -70,8 +70,9 @@
 		[printWebView setFrameLoadDelegate:self];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+
 	}
-		
+
 	return self;
 }
 
@@ -349,12 +350,19 @@
 		[queryResult dataSeek:0];
 	}
 	
-	int i;
-	
-	for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-	{
-		[chooseDatabaseButton addItemWithTitle:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0)];
-	}
+	// if([allDatabases count])
+	// 	[allDatabases removeAllObjects];
+
+	if(allDatabases)
+		[allDatabases release];
+		
+	allDatabases = [[NSMutableArray alloc] initWithCapacity:[queryResult numOfRows]];
+
+	for (int i = 0 ; i < [queryResult numOfRows] ; i++)
+		[allDatabases addObject:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0)];
+
+	for (id db in allDatabases)
+		[chooseDatabaseButton addItemWithTitle:db];
 	
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
@@ -492,6 +500,14 @@
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
+}
+
+/*
+ * Returns an array of all available database names
+ */
+- (NSArray *)allDatabaseNames
+{
+	return allDatabases;
 }
 
 /**
@@ -2127,7 +2143,7 @@
 	[selectedDatabase release];
 	[mySQLVersion release];
 	[connectionController release];
-	
+	[allDatabases release];
 	[super dealloc];
 }
 

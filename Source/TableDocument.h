@@ -100,6 +100,8 @@
 	NSToolbarItem *chooseDatabaseToolbarItem;
 	
 	WebView *printWebView;
+	
+	NSMutableArray *allDatabases;
 }
 
 - (NSString *)getHTMLforPrint;
@@ -117,6 +119,7 @@
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)saveServerVariables:(id)sender;
+- (NSArray *)allDatabaseNames;
 
 //encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;

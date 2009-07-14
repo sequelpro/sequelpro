@@ -110,6 +110,12 @@ enum sp_table_types
 - (int)tableType;
 - (NSArray *)tables;
 - (NSArray *)tableTypes;
+- (NSArray *)allTableAndViewNames;
+- (NSArray *)allTableNames;
+- (NSArray *)allViewNames;
+- (NSArray *)allFunctionNames;
+- (NSArray *)allProcedureNames;
+- (NSArray *)allDatabaseNames;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

@@ -129,60 +129,36 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
 
-	unsigned i;
 
 	if([mySQLConnection isConnected] && !isDictMode)
 	{
 		// Add table names to completions list
-		MCPResult *queryResult = [mySQLConnection listTables];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"table-small-square", @"image", nil]];
-			//[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-		}
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableAndViewNames"])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];
+
+		// Add view names to completions list
+		// for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
+		// 	[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small", @"image", nil]];
 
 		// Add field names to completions list for currently selected table
-		if ([[[self window] delegate] table] != nil) {
-			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
-			// [possibleCompletions addObjectsFromArray:columnNames];
-			NSString *s;
-			enumerate(columnNames, s)
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
-		}
+		if ([[[self window] delegate] table] != nil)
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"dummy-small", @"image", nil]];
+
 
 		// Add all database names to completions list
-		queryResult = [mySQLConnection listDBs];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"database-small", @"image", nil]];
-		}
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
 
 		// Add proc/func only for MySQL version 5 or higher
 		if(mySQLmajorVersion > 4) {
 			// Add all procedures to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW PROCEDURE STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"proc-small", @"image", nil]];
-			}
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", nil]];
 
 			// Add all function to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW FUNCTION STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"func-small", @"image", nil]];
-			}
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", nil]];
 		}
 		
 	}
@@ -927,51 +903,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if([mySQLConnection isConnected])
 	{
-		// Add table names to completions list
-		MCPResult *queryResult = [mySQLConnection listTables];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-		}
-
-		// Add field names to completions list for currently selected table
-		if ([[[self window] delegate] table] != nil) {
-			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
-			[possibleCompletions addObjectsFromArray:columnNames];
-		}
 
 		// Add all database names to completions list
-		queryResult = [mySQLConnection listDBs];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-		}
+		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"]];
+
+		// Add table names to completions list
+		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableAndViewNames"]];
+
+		// Add field names to completions list for currently selected table
+		if ([[[self window] delegate] table] != nil)
+			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 
 		// Add proc/func only for MySQL version 5 or higher
 		if(mySQLmajorVersion > 4) {
-			// Add all procedures to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW PROCEDURE STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-			}
-
-			// Add all function to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW FUNCTION STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-			}
+			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"]];
+			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"]];
 		}
-		
+
 	}
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
