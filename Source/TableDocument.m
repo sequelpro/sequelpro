@@ -59,12 +59,15 @@
 {
 	if ((self = [super init])) {
 		
-		_encoding = [@"utf8" retain];
+		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
 		connectionController = nil;
 		selectedDatabase = nil;
+		mySQLConnection = nil;
+		mySQLVersion = nil;
+		variables = nil;
 		
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
@@ -78,6 +81,17 @@
 
 - (void)awakeFromNib
 {
+
+	// The first window should use autosaving; subsequent windows should cascade
+	BOOL usedAutosave = [tableWindow setFrameAutosaveName:[self windowNibName]];
+	if (!usedAutosave) {
+		[tableWindow setFrameUsingName:[self windowNibName]];
+		NSArray *documents = [[NSDocumentController sharedDocumentController] documents];
+		NSRect previousFrame = [[[documents objectAtIndex:(([documents count] > 1)?[documents count]-2:[documents count]-1)] valueForKey:@"tableWindow"] frame];
+		NSPoint topLeftPoint = previousFrame.origin;
+		topLeftPoint.y += previousFrame.size.height;
+		[tableWindow setFrameTopLeftPoint:[tableWindow cascadeTopLeftFromPoint:topLeftPoint]];
+	}
 
 	// Set up the toolbar
 	[self setupToolbar];
@@ -110,9 +124,6 @@
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
 	[windowFrame addSubview:titleAccessoryView];
-
-	// Pull the new window to the front of the app
-	[tableWindow makeKeyAndOrderFront:self];
 }
 
 #pragma mark -
@@ -140,17 +151,18 @@
 	// Get the mysql version
 	theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
 	version = [[theResult fetchRowAsArray] objectAtIndex:1];
+	if (mySQLVersion) [mySQLVersion release], mySQLVersion = nil;
 	if ( [version isKindOfClass:[NSData class]] ) {
 		// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
 		mySQLVersion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
 	} else {
-		mySQLVersion = [[NSString stringWithString:version] retain];
+		mySQLVersion = [[NSString alloc] initWithString:version];
 	}
 
 	// Update the selected database if appropriate
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-		selectedDatabase = [[connectionController database] retain];
+		selectedDatabase = [[NSString alloc] initWithString:[connectionController database]];
 	}
 
 	// Update the database list
@@ -171,7 +183,6 @@
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
-	[self setFileName:[NSString stringWithFormat:@"(MySQL %@) %@@%@ %@", mySQLVersion, [self user], [self host], [self database]]];
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], ([self database]?[self database]:@"")]];
 	[self viewStructure:self];
 
@@ -316,7 +327,7 @@
 			nil];
 
     [connection release];
-    [rows release];
+    if (rows) [rows release];
 
 	// Process the template and display the results.
 	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
@@ -395,9 +406,8 @@
 	}
 	
 	//setConnection of TablesList and TablesDump to reload tables in db
-	[selectedDatabase release];
-	selectedDatabase = nil;
-	selectedDatabase = [[chooseDatabaseButton titleOfSelectedItem] retain];
+	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+	selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
@@ -463,9 +473,8 @@
 	}
 	
 	//select new db
-	[selectedDatabase release];
-	selectedDatabase = nil;
-	selectedDatabase = [[databaseNameField stringValue] retain];
+	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+	selectedDatabase = [[NSString alloc] initWithString:[databaseNameField stringValue]];
 	[self setDatabases:self];
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
@@ -534,7 +543,7 @@
 		}
 		
 		// db deleted with success
-		selectedDatabase = nil;
+		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 		[self setDatabases:self];
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
@@ -575,17 +584,13 @@
 		}
 		if(![dbName isKindOfClass:[NSNull class]]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
-				if (selectedDatabase) {
-					[selectedDatabase release];
-					selectedDatabase = nil;
-				}
-				selectedDatabase = [dbName retain];
+				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
 				[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], selectedDatabase]];
 			}
 		} else {
-			[selectedDatabase release];
-			selectedDatabase = nil;
+			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
 			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/", mySQLVersion, [self name]]];
 		}
@@ -654,8 +659,8 @@
 		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
 		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
-		[_encoding autorelease];
-		_encoding = [mysqlEncoding retain];
+		[_encoding release];
+		_encoding = [[NSString alloc] initWithString:mysqlEncoding];
 	} else {
 		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
 		_encodingViaLatin1 = NO;
@@ -926,7 +931,7 @@
 	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
-		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
 	
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -1654,7 +1659,7 @@
 	NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:@"png"];
 	if (!imagePath) return;
 
-	NSImage *image = [[NSImage alloc] initByReferencingFile:imagePath];
+	NSImage *image = [[[NSImage alloc] initByReferencingFile:imagePath] autorelease];
 	[titleImageView setImage:image];
 }
 
@@ -1950,10 +1955,10 @@
  * Invoked when the document window is about to close
  */
 - (void)windowWillClose:(NSNotification *)aNotification
-{	
+{
+	[mySQLConnection setDelegate:nil];
 	if ([mySQLConnection isConnected]) [self closeConnection];
 	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
-	[[customQueryInstance helpWebViewWindow] release];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -1969,6 +1974,26 @@
 		return YES;
 	}
 }
+
+/**
+ * Don't show the document "changed" dot in the close button, or show a
+ * "save?" dialog when closing the document.
+ */
+- (BOOL)isDocumentEdited
+{
+	return NO;
+}
+
+/**
+ * The window title for this document.
+ */
+- (NSString *)displayName
+{
+	if (!_isConnected) return @"Connecting...";
+	
+	return [NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], ([self database]?[self database]:@"")];
+}
+
 
 #pragma mark -
 #pragma mark SMySQL delegate methods
@@ -2130,6 +2155,7 @@
 		if (theValue == nil) {
 			[[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		}
+		if (theValue) [theValue autorelease];
 	}
 	
 	return theValue;
@@ -2137,12 +2163,13 @@
 
 - (void)dealloc
 {
-	[chooseDatabaseButton release];
-	[mySQLConnection release];
-	[variables release];
-	[selectedDatabase release];
-	[mySQLVersion release];
-	[connectionController release];
+	[_encoding release];
+	[printWebView release];
+	if (connectionController) [connectionController release];
+	if (mySQLConnection) [mySQLConnection release];
+	if (variables) [variables release];
+	if (selectedDatabase) [selectedDatabase release];
+	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	[super dealloc];
 }

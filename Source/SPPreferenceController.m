@@ -61,7 +61,9 @@
 	if (self = [super initWithWindowNibName:@"Preferences"]) {
 		prefs = [NSUserDefaults standardUserDefaults];
 		[self applyRevisionChanges];
+
 		currentFavorite = nil;
+		keychain = nil;
 	}
 
 	return self;
@@ -958,7 +960,7 @@
 // -------------------------------------------------------------------------------
 - (void)dealloc
 {
-	[keychain release], keychain = nil;
+	if (keychain) [keychain release], keychain = nil;
 	if (currentFavorite) [currentFavorite release];
 
 	[super dealloc];

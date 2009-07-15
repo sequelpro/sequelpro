@@ -320,7 +320,7 @@ static void forcePingTimeout(int signalNumber);
 	
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setTitlebarStatus:@"SSH Disconnected"];
+		if (delegate) [delegate setTitlebarStatus:@"SSH Disconnected"];
 		//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	
@@ -421,7 +421,7 @@ static void forcePingTimeout(int signalNumber);
 		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
 		[connectionTunnel connect];
 		
-		[delegate setTitlebarStatus:@"SSH Connecting…"];
+		if (delegate) [delegate setTitlebarStatus:@"SSH Connecting…"];
 		//[delegate setStatusIconToImageWithName:@"ssh-connecting"];
 		
 		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
@@ -429,14 +429,14 @@ static void forcePingTimeout(int signalNumber);
 		// Allow the tunnel to attempt to connect in a loop
 		while (1) {
 			if ([connectionTunnel state] == SPSSH_STATE_CONNECTED) {
-				[delegate setTitlebarStatus:@"SSH Connected"];
+				if (delegate) [delegate setTitlebarStatus:@"SSH Connected"];
 				//[delegate setStatusIconToImageWithName:@"ssh-connected"];
 				connectionPort = [connectionTunnel localPort];
 				break;
 			}
 			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
 				[connectionTunnel disconnect];
-				[delegate setTitlebarStatus:@"SSH Disconnected"];
+				if (delegate) [delegate setTitlebarStatus:@"SSH Disconnected"];
 				//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 				break;
 			}
@@ -704,7 +704,7 @@ static void forcePingTimeout(int signalNumber);
 	lastQueryErrorId = mysql_errno(mConnection);
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setTitlebarStatus:@"SSH Disconnected"];
+		if (delegate) [delegate setTitlebarStatus:@"SSH Disconnected"];
 		//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	return NO;
@@ -1347,6 +1347,8 @@ static void forcePingTimeout(int signalNumber)
 
 - (void) dealloc
 {
+	delegate = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];

@@ -117,9 +117,9 @@
 {    
     [keychain release];
     [prefs release];
-	[favorites release];
+	if (favorites) [favorites release];
 	if (mySQLConnection) [mySQLConnection release];
-	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release];
+	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
 	if (connectionKeychainItemName) [connectionKeychainItemName release];
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];

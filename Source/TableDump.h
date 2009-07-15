@@ -101,8 +101,6 @@
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
 	int currentRow;
-	NSString *savePath;
-	NSString *openPath;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 }

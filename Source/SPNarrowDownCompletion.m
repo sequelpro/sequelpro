@@ -96,6 +96,7 @@
 		mutablePrefix = [NSMutableString new];
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
 		caseSensitive = YES;
+		filtered = nil;
 		
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"CustomQueryEditorFont"]];
 		[self setupInterface];
@@ -109,9 +110,10 @@
 	[mutablePrefix release];
 	[textualInputCharacters release];
 
-	[suggestions release];
+	// TODO: This may cause errors, I cannot see if it is always set up - only if !dictMode.
+	// [suggestions release];
 
-	[filtered release];
+	if (filtered) [filtered release];
 
 	[super dealloc];
 }
@@ -298,7 +300,7 @@
 	// so here we use the difference in height to find the new height for the window
 	// newHeight = [[self contentView] frame].size.height + (newHeight - [theTableView frame].size.height);
 	[self setFrame:NSMakeRect(old.x, old.y-newHeight, maxWidth, newHeight) display:YES];
-	[filtered release];
+	if (filtered) [filtered release];
 	filtered = [newFiltered retain];
 	[theTableView reloadData];
 }

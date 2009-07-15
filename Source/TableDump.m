@@ -735,7 +735,7 @@
 		
 		//free arrays
 		if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-		importArray = nil;
+		[importArray release], importArray = nil;
 	}
 	
     // Import finished Growl notification
@@ -2324,6 +2324,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	tables = [[NSMutableArray alloc] init];
 	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
 	fieldMappingArray = nil;
+	importArray = nil;
+	prefs = nil;
 	
 	return self;
 }
@@ -2331,12 +2333,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (void)dealloc
 {	
 	[tables release];
-	[importArray release];
 	[fieldMappingButtonOptions release];
+	if (importArray) [importArray release];
 	if (fieldMappingArray) [fieldMappingArray release];
-	[savePath release];
-	[openPath release];
-	[prefs release];
+	if (prefs) [prefs release];
 	
 	[super dealloc];
 }

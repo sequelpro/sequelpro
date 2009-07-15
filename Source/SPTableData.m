@@ -929,8 +929,9 @@
 	[constraints release];
 	[status release];
 	
-	if (tableEncoding != nil) [tableEncoding release];
-	if (tableCreateSyntax != nil) [tableCreateSyntax release];
+	if (tableEncoding) [tableEncoding release];
+	if (tableCreateSyntax) [tableCreateSyntax release];
+	if (mySQLConnection) [mySQLConnection release];
 
 	[super dealloc];
 }

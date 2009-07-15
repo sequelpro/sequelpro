@@ -270,7 +270,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-	//TODO : where to place the release??
+	// TODO: where to place the release??
 	// [completionPopUp release];
 	
 
@@ -2591,6 +2591,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[lineNumberView release];
 	[super dealloc];
 }
 

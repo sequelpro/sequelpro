@@ -58,13 +58,15 @@
 		selectedTable = nil;
 		sortCol       = nil;
 		lastField     = nil;
+		editData	  = nil;
+		keys		  = nil;
 
 		areShowingAllRows = false;
 		currentlyEditingRow = -1;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 		
-		usedQuery = [[NSString stringWithString:@""] retain];
+		usedQuery = [[NSString alloc] initWithString:@""];
 	}
 	
 	return self;
@@ -101,8 +103,7 @@
 	selectedTable = aTable;
 
 	// Reset table key store for use in argumentForRow:
-	if ( keys )
-		keys = nil;
+	if (keys) [keys release], keys = nil;
 
 	// Restore the table content view to the top left
 	[tableContentView scrollRowToVisible:0];
@@ -709,9 +710,8 @@
 
 - (void)setUsedQuery:(NSString *)query
 {
-	if(usedQuery)
-		[usedQuery release];
-	usedQuery = [[NSString stringWithString:query] retain];
+	if (usedQuery) [usedQuery release];
+	usedQuery = [[NSString alloc] initWithString:query];
 }
 
 
@@ -955,7 +955,7 @@
 		[editSheet makeFirstResponder:editImage];
 		break;
 		case 2: // hex - load on demand
-		if([editData length] && [[hexTextView string] isEqualToString:@""]) {
+		if(editData && [editData length] && [[hexTextView string] isEqualToString:@""]) {
 			[editSheetProgressBar startAnimation:self];
 			[hexTextView setString:[editData dataToFormattedHexString]];
 			[editSheetProgressBar stopAnimation:self];
@@ -1127,7 +1127,7 @@
 	image = [[[NSImage alloc] initWithPasteboard:[NSPasteboard generalPasteboard]] autorelease];
 	if (image) {
 
-		if (nil != editData) [editData release];
+		if (editData) [editData release];
 
 		[editImage setImage:image];
 
@@ -1158,7 +1158,7 @@
 
 	editSheetWillBeInitialized = YES;
 
-	if (nil != editData) [editData release];
+	if (editData) [editData release];
 
 	// If the image was not processed, set a blank string as the contents of the edit and hex views.
 	if ( data == nil ) {
@@ -1191,7 +1191,7 @@
 	// If the image was deleted, set a blank string as the contents of the edit and hex views.
 	// The actual dropped image processing is handled by processUpdatedImageData:.
 	if ( [editImage image] == nil ) {
-		if (nil != editData) [editData release];
+		if (editData) [editData release];
 		editData = [[NSData alloc] init];
 		[editTextView setString:@""];
 		[hexTextView setString:@""];
@@ -1214,9 +1214,7 @@
 	[hexTextView setString:@""];
 	
 	// free old data
-	if ( editData != nil ) {
-		[editData release];
-	}
+	if ( editData ) [editData release];
 	
 	// set edit data to text
 	editData = [[editTextView string] retain];
@@ -2305,6 +2303,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		
 		theValue = [[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
 		NSImage *image = nil;
+		if (editData) [editData release]; 
 		editData = [theValue retain];
 
 		// hide all views in editSheet
@@ -2340,7 +2339,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
 		} else {
-			stringValue = [theValue retain];
+			stringValue = [[NSString alloc] initWithString:theValue];
 
 			[hexTextView setString:@""];
 
@@ -2409,15 +2408,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 				currentlyEditingRow = rowIndex;
 			}
 			
-			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
+			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[[editData copy] autorelease]];
 
 			// Clean up
 			[editImage setImage:nil];
 			[editTextView setString:@""];
 			[hexTextView setString:@""];
-			if ( editData ) {
-				[editData release];
-			}
+			if ( editData ) [editData release], editData = nil;
 		}
 		return NO;
 	} else {
@@ -2580,13 +2577,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 // Last but not least
 - (void)dealloc
-{	
-	[editData release];
+{
 	[fullResult release];
 	[filteredResult release];
-	[keys release];
 	[oldRow release];
-	[compareType release];
+	if (editData) [editData release];
+	if (keys) [keys release];
 	if (sortCol) [sortCol release];
 	if (lastField) [lastField release];
 	[usedQuery release];

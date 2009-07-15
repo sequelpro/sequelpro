@@ -1342,6 +1342,7 @@ traps enter and esc and make/cancel editing without entering next row
 		enumFields  = [[NSMutableDictionary alloc] init];
 		
 		currentlyEditingRow = -1;
+		defaultValues = nil;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
@@ -1361,8 +1362,8 @@ traps enter and esc and make/cancel editing without entering next row
 	[tableFields release];
 	[indexes release];
 	[oldRow release];
-	[defaultValues release];
 	[enumFields release];
+	if (defaultValues) [defaultValues release];
 	
 	[super dealloc];
 }
