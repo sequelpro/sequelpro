@@ -133,12 +133,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([mySQLConnection isConnected] && !isDictMode)
 	{
 		// Add table names to completions list
-		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableAndViewNames"])
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];
 
 		// Add view names to completions list
-		// for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
-		// 	[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small", @"image", nil]];
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", nil]];
 
 		// Add field names to completions list for currently selected table
 		if ([[[self window] delegate] table] != nil)
@@ -170,26 +170,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if([[self string] length]<6000000)
 		{
 			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
-			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+
 			NSMutableArray *uniqueArray = [NSMutableArray array];
-			NSString *s;
-			enumerate(textViewWords, s)
-				if(![uniqueArray containsObject:s])
-					[uniqueArray addObject:s];
+			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
 
 			// Remove current word from list
 			[uniqueArray removeObject:currentWord];
 
 			int reverseSort = NO;
 			NSArray *sortedArray = [[[uniqueArray mutableCopy] autorelease] sortedArrayUsingFunction:alphabeticSort context:&reverseSort];
-			// [possibleCompletions addObjectsFromArray:sortedArray];
-			NSString *w;
-			enumerate(sortedArray, w)
+			for(id w in sortedArray)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
-			
 
-			// Remove the current word
-			// [possibleCompletions removeObject:currentWord];
 		}
 	}
 
@@ -212,14 +204,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	// Build array of dictionaries as e.g.:
 	// [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
-	NSString* candidate;
-	enumerate(possibleCompletions, candidate)
-	{
-		if(![compl containsObject:candidate])
-			[compl addObject:candidate];
-	}
+	for(id suggestion in possibleCompletions)
+		if(![compl containsObject:suggestion])
+			[compl addObject:suggestion];
 
 	[possibleCompletions release];
+
 	return [compl autorelease];
 
 }
