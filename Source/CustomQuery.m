@@ -212,6 +212,12 @@
 		[textView shiftSelectionLeft];
 	}
 
+	// "Comment Current Query/Selection" menu item - Add or remove "-- " for each line 
+	// in the current query or selection
+	if (sender == commentCurrentQueryOrSelectionMenuItem) {
+		[self commentOutQuery];
+	}
+
 	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
@@ -927,6 +933,9 @@
 		[textView setSelectedRange:currentQueryRange];
 }
 
+/*
+ * Add or remove "-- " for each line in the current query or selection
+ */
 - (void)commentOutQuery
 {
 	
@@ -945,11 +954,14 @@
 		workingRange = currentQueryRange;
 		
 	NSMutableString *n = [NSMutableString string];
-	[n setString:[NSString stringWithFormat:@"# %@", [[textView string] substringWithRange:workingRange]]];
-	[n replaceOccurrencesOfRegex:@"\\n(?=.)" withString:@"\n# "];
-	[n replaceOccurrencesOfRegex:@"\\n# # " withString:@"\n"];
-	[n replaceOccurrencesOfRegex:@"^# # " withString:@""];
+	[n setString:[NSString stringWithFormat:@"-- %@", [[textView string] substringWithRange:workingRange]]];
+	[n replaceOccurrencesOfRegex:@"\\n(?=.)" withString:@"\n-- "];
 
+	// comment out if at least one line is already commented out
+	if(!([n isMatchedByRegex:@"(\\n-- --|^-- --)"] && [n isMatchedByRegex:@"(\\n-- |^-- )(?!-)"])) {
+		[n replaceOccurrencesOfRegex:@"\\n-- -- " withString:@"\n"];
+		[n replaceOccurrencesOfRegex:@"^-- -- " withString:@""];
+	}
 	[textView setSelectedRange:workingRange];
 
 	[textView insertText:n];

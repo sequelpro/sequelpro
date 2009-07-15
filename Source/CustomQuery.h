@@ -63,6 +63,7 @@
 	IBOutlet NSMenuItem *autopairMenuItem;
 	IBOutlet NSMenuItem *autohelpMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
+	IBOutlet NSMenuItem *commentCurrentQueryOrSelectionMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
