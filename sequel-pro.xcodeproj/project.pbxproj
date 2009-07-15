@@ -159,6 +159,7 @@
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8C8531100E0A8000D7A129 /* SPTableView.m */; };
 		BC99296E0FF3D001008B79AB /* SPFieldEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = BC99296D0FF3D001008B79AB /* SPFieldEditor.m */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
@@ -453,6 +454,8 @@
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC8C8530100E0A8000D7A129 /* SPTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableView.h; sourceTree = "<group>"; };
+		BC8C8531100E0A8000D7A129 /* SPTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableView.m; sourceTree = "<group>"; };
 		BC99296C0FF3D001008B79AB /* SPFieldEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldEditor.h; sourceTree = "<group>"; };
 		BC99296D0FF3D001008B79AB /* SPFieldEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldEditor.m; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
@@ -696,6 +699,8 @@
 				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
 				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
 				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
+				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
+				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1268,6 +1273,7 @@
 				BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */,
 				BC99296E0FF3D001008B79AB /* SPFieldEditor.m in Sources */,
 				5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */,
+				BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
