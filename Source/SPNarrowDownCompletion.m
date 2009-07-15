@@ -110,8 +110,7 @@
 	[mutablePrefix release];
 	[textualInputCharacters release];
 
-	// TODO: This may cause errors, I cannot see if it is always set up - only if !dictMode.
-	// [suggestions release];
+	if(suggestions) [suggestions release];
 
 	if (filtered) [filtered release];
 
@@ -134,9 +133,7 @@
 		theView = aView;
 		dictMode = mode;
 		
-		if(dictMode) {
-			words = [NSArray arrayWithArray:suggestions];
-		} else {
+		if(!dictMode) {
 			suggestions = [someSuggestions retain];
 			words = nil;
 		}
@@ -236,8 +233,7 @@
 	NSArray* newFiltered;
 	if([mutablePrefix length] > 0)
 	{
-		if(dictMode)
-		{
+		if(dictMode) {
 			newFiltered = [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0];
 		} else {
 			NSPredicate* predicate;

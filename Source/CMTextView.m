@@ -915,12 +915,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
 		// Only parse for words if text size is less than 6MB
+		// if([[self string] length]<6000000)
+		// {
+		// 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
+		// 	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+		// 	[possibleCompletions addObjectsFromArray:textViewWords];
+		// }
 		if([[self string] length]<6000000)
 		{
-			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
-			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
-			[possibleCompletions addObjectsFromArray:textViewWords];
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
+			NSMutableArray *uniqueArray = [NSMutableArray array];
+			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
+			[possibleCompletions addObjectsFromArray:uniqueArray];
 		}
+
 		[possibleCompletions addObjectsFromArray:[self keywords]];
 	}
 	
@@ -942,18 +950,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[possibleCompletions release];
 
 	return [compl autorelease];
-}
-
-
-/*
- * Hook to invoke the auto-uppercasing of SQL keywords after pasting
- */
-- (void)paste:(id)sender
-{
-
-	[super paste:sender];
-	// Invoke the auto-uppercasing of SQL keywords via an additional trigger
-	[self insertText:@""];
 }
 
 
