@@ -653,7 +653,8 @@
 		[tableColumn removeAllObjects];
 		resultRow = [theResult fetchRowAsDictionary];
 
-		// Add the column name
+		// Add the column index and name
+		[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
 		[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Field"]] forKey:@"name"];
 
 		// Populate type, length, and other available details from the Type columns
