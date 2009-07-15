@@ -531,6 +531,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self makeTextSizeSmaller];
 			return;
 		}
+		if([charactersIgnMod isEqualToString:@"/"])
+		{
+			[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] commentOutQuery];
+			return;
+		}
 	}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
@@ -684,7 +689,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[super deleteBackward:sender];
 
 }
-
 
 /*
  * Handle special commands - see NSResponder.h for a sample list.

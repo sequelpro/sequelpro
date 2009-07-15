@@ -927,6 +927,36 @@
 		[textView setSelectedRange:currentQueryRange];
 }
 
+- (void)commentOutQuery
+{
+	
+	if(!currentQueryRange.length && ![textView selectedRange].length) {
+		NSBeep();
+		return;
+	}
+	
+	NSRange workingRange;
+
+	NSRange oldRange = [textView selectedRange];
+
+	if(oldRange.length)
+		workingRange = oldRange;
+	else
+		workingRange = currentQueryRange;
+		
+	NSMutableString *n = [NSMutableString string];
+	[n setString:[NSString stringWithFormat:@"# %@", [[textView string] substringWithRange:workingRange]]];
+	[n replaceOccurrencesOfRegex:@"\\n(?=.)" withString:@"\n# "];
+	[n replaceOccurrencesOfRegex:@"\\n# # " withString:@"\n"];
+	[n replaceOccurrencesOfRegex:@"^# # " withString:@""];
+
+	[textView setSelectedRange:workingRange];
+
+	[textView insertText:n];
+
+	[textView setSelectedRange:NSMakeRange(NSMaxRange(currentQueryRange),0)];
+}
+
 #pragma mark -
 #pragma mark Accessors
 

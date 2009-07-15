@@ -148,6 +148,7 @@
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;
+- (void)commentOutQuery;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
 
