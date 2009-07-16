@@ -79,6 +79,7 @@
 	IBOutlet id syntaxView;
 	IBOutlet id syntaxViewContent;
 	IBOutlet NSWindow *createTableSyntaxWindow;
+	IBOutlet NSWindow *connectionErrorDialog;
 
 	SPConnectionController *connectionController;
 

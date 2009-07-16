@@ -488,14 +488,14 @@ static BOOL	sDebugQueries = NO;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(decisionAfterConnectionFailure)]) {
-			failureDecision = [delegate decisionAfterConnectionFailure];
+		if ([delegate respondsToSelector:@selector(connectionFailed)]) {
+			failureDecision = [delegate connectionFailed];
 		}
 		
 		switch (failureDecision) {				
 			case MCPConnectionCheckDisconnect:
 				return NO;				
-			case MCPConnectionCheckReconnect:
+			default:
 				return [self reconnect];
 		}
 	}
@@ -532,22 +532,22 @@ static BOOL	sDebugQueries = NO;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckRetry;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(decisionAfterConnectionFailure)]) {
-			failureDecision = [delegate decisionAfterConnectionFailure];
+		if ([delegate respondsToSelector:@selector(connectionFailed)]) {
+			failureDecision = [delegate connectionFailed];
 		}
 		
 		switch (failureDecision) {
-			// "Reconnect" has been selected.  Request a reconnect, and retry.
+			// 'Reconnect' has been selected. Request a reconnect, and retry.
 			case MCPConnectionCheckReconnect:
 				[self reconnect];
 				
 				return [self checkConnection];
 				
-			// "Disconnect" has been selected.  Close the parent window, which will handle disconnections, and return false.
+			// 'Disconnect' has been selected. Close the parent window, which will handle disconnections, and return false.
 			case MCPConnectionCheckDisconnect:
 				return NO;
 				
-			// "Retry" has been selected - return a recursive call.
+			// 'Retry' has been selected - return a recursive call.
 			case MCPConnectionCheckRetry:
 				return [self checkConnection];
 		}

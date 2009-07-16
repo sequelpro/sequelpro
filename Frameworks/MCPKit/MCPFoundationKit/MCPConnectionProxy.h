@@ -28,6 +28,9 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+ * SSH tunnel state constants.
+ */
 enum SSH_TUNNEL_STATES
 {
 	SSH_STATE_IDLE = 0,
@@ -40,27 +43,27 @@ enum SSH_TUNNEL_STATES
 @protocol MCPConnectionProxy <NSObject>
 
 /**
- * Connect the SSH tunnel.
+ * Connect the proxy.
  */
 - (void)connect;
 
 /**
- * Disconnect the SSH tunnel.
+ * Disconnect the proxy.
  */
 - (void)disconnect;
 
 /**
- * Get the current state of the SSH tunnel.
+ * Get the current state of the proxy.
  */
 - (int)state;
 
 /**
- * Get the local port being used by the SSH tunnel.
+ * Get the local port being used by the proxy.
  */ 
 - (int)localPort;
 
 /**
- * Sets the method the SSH tunnel should call whenever the state of the connection changes.
+ * Sets the method the proxy should call whenever the state of the connection changes.
  */
 - (BOOL)setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
 

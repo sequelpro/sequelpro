@@ -49,7 +49,8 @@ extern const unsigned int kLengthOfTruncationForLog;
 /*
  * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
  */
-static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encoding, int lossy) {
+static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encoding, int lossy) 
+{
 	typedef NSData* (*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, int, int);
 	static SPStringDataUsingLossyEncodingMethodPtr SPNSStringDataUsingLossyEncoding;
 	if (!SPNSStringDataUsingLossyEncoding) SPNSStringDataUsingLossyEncoding = (SPStringDataUsingLossyEncodingMethodPtr)[self methodForSelector:@selector(dataUsingEncoding:allowLossyConversion:)];
@@ -57,19 +58,25 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	return to_return;
 }
 
+/**
+ * Connection check constants
+ */
 typedef enum _MCPConnectionCheck {
 	MCPConnectionCheckReconnect = 1,
 	MCPConnectionCheckDisconnect,
 	MCPConnectionCheckRetry
 } MCPConnectionCheck;
 
+/**
+ * Delegate interface
+ */
 @interface NSObject (MCPConnectionDelegate)
 
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 - (BOOL)connectionEncodingViaLatin1;
 - (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account;
-- (MCPConnectionCheck)decisionAfterConnectionFailure;
+- (MCPConnectionCheck)connectionFailed;
 
 @end
 

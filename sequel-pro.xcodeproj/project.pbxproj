@@ -1042,11 +1042,11 @@
 				B52460D90F8EF93B00171639 /* Console.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 				5822CADF10011C8000DCC3D6 /* ConnectionView.xib */,
-				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
 				B57747D00F7A891A003B34F9 /* Preferences.xib */,
 				B5E92F170F75B2D100012500 /* ExportDialog.xib */,
 				B58DA73B0FF8BBA500FDDACD /* printAccessory.xib */,
 				B58DA7390FF8BB9E00FDDACD /* SSHQuestionDialog.xib */,
+				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";

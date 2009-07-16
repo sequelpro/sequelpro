@@ -742,7 +742,10 @@ const OUR_CHARSET our_charsets60[] =
 	
 	for (i=0; i < numFields; i++)
 	{
-		NSMutableDictionary *fieldStructure = [NSMutableDictionary dictionaryWithCapacity:38];
+		NSMutableDictionary *fieldStructure = [NSMutableDictionary dictionaryWithCapacity:39];
+		
+		/* Original column position */
+		[fieldStructure setObject:[NSNumber numberWithInt:i] forKey:@"datacolumnindex"];
 		
 		/* Name of column */
 		[fieldStructure setObject:[self stringWithCString:theField[i].name] forKey:@"name"];

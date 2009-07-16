@@ -208,7 +208,8 @@
 
 	// Set up the tunnel details
 	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:([[self sshPort] length]?[[self sshPort] intValue]:22) login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] intValue]:3306) onHost:[self host]];
-
+	[sshTunnel setParentWindow:documentWindow];
+	
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
 		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];

@@ -121,7 +121,7 @@
 											av.size.width,
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
-	[windowFrame addSubview:titleAccessoryView];
+	[windowFrame addSubview:titleAccessoryView];	
 }
 
 #pragma mark -
@@ -2026,12 +2026,17 @@
 }
 
 /**
- * Invoked when the connection fails for whatever reason and the framework needs to know how to proceed.
+ * Invoked when the connection fails and the framework needs to know how to proceed.
  */
-- (MCPConnectionCheck)decisionAfterConnectionFailure
+- (MCPConnectionCheck)connectionFailed
 {
-	// TODO: Actually implement giving the user the option of how to proceed
-	return MCPConnectionCheckReconnect;
+	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+	
+	[NSApp endSheet:connectionErrorDialog];
+	[connectionErrorDialog orderOut:nil];
+	
+	return connectionErrorCode;
 }
 
 #pragma mark -
@@ -2040,7 +2045,7 @@
 /**
  * When adding a database, enable the button only if the new name has a length.
  */
-- (void) controlTextDidChange:(NSNotification *)aNotification
+- (void)controlTextDidChange:(NSNotification *)aNotification
 {
 	if ([aNotification object] == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
