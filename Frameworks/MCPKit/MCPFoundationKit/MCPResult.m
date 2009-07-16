@@ -437,6 +437,7 @@ const OUR_CHARSET our_charsets60[] =
 				case FIELD_TYPE_LONG:
 				case FIELD_TYPE_LONGLONG:
 				case FIELD_TYPE_DECIMAL:
+				case FIELD_TYPE_NEWDECIMAL:
 				case FIELD_TYPE_FLOAT:
 				case FIELD_TYPE_DOUBLE:
 				case FIELD_TYPE_TIMESTAMP:
