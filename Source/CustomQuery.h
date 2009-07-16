@@ -63,7 +63,8 @@
 	IBOutlet NSMenuItem *autopairMenuItem;
 	IBOutlet NSMenuItem *autohelpMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
-	IBOutlet NSMenuItem *commentCurrentQueryOrSelectionMenuItem;
+	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
+	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
@@ -149,7 +150,8 @@
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;
-- (void)commentOutQuery;
+- (void)commentOut;
+- (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
 

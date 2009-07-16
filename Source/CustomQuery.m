@@ -212,10 +212,17 @@
 		[textView shiftSelectionLeft];
 	}
 
-	// "Comment Current Query/Selection" menu item - Add or remove "-- " for each line 
-	// in the current query or selection
-	if (sender == commentCurrentQueryOrSelectionMenuItem) {
-		[self commentOutQuery];
+	// "Comment Line/Selection" menu item - Add or remove "-- " for each line 
+	// in a line or selection resp. or wrap the selection into /* */ 
+	// if the selection does not end at the end of a line (in-line comment)
+	if (sender == commentLineOrSelectionMenuItem) {
+		[self commentOut];
+	}
+
+	// "Comment Current Query" menu item - Add or remove "-- " for each line 
+	// in the current query
+	if (sender == commentCurrentQueryMenuItem) {
+		[self commentOutCurrentQueryTakingSelection:NO];
 	}
 
 	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
@@ -934,39 +941,105 @@
 }
 
 /*
- * Add or remove "-- " for each line in the current query or selection
+ * Add or remove "/*  *~/" for each line in the current query
+ * a given selection
  */
-- (void)commentOutQuery
+- (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection
 {
-	
-	if(!currentQueryRange.length && ![textView selectedRange].length) {
-		NSBeep();
-		return;
-	}
-	
-	NSRange workingRange;
+
+	BOOL isUncomment = NO;
 
 	NSRange oldRange = [textView selectedRange];
-
-	if(oldRange.length)
-		workingRange = oldRange;
-	else
+	
+	NSRange workingRange = oldRange;
+	if(!takeSelection)
 		workingRange = currentQueryRange;
-		
+
 	NSMutableString *n = [NSMutableString string];
-	[n setString:[NSString stringWithFormat:@"-- %@", [[textView string] substringWithRange:workingRange]]];
-	[n replaceOccurrencesOfRegex:@"\\n(?=.)" withString:@"\n-- "];
 
-	// comment out if at least one line is already commented out
-	if(!([n isMatchedByRegex:@"(\\n-- --|^-- --)"] && [n isMatchedByRegex:@"(\\n-- |^-- )(?!-)"])) {
-		[n replaceOccurrencesOfRegex:@"\\n-- -- " withString:@"\n"];
-		[n replaceOccurrencesOfRegex:@"^-- -- " withString:@""];
+	[n setString:[[textView string] substringWithRange:workingRange]];
+
+	// Escape given */ by *\/ 
+	[n replaceOccurrencesOfRegex:@"\\*/(?=.)" withString:@"*\\\\/"];
+	[n replaceOccurrencesOfRegex:@"\\*/(?=\\n)" withString:@"*\\\\/"];
+
+	// Wrap current query into /* */
+	[n replaceOccurrencesOfRegex:@"^" withString:@"/* "];
+	[n replaceOccurrencesOfRegex:@"$" withString:@" */"];
+	
+	// Check if current query/selection is already commented out, if so uncomment it
+	if([n isMatchedByRegex:@"^/\\* \\s*/\\*\\s*(.|\\n)*?\\s*\\*/ \\*/\\s*$"]) {
+		[n replaceOccurrencesOfRegex:@"^/\\* \\s*/\\*\\s*" withString:@""];
+		[n replaceOccurrencesOfRegex:@"\\s*\\*/ \\*/\\s*$" withString:@""];
+		// unescape *\/
+		[n replaceOccurrencesOfRegex:@"\\*\\\\/" withString:@"*/"];
+		isUncomment = YES;
 	}
+
+	// Replace current query/selection by (un)commented string
 	[textView setSelectedRange:workingRange];
-
 	[textView insertText:n];
+	
+	// If commenting out locate the caret just after the first /* to allow to enter 
+	// something like /*!400000 or similar
+	if(!isUncomment)
+		[textView setSelectedRange:NSMakeRange(workingRange.location+2,0)];
 
-	[textView setSelectedRange:NSMakeRange(NSMaxRange(currentQueryRange),0)];
+}
+
+/*
+ * Add or remove "-- " for each line in the current query or selection,
+ * if the selection is in-line wrap selection into /* block comments and
+ * place the caret after /* to allow to enter !xxxxxx e.g.
+ */
+- (void)commentOut
+{
+
+	NSRange oldRange = [textView selectedRange];
+	
+	if(oldRange.length) { 
+		[self commentOutCurrentQueryTakingSelection:YES];
+	} else { // single line
+		
+		// get the current line range
+		NSRange lineRange = [[textView string] lineRangeForRange:oldRange];
+		NSMutableString *n = [NSMutableString string];
+
+		// Put "-- " in front of the current line
+		[n setString:[NSString stringWithFormat:@"-- %@", [[textView string] substringWithRange:lineRange]]];
+
+		// Check if current line is already commented out, if so uncomment it
+		// and preserve the original indention via regex:@"^-- (\\s*)"
+		if([n isMatchedByRegex:@"^-- \\s*(--\\s|#)"]) {
+			[n replaceOccurrencesOfRegex:@"^-- \\s*(--\\s|#)" 
+				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
+													options:RKLNoOptions 
+													inRange:NSMakeRange(0,[n length]) 
+													capture:1
+													error: nil]]];
+		} else if ([n isMatchedByRegex:@"^-- \\s*/\\*.*?\\*/\\s*$"]) {
+			[n replaceOccurrencesOfRegex:@"^-- \\s*/\\* ?" 
+				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
+													options:RKLNoOptions 
+													inRange:NSMakeRange(0,[n length]) 
+													capture:1
+													error: nil]]];
+			[n replaceOccurrencesOfRegex:@"\\*/\\s*$" 
+				withString:[n substringWithRange:[n rangeOfRegex:@"\\*/(\\s*)$" 
+													options:RKLNoOptions 
+													inRange:NSMakeRange(0,[n length]) 
+													capture:1
+													error: nil]]];
+		}
+		
+		// Replace current line by (un)commented string
+		// The caret will be placed at the beginning of the next line if present to
+		// allow a fast (un)commenting of lines
+		[textView setSelectedRange:lineRange];
+		[textView insertText:n];
+
+	}
+
 }
 
 #pragma mark -
@@ -1652,6 +1725,9 @@
 	} else {
 		currentQueryRange = NSMakeRange(0, 0);
 	}
+
+	// disable "Comment Current Query" meun item if no current query is selectable
+	[commentCurrentQueryMenuItem setEnabled:(currentQueryRange.length) ? YES : NO];
 
 	// If no text is selected, disable the button and action menu.
 	if ( caretPosition == NSNotFound ) {
