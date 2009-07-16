@@ -26,9 +26,39 @@
 //  More info at <http://mysql-cocoa.sourceforge.net/>
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+// Result type constants
 typedef enum {
     MCPTypeArray = 1,
     MCPTypeDictionary = 2,
     MCPTypeFlippedArray = 3,
     MCPTypeFlippedDictionary = 4
 } MCPReturnType;
+
+// Connection check constants
+typedef enum {
+	MCPConnectionCheckReconnect = 0,
+	MCPConnectionCheckDisconnect = 1,
+	MCPConnectionCheckRetry = 3
+} MCPConnectionCheck;
+
+// Charcater set mapping constants
+typedef struct _OUR_CHARSET
+{
+	unsigned int nr;
+	const char	 *name;
+	const char	 *collation;
+	unsigned int char_minlen;
+	unsigned int char_maxlen;
+} OUR_CHARSET;
+
+// Deafult connection option
+extern const unsigned int kMCPConnectionDefaultOption;
+
+// Default socket (from the mysql.h used at compile time)
+extern const char *kMCPConnectionDefaultSocket;
+
+// Added to MySQL error code
+extern const unsigned int kMCPConnectionNotInited;
+
+// The length of the truncation if required
+extern const unsigned int kLengthOfTruncationForLog;

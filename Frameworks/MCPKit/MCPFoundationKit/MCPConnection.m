@@ -30,7 +30,6 @@
 #import "MCPResult.h"
 #import "MCPNumber.h"
 #import "MCPNull.h"
-
 #import "MCPConnectionProxy.h"
 
 #include <unistd.h>
@@ -488,8 +487,8 @@ static BOOL	sDebugQueries = NO;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(connectionFailed)]) {
-			failureDecision = [delegate connectionFailed];
+		if ([delegate respondsToSelector:@selector(connectionLost)]) {
+			failureDecision = [delegate connectionLost];
 		}
 		
 		switch (failureDecision) {				
@@ -532,8 +531,8 @@ static BOOL	sDebugQueries = NO;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckRetry;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(connectionFailed)]) {
-			failureDecision = [delegate connectionFailed];
+		if ([delegate respondsToSelector:@selector(connectionLost)]) {
+			failureDecision = [delegate connectionLost];
 		}
 		
 		switch (failureDecision) {

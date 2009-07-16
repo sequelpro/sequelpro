@@ -27,23 +27,14 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/Foundation.h>
-#import "mysql.h"
 #import "MCPConstants.h"
+
+#import "mysql.h"
 
 #define MAGIC_BINARY_CHARSET_NR 63
 
-typedef struct st_our_charset
-{
-	unsigned int	nr;
-	const char		*name;
-	const char		*collation;
-	unsigned int	char_minlen;
-	unsigned int	char_maxlen;
-} OUR_CHARSET;
-
 @interface MCPResult : NSObject 
 {
-@protected
 	MYSQL_RES		 *mResult;		 /* The MYSQL_RES structure of the C API. */
 	NSArray			 *mNames;		 /* An NSArray holding the name of the columns. */
 	NSDictionary	 *mMySQLLocales; /* A Locales dictionary to define the locales of MySQL. */
@@ -52,29 +43,21 @@ typedef struct st_our_charset
 	NSTimeZone		 *mTimeZone;	 /* The time zone of the connection when the query was made. */
 }
 
-/**
- * Initialization
- */
+// Initialization
 - (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)iTimeZone;
 - (id)initWithResPtr:(MYSQL_RES *)mySQLResPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)iTimeZone;
 
-/**
- * Result info
- */
+// Result info
 - (my_ulonglong)numOfRows;
 - (unsigned int)numOfFields;
 
-/**
- * Rows
- */
+// Rows
 - (void)dataSeek:(my_ulonglong) row;
 - (id)fetchRowAsType:(MCPReturnType) aType;
 - (NSArray *)fetchRowAsArray;
 - (NSDictionary *)fetchRowAsDictionary;
 
-/**
- * Columns
- */
+// Columns
 - (NSArray *)fetchFieldNames;
 - (id)fetchTypesAsType:(MCPReturnType)aType;
 - (NSArray *)fetchTypesAsArray;
@@ -87,16 +70,12 @@ typedef struct st_our_charset
 - (BOOL)isBlobAtIndex:(unsigned int)index;
 - (BOOL)isBlobForKey:(NSString *)key;
 
-/**
- * Conversion
- */
+// Conversion
 - (NSString *)stringWithText:(NSData *)theTextData;
 - (const char *)cStringFromString:(NSString *)theString;
 - (NSString *)stringWithCString:(const char *)theCString;
 
-/**
- * Other
- */
+// Other
 - (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length;
 - (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags;
 - (NSString *)find_charsetName:(unsigned int)charsetnr;

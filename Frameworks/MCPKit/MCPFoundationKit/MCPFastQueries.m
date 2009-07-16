@@ -29,80 +29,91 @@
 #import "MCPFastQueries.h"
 #import "MCPResultPlus.h"
 
+/**
+ * This actegory is made up to keep the extra methods out or the core of the framework.
+ *
+ * Basicly this is the place to add methods which are useful, but are just wrappers to the methods of the 
+ * core (MCPConnection, MCPResult). The purpous being to have a single line call available for current tasks 
+ * which otherwise would need a couple of lines and object defined.
+ */
 @implementation MCPConnection (MCPFastQueries)
-/*" 
-This actegory is made up to keep the extra methods out or the core of the framework.
 
-Basicly this is the place to add methods which are useful, but are just wrappers to the methods of the core (MCPConnection, MCPResult). The purpous being to have a single line call available for current tasks which otherwise would need a couple of lines and object defined.
-"*/
-
-- (my_ulonglong) insertQuery:(NSString *) aQuery
-/*"
-Send the query aQuery to the server and retrieve the row id if the table have a autoincrement column.
-Returns 0 if nothing have been inserted.
-"*/
+/**
+ * Send the query aQuery to the server and retrieve the row id if the table have a autoincrement column.
+ * Returns 0 if nothing have been inserted.
+ */
+- (my_ulonglong)insertQuery:(NSString *)aQuery
 {
     [self queryString:aQuery];
+	
     return [self insertId];
 }
 
-
-- (my_ulonglong) updateQuery:(NSString *) aQuery
-/*"
-Send the query aQuery to the server and retrieve the number of affected rows (should work with !{update}, !{delete}, !{insert} and !{select} type of queries).
-
-NB: This can also be used with a !{select} query if you are only interested in the number of row complying with the query; you'll get no chance to get the result from the query, except by sending the query again (with !{queryString:})
-"*/
+/**
+ * Send the query aQuery to the server and retrieve the number of affected rows (should work with !{update}, 
+ * !{delete}, !{insert} and !{select} type of queries).
+ *
+ * NB: This can also be used with a !{select} query if you are only interested in the number of row complying 
+ * with the query; you'll get no chance to get the result from the query, except by sending the query 
+ * again (with !{queryString:})
+ */
+- (my_ulonglong)updateQuery:(NSString *)aQuery
 {
     [self queryString:aQuery];
+	
     return [self affectedRows];
 }
 
-
-- (id) getFirstFieldFromQuery:(NSString *) aQuery
-/*"
-Get the first field of the first row of the result from the query (aQuery). Should return nil if no object at all are selected.
-"*/
+/**
+ * Get the first field of the first row of the result from the query (aQuery). Should return nil if no object 
+ * at all are selected.
+ */
+- (id)getFirstFieldFromQuery:(NSString *)aQuery
 {
-    MCPResult		*theResult = [self queryString:aQuery];
+    MCPResult *theResult = [self queryString:aQuery];
+	
     return [[theResult fetchRowAsType:MCPTypeArray] objectAtIndex:0];
 }
 
-
+/**
+ * Get the firdst row of the result from the query aQuery, in a collection of type determined by aType 
+ * (MCPTypeArray or MCPTypeDictionary)
+ */
 - (id) getFirstRowFromQuery:(NSString *) aQuery asType:(MCPReturnType) aType
-/*"
-Get the firdst row of the result from the query aQuery, in a collection of type determined by aType (MCPTypeArray or MCPTypeDictionary)
-"*/
 {
-    MCPResult		*theResult = [self queryString:aQuery];
+    MCPResult *theResult = [self queryString:aQuery];
+	
     return [theResult fetchRowAsType:aType];
 }
 
+/**
+ * Get a bidimensional table of the whole rows of the result from the query aQuery. The type of the result is 
+ * choosen by aType, it can be (MCPTypeArray, MCPTypeDictionary, MCPTypeFlippedArray & MCPTypeFlippedDictionary). 
+ * Description of the types can be found in method !{fetch2DResultAsType:}.
+ */
+- (id)getAllRowsFromQuery:(NSString *)aQuery asType:(MCPReturnType)aType
 
-- (id) getAllRowsFromQuery:(NSString *) aQuery asType:(MCPReturnType) aType
-/*"
-Get a bidimensional table of the whole rows of the result from the query aQuery. The type of the result is choosen by aType, it can be (MCPTypeArray, MCPTypeDictionary, MCPTypeFlippedArray & MCPTypeFlippedDictionary). Description of the types can be found in method !{fetch2DResultAsType:}.
-"*/
 {
-    MCPResult		*theResult = [self queryString:aQuery];
-    return [theResult fetch2DResultAsType:aType];
+    MCPResult *theResult = [self queryString:aQuery];
+   
+	return [theResult fetch2DResultAsType:aType];
 }
 
-
-- (NSArray *) getQuery:(NSString *) aQuery colWithIndex:(unsigned int) aCol
-/*"
-Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's index, starting from 0.
-"*/
+/**
+ * Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's index, 
+ * starting from 0.
+ */
+- (NSArray *)getQuery:(NSString *)aQuery colWithIndex:(unsigned int)aCol
 {
-    MCPResult		*theResult = [self queryString:aQuery];
-    return [theResult fetchColAtIndex:aCol];
+    MCPResult *theResult = [self queryString:aQuery];
+    
+	return [theResult fetchColAtIndex:aCol];
 }
 
-
-- (NSArray *) getQuery:(NSString *) aQuery colWithName:(NSString *) aColName
-/*"
-Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's name.
-"*/
+/**
+ * Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's name.
+ */
+- (NSArray *)getQuery:(NSString *)aQuery colWithName:(NSString *)aColName
 {
     MCPResult		*theResult = [self queryString:aQuery];
     return [theResult fetchColWithName:aColName];

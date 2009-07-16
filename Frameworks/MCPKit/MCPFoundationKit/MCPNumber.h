@@ -34,54 +34,50 @@
    NSNumber   *number;
 }
 
-- (id) initWithChar:(char) value;
-- (id) initWithUnsignedChar:(unsigned char) value;
-- (id) initWithShort:(short) value;
-- (id) initWithUnsignedShort:(unsigned short) value;
-- (id) initWithInt:(int) value;
-- (id) initWithUnsignedInt:(unsigned int) value;
-- (id) initWithLong:(long) value;
-- (id) initWithUnsignedLong:(unsigned long) value;
-- (id) initWithLongLong:(long long) value;
-- (id) initWithUnsignedLongLong:(unsigned long long) value;
-- (id) initWithFloat:(float) value;
-- (id) initWithDouble:(double) value;
-- (id) initWithBool:(BOOL) value;
++ (MCPNumber *)numberWithChar:(char)value;
++ (MCPNumber *)numberWithUnsignedChar:(unsigned char)value;
++ (MCPNumber *)numberWithShort:(short)value;
++ (MCPNumber *)numberWithUnsignedShort:(unsigned short)value;
++ (MCPNumber *)numberWithInt:(int)value;
++ (MCPNumber *)numberWithUnsignedInt:(unsigned int)value;
++ (MCPNumber *)numberWithLong:(long)value;
++ (MCPNumber *)numberWithUnsignedLong:(unsigned long)value;
++ (MCPNumber *)numberWithLongLong:(long long)value;
++ (MCPNumber *)numberWithUnsignedLongLong:(unsigned long long)value;
++ (MCPNumber *)numberWithFloat:(float)value;
++ (MCPNumber *)numberWithDouble:(double)value;
++ (MCPNumber *)numberWithBool:(BOOL)value;
 
-+ (MCPNumber *) numberWithChar:(char) value;
-+ (MCPNumber *) numberWithUnsignedChar:(unsigned char) value;
-+ (MCPNumber *) numberWithShort:(short) value;
-+ (MCPNumber *) numberWithUnsignedShort:(unsigned short) value;
-+ (MCPNumber *) numberWithInt:(int) value;
-+ (MCPNumber *) numberWithUnsignedInt:(unsigned int) value;
-+ (MCPNumber *) numberWithLong:(long) value;
-+ (MCPNumber *) numberWithUnsignedLong:(unsigned long) value;
-+ (MCPNumber *) numberWithLongLong:(long long) value;
-+ (MCPNumber *) numberWithUnsignedLongLong:(unsigned long long) value;
-+ (MCPNumber *) numberWithFloat:(float) value;
-+ (MCPNumber *) numberWithDouble:(double) value;
-+ (MCPNumber *) numberWithBool:(BOOL) value;
+- (id)initWithChar:(char)value;
+- (id)initWithUnsignedChar:(unsigned char)value;
+- (id)initWithShort:(short)value;
+- (id)initWithUnsignedShort:(unsigned short)value;
+- (id)initWithInt:(int)value;
+- (id)initWithUnsignedInt:(unsigned int)value;
+- (id)initWithLong:(long)value;
+- (id)initWithUnsignedLong:(unsigned long)value;
+- (id)initWithLongLong:(long long)value;
+- (id)initWithUnsignedLongLong:(unsigned long long)value;
+- (id)initWithFloat:(float)value;
+- (id)initWithDouble:(double)value;
+- (id)initWithBool:(BOOL)value;
 
-- (void) dealloc;
+// Important NSNumber primitive methods
+- (const char *)objCType;
+- (void)getValue:(void *)buffer;
 
-/*" Most important : NSNumber primitive methods: "*/
-- (const char *) objCType;
-- (void) getValue:(void *) buffer;
-
-//- (NSString *) descriptionWithLocale:(NSDictionary *) aLocale; // Not Primitive, but buggy...
-
-- (char) charValue;
-- (unsigned char) unsignedCharValue;
-- (short) shortValue;
-- (unsigned short) unsignedShortValue;
-- (int) intValue;
-- (unsigned int) unsignedIntValue;
-- (long) longValue;
-- (unsigned long) unsignedLongValue;
-- (long long) longLongValue;
-- (unsigned long long) unsignedLongLongValue;
-- (float) floatValue;
-- (double) doubleValue;
-- (BOOL) boolValue;
+- (char)charValue;
+- (unsigned char)unsignedCharValue;
+- (short)shortValue;
+- (unsigned short)unsignedShortValue;
+- (int)intValue;
+- (unsigned int)unsignedIntValue;
+- (long)longValue;
+- (unsigned long)unsignedLongValue;
+- (long long)longLongValue;
+- (unsigned long long)unsignedLongLongValue;
+- (float)floatValue;
+- (double)doubleValue;
+- (BOOL)boolValue;
 
 @end

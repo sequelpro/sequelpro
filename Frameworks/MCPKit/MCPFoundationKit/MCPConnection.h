@@ -27,6 +27,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/Foundation.h>
+
 #import "MCPConstants.h"
 
 #import "mysql.h"
@@ -34,19 +35,7 @@
 @class MCPResult;
 @protocol MCPConnectionProxy;
 
-// Deafult connection option
-extern const unsigned int kMCPConnectionDefaultOption;
-
-// Default socket (from the mysql.h used at compile time)
-extern const char *kMCPConnectionDefaultSocket;
-
-// Added to MySQL error code
-extern const unsigned int kMCPConnectionNotInited;
-
-// The length of the truncation if required
-extern const unsigned int kLengthOfTruncationForLog;
-
-/*
+/**
  * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
  */
 static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encoding, int lossy) 
@@ -58,25 +47,14 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	return to_return;
 }
 
-/**
- * Connection check constants
- */
-typedef enum _MCPConnectionCheck {
-	MCPConnectionCheckReconnect = 1,
-	MCPConnectionCheckDisconnect,
-	MCPConnectionCheckRetry
-} MCPConnectionCheck;
-
-/**
- * Delegate interface
- */
+// Connection delegate interface
 @interface NSObject (MCPConnectionDelegate)
 
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 - (BOOL)connectionEncodingViaLatin1;
 - (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account;
-- (MCPConnectionCheck)connectionFailed;
+- (MCPConnectionCheck)connectionLost;
 
 @end
 
@@ -141,28 +119,20 @@ typedef enum _MCPConnectionCheck {
 @property (readwrite, assign) int connectionTimeout;
 @property (readwrite, assign) float keepAliveInterval;
 
-/**
- * Initialisation
- */
+// Initialisation
 - (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port;
 - (id)initToSocket:(NSString *)socket withLogin:(NSString *)login;
 
-/**
- * Connection details
- */
+// Connection details
 - (BOOL)setPort:(int)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
 - (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 
-/**
- * SSH
- */
+// SSH
 - (BOOL)setSSHTunnel:(id <MCPConnectionProxy>)theTunnel;
 - (void)sshTunnelStateChange:(id <MCPConnectionProxy>)theTunnel;
 
-/**
- * Connection
- */
+// Connection
 - (BOOL)connect;
 - (void)disconnect;
 - (BOOL)reconnect;
@@ -175,24 +145,18 @@ typedef enum _MCPConnectionCheck {
 - (void)threadedKeepAlive;
 - (void)restoreConnectionDetails;
 
-/**
- * Server versions
- */
+// Server versions
 - (int)serverMajorVersion;
 - (int)serverMinorVersion;
 - (int)serverReleaseVersion;
 
-/**
- * MySQL defaults
- */
+// MySQL defaults
 + (NSDictionary *)getMySQLLocales;
 + (NSStringEncoding)encodingForMySQLEncoding:(const char *)mysqlEncoding;
 + (NSStringEncoding)defaultMySQLEncoding;
 + (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
 
-/**
- * Class maintenance
- */
+// Class maintenance
 + (void)setLogQueries:(BOOL)iLogFlag;
 + (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag;
 + (BOOL)truncateLongField;
@@ -201,17 +165,13 @@ typedef enum _MCPConnectionCheck {
 
 - (BOOL)selectDB:(NSString *)dbName;
 
-/**
- * Error information
- */
+// Error information
 - (NSString *)getLastErrorMessage;
 - (void)setLastErrorMessage:(NSString *)theErrorMessage;
 - (unsigned int)getLastErrorID;
 + (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
 
-/**
- * Queries
- */
+// Queries
 - (NSString *)prepareBinaryData:(NSData *)theData;
 - (NSString *)prepareString:(NSString *)theString;
 - (NSString *)quoteObject:(id)theObject;
@@ -222,9 +182,7 @@ typedef enum _MCPConnectionCheck {
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;
 
-/**
- * Database structure
- */
+// Database structure
 - (MCPResult *)listDBs;
 - (MCPResult *)listDBsLike:(NSString *)dbsName;
 - (MCPResult *)listTables;
@@ -233,9 +191,7 @@ typedef enum _MCPConnectionCheck {
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
 
-/**
- * Server information
- */
+// Server information
 - (NSString *)clientInfo;
 - (NSString *)hostInfo;
 - (NSString *)serverInfo;
@@ -244,29 +200,21 @@ typedef enum _MCPConnectionCheck {
 - (BOOL)killProcess:(unsigned long)pid;
 - (NSString *)findSocketPath;
 
-/**
- * Encoding
- */
+// Encoding
 - (void)setEncoding:(NSStringEncoding)theEncoding;
 - (NSStringEncoding)encoding;
 
-/**
- * Time zone
- */
+// Time zone
 - (void)setTimeZone:(NSTimeZone *)iTimeZone;
 - (NSTimeZone *)timeZone;
 
-/**
- * Packet size
- */
+// Packet size
 - (BOOL)fetchMaxAllowedPacket;
 - (int)getMaxAllowedPacket;
 - (BOOL)isMaxAllowedPacketEditable;
 - (int)setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
 
-/**
- * Data conversion
- */
+// Data conversion
 - (const char *)cStringFromString:(NSString *)theString;
 - (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding;
 - (NSString *)stringWithCString:(const char *)theCString;

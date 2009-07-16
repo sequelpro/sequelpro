@@ -1239,6 +1239,14 @@
 }
 
 /**
+ * Invoked when user dismisses the error sheet displayed as a result of the current connection being lost.
+ */
+- (IBAction)closeErrorConnectionSheet:(id)sender
+{
+	[NSApp stopModalWithCode:[sender tag]];
+}
+
+/**
  * Passes query to tablesListInstance
  */
 - (void)doPerformQueryService:(NSString *)query
@@ -2043,6 +2051,8 @@
 	
 	[NSApp endSheet:connectionErrorDialog];
 	[connectionErrorDialog orderOut:nil];
+	
+	NSLog(@"%d", connectionErrorCode);
 	
 	return connectionErrorCode;
 }

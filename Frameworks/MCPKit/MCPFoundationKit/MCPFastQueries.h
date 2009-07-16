@@ -32,19 +32,15 @@
 
 @interface MCPConnection (MCPFastQueries)
 
-/**
- * For insert queries, get directly the Id of the newly inserted row.
- */
-- (my_ulonglong) insertQuery:(NSString *) aQuery;
-- (my_ulonglong) updateQuery:(NSString *) aQuery;
+// For insert queries, get directly the Id of the newly inserted row.
+- (my_ulonglong)insertQuery:(NSString *)aQuery;
+- (my_ulonglong)updateQuery:(NSString *)aQuery;
 
-/**
- * Returns directly a proper NS object, or a collection (NSArray, NSDictionary...).
- */
-- (id) getFirstFieldFromQuery:(NSString *) aQuery;
-- (id) getFirstRowFromQuery:(NSString *) aQuery asType:(MCPReturnType) aType;
-- (id) getAllRowsFromQuery:(NSString *) aQuery asType:(MCPReturnType) aType;
-- (NSArray *) getQuery:(NSString *) aQuery colWithIndex:(unsigned int) aCol;
-- (NSArray *) getQuery:(NSString *) aQuery colWithName:(NSString *) aColName;
+// Returns directly a proper NS object, or a collection (NSArray, NSDictionary...).
+- (id)getFirstFieldFromQuery:(NSString *)aQuery;
+- (id)getFirstRowFromQuery:(NSString *)aQuery asType:(MCPReturnType)aType;
+- (id)getAllRowsFromQuery:(NSString *)aQuery asType:(MCPReturnType)aType;
+- (NSArray *)getQuery:(NSString *)aQuery colWithIndex:(unsigned int)aCol;
+- (NSArray *)getQuery:(NSString *)aQuery colWithName:(NSString *)aColName;
 
 @end
