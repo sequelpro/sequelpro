@@ -96,6 +96,7 @@
 	BOOL _encodingViaLatin1;
 	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
+	BOOL _mainNibLoaded;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;

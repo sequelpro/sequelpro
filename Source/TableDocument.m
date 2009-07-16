@@ -57,6 +57,7 @@
 {
 	if ((self = [super init])) {
 		
+		_mainNibLoaded = NO;
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
 		chooseDatabaseButton = nil;
@@ -79,6 +80,8 @@
 
 - (void)awakeFromNib
 {
+	if (_mainNibLoaded) return;
+	_mainNibLoaded = YES;
 
 	// The first window should use autosaving; subsequent windows should cascade
 	BOOL usedAutosave = [tableWindow setFrameAutosaveName:[self windowNibName]];
@@ -122,6 +125,11 @@
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
 	[windowFrame addSubview:titleAccessoryView];	
+
+	// Load additional nibs
+	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
+		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+	}
 }
 
 #pragma mark -
