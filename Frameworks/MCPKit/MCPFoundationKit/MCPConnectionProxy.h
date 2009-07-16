@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  MCPSSHProtocol.h
+//  MCPConnectionProxy.h
 //  MCPKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on July 2, 2009.
@@ -37,7 +37,7 @@ enum SSH_TUNNEL_STATES
 	SSH_STATE_FORWARDING_FAILED = 4
 };
 
-@protocol MCPSSHProtocol <NSObject>
+@protocol MCPConnectionProxy <NSObject>
 
 /**
  * Connect the SSH tunnel.

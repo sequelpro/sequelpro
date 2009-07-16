@@ -1,6 +1,6 @@
 #import <Cocoa/Cocoa.h>
 
-#import <MCPKit/MCPSSHProtocol.h>
+#import <MCPKit/MCPConnectionProxy.h>
 
 enum spsshtunnel_password_modes
 {
@@ -8,7 +8,7 @@ enum spsshtunnel_password_modes
 	SPSSH_PASSWORD_ASKS_UI = 1
 };
 
-@interface SPSSHTunnel : NSObject <MCPSSHProtocol>
+@interface SPSSHTunnel : NSObject <MCPConnectionProxy>
 {
 	IBOutlet NSWindow *sshQuestionDialog;
 	IBOutlet NSTextField *sshQuestionText;

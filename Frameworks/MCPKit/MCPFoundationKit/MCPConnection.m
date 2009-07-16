@@ -31,7 +31,7 @@
 #import "MCPNumber.h"
 #import "MCPNull.h"
 
-#import "MCPSSHProtocol.h"
+#import "MCPConnectionProxy.h"
 
 #include <unistd.h>
 #include <setjmp.h>
@@ -239,7 +239,7 @@ static BOOL	sDebugQueries = NO;
  * and will be automatically connected/connection checked/reconnected/disconnected
  * together with the main connection.
  */
-- (BOOL)setSSHTunnel:(id <MCPSSHProtocol>)theTunnel
+- (BOOL)setSSHTunnel:(id <MCPConnectionProxy>)theTunnel
 {
 	connectionTunnel = theTunnel;
 	[connectionTunnel retain];
@@ -253,7 +253,7 @@ static BOOL	sDebugQueries = NO;
 /**
  * Handle any state changes in the associated SSH Tunnel.
  */
-- (void)sshTunnelStateChange:(id <MCPSSHProtocol>)theTunnel
+- (void)sshTunnelStateChange:(id <MCPConnectionProxy>)theTunnel
 {
 	int newState = [theTunnel state];
 	

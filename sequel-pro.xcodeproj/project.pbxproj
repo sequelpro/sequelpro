@@ -39,7 +39,7 @@
 		1774635E0FFD20320046C37C /* MCPNull.h in Headers */ = {isa = PBXBuildFile; fileRef = 177463310FFD1F770046C37C /* MCPNull.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1774635F0FFD20320046C37C /* MCPFastQueries.h in Headers */ = {isa = PBXBuildFile; fileRef = 177463340FFD1F770046C37C /* MCPFastQueries.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177463600FFD20320046C37C /* MCPConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 177463350FFD1F770046C37C /* MCPConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		177463610FFD20320046C37C /* MCPSSHProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 177463270FFD1F770046C37C /* MCPSSHProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		177463610FFD20320046C37C /* MCPConnectionProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 177463270FFD1F770046C37C /* MCPConnectionProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177463620FFD20550046C37C /* MCPRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = 177463130FFD1F020046C37C /* MCPRelation.m */; };
 		177463630FFD20550046C37C /* MCPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 177463140FFD1F020046C37C /* MCPObject.m */; };
 		177463640FFD20550046C37C /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 1774631E0FFD1F020046C37C /* MCPClassDescription.m */; };
@@ -339,7 +339,7 @@
 		177463240FFD1F020046C37C /* MCPEntrepriseNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPEntrepriseNotifications.m; sourceTree = "<group>"; };
 		177463250FFD1F020046C37C /* MCPEntrepriseNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPEntrepriseNotifications.h; sourceTree = "<group>"; };
 		177463260FFD1F020046C37C /* MCPClassDescription+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPClassDescription+Private.h"; sourceTree = "<group>"; };
-		177463270FFD1F770046C37C /* MCPSSHProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPSSHProtocol.h; sourceTree = "<group>"; };
+		177463270FFD1F770046C37C /* MCPConnectionProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnectionProxy.h; sourceTree = "<group>"; };
 		177463280FFD1F770046C37C /* MCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResult.m; sourceTree = "<group>"; };
 		177463290FFD1F770046C37C /* MCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPResult.h; sourceTree = "<group>"; };
 		1774632A0FFD1F770046C37C /* MCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPConnection.m; sourceTree = "<group>"; };
@@ -754,7 +754,7 @@
 				177463340FFD1F770046C37C /* MCPFastQueries.h */,
 				177463330FFD1F770046C37C /* MCPFastQueries.m */,
 				177463350FFD1F770046C37C /* MCPConstants.h */,
-				177463270FFD1F770046C37C /* MCPSSHProtocol.h */,
+				177463270FFD1F770046C37C /* MCPConnectionProxy.h */,
 			);
 			path = MCPFoundationKit;
 			sourceTree = "<group>";
@@ -1185,7 +1185,7 @@
 				1774635E0FFD20320046C37C /* MCPNull.h in Headers */,
 				1774635F0FFD20320046C37C /* MCPFastQueries.h in Headers */,
 				177463600FFD20320046C37C /* MCPConstants.h in Headers */,
-				177463610FFD20320046C37C /* MCPSSHProtocol.h in Headers */,
+				177463610FFD20320046C37C /* MCPConnectionProxy.h in Headers */,
 				177463460FFD200B0046C37C /* mysql_version.h in Headers */,
 				177463470FFD200B0046C37C /* typelib.h in Headers */,
 				177463480FFD200B0046C37C /* mysql_time.h in Headers */,
