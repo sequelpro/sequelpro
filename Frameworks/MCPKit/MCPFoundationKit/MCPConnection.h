@@ -235,6 +235,7 @@ typedef enum _MCPConnectionCheck {
 - (NSNumber *)protoInfo;
 - (MCPResult *)listProcesses;
 - (BOOL)killProcess:(unsigned long)pid;
+- (NSString *)findSocketPath;
 
 /**
  * Encoding

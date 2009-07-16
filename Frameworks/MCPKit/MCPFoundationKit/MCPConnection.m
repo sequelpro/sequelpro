@@ -151,6 +151,9 @@ static BOOL	sDebugQueries = NO;
 - (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port
 {
 	if ((self = [self init])) {
+		if (!host) host = @"";
+		if (!login) login = @"";
+		
 		connectionHost = [[NSString alloc] initWithString:host];
 		connectionLogin = [[NSString alloc] initWithString:login];
 		connectionPort = port;
@@ -166,6 +169,13 @@ static BOOL	sDebugQueries = NO;
 - (id)initToSocket:(NSString *)socket withLogin:(NSString *)login
 {
 	if ((self = [self init])) {
+		if (!socket || ![socket length]) {
+			socket = [self findSocketPath];
+			if (!socket) socket = @"";
+		}
+		
+		if (!login) login = @"";
+		
 		connectionHost = nil;
 		connectionLogin = [[NSString alloc] initWithString:login];
 		connectionSocket = [[NSString alloc] initWithString:socket];
@@ -197,6 +207,8 @@ static BOOL	sDebugQueries = NO;
 	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
 	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
 	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
+	
+	if (!thePassword) thePassword = @"";
 	
 	connectionPassword = [[NSString alloc] initWithString:thePassword];
 	
@@ -319,6 +331,9 @@ static BOOL	sDebugQueries = NO;
 	
 	if (theRet != mConnection) {
 		[self setLastErrorMessage:nil];
+		
+		lastQueryErrorId = mysql_errno(mConnection);
+		
 		return mConnected = NO;
 	}
 	
@@ -331,6 +346,9 @@ static BOOL	sDebugQueries = NO;
 	
 	if (![self fetchMaxAllowedPacket]) {
 		[self setLastErrorMessage:nil];
+		
+		lastQueryErrorId = mysql_errno(mConnection);
+		
 		return mConnected = NO;
 	}
 	
@@ -682,7 +700,7 @@ static void forcePingTimeout(int signalNumber)
  * Restore the connection encoding details as necessary based on the delegate-provided
  * details.
  */
-- (void) restoreConnectionDetails
+- (void)restoreConnectionDetails
 {
 	connectionThreadId = mConnection->thread_id;
 	[self fetchMaxAllowedPacket];
@@ -1027,6 +1045,8 @@ static void forcePingTimeout(int signalNumber)
 	}
 	
 	[self setLastErrorMessage:nil];
+	
+	lastQueryErrorId = mysql_errno(mConnection);
 	
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
@@ -1641,6 +1661,35 @@ static void forcePingTimeout(int signalNumber)
 	return (theErrorCode) ? NO : YES;
 }
 
+/*
+ * Check some common locations for the presence of a MySQL socket file, returning
+ * it if successful.
+ */
+- (NSString *)findSocketPath
+{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	NSArray *possibleSocketLocations = [NSArray arrayWithObjects:
+										@"/tmp/mysql.sock",							// Default
+										@"/var/run/mysqld/mysqld.sock",				// As used on Debian/Gentoo
+										@"/var/tmp/mysql.sock",						// As used on FreeBSD
+										@"/var/lib/mysql/mysql.sock",				// As used by Fedora
+										@"/opt/local/lib/mysql/mysql.sock",			// Alternate fedora
+										@"/opt/local/var/run/mysqld/mysqld.sock",	// Darwinports MySQL
+										@"/opt/local/var/run/mysql4/mysqld.sock",	// Darwinports MySQL 4
+										@"/opt/local/var/run/mysql5/mysqld.sock",	// Darwinports MySQL 5
+										@"/Applications/MAMP/tmp/mysql/mysql.sock",	// MAMP default location
+										nil];
+	
+	for (int i = 0; i < [possibleSocketLocations count]; i++) 
+	{
+		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
+			return [possibleSocketLocations objectAtIndex:i];
+	}
+	
+	return nil;
+}
+
 #pragma mark -
 #pragma mark Encoding
 
@@ -1913,6 +1962,8 @@ static void forcePingTimeout(int signalNumber)
  */
 - (void) dealloc
 {
+	delegate = nil;
+		
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];
