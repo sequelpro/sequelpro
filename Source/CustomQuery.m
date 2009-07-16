@@ -1754,12 +1754,15 @@
 			[runSelectionButton setEnabled:NO];
 			[runSelectionMenuItem setEnabled:NO];
 		}
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Line", @"Title of action menu item to comment line")];
+
 	// For selection ranges, enable the button.
 	} else {
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
 		[runSelectionButton setEnabled:YES];
 		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
 		[runSelectionMenuItem setEnabled:YES];
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
 	}
 
 }
