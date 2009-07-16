@@ -959,18 +959,23 @@
 
 	[n setString:[[textView string] substringWithRange:workingRange]];
 
+	if([n isMatchedByRegex:@"\\n\\Z"]) {
+		workingRange.length--;
+		[n replaceOccurrencesOfRegex:@"\\n\\Z" withString:@""];
+	}
+
 	// Escape given */ by *\/ 
 	[n replaceOccurrencesOfRegex:@"\\*/(?=.)" withString:@"*\\\\/"];
 	[n replaceOccurrencesOfRegex:@"\\*/(?=\\n)" withString:@"*\\\\/"];
 
 	// Wrap current query into /* */
 	[n replaceOccurrencesOfRegex:@"^" withString:@"/* "];
-	[n replaceOccurrencesOfRegex:@"$" withString:@" */"];
+	[n appendString:@" */"];
 	
 	// Check if current query/selection is already commented out, if so uncomment it
 	if([n isMatchedByRegex:@"^/\\* \\s*/\\*\\s*(.|\\n)*?\\s*\\*/ \\*/\\s*$"]) {
 		[n replaceOccurrencesOfRegex:@"^/\\* \\s*/\\*\\s*" withString:@""];
-		[n replaceOccurrencesOfRegex:@"\\s*\\*/ \\*/\\s*$" withString:@""];
+		[n replaceOccurrencesOfRegex:@"\\s*\\*/ \\*/\\s*\\Z" withString:@""];
 		// unescape *\/
 		[n replaceOccurrencesOfRegex:@"\\*\\\\/" withString:@"*/"];
 		isUncomment = YES;
@@ -997,7 +1002,7 @@
 
 	NSRange oldRange = [textView selectedRange];
 	
-	if(oldRange.length) { 
+	if(oldRange.length) { // (un)comment selection
 		[self commentOutCurrentQueryTakingSelection:YES];
 	} else { // single line
 		
@@ -1017,15 +1022,15 @@
 													inRange:NSMakeRange(0,[n length]) 
 													capture:1
 													error: nil]]];
-		} else if ([n isMatchedByRegex:@"^-- \\s*/\\*.*?\\*/\\s*$"]) {
+		} else if ([n isMatchedByRegex:@"^-- \\s*/\\*.*? ?\\*/\\s*$"]) {
 			[n replaceOccurrencesOfRegex:@"^-- \\s*/\\* ?" 
 				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
 													options:RKLNoOptions 
 													inRange:NSMakeRange(0,[n length]) 
 													capture:1
 													error: nil]]];
-			[n replaceOccurrencesOfRegex:@"\\*/\\s*$" 
-				withString:[n substringWithRange:[n rangeOfRegex:@"\\*/(\\s*)$" 
+			[n replaceOccurrencesOfRegex:@" ?\\*/\\s*$" 
+				withString:[n substringWithRange:[n rangeOfRegex:@" ?\\*/(\\s*)$" 
 													options:RKLNoOptions 
 													inRange:NSMakeRange(0,[n length]) 
 													capture:1
