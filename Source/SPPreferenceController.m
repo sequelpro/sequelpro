@@ -877,8 +877,14 @@
 	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
-	// Load in current favorites
-	[defaultFavoritePopup addItemsWithTitles:[[favoritesController arrangedObjects] valueForKeyPath:@"name"]];
+	int i;
+	for(i=0; i<[[[favoritesController arrangedObjects] valueForKeyPath:@"name"] count]; i++ ){
+		NSMenuItem *favoritePrefMenuItem = [[NSMenuItem alloc] initWithTitle:[[[favoritesController arrangedObjects] valueForKeyPath:@"name"] objectAtIndex:i] 
+																	  action:NULL
+															   keyEquivalent:@"" ];
+		[[defaultFavoritePopup menu] addItem:favoritePrefMenuItem];
+		[favoritePrefMenuItem release];
+	}
 	
 	// Add item to switch to edit favorites pane
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
