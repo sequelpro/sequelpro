@@ -369,6 +369,10 @@
 			
 			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
 		}
+		// Prefix number of rows with '~' if this is not a MyISAM table. Only MyISAM tables report the exact row count.
+		else if (([key isEqualToString:@"Rows"]) && (![[infoDict objectForKey:@"Engine"] isEqualToString:@"MyISAM"])) {
+			value = [@"~" stringByAppendingString:value];
+		}
 	}
 		
 	return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];

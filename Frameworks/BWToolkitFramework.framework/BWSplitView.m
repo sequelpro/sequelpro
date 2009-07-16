@@ -283,6 +283,7 @@ static float scaleFactor = 1.0f;
 - (void)animationEnded
 {
 	isAnimating = NO;
+	[[self window] invalidateCursorRectsForView:self];
 }
 
 - (float)animationDuration

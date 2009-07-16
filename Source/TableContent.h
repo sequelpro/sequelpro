@@ -66,9 +66,9 @@
 	
 	id editData;
 	NSString *selectedTable, *usedQuery;
-	NSMutableArray *fullResult, *filteredResult, *keys;
-	NSMutableDictionary *oldRow;
-	NSString *compareType, *sortField;
+	NSMutableArray *fullResult, *filteredResult, *keys, *oldRow;
+	NSString *compareType, *lastField;
+	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;

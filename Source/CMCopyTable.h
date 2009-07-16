@@ -23,6 +23,7 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #import <AppKit/AppKit.h>
+#import "SPTableView.h"
 
 /*!
 	@class copyTable
@@ -32,7 +33,7 @@
 		is in similar format. The values for each cell are obtained via the
 		objects description method
 */
-@interface CMCopyTable : NSTableView 
+@interface CMCopyTable : SPTableView 
 {
 
 	id tableInstance;				// the table content view instance

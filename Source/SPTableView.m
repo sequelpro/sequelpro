@@ -1,11 +1,10 @@
 //
-//  $Id$
+//  $Id: SPTableView.m 866 2009-06-15 16:05:54Z bibiko $
 //
-//  MainController.h
+//  SPTableView.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
-//  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Created by Hans-Jörg Bibiko on July 15, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,33 +22,29 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import "SPTableView.h"
 
-@class SPPreferenceController;
 
-@interface MainController : NSObject 
+@implementation SPTableView
+
+/*
+ * Right-click at row will select that row before ordering out the contextual menu
+ * if not more than one row is selected
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event
 {
-	BOOL isNewFavorite;
+
+	// If more than one row is selected only returns the default contextual menu
+	if([self numberOfSelectedRows] > 1)
+		return [self menu];
 	
-	SPPreferenceController *prefsController;
+	// Right-click at a row will select that row before ordering out the context menu
+	int row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
+	if(row >= 0 && row < [self numberOfRows]) {
+		[self selectRow:row byExtendingSelection:NO];
+		[[self window] makeFirstResponder:self];
+	}
+	return [self menu];
 }
-
-// IBAction methods
-- (IBAction)openPreferences:(id)sender;
-
-// Services menu methods
-- (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error;
-
-// Menu methods
-- (IBAction)donate:(id)sender;
-- (IBAction)visitWebsite:(id)sender;
-- (IBAction)visitHelpWebsite:(id)sender;
-- (IBAction)visitFAQWebsite:(id)sender;
-
-// Getters
-- (SPPreferenceController *)preferenceController;
-
-// Other
-- (id)handleQuitScriptCommand:(NSScriptCommand *)command;
 
 @end

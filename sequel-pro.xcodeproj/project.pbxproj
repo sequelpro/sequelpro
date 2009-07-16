@@ -201,8 +201,10 @@
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
+		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8C8531100E0A8000D7A129 /* SPTableView.m */; };
 		BC99296E0FF3D001008B79AB /* SPFieldEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = BC99296D0FF3D001008B79AB /* SPFieldEditor.m */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
@@ -545,9 +547,12 @@
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
 		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
+		BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small-square.tiff"; sourceTree = "<group>"; };
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC8C8530100E0A8000D7A129 /* SPTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableView.h; sourceTree = "<group>"; };
+		BC8C8531100E0A8000D7A129 /* SPTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableView.m; sourceTree = "<group>"; };
 		BC99296C0FF3D001008B79AB /* SPFieldEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldEditor.h; sourceTree = "<group>"; };
 		BC99296D0FF3D001008B79AB /* SPFieldEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldEditor.m; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
@@ -899,6 +904,8 @@
 				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
 				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
 				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
+				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
+				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -960,6 +967,7 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */,
 				177E792B0FCB54EC00E9E122 /* database-small.png */,
 				177E792C0FCB54EC00E9E122 /* dummy-small.png */,
 				177E792D0FCB54EC00E9E122 /* table-small-square.tiff */,
@@ -1406,6 +1414,7 @@
 				B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */,
 				B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */,
 				5822CAE110011C8000DCC3D6 /* ConnectionView.xib in Resources */,
+				BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1535,6 +1544,7 @@
 				BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */,
 				BC99296E0FF3D001008B79AB /* SPFieldEditor.m in Sources */,
 				5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */,
+				BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

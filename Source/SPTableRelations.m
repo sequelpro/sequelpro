@@ -323,6 +323,7 @@
 - (void)dealloc
 {	
 	[relationData release], relationData = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[super dealloc];
 }

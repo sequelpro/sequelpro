@@ -388,6 +388,7 @@
 																];
 			}
 			
+			[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
@@ -651,7 +652,8 @@
 		[tableColumn removeAllObjects];
 		resultRow = [theResult fetchRowAsDictionary];
 
-		// Add the column name
+		// Add the column index and name
+		[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
 		[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Field"]] forKey:@"name"];
 
 		// Populate type, length, and other available details from the Type columns
@@ -714,7 +716,9 @@
 	}
 
 	// Run the status query and retrieve as a dictionary.
-	MCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", [tableListInstance tableName]]];
+	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
+	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
+	MCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -925,8 +929,9 @@
 	[constraints release];
 	[status release];
 	
-	if (tableEncoding != nil) [tableEncoding release];
-	if (tableCreateSyntax != nil) [tableCreateSyntax release];
+	if (tableEncoding) [tableEncoding release];
+	if (tableCreateSyntax) [tableCreateSyntax release];
+	if (mySQLConnection) [mySQLConnection release];
 
 	[super dealloc];
 }

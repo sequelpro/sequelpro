@@ -930,6 +930,78 @@
 }
 
 /**
+ * Database tables accessors for a given table type
+ */
+- (NSArray *)allTableAndViewNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE || [NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allTableNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allViewNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allProcedureNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_PROC)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allFunctionNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_FUNC)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+
+/**
+ * Returns an array of all available database names
+ */
+- (NSArray *)allDatabaseNames
+{
+	return [tableDocumentInstance allDatabaseNames];
+}
+
+/**
  * Database table types accessor
  */
 - (NSArray *)tableTypes

@@ -26,6 +26,11 @@
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
+
+@interface NSString (Private)
+- (int)smallestOf:(int)a andOf:(int)b andOf:(int)c;
+@end
+
 @implementation NSString (SPStringAdditions)
 
 /*
@@ -272,7 +277,7 @@
 #endif
 
 
-- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask
 {
 	NSRange                 range;
 	NSMutableString*        newString = [NSMutableString string];
@@ -302,9 +307,72 @@
 }
 
 
-- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet
 {
 	return [self stringByRemovingCharactersInSet:charSet options:0];
 }
+
+// calculate the distance between two string case-insensitively
+- (float)levenshteinDistanceWithWord:(NSString *)stringB
+{
+	// normalize strings
+	NSString * stringA = [NSString stringWithString: self];
+	[stringA stringByTrimmingCharactersInSet:
+	[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	[stringB stringByTrimmingCharactersInSet:
+	[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	stringA = [stringA lowercaseString];
+	stringB = [stringB lowercaseString];
+
+	int k, i, j, cost, * d, distance;
+
+	int n = [stringA length];
+	int m = [stringB length];	
+
+	if( n++ != 0 && m++ != 0 ) {
+
+		d = malloc( sizeof(int) * m * n );
+
+		for( k = 0; k < n; k++)
+			d[k] = k;
+
+		for( k = 0; k < m; k++)
+			d[ k * n ] = k;
+
+		for( i = 1; i < n; i++ )
+		for( j = 1; j < m; j++ ) {
+
+			if( [stringA characterAtIndex: i-1] == [stringB characterAtIndex: j-1] )
+				cost = 0;
+			else
+				cost = 1;
+
+			d[ j * n + i ] = [self smallestOf: d [ (j - 1) * n + i ] + 1
+				andOf: d[ j * n + i - 1 ] +  1
+				andOf: d[ (j - 1) * n + i -1 ] + cost ];
+		}
+
+		distance = d[ n * m - 1 ];
+
+		free( d );
+
+		return distance;
+	}
+	return 0.0;
+}
+
+// return the minimum of a, b and c
+- (int)smallestOf:(int)a andOf:(int)b andOf:(int)c
+{
+	int min = a;
+	if ( b < min )
+		min = b;
+
+	if( c < min )
+		min = c;
+
+	return min;
+}
+
 
 @end

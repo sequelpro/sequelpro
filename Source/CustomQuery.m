@@ -168,12 +168,8 @@
 		[NSApp endSheet:queryFavoritesSheet];
 		[queryFavoritesSheet orderOut:nil];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] != 3) {
-//choose favorite
-		// Register the next action for undo
-		[textView shouldChangeTextInRange:[textView selectedRange] replacementString:[queryFavoritesButton titleOfSelectedItem]];
-		[textView replaceCharactersInRange:[textView selectedRange] withString:[queryFavoritesButton titleOfSelectedItem]];
-		// invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-		[textView insertText:@""];
+		//choose favorite
+		[textView insertText:[queryFavoritesButton titleOfSelectedItem]];
 	}
 }
 
@@ -182,12 +178,7 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
-	// Register the next action for undo
-	[textView shouldChangeTextInRange:NSMakeRange(0,[[textView string] length]) replacementString:[queryHistoryButton titleOfSelectedItem]];
-	[textView setString:[queryHistoryButton titleOfSelectedItem]];
-	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-	[textView insertText:@""];
-	[textView selectAll:self];
+	[textView insertText:[queryHistoryButton titleOfSelectedItem]];
 }
 
 /*
@@ -219,6 +210,19 @@
 	// "Shift Left" menu item - un-indent the selection by one tab if possible.
 	if (sender == shiftLeftMenuItem) {
 		[textView shiftSelectionLeft];
+	}
+
+	// "Comment Line/Selection" menu item - Add or remove "-- " for each line 
+	// in a line or selection resp. or wrap the selection into /* */ 
+	// if the selection does not end at the end of a line (in-line comment)
+	if (sender == commentLineOrSelectionMenuItem) {
+		[self commentOut];
+	}
+
+	// "Comment Current Query" menu item - Add or remove "-- " for each line 
+	// in the current query
+	if (sender == commentCurrentQueryMenuItem) {
+		[self commentOutCurrentQueryTakingSelection:NO];
 	}
 
 	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
@@ -634,7 +638,6 @@
 		return;
 	}
 
-
 	// get column definitions for the result array
 	cqColumnDefinition = [[theResult fetchResultFieldsStructure] retain];
 
@@ -658,9 +661,10 @@
 
 	// Add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
+
 	if(!tableReloadAfterEdting) {
 		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
-			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"name"]];
+			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
 			[theCol setEditable:YES];
 			NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
@@ -703,7 +707,7 @@
 }
 
 /*
- * Fetches the result as an array with a dictionary for each row in it
+ * Fetches the result as an array, with an array for each row in it
  */
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
@@ -711,11 +715,9 @@
 	unsigned long numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 
-	NSDictionary *tempRow;
-	NSMutableDictionary *modifiedRow = [NSMutableDictionary dictionary];
-	NSEnumerator *enumerator;
-	id key;
-	int i;
+	NSArray *tempRow;
+	NSMutableArray *modifiedRow = [NSMutableArray array];
+	int i, j, numOfFields;
 	Class nullClass = [NSNull class];
 	id prefsNullValue = [prefs objectForKey:@"NullValue"];
 	// BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
@@ -725,14 +727,15 @@
 
 	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < numOfRows ; i++ ) {
-		tempRow = [theResult fetchRowAsDictionary];
-		enumerator = [tempRow keyEnumerator];
+		tempRow = [theResult fetchRowAsArray];
 
-		while ( key = [enumerator nextObject] ) {
-			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] ) {
-				[modifiedRow setObject:prefsNullValue forKey:key];
+		if ( i == 0 ) numOfFields = [tempRow count];
+
+		for ( j = 0; j < numOfFields; j++) {
+			if ( [NSArrayObjectAtIndex(tempRow, j) isMemberOfClass:nullClass] ) {
+				[modifiedRow addObject:prefsNullValue];
 			} else {
-				[modifiedRow setObject:[tempRow objectForKey:key] forKey:key];
+				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, j)];
 			}
 		}
 
@@ -746,7 +749,8 @@
 		// 	}
 		// }
 
-		[tempResult addObject:[NSMutableDictionary dictionaryWithDictionary:modifiedRow]];
+		[tempResult addObject:[NSArray arrayWithArray:modifiedRow]];
+		[modifiedRow removeAllObjects];
 	}
 
 	return tempResult;
@@ -936,6 +940,108 @@
 		[textView setSelectedRange:currentQueryRange];
 }
 
+/*
+ * Add or remove "/*  *~/" for each line in the current query
+ * a given selection
+ */
+- (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection
+{
+
+	BOOL isUncomment = NO;
+
+	NSRange oldRange = [textView selectedRange];
+	
+	NSRange workingRange = oldRange;
+	if(!takeSelection)
+		workingRange = currentQueryRange;
+
+	NSMutableString *n = [NSMutableString string];
+
+	[n setString:[[textView string] substringWithRange:workingRange]];
+
+	// Escape given */ by *\/ 
+	[n replaceOccurrencesOfRegex:@"\\*/(?=.)" withString:@"*\\\\/"];
+	[n replaceOccurrencesOfRegex:@"\\*/(?=\\n)" withString:@"*\\\\/"];
+
+	// Wrap current query into /* */
+	[n replaceOccurrencesOfRegex:@"^" withString:@"/* "];
+	[n replaceOccurrencesOfRegex:@"$" withString:@" */"];
+	
+	// Check if current query/selection is already commented out, if so uncomment it
+	if([n isMatchedByRegex:@"^/\\* \\s*/\\*\\s*(.|\\n)*?\\s*\\*/ \\*/\\s*$"]) {
+		[n replaceOccurrencesOfRegex:@"^/\\* \\s*/\\*\\s*" withString:@""];
+		[n replaceOccurrencesOfRegex:@"\\s*\\*/ \\*/\\s*$" withString:@""];
+		// unescape *\/
+		[n replaceOccurrencesOfRegex:@"\\*\\\\/" withString:@"*/"];
+		isUncomment = YES;
+	}
+
+	// Replace current query/selection by (un)commented string
+	[textView setSelectedRange:workingRange];
+	[textView insertText:n];
+	
+	// If commenting out locate the caret just after the first /* to allow to enter 
+	// something like /*!400000 or similar
+	if(!isUncomment)
+		[textView setSelectedRange:NSMakeRange(workingRange.location+2,0)];
+
+}
+
+/*
+ * Add or remove "-- " for each line in the current query or selection,
+ * if the selection is in-line wrap selection into /* block comments and
+ * place the caret after /* to allow to enter !xxxxxx e.g.
+ */
+- (void)commentOut
+{
+
+	NSRange oldRange = [textView selectedRange];
+	
+	if(oldRange.length) { 
+		[self commentOutCurrentQueryTakingSelection:YES];
+	} else { // single line
+		
+		// get the current line range
+		NSRange lineRange = [[textView string] lineRangeForRange:oldRange];
+		NSMutableString *n = [NSMutableString string];
+
+		// Put "-- " in front of the current line
+		[n setString:[NSString stringWithFormat:@"-- %@", [[textView string] substringWithRange:lineRange]]];
+
+		// Check if current line is already commented out, if so uncomment it
+		// and preserve the original indention via regex:@"^-- (\\s*)"
+		if([n isMatchedByRegex:@"^-- \\s*(--\\s|#)"]) {
+			[n replaceOccurrencesOfRegex:@"^-- \\s*(--\\s|#)" 
+				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
+													options:RKLNoOptions 
+													inRange:NSMakeRange(0,[n length]) 
+													capture:1
+													error: nil]]];
+		} else if ([n isMatchedByRegex:@"^-- \\s*/\\*.*?\\*/\\s*$"]) {
+			[n replaceOccurrencesOfRegex:@"^-- \\s*/\\* ?" 
+				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
+													options:RKLNoOptions 
+													inRange:NSMakeRange(0,[n length]) 
+													capture:1
+													error: nil]]];
+			[n replaceOccurrencesOfRegex:@"\\*/\\s*$" 
+				withString:[n substringWithRange:[n rangeOfRegex:@"\\*/(\\s*)$" 
+													options:RKLNoOptions 
+													inRange:NSMakeRange(0,[n length]) 
+													capture:1
+													error: nil]]];
+		}
+		
+		// Replace current line by (un)commented string
+		// The caret will be placed at the beginning of the next line if present to
+		// allow a fast (un)commenting of lines
+		[textView setSelectedRange:lineRange];
+		[textView insertText:n];
+
+	}
+
+}
+
 #pragma mark -
 #pragma mark Accessors
 
@@ -1082,7 +1188,7 @@
  */
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn
 {
-
+	NSArray *dataRow;
 	id field;
 
 	//Look for all columns which are coming from "tableForColumn"
@@ -1097,8 +1203,9 @@
 	[fieldIDQueryString setString:@"WHERE ("];
 	
 	// Build WHERE clause
+	dataRow = [fullResult objectAtIndex:rowIndex];
 	for(field in columnsForFieldTableName) {
-		id aValue = [[fullResult objectAtIndex:rowIndex] objectForKey:[field objectForKey:@"name"]];
+		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
 			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
@@ -1148,7 +1255,7 @@
 
 	if ( aTableView == customQueryView ) {
 
-		id theValue = [NSArrayObjectAtIndex(fullResult, rowIndex) objectForKey:[aTableColumn identifier]];
+		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
 
 		if ( [theValue isKindOfClass:[NSData class]] )
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
@@ -1210,7 +1317,7 @@
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
-			if([[c objectForKey:@"name"] isEqualToString:[aTableColumn identifier]]) {
+			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 				break;
 			}
@@ -1239,7 +1346,7 @@
 			if([anObject isEqualToString:[prefs stringForKey:@"NullValue"]])
 				newObject = @"NULL";
 			else
-				newObject = [NSString stringWithFormat:@"'%@'", [anObject description]];
+				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
 			
 			[mySQLConnection queryString:
 				[NSString stringWithFormat:@"UPDATE %@ SET %@=%@ %@ LIMIT 1", 
@@ -1290,17 +1397,18 @@
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
 	//sets order descending if a header is clicked twice
-	if ( [[tableColumn identifier] isEqualTo:sortField] ) {
+	if ( sortField && [[tableColumn identifier] isEqualToNumber:sortField] ) {
 		isDesc = !isDesc;
 	} else {
 		isDesc = NO;
-		[customQueryView setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
+		if (sortField) [customQueryView setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
 	}
 
 	if (sortField) [sortField release];
-	sortField = [[NSString alloc] initWithString:[tableColumn identifier]];
+	sortField = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
 	
-	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %@ %@ ", [sortField backtickQuotedString], (isDesc)?@"DESC":@"ASC"];
+	// Order by the column position number to avoid ambiguous name errors
+	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %i %@ ", [[tableColumn identifier] intValue]+1, (isDesc)?@"DESC":@"ASC"];
 	
 	//make queryString and perform query
 	if([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
@@ -1444,7 +1552,7 @@
 
 			// Retrieve the column defintion
 			for(id c in cqColumnDefinition) {
-				if([[c objectForKey:@"name"] isEqualToString:[aTableColumn identifier]]) {
+				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 					columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 					break;
 				}
@@ -1490,18 +1598,18 @@
 		//get the value
 			theRow = [fullResult objectAtIndex:rowIndex];
 	
-			if ( [[theRow objectForKey:[aTableColumn identifier]] isKindOfClass:[NSData class]] ) {
-				theValue = [[NSString alloc] initWithData:[theRow objectForKey:[aTableColumn identifier]]
+			if ( [[theRow objectAtIndex:[[aTableColumn identifier] intValue]] isKindOfClass:[NSData class]] ) {
+				theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[[aTableColumn identifier] intValue]]
 									encoding:[mySQLConnection encoding]];
 				if (theValue == nil) {
-					theValue = [[NSString alloc] initWithData:[theRow objectForKey:[aTableColumn identifier]]
+					theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[[aTableColumn identifier] intValue]]
 													 encoding:NSASCIIStringEncoding];
 				}
 				[theValue autorelease];
-			} else if ( [[theRow objectForKey:[aTableColumn identifier]] isMemberOfClass:[NSNull class]] ) {
+			} else if ( [[theRow objectAtIndex:[[aTableColumn identifier] intValue]] isMemberOfClass:[NSNull class]] ) {
 				theValue = [prefs objectForKey:@"NullValue"];
 			} else {
-				theValue = [theRow objectForKey:[aTableColumn identifier]];
+				theValue = [theRow objectAtIndex:[[aTableColumn identifier] intValue]];
 			}
 	
 			[valueTextField setString:[theValue description]];
@@ -1618,6 +1726,9 @@
 		currentQueryRange = NSMakeRange(0, 0);
 	}
 
+	// disable "Comment Current Query" meun item if no current query is selectable
+	[commentCurrentQueryMenuItem setEnabled:(currentQueryRange.length) ? YES : NO];
+
 	// If no text is selected, disable the button and action menu.
 	if ( caretPosition == NSNotFound ) {
 		[runSelectionButton setEnabled:NO];
@@ -1643,12 +1754,15 @@
 			[runSelectionButton setEnabled:NO];
 			[runSelectionMenuItem setEnabled:NO];
 		}
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Line", @"Title of action menu item to comment line")];
+
 	// For selection ranges, enable the button.
 	} else {
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
 		[runSelectionButton setEnabled:YES];
 		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
 		[runSelectionMenuItem setEnabled:YES];
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
 	}
 
 }

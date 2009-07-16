@@ -80,6 +80,7 @@
     IBOutlet id errorsView;
     IBOutlet id singleProgressSheet;
     IBOutlet id singleProgressBar;
+    IBOutlet id singleProgressTitle;
     IBOutlet id singleProgressText;
 	
     IBOutlet id fieldMappingSheet;
@@ -97,8 +98,6 @@
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
 	int currentRow;
-	NSString *savePath;
-	NSString *openPath;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 }
