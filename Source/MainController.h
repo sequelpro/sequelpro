@@ -44,6 +44,7 @@
 - (IBAction)donate:(id)sender;
 - (IBAction)visitWebsite:(id)sender;
 - (IBAction)visitHelpWebsite:(id)sender;
+- (IBAction)visitFAQWebsite:(id)sender;
 
 // Getters
 - (SPPreferenceController *)preferenceController;

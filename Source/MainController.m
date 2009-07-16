@@ -33,6 +33,7 @@
 #define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
 #define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
 #define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
+#define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
 
 @implementation MainController
 
@@ -141,6 +142,14 @@
  * Opens help link in default browser
  */
 - (IBAction)visitHelpWebsite:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_DOCS_URL]];
+}
+
+/**
+ * Opens FAQ help link in default browser
+ */
+- (IBAction)visitFAQWebsite:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_FAQ_URL]];
 }
