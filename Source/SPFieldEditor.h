@@ -12,7 +12,6 @@
 @interface SPFieldEditor : NSWindow {
 
 	IBOutlet id editSheetProgressBar;
-	IBOutlet id editSheet;
 	IBOutlet id editSheetSegmentControl;
 	IBOutlet id editSheetQuickLookButton;
 	IBOutlet id editImage;
@@ -21,7 +20,7 @@
 	IBOutlet id editTextScrollView;
 	IBOutlet id hexTextScrollView;
 
-	id editData;
+	id sheetEditData;
 
 	NSString *stringValue;
 	
