@@ -173,7 +173,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (NSString *)quoteObject:(id)theObject;
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPResult *)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding;
-//- (void)workerPerformQuery:(NSString *)query;
 - (double)lastQueryExecutionTime;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;

@@ -1339,36 +1339,6 @@ static void forcePingTimeout(int signalNumber)
 }
 
 /**
- * Perform a query in threaded mode.
- */
-/*- (void)workerPerformQuery:(NSString *)query
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	const char *theCQuery;
-	NSDate *queryStartDate;
-	float queryExecutionTime;
-	int theQueryCode;
-	
-	theCQuery = [self _cStringFromString:query usingEncoding:workerStringEncoding];
-	
-	queryStartDate = [NSDate date];
-	theQueryCode = mysql_query(mConnection, theCQuery);
-	queryExecutionTime = [[NSDate date] timeIntervalSinceDate:queryStartDate];
-	
-	// If the thread has already been cancelled, this is a timed-out result.
-	if ([[NSThread currentThread] isCancelled]) {
-		[pool release];
-		return;
-	}
-	
-	workerQueryResultCode = theQueryCode;
-	lastQueryExecutionTime = queryExecutionTime;
-	workerQueryComplete = YES;
-	
-	[pool release];
-}*/
-
-/**
  * Return the time taken to execute the last query.  This should be close to the time it took
  * the server to run the query, but will include network lag and some client library overhead.
  */
