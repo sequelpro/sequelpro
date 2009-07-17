@@ -1349,24 +1349,40 @@
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 			
 			NSString *newObject = nil;
-			if([anObject isEqualToString:[prefs stringForKey:@"NullValue"]])
-				newObject = @"NULL";
-			else
+			if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
 				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
-			
+			} else if ( [anObject isKindOfClass:[NSNumber class]] ) {
+				newObject = [anObject stringValue];
+			} else if ( [anObject isKindOfClass:[NSData class]] ) {
+				newObject = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:anObject]];
+			} else {
+				if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
+					newObject = @"CURRENT_TIMESTAMP";
+				} else if([anObject isEqualToString:[prefs stringForKey:@"NullValue"]]) {
+					newObject = @"NULL";
+				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+					newObject = ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"])?@"0":@"1");
+				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
+							&& [[anObject description] isEqualToString:@"NOW()"]) {
+					newObject = @"NOW()";
+				} else {
+					newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+				}
+			}
+
 			[mySQLConnection queryString:
 				[NSString stringWithFormat:@"UPDATE %@ SET %@=%@ %@ LIMIT 1", 
 					[tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
-				// Check for errors while UPDATE
-				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
+			// Check for errors while UPDATE
+			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, nil, nil,
+								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
 
-					return;
-				}
+				return;
+			}
 
 
 			// This shouldn't happen – for safety reasons
@@ -1557,11 +1573,10 @@
 
 		// Check if current field is a blob
 		if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
-			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
+			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
 			isBlob = YES;
-		} else {
+		else
 			isBlob = NO;
-		}
 
 		// Resolve the original table name for current column if AS was used
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
@@ -1578,16 +1593,20 @@
 
 		BOOL isFieldEditable = (!noTableName && numberOfPossibleUpdateRows == 1) ? YES : NO;
 
+		// maybe??
 		// if(!isFieldEditable)
 		// 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
 
+		//to enable editing simply uncomment isEditable and delete 'NO' :)
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
-								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob isEditable:NO withWindow:tableWindow] retain];
+								usingEncoding:[mySQLConnection encoding] 
+								isObjectBlob:isBlob 
+								isEditable:/*isFieldEditable*/NO 
+								withWindow:tableWindow] retain];
 
-		if ( editData ) {
-
-		}
+		if ( editData )
+			[self tableView:aTableView setObjectValue:[editData copy] forTableColumn:aTableColumn row:rowIndex];
 
 		[fieldEditor release];
 
