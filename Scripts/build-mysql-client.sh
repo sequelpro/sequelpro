@@ -22,20 +22,28 @@ CONFIGURE_OPTIONS='--without-server --enable-thread-safe-client --disable-depend
 BINARY_DISTRIBUTION_SCRIPT='scripts/make_binary_distribution'
 
 usage() 
-{
-	echo "Usage: $(basename $0): -s <mysql_source_path> [-q -c -d]"
+{	
+	cat <<!EOF
+Usage: $(basename $0): -s <mysql_source_path> [-q -c -d]
+
+Where: -s -- Path to the MySQL source directory
+       -q -- Be quiet during the build. Suppress all compiler messages
+       -c -- Clean the source directory after the build completes
+       -d -- Debug. Output all the build commands
+!EOF
 }
 
 if [ $# -eq 0 ]
 then
 	echo "Invalid number of arguments. I need the path to the MySQL source directory."
+	echo ''
 	usage
 	exit 1
 fi
 
 echo ''
 echo "This script builds the MySQL client libraries for distrubution in Sequel Pro's MCPKit MySQL framework."
-echo 'The are all built as 4-way (32/64 bit i386/PPC arch) binaries.'
+echo 'The are all built as 4-way (32/64 bit, i386/PPC arch) binaries.'
 echo ''
 echo -n 'This may take a while, are you sure you want to continue [y | n]: '
 
