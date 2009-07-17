@@ -43,6 +43,9 @@
 	int quickLookCloseMarker;
 	NSStringEncoding encoding;
 	NSString *stringValue;
+	NSString *tmpFileName;
+	
+	int counter;
 	
 	NSUserDefaults *prefs;
 }

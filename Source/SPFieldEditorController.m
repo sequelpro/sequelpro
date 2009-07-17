@@ -37,6 +37,7 @@
 	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"])) {
 		// force the nib to be loaded
 		(void) [self window];
+		counter = 0;
 	}
 	return self;
 	
@@ -72,7 +73,7 @@
 	editSheetWillBeInitialized = YES;
 	
 	encoding = anEncoding;
-	
+
 	isBlob = isFieldBlob;
 	
 	sheetEditData = [data retain];
@@ -171,7 +172,7 @@
 	
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
-	
+
 	return ( code ) ? [sheetEditData retain] : nil;
 }
 
@@ -269,6 +270,7 @@
 			[[self window] makeFirstResponder:editImage];
 			break;
 		case 2: // hex - load on demand
+			[[self window] makeFirstResponder:hexTextView];
 			if([sheetEditData length] && [[hexTextView string] isEqualToString:@""]) {
 				[editSheetProgressBar startAnimation:self];
 				if([sheetEditData isKindOfClass:[NSData class]]) {
@@ -283,7 +285,6 @@
 			[editImage setHidden:YES];
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
-			[[self window] makeFirstResponder:hexTextView];
 			break;
 	}
 }
@@ -350,10 +351,9 @@
 		
 		// Create a temporary file name to store the data as file
 		// since QuickLook only works on files.
-		NSString *tmpFileName = [NSString stringWithFormat:@"/tmp/SequelProQuickLook.%@", type];
-		
-		[self removeQuickLooksTempFile:tmpFileName];
-		
+		// Alternate the file name to suppress caching by using counter%2.
+		tmpFileName = [NSString stringWithFormat:@"%@SequelProQuickLook%d.%@", NSTemporaryDirectory(), counter%2, type];
+
 		// if data are binary
 		if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
 			[sheetEditData writeToFile:tmpFileName atomically:YES];
@@ -375,26 +375,29 @@
 					default:
 					enc = @"US-ASCII";
 				}
-
 				[[NSString stringWithFormat:@"<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=%@'>%@", enc, [editTextView string]] writeToFile:tmpFileName
-										  	atomically:YES
-												encoding:encoding
-											   	error:NULL];
+											atomically:YES
+											encoding:encoding
+											error:NULL];
 			} else {
 				[[sheetEditData description] writeToFile:tmpFileName
-										  	atomically:YES
-												encoding:encoding
-											   	error:NULL];
+											atomically:YES
+											encoding:encoding
+											error:NULL];
 			}
 		}
+		
+		counter++;
 		
 		// Init QuickLook
 		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
 		
-		[[ql windowController] setDelegate:self];
+		[[ql delegate] setDelegate:self];
 
 		[ql setURLs:[NSArray arrayWithObject:
 					 [NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
+
+
 		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
 		// for superclass of class 'MainController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
 		[ql setShowsAddToiPhotoButton:NO];
@@ -433,7 +436,11 @@
 		// The afterDelay: time is a kind of dummy, because after double-clicking the model session loop
 		// will break (ql not visible) and returns the event handling back to the editSheet which by itself
 		// blocks the execution of removeQuickLooksTempFile: until the editSheet is closed.
-		[self performSelector:@selector(removeQuickLooksTempFile:) withObject:tmpFileName afterDelay:2];
+		// [NSObject cancelPreviousPerformRequestsWithTarget:self 
+		// 							selector:@selector(removeQuickLooksTempFile) 
+		// 							object:tmpFileName];
+		
+		[self performSelector:@selector(removeQuickLooksTempFile:) withObject:tmpFileName afterDelay:.1];
 
 	}
 	
@@ -441,7 +448,8 @@
 
 - (void)removeQuickLooksTempFile:(NSString*)aPath
 {
-	[[NSFileManager defaultManager] removeItemAtPath:aPath error:NULL];
+	if(![[NSFileManager defaultManager] removeItemAtPath:aPath error:NULL])
+		NSLog(@"Couldn't delete temp file at path '%@'", aPath);
 }
 
 // This is the delegate method
