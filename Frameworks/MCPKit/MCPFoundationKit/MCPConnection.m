@@ -39,8 +39,6 @@
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
 
-#define LOG_ALL_QUERIES 1
-
 const unsigned int kMCPConnectionDefaultOption = CLIENT_COMPRESS;
 const char         *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const unsigned int kMCPConnection_Not_Inited = 1000;
@@ -48,13 +46,12 @@ const unsigned int kLengthOfTruncationForLog = 100;
 
 static BOOL	sTruncateLongFieldInLogs = YES;
 
-#if LOG_ALL_QUERIES == 1
-static BOOL	sDebugQueries = NO;
-#endif
-
 // Debug
 // static FILE *MCPConnectionLogFile;
 
+/**
+ * Privte API
+ */
 @interface MCPConnection (PrivateAPI)
 
 - (void)_getServerVersionString;
@@ -111,8 +108,6 @@ static BOOL	sDebugQueries = NO;
 		connectionLogin = nil;
 		connectionSocket = nil;
 		connectionPassword = nil;
-		connectionKeychainName = nil;
-		connectionKeychainAccount = nil;
 		keepAliveTimer = nil;
 		connectionTunnel = nil;
 		lastKeepAliveSuccess = nil;
@@ -204,28 +199,10 @@ static BOOL	sDebugQueries = NO;
 - (BOOL)setPassword:(NSString *)thePassword
 {
 	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
-	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
-	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
 	
 	if (!thePassword) thePassword = @"";
 	
 	connectionPassword = [[NSString alloc] initWithString:thePassword];
-	
-	return YES;
-}
-
-/**
- * Sets the keychain name to use to retrieve the password.  This is the recommended and
- * secure way of supplying a password to the SSH tunnel.
- */
-- (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
-{
-	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
-	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
-	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
-	
-	connectionKeychainName = [[NSString alloc] initWithString:theName];
-	connectionKeychainAccount = [[NSString alloc] initWithString:theAccount];
 	
 	return YES;
 }
@@ -284,9 +261,6 @@ static BOOL	sDebugQueries = NO;
 	const char	*theSocket;
 	void		*theRet;
 	
-	// Ensure that a password method has been provided
-	if (connectionKeychainName == nil && connectionPassword == nil) return NO;
-	
 	// Disconnect if a connection is already active
 	if (mConnected) {
 		[self disconnect];
@@ -316,14 +290,14 @@ static BOOL	sDebugQueries = NO;
 	}
 	
 	// Select the password from the provided method
-	if (connectionKeychainName) {
-		if (delegate && [delegate respondsToSelector:@selector(passwordForKeychainItemName:account:)]) {
-			thePass = [self cStringFromString:[delegate passwordForKeychainItemName:connectionKeychainName account:connectionKeychainAccount]];
+	if (!connectionPassword) {		
+		if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+			thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
 		}
-	} else {
+	} else {		
 		thePass = [self cStringFromString:connectionPassword];
 	}
-			
+				
 	// Connect
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
@@ -407,9 +381,11 @@ static BOOL	sDebugQueries = NO;
 	if (delegate && [delegate valueForKey:@"selectedDatabase"]) {
 		currentDatabase = [NSString stringWithString:[delegate valueForKey:@"selectedDatabase"]];
 	}
+	
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
 	}
+	
 	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
 		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1];
 	}
@@ -472,6 +448,7 @@ static BOOL	sDebugQueries = NO;
 		if (currentDatabase) {
 			[self selectDB:currentDatabase];
 		}
+		
 		if (currentEncoding) {
 			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
 			[self setEncoding:[MCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
@@ -909,21 +886,11 @@ static void forcePingTimeout(int signalNumber)
 }
 
 #pragma mark -
-#pragma mark MySQL defaults
+#pragma mark Class maintenance
 
 /**
- *
- */
-+ (void)setLogQueries:(BOOL)iLogFlag
-{
-#if LOG_ALL_QUERIES == 1
-	sDebugQueries = iLogFlag;
-#endif
-}
-
-/**
- *
- */
+  *
+  */
 + (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag
 {
 	sTruncateLongFieldInLogs = iTruncFlag;
@@ -980,11 +947,11 @@ static void forcePingTimeout(int signalNumber)
  */
 - (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(int)port socket:(NSString *)socket
 {
-	const char	*theLogin = [self cStringFromString:login];
-	const char	*theHost = [self cStringFromString:host];
-	const char	*thePass = [self cStringFromString:pass];
-	const char	*theSocket = [self cStringFromString:socket];
-	void	*theRet;
+	const char *theLogin  = [self cStringFromString:login];
+	const char *theHost	  = [self cStringFromString:host];
+	const char *thePass	  = [self cStringFromString:pass];
+	const char *theSocket = [self cStringFromString:socket];
+	void	   *theRet;
 	
 	if (mConnected) {
 		// Disconnect if it was already connected
@@ -997,6 +964,7 @@ static void forcePingTimeout(int signalNumber)
 	if ([host isEqualToString:@""]) {
 		theHost = NULL;
 	}
+	
 	if (theSocket == NULL) {
 		theSocket = kMCPConnectionDefaultSocket;
 	}
@@ -1005,9 +973,13 @@ static void forcePingTimeout(int signalNumber)
 	if (theRet != mConnection) {
 		return mConnected = NO;
 	}
+	
 	mConnected = YES;
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
-	[self timeZone]; // Getting the timezone used by the server.
+	
+	// Getting the timezone used by the server.
+	[self timeZone]; 
+	
 	return mConnected;
 }
 
@@ -1968,8 +1940,6 @@ static void forcePingTimeout(int signalNumber)
 	if (connectionLogin) [connectionLogin release];
 	if (connectionSocket) [connectionSocket release];
 	if (connectionPassword) [connectionPassword release];
-	if (connectionKeychainName) [connectionKeychainName release];
-	if (connectionKeychainAccount) [connectionKeychainAccount release];
 	if (lastKeepAliveSuccess) [lastKeepAliveSuccess release];
 	
 	[super dealloc];

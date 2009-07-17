@@ -37,7 +37,8 @@ enum spconnection_types
 	SP_CONNECTION_SSHTUNNEL = 2
 };
 
-@interface SPConnectionController : NSObject {
+@interface SPConnectionController : NSObject 
+{
 	TableDocument *tableDocument;
 	NSWindow *documentWindow;
 	NSSplitView *contentView;
@@ -61,7 +62,7 @@ enum spconnection_types
 	NSString *sshUser;
 	NSString *sshPassword;
 	NSString *sshPort;
-
+	
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
@@ -105,6 +106,11 @@ enum spconnection_types
 @property (readwrite, retain) NSString *sshPassword;
 @property (readwrite, retain) NSString *sshPort;
 
+@property (readwrite, retain) NSString *connectionKeychainItemName;
+@property (readwrite, retain) NSString *connectionKeychainItemAccount;
+@property (readwrite, retain) NSString *connectionSSHKeychainItemName;
+@property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+
 - (id) initWithDocument:(TableDocument *)theTableDocument;
 
 // Connection processes
@@ -134,9 +140,8 @@ enum spconnection_types
 
 @end
 
-
 @interface SPFlippedView: NSView
-{
-}
+
 - (BOOL)isFlipped;
+
 @end

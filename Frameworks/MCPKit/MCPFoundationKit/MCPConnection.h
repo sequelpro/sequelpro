@@ -53,7 +53,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (void)willQueryString:(NSString *)query;
 - (void)queryGaveError:(NSString *)error;
 - (BOOL)connectionEncodingViaLatin1;
-- (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account;
+- (NSString *)keychainPasswordForConnection:(id)connection;
 - (MCPConnectionCheck)connectionLost;
 
 @end
@@ -73,8 +73,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	
 	id <MCPConnectionProxy> connectionTunnel;
 	NSString *connectionLogin;
-	NSString *connectionKeychainName;
-	NSString *connectionKeychainAccount;
 	NSString *connectionPassword;
 	NSString *connectionHost;
 	int connectionPort;
@@ -126,7 +124,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 // Connection details
 - (BOOL)setPort:(int)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
-- (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 
 // SSH
 - (BOOL)setSSHTunnel:(id <MCPConnectionProxy>)theTunnel;
@@ -157,7 +154,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 + (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
 
 // Class maintenance
-+ (void)setLogQueries:(BOOL)iLogFlag;
 + (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag;
 + (BOOL)truncateLongField;
 - (BOOL)setConnectionOption:(int)option toValue:(BOOL)value;

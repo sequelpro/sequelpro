@@ -43,6 +43,11 @@
 @synthesize sshPassword;
 @synthesize sshPort;
 
+@synthesize connectionKeychainItemName;
+@synthesize connectionKeychainItemAccount;
+@synthesize connectionSSHKeychainItemName;
+@synthesize connectionSSHKeychainItemAccount;
+
 /**
  * Initialise the connection controller, linking it to the
  * parent document and setting up the parent window.
@@ -274,10 +279,8 @@
 		}
 	}
 
-	// Set the password as appropriate
-	if (connectionKeychainItemName) {
-		[mySQLConnection setPasswordKeychainName:connectionKeychainItemName account:connectionKeychainItemAccount];
-	} else {
+	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
+	if (!connectionKeychainItemName) {
 		[mySQLConnection setPassword:[self password]];
 	}
 	

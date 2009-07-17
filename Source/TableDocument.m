@@ -2010,7 +2010,7 @@
 #pragma mark MCPKit connection delegate methods
 
 /**
- * Invoked when framework will perform a query
+ * Invoked when framework is about to perform a query.
  */
 - (void)willQueryString:(NSString *)query
 {		
@@ -2020,7 +2020,7 @@
 }
 
 /**
- * Invoked when query gave an error
+ * Invoked when the query just executed resulted in an error. 
  */
 - (void)queryGaveError:(NSString *)error
 {	
@@ -2028,16 +2028,16 @@
 }
 
 /**
- * Returns the password in the associated Keychain item.
+ * Invoked when the current connection needs a password from the Keychain.
  */
-- (NSString *)passwordForKeychainItemName:(NSString *)name account:(NSString *)account
+- (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
 {	
 	KeyChain *keychain = [[KeyChain alloc] init];
 	
-	NSString *password = [keychain getPasswordForName:name account:account];
+	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
 	
 	[keychain release];
-	
+		
 	return password;
 }
 
@@ -2051,9 +2051,7 @@
 	
 	[NSApp endSheet:connectionErrorDialog];
 	[connectionErrorDialog orderOut:nil];
-	
-	NSLog(@"%d", connectionErrorCode);
-	
+		
 	return connectionErrorCode;
 }
 
