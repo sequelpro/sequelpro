@@ -95,9 +95,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	NSDate *lastKeepAliveSuccess;
 	
 	BOOL retryAllowed;
-	
+	BOOL delegateQueryLogging;
 	BOOL delegateResponseToWillQueryString;
-	BOOL consoleLoggingEnabled;
 	
 	// Pointers
 	IMP cStringPtr;
@@ -114,6 +113,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 
 @property (readwrite, assign) id delegate;
 @property (readwrite, assign) BOOL useKeepAlive;
+@property (readwrite, assign) BOOL delegateQueryLogging;
 @property (readwrite, assign) int connectionTimeout;
 @property (readwrite, assign) float keepAliveInterval;
 

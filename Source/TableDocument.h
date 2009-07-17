@@ -127,7 +127,7 @@
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
 - (NSString *)connectionEncoding;
-- (BOOL)connectionEncodingViaLatin1;
+- (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;

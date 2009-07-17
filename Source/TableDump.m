@@ -903,7 +903,7 @@
 
 	// Store the current connection encoding so it can be restored after the dump.
 	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
-	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 	
 	// Set the connection to UTF8 to be able to export correctly.
 	[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
@@ -1196,7 +1196,7 @@
 	
 	// store connection encoding
 	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
-	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 	
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	

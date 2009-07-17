@@ -46,9 +46,6 @@ const unsigned int kLengthOfTruncationForLog = 100;
 
 static BOOL	sTruncateLongFieldInLogs = YES;
 
-// Debug
-// static FILE *MCPConnectionLogFile;
-
 /**
  * Privte API
  */
@@ -63,21 +60,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 // Synthesize ivars
 @synthesize delegate;
 @synthesize useKeepAlive;
+@synthesize delegateQueryLogging;
 @synthesize connectionTimeout;
 @synthesize keepAliveInterval;
-
-/**
- * Initialize the class version to 3.0.1
- */
-+ (void)initialize
-{
-	if (self = [MCPConnection class]) {
-		[self setVersion:030001]; // Ma.Mi.Re -> MaMiRe
-#if LOG_ALL_QUERIES == 1
-		[self setLogQueries:NO];
-#endif
-	}
-}
 
 #pragma mark -
 #pragma mark Initialisation
@@ -125,7 +110,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryAffectedRows  = 0;
 		
 		// Obtain SEL references
-		willQueryStringSEL = @selector(willQueryString:);
+		willQueryStringSEL = @selector(willQueryString:connection:);
 		stopKeepAliveTimerSEL = @selector(stopKeepAliveTimer);
 		startKeepAliveTimerResettingStateSEL = @selector(startKeepAliveTimerResettingState:);
 		cStringSEL = @selector(cStringFromString:);
@@ -328,12 +313,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	// Register notification if a query was sent to the MySQL connection
 	// to be able to identify the sender of that query
 	//[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:) name:@"SMySQLQueryWillBePerformed" object:nil];
-	
-	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
-	
-	// Init 'consoleLoggingEnabled'
-	consoleLoggingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"];
-	
+		
 	// Start the keepalive timer
 	[self startKeepAliveTimerResettingState:YES];
 	
@@ -1217,9 +1197,8 @@ static void forcePingTimeout(int signalNumber)
 	
 	// queryStartTime = clock();
 	
-	// Inform the delegate about the query if logging is enabled and 
-	// delegate responds to willQueryString:
-	if (consoleLoggingEnabled && delegateResponseToWillQueryString)
+	// Inform the delegate about the query if logging is enabled and delegate responds to willQueryString:connection:
+	if (delegateQueryLogging && delegateResponseToWillQueryString)
 		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
 	
 	// Derive the query string in the correct encoding
@@ -1233,7 +1212,7 @@ static void forcePingTimeout(int signalNumber)
 	// increase it for the current session and reconnect.
 	if (maxAllowedPacketSize < theCQueryLength) {
 		
-		if(isMaxAllowedPacketEditable) {
+		if (isMaxAllowedPacketEditable) {
 			
 			currentMaxAllowedPacket = maxAllowedPacketSize;
 			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
