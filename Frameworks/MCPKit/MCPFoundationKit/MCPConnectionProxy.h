@@ -29,15 +29,15 @@
 #import <Foundation/Foundation.h>
 
 /**
- * SSH tunnel state constants.
+ * Connection proxy state constants.
  */
-enum SSH_TUNNEL_STATES
+enum PROXY_TUNNEL_STATES
 {
-	SSH_STATE_IDLE = 0,
-	SSH_STATE_CONNECTING = 1,
-	SSH_STATE_WAITING_FOR_AUTH = 2,
-	SSH_STATE_CONNECTED = 3,
-	SSH_STATE_FORWARDING_FAILED = 4
+	PROXY_STATE_IDLE = 0,
+	PROXY_STATE_CONNECTING = 1,
+	PROXY_STATE_WAITING_FOR_AUTH = 2,
+	PROXY_STATE_CONNECTED = 3,
+	PROXY_STATE_FORWARDING_FAILED = 4
 };
 
 @protocol MCPConnectionProxy <NSObject>

@@ -239,10 +239,10 @@
 {
 	int newState = [theTunnel state];
 
-	if (newState == SSH_STATE_IDLE) {
+	if (newState == PROXY_STATE_IDLE) {
 		[tableDocument setTitlebarStatus:@"SSH Disconnected"];
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
-	} else if (newState == SSH_STATE_CONNECTED) {
+	} else if (newState == PROXY_STATE_CONNECTED) {
 		[tableDocument setTitlebarStatus:@"SSH Connected"];
 		[self initiateMySQLConnection];
 	} else {
@@ -271,7 +271,7 @@
 			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
 														withLogin:[self user]
 														usingPort:[sshTunnel localPort]];
-			[mySQLConnection setSSHTunnel:sshTunnel];
+			[mySQLConnection setConnectionProxy:sshTunnel];
 		} else {
 			mySQLConnection = [[MCPConnection alloc] initToHost:[self host]
 														withLogin:[self user]
@@ -297,7 +297,7 @@
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
 
 			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
-			if ([sshTunnel state] == SSH_STATE_FORWARDING_FAILED) {
+			if ([sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
 				if ([sshTunnel localPortFallback]) {
 					[mySQLConnection setPort:[sshTunnel localPortFallback]];
 					[mySQLConnection connect];
@@ -310,7 +310,7 @@
 		
 		if (![mySQLConnection isConnected]) {
 			NSString *errorMessage;
-			if (sshTunnel && [sshTunnel state] == SSH_STATE_FORWARDING_FAILED) {
+			if (sshTunnel && [sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@", @"message of panel when SSH port forwarding failed"), [self host], [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"SSH port forwarding failed", @"title when ssh tunnel port forwarding failed") errorMessage:errorMessage detail:[sshTunnel debugMessages]];
 			} else if ([mySQLConnection getLastErrorID] == 1045) { // "Access denied" error

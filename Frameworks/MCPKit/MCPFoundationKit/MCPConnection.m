@@ -94,7 +94,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		connectionSocket = nil;
 		connectionPassword = nil;
 		keepAliveTimer = nil;
-		connectionTunnel = nil;
+		connectionProxy = nil;
 		lastKeepAliveSuccess = nil;
 		
 		// Initialize ivar defaults
@@ -193,41 +193,41 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 }
 
 #pragma mark -
-#pragma mark SSH
+#pragma mark Connection proxy
 
 /*
- * Set a SSH tunnel object to connect through.  This object will be retained locally,
+ * Set a connection proxy object to connect through.  This object will be retained locally,
  * and will be automatically connected/connection checked/reconnected/disconnected
  * together with the main connection.
  */
-- (BOOL)setSSHTunnel:(id <MCPConnectionProxy>)theTunnel
+- (BOOL)setConnectionProxy:(id <MCPConnectionProxy>)proxy
 {
-	connectionTunnel = theTunnel;
-	[connectionTunnel retain];
+	connectionProxy = proxy;
+	[connectionProxy retain];
 	
-	currentSSHTunnelState = [connectionTunnel state];
-	[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
+	currentProxyState = [connectionProxy state];
+	[connectionProxy setConnectionStateChangeSelector:@selector(connectionProxyStateChange:) delegate:self];
 	
 	return YES;
 }
 
 /**
- * Handle any state changes in the associated SSH Tunnel.
+ * Handle any state changes in the associated connection proxy.
  */
-- (void)sshTunnelStateChange:(id <MCPConnectionProxy>)theTunnel
+- (void)connectionProxyStateChange:(id <MCPConnectionProxy>)proxy
 {
-	int newState = [theTunnel state];
+	int newState = [proxy state];
 	
 	// Restart the tunnel if it dies
-	if (mConnected && newState == SSH_STATE_IDLE && currentSSHTunnelState == SSH_STATE_CONNECTED) {
-		currentSSHTunnelState = newState;
-		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
+	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
+		currentProxyState = newState;
+		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
 		[self reconnect];
 		
 		return;
 	}
 	
-	currentSSHTunnelState = newState;
+	currentProxyState = newState;
 }
 
 #pragma mark -
@@ -332,8 +332,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	
 	mConnected = NO;
 	
-	if (connectionTunnel) {
-		[connectionTunnel disconnect];
+	if (connectionProxy) {
+		[connectionProxy disconnect];
 	}
 	
 	if (serverVersionString != nil) {
@@ -379,20 +379,20 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	mConnected = NO;
 	
 	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
-	if (connectionTunnel) {
-		[connectionTunnel setConnectionStateChangeSelector:nil delegate:nil];
-		if ([connectionTunnel state] != SSH_STATE_IDLE) [connectionTunnel disconnect];
-		[connectionTunnel connect];
+	if (connectionProxy) {
+		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
+		if ([connectionProxy state] != PROXY_STATE_IDLE) [connectionProxy disconnect];
+		[connectionProxy connect];
 		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
 		
 		// Allow the tunnel to attempt to connect in a loop
 		while (1) {
-			if ([connectionTunnel state] == SSH_STATE_CONNECTED) {
-				connectionPort = [connectionTunnel localPort];
+			if ([connectionProxy state] == PROXY_STATE_CONNECTED) {
+				connectionPort = [connectionProxy localPort];
 				break;
 			}
 			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
-				[connectionTunnel disconnect];
+				[connectionProxy disconnect];
 				break;
 			}
 			
@@ -402,11 +402,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 			tunnelStartDate = [tunnelStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
 		}
 		
-		currentSSHTunnelState = [connectionTunnel state];
-		[connectionTunnel setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
+		currentProxyState = [connectionProxy state];
+		[connectionProxy setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
 	}
 	
-	if (!connectionTunnel || [connectionTunnel state] == SSH_STATE_CONNECTED) {
+	if (!connectionProxy || [connectionProxy state] == PROXY_STATE_CONNECTED) {
 		
 		// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
 		if (mConnection == NULL) {
@@ -999,8 +999,8 @@ static void forcePingTimeout(int signalNumber)
 	
 	lastQueryErrorId = mysql_errno(mConnection);
 	
-	if (connectionTunnel) {
-		[connectionTunnel disconnect];
+	if (connectionProxy) {
+		[connectionProxy disconnect];
 	}
 	
 	return NO;

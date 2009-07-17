@@ -71,7 +71,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	int connectionTimeout;
 	float keepAliveInterval;
 	
-	id <MCPConnectionProxy> connectionTunnel;
+	id <MCPConnectionProxy> connectionProxy;
 	NSString *connectionLogin;
 	NSString *connectionPassword;
 	NSString *connectionHost;
@@ -80,7 +80,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	int maxAllowedPacketSize;
 	unsigned long connectionThreadId;
 	
-	int currentSSHTunnelState;
+	int currentProxyState;
 	
 	double lastQueryExecutionTime;
 	NSString *lastQueryErrorMessage;
@@ -125,9 +125,9 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (BOOL)setPort:(int)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
 
-// SSH
-- (BOOL)setSSHTunnel:(id <MCPConnectionProxy>)theTunnel;
-- (void)sshTunnelStateChange:(id <MCPConnectionProxy>)theTunnel;
+// Proxy
+- (BOOL)setConnectionProxy:(id <MCPConnectionProxy>)proxy;
+- (void)connectionProxyStateChange:(id <MCPConnectionProxy>)proxy;
 
 // Connection
 - (BOOL)connect;
