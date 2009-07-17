@@ -50,11 +50,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 // Connection delegate interface
 @interface NSObject (MCPConnectionDelegate)
 
-- (void)willQueryString:(NSString *)query;
-- (void)queryGaveError:(NSString *)error;
-- (BOOL)connectionEncodingViaLatin1;
+- (void)willQueryString:(NSString *)query connection:(id)connection;
+- (void)queryGaveError:(NSString *)error connection:(id)connection;
+- (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (NSString *)keychainPasswordForConnection:(id)connection;
-- (MCPConnectionCheck)connectionLost;
+- (MCPConnectionCheck)connectionLost:(id)connection;
 
 @end
 

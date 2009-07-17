@@ -698,9 +698,10 @@
 }
 
 /**
- * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility
+ * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility.
+ * This is a delegate method of MCPKit's MCPConnection class.
  */
-- (BOOL)connectionEncodingViaLatin1
+- (BOOL)connectionEncodingViaLatin1:(id)connection
 {
 	return _encodingViaLatin1;
 }
@@ -2012,7 +2013,7 @@
 /**
  * Invoked when framework is about to perform a query.
  */
-- (void)willQueryString:(NSString *)query
+- (void)willQueryString:(NSString *)query connection:(id)connection
 {		
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"]) {
 		[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
@@ -2022,7 +2023,7 @@
 /**
  * Invoked when the query just executed resulted in an error. 
  */
-- (void)queryGaveError:(NSString *)error
+- (void)queryGaveError:(NSString *)error connection:(id)connection
 {	
 	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
 }
@@ -2044,7 +2045,7 @@
 /**
  * Invoked when the connection fails and the framework needs to know how to proceed.
  */
-- (MCPConnectionCheck)connectionFailed
+- (MCPConnectionCheck)connectionFailed:(id)connection
 {
 	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];

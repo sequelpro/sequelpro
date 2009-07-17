@@ -386,8 +386,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
 	}
 	
-	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
-		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1];
+	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
+		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1:self];
 	}
 	
 	// Close the connection if it exists.
@@ -464,8 +464,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(connectionLost)]) {
-			failureDecision = [delegate connectionLost];
+		if ([delegate respondsToSelector:@selector(connectionLost:)]) {
+			failureDecision = [delegate connectionLost:self];
 		}
 		
 		switch (failureDecision) {				
@@ -508,8 +508,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckRetry;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(connectionLost)]) {
-			failureDecision = [delegate connectionLost];
+		if ([delegate respondsToSelector:@selector(connectionLost:)]) {
+			failureDecision = [delegate connectionLost:self];
 		}
 		
 		switch (failureDecision) {
@@ -683,8 +683,8 @@ static void forcePingTimeout(int signalNumber)
 	
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
-		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1)]) {
-			if ([delegate connectionEncodingViaLatin1]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
+		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
+			if ([delegate connectionEncodingViaLatin1:self]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
 		}
 	}
 }
@@ -1204,7 +1204,7 @@ static void forcePingTimeout(int signalNumber)
 	// If no connection is present, return nil.
 	if (!mConnected) {
 		// Write a log entry
-		if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:@"No connection available!"];
+		if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:@"No connection available!" connection:self];
 		// Notify that the query has been performed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 		// Show an error alert while resetting
@@ -1246,7 +1246,7 @@ static void forcePingTimeout(int signalNumber)
 									  theCQueryLength, maxAllowedPacketSize];
 			
 			// Write a log entry and update the connection error messages for those uses that check it
-			if ([delegate respondsToSelector:@selector(queryGaveError:)]) [delegate queryGaveError:errorMessage];
+			if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:errorMessage connection:self];
 			[self setLastErrorMessage:errorMessage];
 			
 			// Notify that the query has been performed
@@ -1330,7 +1330,7 @@ static void forcePingTimeout(int signalNumber)
 	
 	// If an error occurred, inform the delegate
 	if (queryResultCode & delegateResponseToWillQueryString)
-		[delegate queryGaveError:lastQueryErrorMessage];
+		[delegate queryGaveError:lastQueryErrorMessage connection:self];
 	
 	(void)(int)(*startKeepAliveTimerResettingStatePtr)(self, startKeepAliveTimerResettingStateSEL, YES);
 	
@@ -1797,11 +1797,11 @@ static void forcePingTimeout(int signalNumber)
 	
 	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
 	// Inform the user via a log entry about that change according to reset value
-	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:)])
+	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:connection:)])
 		if(reset)
-			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %d for new session", newSize]];
+			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %d for new session", newSize] connection:self];
 		else
-			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize]];
+			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize] connection:self];
 	
 	return maxAllowedPacketSize;
 }
