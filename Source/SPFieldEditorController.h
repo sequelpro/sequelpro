@@ -38,15 +38,13 @@
 	IBOutlet id editSheet;
 	
 	id sheetEditData;
-	
-	NSString *stringValue;
-	
 	BOOL editSheetWillBeInitialized;
 	BOOL isBlob;
 	int quickLookCloseMarker;
 	NSStringEncoding encoding;
+	NSString *stringValue;
 	
-	
+	NSUserDefaults *prefs;
 }
 
 - (IBAction)closeEditSheet:(id)sender;
@@ -67,7 +65,5 @@
 
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
 - (void)textViewDidChangeSelection:(NSNotification *)notification;
-
-- (void)clean;
 
 @end

@@ -44,13 +44,24 @@
 
 - (void) dealloc
 {
+	if ( sheetEditData ) [sheetEditData release];
 	[super dealloc];
 }
 
-- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding isObjectBlob:(BOOL)isFieldBlob withWindow:(NSWindow *)tableWindow
+- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding 
+		isObjectBlob:(BOOL)isFieldBlob withWindow:(NSWindow *)tableWindow
 {
-	
-	[self clean];
+
+	prefs = [NSUserDefaults standardUserDefaults];
+
+	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+		[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+	} else {
+		[editTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+
+
 	// hide all views in editSheet
 	[hexTextView setHidden:YES];
 	[hexTextScrollView setHidden:YES];
@@ -64,8 +75,7 @@
 	
 	isBlob = isFieldBlob;
 	
-	// sheetEditData = data;
-	sheetEditData = [data copy];
+	sheetEditData = [data retain];
 	
 	// hide all views in editSheet
 	[hexTextView setHidden:YES];
@@ -149,8 +159,6 @@
 		[stringValue release];
 	}
 	
-	
-	
 	editSheetWillBeInitialized = NO;
 	
 	[editSheetProgressBar stopAnimation:self];
@@ -161,27 +169,12 @@
 	[NSApp endSheet:editSheet];
 	[editSheet orderOut:nil];
 	
-	
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
 	
-	if ( code ) return [sheetEditData autorelease];
-	
-	[self clean];
-	
-	return nil;
+	return ( code ) ? [sheetEditData retain] : nil;
 }
 
-- (void)clean
-{
-	[hexTextView setString:@""];
-	[editTextView setString:@""];
-	[editImage setImage:nil];
-	if ( sheetEditData ) {
-		[sheetEditData release];
-	}
-	
-}
 
 - (IBAction)closeEditSheet:(id)sender
 {
@@ -265,7 +258,7 @@
 			[editImage setHidden:YES];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
-			// [self makeFirstResponder:editTextView];
+			[[self window] makeFirstResponder:editTextView];
 			break;
 		case 1: // image
 			[editTextView setHidden:YES];
@@ -273,7 +266,7 @@
 			[editImage setHidden:NO];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
-			// [self makeFirstResponder:editImage];
+			[[self window] makeFirstResponder:editImage];
 			break;
 		case 2: // hex - load on demand
 			if([sheetEditData length] && [[hexTextView string] isEqualToString:@""]) {
@@ -286,7 +279,7 @@
 			[editImage setHidden:YES];
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
-			// [self makeFirstResponder:hexTextView];
+			[[self window] makeFirstResponder:hexTextView];
 			break;
 	}
 }
@@ -305,11 +298,10 @@
 		NSString *fileName = [panel filename];
 		
 		// Write binary field types directly to the file
-		//// || [editSheetBinaryButton state] == NSOnState
 		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
 			[sheetEditData writeToFile:fileName atomically:YES];
-			
-			// Write other field types' representations to the file via the current encoding
+
+		// Write other field types' representations to the file via the current encoding
 		} else {
 			[[sheetEditData description] writeToFile:fileName
 										  atomically:YES
@@ -356,22 +348,47 @@
 		// since QuickLook only works on files.
 		NSString *tmpFileName = [NSString stringWithFormat:@"/tmp/SequelProQuickLook.%@", type];
 		
+		[self removeQuickLooksTempFile:tmpFileName];
+		
 		// if data are binary
-		if ( [sheetEditData isKindOfClass:[NSData class]] || !isText) {
+		if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
 			[sheetEditData writeToFile:tmpFileName atomically:YES];
 			
-			// write other field types' representations to the file via the current encoding
+		// write other field types' representations to the file via the current encoding
 		} else {
-			[[sheetEditData description] writeToFile:tmpFileName
-										  atomically:YES
-											encoding:encoding
-											   error:NULL];
+			
+			// if "html" type try to set the HTML charset - not yet completed
+			if([type isEqualToString:@"html"]) {
+
+				NSString *enc;
+				switch(encoding) {
+					case NSASCIIStringEncoding:
+					enc = @"US-ASCII";break;
+					case NSUTF8StringEncoding:
+					enc = @"UTF-8";break;
+					case NSISOLatin1StringEncoding:
+					enc = @"ISO-8859-1";break;
+					default:
+					enc = @"US-ASCII";
+				}
+
+				[[NSString stringWithFormat:@"<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=%@'>%@", enc, [editTextView string]] writeToFile:tmpFileName
+										  	atomically:YES
+												encoding:encoding
+											   	error:NULL];
+			} else {
+				[[sheetEditData description] writeToFile:tmpFileName
+										  	atomically:YES
+												encoding:encoding
+											   	error:NULL];
+			}
 		}
 		
+		// Init QuickLook
 		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
 		
-		// Init QuickLook
-		[[ql delegate] setDelegate:self];
+		[[ql windowController] setDelegate:self];
+
 		[ql setURLs:[NSArray arrayWithObject:
 					 [NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
 		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
@@ -404,14 +421,16 @@
 		}
 		[NSApp endModalSession:session];
 		
+		// set ql's delegate to nil for dealloc
+		[[ql windowController] setDelegate:nil];
+		
+
 		// Remove temp file after closing the sheet to allow double-click event at the QuickLook preview.
 		// The afterDelay: time is a kind of dummy, because after double-clicking the model session loop
 		// will break (ql not visible) and returns the event handling back to the editSheet which by itself
 		// blocks the execution of removeQuickLooksTempFile: until the editSheet is closed.
 		[self performSelector:@selector(removeQuickLooksTempFile:) withObject:tmpFileName afterDelay:2];
-		
-		// [[NSFileManager defaultManager] removeItemAtPath:tmpFileName error:NULL];
-		
+
 	}
 	
 }
@@ -453,6 +472,7 @@
 		
 		[editImage setImage:image];
 		
+		if( sheetEditData ) [sheetEditData release];
 		sheetEditData = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
 		
 		NSString *contents = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
@@ -521,10 +541,10 @@
 	}
 }
 
-- (void)textViewDidChangeSelection:(NSNotification *)notification
 /*
  invoked when the user changes the string in the editSheet
  */
+- (void)textViewDidChangeSelection:(NSNotification *)notification
 {
 	
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)

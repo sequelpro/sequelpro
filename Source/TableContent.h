@@ -36,18 +36,8 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 	
-	IBOutlet id editSheetProgressBar;
-	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
-	IBOutlet id editSheet;
-	IBOutlet id editSheetSegmentControl;
-	IBOutlet id editSheetQuickLookButton;
-	IBOutlet id editImage;
-	IBOutlet id editTextView;
-	IBOutlet id hexTextView;
-	IBOutlet id editTextScrollView;
-	IBOutlet id hexTextScrollView;
 	IBOutlet id fieldField;
 	IBOutlet id compareField;
 	IBOutlet id argumentField;
@@ -64,7 +54,6 @@
 	
 	CMMCPConnection *mySQLConnection;
 	
-	id editData;
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *fullResult, *filteredResult, *keys, *oldRow;
 	NSString *compareType, *lastField;
@@ -74,9 +63,6 @@
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
 	
-	BOOL editSheetWillBeInitialized;
-	
-	int quickLookCloseMarker;
 }
 
 //table methods
@@ -94,16 +80,6 @@
 - (IBAction)copyRow:(id)sender;
 - (IBAction)removeRow:(id)sender;
 
-//editSheet methods
-- (IBAction)closeEditSheet:(id)sender;
-- (IBAction)openEditSheet:(id)sender;
-- (IBAction)saveEditSheet:(id)sender;
-- (IBAction)segmentControllerChanged:(id)sender;
-- (IBAction)quickLookFormatButton:(id)sender;
-- (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText;
-- (void)processUpdatedImageData:(NSData *)data;
-- (IBAction)dropImage:(id)sender;
-- (void)textViewDidChangeSelection:(NSNotification *)aNotification;
 
 //getter methods
 - (NSArray *)currentResult;
@@ -143,6 +119,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
 
 //textView delegate methods
-- (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
+// - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
 
 @end
