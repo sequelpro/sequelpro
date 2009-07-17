@@ -34,6 +34,7 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "RegexKitLite.h"
+#import "SPFieldEditorController.h"
 
 #define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
 #define SP_HELP_SEARCH_IN_MYSQL   0
@@ -1541,94 +1542,59 @@
 	// Check if the field can identified bijectively
 	if ( aTableView == customQueryView ) {
 
-		// TODO: only for testing
-		if([[NSApp currentEvent] modifierFlags] & NSCommandKeyMask) {
-			if(!tempAlertWasShown) {
-				NSRunCriticalAlertPanel (
-				   @"ATTENTION – ONLY FOR TESTING",
-				   @"Editing result fields in Custom Query is a BETA feature!\n\nPlease DO NOT USE that feature in production!\n\nAnyway we'd be glad if you take a bit time to test that feature on TEST data.\n\nThank you very much for testing.\n\nThe Sequel-Pro team",
-				   @"OK",
-				   nil,
-				   nil);
-				tempAlertWasShown = YES;
-			}
 
-			NSDictionary *columnDefinition;
+		NSDictionary *columnDefinition;
+		BOOL noTableName = NO;
+		BOOL isBlob;
 
-			// Retrieve the column defintion
-			for(id c in cqColumnDefinition) {
-				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
-					columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-					break;
-				}
+		// Retrieve the column defintion
+		for(id c in cqColumnDefinition) {
+			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
+				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+				break;
 			}
-
-
-			// Check if current field is a blob
-			if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
-				|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
-				[errorText setStringValue:@"Editing blob data not yet supported."];
-				NSBeep();
-				return NO;
-			}
-
-			// Resolve the original table name for current column if AS was used
-			NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
-			
-			// No table name found indicates that the field's column contains data from more than one table as for UNION
-			// or the field data are not bound to any table as in SELECT 1
-			if(!tableForColumn || ![tableForColumn length]) {
-				[errorText setStringValue:[NSString stringWithFormat:@"Couldn't identify field origin unambiguously. The column '%@' contains data from more or less than one table.", [columnDefinition objectForKey:@"name"]]];
-				NSBeep();
-				return NO;
-			}
-		
-			NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
-		
-			// Actual check whether field can be identified bijectively
-			int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
-			if (numberOfPossibleUpdateRows == 1)
-				return YES;
-			else {
-				[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
-				NSBeep();
-				return NO;
-			}
-		} 
-		// TODO: keep old behaviour for testing
-		else {
-			id theRow;
-			NSString *theValue;
-			
-		//get the value
-			theRow = [fullResult objectAtIndex:rowIndex];
-	
-			if ( [[theRow objectAtIndex:[[aTableColumn identifier] intValue]] isKindOfClass:[NSData class]] ) {
-				theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[[aTableColumn identifier] intValue]]
-									encoding:[mySQLConnection encoding]];
-				if (theValue == nil) {
-					theValue = [[NSString alloc] initWithData:[theRow objectAtIndex:[[aTableColumn identifier] intValue]]
-													 encoding:NSASCIIStringEncoding];
-				}
-				[theValue autorelease];
-			} else if ( [[theRow objectAtIndex:[[aTableColumn identifier] intValue]] isMemberOfClass:[NSNull class]] ) {
-				theValue = [prefs objectForKey:@"NullValue"];
-			} else {
-				theValue = [theRow objectAtIndex:[[aTableColumn identifier] intValue]];
-			}
-	
-			[valueTextField setString:[theValue description]];
-			[valueTextField selectAll:self];
-			[NSApp beginSheet:valueSheet
-					modalForWindow:tableWindow modalDelegate:self
-					didEndSelector:nil contextInfo:nil];
-			[NSApp runModalForWindow:valueSheet];
-	
-			[NSApp endSheet:valueSheet];
-			[valueSheet orderOut:nil];
-	
-			return NO;
 		}
+
+		// Check if current field is a blob
+		if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
+			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
+			isBlob = YES;
+		} else {
+			isBlob = NO;
+		}
+
+		// Resolve the original table name for current column if AS was used
+		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
+		
+		// No table name found indicates that the field's column contains data from more than one table as for UNION
+		// or the field data are not bound to any table as in SELECT 1
+		if(!tableForColumn || ![tableForColumn length])
+			noTableName = YES;
+	
+		NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
+	
+		// Actual check whether field can be identified bijectively
+		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+
+		BOOL isFieldEditable = (!noTableName && numberOfPossibleUpdateRows == 1) ? YES : NO;
+
+		// if(!isFieldEditable)
+		// 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+
+		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
+								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob isEditable:NO withWindow:tableWindow] retain];
+
+		if ( editData ) {
+
+		}
+
+		[fieldEditor release];
+
+		if ( editData ) [editData release];
+
+		return NO;
+
 	} else {
 		return YES;
 	}

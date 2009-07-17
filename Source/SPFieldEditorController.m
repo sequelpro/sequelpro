@@ -72,15 +72,13 @@
 	
 	if(!isEditable) {
 		[editSheetOkButton setTitle:NSLocalizedString(@"Close", @"close button title")];
+		[editSheetOkButton setKeyEquivalent:@"\033"]; // ESC key
 		[editSheetCancelButton setHidden:YES];
 		[editSheetOpenButton setEnabled:NO];
-	} else {
-		[editSheetOkButton setTitle:NSLocalizedString(@"OK", @"ok button title")];
-		[editSheetCancelButton setHidden:NO];
-		[editSheetOpenButton setEnabled:YES];
 	}
 	
 	editSheetWillBeInitialized = YES;
+	
 	
 	encoding = anEncoding;
 
@@ -100,10 +98,13 @@
 	[editSheetSegmentControl setHidden:(!isBlob)];
 
 	// Set window's min size since no segment and quicklook buttons are hidden
-	if(isBlob)
+	if(isBlob) {
+		[editSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
 		[editSheet setMinSize:NSMakeSize(560, 200)];
-	else
+	} else {
+		[editSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
 		[editSheet setMinSize:NSMakeSize(340, 150)];
+	}
 	
 	[editTextView setEditable:isEditable];
 	[editImage setEditable:isEditable];

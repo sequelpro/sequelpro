@@ -464,6 +464,7 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="983787914"/>
+									<reference key="NSNextKeyView" ref="459839028"/>
 									<reference key="NSDocView" ref="459839028"/>
 									<reference key="NSBGColor" ref="940290613"/>
 									<object class="NSCursor" key="NSCursor" id="956874367">
@@ -496,6 +497,7 @@
 							</object>
 							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSNextKeyView" ref="1068411389"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="977735067"/>
 							<reference key="NSHScroller" ref="426249328"/>
@@ -612,6 +614,7 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="604699677"/>
+									<reference key="NSNextKeyView" ref="702566211"/>
 									<reference key="NSDocView" ref="702566211"/>
 									<reference key="NSBGColor" ref="940290613"/>
 									<reference key="NSCursor" ref="956874367"/>
@@ -641,6 +644,7 @@
 							</object>
 							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSNextKeyView" ref="967441740"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="699979333"/>
 							<reference key="NSHScroller" ref="393370468"/>
@@ -684,7 +688,7 @@
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMinSize">{560, 222}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
-				<string key="NSFrameAutosaveName">SPEditSheet</string>
+				<string key="NSFrameAutosaveName"/>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
