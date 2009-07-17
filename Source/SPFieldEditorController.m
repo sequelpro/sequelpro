@@ -50,7 +50,7 @@
 }
 
 - (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding 
-		isObjectBlob:(BOOL)isFieldBlob withWindow:(NSWindow *)tableWindow
+		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
 
 	prefs = [NSUserDefaults standardUserDefaults];
@@ -70,6 +70,16 @@
 	[editTextView setHidden:YES];
 	[editTextScrollView setHidden:YES];
 	
+	if(!isEditable) {
+		[editSheetOkButton setTitle:NSLocalizedString(@"Close", @"close button title")];
+		[editSheetCancelButton setHidden:YES];
+		[editSheetOpenButton setEnabled:NO];
+	} else {
+		[editSheetOkButton setTitle:NSLocalizedString(@"OK", @"ok button title")];
+		[editSheetCancelButton setHidden:NO];
+		[editSheetOpenButton setEnabled:YES];
+	}
+	
 	editSheetWillBeInitialized = YES;
 	
 	encoding = anEncoding;
@@ -88,6 +98,15 @@
 	// Hide QuickLook button and text/iamge/hex control for text data
 	[editSheetQuickLookButton setHidden:(!isBlob)];
 	[editSheetSegmentControl setHidden:(!isBlob)];
+
+	// Set window's min size since no segment and quicklook buttons are hidden
+	if(isBlob)
+		[editSheet setMinSize:NSMakeSize(560, 200)];
+	else
+		[editSheet setMinSize:NSMakeSize(340, 150)];
+	
+	[editTextView setEditable:isEditable];
+	[editImage setEditable:isEditable];
 	
 	[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	
@@ -173,7 +192,7 @@
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
 
-	return ( code ) ? [sheetEditData retain] : nil;
+	return ( code && isEditable ) ? [sheetEditData retain] : nil;
 }
 
 
@@ -473,6 +492,7 @@
 
 -(void)processPasteImageData
 {
+
 	editSheetWillBeInitialized = YES;
 	
 	NSImage *image = nil;

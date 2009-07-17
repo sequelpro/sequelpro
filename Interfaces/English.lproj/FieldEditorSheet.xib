@@ -464,7 +464,6 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="983787914"/>
-									<reference key="NSNextKeyView" ref="459839028"/>
 									<reference key="NSDocView" ref="459839028"/>
 									<reference key="NSBGColor" ref="940290613"/>
 									<object class="NSCursor" key="NSCursor" id="956874367">
@@ -497,7 +496,6 @@
 							</object>
 							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
-							<reference key="NSNextKeyView" ref="1068411389"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="977735067"/>
 							<reference key="NSHScroller" ref="426249328"/>
@@ -614,7 +612,6 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="604699677"/>
-									<reference key="NSNextKeyView" ref="702566211"/>
 									<reference key="NSDocView" ref="702566211"/>
 									<reference key="NSBGColor" ref="940290613"/>
 									<reference key="NSCursor" ref="956874367"/>
@@ -644,7 +641,6 @@
 							</object>
 							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
-							<reference key="NSNextKeyView" ref="967441740"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="699979333"/>
 							<reference key="NSHScroller" ref="393370468"/>
@@ -909,6 +905,30 @@
 						<reference key="destination" ref="964663224"/>
 					</object>
 					<int key="connectionID">66</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetOkButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="315097820"/>
+					</object>
+					<int key="connectionID">67</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetCancelButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="760872156"/>
+					</object>
+					<int key="connectionID">68</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetOpenButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="16151679"/>
+					</object>
+					<int key="connectionID">69</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1379,7 +1399,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">66</int>
+			<int key="maxID">69</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1407,6 +1427,14 @@
 			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPEditSheetTextView</string>
+					<string key="superclassName">NSTextView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/SPEditSheetTextView.h</string>
+					</object>
+				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPFieldEditorController</string>
 					<string key="superclassName">NSWindowController</string>
@@ -1437,6 +1465,9 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>editImage</string>
 							<string>editSheet</string>
+							<string>editSheetCancelButton</string>
+							<string>editSheetOkButton</string>
+							<string>editSheetOpenButton</string>
 							<string>editSheetProgressBar</string>
 							<string>editSheetQuickLookButton</string>
 							<string>editSheetSegmentControl</string>
@@ -1448,6 +1479,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

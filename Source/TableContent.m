@@ -1934,7 +1934,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		id editData = [[fieldEditor editWithObject:[[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
-								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob withWindow:tableWindow] retain];
+								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob isEditable:YES withWindow:tableWindow] retain];
 
 		if ( editData ) {
 			if ( !isEditingRow ) {
