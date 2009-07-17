@@ -271,7 +271,11 @@
 		case 2: // hex - load on demand
 			if([sheetEditData length] && [[hexTextView string] isEqualToString:@""]) {
 				[editSheetProgressBar startAnimation:self];
-				[hexTextView setString:[sheetEditData dataToFormattedHexString]];
+				if([sheetEditData isKindOfClass:[NSData class]]) {
+					[hexTextView setString:[sheetEditData dataToFormattedHexString]];
+				} else {
+					[hexTextView setString:[[sheetEditData dataUsingEncoding:encoding allowLossyConversion:YES] dataToFormattedHexString]];
+				}
 				[editSheetProgressBar stopAnimation:self];
 			}
 			[editTextView setHidden:YES];
@@ -561,7 +565,7 @@
 	}
 	
 	// set edit data to text
-	sheetEditData = [[editTextView string] retain];
+	sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 	
 }
 
