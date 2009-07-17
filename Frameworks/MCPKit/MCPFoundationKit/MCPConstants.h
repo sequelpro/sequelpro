@@ -36,9 +36,9 @@ typedef enum {
 
 // Connection check constants
 typedef enum {
-	MCPConnectionCheckReconnect = 0,
-	MCPConnectionCheckDisconnect = 1,
-	MCPConnectionCheckRetry = 3
+	MCPConnectionCheckRetry = 0,
+	MCPConnectionCheckReconnect = 1,
+	MCPConnectionCheckDisconnect = 2
 } MCPConnectionCheck;
 
 // Charcater set mapping constants
