@@ -1,10 +1,10 @@
 //
-//  $Id$
+//  $Id: SPTableView.h 866 2009-06-15 16:05:54Z bibiko $
 //
-//  SPArrayAdditions.h
+//  SPTableView.h
 //  sequel-pro
 //
-//  Created by Jakob Egger on March 24, 2009
+//  Created by Hans-Jörg Bibiko on July 15, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -24,15 +24,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-static inline id NSArrayObjectAtIndex(NSArray* self, NSUInteger i) {
-	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
-}
 
+@interface SPTableView : NSTableView
 
-@interface NSArray (SPArrayAdditions)
-
-- (NSString *)componentsJoinedAndBacktickQuoted;
-- (NSString *)componentsJoinedByCommas;
-- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end

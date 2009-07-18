@@ -16,7 +16,7 @@
     NSManagedObjectModel *managedObjectModel;
     NSManagedObjectContext *managedObjectContext;
 	
-	NSArray *dbList;
+	NSMutableArray *dbList;
 	NSMutableArray *users;
 	NSMutableArray *availablePrivs;
 	NSMutableArray *selectedPrivs;

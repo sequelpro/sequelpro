@@ -384,7 +384,7 @@
 	
 	//set up tableView
 	currentRow = 0;
-	fieldMappingArray = nil;
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([importArray count] > 1)];
@@ -442,6 +442,8 @@
 	// reset interface
 	[errorsView setString:@""];
 	[errorsView displayIfNeeded];
+	[singleProgressTitle setStringValue:NSLocalizedString(@"Starting import...", @"text showing that the application has started importing")];
+	[singleProgressTitle displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
 	[singleProgressText displayIfNeeded];
 	[singleProgressBar setDoubleValue:0];
@@ -473,6 +475,7 @@
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Executing %d statements...", @"text showing that app is executing x statements"), queryCount]];
 
 		NSCharacterSet *whitespaceAndNewline = [NSCharacterSet whitespaceAndNewlineCharacterSet];
@@ -545,6 +548,7 @@
 		   didEndSelector:nil 
 			  contextInfo:nil];
 		
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
 		[singleProgressSheet makeKeyWindow];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
@@ -588,6 +592,7 @@
 		int i;
 		theResult = (CMMCPResult *) [mySQLConnection listTables];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
+		[fieldMappingPopup removeAllItems];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 			[fieldMappingPopup addItemWithTitle:NSArrayObjectAtIndex([theResult fetchRowAsArray], 0)];
 		}
@@ -607,7 +612,7 @@
 			
 			//set up tableView
 			currentRow = 0;
-			fieldMappingArray = nil;
+			if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 			[self setupFieldMappingArray];
 			[rowDownButton setEnabled:NO];
 			[rowUpButton setEnabled:([importArray count] > 1)];
@@ -651,6 +656,8 @@
 					  contextInfo:nil];
 				
 				[singleProgressSheet makeKeyWindow];
+				[singleProgressText setStringValue:NSLocalizedString(@"Creating rows...", @"text showing that app is importing rows from CSV")];
+				[singleProgressText displayIfNeeded];
 				
 				// get fields to be imported
 				for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
@@ -727,8 +734,8 @@
 		}
 		
 		//free arrays
-		fieldMappingArray = nil;
-		importArray = nil;
+		if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+		[importArray release], importArray = nil;
 	}
 	
     // Import finished Growl notification
@@ -761,7 +768,7 @@
 	int i, value;
 	
     if (!fieldMappingArray) {
-        fieldMappingArray = [NSMutableArray array];
+        fieldMappingArray = [[NSMutableArray alloc] init];
 		
 		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
 			if (i < [NSArrayObjectAtIndex(importArray, currentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, currentRow), i) isKindOfClass:[NSNull class]]) {
@@ -833,12 +840,14 @@
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
+	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
 	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
 	NSMutableString *sqlString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSDictionary *tableDetails;
 	NSMutableArray *tableColumnNumericStatus;
+	NSEnumerator *viewSyntaxEnumerator;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	id createTableSyntax = nil;
 	BOOL previousConnectionEncodingViaLatin1;
@@ -846,9 +855,10 @@
 	// Reset the interface
 	[errorsView setString:@""];
 	[errorsView displayIfNeeded];
+	[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
+	[singleProgressTitle displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	[singleProgressText displayIfNeeded];
-	//progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 	
@@ -920,7 +930,8 @@
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {
-				createTableSyntax = [[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier];
+				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
+				createTableSyntax = [self createViewPlaceholderSyntaxForView:tableName];
 				tableType = SP_TABLETYPE_VIEW;
 			} else {
 				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
@@ -1088,6 +1099,15 @@
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
+	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
+	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
+	while (tableName = [viewSyntaxEnumerator nextObject]) {
+		[metaString setString:@"\n\n"];
+		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
+		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
+		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	}
+
 	// Restore unique checks, foreign key checks, and other settings saved at the start
 	[metaString setString:@"\n\n\n"];
 	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
@@ -1138,6 +1158,8 @@
 	NSString *previousConnectionEncoding;
 	BOOL previousConnectionEncodingViaLatin1;
 	
+	[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting Dot file", @"text showing that the application is exporting a Dot file")];
+	[singleProgressTitle displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	[singleProgressText displayIfNeeded];
 	progressBarWidth = (int)[singleProgressBar bounds].size.width;
@@ -1331,6 +1353,7 @@
 	if ( !silently ) {
 		
 		// Set the progress text
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting CSV", @"text showing that the application is exporting a CSV")];
 		[singleProgressText setStringValue:NSLocalizedString(@"Exporting...", @"text showing that app is exporting to text file")];
 		// [singleProgressText displayIfNeeded];
 		
@@ -1668,6 +1691,8 @@
 	if ( !silently ) {
 		
 		// Set the progress text
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting XML", @"text showing that the application is exporting XML")];
+		[singleProgressTitle displayIfNeeded];
 		[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 		[singleProgressText displayIfNeeded];
 		
@@ -1802,6 +1827,7 @@
 	// Reset the interface
 	[errorsView setString:@""];
 	[errorsView displayIfNeeded];
+	[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), [type uppercaseString]]];
 	[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 	[singleProgressText displayIfNeeded];
 	[singleProgressBar setDoubleValue:0];
@@ -1862,8 +1888,18 @@
 			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
 		}
 
+		// Determine whether this table is a table or a view via the create table command, and get the table details
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		if ( [queryResult numOfRows] ) {
+			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
+			if ([tableDetails objectForKey:@"Create View"]) {
+				tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForView:tableName]];
+			} else {
+				tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
+			}
+		}
+
 		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
 		tableColumnNumericStatus = [NSMutableArray array];
 		for ( j = 0; j < [[tableDetails objectForKey:@"columns"] count] ; j++ ) {
 			tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
@@ -1980,6 +2016,77 @@
 	return [NSString stringWithString:mutableString];
 }
 
+/*
+ * Retrieve information for a view and use that to construct a CREATE TABLE
+ * string for an equivalent basic table.  Allows the construction of
+ * placeholder tables to resolve view interdependencies in dumps.
+ */
+- (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName
+{
+	NSDictionary *viewInformation;
+	NSMutableString *placeholderSyntax, *fieldString;
+	NSArray *viewColumns;
+	NSDictionary *column;
+	int i, j;
+
+	// Get structured information for the view via the SPTableData parsers
+	viewInformation = [tableDataInstance informationForView:viewName];
+	if (!viewInformation) return nil;
+	viewColumns = [viewInformation objectForKey:@"columns"];
+	
+	// Set up the start of the placeholder string and initialise an empty field string
+	placeholderSyntax = [[NSMutableString alloc] initWithFormat:@"CREATE TABLE %@ (\n", [viewName backtickQuotedString]];
+	fieldString = [[NSMutableString alloc] init];
+
+	// Loop through the columns, creating an appropriate column definition for each and appending it to the syntax string
+	for (i = 0; i < [viewColumns count]; i++) {
+		column = [viewColumns objectAtIndex:i];
+		[fieldString setString:[[column objectForKey:@"name"] backtickQuotedString]];
+
+		// Add the type and length information as appropriate
+		if ([column objectForKey:@"length"]) {
+			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], [column objectForKey:@"length"]];
+		} else if ([column objectForKey:@"values"]) {
+			[fieldString appendFormat:@" %@(", [column objectForKey:@"type"]];
+			for (j = 0; j < [[column objectForKey:@"values"] count]; j++) {
+				[fieldString appendFormat:@"'%@'%@", [mySQLConnection prepareString:[[column objectForKey:@"values"] objectAtIndex:j]], (j+1 == [[column objectForKey:@"values"] count])?@"":@","];
+			}
+			[fieldString appendString:@")"];
+		} else {
+			[fieldString appendFormat:@" %@", [column objectForKey:@"type"]];
+		}
+	
+		// Field specification details
+		if ([[column objectForKey:@"unsigned"] intValue] == 1) [fieldString appendString:@" UNSIGNED"];
+		if ([[column objectForKey:@"zerofill"] intValue] == 1) [fieldString appendString:@" ZEROFILL"];
+		if ([[column objectForKey:@"binary"] intValue] == 1) [fieldString appendString:@" BINARY"];
+		if ([[column objectForKey:@"null"] intValue] == 0) [fieldString appendString:@" NOT NULL"];
+
+		// Provide the field default if appropriate
+		if ([column objectForKey:@"default"]) {
+			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
+				[fieldString appendString:@" DEFAULT NULL"];
+			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
+						&& [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+			} else {
+				[fieldString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[column objectForKey:@"default"]]];
+			}
+		}
+		
+		// Extras aren't required for the temp table.
+		// Add the field string to the syntax string
+		[placeholderSyntax appendFormat:@"   %@%@\n", fieldString, (i == [viewColumns count]-1)?@"":@","];
+	}
+
+	// Append the remainder of the table string
+	[placeholderSyntax appendString:@") ENGINE=MyISAM;"];
+
+	// Clean up and return.
+	[fieldString release];
+	return [placeholderSyntax autorelease];
+}
+ 
 /*
  * Split a string by the terminated-character if this is not escaped
  * if enclosed-character is given, ignores characters inside enclosed-characters
@@ -2216,6 +2323,9 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	tables = [[NSMutableArray alloc] init];
 	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
+	fieldMappingArray = nil;
+	importArray = nil;
+	prefs = nil;
 	
 	return self;
 }
@@ -2223,12 +2333,10 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 - (void)dealloc
 {	
 	[tables release];
-	[importArray release];
 	[fieldMappingButtonOptions release];
-	[fieldMappingArray release];
-	[savePath release];
-	[openPath release];
-	[prefs release];
+	if (importArray) [importArray release];
+	if (fieldMappingArray) [fieldMappingArray release];
+	if (prefs) [prefs release];
 	
 	[super dealloc];
 }

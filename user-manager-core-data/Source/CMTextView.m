@@ -129,60 +129,36 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
 
-	unsigned i;
 
 	if([mySQLConnection isConnected] && !isDictMode)
 	{
 		// Add table names to completions list
-		MCPResult *queryResult = [mySQLConnection listTables];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"table-small-square", @"image", nil]];
-			//[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-		}
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];
+
+		// Add view names to completions list
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", nil]];
 
 		// Add field names to completions list for currently selected table
-		if ([[[self window] delegate] table] != nil) {
-			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
-			// [possibleCompletions addObjectsFromArray:columnNames];
-			NSString *s;
-			enumerate(columnNames, s)
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
-		}
+		if ([[[self window] delegate] table] != nil)
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"dummy-small", @"image", nil]];
+
 
 		// Add all database names to completions list
-		queryResult = [mySQLConnection listDBs];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), @"display", @"database-small", @"image", nil]];
-		}
+		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
 
 		// Add proc/func only for MySQL version 5 or higher
 		if(mySQLmajorVersion > 4) {
 			// Add all procedures to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW PROCEDURE STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"proc-small", @"image", nil]];
-			}
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", nil]];
 
 			// Add all function to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW FUNCTION STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				// [possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 1), @"display", @"func-small", @"image", nil]];
-			}
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", nil]];
 		}
 		
 	}
@@ -194,26 +170,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if([[self string] length]<6000000)
 		{
 			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
-			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+
 			NSMutableArray *uniqueArray = [NSMutableArray array];
-			NSString *s;
-			enumerate(textViewWords, s)
-				if(![uniqueArray containsObject:s])
-					[uniqueArray addObject:s];
+			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
 
 			// Remove current word from list
 			[uniqueArray removeObject:currentWord];
 
 			int reverseSort = NO;
 			NSArray *sortedArray = [[[uniqueArray mutableCopy] autorelease] sortedArrayUsingFunction:alphabeticSort context:&reverseSort];
-			// [possibleCompletions addObjectsFromArray:sortedArray];
-			NSString *w;
-			enumerate(sortedArray, w)
+			for(id w in sortedArray)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
-			
 
-			// Remove the current word
-			// [possibleCompletions removeObject:currentWord];
 		}
 	}
 
@@ -236,14 +204,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	// Build array of dictionaries as e.g.:
 	// [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
-	NSString* candidate;
-	enumerate(possibleCompletions, candidate)
-	{
-		if(![compl containsObject:candidate])
-			[compl addObject:candidate];
-	}
+	for(id suggestion in possibleCompletions)
+		if(![compl containsObject:suggestion])
+			[compl addObject:suggestion];
 
 	[possibleCompletions release];
+
 	return [compl autorelease];
 
 }
@@ -294,7 +260,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-	//TODO : where to place the release??
+	// TODO: where to place the release??
 	// [completionPopUp release];
 	
 
@@ -719,7 +685,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-
 /*
  * Handle special commands - see NSResponder.h for a sample list.
  * This subclass currently handles insertNewline: in order to preserve indentation
@@ -927,62 +892,42 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if([mySQLConnection isConnected])
 	{
-		// Add table names to completions list
-		MCPResult *queryResult = [mySQLConnection listTables];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-		}
-
-		// Add field names to completions list for currently selected table
-		if ([[[self window] delegate] table] != nil) {
-			id columnNames = [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"];
-			[possibleCompletions addObjectsFromArray:columnNames];
-		}
 
 		// Add all database names to completions list
-		queryResult = [mySQLConnection listDBs];
-		if ([queryResult numOfRows])
-			[queryResult dataSeek:0];
-		for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-		{
-			[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
-		}
+		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"]];
+
+		// Add table names to completions list
+		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableAndViewNames"]];
+
+		// Add field names to completions list for currently selected table
+		if ([[[self window] delegate] table] != nil)
+			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 
 		// Add proc/func only for MySQL version 5 or higher
 		if(mySQLmajorVersion > 4) {
-			// Add all procedures to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW PROCEDURE STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-			}
-
-			// Add all function to completions list for currently selected table
-			queryResult = [mySQLConnection queryString:@"SHOW FUNCTION STATUS"];
-			if ([queryResult numOfRows])
-				[queryResult dataSeek:0];
-			for (i = 0 ; i < [queryResult numOfRows] ; i++) 
-			{
-				[possibleCompletions addObject:[[queryResult fetchRowAsArray] objectAtIndex:1]];
-			}
+			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"]];
+			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"]];
 		}
-		
+
 	}
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
 		// Only parse for words if text size is less than 6MB
+		// if([[self string] length]<6000000)
+		// {
+		// 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
+		// 	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
+		// 	[possibleCompletions addObjectsFromArray:textViewWords];
+		// }
 		if([[self string] length]<6000000)
 		{
-			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
-			NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
-			[possibleCompletions addObjectsFromArray:textViewWords];
+			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
+			NSMutableArray *uniqueArray = [NSMutableArray array];
+			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
+			[possibleCompletions addObjectsFromArray:uniqueArray];
 		}
+
 		[possibleCompletions addObjectsFromArray:[self keywords]];
 	}
 	
@@ -1004,18 +949,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[possibleCompletions release];
 
 	return [compl autorelease];
-}
-
-
-/*
- * Hook to invoke the auto-uppercasing of SQL keywords after pasting
- */
-- (void)paste:(id)sender
-{
-
-	[super paste:sender];
-	// Invoke the auto-uppercasing of SQL keywords via an additional trigger
-	[self insertText:@""];
 }
 
 
@@ -2131,12 +2064,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
 		int end = curPos + SP_SYNTAX_HILITE_BIAS;
-		if (end > strlength )
-		{
+		if (end > strlength ) {
 			end = strlength;
 		} else {
-			while(end < strlength)
-			{
+			while(end < strlength) {
 				if([selfstr characterAtIndex:end]=='\n')
 					break;
 				end++;
@@ -2146,8 +2077,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
 		int start = end - (SP_SYNTAX_HILITE_BIAS*2);
 		if (start > 0)
-			while(start>-1)
-			{
+			while(start>-1) {
 				if([selfstr characterAtIndex:start]=='\n')
 					break;
 				start--;
@@ -2155,7 +2085,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		else
 			start = 0;
 
-	
 		textRange = NSMakeRange(start, end-start);
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
@@ -2278,8 +2207,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
-
+	
+	[commentColor release];
+	[quoteColor release];
+	[keywordColor release];
+	[backtickColor release];
+	[numericColor release];
+	[variableColor release];
+	[textColor release];
 }
+
 
 #pragma mark -
 #pragma mark context menu
@@ -2639,6 +2576,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[lineNumberView release];
 	[super dealloc];
 }
 

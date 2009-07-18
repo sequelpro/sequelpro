@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="193"/>
+			<integer value="130"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -238,7 +238,7 @@
 											<reference key="NSSuperview" ref="490248567"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="703031625">
-												<int key="NSCellFlags">-2080244224</int>
+												<int key="NSCellFlags">67239424</int>
 												<int key="NSCellFlags2">134250496</int>
 												<string key="NSContents"/>
 												<reference key="NSSupport" ref="746597359"/>
@@ -356,7 +356,7 @@
 												<reference key="NSControlView" ref="200332014"/>
 												<int key="NSButtonFlags">-2042609409</int>
 												<int key="NSButtonFlags2">35</int>
-												<object class="NSCustomResource" key="NSNormalImage">
+												<object class="NSCustomResource" key="NSNormalImage" id="768907814">
 													<string key="NSClassName">NSImage</string>
 													<string key="NSResourceName">button_action</string>
 												</object>
@@ -371,10 +371,7 @@
 													<string key="NSKeyEquiv"/>
 													<int key="NSKeyEquivModMask">1048576</int>
 													<int key="NSMnemonicLoc">2147483647</int>
-													<object class="NSCustomResource" key="NSImage">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_action</string>
-													</object>
+													<reference key="NSImage" ref="768907814"/>
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="190719524"/>
 												</object>
@@ -420,7 +417,7 @@
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSTabView" id="716372522">
 											<reference key="NSNextResponder" ref="755335467"/>
-											<int key="NSvFlags">30</int>
+											<int key="NSvFlags">286</int>
 											<string key="NSFrame">{{-3, 21}, {527, 330}}</string>
 											<reference key="NSSuperview" ref="755335467"/>
 											<object class="NSMutableArray" key="NSTabViewItems">
@@ -562,7 +559,7 @@
 												<object class="NSTabViewItem" id="1024639412">
 													<string key="NSIdentifier">Item 3</string>
 													<object class="NSView" key="NSView" id="202198269">
-														<reference key="NSNextResponder" ref="716372522"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1222,7 +1219,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {507, 284}}</string>
-														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Global Privileges</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -1231,7 +1227,7 @@
 												<object class="NSTabViewItem" id="752515175">
 													<string key="NSIdentifier">2</string>
 													<object class="NSView" key="NSView" id="610997909">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="716372522"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1359,7 +1355,7 @@
 																	</object>
 																	<reference ref="915166254"/>
 																</object>
-																<string key="NSFrame">{{70, 17}, {102, 261}}</string>
+																<string key="NSFrame">{{72, 17}, {102, 261}}</string>
 																<reference key="NSSuperview" ref="610997909"/>
 																<reference key="NSNextKeyView" ref="650938990"/>
 																<int key="NSsFlags">560</int>
@@ -1694,6 +1690,7 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {507, 284}}</string>
+														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Schema Privileges</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -1807,13 +1804,13 @@
 													<reference key="NSTabView" ref="716372522"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="1024639412"/>
+											<reference key="NSSelectedTabViewItem" ref="752515175"/>
 											<reference key="NSFont" ref="746597359"/>
 											<int key="NSTvFlags">0</int>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="202198269"/>
+												<reference ref="610997909"/>
 											</object>
 										</object>
 										<object class="NSButton" id="445730006">
@@ -2878,11 +2875,11 @@
 						<reference key="object" ref="610997909"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="977441295"/>
 							<reference ref="934312471"/>
 							<reference ref="721869623"/>
 							<reference ref="89470703"/>
 							<reference ref="690706913"/>
+							<reference ref="977441295"/>
 						</object>
 						<reference key="parent" ref="752515175"/>
 					</object>
@@ -3932,6 +3929,7 @@
 					<string>31.IBPluginDependency</string>
 					<string>33.IBPluginDependency</string>
 					<string>36.IBPluginDependency</string>
+					<string>37.IBAttributePlaceholdersKey</string>
 					<string>37.IBPluginDependency</string>
 					<string>38.IBPluginDependency</string>
 					<string>39.IBPluginDependency</string>
@@ -4076,6 +4074,14 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">InitialTabViewItem</string>
+						<object class="IBInitialTabViewItemAttribute" key="NS.object.0">
+							<string key="name">InitialTabViewItem</string>
+							<reference key="object" ref="716372522"/>
+							<reference key="initialTabViewItem" ref="820796939"/>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

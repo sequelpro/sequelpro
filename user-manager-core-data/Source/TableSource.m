@@ -246,7 +246,7 @@ reloads the table (performing a new mysql-query)
 */
 - (IBAction)reloadTable:(id)sender
 {
-	[tableDataInstance resetColumnData];
+	[tableDataInstance resetAllData];
 	[tablesListInstance setStatusRequiresReload:YES];
 	[self loadTable:selectedTable];
 }
@@ -266,7 +266,7 @@ reloads the table (performing a new mysql-query)
 	int insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 	
 	[tableFields insertObject:[NSMutableDictionary 
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"YES" : @"NO", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"1" : @"0", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
 							   forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]
 					  atIndex:insertIndex];
 
@@ -348,7 +348,7 @@ reloads the table (performing a new mysql-query)
 				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 
 		if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-			[tableDataInstance resetColumnData];
+			[tableDataInstance resetAllData];
 			[tablesListInstance setStatusRequiresReload:YES];
 			[self loadTable:selectedTable];
 			[NSApp stopModalWithCode:1];
@@ -442,7 +442,7 @@ opens the indexSheet
 	[indexSheet makeFirstResponder:indexedColumnsField];
 	
 	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
-	for (i = 0; i < [indexes count]; i++) {
+	for (i = 0; i < [tableFields count]; i++) {
 		if ([[[tableFields objectAtIndex:i] objectForKey:@"Key"] isEqualToString:@"PRI"]) {
 			[indexTypeField selectItemAtIndex:1];
 			[indexNameField setEnabled:YES];
@@ -581,11 +581,9 @@ fetches the result as an array with a dictionary for each row in it
 			[tempRow setObject:@"None" forKey:@"Extra"];
 		}
 		if ( [[tempRow objectForKey:@"Null"] isEqualToString:@"YES"] ) {
-//			[tempRow setObject:[NSNumber numberWithInt:0] forKey:@"Null"];
-			[tempRow setObject:@"YES" forKey:@"Null"];
+			[tempRow setObject:@"1" forKey:@"Null"];
 		} else {
-//			[tempRow setObject:[NSNumber numberWithInt:1] forKey:@"Null"];
-			[tempRow setObject:@"NO" forKey:@"Null"];
+			[tempRow setObject:@"0" forKey:@"Null"];
 		}
 		[tempResult addObject:tempRow];
 	}
@@ -700,7 +698,7 @@ fetches the result as an array with a dictionary for each row in it
 		[queryString appendString:@" BINARY"];
 	}
 
-	if ([[theRow objectForKey:@"Null"] isEqualToString:@"NO"]) {
+	if ([[theRow objectForKey:@"Null"] intValue] == 0) {
 		[queryString appendString:@" NOT NULL"];
 	} else {
 		[queryString appendString:@" NULL"];
@@ -713,7 +711,7 @@ fetches the result as an array with a dictionary for each row in it
 
 		// If a null value has been specified, and null is allowed, specify DEFAULT NULL
 		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
-			if ([[theRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
+			if ([[theRow objectForKey:@"Null"] intValue] == 1) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
 		
@@ -788,7 +786,7 @@ fetches the result as an array with a dictionary for each row in it
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
 		
-		[tableDataInstance resetColumnData];
+		[tableDataInstance resetAllData];
 		[tablesListInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
 
@@ -856,7 +854,7 @@ fetches the result as an array with a dictionary for each row in it
 					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 			
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				[tableDataInstance resetColumnData];
+				[tableDataInstance resetAllData];
 				[tablesListInstance setStatusRequiresReload:YES];
 				[self loadTable:selectedTable];
 
@@ -883,7 +881,7 @@ fetches the result as an array with a dictionary for each row in it
 			}
 		
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				[tableDataInstance resetColumnData];
+				[tableDataInstance resetAllData];
 				[tablesListInstance setStatusRequiresReload:YES];
 				[self loadTable:selectedTable];
 			} else {
@@ -922,6 +920,29 @@ fetches the result as an array with a dictionary for each row in it
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 		[indexView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
+}
+
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// Remove field
+	if ([menuItem action] == @selector(removeField:)) {
+		return (([tableSourceView numberOfSelectedRows] == 1) && ([tableSourceView numberOfRows] > 1));
+	}
+	
+	// Duplicate field
+	if ([menuItem action] == @selector(copyField:)) {
+		return ([tableSourceView numberOfSelectedRows] == 1);
+	}
+	
+	// Remove index
+	if ([menuItem action] == @selector(removeIndex:)) {
+		return ([indexView numberOfSelectedRows] == 1);
+	}
+	
+	return YES;
 }
 
 #pragma mark -
@@ -1133,7 +1154,7 @@ would result in a position change.
 	if ([[originalRow objectForKey:@"binary"] isEqualToString:@"1"]) {
 		[queryString appendString:@" BINARY"];
 	}
-	if ([[originalRow objectForKey:@"Null"] isEqualToString:@"NO"] ) {
+	if ([[originalRow objectForKey:@"Null"] isEqualToString:@"0"] ) {
 		[queryString appendString:@" NOT NULL"];
 	}
 	if (![[originalRow objectForKey:@"Extra"] isEqualToString:@"None"] ) {
@@ -1143,7 +1164,7 @@ would result in a position change.
 
 	// Add the default value
 	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
-		if ([[originalRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
+		if ([[originalRow objectForKey:@"Null"] intValue] == 1) {
 			[queryString appendString:@" DEFAULT NULL"];
 		}
 	} else if ( [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
@@ -1166,7 +1187,7 @@ would result in a position change.
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
 	} else {
-		[tableDataInstance resetColumnData];
+		[tableDataInstance resetAllData];
 		[tablesListInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
 
@@ -1248,9 +1269,7 @@ traps enter and esc and make/cancel editing without entering next row
 			}
 		} else {
 			if ( column == 2 ) {
-				[tableSourceView editColumn:column+4 row:row withEvent:nil select:YES];
-			} else if ( column == 6 ) {
-				[tableSourceView editColumn:column+2 row:row withEvent:nil select:YES];
+				[tableSourceView editColumn:column+6 row:row withEvent:nil select:YES];
 			} else {
 				[tableSourceView editColumn:column+1 row:row withEvent:nil select:YES];
 			}
@@ -1323,6 +1342,7 @@ traps enter and esc and make/cancel editing without entering next row
 		enumFields  = [[NSMutableDictionary alloc] init];
 		
 		currentlyEditingRow = -1;
+		defaultValues = nil;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
@@ -1342,8 +1362,8 @@ traps enter and esc and make/cancel editing without entering next row
 	[tableFields release];
 	[indexes release];
 	[oldRow release];
-	[defaultValues release];
 	[enumFields release];
+	if (defaultValues) [defaultValues release];
 	
 	[super dealloc];
 }

@@ -46,6 +46,7 @@ enum sp_table_types
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
+	IBOutlet id databaseDataInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;
@@ -109,6 +110,12 @@ enum sp_table_types
 - (int)tableType;
 - (NSArray *)tables;
 - (NSArray *)tableTypes;
+- (NSArray *)allTableAndViewNames;
+- (NSArray *)allTableNames;
+- (NSArray *)allViewNames;
+- (NSArray *)allFunctionNames;
+- (NSArray *)allProcedureNames;
+- (NSArray *)allDatabaseNames;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

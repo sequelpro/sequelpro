@@ -52,7 +52,9 @@
     if ((self = [super initWithScrollView:aScrollView orientation:NSVerticalRuler]) != nil)
     {
         [self setClientView:[aScrollView documentView]];
-    }
+		lineIndices = nil;
+	}
+	
     return self;
 }
 
@@ -65,7 +67,7 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [lineIndices release];
+    if (lineIndices) [lineIndices release];
     [font release];
     
     [super dealloc];
@@ -169,8 +171,7 @@
 
 - (void)invalidateLineIndices
 {
-	[lineIndices release];
-	lineIndices = nil;
+	if (lineIndices) [lineIndices release], lineIndices = nil;
 }
 
 - (void)textDidChange:(NSNotification *)notification
@@ -246,7 +247,7 @@
         // TODO improve performance maybe via threading
         if(stringLength>6000000)
                 return;
-        [lineIndices release];
+        if (lineIndices) [lineIndices release];
         lineIndices = [[NSMutableArray alloc] init];
         
         index = 0;

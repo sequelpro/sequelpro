@@ -83,6 +83,7 @@
     IBOutlet id errorsView;
     IBOutlet id singleProgressSheet;
     IBOutlet id singleProgressBar;
+    IBOutlet id singleProgressTitle;
     IBOutlet id singleProgressText;
 	
     IBOutlet id fieldMappingSheet;
@@ -100,8 +101,6 @@
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
 	int currentRow;
-	NSString *savePath;
-	NSString *openPath;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 }
@@ -142,6 +141,7 @@
 	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
+- (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName;
 
 - (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
 - (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;

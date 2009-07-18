@@ -27,6 +27,7 @@
 #import "SPStringAdditions.h"
 #include <unistd.h>
 #include <setjmp.h>
+#include <mach/mach_time.h>
 
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
@@ -80,6 +81,9 @@ static void forcePingTimeout(int signalNumber);
 
 	mConnectionFlags = kMCPConnectionDefaultOption;
 	
+	if (!host) host = @"";
+	if (!login) login = @"";
+	
 	connectionHost = [[NSString alloc] initWithString:host];
 	connectionLogin = [[NSString alloc] initWithString:login];
 	connectionPort = port;
@@ -100,6 +104,12 @@ static void forcePingTimeout(int signalNumber);
 	}
 	
 	mConnectionFlags = kMCPConnectionDefaultOption;
+
+	if (!socket || ![socket length]) {
+		socket = [self findSocketPath];
+		if (!socket) socket = @"";
+	}
+	if (!login) login = @"";
 	
 	connectionHost = nil;
 	connectionLogin = [[NSString alloc] initWithString:login];
@@ -160,6 +170,8 @@ static void forcePingTimeout(int signalNumber);
 	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
 	if (connectionKeychainName) [connectionKeychainName release], connectionKeychainName = nil;
 	if (connectionKeychainAccount) [connectionKeychainAccount release], connectionKeychainAccount = nil;
+
+	if (!thePassword) thePassword = @"";
 
 	connectionPassword = [[NSString alloc] initWithString:thePassword];
 	
@@ -265,6 +277,7 @@ static void forcePingTimeout(int signalNumber);
 	thePass = NULL;
 	if (theRet != mConnection) {
 		[self setLastErrorMessage:nil];
+		lastQueryErrorId = mysql_errno(mConnection);
 		return mConnected = NO;
 	}
 
@@ -277,6 +290,7 @@ static void forcePingTimeout(int signalNumber);
 
 	if (![self fetchMaxAllowedPacket]) {
 		[self setLastErrorMessage:nil];
+		lastQueryErrorId = mysql_errno(mConnection);
 		return mConnected = NO;
 	}
 	
@@ -306,7 +320,7 @@ static void forcePingTimeout(int signalNumber);
 	
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setTitlebarStatus:@"SSH Disconnected"];
+		if (delegate) [delegate setTitlebarStatus:@"SSH Disconnected"];
 		//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	
@@ -407,7 +421,7 @@ static void forcePingTimeout(int signalNumber);
 		if ([connectionTunnel state] != SPSSH_STATE_IDLE) [connectionTunnel disconnect];
 		[connectionTunnel connect];
 		
-		[delegate setTitlebarStatus:@"SSH Connecting…"];
+		if (delegate) [delegate setTitlebarStatus:@"SSH Connecting…"];
 		//[delegate setStatusIconToImageWithName:@"ssh-connecting"];
 		
 		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
@@ -415,14 +429,14 @@ static void forcePingTimeout(int signalNumber);
 		// Allow the tunnel to attempt to connect in a loop
 		while (1) {
 			if ([connectionTunnel state] == SPSSH_STATE_CONNECTED) {
-				[delegate setTitlebarStatus:@"SSH Connected"];
+				if (delegate) [delegate setTitlebarStatus:@"SSH Connected"];
 				//[delegate setStatusIconToImageWithName:@"ssh-connected"];
 				connectionPort = [connectionTunnel localPort];
 				break;
 			}
 			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
 				[connectionTunnel disconnect];
-				[delegate setTitlebarStatus:@"SSH Disconnected"];
+				if (delegate) [delegate setTitlebarStatus:@"SSH Disconnected"];
 				//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 				break;
 			}
@@ -687,9 +701,10 @@ static void forcePingTimeout(int signalNumber);
 		return YES;
 	}
 	[self setLastErrorMessage:nil];
+	lastQueryErrorId = mysql_errno(mConnection);
 	if (connectionTunnel) {
 		[connectionTunnel disconnect];
-		[delegate setTitlebarStatus:@"SSH Disconnected"];
+		if (delegate) [delegate setTitlebarStatus:@"SSH Disconnected"];
 		//[delegate setStatusIconToImageWithName:@"ssh-disconnected"];
 	}
 	return NO;
@@ -742,7 +757,8 @@ static void forcePingTimeout(int signalNumber);
 - (CMMCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	CMMCPResult		*theResult = nil;
-	int				queryStartTime;
+	uint64_t		queryStartTime, queryExecutionTime_t;
+	Nanoseconds		queryExecutionTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
@@ -825,9 +841,10 @@ static void forcePingTimeout(int signalNumber);
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
-		queryStartTime = clock();
+		queryStartTime = mach_absolute_time();
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
-		lastQueryExecutionTime = (clock() - queryStartTime);
+		queryExecutionTime_t = mach_absolute_time() - queryStartTime;
+		queryExecutionTime = AbsoluteToNanoseconds( *(AbsoluteTime *) &(queryExecutionTime_t) );
 
 		// On success, capture the results
 		if (0 == queryResultCode) {
@@ -876,6 +893,7 @@ static void forcePingTimeout(int signalNumber);
 	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
 	if (queryErrorMessage) [queryErrorMessage release]; 
 	lastQueryAffectedRows = queryAffectedRows;
+	lastQueryExecutionTime = ((double) UnsignedWideToUInt64( queryExecutionTime )) * 1e-9;
 	
 	// If an error occurred, inform the delegate
 	if (queryResultCode & delegateResponseToWillQueryString)
@@ -892,7 +910,7 @@ static void forcePingTimeout(int signalNumber);
  * Return the time taken to execute the last query.  This should be close to the time it took
  * the server to run the query, but will include network lag and some client library overhead.
  */
-- (float) lastQueryExecutionTime
+- (double) lastQueryExecutionTime
 {
 	return lastQueryExecutionTime;
 }
@@ -1300,9 +1318,37 @@ static void forcePingTimeout(int signalNumber)
 	return(!mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet"));
 }
 
+/*
+ * Check some common locations for the presence of a MySQL socket file, returning
+ * it if successful.
+ */
+- (NSString *)findSocketPath
+{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSArray *possibleSocketLocations = [NSArray arrayWithObjects:
+										@"/tmp/mysql.sock",							// Default
+										@"/var/run/mysqld/mysqld.sock",				// As used on Debian/Gentoo
+										@"/var/tmp/mysql.sock",						// As used on FreeBSD
+										@"/var/lib/mysql/mysql.sock",				// As used by Fedora
+										@"/opt/local/lib/mysql/mysql.sock",			// Alternate fedora
+										@"/opt/local/var/run/mysqld/mysqld.sock",	// Darwinports MySQL
+										@"/opt/local/var/run/mysql4/mysqld.sock",	// Darwinports MySQL 4
+										@"/opt/local/var/run/mysql5/mysqld.sock",	// Darwinports MySQL 5
+										@"/Applications/MAMP/tmp/mysql/mysql.sock",	// MAMP default location
+										nil];
+	
+	for (int i = 0; i < [possibleSocketLocations count]; i++) {
+		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
+			return [possibleSocketLocations objectAtIndex:i];
+	}
+	
+	return nil;
+}
 
 - (void) dealloc
 {
+	delegate = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];

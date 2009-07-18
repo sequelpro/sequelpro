@@ -302,12 +302,28 @@
 	} 
 }
 
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// Remove row
+	if ([menuItem action] == @selector(removeRelation:)) {
+		[menuItem setTitle:([relationsTableView numberOfSelectedRows] > 1) ? @"Delete Relations" : @"Delete Relation"];
+		
+		return ([relationsTableView numberOfSelectedRows] > 0);
+	}
+	
+	return YES;
+}
+
 /*
  * Dealloc.
  */
 - (void)dealloc
 {	
 	[relationData release], relationData = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[super dealloc];
 }

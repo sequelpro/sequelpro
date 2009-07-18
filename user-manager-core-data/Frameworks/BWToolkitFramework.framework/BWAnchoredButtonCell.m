@@ -161,8 +161,9 @@ static float scaleFactor = 1.0f;
 {
 	NSImage *image;
 	
-	image = ([self state] == NSOffState ? [self image] : [self alternateImage]);
-	
+	image = ([self state] == NSOffState || [self alternateImage] == nil ? [self image] : [self alternateImage]);
+		
+		
 	if (image != nil)
 	{
 		[image setScalesWhenResized:NO];

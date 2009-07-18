@@ -8,7 +8,6 @@
 
 #import "SPUserManager.h"
 #import "CMMCPConnection.h"
-#import "SPUserItem.h"
 #import "SPUserMO.h"
 #import "CMMCPResult.h"
 #import "ImageAndTextCell.h"
@@ -21,7 +20,6 @@
 - (void)_initializeTree:(NSArray *)items;
 - (void)_initializeUsers;
 - (void)_initializeDatabaseList;
-- (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem;
 - (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
 - (void)_selectParentFromSelection;
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
@@ -61,6 +59,10 @@
 											 selector:@selector(contextDidSave:) 
 												 name:NSManagedObjectContextDidSaveNotification 
 											   object:nil];
+	
+	// Remove the Schema Privileges for now
+//	[tabView removeTabViewItem:[tabView tabViewItemAtIndex:2]];
+	
 	// Set up the sorting for the NSArrayControllers
 	NSSortDescriptor *sd = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
 	[selectedPrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
@@ -80,7 +82,6 @@
 	availablePrivs = [[NSMutableArray alloc] init];
 	selectedPrivs = [[NSMutableArray alloc] init];
 	
-	// Initializing could take a while so run in a separate thread
 	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
 }
 
@@ -88,7 +89,10 @@
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	MCPResult *result = [[self connection] listDBs];
-	
+	if (dbList == nil)
+	{
+		dbList = [[NSMutableArray alloc] init];
+	}
 	if ([result numOfRows])
 	{
 		[result dataSeek:0];
@@ -124,7 +128,7 @@
 	}
 	[usersResultArray addObjectsFromArray:resultAsArray];
 	
-	[self performSelectorOnMainThread:@selector(_initializeTree:) withObject:usersResultArray waitUntilDone:TRUE];
+	[self _initializeTree:usersResultArray];
 	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
 	[result release];
 	[pool release];
@@ -197,21 +201,6 @@
 		NS_ENDHANDLER
 	}
 	
-}
-- (void)_initializeGlobalPrivilegesWithItem:(NSDictionary *)item intoChildItem:(SPUserItem *)childItem
-{
-	NSArray *itemKeys = [item allKeys];
-	NSMutableDictionary *globalPrivs = [NSMutableDictionary dictionary];
-	
-	for (int index = 0; index < [itemKeys count]; index++)
-	{
-		NSString *key = [itemKeys objectAtIndex:index];
-		if ([key hasSuffix:@"_priv"])
-		{
-			[globalPrivs setValue:[item valueForKey:key] forKey:key];
-		}
-	}
-	[childItem setGlobalPrivileges:globalPrivs];
 }
 
 - (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items
@@ -401,21 +390,29 @@
 {	
 	NSLog(@"observeValueForKeyPath");
 	NSLog(@"%@", change);
-	if ([[object class] isKindOfClass:[NSManagedObject class]] && !isInitializing) {
+	NSLog(@"%d", isInitializing);
+	if ([[object class] isKindOfClass:[NSManagedObject class]] && !isInitializing)
+	{
 		NSManagedObject *parent = nil;
 		if ([(NSManagedObject *)object parent] != nil)
 		{
 			parent = [(NSManagedObject *)object parent];
-		} else {
+		} 
+		else 
+		{
 			parent = (NSManagedObject *)object;
 		}
 		
 		if (context == @"SPUser-user") {
-			for (NSManagedObject *child in [parent children]) {
+			for (NSManagedObject *child in [parent children]) 
+			{
 				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"user"];
 			}
-		} else if (context == @"SPUser-password") {
-			for (NSManagedObject *child in [parent children]) {
+		} 
+		else if (context == @"SPUser-password") 
+		{
+			for (NSManagedObject *child in [parent children]) 
+			{
 				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"password"];
 			}
 		}
@@ -545,7 +542,7 @@
 		
 		if ([updated count] > 0)
 		{
-			
+			[self updateUsers:updated];
 		}
 		
 		if ([deleted count] > 0)
@@ -623,7 +620,7 @@
 				// Grant privileges
 				if ([grantPrivileges count] > 0)
 				{
-					NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO '%@'@'%@';",
+					NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@;",
 												[grantPrivileges componentsJoinedByCommas],
 												[[[user parent] valueForKey:@"user"] tickQuotedString],
 												[[user valueForKey:@"host"] tickQuotedString]];
@@ -647,7 +644,7 @@
 		}
 	}
 	
-	return FALSE;
+	return TRUE;
 	
 }
 - (NSArray *)_fetchUserWithUserName:(NSString *)username

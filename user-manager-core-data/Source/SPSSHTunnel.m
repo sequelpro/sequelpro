@@ -563,6 +563,8 @@
 
 - (void)dealloc
 {
+	delegate = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (connectionState != SPSSH_STATE_IDLE) [self disconnect];
 	[sshHost release];
 	[sshLogin release];

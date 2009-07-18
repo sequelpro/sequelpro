@@ -53,7 +53,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(int)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval intervalInClocks:(BOOL)inClocks;
++ (NSString *)stringForTimeInterval:(float)timeInterval;
 
 - (NSString *)backtickQuotedString;
 - (NSString *)tickQuotedString;
@@ -61,8 +61,10 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 
-- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask;
-- (NSString *)	 stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
+
+- (float)levenshteinDistanceWithWord:(NSString *)stringB;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;

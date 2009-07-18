@@ -63,6 +63,8 @@
 	IBOutlet NSMenuItem *autopairMenuItem;
 	IBOutlet NSMenuItem *autohelpMenuItem;
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
+	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
+	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
@@ -95,7 +97,7 @@
 	
 	BOOL tableReloadAfterEdting;
 	BOOL isDesc;
-	NSString *sortField;
+	NSNumber *sortField;
 	BOOL tempAlertWasShown; // a temp value for nightly builts
 		
 }
@@ -148,6 +150,8 @@
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;
+- (void)commentOut;
+- (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
 

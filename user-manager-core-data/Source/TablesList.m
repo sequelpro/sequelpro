@@ -35,6 +35,7 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
+#import "SPDatabaseData.h"
 
 @implementation TablesList
 
@@ -209,17 +210,15 @@
 	// Populate the table type (engine) popup button
 	[tableTypeButton removeAllItems];
 	
-	CMMCPResult *engines = [mySQLConnection queryString:@"SELECT engine FROM information_schema.engines"];
-	
-	[engines dataSeek:0];
-	
+	NSArray *engines = [databaseDataInstance getDatabaseStorageEngines];
+		
 	// Add default menu item
 	[tableTypeButton addItemWithTitle:@"Default"];
 	[[tableTypeButton menu] addItem:[NSMenuItem separatorItem]];
 	
-	for (int i = 0; i < [engines numOfRows]; i++)
+	for (NSDictionary *engine in engines)
 	{
-		[tableTypeButton addItemWithTitle:[[engines fetchRowAsArray] objectAtIndex:0]];
+		[tableTypeButton addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
 	
 	[NSApp beginSheet:tableSheet
@@ -329,10 +328,16 @@
 	
 	[tableWindow endEditingFor:nil];
 	
-	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Cancel", @"cancel button") alternateButton:NSLocalizedString(@"Delete", @"delete button") otherButton:nil informativeTextWithFormat:@""];
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
 	NSString *tblTypes;
@@ -680,9 +685,15 @@
 	
 	[tableWindow endEditingFor:nil];
 	
-	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Cancel", @"cancel button") alternateButton:NSLocalizedString(@"Truncate", @"truncate button") otherButton:nil informativeTextWithFormat:@""];
+	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Truncate", @"truncate button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [tables objectAtIndex:[tablesListView selectedRow]]]];
@@ -709,14 +720,14 @@
 	else if ([contextInfo isEqualToString:@"removeRow"]) {
 		[[sheet window] orderOut:nil];
 		
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[self removeTable];
 		}
 	}
 	else if ([contextInfo isEqualToString:@"truncateTable"]) {
 		[[sheet window] orderOut:nil];
 		
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[self truncateTable];
 		}
 	}
@@ -916,6 +927,78 @@
 - (NSArray *)tables
 {
 	return tables;
+}
+
+/**
+ * Database tables accessors for a given table type
+ */
+- (NSArray *)allTableAndViewNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE || [NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allTableNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allViewNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allProcedureNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_PROC)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+- (NSArray *)allFunctionNames
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+	int i;
+	int cnt = [[self tables] count];
+	for(i=0; i<cnt; i++) {
+		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_FUNC)
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+	}
+	[returnArray sortUsingSelector:@selector(compare:)];
+	return returnArray;
+}
+
+/**
+ * Returns an array of all available database names
+ */
+- (NSArray *)allDatabaseNames
+{
+	return [tableDocumentInstance allDatabaseNames];
 }
 
 /**

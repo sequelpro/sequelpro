@@ -167,11 +167,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	NSArray *columns = [self tableColumns];
 	int numColumns   = [columns count];
 
-	NSTableColumn *col     = nil;
 	// NSIndexSet *rowIndexes = [self selectedRowIndexes];
 	NSString *spNULL       = [prefs objectForKey:@"NullValue"];
 	NSMutableString *value = [NSMutableString stringWithCapacity:10];
-	NSDictionary *dbDataRow;
+	NSArray *dbDataRow;
+	NSMutableArray *columnMappings;
 	id enumObj;
 	id rowData = nil;
 	id rowEnumObject = nil;
@@ -184,21 +184,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 
-	// Create an array of table column names
-	NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
-	enumerate(columns, enumObj)
-		[tbHeader addObject:[[enumObj headerCell] stringValue]];
-
-	// Create an hash of header name and typegrouping
-	NSMutableDictionary *headerType = [NSMutableDictionary dictionaryWithCapacity:numColumns];
-	enumerate(columnDefinitions, enumObj)
-		[headerType setObject:[enumObj objectForKey:@"typegrouping"] forKey:[enumObj objectForKey:@"name"]];
-
 	// Create array of types according to the column order
 	NSMutableArray *types = [NSMutableArray arrayWithCapacity:numColumns];
-	enumerate(tbHeader, enumObj)
+	enumerate(columns, enumObj)
 	{
-		NSString *t = [headerType objectForKey:enumObj];
+		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] intValue]] objectForKey:@"typegrouping"];
 		if([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
 			[types addObject:[NSNumber numberWithInt:0]]; // numeric
 		else if([t isEqualToString:@"blobdata"])
@@ -209,12 +199,23 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
 	}
 
+	// Create an array of table column names
+	NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
+	enumerate(columns, enumObj)
+		[tbHeader addObject:[[enumObj headerCell] stringValue]];
+
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 
 	//this is really deprecated in 10.3, but the new method is really weird
 	NSEnumerator *enumerator = [self selectedRowEnumerator]; 
 
+	// Set up an array of table column mappings
+	columnMappings = [[NSMutableArray alloc] initWithCapacity:numColumns];
+	for ( c = 0; c < numColumns; c++ ) {
+		[columnMappings addObject:[[columns objectAtIndex:c] identifier]];
+	}
+	
 	while ( rowEnumObject = [enumerator nextObject] )
 	{ 
 		[value appendString:@"\t("];
@@ -223,8 +224,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			col = [columns objectAtIndex:c];
-			rowData = [[tableData objectAtIndex:row] objectForKey:[tbHeader objectAtIndex:c]];
+			rowData = [[tableData objectAtIndex:row] objectAtIndex:[[columnMappings objectAtIndex:c] intValue]];
 
 			// Check for NULL value - TODO this is not safe!!
 			if([[rowData description] isEqualToString:spNULL]){
@@ -251,12 +251,12 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
-									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
-							if([[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] isKindOfClass:[NSNull class]])
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsArray];
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"X'%@', ", 
-									[mySQLConnection prepareBinaryData:[dbDataRow objectForKey:[tbHeader objectAtIndex:c]]]]];
+									[mySQLConnection prepareBinaryData:[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]]]]];
 						} else {
 							[value appendString:[NSString stringWithFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:rowData]]];
 						}
@@ -271,12 +271,12 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
-									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsDictionary];
-							if([[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] isKindOfClass:[NSNull class]])
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsArray];
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"'%@', ", 
-									[mySQLConnection prepareString:[[dbDataRow objectForKey:[tbHeader objectAtIndex:c]] description]]]];
+									[mySQLConnection prepareString:[[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] description]]]];
 						} else {
 							[value appendString:[NSString stringWithFormat:@"'%@', ", 
 								[[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"] ] ];
@@ -325,6 +325,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		[result deleteCharactersInRange:NSMakeRange([result length]-2, 2)];
 
 	[result appendString:@";\n"];
+	
+	[columnMappings release];
 	
 	return result;
 }
