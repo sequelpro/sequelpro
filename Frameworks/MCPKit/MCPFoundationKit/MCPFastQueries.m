@@ -42,9 +42,9 @@
  * Send the query aQuery to the server and retrieve the row id if the table have a autoincrement column.
  * Returns 0 if nothing have been inserted.
  */
-- (my_ulonglong)insertQuery:(NSString *)aQuery
-{
-    [self queryString:aQuery];
+- (my_ulonglong)insertQuery:(NSString *)query
+{	
+	[self queryString:query];
 	
     return [self insertId];
 }
@@ -57,9 +57,9 @@
  * with the query; you'll get no chance to get the result from the query, except by sending the query 
  * again (with !{queryString:})
  */
-- (my_ulonglong)updateQuery:(NSString *)aQuery
-{
-    [self queryString:aQuery];
+- (my_ulonglong)updateQuery:(NSString *)query
+{	
+	[self queryString:query];
 	
     return [self affectedRows];
 }
@@ -68,22 +68,18 @@
  * Get the first field of the first row of the result from the query (aQuery). Should return nil if no object 
  * at all are selected.
  */
-- (id)getFirstFieldFromQuery:(NSString *)aQuery
-{
-    MCPResult *theResult = [self queryString:aQuery];
-	
-    return [[theResult fetchRowAsType:MCPTypeArray] objectAtIndex:0];
+- (id)getFirstFieldFromQuery:(NSString *)query
+{	
+    return [[[self queryString:query] fetchRowAsType:MCPTypeArray] objectAtIndex:0];
 }
 
 /**
  * Get the firdst row of the result from the query aQuery, in a collection of type determined by aType 
  * (MCPTypeArray or MCPTypeDictionary)
  */
-- (id) getFirstRowFromQuery:(NSString *) aQuery asType:(MCPReturnType) aType
-{
-    MCPResult *theResult = [self queryString:aQuery];
-	
-    return [theResult fetchRowAsType:aType];
+- (id) getFirstRowFromQuery:(NSString *)query asType:(MCPReturnType)type
+{	
+    return [[self queryString:query] fetchRowAsType:type];
 }
 
 /**
@@ -91,32 +87,27 @@
  * choosen by aType, it can be (MCPTypeArray, MCPTypeDictionary, MCPTypeFlippedArray & MCPTypeFlippedDictionary). 
  * Description of the types can be found in method !{fetch2DResultAsType:}.
  */
-- (id)getAllRowsFromQuery:(NSString *)aQuery asType:(MCPReturnType)aType
+- (id)getAllRowsFromQuery:(NSString *)query asType:(MCPReturnType)type
 
-{
-    MCPResult *theResult = [self queryString:aQuery];
-   
-	return [theResult fetch2DResultAsType:aType];
+{   
+	return [[self queryString:query] fetch2DResultAsType:type];
 }
 
 /**
  * Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's index, 
  * starting from 0.
  */
-- (NSArray *)getQuery:(NSString *)aQuery colWithIndex:(unsigned int)aCol
-{
-    MCPResult *theResult = [self queryString:aQuery];
-    
-	return [theResult fetchColAtIndex:aCol];
+- (NSArray *)getQuery:(NSString *)query colWithIndex:(unsigned int)col
+{    
+	return [[self queryString:query] fetchColAtIndex:col];
 }
 
 /**
  * Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's name.
  */
-- (NSArray *)getQuery:(NSString *)aQuery colWithName:(NSString *)aColName
-{
-    MCPResult		*theResult = [self queryString:aQuery];
-    return [theResult fetchColWithName:aColName];
+- (NSArray *)getQuery:(NSString *)query colWithName:(NSString *)colName
+{    
+	return [[self queryString:query] fetchColWithName:colName];
 }
 
 @end

@@ -1021,11 +1021,11 @@ const OUR_CHARSET our_charsets60[] =
 		return @"This is an empty MCPResult\n";
 	}
 	else {
-		NSMutableString		*theString = [NSMutableString stringWithCapacity:0];
-		int						i;
-		NSArray					*theRow;
-		MYSQL_ROW_OFFSET		thePosition;
-		BOOL						trunc = [MCPConnection truncateLongField];
+		NSMutableString  *theString = [NSMutableString stringWithCapacity:0];
+		int				 i;
+		NSArray			 *theRow;
+		MYSQL_ROW_OFFSET thePosition;
+		BOOL			 trunc = [MCPConnection truncateLongField];
 		
 		// First line, saying we are displaying a MCPResult
 		[theString appendFormat:@"MCPResult: (encoding : %d, dim %d x %d)\n", (long)mEncoding, (long)mNumOfFields, (long)[self numOfRows]];

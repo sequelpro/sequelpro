@@ -1614,7 +1614,7 @@ static void forcePingTimeout(int signalNumber)
 #pragma mark Encoding
 
 /**
- * Sets the encoding used by the server for data transfert.
+ * Sets the encoding used by the server for data transfer.
  * Used to make sure the output of the query result is ok even for non-ascii characters
  * The character set (encoding) used by the db is passed to the MCPConnection object upon connection,
  * so most likely the encoding (from -encoding) method is already the proper one.

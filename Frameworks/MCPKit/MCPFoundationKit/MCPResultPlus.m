@@ -40,7 +40,7 @@
  * The index 0 of the returned array always correspond to the first row (ie: returned NSArray is indexed 
  * by row number), the read position is restored after to it's initial position after the read. 
  */
-- (NSArray *)fetchColAtIndex:(unsigned int) aCol
+- (NSArray *)fetchColAtIndex:(unsigned int)col
 {
     NSMutableArray   *theCol = [NSMutableArray arrayWithCapacity:[self numOfRows]];
     MYSQL_ROW_OFFSET thePosition;
@@ -50,9 +50,9 @@
 		// If there is no results, returns nil.
         return nil;
     }
-    if (aCol >= mNumOfFields) {
+    if (col >= mNumOfFields) {
 		// Bad column number
-        NSLog (@"The index : %d is not within the range 0 - %d\n", (long)aCol, (long)mNumOfFields);
+        NSLog (@"The index : %d is not within the range 0 - %d\n", (long)col, (long)mNumOfFields);
         return nil;
     }
 
@@ -63,7 +63,7 @@
 	// One might want to have optimized code here. Maybe in later versions
     while (theRow = [self fetchRowAsType:MCPTypeArray]) 
 	{
-        [theCol addObject:[theRow objectAtIndex:aCol]];
+        [theCol addObject:[theRow objectAtIndex:col]];
     }
 
 	// Returning to the proper row
@@ -76,7 +76,7 @@
  * The same as !{fetchColAtIndex:}, but the choice of the column is done by it's field name. Indeed it is just 
  * a wrapper to !{fetchColAtIndex}.
  */
-- (NSArray *)fetchColWithName:(NSString *)aColName
+- (NSArray *)fetchColWithName:(NSString *)colName
 {
     unsigned int theCol;
     
@@ -89,10 +89,10 @@
         [self fetchFieldNames];
     }
 	
-    theCol = [mNames indexOfObject:aColName];
+    theCol = [mNames indexOfObject:colName];
     
 	if (theCol == NSNotFound) {
-        NSLog(@"No column have been found with name : %@\n",aColName);
+        NSLog(@"No column have been found with name : %@\n", colName);
         return nil;
     }
 	
@@ -113,7 +113,7 @@
  * In any case the read position is restored at the end of the call (hence a fetchRow will get the same row 
  * wether this method is called before it or not).
  */
-- (id) fetch2DResultAsType:(MCPReturnType) aType;
+- (id) fetch2DResultAsType:(MCPReturnType)type;
 {
     id				 theTable, theVect;
     MYSQL_ROW_OFFSET thePosition;
@@ -128,7 +128,7 @@
 	
     [self dataSeek:0];
     
-    switch (aType) 
+    switch (type) 
 	{
         case MCPTypeArray :
             theTable = [NSMutableArray arrayWithCapacity:[self numOfRows]];
@@ -175,7 +175,7 @@
             theTable = [NSDictionary dictionaryWithDictionary:theTable];
             break;
         default :
-            NSLog (@"Unknown MCPReturnType : %d; return nil\n", (int)aType);
+            NSLog (@"Unknown MCPReturnType : %d; return nil\n", (int)type);
             theTable = nil;
             break;
     }

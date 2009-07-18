@@ -33,10 +33,10 @@
 @interface MCPResult (MCPResultPlus)
 
 // Getting a complete column as an array
-- (NSArray *)fetchColAtIndex:(unsigned int) aCol;
-- (NSArray *)fetchColWithName:(NSString *) aColName;
+- (NSArray *)fetchColAtIndex:(unsigned int)col;
+- (NSArray *)fetchColWithName:(NSString *)colName;
 
 // Getting the complete result as 2D array
-- (id)fetch2DResultAsType:(MCPReturnType) aType;
+- (id)fetch2DResultAsType:(MCPReturnType)type;
 
 @end
