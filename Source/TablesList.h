@@ -123,5 +123,6 @@ enum sp_table_types
 // Setters
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
+- (BOOL)selectTableOrViewWithName:(NSString *)theName;
 
 @end

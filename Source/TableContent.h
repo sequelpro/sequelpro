@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit_bundled/MCPKit_bundled.h>
 
-@class CMMCPConnection, CMMCPResult, CMCopyTable;
+@class CMMCPConnection, CMMCPResult, CMCopyTable, SPTextAndLinkCell;
 
 @interface TableContent : NSObject 
 {	
@@ -55,8 +55,9 @@
 	CMMCPConnection *mySQLConnection;
 	
 	NSString *selectedTable, *usedQuery;
-	NSMutableArray *fullResult, *filteredResult, *keys, *oldRow;
+	NSMutableArray *fullResult, *filteredResult, *dataColumns, *keys, *oldRow;
 	NSString *compareType, *lastField;
+	NSString *targetFilterColumn, *targetFilterValue;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
@@ -87,6 +88,7 @@
 
 //additional methods
 - (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
 - (IBAction)stepLimitRows:(id)sender;
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
