@@ -1464,29 +1464,10 @@
 		} else {
 
 			if (! [tempValue isKindOfClass:[NSData class]] ) {
-				// Escape special characters (in WHERE statement!)
-				for ( j = 0 ; j < [value length] ; j++ ) {
-					if ( [value characterAtIndex:j] == '\\' ) {
-						[value insertString:@"\\" atIndex:j];
-						j++;
-					}
-				}
-				[value setString:[mySQLConnection prepareString:value]];
-				for ( j = 0 ; j < [value length] ; j++ ) {
-					if ( [value characterAtIndex:j] == '%' ||
-						[value characterAtIndex:j] == '_' ) {
-						[value insertString:@"\\" atIndex:j];
-						j++;
-					}
-				}
-				[value setString:[NSString stringWithFormat:@"'%@'", value]];
+				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:value]]];
 			}
-			// columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
-			// if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
-				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
-			// } else {
-			// 	[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
-			// }
+
+			[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 		}
 	}
 	if ( setLimit )
