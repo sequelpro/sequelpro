@@ -44,7 +44,6 @@
 					<characters key="NS.bytes">View</characters>
 				</object>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
-				<string key="NSWindowContentMinSize">{560, 200}</string>
 				<object class="NSView" key="NSWindowView" id="559857537">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">4370</int>
@@ -686,7 +685,6 @@
 					<string key="NSFrameSize">{667, 416}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
-				<string key="NSMinSize">{560, 222}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName"/>
 			</object>
@@ -1314,7 +1312,7 @@
 					<string>{{452, 157}, {667, 416}}</string>
 					<reference ref="9"/>
 					<integer value="0" id="8"/>
-					<reference ref="9"/>
+					<boolean value="NO"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{560, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
