@@ -2058,14 +2058,17 @@
 /**
  * Invoked when the connection fails and the framework needs to know how to proceed.
  */
-- (MCPConnectionCheck)connectionFailed:(id)connection
+- (MCPConnectionCheck)connectionLost:(id)connection
 {
 	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
-	
+
 	[NSApp endSheet:connectionErrorDialog];
 	[connectionErrorDialog orderOut:nil];
-		
+
+	// If "disconnect" was selected, trigger a window close.
+	if (connectionErrorCode == MCPConnectionCheckDisconnect) [tableWindow close];
+
 	return connectionErrorCode;
 }
 

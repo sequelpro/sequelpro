@@ -108,6 +108,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
+
+		// Default to allowing queries to be reattempted if they fail due to connection issues
+		retryAllowed = YES;
 		
 		// Obtain SEL references
 		willQueryStringSEL = @selector(willQueryString:connection:);
@@ -253,9 +256,19 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		if (mConnection == NULL) return NO;
 	}
 
-	// Ensure the custom timeout option is set
 	if (mConnection != NULL) {
+
+		// Ensure the custom timeout option is set
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+		
+		// Set automatic reconnection for use with mysql_ping
+		// TODO: Automatic reconnection is currently used by MCPConnection, using thread IDs to
+		// detect when this has occurred.  Custom reconnection may be preferable.
+		my_bool trueBool = TRUE;
+		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &trueBool);
+
+		// Ensure compression is enabled where possible
+		mysql_options(mConnection, MYSQL_OPT_COMPRESS, 0);
 	}
 	
 	// Set the host as appropriate
@@ -309,11 +322,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		
 		return mConnected = NO;
 	}
-	
-	// Register notification if a query was sent to the MySQL connection
-	// to be able to identify the sender of that query
-	//[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:) name:@"SMySQLQueryWillBePerformed" object:nil];
-		
+
 	// Start the keepalive timer
 	[self startKeepAliveTimerResettingState:YES];
 	
@@ -415,9 +424,6 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		
 		if (mConnection != NULL) {
 			
-			// Set a connection timeout for the new connection
-			mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
-			
 			// Attempt to reestablish the connection
 			[self connect];
 		}
@@ -488,8 +494,10 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckRetry;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(connectionLost:)]) {
+		if (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) {
 			failureDecision = [delegate connectionLost:self];
+		} else {
+			failureDecision = MCPConnectionCheckDisconnect;
 		}
 		
 		switch (failureDecision) {
@@ -668,6 +676,18 @@ static void forcePingTimeout(int signalNumber)
 		}
 	}
 }
+
+/**
+ * Allow controlling over whether queries are allowed to retry after a connection failure.
+ * This defaults to YES on init, and is intended to allow temporary disabling in situations
+ * where the query result is checked and displayed to the user without any repurcussions on
+ * failure.
+ */
+- (void)setAllowQueryRetries:(BOOL)allow
+{
+	retryAllowed = allow;
+}
+
 
 #pragma mark -
 #pragma mark Server versions
@@ -1244,7 +1264,7 @@ static void forcePingTimeout(int signalNumber)
 		// If this query has failed once already, check the connection
 		if (isQueryRetry) {
 			if (![self checkConnection]) {
-				
+
 				// Notify that the query has been performed
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 				return nil;
@@ -1281,7 +1301,7 @@ static void forcePingTimeout(int signalNumber)
 			
 			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);
-			
+
 			// If the error was a connection error, retry once
 			if (!isQueryRetry && retryAllowed && [MCPConnection isErrorNumberConnectionError:queryErrorId]) {
 				isQueryRetry = YES;

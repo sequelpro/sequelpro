@@ -141,6 +141,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (void)keepAlive:(NSTimer *)theTimer;
 - (void)threadedKeepAlive;
 - (void)restoreConnectionDetails;
+- (void)setAllowQueryRetries:(BOOL)allow;
 
 // Server versions
 - (int)serverMajorVersion;

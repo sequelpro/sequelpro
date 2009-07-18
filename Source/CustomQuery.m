@@ -425,7 +425,10 @@
 			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 		}
 	}
-	
+
+	// Disable automatic query retries on failure for the custom queries
+	[mySQLConnection setAllowQueryRetries:NO];
+
 	long queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
@@ -623,6 +626,8 @@
 		}
 	}
 
+	// Restore automatic query retries
+	[mySQLConnection setAllowQueryRetries:YES];
 
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !theResult || ![theResult numOfRows] ) {
