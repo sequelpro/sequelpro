@@ -1400,7 +1400,7 @@
 	NSMutableString *argument = [NSMutableString string];
 	// NSString *columnType;
 	NSArray *columnNames;
-	int i,j;
+	int i;
 	
 	if ( row == -1 )
 		return @"";
