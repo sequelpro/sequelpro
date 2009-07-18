@@ -24,7 +24,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @interface NSData (SPDataAdditions)
 
 - (NSString *) base64EncodingWithLineLength:(unsigned int)lineLength;

@@ -35,5 +35,6 @@
 #import <MCPKit/MCPNumber.h>
 #import <MCPKit/MCPResultPlus.h>
 #import <MCPKit/MCPFastQueries.h>
+#import <MCPKit/MCPConnectionProxy.h>
 
 #import "mysql.h"

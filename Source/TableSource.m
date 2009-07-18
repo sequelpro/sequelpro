@@ -30,7 +30,6 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 
-
 @implementation TableSource
 
 /*

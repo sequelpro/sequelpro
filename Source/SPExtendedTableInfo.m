@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPExtendedTableInfo.h"
 #import "SPTableData.h"
 #import "RegexKitLite.h"

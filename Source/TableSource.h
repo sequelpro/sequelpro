@@ -26,8 +26,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@interface TableSource : NSObject {
-
+@interface TableSource : NSObject 
+{
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 

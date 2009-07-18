@@ -30,8 +30,6 @@
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
 
-
-
 #pragma mark -
 #pragma mark lex init
 

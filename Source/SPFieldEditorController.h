@@ -24,9 +24,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-
-@interface SPFieldEditorController : NSWindowController {
-	
+@interface SPFieldEditorController : NSWindowController 
+{	
 	IBOutlet id editSheetProgressBar;
 	IBOutlet id editSheetSegmentControl;
 	IBOutlet id editSheetQuickLookButton;
@@ -36,17 +35,21 @@
 	IBOutlet id editTextScrollView;
 	IBOutlet id hexTextScrollView;
 	IBOutlet id editSheet;
+	IBOutlet id editSheetCancelButton;
+	IBOutlet id editSheetOkButton;
+	IBOutlet id editSheetOpenButton;
 	
 	id sheetEditData;
-	
-	NSString *stringValue;
-	
 	BOOL editSheetWillBeInitialized;
 	BOOL isBlob;
 	int quickLookCloseMarker;
 	NSStringEncoding encoding;
+	NSString *stringValue;
+	NSString *tmpFileName;
 	
+	int counter;
 	
+	NSUserDefaults *prefs;
 }
 
 - (IBAction)closeEditSheet:(id)sender;
@@ -57,7 +60,7 @@
 - (IBAction)quickLookFormatButton:(id)sender;
 - (IBAction)dropImage:(id)sender;
 
-- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding isObjectBlob:(BOOL)isFieldBlob withWindow:(NSWindow *)tableWindow;
+- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;
 
 - (void)processPasteImageData;
 - (void)processUpdatedImageData:(NSData *)data;
@@ -67,7 +70,5 @@
 
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
 - (void)textViewDidChangeSelection:(NSNotification *)notification;
-
-- (void)clean;
 
 @end

@@ -25,7 +25,6 @@
 #import "SPEditSheetTextView.h"
 #import "SPTextViewAdditions.h"
 
-
 @implementation SPEditSheetTextView
 
 - (void) keyDown:(NSEvent *)theEvent

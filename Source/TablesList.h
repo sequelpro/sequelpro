@@ -37,8 +37,8 @@ enum sp_table_types
 
 @class CMMCResult, MCPConnection;
 
-@interface TablesList : NSObject {
-
+@interface TablesList : NSObject 
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;

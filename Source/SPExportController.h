@@ -25,8 +25,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@interface SPExportController : NSObject {
-
+@interface SPExportController : NSObject 
+{
 	// Table Document
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;

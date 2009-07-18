@@ -37,14 +37,13 @@
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{364, 195}, {667, 416}}</string>
-				<int key="NSWTFlags">1618477056</int>
+				<int key="NSWTFlags">544735232</int>
 				<string key="NSWindowTitle">Field Editor</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<object class="NSMutableString" key="NSViewClass">
 					<characters key="NS.bytes">View</characters>
 				</object>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
-				<string key="NSWindowContentMinSize">{560, 200}</string>
 				<object class="NSView" key="NSWindowView" id="559857537">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">4370</int>
@@ -464,6 +463,7 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="983787914"/>
+									<reference key="NSNextKeyView" ref="459839028"/>
 									<reference key="NSDocView" ref="459839028"/>
 									<reference key="NSBGColor" ref="940290613"/>
 									<object class="NSCursor" key="NSCursor" id="956874367">
@@ -496,6 +496,7 @@
 							</object>
 							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSNextKeyView" ref="1068411389"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="977735067"/>
 							<reference key="NSHScroller" ref="426249328"/>
@@ -612,6 +613,7 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="604699677"/>
+									<reference key="NSNextKeyView" ref="702566211"/>
 									<reference key="NSDocView" ref="702566211"/>
 									<reference key="NSBGColor" ref="940290613"/>
 									<reference key="NSCursor" ref="956874367"/>
@@ -641,6 +643,7 @@
 							</object>
 							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSNextKeyView" ref="967441740"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="699979333"/>
 							<reference key="NSHScroller" ref="393370468"/>
@@ -682,9 +685,8 @@
 					<string key="NSFrameSize">{667, 416}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
-				<string key="NSMinSize">{560, 222}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
-				<string key="NSFrameAutosaveName">SPEditSheet</string>
+				<string key="NSFrameAutosaveName"/>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -881,6 +883,54 @@
 						<reference key="destination" ref="172882781"/>
 					</object>
 					<int key="connectionID">63</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">quickLookFormatButton:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="364525587"/>
+					</object>
+					<int key="connectionID">64</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">quickLookFormatButton:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="800624537"/>
+					</object>
+					<int key="connectionID">65</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">quickLookFormatButton:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="964663224"/>
+					</object>
+					<int key="connectionID">66</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetOkButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="315097820"/>
+					</object>
+					<int key="connectionID">67</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetCancelButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="760872156"/>
+					</object>
+					<int key="connectionID">68</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetOpenButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="16151679"/>
+					</object>
+					<int key="connectionID">69</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1258,11 +1308,11 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{232, 340}, {667, 416}}</string>
-					<string>{{232, 340}, {667, 416}}</string>
+					<string>{{452, 157}, {667, 416}}</string>
+					<string>{{452, 157}, {667, 416}}</string>
 					<reference ref="9"/>
 					<integer value="0" id="8"/>
-					<reference ref="9"/>
+					<boolean value="NO"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{560, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1282,7 +1332,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{543, -49}, {126, 173}}</string>
+					<string>{{769, 16}, {126, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1351,7 +1401,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">63</int>
+			<int key="maxID">69</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1379,6 +1429,14 @@
 			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPEditSheetTextView</string>
+					<string key="superclassName">NSTextView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/SPEditSheetTextView.h</string>
+					</object>
+				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPFieldEditorController</string>
 					<string key="superclassName">NSWindowController</string>
@@ -1409,6 +1467,9 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>editImage</string>
 							<string>editSheet</string>
+							<string>editSheetCancelButton</string>
+							<string>editSheetOkButton</string>
+							<string>editSheetOpenButton</string>
 							<string>editSheetProgressBar</string>
 							<string>editSheetQuickLookButton</string>
 							<string>editSheetSegmentControl</string>
@@ -1420,6 +1481,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

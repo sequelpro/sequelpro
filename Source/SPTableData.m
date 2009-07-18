@@ -32,7 +32,6 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 
-
 @implementation SPTableData
 
 

@@ -33,8 +33,8 @@
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
 
-@interface CustomQuery : NSObject {
-
+@interface CustomQuery : NSObject 
+{
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;

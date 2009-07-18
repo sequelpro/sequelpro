@@ -24,8 +24,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @interface SPTableView : NSTableView
-
 
 @end

@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class MCPConnection, MCPResult, CMCopyTable;
+@class CMCopyTable;
 
 @interface SPTableRelations : NSObject 
 {	
