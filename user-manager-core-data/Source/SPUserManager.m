@@ -19,8 +19,6 @@
 @interface SPUserManager (PrivateMethods)
 - (void)_initializeTree:(NSArray *)items;
 - (void)_initializeUsers;
-- (void)_initializeDatabaseList;
-- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items;
 - (void)_selectParentFromSelection;
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
 - (NSManagedObject *)_createNewSPUser;
@@ -28,7 +26,6 @@
 - (BOOL)deleteUsers:(NSArray *)deletedUsers;
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
 - (BOOL)checkAndDisplayMySqlError;
-
 @end
 
 @implementation SPUserManager
@@ -59,16 +56,6 @@
 											 selector:@selector(contextDidSave:) 
 												 name:NSManagedObjectContextDidSaveNotification 
 											   object:nil];
-	
-	// Remove the Schema Privileges for now
-//	[tabView removeTabViewItem:[tabView tabViewItemAtIndex:2]];
-	
-	// Set up the sorting for the NSArrayControllers
-	NSSortDescriptor *sd = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
-	[selectedPrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
-	[availablePrivsController setSortDescriptors:[NSArray arrayWithObject:sd]];
-	[sd release];
-	
 	[tabView selectTabViewItemAtIndex:0];
 	
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
@@ -76,32 +63,8 @@
 	
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
-	
-	[self _initializeDatabaseList];
-	
-	availablePrivs = [[NSMutableArray alloc] init];
-	selectedPrivs = [[NSMutableArray alloc] init];
-	
+		
 	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
-}
-
-- (void)_initializeDatabaseList
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	MCPResult *result = [[self connection] listDBs];
-	if (dbList == nil)
-	{
-		dbList = [[NSMutableArray alloc] init];
-	}
-	if ([result numOfRows])
-	{
-		[result dataSeek:0];
-	}
-	for (int i = 0; i < [result numOfRows]; i++)
-	{
-		[databaseList addObject:[result fetchRowAsDictionary]];
-	}
-	[pool release];
 }
 
 - (void)_initializeUsers
@@ -109,6 +72,7 @@
 	isInitializing = TRUE;
 	
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
@@ -120,16 +84,16 @@
 		// Go to the beginning
 		[result dataSeek:0];
 	}
-	[users release], users = nil;
-	users = [[NSMutableArray alloc] init];
+	
 	for(int i = 0; i < rows; i++)
 	{
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
+	
 	[usersResultArray addObjectsFromArray:resultAsArray];
 	
 	[self _initializeTree:usersResultArray];
-	[self _initializeSchemaPrivilegesWithItems:usersResultArray];
+	
 	[result release];
 	[pool release];
 	isInitializing = FALSE;
@@ -203,37 +167,6 @@
 	
 }
 
-- (void)_initializeSchemaPrivilegesWithItems:(NSArray *)items
-{
-	NSDictionary *firstItem = [items objectAtIndex:0];
-	NSArray *keys = [firstItem allKeys];
-	for(int index = 0; index < [keys count]; index++)
-	{
-		NSString *key = [keys objectAtIndex:index];
-		if ([key hasSuffix:@"_priv"])
-		{
-			NSString *newKey = [key substringToIndex:[key rangeOfString:@"_priv"].location];
-			[availablePrivsController addObject:[NSDictionary dictionaryWithObject:newKey forKey:@"name"]];			
-		}
-		
-	}
-}
-
-
-/**
- Returns the support folder for the application, used to store the Core Data
- store file.  This code uses a folder named "CoreDataTutorial" for
- the content, either in the NSApplicationSupportDirectory location or (if the
- former cannot be found), the system's temporary directory.
- */
-
-- (NSString *)applicationSupportFolder {
-	
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
-    return [basePath stringByAppendingPathComponent:@"SequelPro"];
-}
-
 /**
  Creates, retains, and returns the managed object model for the application 
  by merging all of the models found in the application bundle.
@@ -262,18 +195,11 @@
         return persistentStoreCoordinator;
     }
 	
-    NSFileManager *fileManager;
-    NSString *applicationSupportFolder = nil;
     NSError *error;
     
-    fileManager = [NSFileManager defaultManager];
-    applicationSupportFolder = [self applicationSupportFolder];
-    if ( ![fileManager fileExistsAtPath:applicationSupportFolder isDirectory:NULL] ) {
-        [fileManager createDirectoryAtPath:applicationSupportFolder attributes:nil];
-    }
-    
     persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
-    if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error]){
+    if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error])
+	{
         [[NSApplication sharedApplication] presentError:error];
     }    
 	
@@ -325,14 +251,6 @@
     [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
     [managedObjectModel release], managedObjectModel = nil;
 	
-	[modifiedUsers release], modifiedUsers = nil;
-	[addedUsers release],addedUsers = nil;
-	[removedUsers release],removedUsers = nil;
-	[dbList release],dbList = nil;
-	[availablePrivs release],availablePrivs = nil;
-	[selectedPrivs release],selectedPrivs = nil;
-	[allPrivs release],allPrivs = nil;
-	[users release],users = nil;
 	[mySqlConnection release];
 	[super dealloc];
 }
@@ -388,9 +306,6 @@
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	NSLog(@"observeValueForKeyPath");
-	NSLog(@"%@", change);
-	NSLog(@"%d", isInitializing);
 	if ([[object class] isKindOfClass:[NSManagedObject class]] && !isInitializing)
 	{
 		NSManagedObject *parent = nil;
@@ -439,19 +354,6 @@
 	{
 		[window close];
 	}
-}
-
-// Schema Privileges Actions
-- (IBAction)addToSelected:(id)sender
-{
-	[selectedPrivsController addObjects:[availablePrivsController selectedObjects]];
-	[availablePrivsController removeObjects:[availablePrivsController selectedObjects]];
-}
-
-- (IBAction)addToAvailable:(id)sender
-{
-	[availablePrivsController addObjects:[selectedPrivsController selectedObjects]];
-	[selectedPrivsController removeObjects:[selectedPrivsController selectedObjects]];
 }
 
 - (IBAction)addUser:(id)sender
@@ -525,11 +427,7 @@
 // Notifications
 - (void)contextDidSave:(NSNotification *)notification
 {
-	if (isInitializing)
-	{
-		NSLog(@"ContextDidSave during initializing");
-	} 
-	else
+	if (!isInitializing)
 	{
 		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
 		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
@@ -548,8 +446,7 @@
 		if ([deleted count] > 0)
 		{
 			[self deleteUsers:deleted];
-		}
-		
+		}		
 	}
 }
 
@@ -688,5 +585,10 @@
 	} else {
 		return TRUE;
 	}
+}
+
+-(void) tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	
 }
 @end
