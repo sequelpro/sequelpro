@@ -52,7 +52,7 @@
 - (unsigned int)numOfFields;
 
 // Rows
-- (void)dataSeek:(my_ulonglong) row;
+- (void)dataSeek:(my_ulonglong)row;
 - (id)fetchRowAsType:(MCPReturnType) aType;
 - (NSArray *)fetchRowAsArray;
 - (NSDictionary *)fetchRowAsDictionary;
@@ -78,8 +78,8 @@
 // Other
 - (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length;
 - (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags;
-- (NSString *)find_charsetName:(unsigned int)charsetnr;
-- (NSString *)find_charsetCollation:(unsigned int)charsetnr;
-- (unsigned int)find_charsetMaxByteLengthPerChar:(unsigned int)charsetnr;
+- (NSString *)findCharsetName:(unsigned int)charsetnr;
+- (NSString *)findCharsetCollation:(unsigned int)charsetnr;
+- (unsigned int)findCharsetMaxByteLengthPerChar:(unsigned int)charsetnr;
 
 @end

@@ -396,6 +396,7 @@ const OUR_CHARSET our_charsets60[] =
 	}
 	
 	theRow = mysql_fetch_row(mResult);
+	
 	if (theRow == NULL) {
 		return nil;
 	}
@@ -778,7 +779,7 @@ const OUR_CHARSET our_charsets60[] =
 		/* Width of column (real length in bytes) */
 		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].length] forKey:@"byte_length"];
 		/* Width of column (as in create)*/
-		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].length/[self find_charsetMaxByteLengthPerChar:theField[i].charsetnr]] 
+		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].length/[self findCharsetMaxByteLengthPerChar:theField[i].charsetnr]] 
 						   forKey:@"char_length"];
 		/* Max width (bytes) for selected set */
 		[fieldStructure setObject:[NSNumber numberWithUnsignedLongLong:theField[i].max_length] forKey:@"max_byte_length"];
@@ -810,8 +811,8 @@ const OUR_CHARSET our_charsets60[] =
 		
 		/* Character set */
 		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].charsetnr] forKey:@"charsetnr"];
-		[fieldStructure setObject:[self find_charsetName:theField[i].charsetnr] forKey:@"charset_name"];
-		[fieldStructure setObject:[self find_charsetCollation:theField[i].charsetnr] forKey:@"charset_collation"];
+		[fieldStructure setObject:[self findCharsetName:theField[i].charsetnr] forKey:@"charset_name"];
+		[fieldStructure setObject:[self findCharsetCollation:theField[i].charsetnr] forKey:@"charset_collation"];
 		
 		/* Table type */
 		[fieldStructure setObject:[self mysqlTypeToStringForType:theField[i].type 
@@ -1163,7 +1164,7 @@ const OUR_CHARSET our_charsets60[] =
 		case MYSQL_TYPE_BLOB:
 		{
 			BOOL isBlob = (charsetnr == MAGIC_BINARY_CHARSET_NR);
-			switch ((int)length/[self find_charsetMaxByteLengthPerChar:charsetnr]) {
+			switch ((int)length/[self findCharsetMaxByteLengthPerChar:charsetnr]) {
 				case 255: return isBlob? @"TINYBLOB":@"TINYTEXT";
 				case 65535: return isBlob? @"BLOB":@"TEXT";
 				case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
@@ -1284,7 +1285,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Convert a mysql_charsetnr into a charset name as string
  */
-- (NSString *)find_charsetName:(unsigned int)charsetnr
+- (NSString *)findCharsetName:(unsigned int)charsetnr
 {
 	const OUR_CHARSET * c = our_charsets60;
 	
@@ -1300,7 +1301,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Convert a mysql_charsetnr into a collation name as string
  */
-- (NSString *)find_charsetCollation:(unsigned int)charsetnr
+- (NSString *)findCharsetCollation:(unsigned int)charsetnr
 {
 	const OUR_CHARSET * c = our_charsets60;
 	
@@ -1317,7 +1318,7 @@ const OUR_CHARSET our_charsets60[] =
  * Return the max byte length to store a char by using
  * a specific mysql_charsetnr
  */
-- (unsigned int)find_charsetMaxByteLengthPerChar:(unsigned int)charsetnr
+- (unsigned int)findCharsetMaxByteLengthPerChar:(unsigned int)charsetnr
 {
 	const OUR_CHARSET * c = our_charsets60;
 	
