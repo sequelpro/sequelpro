@@ -287,6 +287,11 @@
 	// Connection delegate must be set before actual connection attempt is made
 	[mySQLConnection setDelegate:tableDocument];
 
+	// Set options from preferences
+	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:@"ConnectionTimeoutValue"] intValue]];
+	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:@"UseKeepAlive"] boolValue]];
+	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:@"KeepAliveInterval"] floatValue]];
+
 	// Connect
 	[mySQLConnection connect];
 

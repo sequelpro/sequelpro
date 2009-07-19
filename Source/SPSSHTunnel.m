@@ -191,7 +191,7 @@
 		return;
 	}
 
-	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
+	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
 	BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
 	double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];

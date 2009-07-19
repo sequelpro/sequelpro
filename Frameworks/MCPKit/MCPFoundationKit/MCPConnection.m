@@ -100,7 +100,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		// Initialize ivar defaults
 		connectionTimeout = 10;
 		useKeepAlive      = YES; 
-		keepAliveInterval = 0;   
+		keepAliveInterval = 60;   
 		
 		connectionThreadId     = 0;
 		maxAllowedPacketSize   = -1;
@@ -260,7 +260,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 
 		// Ensure the custom timeout option is set
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
-		
+
 		// Set automatic reconnection for use with mysql_ping
 		// TODO: Automatic reconnection is currently used by MCPConnection, using thread IDs to
 		// detect when this has occurred.  Custom reconnection may be preferable.
