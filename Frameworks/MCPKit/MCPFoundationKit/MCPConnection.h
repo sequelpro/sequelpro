@@ -67,6 +67,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	unsigned int	 mConnectionFlags; /* The flags to be used for the connection to the database. */
 	id				 delegate;         /* Connection delegate */
 	
+	NSLock			 *queryLock;	   /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
+
 	BOOL useKeepAlive;
 	int connectionTimeout;
 	float keepAliveInterval;
@@ -83,6 +85,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	int currentProxyState;
 	
 	double lastQueryExecutionTime;
+	double lastQueryExecutedAtTime;
 	NSString *lastQueryErrorMessage;
 	unsigned int lastQueryErrorId;
 	my_ulonglong lastQueryAffectedRows;
@@ -93,6 +96,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	
 	NSTimer *keepAliveTimer;
 	NSDate *lastKeepAliveSuccess;
+	uint64_t connectionStartTime;
 	
 	BOOL retryAllowed;
 	BOOL delegateQueryLogging;
@@ -103,12 +107,14 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	IMP willQueryStringPtr;
 	IMP stopKeepAliveTimerPtr;
 	IMP startKeepAliveTimerResettingStatePtr;
+	IMP timeConnectedPtr;
 	
 	// Selectors
 	SEL cStringSEL;
 	SEL willQueryStringSEL;
 	SEL stopKeepAliveTimerSEL;
 	SEL startKeepAliveTimerResettingStateSEL;
+	SEL timeConnectedSEL;
 }
 
 @property (readwrite, assign) id delegate;
@@ -142,6 +148,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (void)threadedKeepAlive;
 - (void)restoreConnectionDetails;
 - (void)setAllowQueryRetries:(BOOL)allow;
+- (double)timeConnected;
 
 // Server versions
 - (int)serverMajorVersion;

@@ -89,6 +89,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		mEncoding = NSISOLatin1StringEncoding;
 		mConnectionFlags = kMCPConnectionDefaultOption;
 		
+		queryLock = [[NSLock alloc] init];
+		
 		connectionHost = nil;
 		connectionLogin = nil;
 		connectionSocket = nil;
@@ -96,6 +98,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		keepAliveTimer = nil;
 		connectionProxy = nil;
 		lastKeepAliveSuccess = nil;
+		connectionStartTime = -1;
+		lastQueryExecutedAtTime = INT_MAX;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -309,6 +313,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	mConnected = YES;
+	connectionStartTime = mach_absolute_time();
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
 	connectionThreadId = mConnection->thread_id;
 	[self timeZone]; // Getting the timezone used by the server.
@@ -524,14 +529,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 }
 
 /**
- * The current versions of MCPKit (and up to and including 3.0.1) use MySQL 4.1.12; this has an issue with
- * mysql_ping where a connection which is terminated will cause mysql_ping never to respond, even when
- * connection timeouts are set.  Full details of this issue are available at http://bugs.mysql.com/bug.php?id=9678 ;
- * this bug was fixed in 4.1.22 and later versions.
- * This issue can be replicated by connecting to a remote host, and then configuring a firewall on that host
- * to drop all packets on the connected port - mysql_ping and so Sequel Pro will hang.
- * Until the client libraries are updated, this provides a drop-in wrapper for mysql_ping, which calls mysql_ping
- * while running a SIGALRM to enforce the specified connection time.  This is low-level but effective.
+ * This function provides a method of pinging the remote server while running a SIGALRM
+ * to enforce the specified connection time.  This is low-level but effective, and required
+ * because low-level net reads can block indefintely if the remote server disappears or on
+ * network issues - setting the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix"
+ * ping, but cause long queries to be terminated.
  * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
  */
 - (BOOL) pingConnection
@@ -546,6 +548,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	timeoutAction.sa_flags = 0;
 	sigaction(SIGALRM, &timeoutAction, NULL);
 	alarm(connectionTimeout+1);
+
+	[queryLock lock];
 	
 	// Set up a "restore point", returning 0; if longjmp is used later with this reference, execution
 	// jumps back to this point and returns a nonzero value, so this function evaluates to false when initially
@@ -560,7 +564,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		
 		// Run mysql_ping, which returns 0 on success, and otherwise an error.
 		pingSuccess = (BOOL)(! mysql_ping(mConnection));
-		
+
 		// If the ping failed within a second, try another one; this is because a terminated-but-then
 		// restored connection is at times restored or functional after a ping, but the ping still returns
 		// an error.  This additional check ensures the returned status is correct with minimal other effect.
@@ -569,6 +573,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		}
 	}
 	
+	[queryLock unlock];
+
 	// Reset and clear the SIGALRM used to check connection timeouts.
 	alarm(0);
 	timeoutAction.sa_handler = SIG_IGN;
@@ -649,7 +655,12 @@ static void forcePingTimeout(int signalNumber)
 - (void)threadedKeepAlive
 {
 	if (!mConnected) return;
-	
+
+	if (![queryLock tryLock]) return;
+	[queryLock unlock];
+
+	// Don't wrap this ping in a lock - will block main thread on read issues, and can't use
+	// the setjmp/lngjmp safety net in a thread.
 	mysql_ping(mConnection);
 	
 	if (lastKeepAliveSuccess) {
@@ -667,6 +678,7 @@ static void forcePingTimeout(int signalNumber)
 - (void)restoreConnectionDetails
 {
 	connectionThreadId = mConnection->thread_id;
+	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
 	
 	if (delegate && [delegate valueForKey:@"_encoding"]) {
@@ -688,6 +700,20 @@ static void forcePingTimeout(int signalNumber)
 	retryAllowed = allow;
 }
 
+/**
+ * Retrieve the time elapsed since the connection was established, in seconds.
+ * This time is retrieved in a monotonically increasing fashion and is high
+ * precision; it is used internally for query timing, and is reset on reconnections.
+ */
+- (double)timeConnected
+{
+	if (connectionStartTime == -1) return -1;
+
+	uint64_t currentTime_t = mach_absolute_time() - connectionStartTime;
+	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+
+	return (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9);
+}
 
 #pragma mark -
 #pragma mark Server versions
@@ -1008,11 +1034,14 @@ static void forcePingTimeout(int signalNumber)
 	
 	if (mConnected) {
 		const char	 *theDBName = [self cStringFromString:dbName];
+		[queryLock lock];
 		if (0 == mysql_select_db(mConnection, theDBName)) {
+			[queryLock unlock];
 			[self startKeepAliveTimerResettingState:YES];
 			
 			return YES;
 		}
+		[queryLock unlock];
 	}
 	
 	[self setLastErrorMessage:nil];
@@ -1190,8 +1219,7 @@ static void forcePingTimeout(int signalNumber)
 - (MCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
 {
 	MCPResult		*theResult = nil;
-	uint64_t		queryStartTime, queryExecutionTime_t;
-	Nanoseconds		queryExecutionTime;
+	double			queryStartTime, queryExecutionTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
 	int				queryResultCode;
@@ -1215,12 +1243,16 @@ static void forcePingTimeout(int signalNumber)
 	
 	(void)(*stopKeepAliveTimerPtr)(self, stopKeepAliveTimerSEL);
 	
-	// queryStartTime = clock();
-	
 	// Inform the delegate about the query if logging is enabled and delegate responds to willQueryString:connection:
 	if (delegateQueryLogging && delegateResponseToWillQueryString)
 		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
 	
+	// If thirty seconds have elapsed since the last query, check the connection.  This provides
+	// a balance between keeping high read/write timeouts for long queries, network issues, and
+	// minimising the impact of performing lots of additional checks.
+	if ([self timeConnected] - lastQueryExecutedAtTime > 30
+		&& ![self checkConnection]) return nil;
+
 	// Derive the query string in the correct encoding
 	NSData *d = NSStringDataUsingLossyEncoding(query, encoding, 1);
 	theCQuery = [d bytes];
@@ -1271,18 +1303,23 @@ static void forcePingTimeout(int signalNumber)
 			}
 		}
 		
+		[queryLock lock];
+
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
-		queryStartTime = mach_absolute_time();
+		queryStartTime = [self timeConnected];
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
-		queryExecutionTime_t = (mach_absolute_time() - queryStartTime);
-		queryExecutionTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(queryExecutionTime_t));
+		lastQueryExecutedAtTime = [self timeConnected];
+		queryExecutionTime = lastQueryExecutedAtTime - queryStartTime;
+		[queryLock unlock];
 		
 		// On success, capture the results
 		if (0 == queryResultCode) {
 			
 			if (mysql_field_count(mConnection) != 0) {
 				theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+
+				[queryLock unlock];
 				
 				// Ensure no problem occurred during the result fetch
 				if (mysql_errno(mConnection) != 0) {
@@ -1290,6 +1327,8 @@ static void forcePingTimeout(int signalNumber)
 					queryErrorId = mysql_errno(mConnection);
 					break;
 				}
+			} else {
+				[queryLock unlock];
 			}
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
@@ -1298,6 +1337,7 @@ static void forcePingTimeout(int signalNumber)
 			
 			// On failure, set the error messages and IDs
 		} else {
+			[queryLock unlock];
 			
 			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);
@@ -1325,7 +1365,7 @@ static void forcePingTimeout(int signalNumber)
 	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
 	if (queryErrorMessage) [queryErrorMessage release]; 
 	lastQueryAffectedRows = queryAffectedRows;
-	lastQueryExecutionTime = (((double)UnsignedWideToUInt64(queryExecutionTime)) * 1e-9);
+	lastQueryExecutionTime = queryExecutionTime;
 	
 	// If an error occurred, inform the delegate
 	if (queryResultCode & delegateResponseToWillQueryString)
@@ -1401,6 +1441,7 @@ static void forcePingTimeout(int signalNumber)
 	
 	[self startKeepAliveTimerResettingState:YES];
 	
+	[queryLock lock];
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_dbs(mConnection, NULL)) {
 			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
@@ -1419,6 +1460,7 @@ static void forcePingTimeout(int signalNumber)
 			[theResult init];
 		}        
 	}
+	[queryLock unlock];
 	
 	if (theResult) {
 		[theResult autorelease];
@@ -1455,7 +1497,8 @@ static void forcePingTimeout(int signalNumber)
 	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
 	
 	[self startKeepAliveTimerResettingState:YES];
-	
+
+	[queryLock lock];
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_tables(mConnection, NULL)) {
 			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
@@ -1473,6 +1516,8 @@ static void forcePingTimeout(int signalNumber)
 			[theResult init];
 		}
 	}
+	[queryLock unlock];
+
 	if (theResult) {
 		[theResult autorelease];
 	}
@@ -1576,12 +1621,14 @@ static void forcePingTimeout(int signalNumber)
 	MCPResult *theResult = [MCPResult alloc];
 	MYSQL_RES *theResPtr;
 	
+	[queryLock lock];
 	if (theResPtr = mysql_list_processes(mConnection)) {
 		[theResult initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
 	} 
 	else {
 		[theResult init];
 	}
+	[queryLock unlock];
 	
 	if (theResult) {
 		[theResult autorelease];
@@ -1749,6 +1796,7 @@ static void forcePingTimeout(int signalNumber)
 	if ([self serverMajorVersion] == 3) queryString = "SHOW VARIABLES LIKE 'max_allowed_packet'";
 	else queryString = "SELECT @@global.max_allowed_packet";
 	
+	[queryLock lock];
 	if (0 == mysql_query(mConnection, queryString)) {
 		if (mysql_field_count(mConnection) != 0) {
 			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
@@ -1756,10 +1804,12 @@ static void forcePingTimeout(int signalNumber)
 			[r autorelease];
 			if([a count]) {
 				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] intValue];
+				[queryLock unlock];
 				return true;
 			}
 		}
 	}
+	[queryLock unlock];
 	
 	return false;
 }
@@ -1794,7 +1844,10 @@ static void forcePingTimeout(int signalNumber)
 {
 	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return maxAllowedPacketSize;
 	
+	[queryLock lock];
 	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
+	[queryLock unlock];
+
 	// Inform the user via a log entry about that change according to reset value
 	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:connection:)])
 		if(reset)
@@ -1810,7 +1863,13 @@ static void forcePingTimeout(int signalNumber)
  */
 - (BOOL)isMaxAllowedPacketEditable
 {
-	return(!mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet"));
+	BOOL isEditable;
+
+	[queryLock lock];
+	isEditable = !mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet");
+	[queryLock unlock];
+
+	return isEditable;
 }
 
 #pragma mark -
@@ -1910,6 +1969,7 @@ static void forcePingTimeout(int signalNumber)
 	if (connectionSocket) [connectionSocket release];
 	if (connectionPassword) [connectionPassword release];
 	if (lastKeepAliveSuccess) [lastKeepAliveSuccess release];
+	[queryLock release];
 	
 	[super dealloc];
 }
