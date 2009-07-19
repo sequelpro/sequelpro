@@ -1051,6 +1051,39 @@
 	statusLoaded = !reload;
 }
 
+/**
+ * Select a table or view using the provided name; returns YES if the
+ * supplied name could be selected, or NO if not.
+ */
+- (BOOL)selectTableOrViewWithName:(NSString *)theName
+{
+	int i, tableType;
+	int itemIndex = NSNotFound;
+	int caseInsensitiveItemIndex = NSNotFound;
+
+	// Loop through the tables/views to find the desired item
+	for (i = 0; i < [tables count]; i++) {
+		tableType = [[tableTypes objectAtIndex:i] intValue];
+		if (tableType != SP_TABLETYPE_TABLE && tableType != SP_TABLETYPE_VIEW) continue;
+		if ([[tables objectAtIndex:i] isEqualToString:theName]) {
+			itemIndex = i;
+			break;
+		}
+		if ([[tables objectAtIndex:i] compare:theName options:NSCaseInsensitiveSearch|NSLiteralSearch] == NSOrderedSame)
+			caseInsensitiveItemIndex = i;
+	}
+	
+	// If no case-sensitive match was found, use a case-insensitive match if available
+	if (itemIndex == NSNotFound && caseInsensitiveItemIndex != NSNotFound)
+		itemIndex = caseInsensitiveItemIndex;
+
+	// If no match found, return failure
+	if (itemIndex == NSNotFound) return NO;
+
+	[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
+	return YES;
+}
+
 #pragma mark Datasource methods
 
 /**

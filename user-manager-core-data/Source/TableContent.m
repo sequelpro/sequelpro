@@ -39,6 +39,8 @@
 #import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPDataAdditions.h"
+#import "SPTextAndLinkCell.h"
+#import "QLPreviewPanel.h"
 #import "SPFieldEditorController.h"
 
 
@@ -53,6 +55,7 @@
 		
 		fullResult     = [[NSMutableArray alloc] init];
 		filteredResult = [[NSMutableArray alloc] init];
+		dataColumns    = [[NSMutableArray alloc] init];
 		oldRow         = [[NSMutableArray alloc] init];
 		
 		selectedTable = nil;
@@ -60,6 +63,8 @@
 		lastField     = nil;
 		// editData	  = nil;
 		keys		  = nil;
+		targetFilterColumn = nil;
+		targetFilterValue = nil;
 
 		areShowingAllRows = false;
 		currentlyEditingRow = -1;
@@ -86,7 +91,7 @@
 {
 	int			i;
 	NSNumber	*colWidth, *savedSortCol = nil;
-	NSArray		*theColumns, *columnNames;
+	NSArray *columnNames;
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
 	NSString	*query;
@@ -101,7 +106,7 @@
 
 	// Store the newly selected table name
 	selectedTable = aTable;
-
+	
 	// Reset table key store for use in argumentForRow:
 	if (keys) [keys release], keys = nil;
 
@@ -110,11 +115,12 @@
 	[tableContentView scrollColumnToVisible:0];
 
 	// Remove existing columns from the table
-	theColumns = [tableContentView tableColumns];
-	
-	while ([theColumns count]) {
-		[tableContentView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
+	while ([[tableContentView tableColumns] count]) {
+		[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
 	}
+
+	// Reset data column store
+	[dataColumns removeAllObjects];
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
 	// [tableDataInstance tableEncoding] == nil indicates that an error occured while retrieving table data
@@ -158,8 +164,25 @@
 
 	// Retrieve the field names and types for this table from the data cache. This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
-	theColumns = [tableDataInstance columns];
+	[dataColumns addObjectsFromArray:[tableDataInstance columns]];
 	columnNames = [tableDataInstance columnNames];
+	
+	// Retrieve the constraints, and loop through them to add up to one foreign key to each column
+	NSArray *constraints = [tableDataInstance getConstraints];
+	for (NSDictionary *constraint in constraints) {
+		NSString *firstColumn = [[[constraint objectForKey:@"columns"] componentsSeparatedByString:@","] objectAtIndex:0];
+		NSString *firstRefColumn = [[[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","] objectAtIndex:0];
+		int columnIndex = [columnNames indexOfObject:firstColumn];
+		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
+			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+											[constraint objectForKey:@"ref_table"], @"table",
+											firstRefColumn, @"column",
+											nil];
+			NSMutableDictionary *rowDictionary = [NSMutableDictionary dictionaryWithDictionary:[dataColumns objectAtIndex:columnIndex]];
+			[rowDictionary setObject:refDictionary forKey:@"foreignkeyreference"];
+			[dataColumns replaceObjectAtIndex:columnIndex withObject:rowDictionary];
+		}
+	}
 
 	// Retrieve the total number of rows of the current table
 	// to adjustify "Limit From:"
@@ -172,8 +195,8 @@
 	NSString *nullValue = [prefs objectForKey:@"NullValue"];
 	
 	// Add the new columns to the table
-	for ( i = 0 ; i < [theColumns count] ; i++ ) {
-		columnDefinition = NSArrayObjectAtIndex(theColumns, i);
+	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
+		columnDefinition = NSArrayObjectAtIndex(dataColumns, i);
 
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
@@ -181,7 +204,7 @@
 		[theCol setEditable:YES];
 		
 		// Set up the data cell depending on the column type
-		NSComboBoxCell *dataCell;
+		id dataCell;
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"]) {
 			dataCell = [[[NSComboBoxCell alloc] initTextCell:@""] autorelease];
 			[dataCell setButtonBordered:NO];
@@ -193,14 +216,21 @@
 			if([[columnDefinition objectForKey:@"null"] boolValue])
 				[dataCell addItemWithObjectValue:nullValue];
 			[dataCell addItemsWithObjectValues:[columnDefinition objectForKey:@"values"]];
+
+		// Add a foreign key arrow if applicable
+		} else if ([columnDefinition objectForKey:@"foreignkeyreference"]) {
+			dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
+			[dataCell setTarget:self action:@selector(clickLinkArrow:)];
+		
+		// Otherwise instantiate a text-only cell
 		} else {
-			dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
+			dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 		}
 		[dataCell setEditable:YES];
 
 		// Set the line break mode and an NSFormatter subclass which truncates long strings for display
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+		//[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
@@ -254,7 +284,7 @@
 	}
 
 	// Preserve the stored filter settings if appropriate
-	if (preserveCurrentView && [fieldField isEnabled]) {
+	if (!targetFilterColumn && preserveCurrentView && [fieldField isEnabled]) {
 		preservedFilterField = [NSString stringWithString:[[fieldField selectedItem] title]];
 		preservedFilterComparison = [NSString stringWithString:[[compareField selectedItem] title]];
 		preservedFilterValue = [NSString stringWithString:[argumentField stringValue]];
@@ -273,18 +303,30 @@
 	[argumentField setStringValue:@""];
 	[filterButton setEnabled:YES];
 	
-	// Restore preserved filter settings if appropriate and valid
-	if (preserveCurrentView && preservedFilterField != nil && [fieldField itemWithTitle:preservedFilterField]) {
+	// Select the specified target filter settings if set
+	if (targetFilterColumn) {
+		[fieldField selectItemWithTitle:targetFilterColumn];
+		[self setCompareTypes:self];
+		if ([targetFilterValue isEqualToString:[prefs objectForKey:@"NullValue"]]) {
+			[compareField selectItemWithTitle:@"IS NULL"];
+		} else {
+			[compareField selectItemAtIndex:0];	// "=", "IS", etc
+			[argumentField setStringValue:targetFilterValue];
+		}
+		areShowingAllRows = NO;
+		targetFilterColumn = nil;
+		targetFilterValue = nil;
+
+	// Otherwise, restore preserved filter settings if appropriate and valid
+	} else if (preserveCurrentView && preservedFilterField != nil && [fieldField itemWithTitle:preservedFilterField]) {
 		[fieldField selectItemWithTitle:preservedFilterField];
 		[self setCompareTypes:self];
-	}
-	
-	if (preserveCurrentView && preservedFilterField != nil
-		&& [fieldField itemWithTitle:preservedFilterField]
-		&& [compareField itemWithTitle:preservedFilterComparison]) {
-		[compareField selectItemWithTitle:preservedFilterComparison];
-		[argumentField setStringValue:preservedFilterValue];
-		areShowingAllRows = NO;
+		
+		if ([fieldField itemWithTitle:preservedFilterField] && [compareField itemWithTitle:preservedFilterComparison]) {
+			[compareField selectItemWithTitle:preservedFilterComparison];
+			[argumentField setStringValue:preservedFilterValue];
+			areShowingAllRows = NO;
+		}
 	}
 
 	// Enable or disable the limit fields according to preference setting
@@ -317,7 +359,7 @@
 	// Perform the data query and store the result as an array containing a dictionary per result row
 	query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 	if ( sortCol ) {
-		query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+		query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		if ( isDesc )
 			query = [query stringByAppendingString:@" DESC"];
 	}
@@ -362,7 +404,7 @@
 	[tableContentView reloadData];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInstance:self withTableData:filteredResult withColumns:theColumns withTableName:selectedTable withConnection:mySQLConnection];
+	[tableContentView setTableInstance:self withTableData:filteredResult withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -418,7 +460,7 @@
 	//	queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 	if ( sortCol ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		//		queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
@@ -637,7 +679,7 @@
 
 	// Add sorting details if appropriate
 	if ( sortCol ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		if ( isDesc )
 			queryString = [queryString stringByAppendingString:@" DESC"];
 	}
@@ -722,7 +764,6 @@
  */
 - (IBAction)addRow:(id)sender
 {
-	NSArray *columns;
 	NSMutableDictionary *column;
 	NSMutableArray *newRow = [NSMutableArray array];
 	int i;
@@ -730,9 +771,8 @@
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	columns = [[NSArray alloc] initWithArray:[tableDataInstance columns]];
-	for ( i = 0 ; i < [columns count] ; i++ ) {
-		column = NSArrayObjectAtIndex(columns, i);
+	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
+		column = NSArrayObjectAtIndex(dataColumns, i);
 		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
 			[newRow addObject:[prefs stringForKey:@"NullValue"]];
 		} else {
@@ -740,7 +780,6 @@
 		}
 	}
 	[filteredResult addObject:newRow];
-	[columns release];
 
 	[tableContentView reloadData];
 	[tableContentView selectRow:[tableContentView numberOfRows]-1 byExtendingSelection:NO];
@@ -983,6 +1022,35 @@
 }
 
 /**
+ * Performs the requested action - switching to another table
+ * with the appropriate filter settings - when a link arrow is
+ * selected.
+ */
+- (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell
+{
+	if ([theArrowCell getClickedColumn] == NSNotFound || [theArrowCell getClickedRow] == NSNotFound) return;
+	int dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] intValue];
+
+	// Ensure the clicked cell has foreign key details available
+	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
+	if (!refDictionary) return;
+
+	// Check whether a save of the current row is required.
+	if ( ![self saveRowOnDeselect] ) return;
+
+	// Store the filter details to use when next loading the table
+	targetFilterColumn = [refDictionary objectForKey:@"column"];
+	targetFilterValue = [[filteredResult objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
+
+	// Attempt to switch to the new table
+	if (![tablesListInstance selectTableOrViewWithName:[refDictionary objectForKey:@"table"]]) {
+		NSBeep();
+		targetFilterColumn = nil;
+		targetFilterValue = nil;
+	}
+}
+
+/**
  * Sets the compare types for the filter and the appropriate formatter for the textField
  */
 - (IBAction)setCompareTypes:(id)sender
@@ -1074,7 +1142,6 @@
  */
 - (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
 {
-	NSArray *columns;
 	unsigned long numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 
@@ -1086,12 +1153,11 @@
 	id prefsNullValue = [prefs objectForKey:@"NullValue"];
 	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
 
-	columns = [tableDataInstance columns];
-	long columnsCount = [columns count];
+	long columnsCount = [dataColumns count];
 
 	// Build up an array of which columns are blobs for faster iteration
 	for ( i = 0; i < columnsCount ; i++ ) {
-		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, i) objectForKey:@"name"] ]]];
+		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
 	}
 	
 	if (numOfRows) [theResult dataSeek:0];
@@ -1130,7 +1196,7 @@
  */
 - (BOOL)addRowToDB
 {
-	NSArray *theColumns, *columnNames;
+	NSArray *columnNames;
 	NSMutableString *queryString;
 	NSString *query;
 	CMMCPResult *queryResult;
@@ -1155,7 +1221,6 @@
 
 	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
-	theColumns = [tableDataInstance columns];
 	columnNames = [tableDataInstance columnNames];
 	
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
@@ -1182,9 +1247,9 @@
 			} else {
 				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
-				} else if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
-				} else if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"date"]
+				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"date"]
 							&& [[rowObject description] isEqualToString:@"NOW()"]) {
 					[rowValue setString:@"NOW()"];
 				} else {
@@ -1244,8 +1309,8 @@
 			} else {
 
 				// Set the insertId for fields with auto_increment
-				for ( i = 0; i < [theColumns count] ; i++ ) {
-					if ([[NSArrayObjectAtIndex(theColumns, i) objectForKey:@"autoincrement"] intValue]) {
+				for ( i = 0; i < [dataColumns count] ; i++ ) {
+					if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"autoincrement"] intValue]) {
 						[[filteredResult objectAtIndex:currentlyEditingRow] replaceObjectAtIndex:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
 					}
 				}
@@ -1264,7 +1329,7 @@
 			} else {
 				query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 				if ( sortCol ) {
-					query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+					query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 					if ( isDesc )
 						query = [query stringByAppendingString:@" DESC"];
 				}
@@ -1335,7 +1400,7 @@
 	NSMutableString *argument = [NSMutableString string];
 	// NSString *columnType;
 	NSArray *columnNames;
-	int i,j;
+	int i;
 	
 	if ( row == -1 )
 		return @"";
@@ -1399,29 +1464,10 @@
 		} else {
 
 			if (! [tempValue isKindOfClass:[NSData class]] ) {
-				// Escape special characters (in WHERE statement!)
-				for ( j = 0 ; j < [value length] ; j++ ) {
-					if ( [value characterAtIndex:j] == '\\' ) {
-						[value insertString:@"\\" atIndex:j];
-						j++;
-					}
-				}
-				[value setString:[mySQLConnection prepareString:value]];
-				for ( j = 0 ; j < [value length] ; j++ ) {
-					if ( [value characterAtIndex:j] == '%' ||
-						[value characterAtIndex:j] == '_' ) {
-						[value insertString:@"\\" atIndex:j];
-						j++;
-					}
-				}
-				[value setString:[NSString stringWithFormat:@"'%@'", value]];
+				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:value]]];
 			}
-			// columnType = [[tableDataInstance columnWithName:[keys objectAtIndex:i]] objectForKey:@"typegrouping"];
-			// if ( [columnType isEqualToString:@"integer"] || [columnType isEqualToString:@"float"]  || [columnType isEqualToString:@"bit"] ) {
-				[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
-			// } else {
-			// 	[argument appendString:[NSString stringWithFormat:@"%@ LIKE %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
-			// }
+
+			[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 		}
 	}
 	if ( setLimit )
@@ -1437,10 +1483,9 @@
 - (BOOL)tableContainsBlobOrTextColumns
 {
 	int i;
-	NSArray *tableColumns = [tableDataInstance columns];
 
-	for ( i = 0 ; i < [tableColumns count]; i++ ) {
-		if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(tableColumns, i) objectForKey:@"name"]] ) {
+	for ( i = 0 ; i < [dataColumns count]; i++ ) {
+		if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
 			return YES;
 		}
 	}
@@ -1456,12 +1501,11 @@
 {
 	int i;
 	NSMutableArray *fields = [NSMutableArray array];
-	NSArray *columns = [tableDataInstance columns];
 	NSArray *columnNames = [tableDataInstance columnNames];
 	
 	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
-			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(columns, i) objectForKey:@"name"]] ) {
+			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
 				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
 			} else {
 			
@@ -1576,7 +1620,7 @@
 					queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 					if ( sortCol ) {
 						//						queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
-						queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+						queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 						if ( isDesc )
 							queryString = [queryString stringByAppendingString:@" DESC"];
 					}
@@ -1680,14 +1724,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 		// that don't support this selector
 		if ([cell respondsToSelector:@selector(setTextColor:)])
 		{
-			NSArray    *columns             = [tableDataInstance columns];
 			NSString   *columnTypeGrouping;
 			NSUInteger  indexOfColumn;
 
 			indexOfColumn = [[aTableColumn identifier] intValue];
 
 			// Test if the current column is a text or a blob field
-			columnTypeGrouping = [[columns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
+			columnTypeGrouping = [[dataColumns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
 			if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
 
 				// now check if the field has been loaded already or not
@@ -1766,11 +1809,11 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	
 	// Save the sort field name for use when refreshing the table
 	if (lastField) [lastField release];
-	lastField = [[NSString alloc] initWithString:[[[tableDataInstance columns] objectAtIndex:[[tableColumn identifier] intValue]] objectForKey:@"name"]];
+	lastField = [[NSString alloc] initWithString:[[dataColumns objectAtIndex:[[tableColumn identifier] intValue]] objectForKey:@"name"]];
 	
 	//make queryString and perform query
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@ ORDER BY %@", [self fieldListForQuery],
-				   [selectedTable backtickQuotedString], [[[[tableDataInstance columns] objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+				   [selectedTable backtickQuotedString], [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 	if ( isDesc )
 		queryString = [queryString stringByAppendingString:@" DESC"];
 	if ( [prefs boolForKey:@"LimitResults"] ) {
@@ -2096,6 +2139,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 {
 	[fullResult release];
 	[filteredResult release];
+	[dataColumns release];
 	[oldRow release];
 	// if (editData) [editData release];
 	if (keys) [keys release];
