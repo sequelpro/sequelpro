@@ -35,6 +35,7 @@
 #import "TablesList.h"
 #import "RegexKitLite.h"
 #import "SPFieldEditorController.h"
+#import "SPTextAndLinkCell.h"
 
 #define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
 #define SP_HELP_SEARCH_IN_MYSQL   0
@@ -673,7 +674,7 @@
 			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
 			[theCol setEditable:YES];
-			NSTextFieldCell *dataCell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
+			SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 			[dataCell setEditable:YES];
 			[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 			if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
