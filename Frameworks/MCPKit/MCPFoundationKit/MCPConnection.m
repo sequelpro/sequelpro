@@ -1311,7 +1311,6 @@ static void forcePingTimeout(int signalNumber)
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
 		lastQueryExecutedAtTime = [self timeConnected];
 		queryExecutionTime = lastQueryExecutedAtTime - queryStartTime;
-		[queryLock unlock];
 		
 		// On success, capture the results
 		if (0 == queryResultCode) {
