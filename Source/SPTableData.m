@@ -739,6 +739,15 @@
 	if ([status objectForKey:@"Type"]) {
 		[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
 	}
+	
+	// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
+	// this happens e.g. for db "information_schema"
+	if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
+		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+			[status setObject:[NSNumber numberWithLongLong:[[[tableStatusResult fetchRowAsArray] objectAtIndex:0] longLongValue]] forKey:@"Rows"];
+
+	}
 
 	return TRUE;
 }
