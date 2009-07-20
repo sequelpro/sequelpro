@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="454"/>
+			<integer value="27"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1448,7 +1448,7 @@
 										<object class="NSButton" id="445730006">
 											<reference key="NSNextResponder" ref="755335467"/>
 											<int key="NSvFlags">289</int>
-											<string key="NSFrame">{{388, -1}, {76, 25}}</string>
+											<string key="NSFrame">{{394, -1}, {76, 32}}</string>
 											<reference key="NSSuperview" ref="755335467"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="289173129">
@@ -1458,7 +1458,7 @@
 												<reference key="NSSupport" ref="746597359"/>
 												<reference key="NSControlView" ref="445730006"/>
 												<int key="NSButtonFlags">-2038021889</int>
-												<int key="NSButtonFlags2">162</int>
+												<int key="NSButtonFlags2">129</int>
 												<reference key="NSAlternateImage" ref="746597359"/>
 												<string key="NSAlternateContents"/>
 												<string key="NSKeyEquivalent"/>
@@ -1469,7 +1469,7 @@
 										<object class="NSButton" id="335568650">
 											<reference key="NSNextResponder" ref="755335467"/>
 											<int key="NSvFlags">289</int>
-											<string key="NSFrame">{{306, -1}, {82, 25}}</string>
+											<string key="NSFrame">{{312, -1}, {82, 32}}</string>
 											<reference key="NSSuperview" ref="755335467"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="1067684076">
@@ -1479,7 +1479,7 @@
 												<reference key="NSSupport" ref="746597359"/>
 												<reference key="NSControlView" ref="335568650"/>
 												<int key="NSButtonFlags">-2038021889</int>
-												<int key="NSButtonFlags2">162</int>
+												<int key="NSButtonFlags2">129</int>
 												<reference key="NSAlternateImage" ref="746597359"/>
 												<string key="NSAlternateContents"/>
 												<string key="NSKeyEquivalent"/>
@@ -3343,11 +3343,11 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{507, 596}, {724, 479}}</string>
+					<string>{{64, 377}, {724, 479}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="6"/>
 					<reference ref="6"/>
-					<string>{{507, 596}, {724, 479}}</string>
+					<string>{{64, 377}, {724, 479}}</string>
 					<reference ref="5"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3498,8 +3498,6 @@
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addHost:</string>
-							<string>addToAvailable:</string>
-							<string>addToSelected:</string>
 							<string>addUser:</string>
 							<string>doApply:</string>
 							<string>doCancel:</string>
@@ -3514,82 +3512,22 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>alterCB</string>
-							<string>alterRoutineCB</string>
-							<string>availablePrivsController</string>
-							<string>createCB</string>
-							<string>createRoutineCB</string>
-							<string>createTmpTableCB</string>
-							<string>createUserCB</string>
-							<string>createViewCB</string>
-							<string>databaseList</string>
-							<string>deleteCB</string>
-							<string>dropCB</string>
-							<string>executeCB</string>
-							<string>fileCB</string>
-							<string>grantCB</string>
-							<string>indexesCB</string>
-							<string>insertCB</string>
-							<string>lockTablesCB</string>
 							<string>outlineView</string>
-							<string>processCB</string>
-							<string>referencesCB</string>
-							<string>reloadCB</string>
-							<string>replClientCB</string>
-							<string>replSlaveCB</string>
-							<string>selectCB</string>
-							<string>selectedPrivsController</string>
-							<string>showDatabasesCB</string>
-							<string>showViewCB</string>
-							<string>shutdownCB</string>
-							<string>superCB</string>
 							<string>tabView</string>
 							<string>treeController</string>
-							<string>updateCB</string>
 							<string>window</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSArrayController</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSArrayController</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>NSOutlineView</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSArrayController</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>NSTabView</string>
 							<string>NSTreeController</string>
-							<string>NSButton</string>
 							<string>NSWindow</string>
 						</object>
 					</object>
