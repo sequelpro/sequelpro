@@ -216,7 +216,6 @@
 		[tableCommentsTextView setString:@""];
 		[tableCommentsTextView setEditable:NO];
 		
-		
 		return;
 	}
 	
@@ -224,7 +223,7 @@
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	NSArray *collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 	
-	if ([engines count] > 0) {
+	if (([engines count] > 0) && ([statusFields objectForKey:@"Engine"])) {
 		// Populate type popup button
 		for (NSDictionary *engine in engines)
 		{		
@@ -234,13 +233,16 @@
 		[tableTypePopUpButton selectItemWithTitle:[statusFields objectForKey:@"Engine"]];
 		[tableTypePopUpButton setEnabled:YES];
 	}
+	else {
+		[tableTypePopUpButton addItemWithTitle:@"Not available"];
+	}
 	
 	if ([encodings count] > 0) {
 		NSString *selectedTitle = @"";
 		
 		// Populate encoding popup button
 		for (NSDictionary *encoding in encodings)
-		{		
+		{					
 			NSString *menuItemTitle = [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
 			
 			[tableEncodingPopUpButton addItemWithTitle:menuItemTitle];
@@ -253,16 +255,22 @@
 		[tableEncodingPopUpButton selectItemWithTitle:selectedTitle];
 		[tableEncodingPopUpButton setEnabled:YES];
 	}
+	else {
+		[tableEncodingPopUpButton addItemWithTitle:@"Not available"];
+	}
 	
-	if ([collations count] > 0) {
+	if (([collations count] > 0) && ([statusFields objectForKey:@"Collation"])) {
 		// Populate collation popup button
 		for (NSDictionary *collation in collations)
 		{		
 			[tableCollationPopUpButton addItemWithTitle:[collation objectForKey:@"COLLATION_NAME"]];
 		}	
-		
+				
 		[tableCollationPopUpButton selectItemWithTitle:[statusFields objectForKey:@"Collation"]];
 		[tableCollationPopUpButton setEnabled:YES];
+	}
+	else {
+		[tableCollationPopUpButton addItemWithTitle:@"Not available"];
 	}
 	
 	[tableCreatedAt setStringValue:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields withLabel:@"Created at"]];
