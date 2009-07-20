@@ -386,7 +386,25 @@ const CHAR_SETS charsets[] =
 - (NSArray *)getDatabaseCharacterSetEncodings
 {
 	if ([characterSetEncodings count] == 0) {
-		[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM information_schema.character_sets ORDER BY character_set_name ASC"]];
+		
+		// Check the information_schema.collations table is accessible
+		CMMCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'character_sets'"];
+		
+		if ([result numOfRows] == 1) {
+			// Table is accessible so get available encodings for the supplied encoding
+			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM information_schema.character_sets ORDER BY character_set_name ASC"]];	
+		}
+		else {
+			// Get the list of collations matching the supplied encoding from our hard coded list
+			const CHAR_SETS *c = charsets;
+			
+			do {				
+				[characterSetEncodings addObject:[NSDictionary dictionaryWithObject:[NSString stringWithCString:c->name encoding:NSUTF8StringEncoding] forKey:@"CHARACTER_SET_NAME"]];
+				
+				++c;
+			} 
+			while (c[0].nr != 0);
+		}
 	}
 	
 	return characterSetEncodings;

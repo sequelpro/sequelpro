@@ -237,14 +237,14 @@
 		[tableTypePopUpButton addItemWithTitle:@"Not available"];
 	}
 	
-	if ([encodings count] > 0) {
+	if (([encodings count] > 0) && ([tableDataInstance tableEncoding])) {
 		NSString *selectedTitle = @"";
 		
 		// Populate encoding popup button
 		for (NSDictionary *encoding in encodings)
-		{					
-			NSString *menuItemTitle = [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
-			
+		{			
+			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
+						
 			[tableEncodingPopUpButton addItemWithTitle:menuItemTitle];
 			
 			if ([[tableDataInstance tableEncoding] isEqualToString:[encoding objectForKey:@"CHARACTER_SET_NAME"]]) {
