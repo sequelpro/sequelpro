@@ -26,6 +26,13 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
+typedef struct _CHAR_SETS
+{
+	unsigned int nr;
+	const char	 *name;
+	const char	 *collation;
+} CHAR_SETS;
+
 @interface SPDatabaseData : NSObject 
 {
 	NSString *characterSetEncoding;
