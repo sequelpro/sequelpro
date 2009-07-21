@@ -94,7 +94,8 @@
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 	
-	BOOL tableReloadAfterEdting;
+	BOOL tableReloadAfterEditing;
+	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
 	BOOL tempAlertWasShown; // a temp value for nightly builts
