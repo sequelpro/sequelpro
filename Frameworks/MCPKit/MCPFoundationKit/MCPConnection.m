@@ -1802,8 +1802,8 @@ static void forcePingTimeout(int signalNumber)
 			NSArray *a = [r fetchRowAsArray];
 			[r autorelease];
 			if([a count]) {
-				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] intValue];
 				[queryLock unlock];
+				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] intValue];
 				return true;
 			}
 		}
