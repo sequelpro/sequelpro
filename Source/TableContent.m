@@ -1668,15 +1668,15 @@
  * Queries the number from MySQL if enabled in prefs and result is limited, otherwise just return the fullResult count.
  */
 - (int)getNumberOfRows
-{
+{	
 	if ([prefs boolForKey:@"LimitResults"] && [prefs boolForKey:@"FetchCorrectRowCount"]) {
 		numRows = [self fetchNumberOfRows];
 	} else {
 		numRows = [fullResult count];
 	}
-	
+		
 	// Update table data cache with the more accurate row count
-	[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", numRows] forKey:@"Rows"];
+	//[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", numRows] forKey:@"Rows"];
 	
 	return numRows;
 }

@@ -199,7 +199,7 @@
  * via other means and are subsequently more accurate than the value currently set.
  */
 - (void)setStatusValue:(NSString *)value forKey:(NSString *)key
-{	
+{		
 	[status setValue:value forKey:key];
 }
 
