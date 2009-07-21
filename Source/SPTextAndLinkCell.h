@@ -39,7 +39,6 @@ enum sptextandlinkcell_drawstates
 	id linkTarget;
 	SEL linkAction;
 	
-	NSRect linkRect;
 	int lastLinkColumn;
 	int lastLinkRow;
 	int drawState;

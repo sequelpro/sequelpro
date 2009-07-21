@@ -28,6 +28,13 @@
 
 @implementation SPTextAndLinkCell
 
+/**
+ * Provide a method to derive the link rect from a cell rect.
+ */
+static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect) {
+	return NSMakeRect(inRect.origin.x + inRect.size.width - 15, inRect.origin.y - 1, 12, inRect.size.height);
+}
+
 #pragma mark -
 #pragma mark Setup and teardown
 
@@ -99,6 +106,7 @@
 		[linkButton setBordered:NO];
 		[linkButton setShowsBorderOnlyWhileMouseInside:YES];
 		[linkButton setImage:[NSImage imageNamed:@"link-arrow"]];
+		[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow-clicked"]];
 	}
 }
 
@@ -120,7 +128,7 @@
 	
 	// Set up new rects
 	NSRect textRect = NSMakeRect(aRect.origin.x, aRect.origin.y, aRect.size.width - 18, aRect.size.height);
-	linkRect = NSMakeRect(aRect.origin.x + aRect.size.width - 15, aRect.origin.y - 1, 12, aRect.size.height);
+	NSRect linkRect = SPTextLinkRectFromCellRect(aRect);
 
 	// Draw the text
 	[super drawInteriorWithFrame:textRect inView:controlView];
@@ -138,12 +146,15 @@
 		switch (drawState) {
 			case SP_LINKDRAWSTATE_NORMAL:
 				[linkButton setImage:[NSImage imageNamed:@"link-arrow"]];
+				[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow-clicked"]];
 				break;
 			case SP_LINKDRAWSTATE_HIGHLIGHT:
 				[linkButton setImage:[NSImage imageNamed:@"link-arrow-highlighted"]];
+				[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow-highlighted-clicked"]];
 				break;
 			case SP_LINKDRAWSTATE_BACKGROUNDHIGHLIGHT:
 				[linkButton setImage:[NSImage imageNamed:@"link-arrow-clicked"]];
+				[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow"]];
 				break;
 		}
 	}
@@ -161,6 +172,7 @@
 	if (!hasLink) return NSCellHitContentArea | NSCellHitEditableTextArea;
 
 	NSPoint p = [[[NSApp  mainWindow] contentView] convertPoint:[event locationInWindow] toView:controlView];
+	NSRect linkRect = SPTextLinkRectFromCellRect(cellFrame);
 
 	// Hit the link if it falls within the link rectangle for this cell, set when drawing
 	if (p.x > linkRect.origin.x && p.x < (linkRect.origin.x + linkRect.size.width)) {
@@ -171,13 +183,66 @@
 		lastLinkColumn = [tableView columnAtPoint:p];
 		lastLinkRow = [tableView rowAtPoint:p];
 
-		[linkTarget performSelector:linkAction withObject:self];
-		return NSCellHitContentArea;
+		// Return a trackable hit
+		return NSCellHitContentArea | NSCellHitTrackableArea;
 
 	// Otherwise return an editable hit - this allows the entire cell to be clicked to edit the contents.
 	} else {
 		return NSCellHitContentArea | NSCellHitEditableTextArea;
 	}
+}
+
+/**
+ * Allow mouse tracking within the button cell, to support expected click
+ * behaviour in the button cell.
+ */
+- (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView untilMouseUp:(BOOL)untilMouseUp
+{
+
+	// Fast case for no link
+	if (!hasLink) return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:untilMouseUp];
+
+	NSPoint p = [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
+	NSRect linkRect = SPTextLinkRectFromCellRect(cellFrame);
+
+	// Fast path for if not in button rect - just pass to super
+	if (!NSMouseInRect(p, linkRect, [controlView isFlipped]))
+		return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:untilMouseUp];
+
+	// Continue tracking the mouse while it's down, updating the state as it enters and leaves the cell,
+	// until it is released; if still within the cell, follow the link.
+	BOOL mouseInButton = YES;
+	while (1) {
+		if (mouseInButton) {
+
+			// Highlight the button
+			[linkButton highlight:YES withFrame:linkRect inView:controlView];
+
+			// Continue to track until mouse completes a click or exits the cell while still down
+			BOOL mouseClicked = [linkButton trackMouse:theEvent inRect:linkRect ofView:controlView untilMouseUp:NO];
+			if (mouseClicked) {
+
+				// Remove highlight, and follow the link
+				[linkButton highlight:NO withFrame:linkRect inView:controlView];
+				[linkTarget performSelector:linkAction withObject:self];
+				return YES;
+			}
+
+			// Mouse has exited the cell.  Remove highlight.
+			mouseInButton = NO;
+			[linkButton highlight:NO withFrame:linkRect inView:controlView];
+		}
+
+		// Keep tracking the mouse outside the button, until the mouse button is released or it reenters the button
+		theEvent = [[controlView window] nextEventMatchingMask: NSLeftMouseUpMask | NSLeftMouseDraggedMask];
+		p = [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
+		mouseInButton = NSMouseInRect(p, linkRect, [controlView isFlipped]);
+
+		// If the event is a mouse release, break the loop.
+		if ([theEvent type] == NSLeftMouseUp) break;
+	}
+
+	return YES;
 }
 
 #pragma mark -
