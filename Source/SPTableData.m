@@ -194,6 +194,15 @@
 	return [status objectForKey:aKey];
 }
 
+/*
+ * Set the table status value for the supplied key. This method is useful for when status values are obtained
+ * via other means and are subsequently more accurate than the value currently set.
+ */
+- (void)setStatusValue:(NSString *)value forKey:(NSString *)key
+{	
+	[status setValue:value forKey:key];
+}
+
 
 /*
  * Retrieve all known status values as a dictionary, using or refreshing the cache as appropriate.
@@ -736,6 +745,15 @@
 	// Reassign any "Type" key - for MySQL < 4.1 - to "Engine" for consistency.
 	if ([status objectForKey:@"Type"]) {
 		[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
+	}
+	
+	// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
+	// this happens e.g. for db "information_schema"
+	if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
+		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+			[status setObject:[NSNumber numberWithLongLong:[[[tableStatusResult fetchRowAsArray] objectAtIndex:0] longLongValue]] forKey:@"Rows"];
+
 	}
 
 	return TRUE;

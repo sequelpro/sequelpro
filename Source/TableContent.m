@@ -1650,7 +1650,7 @@
 	}
 }
 
-/*
+/**
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
@@ -1663,7 +1663,7 @@
 }
 
 
-/*
+/**
  * Returns the number of rows in the selected table
  * Queries the number from MySQL if enabled in prefs and result is limited, otherwise just return the fullResult count.
  */
@@ -1674,6 +1674,9 @@
 	} else {
 		numRows = [fullResult count];
 	}
+	
+	// Update table data cache with the more accurate row count
+	[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", numRows] forKey:@"Rows"];
 	
 	return numRows;
 }
@@ -1686,15 +1689,13 @@
 	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
 
-//tableView datasource methods
+// TableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [filteredResult count];
 }
 
-- (id)tableView:(CMCopyTable *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 
 	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(filteredResult, rowIndex), [[aTableColumn identifier] intValue]);
@@ -1705,14 +1706,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return theValue;
 }
 
+/**
+ * This function changes the text color of text/blob fields which are not yet loaded to gray
+ */
 - (void)tableView: (CMCopyTable *)aTableView
 	willDisplayCell: (id)cell
 	forTableColumn: (NSTableColumn*)aTableColumn
 	row: (int)row
-/*
-	*  This function changes the text color of 
-	*  text/blob fields which are not yet loaded to gray
-*/
 {
 	// Check if loading of text/blob fields is disabled
 	// If not, all text fields are loaded and we don't have to make them gray

@@ -51,6 +51,7 @@
 - (NSArray *) getConstraints;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
+- (void)setStatusValue:(NSString *)value forKey:(NSString *)key;
 - (NSDictionary *) statusValues;
 - (void) resetAllData;
 - (void) resetStatusData;
