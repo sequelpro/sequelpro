@@ -177,12 +177,6 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect) {
 	// Hit the link if it falls within the link rectangle for this cell, set when drawing
 	if (p.x > linkRect.origin.x && p.x < (linkRect.origin.x + linkRect.size.width)) {
 
-		// Capture the clicked row and cell
-		NSTableView *tableView = (NSTableView *)[self controlView];
-		p = [[[NSApp mainWindow] contentView] convertPoint:[event locationInWindow] toView:tableView];
-		lastLinkColumn = [tableView columnAtPoint:p];
-		lastLinkRow = [tableView rowAtPoint:p];
-
 		// Return a trackable hit
 		return NSCellHitContentArea | NSCellHitTrackableArea;
 
@@ -221,6 +215,12 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect) {
 			// Continue to track until mouse completes a click or exits the cell while still down
 			BOOL mouseClicked = [linkButton trackMouse:theEvent inRect:linkRect ofView:controlView untilMouseUp:NO];
 			if (mouseClicked) {
+
+				// Capture the clicked row and cell
+				NSTableView *tableView = (NSTableView *)[self controlView];
+				p = [[[NSApp mainWindow] contentView] convertPoint:[theEvent locationInWindow] toView:tableView];
+				lastLinkColumn = [tableView columnAtPoint:p];
+				lastLinkRow = [tableView rowAtPoint:p];
 
 				// Remove highlight, and follow the link
 				[linkButton highlight:NO withFrame:linkRect inView:controlView];
