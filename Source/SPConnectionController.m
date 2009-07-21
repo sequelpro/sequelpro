@@ -43,6 +43,11 @@
 @synthesize sshPassword;
 @synthesize sshPort;
 
+@synthesize connectionKeychainItemName;
+@synthesize connectionKeychainItemAccount;
+@synthesize connectionSSHKeychainItemName;
+@synthesize connectionSSHKeychainItemAccount;
+
 /**
  * Initialise the connection controller, linking it to the
  * parent document and setting up the parent window.
@@ -209,7 +214,7 @@
 	// Set up the tunnel details
 	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:([[self sshPort] length]?[[self sshPort] intValue]:22) login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] intValue]:3306) onHost:[self host]];
 	[sshTunnel setParentWindow:documentWindow];
-
+	
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
 		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
@@ -234,10 +239,10 @@
 {
 	int newState = [theTunnel state];
 
-	if (newState == SPSSH_STATE_IDLE) {
+	if (newState == PROXY_STATE_IDLE) {
 		[tableDocument setTitlebarStatus:@"SSH Disconnected"];
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
-	} else if (newState == SPSSH_STATE_CONNECTED) {
+	} else if (newState == PROXY_STATE_CONNECTED) {
 		[tableDocument setTitlebarStatus:@"SSH Connected"];
 		[self initiateMySQLConnection];
 	} else {
@@ -258,29 +263,34 @@
 
 	// Initialise to socket if appropriate.
 	if ([self type] == SP_CONNECTION_SOCKET) {
-		mySQLConnection = [[CMMCPConnection alloc] initToSocket:[self socket] withLogin:[self user]];
+		mySQLConnection = [[MCPConnection alloc] initToSocket:[self socket] withLogin:[self user]];
 
 	// Otherwise, initialise to host, using tunnel if appropriate
 	} else {
 		if ([self type] == SP_CONNECTION_SSHTUNNEL) {
-			mySQLConnection = [[CMMCPConnection alloc] initToHost:@"127.0.0.1"
+			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
 														withLogin:[self user]
 														usingPort:[sshTunnel localPort]];
-			[mySQLConnection setSSHTunnel:sshTunnel];
+			[mySQLConnection setConnectionProxy:sshTunnel];
 		} else {
-			mySQLConnection = [[CMMCPConnection alloc] initToHost:[self host]
+			mySQLConnection = [[MCPConnection alloc] initToHost:[self host]
 														withLogin:[self user]
 														usingPort:([[self port] length]?[[self port] intValue]:3306)];
 		}
 	}
-	[mySQLConnection setParentWindow:documentWindow];
 
-	// Set the password as appropriate
-	if (connectionKeychainItemName) {
-		[mySQLConnection setPasswordKeychainName:connectionKeychainItemName account:connectionKeychainItemAccount];
-	} else {
+	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
+	if (!connectionKeychainItemName) {
 		[mySQLConnection setPassword:[self password]];
 	}
+	
+	// Connection delegate must be set before actual connection attempt is made
+	[mySQLConnection setDelegate:tableDocument];
+
+	// Set options from preferences
+	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:@"ConnectionTimeoutValue"] intValue]];
+	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:@"UseKeepAlive"] boolValue]];
+	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:@"KeepAliveInterval"] floatValue]];
 
 	// Connect
 	[mySQLConnection connect];
@@ -292,7 +302,7 @@
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
 
 			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
-			if ([sshTunnel state] == SPSSH_STATE_FORWARDING_FAILED) {
+			if ([sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
 				if ([sshTunnel localPortFallback]) {
 					[mySQLConnection setPort:[sshTunnel localPortFallback]];
 					[mySQLConnection connect];
@@ -305,7 +315,7 @@
 		
 		if (![mySQLConnection isConnected]) {
 			NSString *errorMessage;
-			if (sshTunnel && [sshTunnel state] == SPSSH_STATE_FORWARDING_FAILED) {
+			if (sshTunnel && [sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@", @"message of panel when SSH port forwarding failed"), [self host], [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"SSH port forwarding failed", @"title when ssh tunnel port forwarding failed") errorMessage:errorMessage detail:[sshTunnel debugMessages]];
 			} else if ([mySQLConnection getLastErrorID] == 1045) { // "Access denied" error

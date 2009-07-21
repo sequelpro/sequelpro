@@ -30,8 +30,8 @@
 
 #define SP_NARROWDOWNLIST_MAX_ROWS 15
 
-@interface SPNarrowDownCompletion : NSWindow {
-
+@interface SPNarrowDownCompletion : NSWindow 
+{
 	NSArray* suggestions;
 	NSMutableString* mutablePrefix;
 	NSString* staticPrefix;

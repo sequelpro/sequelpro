@@ -27,7 +27,6 @@
 #import "SPTableData.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
-#import "CMMCPConnection.h"
 #import "SPStringAdditions.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)

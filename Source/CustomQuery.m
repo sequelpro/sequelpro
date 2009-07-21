@@ -397,7 +397,7 @@
 	
 	NSArray         *theColumns;
 	NSTableColumn   *theCol;
-	CMMCPResult     *theResult  = nil;
+	MCPResult     *theResult  = nil;
 	NSMutableArray  *menuItems  = [NSMutableArray array];
 	NSMutableString *errors     = [NSMutableString string];
 	
@@ -426,7 +426,10 @@
 			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 		}
 	}
-	
+
+	// Disable automatic query retries on failure for the custom queries
+	[mySQLConnection setAllowQueryRetries:NO];
+
 	long queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
@@ -627,6 +630,8 @@
 		}
 	}
 
+	// Restore automatic query retries
+	[mySQLConnection setAllowQueryRetries:YES];
 
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !theResult || ![theResult numOfRows] ) {
@@ -714,7 +719,7 @@
 /*
  * Fetches the result as an array, with an array for each row in it
  */
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	// NSArray *columns;
 	unsigned long numOfRows = [theResult numOfRows];
@@ -1094,7 +1099,7 @@
 /*
  * Sets the connection (received from TableDocument) and makes things that have to be done only once 
  */
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	NSArray *tableColumns = [queryFavoritesView tableColumns];
 	NSEnumerator *enumerator = [tableColumns objectEnumerator];
@@ -2053,7 +2058,7 @@
 	if(![searchString length]) return @"";
 	
 	NSRange         aRange;
-	CMMCPResult     *theResult = nil;
+	MCPResult     *theResult = nil;
 	NSDictionary    *tableDetails;
 	NSMutableString *theHelp = [NSMutableString string];
 

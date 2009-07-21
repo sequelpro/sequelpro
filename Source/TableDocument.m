@@ -40,8 +40,6 @@
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "MainController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPConnectionController.h"
@@ -59,6 +57,7 @@
 {
 	if ((self = [super init])) {
 		
+		_mainNibLoaded = NO;
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
 		chooseDatabaseButton = nil;
@@ -81,6 +80,8 @@
 
 - (void)awakeFromNib
 {
+	if (_mainNibLoaded) return;
+	_mainNibLoaded = YES;
 
 	// The first window should use autosaving; subsequent windows should cascade
 	BOOL usedAutosave = [tableWindow setFrameAutosaveName:[self windowNibName]];
@@ -106,6 +107,9 @@
 
 	// Register observers for when the logging preference changes
 	[prefs addObserver:[SPQueryConsole sharedQueryConsole] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	
+	// Register a second observer for when the logging preference changes so we can tell the current connection about it
+	[prefs addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
@@ -123,22 +127,24 @@
 											av.size.width,
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
-	[windowFrame addSubview:titleAccessoryView];
+	[windowFrame addSubview:titleAccessoryView];	
+
+	// Load additional nibs
+	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
+		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+	}
 }
 
 #pragma mark -
 #pragma mark Connection callback and methods
 
-- (void) setConnection:(CMMCPConnection *)theConnection
+- (void) setConnection:(MCPConnection *)theConnection
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	id version;
 
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
-
-	// Register as the connection delegate
-	[mySQLConnection setDelegate:self];
 	
 	// Set the connection encoding
 	NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
@@ -574,7 +580,7 @@
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
-	CMMCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
+	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		int i;
 		int r = [theResult numOfRows];
@@ -658,7 +664,7 @@
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
-		[mySQLConnection setEncoding:[CMMCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
+		[mySQLConnection setEncoding:[MCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
 		[_encoding release];
 		_encoding = [[NSString alloc] initWithString:mysqlEncoding];
 	} else {
@@ -695,9 +701,10 @@
 }
 
 /**
- * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility
+ * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility.
+ * This is a delegate method of MCPKit's MCPConnection class.
  */
-- (BOOL)connectionEncodingViaLatin1
+- (BOOL)connectionEncodingViaLatin1:(id)connection
 {
 	return _encodingViaLatin1;
 }
@@ -863,7 +870,7 @@
 	if( query == nil )
 		return;
 	
-	CMMCPResult *theResult = [mySQLConnection queryString:query];
+	MCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -918,7 +925,7 @@
 	if( query == nil )
 		return;	
 	
-	CMMCPResult *theResult = [mySQLConnection queryString:query];
+	MCPResult *theResult = [mySQLConnection queryString:query];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -974,7 +981,7 @@
  */
 - (IBAction)checkTable:(id)sender
 {	
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1019,7 +1026,7 @@
  */
 - (IBAction)analyzeTable:(id)sender
 {
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1064,7 +1071,7 @@
  */
 - (IBAction)optimizeTable:(id)sender
 {
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1109,7 +1116,7 @@
  */
 - (IBAction)repairTable:(id)sender
 {
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1190,7 +1197,7 @@
  */
 - (IBAction)checksumTable:(id)sender
 {	
-	CMMCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
 	
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1236,6 +1243,14 @@
 }
 
 /**
+ * Invoked when user dismisses the error sheet displayed as a result of the current connection being lost.
+ */
+- (IBAction)closeErrorConnectionSheet:(id)sender
+{
+	[NSApp stopModalWithCode:[sender tag]];
+}
+
+/**
  * Passes query to tablesListInstance
  */
 - (void)doPerformQueryService:(NSString *)query
@@ -1266,7 +1281,7 @@
  */
 - (void)showVariables:(id)sender
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	NSMutableArray *tempResult = [NSMutableArray array];
 	int i;
 	
@@ -1300,6 +1315,16 @@
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
                                               notificationName:@"Disconnected"];
+}
+
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
+		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
+	}
 }
 
 #pragma mark -
@@ -1996,12 +2021,12 @@
 
 
 #pragma mark -
-#pragma mark SMySQL delegate methods
+#pragma mark MCPKit connection delegate methods
 
 /**
- * Invoked when framework will perform a query
+ * Invoked when framework is about to perform a query.
  */
-- (void)willQueryString:(NSString *)query
+- (void)willQueryString:(NSString *)query connection:(id)connection
 {		
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"]) {
 		[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
@@ -2009,11 +2034,44 @@
 }
 
 /**
- * Invoked when query gave an error
+ * Invoked when the query just executed resulted in an error. 
  */
-- (void)queryGaveError:(NSString *)error
+- (void)queryGaveError:(NSString *)error connection:(id)connection
 {	
 	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
+}
+
+/**
+ * Invoked when the current connection needs a password from the Keychain.
+ */
+- (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
+{	
+	KeyChain *keychain = [[KeyChain alloc] init];
+	
+	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
+	
+	[keychain release];
+		
+	return password;
+}
+
+/**
+ * Invoked when the connection fails and the framework needs to know how to proceed.
+ */
+- (MCPConnectionCheck)connectionLost:(id)connection
+{
+	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+
+	[NSApp endSheet:connectionErrorDialog];
+	[connectionErrorDialog orderOut:nil];
+
+	// If "disconnect" was selected, trigger a window close.
+	[self windowWillClose:nil];
+	if (connectionErrorCode == MCPConnectionCheckDisconnect) 
+		[tableWindow performSelector:@selector(close) withObject:nil afterDelay:0.0];
+
+	return connectionErrorCode;
 }
 
 #pragma mark -
@@ -2022,7 +2080,7 @@
 /**
  * When adding a database, enable the button only if the new name has a length.
  */
-- (void) controlTextDidChange:(NSNotification *)aNotification
+- (void)controlTextDidChange:(NSNotification *)aNotification
 {
 	if ([aNotification object] == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 

@@ -23,16 +23,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
+
 #import "SPTableData.h"
 #import "SPSQLParser.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-
 
 @implementation SPTableData
 
@@ -57,7 +55,7 @@
  * Set the connection for use.
  * Called by the connect sheet methods.
  */
-- (void) setConnection:(CMMCPConnection *)theConnection
+- (void) setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[mySQLConnection retain];
@@ -322,7 +320,7 @@
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [tableName backtickQuotedString]
 																					]];
 
@@ -614,7 +612,7 @@
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [viewName backtickQuotedString]
 																					]];
 
@@ -728,7 +726,7 @@
 	// Run the status query and retrieve as a dictionary.
 	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
-	CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
+	MCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {

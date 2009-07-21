@@ -24,8 +24,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "KeyChain.h"
-#include <CoreFoundation/CoreFoundation.h>
-#include <Security/Security.h>
+
+#import <CoreFoundation/CoreFoundation.h>
+#import <Security/Security.h>
 
 @implementation KeyChain
 

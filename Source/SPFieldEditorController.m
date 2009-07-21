@@ -29,7 +29,6 @@
 #import "SPDataAdditions.h"
 #import "QLPreviewPanel.h"
 
-
 @implementation SPFieldEditorController
 
 - (id) init

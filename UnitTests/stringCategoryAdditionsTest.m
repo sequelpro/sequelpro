@@ -22,7 +22,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 //
 
-
 #import "stringCategoryAdditionsTest.h"
 #import "SPStringAdditions.h"
 
