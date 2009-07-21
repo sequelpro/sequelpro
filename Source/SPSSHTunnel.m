@@ -274,7 +274,7 @@
 	[task setArguments:taskArguments];
 
 	// Set up the environment for the task
-	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"TunnelPassphraseRequester"];
+	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
 	taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 	[taskEnvironment removeObjectForKey: @"SSH_AGENT_PID"];
 	[taskEnvironment removeObjectForKey: @"SSH_AUTH_SOCK"];
@@ -433,7 +433,7 @@
 }
 
 /*
- * Method to request the password for the current connection, as used by TunnelPassphraseRequester;
+ * Method to request the password for the current connection, as used by SequelProTunnelAssistant;
  * called with a verification hash to check against the stored hash, to provide basic security.  Note
  * that this is easily bypassed, but if bypassed the password can already easily be retrieved in the same way.
  */

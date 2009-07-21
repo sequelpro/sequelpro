@@ -1,5 +1,5 @@
 //
-//  TunnelPassphraseRequester.m
+//  SequelProTunnelAssistant.m
 //  sequel-pro
 //
 //  Created by Rowan Beentje on May 4, 2009.
