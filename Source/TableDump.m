@@ -902,7 +902,7 @@
 	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 
 	// Store the current connection encoding so it can be restored after the dump.
-	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+	previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
 	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 	
 	// Set the connection to UTF8 to be able to export correctly.
@@ -1128,6 +1128,7 @@
 	[tableDocumentInstance
 	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
 	 reloadingViews:NO];
+	[previousConnectionEncoding release];
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
@@ -1195,7 +1196,7 @@
 	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 	
 	// store connection encoding
-	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+	previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
 	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 	
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
@@ -1283,7 +1284,8 @@
 	[tableDocumentInstance
 	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
 	 reloadingViews:NO];
-	
+	[previousConnectionEncoding release];
+
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
