@@ -15,6 +15,7 @@
 	NSPersistentStoreCoordinator *persistentStoreCoordinator;
     NSManagedObjectModel *managedObjectModel;
     NSManagedObjectContext *managedObjectContext;
+	NSDictionary *privColumnsMODict;
 	
 	BOOL isInitializing;
 	

@@ -44,10 +44,33 @@
 	}
 	
 	[self setConnection:connection];
+	
+	
+	privColumnsMODict = [[[NSDictionary alloc] initWithObjectsAndKeys:
+						  @"grant_option_priv",@"Grant_priv",
+						  @"show_databases_priv",@"Show_db_priv",
+						  @"create_temporary_table_priv",@"Create_tmp_table_priv",
+						  @"Replication_slave_priv",@"Repl_slave_priv", 
+						  @"Replication_client_priv",@"Repl_client_priv",nil] retain];
+	
 	if (!outlineView) {
 		[NSBundle loadNibNamed:@"UserManagerView" owner:self];
 	}
+	
 	return self;
+}
+
+- (void)dealloc
+{
+	NSLog(@"SPUserManager dealloc.");
+	
+	[managedObjectContext release], managedObjectContext = nil;
+    [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
+    [managedObjectModel release], managedObjectModel = nil;
+	[privColumnsMODict release], privColumnsMODict = nil;
+	
+	[mySqlConnection release];
+	[super dealloc];
 }
 
 - (void)awakeFromNib
@@ -104,7 +127,7 @@
 	
 	for(int i = 0; i < [items count]; i++)
 	{
-		NSString *username = [[items objectAtIndex:i] valueForKey:@"User"];
+		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *array = [self _fetchUserWithUserName:username];
 		NSDictionary *item = [items objectAtIndex:i];
 		
@@ -124,7 +147,7 @@
 			NSManagedObject *child = [self _createNewSPUser];
 			
 			[parent setValue:username forKey:@"user"];
-			[parent setValue:[item valueForKey:@"Password"] forKey:@"password"];
+			[parent setValue:[item objectForKey:@"Password"] forKey:@"password"];
 			[parent addChildrenObject:child];
 			[child setParent:parent];
 			
@@ -144,20 +167,26 @@
 {
 	for (NSString *key in item)
 	{
-		NS_DURING
+		NS_DURING		
 		if ([key hasSuffix:@"_priv"])
 		{
-			BOOL value = [[item valueForKey:key] boolValue];
+			// Special case keys
+			if ([privColumnsMODict objectForKey:key] != nil)
+			{
+				key = [privColumnsMODict objectForKey:key];
+			}
+			
+			BOOL value = [[item objectForKey:key] boolValue];
 			[child setValue:[NSNumber numberWithBool:value] forKey:key];
 		} 
 		else if ([key hasPrefix:@"max"])
 		{
-			NSNumber *value = [NSNumber numberWithInt:[[item valueForKey:key] intValue]];
+			NSNumber *value = [NSNumber numberWithInt:[[item objectForKey:key] intValue]];
 			[child setValue:value forKey:key];
 		}
-		else
+		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
 		{
-			NSString *value = [item valueForKey:key];
+			NSString *value = [item objectForKey:key];
 			[child setValue:value forKey:key];
 		}
 		NS_HANDLER
@@ -243,17 +272,6 @@
 	[window makeKeyAndOrderFront:nil];
 }
 
-- (void)dealloc
-{
-	NSLog(@"SPUserManager dealloc.");
-	
-	[managedObjectContext release], managedObjectContext = nil;
-    [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
-    [managedObjectModel release], managedObjectModel = nil;
-	
-	[mySqlConnection release];
-	[super dealloc];
-}
 
 // OutlineView Delegate Methods
 - (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
@@ -452,6 +470,9 @@
 
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
+	for (NSManagedObject *user in updatedUsers) {
+		NSLog(@"Updated User: %@", user);
+	}
 	return FALSE;
 }
 
