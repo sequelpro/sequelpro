@@ -196,6 +196,15 @@
 	return [status objectForKey:aKey];
 }
 
+/*
+ * Set the table status value for the supplied key. This method is useful for when status values are obtained
+ * via other means and are subsequently more accurate than the value currently set.
+ */
+- (void)setStatusValue:(NSString *)value forKey:(NSString *)key
+{	
+	[status setValue:value forKey:key];
+}
+
 
 /*
  * Retrieve all known status values as a dictionary, using or refreshing the cache as appropriate.
