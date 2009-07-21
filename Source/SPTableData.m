@@ -754,7 +754,7 @@
 	if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
 		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
-			[status setObject:[NSNumber numberWithLongLong:[[[tableStatusResult fetchRowAsArray] objectAtIndex:0] longLongValue]] forKey:@"Rows"];
+			[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 
 	}
 
