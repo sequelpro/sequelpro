@@ -292,14 +292,14 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	// Select the password from the provided method
-	if (!connectionPassword) {		
+	if (!connectionPassword) {
 		if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
 			thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
 		}
 	} else {		
 		thePass = [self cStringFromString:connectionPassword];
 	}
-				
+
 	// Connect
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
@@ -417,7 +417,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		}
 		
 		currentProxyState = [connectionProxy state];
-		[connectionProxy setConnectionStateChangeSelector:@selector(sshTunnelStateChange:) delegate:self];
+		[connectionProxy setConnectionStateChangeSelector:@selector(connectionProxyStateChange:) delegate:self];
 	}
 	
 	if (!connectionProxy || [connectionProxy state] == PROXY_STATE_CONNECTED) {
@@ -1961,7 +1961,7 @@ static void forcePingTimeout(int signalNumber)
 - (void) dealloc
 {
 	delegate = nil;
-		
+
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];
