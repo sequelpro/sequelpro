@@ -728,7 +728,7 @@ static void forcePingTimeout(int signalNumber)
 		if (serverVersionString == nil) {
 			[self _getServerVersionString];
 		}
-		
+
 		if (serverVersionString != nil) {
 			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
 		} 
@@ -1791,7 +1791,7 @@ static void forcePingTimeout(int signalNumber)
 - (BOOL)fetchMaxAllowedPacket
 {
 	char *queryString;
-	
+
 	if ([self serverMajorVersion] == 3) queryString = "SHOW VARIABLES LIKE 'max_allowed_packet'";
 	else queryString = "SELECT @@global.max_allowed_packet";
 	
@@ -1983,7 +1983,7 @@ static void forcePingTimeout(int signalNumber)
 - (void)_getServerVersionString
 {
 	if (mConnected) {
-		MCPResult *theResult = [self queryString:@"SHOW VARIABLES WHERE Variable_name = 'version'"];
+		MCPResult *theResult = [self queryString:@"SHOW VARIABLES LIKE 'version'"];
 		
 		if ([theResult numOfRows]) {
 			[theResult dataSeek:0];
