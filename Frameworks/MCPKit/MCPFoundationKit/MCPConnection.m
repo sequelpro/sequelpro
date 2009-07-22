@@ -371,13 +371,13 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
 	
-	// Store the current database and encoding so they can be re-set if reconnection was successful
-	if (delegate && [delegate valueForKey:@"selectedDatabase"]) {
-		currentDatabase = [NSString stringWithString:[delegate valueForKey:@"selectedDatabase"]];
+	// Store the currently selected database and encoding so they can be re-set if reconnection was successful
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldSelectDatabase:)]) {
+		currentDatabase = [NSString stringWithString:[delegate onReconnectShouldSelectDatabase:self]];
 	}
 	
-	if (delegate && [delegate valueForKey:@"_encoding"]) {
-		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
+		currentEncoding = [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]];
 	}
 	
 	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
@@ -681,8 +681,8 @@ static void forcePingTimeout(int signalNumber)
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
 	
-	if (delegate && [delegate valueForKey:@"_encoding"]) {
-		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
+		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
 		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
 			if ([delegate connectionEncodingViaLatin1:self]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
 		}

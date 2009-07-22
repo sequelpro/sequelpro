@@ -2024,7 +2024,7 @@
 #pragma mark MCPKit connection delegate methods
 
 /**
- * Invoked when framework is about to perform a query.
+ * Invoked when the framework is about to perform a query.
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {		
@@ -2034,11 +2034,29 @@
 }
 
 /**
- * Invoked when the query just executed resulted in an error. 
+ * Invoked when the query just executed by the framework resulted in an error. 
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {	
 	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
+}
+
+/**
+ * Invoked when the framework is in the process of reconnecting to the server and needs to know 
+ * which database to select.
+ */
+- (NSString *)onReconnectShouldSelectDatabase:(id)connection
+{
+	return selectedDatabase;
+}
+
+/**
+ * Invoked when the framework is in the process of reconnecting to the server and needs to know 
+ * what encoding to use for the connection.
+ */
+- (NSString *)onReconnectShouldUseEncoding:(id)connection
+{
+	return _encoding;
 }
 
 /**

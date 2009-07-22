@@ -54,6 +54,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (void)queryGaveError:(NSString *)error connection:(id)connection;
 - (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (NSString *)keychainPasswordForConnection:(id)connection;
+- (NSString *)onReconnectShouldSelectDatabase:(id)connection;
+- (NSString *)onReconnectShouldUseEncoding:(id)connection;
 - (MCPConnectionCheck)connectionLost:(id)connection;
 
 @end
