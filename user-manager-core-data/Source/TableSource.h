@@ -24,9 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+#import <MCPKit/MCPKit.h>
 
 @interface TableSource : NSObject 
 {
@@ -50,9 +48,9 @@
 	IBOutlet id structureGrabber;
 	IBOutlet id editTableButton;
 
-	CMMCPConnection *mySQLConnection;
-	CMMCPResult *tableSourceResult;
-	CMMCPResult *indexResult;
+	MCPConnection *mySQLConnection;
+	MCPResult *tableSourceResult;
+	MCPResult *indexResult;
 
 	NSString *selectedTable;
 	NSMutableArray *tableFields, *indexes;
@@ -85,8 +83,8 @@
 - (IBAction)closeKeySheet:(id)sender;
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection;
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (void)setConnection:(MCPConnection *)theConnection;
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 

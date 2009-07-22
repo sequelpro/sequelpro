@@ -23,16 +23,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
+
 #import "SPTableData.h"
 #import "SPSQLParser.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-
 
 @implementation SPTableData
 
@@ -57,7 +55,7 @@
  * Set the connection for use.
  * Called by the connect sheet methods.
  */
-- (void) setConnection:(CMMCPConnection *)theConnection
+- (void) setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[mySQLConnection retain];
@@ -196,6 +194,15 @@
 	return [status objectForKey:aKey];
 }
 
+/*
+ * Set the table status value for the supplied key. This method is useful for when status values are obtained
+ * via other means and are subsequently more accurate than the value currently set.
+ */
+- (void)setStatusValue:(NSString *)value forKey:(NSString *)key
+{		
+	[status setValue:value forKey:key];
+}
+
 
 /*
  * Retrieve all known status values as a dictionary, using or refreshing the cache as appropriate.
@@ -313,7 +320,7 @@
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [tableName backtickQuotedString]
 																					]];
 
@@ -605,7 +612,7 @@
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	CMMCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [viewName backtickQuotedString]
 																					]];
 
@@ -719,7 +726,7 @@
 	// Run the status query and retrieve as a dictionary.
 	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
-	CMMCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
+	MCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -738,6 +745,15 @@
 	// Reassign any "Type" key - for MySQL < 4.1 - to "Engine" for consistency.
 	if ([status objectForKey:@"Type"]) {
 		[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
+	}
+	
+	// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
+	// this happens e.g. for db "information_schema"
+	if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
+		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+			[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
+
 	}
 
 	return TRUE;

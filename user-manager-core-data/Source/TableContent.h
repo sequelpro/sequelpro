@@ -26,9 +26,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 
-@class CMMCPConnection, CMMCPResult, CMCopyTable, SPTextAndLinkCell;
+@class CMCopyTable, SPTextAndLinkCell;
 
 @interface TableContent : NSObject 
 {	
@@ -52,7 +52,7 @@
 	IBOutlet id limitRowsStepper;
 	IBOutlet id limitRowsText;
 	
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *fullResult, *filteredResult, *dataColumns, *keys, *oldRow;
@@ -87,11 +87,11 @@
 - (NSArray *)currentDataResult;
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
 - (IBAction)stepLimitRows:(id)sender;
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(int)row;
 - (BOOL)tableContainsBlobOrTextColumns;

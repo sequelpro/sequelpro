@@ -24,8 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-
-@class CMMCPConnection;
+#import <MCPKit/MCPKit.h>
 
 typedef struct _CHAR_SETS
 {
@@ -43,10 +42,10 @@ typedef struct _CHAR_SETS
 	NSMutableArray *storageEngines;
 	NSMutableArray *characterSetEncodings;
 	
-	CMMCPConnection *connection;
+	MCPConnection *connection;
 }
 
-@property (readwrite, assign) CMMCPConnection *connection;
+@property (readwrite, assign) MCPConnection *connection;
 
 - (void)resetAllData;
 

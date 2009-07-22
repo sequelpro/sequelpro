@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class CMMCPConnection;
+@class MCPConnection;
 
 @interface SPUserManager : NSObject {
 	
@@ -19,7 +19,7 @@
 	
 	BOOL isInitializing;
 	
-	CMMCPConnection* mySqlConnection;
+	MCPConnection* mySqlConnection;
 	
 	IBOutlet NSOutlineView* outlineView;
 	IBOutlet NSTabView *tabView;
@@ -31,9 +31,9 @@
 - (NSManagedObjectModel *)managedObjectModel;
 - (NSManagedObjectContext *)managedObjectContext;
 
-- (id)initWithConnection:(CMMCPConnection *)connection;
-- (void)setConnection:(CMMCPConnection *)connection;
-- (CMMCPConnection *)connection;
+- (id)initWithConnection:(MCPConnection *)connection;
+- (void)setConnection:(MCPConnection *)connection;
+- (MCPConnection *)connection;
 - (void)show;
 - (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
 

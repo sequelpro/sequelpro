@@ -24,8 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDatabaseData.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "SPStringAdditions.h"
 
 @interface SPDatabaseData (PrivateAPI)
@@ -236,7 +234,7 @@ const CHAR_SETS charsets[] =
 	if ([collations count] == 0) {
 		
 		// Check the information_schema.collations table is accessible
-		CMMCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'collations'"];
+		MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'collations'"];
 		
 		if ([result numOfRows] == 1) {
 			// Table is accessible so get available collations
@@ -272,7 +270,7 @@ const CHAR_SETS charsets[] =
 		characterSetEncoding = [[NSString alloc] initWithString:encoding];
 		
 		// Check the information_schema.collations table is accessible
-		CMMCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'collations'"];
+		MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'collations'"];
 		
 		if ([result numOfRows] == 1) {
 			// Table is accessible so get available collations for the supplied encoding
@@ -308,7 +306,7 @@ const CHAR_SETS charsets[] =
 			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
 			
 			// Check if InnoDB support is enabled
-			CMMCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			MCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
 			
 			if ([result numOfRows] == 1) {
 				if ([[[result fetchRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {
@@ -350,7 +348,7 @@ const CHAR_SETS charsets[] =
 				([connection serverReleaseVersion] >= 5))
 			{
 				// Check the information_schema.engines table is accessible
-				CMMCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'engines'"];
+				MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'engines'"];
 				
 				if ([result numOfRows] == 1) {
 					// Table is accessible so get available storage engines
@@ -388,7 +386,7 @@ const CHAR_SETS charsets[] =
 	if ([characterSetEncodings count] == 0) {
 		
 		// Check the information_schema.collations table is accessible
-		CMMCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'character_sets'"];
+		MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'character_sets'"];
 		
 		if ([result numOfRows] == 1) {
 			// Table is accessible so get available encodings for the supplied encoding
@@ -439,7 +437,7 @@ const CHAR_SETS charsets[] =
 {
 	NSMutableArray *array = [NSMutableArray array];
 	
-	CMMCPResult *result = [connection queryString:query];
+	MCPResult *result = [connection queryString:query];
 	
 	// Log any errors
 	if ([[connection getLastErrorMessage] isEqualToString:@""]) {

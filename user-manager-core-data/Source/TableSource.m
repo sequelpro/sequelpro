@@ -30,7 +30,6 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 
-
 @implementation TableSource
 
 /*
@@ -519,7 +518,7 @@ closes the keySheet
 /*
 sets the connection (received from TableDocument) and makes things that have to be done only once 
 */
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	NSEnumerator *indexColumnsEnumerator = [[indexView tableColumns] objectEnumerator];
 	NSEnumerator *fieldColumnsEnumerator = [[tableSourceView tableColumns] objectEnumerator];
@@ -554,7 +553,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 /*
 fetches the result as an array with a dictionary for each row in it
 */
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	unsigned long numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
@@ -995,7 +994,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 
 - (NSArray *)tableStructureForPrint
 {
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	NSMutableArray *tempResult = [NSMutableArray array];
 	int i;
 	

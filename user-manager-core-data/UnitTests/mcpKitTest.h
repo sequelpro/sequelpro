@@ -23,12 +23,11 @@
 //
 
 #import <SenTestingKit/SenTestingKit.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+#import <MCPKit/MCPKit.h>
 
-@interface mcpKitTest : SenTestCase {
-	
-	CMMCPConnection *mySQLConnection;
+@interface mcpKitTest : SenTestCase 
+{	
+	MCPConnection *mySQLConnection;
 }
 
 @end

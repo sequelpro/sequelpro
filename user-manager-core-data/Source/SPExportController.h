@@ -23,11 +23,10 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
+#import <MCPKit/MCPKit.h>
 
-@interface SPExportController : NSObject {
-
+@interface SPExportController : NSObject 
+{
 	// Table Document
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
@@ -76,7 +75,7 @@
 	IBOutlet id exampleNameLabel;
 	
 	// Local Variables
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	NSMutableArray *tables;
 }
 
@@ -85,7 +84,7 @@
 - (IBAction)closeSheet:(id)sender;
 
 // Utility Methods
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)loadTables;
 - (IBAction)switchTab:(id)sender;
 - (IBAction)switchInput:(id)sender;

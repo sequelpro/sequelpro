@@ -30,8 +30,6 @@
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
 
-
-
 #pragma mark -
 #pragma mark lex init
 
@@ -104,7 +102,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	
 }
-- (void) setConnection:(CMMCPConnection *)theConnection withVersion:(int)majorVersion
+- (void) setConnection:(MCPConnection *)theConnection withVersion:(int)majorVersion
 {
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;

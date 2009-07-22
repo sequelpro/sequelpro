@@ -26,10 +26,10 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-@class CMMCPConnection, CMMCPResult, SPConnectionController;
+@class SPConnectionController;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -81,10 +81,11 @@
 	IBOutlet id syntaxView;
 	IBOutlet id syntaxViewContent;
 	IBOutlet NSWindow *createTableSyntaxWindow;
+	IBOutlet NSWindow *connectionErrorDialog;
 
 	SPConnectionController *connectionController;
 
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 
 	NSArray *variables;
 	NSString *selectedDatabase;
@@ -97,6 +98,7 @@
 	BOOL _encodingViaLatin1;
 	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
+	BOOL _mainNibLoaded;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -111,11 +113,11 @@
 - (IBAction)showUserManager:(id)sender;
 
 // Connection callback and methods
-- (void) setConnection:(CMMCPConnection *)theConnection;
+- (void) setConnection:(MCPConnection *)theConnection;
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (BOOL)shouldAutomaticallyConnect;
 
-//database methods
+// Database methods
 - (IBAction)setDatabases:(id)sender;
 - (IBAction)chooseDatabase:(id)sender;
 - (IBAction)addDatabase:(id)sender;
@@ -125,18 +127,18 @@
 - (IBAction)saveServerVariables:(id)sender;
 - (NSArray *)allDatabaseNames;
 
-//encoding methods
+// Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
 - (NSString *)connectionEncoding;
-- (BOOL)connectionEncodingViaLatin1;
+- (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;
 - (NSString *)encodingNameFromMySQLEncoding:(NSString *)mysqlEncoding;
 - (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName;
 
-//table methods
+// Table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntax:(id)sender;
 - (NSArray *)columnNames;
@@ -147,8 +149,10 @@
 - (IBAction)flushTable:(id)sender;
 - (IBAction)checksumTable:(id)sender;
 
-//other methods
+// Other methods
 - (NSString *)host;
+- (IBAction)closeSheet:(id)sender;
+- (IBAction)closeErrorConnectionSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)flushPrivileges:(id)sender;
 - (void)showVariables:(id)sender;
@@ -156,19 +160,19 @@
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void) refreshCurrentDatabase;
 
-//getter methods
+// Getter methods
 - (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
 
-//notification center methods
+// Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
 - (void)hasPerformedQuery:(NSNotification *)notification;
 - (void)applicationWillTerminate:(NSNotification *)notification;
 
-//menu methods
+// Menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
 - (IBAction)import:(id)sender;
 - (IBAction)export:(id)sender;
@@ -181,23 +185,17 @@
 - (IBAction)viewRelations:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
 
-// titlebar methods
+// Titlebar methods
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
 - (void)setTitlebarStatus:(NSString *)status;
 - (void)clearStatusIcon;
 
-//toolbar methods
+// Toolbar methods
 - (void)setupToolbar;
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar;
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar;
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 - (void)updateChooseDatabaseToolbarItemWidth;
-
-//SMySQL delegate methods
-- (void)willQueryString:(NSString *)query;
-- (void)queryGaveError:(NSString *)error;
-
-- (IBAction)closeSheet:(id)sender;
 
 @end

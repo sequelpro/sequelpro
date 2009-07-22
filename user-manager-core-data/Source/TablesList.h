@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 
 enum sp_table_types
 {
@@ -35,10 +35,10 @@ enum sp_table_types
 	SP_TABLETYPE_FUNC = 3
 };
 
-@class CMMCResult, CMMCPConnection;
+@class CMMCResult, MCPConnection;
 
-@interface TablesList : NSObject {
-
+@interface TablesList : NSObject 
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
@@ -73,14 +73,13 @@ enum sp_table_types
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 
+	MCPConnection *mySQLConnection;
+	
 	IBOutlet NSMenuItem *removeTableContextMenuItem;
 	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
 	IBOutlet NSMenuItem *renameTableContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 
-
-	CMMCPConnection *mySQLConnection;
-	
 	NSMutableArray *tables;
 	NSMutableArray *tableTypes;
 
@@ -101,8 +100,8 @@ enum sp_table_types
 
 // Additional methods
 - (void)removeTable;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)truncateTable;
-- (void)setConnection:(CMMCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 
 // Getters

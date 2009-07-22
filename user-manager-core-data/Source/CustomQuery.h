@@ -24,18 +24,17 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
+
 #import "CMCopyTable.h"
 #import "CMTextView.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "RegexKitLite.h"
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
 
-@interface CustomQuery : NSObject {
-
+@interface CustomQuery : NSObject 
+{
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;
@@ -77,7 +76,7 @@
 	NSUserDefaults *prefs;
 	NSMutableArray *queryFavorites;
 	
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
 	NSRange currentQueryRange;
@@ -95,7 +94,8 @@
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 	
-	BOOL tableReloadAfterEdting;
+	BOOL tableReloadAfterEditing;
+	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
 	BOOL tempAlertWasShown; // a temp value for nightly builts
@@ -134,7 +134,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult;
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 
 // MySQL Help
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;
@@ -146,7 +146,7 @@
 
 
 // Other
-- (void)setConnection:(CMMCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)selectCurrentQuery;

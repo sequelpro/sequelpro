@@ -24,9 +24,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-
-@interface SPFieldEditorController : NSWindowController {
-	
+@interface SPFieldEditorController : NSWindowController 
+{	
 	IBOutlet id editSheetProgressBar;
 	IBOutlet id editSheetSegmentControl;
 	IBOutlet id editSheetQuickLookButton;

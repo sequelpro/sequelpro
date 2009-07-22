@@ -17,6 +17,56 @@
 		177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
+		17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B576101601C300F057DE /* libmysqlclient.a */; };
+		17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
+		17B7B592101602AE00F057DE /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B591101602AE00F057DE /* libssl.dylib */; };
+		17B7B594101602D200F057DE /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B593101602D200F057DE /* libz.dylib */; };
+		17B7B595101602D800F057DE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		17B7B5991016038400F057DE /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B5621016012700F057DE /* MCPKit.framework */; };
+		17B7B5B0101603A400F057DE /* MCPAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B59C101603A400F057DE /* MCPAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5B1101603A400F057DE /* MCPAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B59D101603A400F057DE /* MCPAttribute.m */; };
+		17B7B5B2101603A400F057DE /* MCPClassDescription+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B59E101603A400F057DE /* MCPClassDescription+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5B3101603A400F057DE /* MCPClassDescription+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B59F101603A400F057DE /* MCPClassDescription+MCPEntreprise.m */; };
+		17B7B5B4101603A400F057DE /* MCPClassDescription+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A0101603A400F057DE /* MCPClassDescription+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5B5101603A400F057DE /* MCPClassDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A1101603A400F057DE /* MCPClassDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5B6101603A400F057DE /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A2101603A400F057DE /* MCPClassDescription.m */; };
+		17B7B5B7101603A400F057DE /* MCPEntrepriseNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A3101603A400F057DE /* MCPEntrepriseNotifications.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5B8101603A400F057DE /* MCPEntrepriseNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A4101603A400F057DE /* MCPEntrepriseNotifications.m */; };
+		17B7B5B9101603A400F057DE /* MCPJoin.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A5101603A400F057DE /* MCPJoin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5BA101603A400F057DE /* MCPJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A6101603A400F057DE /* MCPJoin.m */; };
+		17B7B5BB101603A400F057DE /* MCPModel+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A7101603A400F057DE /* MCPModel+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5BC101603A400F057DE /* MCPModel+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A8101603A400F057DE /* MCPModel+MCPEntreprise.m */; };
+		17B7B5BD101603A400F057DE /* MCPModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A9101603A400F057DE /* MCPModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5BE101603A400F057DE /* MCPModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5AA101603A400F057DE /* MCPModel.m */; };
+		17B7B5BF101603A400F057DE /* MCPObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5AB101603A400F057DE /* MCPObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5C0101603A400F057DE /* MCPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5AC101603A400F057DE /* MCPObject.m */; };
+		17B7B5C1101603A400F057DE /* MCPRelation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5AD101603A400F057DE /* MCPRelation+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5C2101603A400F057DE /* MCPRelation.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5AE101603A400F057DE /* MCPRelation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5C3101603A400F057DE /* MCPRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5AF101603A400F057DE /* MCPRelation.m */; };
+		17B7B5D3101603B200F057DE /* MCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5C4101603B200F057DE /* MCPConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5D4101603B200F057DE /* MCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5C5101603B200F057DE /* MCPConnection.m */; };
+		17B7B5D5101603B200F057DE /* MCPConnectionProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5D6101603B200F057DE /* MCPConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5C7101603B200F057DE /* MCPConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5D7101603B200F057DE /* MCPFastQueries.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5C8101603B200F057DE /* MCPFastQueries.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5D8101603B200F057DE /* MCPFastQueries.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5C9101603B200F057DE /* MCPFastQueries.m */; };
+		17B7B5D9101603B200F057DE /* MCPKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5CA101603B200F057DE /* MCPKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5DA101603B200F057DE /* MCPNull.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5CB101603B200F057DE /* MCPNull.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5DB101603B200F057DE /* MCPNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5CC101603B200F057DE /* MCPNull.m */; };
+		17B7B5DC101603B200F057DE /* MCPNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5CD101603B200F057DE /* MCPNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5DD101603B200F057DE /* MCPNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5CE101603B200F057DE /* MCPNumber.m */; };
+		17B7B5DE101603B200F057DE /* MCPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5CF101603B200F057DE /* MCPResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5DF101603B200F057DE /* MCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5D0101603B200F057DE /* MCPResult.m */; };
+		17B7B5E0101603B200F057DE /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5D1101603B200F057DE /* MCPResultPlus.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5D2101603B200F057DE /* MCPResultPlus.m */; };
+		17B7B5EA101603D200F057DE /* my_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E2101603D200F057DE /* my_alloc.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5EB101603D200F057DE /* my_list.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E3101603D200F057DE /* my_list.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5EC101603D200F057DE /* mysql.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E4101603D200F057DE /* mysql.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5ED101603D200F057DE /* mysql_com.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E5101603D200F057DE /* mysql_com.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5EE101603D200F057DE /* mysql_embed.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E6101603D200F057DE /* mysql_embed.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5EF101603D200F057DE /* mysql_time.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E7101603D200F057DE /* mysql_time.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5F0101603D200F057DE /* mysql_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E8101603D200F057DE /* mysql_version.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B5F1101603D200F057DE /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E9101603D200F057DE /* typelib.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17B7B61D101605E300F057DE /* MCPKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 17B7B5621016012700F057DE /* MCPKit.framework */; };
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
@@ -31,8 +81,6 @@
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
 		17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */; };
 		17E641750EF01F80001BC333 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
-		17E6417A0EF01F95001BC333 /* CMMCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641770EF01F95001BC333 /* CMMCPConnection.m */; };
-		17E6417B0EF01F95001BC333 /* CMMCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641790EF01F95001BC333 /* CMMCPResult.m */; };
 		17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417D0EF01FA8001BC333 /* CMCopyTable.m */; };
 		17E641830EF01FA8001BC333 /* CMImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417F0EF01FA8001BC333 /* CMImageView.m */; };
 		17E641840EF01FA8001BC333 /* CMTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641810EF01FA8001BC333 /* CMTextView.m */; };
@@ -71,7 +119,6 @@
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
 		380F4EF50FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */; };
 		380F4F250FC0C3D300B0BFD7 /* mcpKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */; };
-		380F4F270FC0C51C00B0BFD7 /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		384582BE0FB95C9100DDACB6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 384582BC0FB95C9100DDACB6 /* Localizable.strings */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
@@ -81,11 +128,11 @@
 		4D6FC5310FE219A700C16714 /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D6FC52E0FE219A700C16714 /* SPUserMO.m */; };
 		4D6FC5350FE219ED00C16714 /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D6FC5330FE219ED00C16714 /* UserManagerView.xib */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
-		4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
-		4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
+		581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = 581068B51015411B0068C6E2 /* link-arrow-highlighted.png */; };
+		581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */ = {isa = PBXBuildFile; fileRef = 58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */; };
 		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */; };
 		5822CAE110011C8000DCC3D6 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5822CADF10011C8000DCC3D6 /* ConnectionView.xib */; };
@@ -101,11 +148,11 @@
 		58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
 		58CDB3400FCE13EF00F8ACA3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
-		58CDB3410FCE141900F8ACA3 /* TunnelPassphraseRequester.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* TunnelPassphraseRequester.m */; };
+		58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */; };
 		58CDB3420FCE142500F8ACA3 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
 		58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2E227101222670063EF1D /* SPTextAndLinkCell.m */; };
 		58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22B101222870063EF1D /* link-arrow-clicked.png */; };
-		58D2E22F101222870063EF1D /* link-arrow-highlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted.png */; };
+		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
 		58D2E230101222870063EF1D /* link-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22D101222870063EF1D /* link-arrow.png */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
@@ -175,6 +222,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		17B7B59A1016039200F057DE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17B7B5611016012700F057DE;
+			remoteInfo = MCPKit;
+		};
 		380F4EDF0FC0B51D00B0BFD7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -226,9 +280,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				17B7B61D101605E300F057DE /* MCPKit.framework in CopyFiles */,
 				B5538E730FF279F300219803 /* BWToolkitFramework.framework in CopyFiles */,
 				4DECC4910EC2B436008D359E /* Growl.framework in CopyFiles */,
-				4DECC4900EC2B436008D359E /* MCPKit_bundled.framework in CopyFiles */,
 				4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -277,6 +331,57 @@
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
+		17B7B5621016012700F057DE /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17B7B576101601C300F057DE /* libmysqlclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient.a; sourceTree = "<group>"; };
+		17B7B577101601C300F057DE /* libmysqlclient_r.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient_r.a; sourceTree = "<group>"; };
+		17B7B58B1016022C00F057DE /* MCPKit-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MCPKit-Info.plist"; sourceTree = "<group>"; };
+		17B7B58F1016028F00F057DE /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
+		17B7B591101602AE00F057DE /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
+		17B7B593101602D200F057DE /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		17B7B59C101603A400F057DE /* MCPAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPAttribute.h; sourceTree = "<group>"; };
+		17B7B59D101603A400F057DE /* MCPAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPAttribute.m; sourceTree = "<group>"; };
+		17B7B59E101603A400F057DE /* MCPClassDescription+MCPEntreprise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPClassDescription+MCPEntreprise.h"; sourceTree = "<group>"; };
+		17B7B59F101603A400F057DE /* MCPClassDescription+MCPEntreprise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MCPClassDescription+MCPEntreprise.m"; sourceTree = "<group>"; };
+		17B7B5A0101603A400F057DE /* MCPClassDescription+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPClassDescription+Private.h"; sourceTree = "<group>"; };
+		17B7B5A1101603A400F057DE /* MCPClassDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPClassDescription.h; sourceTree = "<group>"; };
+		17B7B5A2101603A400F057DE /* MCPClassDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPClassDescription.m; sourceTree = "<group>"; };
+		17B7B5A3101603A400F057DE /* MCPEntrepriseNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPEntrepriseNotifications.h; sourceTree = "<group>"; };
+		17B7B5A4101603A400F057DE /* MCPEntrepriseNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPEntrepriseNotifications.m; sourceTree = "<group>"; };
+		17B7B5A5101603A400F057DE /* MCPJoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPJoin.h; sourceTree = "<group>"; };
+		17B7B5A6101603A400F057DE /* MCPJoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPJoin.m; sourceTree = "<group>"; };
+		17B7B5A7101603A400F057DE /* MCPModel+MCPEntreprise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPModel+MCPEntreprise.h"; sourceTree = "<group>"; };
+		17B7B5A8101603A400F057DE /* MCPModel+MCPEntreprise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MCPModel+MCPEntreprise.m"; sourceTree = "<group>"; };
+		17B7B5A9101603A400F057DE /* MCPModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPModel.h; sourceTree = "<group>"; };
+		17B7B5AA101603A400F057DE /* MCPModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPModel.m; sourceTree = "<group>"; };
+		17B7B5AB101603A400F057DE /* MCPObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPObject.h; sourceTree = "<group>"; };
+		17B7B5AC101603A400F057DE /* MCPObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPObject.m; sourceTree = "<group>"; };
+		17B7B5AD101603A400F057DE /* MCPRelation+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPRelation+Private.h"; sourceTree = "<group>"; };
+		17B7B5AE101603A400F057DE /* MCPRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPRelation.h; sourceTree = "<group>"; };
+		17B7B5AF101603A400F057DE /* MCPRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPRelation.m; sourceTree = "<group>"; };
+		17B7B5C4101603B200F057DE /* MCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnection.h; sourceTree = "<group>"; };
+		17B7B5C5101603B200F057DE /* MCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPConnection.m; sourceTree = "<group>"; };
+		17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnectionProxy.h; sourceTree = "<group>"; };
+		17B7B5C7101603B200F057DE /* MCPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConstants.h; sourceTree = "<group>"; };
+		17B7B5C8101603B200F057DE /* MCPFastQueries.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPFastQueries.h; sourceTree = "<group>"; };
+		17B7B5C9101603B200F057DE /* MCPFastQueries.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPFastQueries.m; sourceTree = "<group>"; };
+		17B7B5CA101603B200F057DE /* MCPKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKit.h; sourceTree = "<group>"; };
+		17B7B5CB101603B200F057DE /* MCPNull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPNull.h; sourceTree = "<group>"; };
+		17B7B5CC101603B200F057DE /* MCPNull.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPNull.m; sourceTree = "<group>"; };
+		17B7B5CD101603B200F057DE /* MCPNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPNumber.h; sourceTree = "<group>"; };
+		17B7B5CE101603B200F057DE /* MCPNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPNumber.m; sourceTree = "<group>"; };
+		17B7B5CF101603B200F057DE /* MCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPResult.h; sourceTree = "<group>"; };
+		17B7B5D0101603B200F057DE /* MCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResult.m; sourceTree = "<group>"; };
+		17B7B5D1101603B200F057DE /* MCPResultPlus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPResultPlus.h; sourceTree = "<group>"; };
+		17B7B5D2101603B200F057DE /* MCPResultPlus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPResultPlus.m; sourceTree = "<group>"; };
+		17B7B5E2101603D200F057DE /* my_alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = my_alloc.h; sourceTree = "<group>"; };
+		17B7B5E3101603D200F057DE /* my_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = my_list.h; sourceTree = "<group>"; };
+		17B7B5E4101603D200F057DE /* mysql.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql.h; sourceTree = "<group>"; };
+		17B7B5E5101603D200F057DE /* mysql_com.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_com.h; sourceTree = "<group>"; };
+		17B7B5E6101603D200F057DE /* mysql_embed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_embed.h; sourceTree = "<group>"; };
+		17B7B5E7101603D200F057DE /* mysql_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_time.h; sourceTree = "<group>"; };
+		17B7B5E8101603D200F057DE /* mysql_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_version.h; sourceTree = "<group>"; };
+		17B7B5E9101603D200F057DE /* typelib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = typelib.h; sourceTree = "<group>"; };
+		17B7B698101611C800F057DE /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
 		17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
@@ -306,10 +411,6 @@
 		17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
 		17E641730EF01F80001BC333 /* KeyChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyChain.h; sourceTree = "<group>"; };
 		17E641740EF01F80001BC333 /* KeyChain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeyChain.m; sourceTree = "<group>"; };
-		17E641760EF01F95001BC333 /* CMMCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPConnection.h; sourceTree = "<group>"; };
-		17E641770EF01F95001BC333 /* CMMCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMMCPConnection.m; sourceTree = "<group>"; };
-		17E641780EF01F95001BC333 /* CMMCPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMMCPResult.h; sourceTree = "<group>"; };
-		17E641790EF01F95001BC333 /* CMMCPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMMCPResult.m; sourceTree = "<group>"; };
 		17E6417C0EF01FA8001BC333 /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
 		17E6417D0EF01FA8001BC333 /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
 		17E6417E0EF01FA8001BC333 /* CMImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMImageView.h; sourceTree = "<group>"; };
@@ -381,8 +482,8 @@
 		4D6FC5320FE219C200C16714 /* SPUserMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserMO.h; sourceTree = "<group>"; };
 		4D6FC5340FE219ED00C16714 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
-		4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MCPKit_bundled.framework; path = Frameworks/MCPKit_bundled.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
+		581068B51015411B0068C6E2 /* link-arrow-highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-highlighted.png"; sourceTree = "<group>"; };
 		58186D200F4CB38900851FE9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ConnectionErrorDialog.xib; sourceTree = "<group>"; };
 		5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionController.h; sourceTree = "<group>"; };
 		5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionController.m; sourceTree = "<group>"; };
@@ -401,12 +502,12 @@
 		58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_edit_mode_selected.tiff; sourceTree = "<group>"; };
 		58CDB32E0FCE138D00F8ACA3 /* SPSSHTunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSSHTunnel.h; sourceTree = "<group>"; };
 		58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSSHTunnel.m; sourceTree = "<group>"; };
-		58CDB3310FCE139C00F8ACA3 /* TunnelPassphraseRequester.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TunnelPassphraseRequester.m; sourceTree = "<group>"; };
-		58CDB3360FCE13C900F8ACA3 /* TunnelPassphraseRequester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TunnelPassphraseRequester; sourceTree = BUILT_PRODUCTS_DIR; };
+		58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SequelProTunnelAssistant.m; sourceTree = "<group>"; };
+		58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SequelProTunnelAssistant; sourceTree = BUILT_PRODUCTS_DIR; };
 		58D2E227101222670063EF1D /* SPTextAndLinkCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextAndLinkCell.m; sourceTree = "<group>"; };
 		58D2E228101222670063EF1D /* SPTextAndLinkCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextAndLinkCell.h; sourceTree = "<group>"; };
 		58D2E22B101222870063EF1D /* link-arrow-clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-clicked.png"; sourceTree = "<group>"; };
-		58D2E22C101222870063EF1D /* link-arrow-highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-highlighted.png"; sourceTree = "<group>"; };
+		58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-highlighted-clicked.png"; sourceTree = "<group>"; };
 		58D2E22D101222870063EF1D /* link-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow.png"; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
@@ -487,11 +588,22 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		17B7B5601016012700F057DE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */,
+				17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */,
+				17B7B592101602AE00F057DE /* libssl.dylib in Frameworks */,
+				17B7B594101602D200F057DE /* libz.dylib in Frameworks */,
+				17B7B595101602D800F057DE /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		380F4ED60FC0B50500B0BFD7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				380F4F270FC0C51C00B0BFD7 /* MCPKit_bundled.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -512,10 +624,10 @@
 				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
 				B5538EA00FF27CD400219803 /* BWToolkitFramework.framework in Frameworks */,
 				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
-				4DECC3360EC2A170008D359E /* MCPKit_bundled.framework in Frameworks */,
 				B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */,
 				4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
+				17B7B5991016038400F057DE /* MCPKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -525,13 +637,15 @@
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
-				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
 				B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */,
+				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
 				4DECC3340EC2A170008D359E /* Growl.framework */,
-				4DECC3330EC2A170008D359E /* MCPKit_bundled.framework */,
 				4DECC3320EC2A170008D359E /* Sparkle.framework */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
+				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
+				17B7B58F1016028F00F057DE /* libcrypto.dylib */,
+				17B7B591101602AE00F057DE /* libssl.dylib */,
+				17B7B593101602D200F057DE /* libz.dylib */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -616,6 +730,7 @@
 				17E6423C0EF0218B001BC333 /* InfoPlist.strings */,
 				17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */,
 				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
+				17B7B58B1016022C00F057DE /* MCPKit-Info.plist */,
 			);
 			name = Plists;
 			sourceTree = "<group>";
@@ -625,9 +740,103 @@
 			children = (
 				1761FD9D0EF0488900331368 /* build-version.pl */,
 				178934980F30CDA10097539A /* trim-application.sh */,
+				17B7B698101611C800F057DE /* build-mysql-client.sh */,
 				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
 			path = Scripts;
+			sourceTree = "<group>";
+		};
+		17B7B5551016002900F057DE /* MCPKit */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B5561016003F00F057DE /* MySQL */,
+				17B7B5581016005700F057DE /* MCPEntrepriseKit */,
+				17B7B5571016004500F057DE /* MCPFoundationKit */,
+			);
+			name = MCPKit;
+			path = ../Frameworks/MCPKit;
+			sourceTree = "<group>";
+		};
+		17B7B5561016003F00F057DE /* MySQL */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B55A1016007600F057DE /* lib */,
+				17B7B55B1016007C00F057DE /* include */,
+			);
+			path = MySQL;
+			sourceTree = "<group>";
+		};
+		17B7B5571016004500F057DE /* MCPFoundationKit */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B5C4101603B200F057DE /* MCPConnection.h */,
+				17B7B5C5101603B200F057DE /* MCPConnection.m */,
+				17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */,
+				17B7B5C7101603B200F057DE /* MCPConstants.h */,
+				17B7B5C8101603B200F057DE /* MCPFastQueries.h */,
+				17B7B5C9101603B200F057DE /* MCPFastQueries.m */,
+				17B7B5CA101603B200F057DE /* MCPKit.h */,
+				17B7B5CB101603B200F057DE /* MCPNull.h */,
+				17B7B5CC101603B200F057DE /* MCPNull.m */,
+				17B7B5CD101603B200F057DE /* MCPNumber.h */,
+				17B7B5CE101603B200F057DE /* MCPNumber.m */,
+				17B7B5CF101603B200F057DE /* MCPResult.h */,
+				17B7B5D0101603B200F057DE /* MCPResult.m */,
+				17B7B5D1101603B200F057DE /* MCPResultPlus.h */,
+				17B7B5D2101603B200F057DE /* MCPResultPlus.m */,
+			);
+			path = MCPFoundationKit;
+			sourceTree = "<group>";
+		};
+		17B7B5581016005700F057DE /* MCPEntrepriseKit */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B59C101603A400F057DE /* MCPAttribute.h */,
+				17B7B59D101603A400F057DE /* MCPAttribute.m */,
+				17B7B59E101603A400F057DE /* MCPClassDescription+MCPEntreprise.h */,
+				17B7B59F101603A400F057DE /* MCPClassDescription+MCPEntreprise.m */,
+				17B7B5A0101603A400F057DE /* MCPClassDescription+Private.h */,
+				17B7B5A1101603A400F057DE /* MCPClassDescription.h */,
+				17B7B5A2101603A400F057DE /* MCPClassDescription.m */,
+				17B7B5A3101603A400F057DE /* MCPEntrepriseNotifications.h */,
+				17B7B5A4101603A400F057DE /* MCPEntrepriseNotifications.m */,
+				17B7B5A5101603A400F057DE /* MCPJoin.h */,
+				17B7B5A6101603A400F057DE /* MCPJoin.m */,
+				17B7B5A7101603A400F057DE /* MCPModel+MCPEntreprise.h */,
+				17B7B5A8101603A400F057DE /* MCPModel+MCPEntreprise.m */,
+				17B7B5A9101603A400F057DE /* MCPModel.h */,
+				17B7B5AA101603A400F057DE /* MCPModel.m */,
+				17B7B5AB101603A400F057DE /* MCPObject.h */,
+				17B7B5AC101603A400F057DE /* MCPObject.m */,
+				17B7B5AD101603A400F057DE /* MCPRelation+Private.h */,
+				17B7B5AE101603A400F057DE /* MCPRelation.h */,
+				17B7B5AF101603A400F057DE /* MCPRelation.m */,
+			);
+			path = MCPEntrepriseKit;
+			sourceTree = "<group>";
+		};
+		17B7B55A1016007600F057DE /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B576101601C300F057DE /* libmysqlclient.a */,
+				17B7B577101601C300F057DE /* libmysqlclient_r.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		17B7B55B1016007C00F057DE /* include */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B5E2101603D200F057DE /* my_alloc.h */,
+				17B7B5E3101603D200F057DE /* my_list.h */,
+				17B7B5E4101603D200F057DE /* mysql.h */,
+				17B7B5E5101603D200F057DE /* mysql_com.h */,
+				17B7B5E6101603D200F057DE /* mysql_embed.h */,
+				17B7B5E7101603D200F057DE /* mysql_time.h */,
+				17B7B5E8101603D200F057DE /* mysql_version.h */,
+				17B7B5E9101603D200F057DE /* typelib.h */,
+			);
+			path = include;
 			sourceTree = "<group>";
 		};
 		17E641420EF01E8A001BC333 /* Source */ = {
@@ -639,6 +848,7 @@
 				17E6415D0EF01EF9001BC333 /* Model */,
 				17E641670EF01F19001BC333 /* Views */,
 				17E6416E0EF01F3B001BC333 /* Other */,
+				17B7B5551016002900F057DE /* MCPKit */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -678,6 +888,8 @@
 				17E641550EF01EF6001BC333 /* TableSource.m */,
 				17E641480EF01EF6001BC333 /* CustomQuery.h */,
 				17E641490EF01EF6001BC333 /* CustomQuery.m */,
+				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
+				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
@@ -741,7 +953,6 @@
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
 				17128B890FE6DFFA0035DD75 /* QuickLook */,
 				17E6416F0EF01F4C001BC333 /* Keychain */,
-				17E641700EF01F52001BC333 /* MCPKit */,
 				58FEF15E0F23D60A00518E8E /* Parsing */,
 				17E641710EF01F5C001BC333 /* GUI */,
 				17E641720EF01F6B001BC333 /* SSHTunnel */,
@@ -757,17 +968,6 @@
 				17E641740EF01F80001BC333 /* KeyChain.m */,
 			);
 			name = Keychain;
-			sourceTree = "<group>";
-		};
-		17E641700EF01F52001BC333 /* MCPKit */ = {
-			isa = PBXGroup;
-			children = (
-				17E641760EF01F95001BC333 /* CMMCPConnection.h */,
-				17E641770EF01F95001BC333 /* CMMCPConnection.m */,
-				17E641780EF01F95001BC333 /* CMMCPResult.h */,
-				17E641790EF01F95001BC333 /* CMMCPResult.m */,
-			);
-			name = MCPKit;
 			sourceTree = "<group>";
 		};
 		17E641710EF01F5C001BC333 /* GUI */ = {
@@ -787,8 +987,8 @@
 				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
 				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
 				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
-				58D2E227101222670063EF1D /* SPTextAndLinkCell.m */,
 				58D2E228101222670063EF1D /* SPTextAndLinkCell.h */,
+				58D2E227101222670063EF1D /* SPTextAndLinkCell.m */,
 			);
 			name = GUI;
 			sourceTree = "<group>";
@@ -798,7 +998,7 @@
 			children = (
 				58CDB32E0FCE138D00F8ACA3 /* SPSSHTunnel.h */,
 				58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */,
-				58CDB3310FCE139C00F8ACA3 /* TunnelPassphraseRequester.m */,
+				58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */,
 			);
 			name = SSHTunnel;
 			sourceTree = "<group>";
@@ -838,7 +1038,8 @@
 				17E6419F0EF02036001BC333 /* hideconsole.tiff */,
 				58D2E22D101222870063EF1D /* link-arrow.png */,
 				58D2E22B101222870063EF1D /* link-arrow-clicked.png */,
-				58D2E22C101222870063EF1D /* link-arrow-highlighted.png */,
+				581068B51015411B0068C6E2 /* link-arrow-highlighted.png */,
+				58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */,
 				17E641A20EF02036001BC333 /* logo-48.png */,
 				17E641AE0EF02036001BC333 /* selectall.tiff */,
 				17E641AF0EF02036001BC333 /* selectnone.tiff */,
@@ -901,7 +1102,8 @@
 			children = (
 				8D15AC370486D014006FF6A4 /* Sequel Pro.app */,
 				380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */,
-				58CDB3360FCE13C900F8ACA3 /* TunnelPassphraseRequester */,
+				58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */,
+				17B7B5621016012700F057DE /* MCPKit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1005,7 +1207,62 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		17B7B55D1016012700F057DE /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17B7B5B0101603A400F057DE /* MCPAttribute.h in Headers */,
+				17B7B5B2101603A400F057DE /* MCPClassDescription+MCPEntreprise.h in Headers */,
+				17B7B5B4101603A400F057DE /* MCPClassDescription+Private.h in Headers */,
+				17B7B5B5101603A400F057DE /* MCPClassDescription.h in Headers */,
+				17B7B5B7101603A400F057DE /* MCPEntrepriseNotifications.h in Headers */,
+				17B7B5B9101603A400F057DE /* MCPJoin.h in Headers */,
+				17B7B5BB101603A400F057DE /* MCPModel+MCPEntreprise.h in Headers */,
+				17B7B5BD101603A400F057DE /* MCPModel.h in Headers */,
+				17B7B5BF101603A400F057DE /* MCPObject.h in Headers */,
+				17B7B5C1101603A400F057DE /* MCPRelation+Private.h in Headers */,
+				17B7B5C2101603A400F057DE /* MCPRelation.h in Headers */,
+				17B7B5D3101603B200F057DE /* MCPConnection.h in Headers */,
+				17B7B5D5101603B200F057DE /* MCPConnectionProxy.h in Headers */,
+				17B7B5D6101603B200F057DE /* MCPConstants.h in Headers */,
+				17B7B5D7101603B200F057DE /* MCPFastQueries.h in Headers */,
+				17B7B5D9101603B200F057DE /* MCPKit.h in Headers */,
+				17B7B5DA101603B200F057DE /* MCPNull.h in Headers */,
+				17B7B5DC101603B200F057DE /* MCPNumber.h in Headers */,
+				17B7B5DE101603B200F057DE /* MCPResult.h in Headers */,
+				17B7B5E0101603B200F057DE /* MCPResultPlus.h in Headers */,
+				17B7B5EA101603D200F057DE /* my_alloc.h in Headers */,
+				17B7B5EB101603D200F057DE /* my_list.h in Headers */,
+				17B7B5EC101603D200F057DE /* mysql.h in Headers */,
+				17B7B5ED101603D200F057DE /* mysql_com.h in Headers */,
+				17B7B5EE101603D200F057DE /* mysql_embed.h in Headers */,
+				17B7B5EF101603D200F057DE /* mysql_time.h in Headers */,
+				17B7B5F0101603D200F057DE /* mysql_version.h in Headers */,
+				17B7B5F1101603D200F057DE /* typelib.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		17B7B5611016012700F057DE /* MCPKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 17B7B5671016012A00F057DE /* Build configuration list for PBXNativeTarget "MCPKit" */;
+			buildPhases = (
+				17B7B55D1016012700F057DE /* Headers */,
+				17B7B55F1016012700F057DE /* Sources */,
+				17B7B5601016012700F057DE /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MCPKit;
+			productName = MCPKit;
+			productReference = 17B7B5621016012700F057DE /* MCPKit.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		380F4ED80FC0B50500B0BFD7 /* Unit Tests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */;
@@ -1025,9 +1282,9 @@
 			productReference = 380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */;
 			productType = "com.apple.product-type.bundle";
 		};
-		58CDB3350FCE13C900F8ACA3 /* TunnelPassphraseRequester */ = {
+		58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "TunnelPassphraseRequester" */;
+			buildConfigurationList = 58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelProTunnelAssistant" */;
 			buildPhases = (
 				58CDB3330FCE13C900F8ACA3 /* Sources */,
 				58CDB3340FCE13C900F8ACA3 /* Frameworks */,
@@ -1036,9 +1293,9 @@
 			);
 			dependencies = (
 			);
-			name = TunnelPassphraseRequester;
+			name = SequelProTunnelAssistant;
 			productName = TunnelPassphraseRequester;
-			productReference = 58CDB3360FCE13C900F8ACA3 /* TunnelPassphraseRequester */;
+			productReference = 58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */;
 			productType = "com.apple.product-type.tool";
 		};
 		8D15AC270486D014006FF6A4 /* Sequel Pro */ = {
@@ -1054,6 +1311,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				17B7B59B1016039200F057DE /* PBXTargetDependency */,
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
 				B5538E7C0FF27A2200219803 /* PBXTargetDependency */,
 				B5B90FDC0FF3BBC900E7B012 /* PBXTargetDependency */,
@@ -1084,7 +1342,8 @@
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
 				380F4ED80FC0B50500B0BFD7 /* Unit Tests */,
-				58CDB3350FCE13C900F8ACA3 /* TunnelPassphraseRequester */,
+				58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */,
+				17B7B5611016012700F057DE /* MCPKit */,
 			);
 		};
 /* End PBXProject section */
@@ -1204,9 +1463,11 @@
 				BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */,
 				BCA6F631100FA7D700E80253 /* FieldEditorSheet.xib in Resources */,
 				58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */,
-				58D2E22F101222870063EF1D /* link-arrow-highlighted.png in Resources */,
+				58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */,
 				58D2E230101222870063EF1D /* link-arrow.png in Resources */,
 				BC688D811012462600D35128 /* borderlessbackground.png in Resources */,
+				581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */,
+				581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1225,7 +1486,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Add build/bundle version\n\"${SRCROOT}/Scripts/build-version.pl\"\n\n# Copy the TunnelPassphraseRequester into the resources dir\ncp -f \"${BUILT_PRODUCTS_DIR}/TunnelPassphraseRequester\" \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}/Contents/Resources\"\n\n# Trim application if release or dist build\nif test \"$CONFIGURATION\" == 'Release' || test \"$CONFIGURATION\" == 'Distribution'\nthen\n\t\"${SRCROOT}/Scripts/trim-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\" -a\nfi\n\n# Perform distribution tasks on a dist build\nif [ \"$CONFIGURATION\" == 'Distribution' ]\nthen\n\t\"${SRCROOT}/Scripts/package-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\"\nfi";
+			shellScript = "# Add build/bundle version\n\"${SRCROOT}/Scripts/build-version.pl\"\n\n# Trim application if release or dist build\nif test \"$CONFIGURATION\" == 'Release' || test \"$CONFIGURATION\" == 'Distribution'\nthen\n\t\"${SRCROOT}/Scripts/trim-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\" -a\nfi\n\n# Perform distribution tasks on a dist build\nif [ \"$CONFIGURATION\" == 'Distribution' ]\nthen\n\t\"${SRCROOT}/Scripts/package-application.sh\" -p \"${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}\"\nfi";
 		};
 		380F4ED70FC0B50500B0BFD7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1243,6 +1504,28 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		17B7B55F1016012700F057DE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17B7B5B1101603A400F057DE /* MCPAttribute.m in Sources */,
+				17B7B5B3101603A400F057DE /* MCPClassDescription+MCPEntreprise.m in Sources */,
+				17B7B5B6101603A400F057DE /* MCPClassDescription.m in Sources */,
+				17B7B5B8101603A400F057DE /* MCPEntrepriseNotifications.m in Sources */,
+				17B7B5BA101603A400F057DE /* MCPJoin.m in Sources */,
+				17B7B5BC101603A400F057DE /* MCPModel+MCPEntreprise.m in Sources */,
+				17B7B5BE101603A400F057DE /* MCPModel.m in Sources */,
+				17B7B5C0101603A400F057DE /* MCPObject.m in Sources */,
+				17B7B5C3101603A400F057DE /* MCPRelation.m in Sources */,
+				17B7B5D4101603B200F057DE /* MCPConnection.m in Sources */,
+				17B7B5D8101603B200F057DE /* MCPFastQueries.m in Sources */,
+				17B7B5DB101603B200F057DE /* MCPNull.m in Sources */,
+				17B7B5DD101603B200F057DE /* MCPNumber.m in Sources */,
+				17B7B5DF101603B200F057DE /* MCPResult.m in Sources */,
+				17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		380F4ED50FC0B50500B0BFD7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1257,7 +1540,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
-				58CDB3410FCE141900F8ACA3 /* TunnelPassphraseRequester.m in Sources */,
+				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
 				58CDB3420FCE142500F8ACA3 /* KeyChain.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1279,8 +1562,6 @@
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
 				17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */,
 				17E641750EF01F80001BC333 /* KeyChain.m in Sources */,
-				17E6417A0EF01F95001BC333 /* CMMCPConnection.m in Sources */,
-				17E6417B0EF01F95001BC333 /* CMMCPResult.m in Sources */,
 				17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */,
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
 				17E641840EF01FA8001BC333 /* CMTextView.m in Sources */,
@@ -1328,6 +1609,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		17B7B59B1016039200F057DE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17B7B5611016012700F057DE /* MCPKit */;
+			targetProxy = 17B7B59A1016039200F057DE /* PBXContainerItemProxy */;
+		};
 		380F4EE00FC0B51D00B0BFD7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
@@ -1335,7 +1621,7 @@
 		};
 		58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 58CDB3350FCE13C900F8ACA3 /* TunnelPassphraseRequester */;
+			target = 58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */;
 			targetProxy = 58CDB34A0FCE144000F8ACA3 /* PBXContainerItemProxy */;
 		};
 		B5538E7C0FF27A2200219803 /* PBXTargetDependency */ = {
@@ -1467,6 +1753,96 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		17B7B5641016012A00F057DE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Resources/MCPKit-Info.plist";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MCPKit;
+			};
+			name = Debug;
+		};
+		17B7B5651016012A00F057DE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Resources/MCPKit-Info.plist";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MCPKit;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		17B7B5661016012A00F057DE /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Resources/MCPKit-Info.plist";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MCPKit;
+			};
+			name = Distribution;
+		};
 		380F4EDB0FC0B50600B0BFD7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1577,8 +1953,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Frameworks\"",
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
 					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_MODEL_TUNING = G5;
@@ -1586,6 +1960,7 @@
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
@@ -1611,7 +1986,7 @@
 					AppKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = TunnelPassphraseRequester;
+				PRODUCT_NAME = SequelProTunnelAssistant;
 			};
 			name = Debug;
 		};
@@ -1633,7 +2008,7 @@
 					AppKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = TunnelPassphraseRequester;
+				PRODUCT_NAME = SequelProTunnelAssistant;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1654,7 +2029,7 @@
 					AppKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = TunnelPassphraseRequester;
+				PRODUCT_NAME = SequelProTunnelAssistant;
 			};
 			name = Distribution;
 		};
@@ -1665,8 +2040,6 @@
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Frameworks\"",
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
 					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1677,6 +2050,7 @@
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
@@ -1691,8 +2065,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Frameworks\"",
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
 					"\"$(LOCAL_DEVELOPER_DIR)/Extras/BWToolkit\"",
 				);
 				GCC_MODEL_TUNING = G5;
@@ -1700,6 +2072,7 @@
 				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "i386 ppc ppc64 ppc7400 ppc970 x86_64";
@@ -1743,6 +2116,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		17B7B5671016012A00F057DE /* Build configuration list for PBXNativeTarget "MCPKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				17B7B5641016012A00F057DE /* Debug */,
+				17B7B5651016012A00F057DE /* Release */,
+				17B7B5661016012A00F057DE /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1753,7 +2136,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "TunnelPassphraseRequester" */ = {
+		58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelProTunnelAssistant" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58CDB3380FCE13CB00F8ACA3 /* Debug */,

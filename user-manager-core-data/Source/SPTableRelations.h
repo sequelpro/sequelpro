@@ -24,9 +24,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit_bundled/MCPKit_bundled.h>
+#import <MCPKit/MCPKit.h>
 
-@class CMMCPConnection, CMMCPResult, CMCopyTable;
+@class CMCopyTable;
 
 @interface SPTableRelations : NSObject 
 {	
@@ -52,12 +52,12 @@
 	IBOutlet NSPopUpButton *onDeletePopUpButton;
 	IBOutlet NSButton      *confirmAddRelationButton;
 		
-	CMMCPConnection *connection;
+	MCPConnection *connection;
 
 	NSMutableArray *relationData;
 }
 
-@property (readwrite, assign) CMMCPConnection *connection;
+@property (readwrite, assign) MCPConnection *connection;
 
 // IB action methods
 - (IBAction)addRelation:(id)sender;

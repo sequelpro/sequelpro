@@ -43,12 +43,12 @@
  get the tables in db
  */
 {
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	int i;
 	
 	//get tables
 	[tables removeAllObjects];
-	queryResult = (CMMCPResult *)[mySQLConnection listTables];
+	queryResult = (MCPResult *)[mySQLConnection listTables];
 	
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
@@ -423,7 +423,7 @@
 	if (!importSQLAsUTF8 || [fileType isEqualToString:@"CSV"]) {
 		DLog(@"Reading using connection encoding");
 		dumpFile = [SPSQLParser stringWithContentsOfFile:filename
-											 encoding:[CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
+											 encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
 												error:&errorStr];
 	}
 
@@ -588,9 +588,9 @@
 			[pool release];
 			return;
 		}
-		CMMCPResult *theResult;
+		MCPResult *theResult;
 		int i;
-		theResult = (CMMCPResult *) [mySQLConnection listTables];
+		theResult = (MCPResult *) [mySQLConnection listTables];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
 		[fieldMappingPopup removeAllItems];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
@@ -835,7 +835,7 @@
 	int i,j,t,rowCount, colCount, lastProgressValue, queryLength;
 	// int progressBarWidth;
 	int tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
 	NSArray *fieldNames;
 	NSArray *theRow;
@@ -902,8 +902,8 @@
 	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 
 	// Store the current connection encoding so it can be restored after the dump.
-	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
-	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 	
 	// Set the connection to UTF8 to be able to export correctly.
 	[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
@@ -1128,6 +1128,7 @@
 	[tableDocumentInstance
 	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
 	 reloadingViews:NO];
+	[previousConnectionEncoding release];
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
@@ -1195,8 +1196,8 @@
 	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 	
 	// store connection encoding
-	previousConnectionEncoding = [tableDocumentInstance connectionEncoding];
-	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1];
+	previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
+	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 	
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
@@ -1283,7 +1284,8 @@
 	[tableDocumentInstance
 	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
 	 reloadingViews:NO];
-	
+	[previousConnectionEncoding release];
+
 	
 	// Close the progress sheet
 	[NSApp endSheet:singleProgressSheet];
@@ -1297,7 +1299,7 @@
 /*
  Takes an array and writes it in CSV format to the supplied NSFileHandle
  */
-- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle
+- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(MCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle
 		outputFieldNames:(BOOL)outputFieldNames
 		terminatedBy:(NSString *)fieldSeparatorString
 		enclosedBy:(NSString *)enclosingString
@@ -1306,7 +1308,7 @@
 		withNumericColumns:(NSArray *)tableColumnNumericStatus
 		silently:(BOOL)silently;
 {
-	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
+	NSStringEncoding tableEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	NSMutableString *csvCell = [NSMutableString string];
 	NSMutableArray *csvRow = [NSMutableArray array];
 	NSMutableString *csvString = [NSMutableString string];
@@ -1655,9 +1657,9 @@
 /*
  Takes an array and writes it in XML format to the supplied NSFileHandle
  */
-- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(CMMCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently
+- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(MCPResult *)queryResult toFileHandle:(NSFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently
 {
-	NSStringEncoding tableEncoding = [CMMCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
+	NSStringEncoding tableEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	NSMutableArray *xmlTags = [NSMutableArray array];
 	NSMutableArray *xmlRow = [NSMutableArray array];
 	NSMutableString *xmlString = [NSMutableString string];
@@ -1815,7 +1817,7 @@
 - (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
 {
 	int i, j;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	NSString *tableName, *tableColumnTypeGrouping;
 	NSMutableString *infoString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
@@ -2173,7 +2175,7 @@
 }
 
 //additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 /*
  sets the connection (received from TableDocument) and makes things that have to be done only once 
  */

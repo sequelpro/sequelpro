@@ -75,7 +75,7 @@
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
-	tableReloadAfterEdting = NO;
+	tableReloadAfterEditing = NO;
 
 	[self performQueries:queries];
 	// If no error was selected reconstruct a given selection
@@ -129,7 +129,7 @@
 	[textView insertText:@""];
 	[textView setSelectedRange:selectedRange];
 
-	tableReloadAfterEdting = NO;
+	tableReloadAfterEditing = NO;
 
 	[self performQueries:queries];
 }
@@ -397,7 +397,7 @@
 	
 	NSArray         *theColumns;
 	NSTableColumn   *theCol;
-	CMMCPResult     *theResult  = nil;
+	MCPResult     *theResult  = nil;
 	NSMutableArray  *menuItems  = [NSMutableArray array];
 	NSMutableString *errors     = [NSMutableString string];
 	
@@ -420,13 +420,16 @@
 	[customQueryView scrollColumnToVisible:0];
 
 	// Remove all the columns
-	if(!tableReloadAfterEdting) {
+	if(!tableReloadAfterEditing) {
 		theColumns = [customQueryView tableColumns];
 		while ([theColumns count]) {
 			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 		}
 	}
-	
+
+	// Disable automatic query retries on failure for the custom queries
+	[mySQLConnection setAllowQueryRetries:NO];
+
 	long queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
@@ -523,7 +526,7 @@
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 	
-	if(!tableReloadAfterEdting)
+	if(!tableReloadAfterEditing)
 		lastExecutedQuery = [[tempQueries lastObject] retain];
 	
 	//perform empty query if no query is given
@@ -534,7 +537,7 @@
 	
 	//add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	if(!tableReloadAfterEdting) {
+	if(!tableReloadAfterEditing) {
 		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
 
 		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
@@ -549,7 +552,7 @@
 	}
 
 	// Error checking
-	if ( [errors length] ) {
+	if ( [errors length] && !queryIsTableSorter ) {
 		// set the error text
 		[errorText setStringValue:errors];
 		// select the line x of the first error if error message contains "at line x"
@@ -590,6 +593,9 @@
 
 		}
 		
+	} else if ( [errors length] && queryIsTableSorter ) {
+		[errorText setStringValue:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
+		NSBeep();
 	} else {
 		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
 	}
@@ -624,6 +630,8 @@
 		}
 	}
 
+	// Restore automatic query retries
+	[mySQLConnection setAllowQueryRetries:YES];
 
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !theResult || ![theResult numOfRows] ) {
@@ -664,7 +672,7 @@
 	// Add columns corresponding to the query result
 	theColumns = [theResult fetchFieldNames];
 
-	if(!tableReloadAfterEdting) {
+	if(!tableReloadAfterEditing) {
 		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
 			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
@@ -711,7 +719,7 @@
 /*
  * Fetches the result as an array, with an array for each row in it
  */
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	// NSArray *columns;
 	unsigned long numOfRows = [theResult numOfRows];
@@ -1091,7 +1099,7 @@
 /*
  * Sets the connection (received from TableDocument) and makes things that have to be done only once 
  */
-- (void)setConnection:(CMMCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	NSArray *tableColumns = [queryFavoritesView tableColumns];
 	NSEnumerator *enumerator = [tableColumns objectEnumerator];
@@ -1398,7 +1406,7 @@
 			}
 
 			// On success reload table data by executing the last query
-			tableReloadAfterEdting = YES;
+			tableReloadAfterEditing = YES;
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery]];
 			
 		} else {
@@ -1429,11 +1437,14 @@
 
 	if (sortField) [sortField release];
 	sortField = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
-	
+
 	// Order by the column position number to avoid ambiguous name errors
 	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %i %@ ", [[tableColumn identifier] intValue]+1, (isDesc)?@"DESC":@"ASC"];
 	
 	//make queryString and perform query
+	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
+	[queryString replaceOccurrencesOfRegex:@"--.*?$" withString:@""];
+	[queryString replaceOccurrencesOfRegex:@"/\\*(.|\n)*?\\*/" withString:@""];
 	if([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
 		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))" withString:newOrder];
 	else if ([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"])
@@ -1441,9 +1452,13 @@
 	else
 		[queryString appendFormat:@" %@", newOrder];
 		
-	tableReloadAfterEdting = YES;
+	tableReloadAfterEditing = YES;
+	queryIsTableSorter = YES;
 	[self performQueries:[NSArray arrayWithObject:queryString]];
-		
+	queryIsTableSorter = NO;
+
+	if(![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) return;
+
 	//sets highlight and indicatorImage
 	[customQueryView setHighlightedTableColumn:tableColumn];
 	if ( isDesc )
@@ -2043,7 +2058,7 @@
 	if(![searchString length]) return @"";
 	
 	NSRange         aRange;
-	CMMCPResult     *theResult = nil;
+	MCPResult     *theResult = nil;
 	NSDictionary    *tableDetails;
 	NSMutableString *theHelp = [NSMutableString string];
 

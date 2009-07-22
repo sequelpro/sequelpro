@@ -23,16 +23,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "SPTableInfo.h"
 #import "ImageAndTextCell.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
-
-#import <MCPKit_bundled/MCPKit_bundled.h>
 
 @interface SPTableInfo (PrivateAPI)
 

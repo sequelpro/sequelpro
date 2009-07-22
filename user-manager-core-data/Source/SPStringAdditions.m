@@ -26,7 +26,6 @@
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
-
 @interface NSString (Private)
 - (int)smallestOf:(int)a andOf:(int)b andOf:(int)c;
 @end

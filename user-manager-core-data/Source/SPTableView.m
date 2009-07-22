@@ -24,7 +24,6 @@
 
 #import "SPTableView.h"
 
-
 @implementation SPTableView
 
 /*

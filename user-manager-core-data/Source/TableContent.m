@@ -25,13 +25,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "TableContent.h"
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "CMImageView.h"
 #import "CMCopyTable.h"
-#import "CMMCPConnection.h"
-#import "CMMCPResult.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 #import "SPQueryConsole.h"
@@ -42,7 +42,6 @@
 #import "SPTextAndLinkCell.h"
 #import "QLPreviewPanel.h"
 #import "SPFieldEditorController.h"
-
 
 @implementation TableContent
 
@@ -95,7 +94,7 @@
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
 	NSString	*query;
-	CMMCPResult	*queryResult;
+	MCPResult	*queryResult;
 	BOOL		preserveCurrentView = [aTable isEqualToString:selectedTable];
 	NSString	*preservedFilterField = nil, *preservedFilterComparison, *preservedFilterValue;
 
@@ -437,7 +436,7 @@
 - (IBAction)reloadTableValues:(id)sender
 {
 	NSString *queryString;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -500,7 +499,7 @@
  */
 - (IBAction)filterTable:(id)sender
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	int tag = [[compareField selectedItem] tag];
 	NSString *compareOperator = @"";
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
@@ -796,7 +795,7 @@
  */
 {
 	NSMutableArray *tempRow;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	NSDictionary *row;
 	NSArray *dbDataRow = nil;
 	int i;
@@ -993,12 +992,12 @@
 	return currentResult;
 }
 
+// Additional methods
 
-//additional methods
-- (void)setConnection:(CMMCPConnection *)theConnection
-/*
- sets the connection (received from TableDocument) and makes things that have to be done only once 
+/**
+ * Sets the connection (received from TableDocument) and makes things that have to be done only once 
  */
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	
@@ -1140,7 +1139,7 @@
 /*
  * Fetches the result as an array, with an array for each row in it
  */
-- (NSArray *)fetchResultAsArray:(CMMCPResult *)theResult
+- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	unsigned long numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
@@ -1199,7 +1198,7 @@
 	NSArray *columnNames;
 	NSMutableString *queryString;
 	NSString *query;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	id rowObject;
 	NSMutableString *rowValue = [NSMutableString string];
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
@@ -1393,7 +1392,7 @@
  */
 - (NSString *)argumentForRow:(int)row
 {
-	CMMCPResult *theResult;
+	MCPResult *theResult;
 	NSDictionary *theRow;
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
@@ -1531,7 +1530,7 @@
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempResult = [NSMutableArray array];
 	NSString *queryString, *wherePart;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	int i, errors;
 	
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
@@ -1651,7 +1650,7 @@
 	}
 }
 
-/*
+/**
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
@@ -1664,17 +1663,20 @@
 }
 
 
-/*
+/**
  * Returns the number of rows in the selected table
  * Queries the number from MySQL if enabled in prefs and result is limited, otherwise just return the fullResult count.
  */
 - (int)getNumberOfRows
-{
+{	
 	if ([prefs boolForKey:@"LimitResults"] && [prefs boolForKey:@"FetchCorrectRowCount"]) {
 		numRows = [self fetchNumberOfRows];
 	} else {
 		numRows = [fullResult count];
 	}
+		
+	// Update table data cache with the more accurate row count
+	//[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", numRows] forKey:@"Rows"];
 	
 	return numRows;
 }
@@ -1687,15 +1689,13 @@
 	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
 
-//tableView datasource methods
+// TableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [filteredResult count];
 }
 
-- (id)tableView:(CMCopyTable *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 
 	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(filteredResult, rowIndex), [[aTableColumn identifier] intValue]);
@@ -1706,14 +1706,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return theValue;
 }
 
+/**
+ * This function changes the text color of text/blob fields which are not yet loaded to gray
+ */
 - (void)tableView: (CMCopyTable *)aTableView
 	willDisplayCell: (id)cell
 	forTableColumn: (NSTableColumn*)aTableColumn
 	row: (int)row
-/*
-	*  This function changes the text color of 
-	*  text/blob fields which are not yet loaded to gray
-*/
 {
 	// Check if loading of text/blob fields is disabled
 	// If not, all text fields are loaded and we don't have to make them gray
@@ -1782,7 +1781,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
  */
 {
 	NSString *queryString;
-	CMMCPResult *queryResult;
+	MCPResult *queryResult;
 	
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
 		return;
@@ -1941,7 +1940,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	NSArray *tempRow;
 	NSMutableArray *modifiedRow = [NSMutableArray array];
 	// id theValue;
-	CMMCPResult *tempResult;
+	MCPResult *tempResult;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
 	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow ) {

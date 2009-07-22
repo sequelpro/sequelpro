@@ -24,9 +24,6 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-
-@interface stringCategoryAdditionsTest : SenTestCase {
-	
-}
+@interface stringCategoryAdditionsTest : SenTestCase
 
 @end

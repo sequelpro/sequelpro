@@ -26,7 +26,6 @@
 #import "KeyChain.h"
 #import <netinet/in.h>
 
-
 @implementation SPSSHTunnel
 
 /*
@@ -73,7 +72,7 @@
 	requestedResponse = NO;
 	task = nil;
 	localPort = 0;
-	connectionState = SPSSH_STATE_IDLE;
+	connectionState = PROXY_STATE_IDLE;
 
 	return self;
 }
@@ -160,8 +159,9 @@
 - (void) connect
 {
 	localPort = 0;
+	
+	if (connectionState != PROXY_STATE_IDLE || (!passwordInKeychain && !password)) return;
 	[debugMessages removeAllObjects];
-	if (connectionState != SPSSH_STATE_IDLE || (!passwordInKeychain && !password)) return;
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
 }
 
@@ -172,18 +172,18 @@
  */
 - (void) launchTask:(id) dummy
 {
-	if (connectionState != SPSSH_STATE_IDLE || task) return;
+	if (connectionState != PROXY_STATE_IDLE || task) return;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSMutableArray *taskArguments;
 	NSMutableDictionary *taskEnvironment;
 	NSString *authenticationAppPath;
 
-	connectionState = SPSSH_STATE_CONNECTING;
+	connectionState = PROXY_STATE_CONNECTING;
 	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 
 	// Enforce a parent window being present for dialogs
 	if (!parentWindow) {
-		connectionState = SPSSH_STATE_IDLE;
+		connectionState = PROXY_STATE_IDLE;
 		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 		if (lastError) [lastError release];
 		lastError = [[NSString alloc] initWithString:@"SSH Tunnel started without a parent window.  A parent window must be present."];
@@ -191,7 +191,7 @@
 		return;
 	}
 
-	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeout"] intValue];
+	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
 	BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
 	double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
@@ -233,7 +233,7 @@
 		
 		// Abort if no local free port could be allocated
 		if (!localPort || (useHostFallback && !localPortFallback)) {
-			connectionState = SPSSH_STATE_IDLE;
+			connectionState = PROXY_STATE_IDLE;
 			if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			if (lastError) [lastError release];
 			lastError = [[NSString alloc] initWithString:NSLocalizedString(@"No local port could be allocated for the SSH Tunnel.", @"SSH tunnel could not be created because no local port could be allocated")];
@@ -274,7 +274,7 @@
 	[task setArguments:taskArguments];
 
 	// Set up the environment for the task
-	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"TunnelPassphraseRequester"];
+	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
 	taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 	[taskEnvironment removeObjectForKey: @"SSH_AGENT_PID"];
 	[taskEnvironment removeObjectForKey: @"SSH_AUTH_SOCK"];
@@ -320,8 +320,8 @@
 	[task waitUntilExit];
 	
 	// If the task closed unexpectedly, alert appropriately
-	if (connectionState != SPSSH_STATE_IDLE) {
-		connectionState = SPSSH_STATE_IDLE;
+	if (connectionState != PROXY_STATE_IDLE) {
+		connectionState = PROXY_STATE_IDLE;
 		if (lastError) [lastError release];
 		lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
 		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
@@ -344,9 +344,9 @@
  */
 - (void)disconnect
 {
-    if (connectionState == SPSSH_STATE_IDLE) return;
+    if (connectionState == PROXY_STATE_IDLE) return;
     [task terminate];
-    connectionState = SPSSH_STATE_IDLE;
+    connectionState = PROXY_STATE_IDLE;
 	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 }
  
@@ -370,36 +370,36 @@
 			[debugMessages addObject:[NSString stringWithString:message]];
 
 			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound) {
-				connectionState = SPSSH_STATE_CONNECTED;
+				connectionState = PROXY_STATE_CONNECTED;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 
 			if ([message rangeOfString:@"Connection established"].location != NSNotFound) {
-				connectionState = SPSSH_STATE_WAITING_FOR_AUTH;
+				connectionState = PROXY_STATE_WAITING_FOR_AUTH;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 
 			if ([message rangeOfString:@"closed by remote host." ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_IDLE;
+				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was closed 'by the remote host'.  This may indicate a networking issue or a network timeout.", @"SSH tunnel was closed by remote host message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"Permission denied (" ].location != NSNotFound || [message rangeOfString:@"No more authentication methods to try" ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_IDLE;
+				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel could not authenticate with the remote host.  Please check your password and ensure you still have access.", @"SSH tunnel authentication failed message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"connect failed: Connection refused" ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_FORWARDING_FAILED;
+				connectionState = PROXY_STATE_FORWARDING_FAILED;
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was established successfully, but could not forward data to the remote port as the remote port refused the connection.", @"SSH tunnel forwarding port connection refused message")];
 			}
 			if ([message rangeOfString:@"Operation timed out" ].location != NSNotFound) {
-				connectionState = SPSSH_STATE_IDLE;
+				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
 				lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).", @"SSH tunnel failed or timed out message"), sshHost, [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue]];
@@ -408,7 +408,7 @@
 		}
 	}
 
-	if (connectionState != SPSSH_STATE_IDLE) {
+	if (connectionState != PROXY_STATE_IDLE) {
 		[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 	}
 
@@ -433,7 +433,7 @@
 }
 
 /*
- * Method to request the password for the current connection, as used by TunnelPassphraseRequester;
+ * Method to request the password for the current connection, as used by SequelProTunnelAssistant;
  * called with a verification hash to check against the stored hash, to provide basic security.  Note
  * that this is easily bypassed, but if bypassed the password can already easily be retrieved in the same way.
  */
@@ -565,7 +565,7 @@
 {
 	delegate = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	if (connectionState != SPSSH_STATE_IDLE) [self disconnect];
+	if (connectionState != PROXY_STATE_IDLE) [self disconnect];
 	[sshHost release];
 	[sshLogin release];
 	[remoteHost release];

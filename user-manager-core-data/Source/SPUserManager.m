@@ -7,9 +7,9 @@
 //
 
 #import "SPUserManager.h"
-#import "CMMCPConnection.h"
+#import "MCPConnection.h"
 #import "SPUserMO.h"
-#import "CMMCPResult.h"
+#import "MCPResult.h"
 #import "ImageAndTextCell.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
@@ -37,7 +37,7 @@
 	return nil;
 }
 
-- (id)initWithConnection:(CMMCPConnection*) connection
+- (id)initWithConnection:(MCPConnection*) connection
 {
 	if (![super init]) {
 		return nil;
@@ -100,7 +100,7 @@
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
 	[[self connection] selectDB:@"mysql"];
-	CMMCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
+	MCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
 	int rows = [result numOfRows];
 	if (rows > 0)
 	{
@@ -255,14 +255,14 @@
     return managedObjectContext;
 }
 
-- (void)setConnection:(CMMCPConnection *)connection
+- (void)setConnection:(MCPConnection *)connection
 {
 	[connection retain];
 	[mySqlConnection release];
 	mySqlConnection = connection;
 }
 
-- (CMMCPConnection* )connection
+- (MCPConnection* )connection
 {
 	return mySqlConnection;
 }

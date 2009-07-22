@@ -24,14 +24,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @interface SPEditSheetTextView : NSTextView
-{
-
-}
 
 - (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
-
 
 @end

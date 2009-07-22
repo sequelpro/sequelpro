@@ -26,11 +26,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <Foundation/NSObjCRuntime.h>
+
 #import "SPNarrowDownCompletion.h"
 #import "SPArrayAdditions.h"
 #import "ImageAndTextCell.h"
-#import <Foundation/NSObjCRuntime.h>
-
 
 @interface NSTableView (MovingSelectedRow)
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent;

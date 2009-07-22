@@ -38,10 +38,10 @@
 	NSString *tableEncoding;
 	NSString *tableCreateSyntax;
 	
-	CMMCPConnection *mySQLConnection;
+	MCPConnection *mySQLConnection;
 }
 
-- (void) setConnection:(CMMCPConnection *)theConnection;
+- (void) setConnection:(MCPConnection *)theConnection;
 - (NSString *) tableEncoding;
 - (NSString *) tableCreateSyntax;
 - (NSArray *) columns;
@@ -51,6 +51,7 @@
 - (NSArray *) getConstraints;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
+- (void)setStatusValue:(NSString *)value forKey:(NSString *)key;
 - (NSDictionary *) statusValues;
 - (void) resetAllData;
 - (void) resetStatusData;
