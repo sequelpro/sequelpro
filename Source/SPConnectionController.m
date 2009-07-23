@@ -286,6 +286,9 @@
 	
 	// Connection delegate must be set before actual connection attempt is made
 	[mySQLConnection setDelegate:tableDocument];
+	
+	// Set whether or not we should enable delegate logging according to the prefs
+	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:@"ConsoleEnableLogging"]];
 
 	// Set options from preferences
 	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:@"ConnectionTimeoutValue"] intValue]];

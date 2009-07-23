@@ -58,7 +58,6 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 @implementation MCPConnection
 
 // Synthesize ivars
-@synthesize delegate;
 @synthesize useKeepAlive;
 @synthesize delegateQueryLogging;
 @synthesize connectionTimeout;
@@ -104,7 +103,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		// Initialize ivar defaults
 		connectionTimeout = 10;
 		useKeepAlive      = YES; 
-		keepAliveInterval = 60;   
+		keepAliveInterval = 60;  
 		
 		connectionThreadId     = 0;
 		maxAllowedPacketSize   = -1;
@@ -112,6 +111,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
+		
+		// Enable delegate query logging by default
+		delegateQueryLogging = YES;
 
 		// Default to allowing queries to be reattempted if they fail due to connection issues
 		retryAllowed = YES;
@@ -169,6 +171,29 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	return self;
+}
+
+#pragma mark -
+#pragma mark Delegate
+
+/**
+ * Get the connection's current delegate.
+ */
+- (id)delegate
+{
+	return delegate;
+}
+
+/**
+ * Set the connection's delegate to the supplied object.
+ */
+- (void)setDelegate:(id)connectionDelegate
+{
+	delegate = connectionDelegate;
+	
+	// Check that the delegate implements willQueryString:connection: and cache the result as its used
+	// vert frequently.
+	delegateResponseToWillQueryString = [delegate respondsToSelector:@selector(willQueryString:connection:)];
 }
 
 #pragma mark -
@@ -1244,8 +1269,10 @@ static void forcePingTimeout(int signalNumber)
 	(void)(*stopKeepAliveTimerPtr)(self, stopKeepAliveTimerSEL);
 	
 	// Inform the delegate about the query if logging is enabled and delegate responds to willQueryString:connection:
-	if (delegateQueryLogging && delegateResponseToWillQueryString)
-		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
+	if (delegateQueryLogging && delegateResponseToWillQueryString) {
+		[delegate willQueryString:query connection:self];
+	}
+		
 	
 	// If thirty seconds have elapsed since the last query, check the connection.  This provides
 	// a balance between keeping high read/write timeouts for long queries, network issues, and
