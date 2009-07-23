@@ -1609,16 +1609,14 @@
 
 		BOOL isFieldEditable = (!noTableName && numberOfPossibleUpdateRows == 1) ? YES : NO;
 
-		// maybe??
-		// if(!isFieldEditable)
-		// 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+		if(!isFieldEditable)
+		 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
 
-		//to enable editing simply uncomment isEditable and delete 'NO' :)
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
 								usingEncoding:[mySQLConnection encoding] 
 								isObjectBlob:isBlob 
-								isEditable:/*isFieldEditable*/NO 
+								isEditable:isFieldEditable 
 								withWindow:tableWindow] retain];
 
 		if ( editData )
