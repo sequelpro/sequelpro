@@ -1163,7 +1163,7 @@ static void forcePingTimeout(int signalNumber)
 	// theReturn = [self stringWithCString:theCEscBuffer];
 	free(theCEscBuffer);
 	
-	return theReturn;    
+	return [theReturn autorelease];    
 }
 
 /** 
