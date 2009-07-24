@@ -674,7 +674,8 @@
 
 	if(!tableReloadAfterEditing) {
 		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
-			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"datacolumnindex"]];
+			NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,i);
+			theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
 			[theCol setEditable:YES];
 			SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
@@ -688,6 +689,14 @@
 			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 			[theCol setDataCell:dataCell];
 			[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
+
+			// Set the width of this column to saved value if exists and maps to a real column
+			if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
+				NSNumber *colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
+				if ( colWidth ) {
+					[theCol setWidth:[colWidth floatValue]];
+				}
+			}
 
 			[customQueryView addTableColumn:theCol];
 			[theCol release];
@@ -1117,7 +1126,6 @@
 	}
 
 	hasBackgroundAttribute = NO;
-	tempAlertWasShown = NO; //temp for nightly builds
 
 	// Set up the interface
 	// Bind backgroundColor
@@ -1648,6 +1656,55 @@
 		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
 	}
 }
+
+/**
+ * Saves the new column size in the preferences for columns which map to fields
+ */
+- (void)tableViewColumnDidResize:(NSNotification *)aNotification
+{
+	// Abort if still loading the table
+	if (![cqColumnDefinition count]) return;
+NSLog(@"start");
+	// Retrieve the original index of the column from the identifier
+	int columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] intValue];
+	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
+	NSLog(@"1");
+	// Don't save if the column doesn't map to an underlying SQL field
+	if (![columnDefinition objectForKey:@"org_name"] || ![[columnDefinition objectForKey:@"org_name"] length])
+		return;
+	NSLog(@"2");
+
+	NSMutableDictionary *tableColumnWidths;
+	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
+	NSString *table = [columnDefinition objectForKey:@"org_table"];
+	NSString *col = [columnDefinition objectForKey:@"org_name"];
+	
+	// Retrieve or instantiate the tableColumnWidths object
+	if ([prefs objectForKey:@"tableColumnWidths"] != nil) {
+		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"tableColumnWidths"]];
+	} else {
+		tableColumnWidths = [NSMutableDictionary dictionary];
+	}
+
+	// Edit or create database object
+	if  ([tableColumnWidths objectForKey:host_db] == nil) {
+		[tableColumnWidths setObject:[NSMutableDictionary dictionary] forKey:host_db];
+	} else {
+		[tableColumnWidths setObject:[NSMutableDictionary dictionaryWithDictionary:[tableColumnWidths objectForKey:host_db]] forKey:host_db];
+	}
+	
+	// Edit or create table object
+	if  ([[tableColumnWidths objectForKey:host_db] objectForKey:table] == nil) {
+		[[tableColumnWidths objectForKey:host_db] setObject:[NSMutableDictionary dictionary] forKey:table];
+	} else {
+		[[tableColumnWidths objectForKey:host_db] setObject:[NSMutableDictionary dictionaryWithDictionary:[[tableColumnWidths objectForKey:host_db] objectForKey:table]] forKey:table];
+	}
+
+	// Save the column size
+	[[[tableColumnWidths objectForKey:host_db] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:col];
+	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
+}
+
 
 #pragma mark -
 #pragma mark TextView delegate methods
