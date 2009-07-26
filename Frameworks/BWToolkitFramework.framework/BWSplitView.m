@@ -683,6 +683,12 @@ static float scaleFactor = 1.0f;
 	}
 	
 	[self setNeedsDisplay:YES];
+
+	// Tell the original delegate to update if appropriate
+	if (![secondaryDelegate isKindOfClass:NSClassFromString(@"BWAnchoredButtonBar")] &&
+		[secondaryDelegate respondsToSelector:@selector(splitViewDidResizeSubviews:)]) {
+		[secondaryDelegate splitViewDidResizeSubviews:aNotification];
+	}
 }
 
 #pragma mark - Resize Subviews Delegate Method and Helper Methods

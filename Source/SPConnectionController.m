@@ -73,6 +73,7 @@
 		[connectionView setFrame:[contentView frame]];
 		[[documentWindow contentView] addSubview:connectionView];
 		[connectionSplitView setPosition:[[tableDocument valueForKey:@"dbTablesTableView"] frame].size.width ofDividerAtIndex:0];
+		[connectionSplitViewButtonBar setSplitViewDelegate:self];
 		
 		// Disable the toolbar icons
 		NSArray *toolbarItems = [[documentWindow toolbar] items];
@@ -819,8 +820,6 @@
 /**
  * When the split view is resized, trigger a resize in the hidden table
  * width as well, to keep the connection view and connected view in synch.
- * TODO: this isn't functional until a BWToolkit bug is fixed - see
- * http://bitbucket.org/bwalkin/bwtoolkit/issue/50/bwsplitview-and-splitviewdidresizesubviews
  */
 - (void) splitViewDidResizeSubviews:(NSNotification *)aNotification
 {

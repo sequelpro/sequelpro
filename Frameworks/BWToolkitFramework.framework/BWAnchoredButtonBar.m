@@ -262,6 +262,13 @@ static float scaleFactor = 0.0f;
 
 #pragma mark NSSplitView Delegate Methods
 
+// Forward resize events to the delegate if set and supported
+- (void) splitViewDidResizeSubviews:(NSNotification *)aNotification
+{
+	if ([splitViewDelegate respondsToSelector:@selector(splitViewDidResizeSubviews:)])
+		[splitViewDelegate splitViewDidResizeSubviews:aNotification];
+}
+
 // Add the resize handle rect to the split view hot zone
 - (NSRect)splitView:(NSSplitView *)aSplitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {

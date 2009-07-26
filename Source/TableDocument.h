@@ -68,6 +68,7 @@
 	IBOutlet NSTabView *tableTabView;
 	
 	IBOutlet NSTableView *tableInfoTable;
+	IBOutlet NSButton *tableInfoCollapseButton;
 	IBOutlet NSSplitView *tableListSplitter;
 	IBOutlet NSSplitView *contentViewSplitter;
 	IBOutlet id sidebarGrabber;

@@ -37,6 +37,12 @@ enum spconnection_types
 	SP_CONNECTION_SSHTUNNEL = 2
 };
 
+@class BWAnchoredButtonBar;
+
+@interface NSObject (BWAnchoredButtonBar)
+- (void)setSplitViewDelegate:(id)splitViewDelegate;
+@end
+
 @interface SPConnectionController : NSObject 
 {
 	TableDocument *tableDocument;
@@ -70,6 +76,7 @@ enum spconnection_types
 
 	IBOutlet NSView *connectionView;
 	IBOutlet NSSplitView *connectionSplitView;
+	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
 	IBOutlet NSTableView *favoritesTable;
 	
 	IBOutlet NSWindow *errorDetailWindow;

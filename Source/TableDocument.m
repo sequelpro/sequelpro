@@ -2178,8 +2178,7 @@
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
-	if ([notification object] == contentViewSplitter)
-		[self updateChooseDatabaseToolbarItemWidth];
+	[self updateChooseDatabaseToolbarItemWidth];
 }
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
