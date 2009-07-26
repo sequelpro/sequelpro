@@ -99,7 +99,9 @@
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
-		
+
+	NSString *fieldIDQueryString;
+
 }
 
 // IBAction methods
@@ -153,7 +155,7 @@
 - (void)commentOut;
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
 
 
 @end

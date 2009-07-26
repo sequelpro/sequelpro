@@ -1209,7 +1209,7 @@
  * Collect all columns for a given 'tableForColumn' table and
  * return a WHERE clause for identifying the field in quesyion.
  */
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database
 {
 	NSArray *dataRow;
 	id field;
@@ -1222,34 +1222,34 @@
 	}
 
 	// Try to identify the field bijectively
-	NSMutableString *fieldIDQueryString = [NSMutableString string];
-	[fieldIDQueryString setString:@"WHERE ("];
+	NSMutableString *fieldIDQueryStr = [NSMutableString string];
+	[fieldIDQueryStr setString:@"WHERE ("];
 	
 	// Build WHERE clause
 	dataRow = [fullResult objectAtIndex:rowIndex];
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
-			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			[fieldIDQueryStr appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
-			[fieldIDQueryString appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			[fieldIDQueryStr appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
 			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
-				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-				[fieldIDQueryString appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
+				[fieldIDQueryStr appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
-				[fieldIDQueryString appendFormat:@"%@", [aValue description]];
+				[fieldIDQueryStr appendFormat:@"%@", [aValue description]];
 			else
-				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
 		}
 		
-		[fieldIDQueryString appendString:@" AND "];
+		[fieldIDQueryStr appendString:@" AND "];
 	}
 	// Remove last " AND "
-	if([fieldIDQueryString length]>12)
-		[fieldIDQueryString replaceCharactersInRange:NSMakeRange([fieldIDQueryString length]-5,5) withString:@")"];
+	if([fieldIDQueryStr length]>12)
+		[fieldIDQueryStr replaceCharactersInRange:NSMakeRange([fieldIDQueryStr length]-5,5) withString:@")"];
 	
-	return fieldIDQueryString;
+	return fieldIDQueryStr;
 }
 
 
@@ -1336,6 +1336,8 @@
 
 		// Field editing
 
+		if(fieldIDQueryString == nil) return;
+
 		NSDictionary *columnDefinition;
 
 		// Retrieve the column defintion
@@ -1358,10 +1360,10 @@
 		// Resolve the original column name if AS was used
 		NSString *columnName = [columnDefinition objectForKey:@"org_name"];
 
-		NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
+		// NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
 		
 		// Check if the IDstring identifies the current field bijectively
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 		if(numberOfPossibleUpdateRows == 1) {
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 			
@@ -1388,8 +1390,9 @@
 			}
 
 			[mySQLConnection queryString:
-				[NSString stringWithFormat:@"UPDATE %@ SET %@=%@ %@ LIMIT 1", 
-					[tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
+				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@=%@ %@ LIMIT 1", 
+					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString],
+					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
@@ -1585,7 +1588,9 @@
 
 		NSDictionary *columnDefinition;
 		BOOL noTableName = NO;
+		BOOL isFieldEditable;
 		BOOL isBlob;
+		int numberOfPossibleUpdateRows = -1;
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
@@ -1604,21 +1609,34 @@
 
 		// Resolve the original table name for current column if AS was used
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
-		
-		// No table name found indicates that the field's column contains data from more than one table as for UNION
-		// or the field data are not bound to any table as in SELECT 1
-		if(!tableForColumn || ![tableForColumn length])
+
+		// Get the database name which the field belongs to
+		NSString *dbForColumn = [columnDefinition objectForKey:@"db"];
+
+		// No table/database name found indicates that the field's column contains data from more than one table as for UNION
+		// or the field data are not bound to any table as in SELECT 1 or if column database is unset
+		if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
 			noTableName = YES;
 	
-		NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
+		if(!noTableName) {
+			// if table and database name are given check if field can be identified unambiguously
+			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 	
-		// Actual check whether field can be identified bijectively
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+			// Actual check whether field can be identified bijectively
+			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 
-		BOOL isFieldEditable = (!noTableName && numberOfPossibleUpdateRows == 1) ? YES : NO;
+			isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
 
-		if(!isFieldEditable)
-		 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+			if(!isFieldEditable)
+			 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+
+		} else {
+			// no table/databse name are given
+			isFieldEditable = NO;
+			fieldIDQueryString = nil;
+		 	[errorText setStringValue:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
+		}
+
 
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
