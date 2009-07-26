@@ -257,6 +257,15 @@
 	[removeRelationButton setEnabled:([relationsTableView numberOfSelectedRows] > 0)];
 }
 
+/*
+ * Double-click action on table cells - for the time being, return
+ * NO to disable editing.
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+{
+	return NO;
+}
+
 #pragma mark -
 #pragma mark Other
 
