@@ -626,6 +626,7 @@ const OUR_CHARSET our_charsets60[] =
 				theType = @"longlong";
 				break;
 			case FIELD_TYPE_DECIMAL:
+			case FIELD_TYPE_NEWDECIMAL:
 				theType = @"decimal";
 				break;
 			case FIELD_TYPE_FLOAT:
@@ -1129,6 +1130,7 @@ const OUR_CHARSET our_charsets60[] =
 		case FIELD_TYPE_BIT:
 			return @"BIT";
 		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 			//return isUnsigned ? (isZerofill? @"DECIMAL UNSIGNED ZEROFILL" : @"DECIMAL UNSIGNED"): 
 			return @"DECIMAL";
 		case MYSQL_TYPE_TINY:
@@ -1238,6 +1240,7 @@ const OUR_CHARSET our_charsets60[] =
 		case MYSQL_TYPE_FLOAT:
 		case MYSQL_TYPE_DOUBLE:
 		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 			return @"float";
 		case MYSQL_TYPE_YEAR:
 		case MYSQL_TYPE_DATETIME:

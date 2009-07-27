@@ -58,7 +58,6 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 @implementation MCPConnection
 
 // Synthesize ivars
-@synthesize delegate;
 @synthesize useKeepAlive;
 @synthesize delegateQueryLogging;
 @synthesize connectionTimeout;
@@ -104,7 +103,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		// Initialize ivar defaults
 		connectionTimeout = 10;
 		useKeepAlive      = YES; 
-		keepAliveInterval = 60;   
+		keepAliveInterval = 60;  
 		
 		connectionThreadId     = 0;
 		maxAllowedPacketSize   = -1;
@@ -112,6 +111,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
+		
+		// Enable delegate query logging by default
+		delegateQueryLogging = YES;
 
 		// Default to allowing queries to be reattempted if they fail due to connection issues
 		retryAllowed = YES;
@@ -169,6 +171,29 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	return self;
+}
+
+#pragma mark -
+#pragma mark Delegate
+
+/**
+ * Get the connection's current delegate.
+ */
+- (id)delegate
+{
+	return delegate;
+}
+
+/**
+ * Set the connection's delegate to the supplied object.
+ */
+- (void)setDelegate:(id)connectionDelegate
+{
+	delegate = connectionDelegate;
+	
+	// Check that the delegate implements willQueryString:connection: and cache the result as its used
+	// vert frequently.
+	delegateResponseToWillQueryString = [delegate respondsToSelector:@selector(willQueryString:connection:)];
 }
 
 #pragma mark -
@@ -371,13 +396,13 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
 	
-	// Store the current database and encoding so they can be re-set if reconnection was successful
-	if (delegate && [delegate valueForKey:@"selectedDatabase"]) {
-		currentDatabase = [NSString stringWithString:[delegate valueForKey:@"selectedDatabase"]];
+	// Store the currently selected database and encoding so they can be re-set if reconnection was successful
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldSelectDatabase:)]) {
+		currentDatabase = [NSString stringWithString:[delegate onReconnectShouldSelectDatabase:self]];
 	}
 	
-	if (delegate && [delegate valueForKey:@"_encoding"]) {
-		currentEncoding = [NSString stringWithString:[delegate valueForKey:@"_encoding"]];
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
+		currentEncoding = [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]];
 	}
 	
 	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
@@ -681,8 +706,8 @@ static void forcePingTimeout(int signalNumber)
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
 	
-	if (delegate && [delegate valueForKey:@"_encoding"]) {
-		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate valueForKey:@"_encoding"]]]];
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
+		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
 		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
 			if ([delegate connectionEncodingViaLatin1:self]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
 		}
@@ -1163,7 +1188,7 @@ static void forcePingTimeout(int signalNumber)
 	// theReturn = [self stringWithCString:theCEscBuffer];
 	free(theCEscBuffer);
 	
-	return theReturn;    
+	return [theReturn autorelease];    
 }
 
 /** 
@@ -1244,8 +1269,10 @@ static void forcePingTimeout(int signalNumber)
 	(void)(*stopKeepAliveTimerPtr)(self, stopKeepAliveTimerSEL);
 	
 	// Inform the delegate about the query if logging is enabled and delegate responds to willQueryString:connection:
-	if (delegateQueryLogging && delegateResponseToWillQueryString)
-		(void)(NSString*)(*willQueryStringPtr)(delegate, willQueryStringSEL, query);
+	if (delegateQueryLogging && delegateResponseToWillQueryString) {
+		[delegate willQueryString:query connection:self];
+	}
+		
 	
 	// If thirty seconds have elapsed since the last query, check the connection.  This provides
 	// a balance between keeping high read/write timeouts for long queries, network issues, and

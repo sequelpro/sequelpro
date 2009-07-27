@@ -705,6 +705,15 @@
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
 }
 
+/**
+ * Toggle whether the splitview is collapsed.
+ */
+- (IBAction)togglePaneCollapse:(id)sender
+{
+	[tableListSplitView toggleCollapse:sender];
+	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:@"TableInformationPanelCollapsed"];
+}
+
 #pragma mark Alert sheet methods
 
 /**
@@ -1657,6 +1666,22 @@
 	}
 	
 	return self;
+}
+
+/**
+ * Standard awakeFromNib method for interface loading.
+ */
+- (void)awakeFromNib
+{
+
+	// Collapse the table information pane if preference to do so is set
+	if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"TableInformationPanelCollapsed"] boolValue]
+		&& [tableListSplitView collapsibleSubview]) {
+		[tableInfoCollapseButton setNextState];
+		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
+		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
+	}
 }
 
 /**

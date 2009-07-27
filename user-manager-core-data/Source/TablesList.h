@@ -37,6 +37,12 @@ enum sp_table_types
 
 @class CMMCResult, MCPConnection;
 
+@interface NSObject (NSSplitView)
+- (NSView *)collapsibleSubview;
+- (IBAction)toggleCollapse:(id)sender;
+- (void)setCollapsibleSubviewCollapsed:(BOOL)flag;
+@end
+
 @interface TablesList : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
@@ -67,6 +73,8 @@ enum sp_table_types
 	IBOutlet id renameTableButton;
 	IBOutlet id truncateTableButton;
 	IBOutlet id truncateTableContextButton;
+	IBOutlet NSSplitView *tableListSplitView;
+	IBOutlet NSButton *tableInfoCollapseButton;
 	
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
@@ -94,6 +102,7 @@ enum sp_table_types
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
 - (IBAction)truncateTable:(id)sender;
+- (IBAction)togglePaneCollapse:(id)sender;
 
 // copyTableSheet methods
 - (IBAction)closeCopyTableSheet:(id)sender;

@@ -35,6 +35,7 @@
 
 @interface CustomQuery : NSObject 
 {
+	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
 	IBOutlet id queryHistoryButton;
@@ -98,8 +99,9 @@
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
-	BOOL tempAlertWasShown; // a temp value for nightly builts
-		
+
+	NSString *fieldIDQueryString;
+
 }
 
 // IBAction methods
@@ -153,7 +155,7 @@
 - (void)commentOut;
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn;
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
 
 
 @end

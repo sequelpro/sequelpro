@@ -123,10 +123,10 @@
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
-		4D6FC52A0FE2196C00C16714 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D6FC5290FE2196C00C16714 /* SPUserManager.m */; };
-		4D6FC5300FE219A700C16714 /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D6FC52D0FE219A700C16714 /* SPUserManager.xcdatamodel */; };
-		4D6FC5310FE219A700C16714 /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D6FC52E0FE219A700C16714 /* SPUserMO.m */; };
-		4D6FC5350FE219ED00C16714 /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D6FC5330FE219ED00C16714 /* UserManagerView.xib */; };
+		4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B799101E0CDF00D116A1 /* SPUserManager.m */; };
+		4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */; };
+		4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79D101E0CF200D116A1 /* SPUserMO.m */; };
+		4D90B7A2101E0D1500D116A1 /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */; };
 		4DECC3350EC2A170008D359E /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
@@ -475,12 +475,12 @@
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
 		387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableRelations.h; sourceTree = "<group>"; };
 		387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableRelations.m; sourceTree = "<group>"; };
-		4D6FC5280FE2196C00C16714 /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
-		4D6FC5290FE2196C00C16714 /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
-		4D6FC52D0FE219A700C16714 /* SPUserManager.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = SPUserManager.xcdatamodel; sourceTree = "<group>"; };
-		4D6FC52E0FE219A700C16714 /* SPUserMO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserMO.m; sourceTree = "<group>"; };
-		4D6FC5320FE219C200C16714 /* SPUserMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserMO.h; sourceTree = "<group>"; };
-		4D6FC5340FE219ED00C16714 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
+		4D90B798101E0CDF00D116A1 /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
+		4D90B799101E0CDF00D116A1 /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
+		4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = SPUserManager.xcdatamodel; sourceTree = "<group>"; };
+		4D90B79C101E0CF200D116A1 /* SPUserMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserMO.h; sourceTree = "<group>"; };
+		4D90B79D101E0CF200D116A1 /* SPUserMO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserMO.m; sourceTree = "<group>"; };
+		4D90B7A1101E0D1500D116A1 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		581068B51015411B0068C6E2 /* link-arrow-highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-highlighted.png"; sourceTree = "<group>"; };
@@ -525,7 +525,7 @@
 		B5538AAB0FF251EE00219803 /* button_duplicate_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_duplicate_icon.tif; sourceTree = "<group>"; };
 		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
 		B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show_icon.tif; sourceTree = "<group>"; };
-		B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; explicitFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = Frameworks/BWToolkitFramework.framework/BWToolkit.xcodeproj; sourceTree = "<group>"; };
+		B5538CD70FF279AD00219803 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = Frameworks/BWToolkitFramework.framework/BWToolkit.xcodeproj; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
@@ -872,12 +872,32 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				4D6FC5280FE2196C00C16714 /* SPUserManager.h */,
-				4D6FC5290FE2196C00C16714 /* SPUserManager.m */,
-				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
-				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
+				17E641480EF01EF6001BC333 /* CustomQuery.h */,
+				17E641490EF01EF6001BC333 /* CustomQuery.m */,
 				17E6414A0EF01EF6001BC333 /* MainController.h */,
 				17E6414B0EF01EF6001BC333 /* MainController.m */,
+				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
+				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
+				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
+				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
+				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
+				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
+				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
+				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
+				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
+				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
+				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
+				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
+				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
+				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
+				170088CC0F5870E200DD6B51 /* SPQueryConsole.h */,
+				170088CD0F5870E200DD6B51 /* SPQueryConsole.m */,
+				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
+				58FEF57D0F3B4E9700518E8E /* SPTableData.m */,
+				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
+				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
+				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
+				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
 				17E6414E0EF01EF6001BC333 /* TableContent.h */,
 				17E6414F0EF01EF6001BC333 /* TableContent.m */,
 				17E641500EF01EF6001BC333 /* TableDocument.h */,
@@ -886,28 +906,6 @@
 				17E641530EF01EF6001BC333 /* TableDump.m */,
 				17E641540EF01EF6001BC333 /* TableSource.h */,
 				17E641550EF01EF6001BC333 /* TableSource.m */,
-				17E641480EF01EF6001BC333 /* CustomQuery.h */,
-				17E641490EF01EF6001BC333 /* CustomQuery.m */,
-				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
-				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
-				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
-				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
-				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
-				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
-				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
-				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
-				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
-				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
-				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
-				58FEF57D0F3B4E9700518E8E /* SPTableData.m */,
-				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
-				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
-				170088CC0F5870E200DD6B51 /* SPQueryConsole.h */,
-				170088CD0F5870E200DD6B51 /* SPQueryConsole.m */,
-				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
-				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
-				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
-				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -915,19 +913,19 @@
 		17E6415D0EF01EF9001BC333 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				4D6FC52D0FE219A700C16714 /* SPUserManager.xcdatamodel */,
-				4D6FC5320FE219C200C16714 /* SPUserMO.h */,
-				4D6FC52E0FE219A700C16714 /* SPUserMO.m */,
-				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
-				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
-				17E641600EF01F15001BC333 /* TablesList.h */,
-				17E641610EF01F15001BC333 /* TablesList.m */,
+				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
+				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
+				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */,
 				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
+				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
+				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
+				17E641600EF01F15001BC333 /* TablesList.h */,
+				17E641610EF01F15001BC333 /* TablesList.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -939,10 +937,10 @@
 				17E641690EF01F37001BC333 /* ImageAndTextCell.m */,
 				B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */,
 				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
-				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
-				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
 				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
 				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
+				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
+				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1082,10 +1080,10 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
-				4D6FC5330FE219ED00C16714 /* UserManagerView.xib */,
+				4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */,
+				B52460D90F8EF93B00171639 /* Console.xib */,
 				BCA6F62F100FA7D700E80253 /* FieldEditorSheet.xib */,
 				17E642060EF020CB001BC333 /* DBView.xib */,
-				B52460D90F8EF93B00171639 /* Console.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 				5822CADF10011C8000DCC3D6 /* ConnectionView.xib */,
 				58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */,
@@ -1452,7 +1450,6 @@
 				B58DA73C0FF8BBA500FDDACD /* printAccessory.xib in Resources */,
 				B58DA73A0FF8BB9E00FDDACD /* SSHQuestionDialog.xib in Resources */,
 				B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */,
-				4D6FC5350FE219ED00C16714 /* UserManagerView.xib in Resources */,
 				588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */,
 				588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */,
 				588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */,
@@ -1468,6 +1465,7 @@
 				BC688D811012462600D35128 /* borderlessbackground.png in Resources */,
 				581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */,
 				581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */,
+				4D90B7A2101E0D1500D116A1 /* UserManagerView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1593,9 +1591,6 @@
 				177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */,
 				58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */,
 				29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */,
-				4D6FC52A0FE2196C00C16714 /* SPUserManager.m in Sources */,
-				4D6FC5300FE219A700C16714 /* SPUserManager.xcdatamodel in Sources */,
-				4D6FC5310FE219A700C16714 /* SPUserMO.m in Sources */,
 				BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */,
 				BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */,
 				5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */,
@@ -1603,6 +1598,9 @@
 				BC9F0881100FCF2C00A80D32 /* SPFieldEditorController.m in Sources */,
 				58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */,
 				BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */,
+				4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */,
+				4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */,
+				4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1677,10 +1675,10 @@
 			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
-		4D6FC5330FE219ED00C16714 /* UserManagerView.xib */ = {
+		4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				4D6FC5340FE219ED00C16714 /* English */,
+				4D90B7A1101E0D1500D116A1 /* English */,
 			);
 			name = UserManagerView.xib;
 			sourceTree = "<group>";

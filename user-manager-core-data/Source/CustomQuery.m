@@ -674,7 +674,8 @@
 
 	if(!tableReloadAfterEditing) {
 		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
-			theCol = [[NSTableColumn alloc] initWithIdentifier:[NSArrayObjectAtIndex(cqColumnDefinition,i) objectForKey:@"datacolumnindex"]];
+			NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,i);
+			theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
 			[theCol setEditable:YES];
 			SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
@@ -688,6 +689,14 @@
 			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 			[theCol setDataCell:dataCell];
 			[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
+
+			// Set the width of this column to saved value if exists and maps to a real column
+			if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
+				NSNumber *colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
+				if ( colWidth ) {
+					[theCol setWidth:[colWidth floatValue]];
+				}
+			}
 
 			[customQueryView addTableColumn:theCol];
 			[theCol release];
@@ -1117,7 +1126,6 @@
 	}
 
 	hasBackgroundAttribute = NO;
-	tempAlertWasShown = NO; //temp for nightly builds
 
 	// Set up the interface
 	// Bind backgroundColor
@@ -1201,7 +1209,7 @@
  * Collect all columns for a given 'tableForColumn' table and
  * return a WHERE clause for identifying the field in quesyion.
  */
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database
 {
 	NSArray *dataRow;
 	id field;
@@ -1214,34 +1222,34 @@
 	}
 
 	// Try to identify the field bijectively
-	NSMutableString *fieldIDQueryString = [NSMutableString string];
-	[fieldIDQueryString setString:@"WHERE ("];
+	NSMutableString *fieldIDQueryStr = [NSMutableString string];
+	[fieldIDQueryStr setString:@"WHERE ("];
 	
 	// Build WHERE clause
 	dataRow = [fullResult objectAtIndex:rowIndex];
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
-			[fieldIDQueryString appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			[fieldIDQueryStr appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
-			[fieldIDQueryString appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			[fieldIDQueryStr appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
 			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
-				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-				[fieldIDQueryString appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
+				[fieldIDQueryStr appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
-				[fieldIDQueryString appendFormat:@"%@", [aValue description]];
+				[fieldIDQueryStr appendFormat:@"%@", [aValue description]];
 			else
-				[fieldIDQueryString appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
 		}
 		
-		[fieldIDQueryString appendString:@" AND "];
+		[fieldIDQueryStr appendString:@" AND "];
 	}
 	// Remove last " AND "
-	if([fieldIDQueryString length]>12)
-		[fieldIDQueryString replaceCharactersInRange:NSMakeRange([fieldIDQueryString length]-5,5) withString:@")"];
+	if([fieldIDQueryStr length]>12)
+		[fieldIDQueryStr replaceCharactersInRange:NSMakeRange([fieldIDQueryStr length]-5,5) withString:@")"];
 	
-	return fieldIDQueryString;
+	return fieldIDQueryStr;
 }
 
 
@@ -1328,6 +1336,8 @@
 
 		// Field editing
 
+		if(fieldIDQueryString == nil) return;
+
 		NSDictionary *columnDefinition;
 
 		// Retrieve the column defintion
@@ -1350,10 +1360,10 @@
 		// Resolve the original column name if AS was used
 		NSString *columnName = [columnDefinition objectForKey:@"org_name"];
 
-		NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
+		// NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
 		
 		// Check if the IDstring identifies the current field bijectively
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 		if(numberOfPossibleUpdateRows == 1) {
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 			
@@ -1380,8 +1390,9 @@
 			}
 
 			[mySQLConnection queryString:
-				[NSString stringWithFormat:@"UPDATE %@ SET %@=%@ %@ LIMIT 1", 
-					[tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
+				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@=%@ %@ LIMIT 1", 
+					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString],
+					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
 
@@ -1577,7 +1588,9 @@
 
 		NSDictionary *columnDefinition;
 		BOOL noTableName = NO;
+		BOOL isFieldEditable;
 		BOOL isBlob;
+		int numberOfPossibleUpdateRows = -1;
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
@@ -1596,29 +1609,40 @@
 
 		// Resolve the original table name for current column if AS was used
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
-		
-		// No table name found indicates that the field's column contains data from more than one table as for UNION
-		// or the field data are not bound to any table as in SELECT 1
-		if(!tableForColumn || ![tableForColumn length])
+
+		// Get the database name which the field belongs to
+		NSString *dbForColumn = [columnDefinition objectForKey:@"db"];
+
+		// No table/database name found indicates that the field's column contains data from more than one table as for UNION
+		// or the field data are not bound to any table as in SELECT 1 or if column database is unset
+		if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
 			noTableName = YES;
 	
-		NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
+		if(!noTableName) {
+			// if table and database name are given check if field can be identified unambiguously
+			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 	
-		// Actual check whether field can be identified bijectively
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+			// Actual check whether field can be identified bijectively
+			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 
-		BOOL isFieldEditable = (!noTableName && numberOfPossibleUpdateRows == 1) ? YES : NO;
+			isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
 
-		// maybe??
-		// if(!isFieldEditable)
-		// 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+			if(!isFieldEditable)
+			 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
 
-		//to enable editing simply uncomment isEditable and delete 'NO' :)
+		} else {
+			// no table/databse name are given
+			isFieldEditable = NO;
+			fieldIDQueryString = nil;
+		 	[errorText setStringValue:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
+		}
+
+
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
 								usingEncoding:[mySQLConnection encoding] 
 								isObjectBlob:isBlob 
-								isEditable:/*isFieldEditable*/NO 
+								isEditable:isFieldEditable 
 								withWindow:tableWindow] retain];
 
 		if ( editData )
@@ -1650,6 +1674,55 @@
 		[copyQueryFavoriteButton setEnabled:([queryFavoritesView numberOfSelectedRows] == 1)];
 	}
 }
+
+/**
+ * Saves the new column size in the preferences for columns which map to fields
+ */
+- (void)tableViewColumnDidResize:(NSNotification *)aNotification
+{
+	// Abort if still loading the table
+	if (![cqColumnDefinition count]) return;
+NSLog(@"start");
+	// Retrieve the original index of the column from the identifier
+	int columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] intValue];
+	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
+	NSLog(@"1");
+	// Don't save if the column doesn't map to an underlying SQL field
+	if (![columnDefinition objectForKey:@"org_name"] || ![[columnDefinition objectForKey:@"org_name"] length])
+		return;
+	NSLog(@"2");
+
+	NSMutableDictionary *tableColumnWidths;
+	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
+	NSString *table = [columnDefinition objectForKey:@"org_table"];
+	NSString *col = [columnDefinition objectForKey:@"org_name"];
+	
+	// Retrieve or instantiate the tableColumnWidths object
+	if ([prefs objectForKey:@"tableColumnWidths"] != nil) {
+		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"tableColumnWidths"]];
+	} else {
+		tableColumnWidths = [NSMutableDictionary dictionary];
+	}
+
+	// Edit or create database object
+	if  ([tableColumnWidths objectForKey:host_db] == nil) {
+		[tableColumnWidths setObject:[NSMutableDictionary dictionary] forKey:host_db];
+	} else {
+		[tableColumnWidths setObject:[NSMutableDictionary dictionaryWithDictionary:[tableColumnWidths objectForKey:host_db]] forKey:host_db];
+	}
+	
+	// Edit or create table object
+	if  ([[tableColumnWidths objectForKey:host_db] objectForKey:table] == nil) {
+		[[tableColumnWidths objectForKey:host_db] setObject:[NSMutableDictionary dictionary] forKey:table];
+	} else {
+		[[tableColumnWidths objectForKey:host_db] setObject:[NSMutableDictionary dictionaryWithDictionary:[[tableColumnWidths objectForKey:host_db] objectForKey:table]] forKey:table];
+	}
+
+	// Save the column size
+	[[[tableColumnWidths objectForKey:host_db] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:col];
+	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
+}
+
 
 #pragma mark -
 #pragma mark TextView delegate methods

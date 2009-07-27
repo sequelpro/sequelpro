@@ -54,6 +54,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (void)queryGaveError:(NSString *)error connection:(id)connection;
 - (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (NSString *)keychainPasswordForConnection:(id)connection;
+- (NSString *)onReconnectShouldSelectDatabase:(id)connection;
+- (NSString *)onReconnectShouldUseEncoding:(id)connection;
 - (MCPConnectionCheck)connectionLost:(id)connection;
 
 @end
@@ -117,7 +119,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	SEL timeConnectedSEL;
 }
 
-@property (readwrite, assign) id delegate;
 @property (readwrite, assign) BOOL useKeepAlive;
 @property (readwrite, assign) BOOL delegateQueryLogging;
 @property (readwrite, assign) int connectionTimeout;
@@ -126,6 +127,10 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 // Initialisation
 - (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port;
 - (id)initToSocket:(NSString *)socket withLogin:(NSString *)login;
+
+// Delegate
+- (id)delegate;
+- (void)setDelegate:(id)connectionDelegate;
 
 // Connection details
 - (BOOL)setPort:(int)thePort;
