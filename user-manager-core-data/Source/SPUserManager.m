@@ -22,9 +22,6 @@
 - (void)_selectParentFromSelection;
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
 - (NSManagedObject *)_createNewSPUser;
-- (BOOL)insertUsers:(NSArray *)insertedUsers;
-- (BOOL)deleteUsers:(NSArray *)deletedUsers;
-- (BOOL)updateUsers:(NSArray *)updatedUsers;
 - (BOOL)checkAndDisplayMySqlError;
 @end
 
@@ -98,6 +95,8 @@
 	
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
+
+	[[self managedObjectContext] reset];
 	
 	[[self connection] selectDB:@"mysql"];
 	MCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
@@ -269,11 +268,12 @@
 
 - (void)show
 {
+	[self _initializeUsers];
 	[window makeKeyAndOrderFront:nil];
 }
 
-
-// OutlineView Delegate Methods
+#pragma mark -
+#pragma mark OutlineView Delegate Methods
 - (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
@@ -317,14 +317,28 @@
 	return FALSE;
 	
 }
-// TableView Delegate Methods
 
-
-// Observer methods
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification
+{
+	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+	if ([selectedObject parent] == nil && !([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]))
+	{
+		[tabView selectTabViewItemWithIdentifier:@"General"];
+	}
+	else
+	{
+		if ([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"])
+		{
+			[tabView selectTabViewItemWithIdentifier:@"Global Privileges"];
+		}
+	}
+}
+#pragma mark -
+#pragma mark Observer Methods
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([[object class] isKindOfClass:[NSManagedObject class]] && !isInitializing)
+	if ([object isKindOfClass:[NSManagedObject class]])
 	{
 		NSManagedObject *parent = nil;
 		if ([(NSManagedObject *)object parent] != nil)
@@ -333,16 +347,16 @@
 		} 
 		else 
 		{
-			parent = (NSManagedObject *)object;
+			return;
 		}
 		
-		if (context == @"SPUser-user") {
+		if ([keyPath isEqualToString:@"user"]) {
 			for (NSManagedObject *child in [parent children]) 
 			{
 				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"user"];
 			}
 		} 
-		else if (context == @"SPUser-password") 
+		else if ([keyPath isEqualToString:@"password"]) 
 		{
 			for (NSManagedObject *child in [parent children]) 
 			{
@@ -389,8 +403,7 @@
 	[newItem addChildrenObject:newChild];
 		
 	[treeController addObject:newItem];
-	[outlineView expandItem:newItem];
-	
+	[outlineView expandItem:[outlineView itemAtRow:[outlineView selectedRow]]];
 }
 
 - (IBAction)removeUser:(id)sender
@@ -442,7 +455,8 @@
 	}
 }
 
-// Notifications
+#pragma mark -
+#pragma mark Notifications
 - (void)contextDidSave:(NSNotification *)notification
 {
 	if (!isInitializing)
@@ -471,9 +485,9 @@
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
 	for (NSManagedObject *user in updatedUsers) {
-		NSLog(@"Updated User: %@", user);
+		[self grantPrivilegesToUser:user];
 	}
-	return FALSE;
+	return TRUE;
 }
 
 - (BOOL)deleteUsers:(NSArray *)deletedUsers
@@ -500,75 +514,78 @@
 	[[self connection] selectDB:@"mysql"];
 	for(NSManagedObject *user in insertedUsers)
 	{
+		NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
+									 [[[user parent] valueForKey:@"user"] tickQuotedString], 
+									 [[user valueForKey:@"host"] tickQuotedString],
+									 [[[user parent] valueForKey:@"password"] tickQuotedString]];
+		// Create user in database
+		[[self connection] queryString:[NSString stringWithFormat:createStatement]];
 		
-		if ([user valueForKey:@"parent"] != nil)
+		if ([self checkAndDisplayMySqlError])
 		{
-			NSLog(@"%@", user);
-
-			NSDictionary *attributesDict = [[user entity] attributesByName];
-			NSMutableArray *grantPrivileges = [NSMutableArray array];
-			NSMutableArray *revokePrivileges = [NSMutableArray array];
-			
-			for(NSString *key in [attributesDict allKeys])
-			{
-				if ([key hasSuffix:@"_priv"])
-				{
-					NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
-					
-					if ([[user valueForKey:key] boolValue] == TRUE)
-					{
-						[grantPrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
-					}
-					else
-					{
-						[revokePrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
-					}
-				}
-			}
-			
-			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
-												[[[user parent] valueForKey:@"user"] tickQuotedString], 
-												[[user valueForKey:@"host"] tickQuotedString],
-												[[[user parent] valueForKey:@"password"] tickQuotedString]];
-			// Create user in database
-			[[self connection] queryString:[NSString stringWithFormat:createStatement]];
-			
-			if ([self checkAndDisplayMySqlError])
-			{
-				// Grant privileges
-				if ([grantPrivileges count] > 0)
-				{
-					NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@;",
-												[grantPrivileges componentsJoinedByCommas],
-												[[[user parent] valueForKey:@"user"] tickQuotedString],
-												[[user valueForKey:@"host"] tickQuotedString]];
-					NSLog(@"%@", grantStatement);
-					[[self connection] queryString:[NSString stringWithFormat:grantStatement]];
-					[self checkAndDisplayMySqlError];
-				}
-				
-				// Revoke privileges
-				if ([revokePrivileges count] > 0)
-				{
-					NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* TO %@@%@;",
-												 [revokePrivileges componentsJoinedByCommas],
-												 [[[user parent] valueForKey:@"user"] tickQuotedString],
-												 [[user valueForKey:@"host"] tickQuotedString]];
-					NSLog(@"%@", revokeStatement);
-					[[self connection] queryString:[NSString stringWithFormat:revokeStatement]];
-					[self checkAndDisplayMySqlError];
-				}		
-			}
+			[self grantPrivilegesToUser:user];
 		}
 	}
 	
 	return TRUE;
 	
 }
+
+// Grant or Revoke privileges to the given user
+- (BOOL)grantPrivilegesToUser:(NSManagedObject *)user
+{
+	if ([user valueForKey:@"parent"] != nil)
+	{
+		NSDictionary *attributesDict = [[user entity] attributesByName];
+		NSMutableArray *grantPrivileges = [NSMutableArray array];
+		NSMutableArray *revokePrivileges = [NSMutableArray array];
+		
+		for(NSString *key in [attributesDict allKeys])
+		{
+			if ([key hasSuffix:@"_priv"])
+			{
+				NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
+				
+				if ([[user valueForKey:key] boolValue] == TRUE)
+				{
+					[grantPrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
+				}
+				else
+				{
+					[revokePrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
+				}
+			}
+		}
+		// Grant privileges
+		if ([grantPrivileges count] > 0)
+		{
+			NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@;",
+										[grantPrivileges componentsJoinedByCommas],
+										[[[user parent] valueForKey:@"user"] tickQuotedString],
+										[[user valueForKey:@"host"] tickQuotedString]];
+			NSLog(@"%@", grantStatement);
+			[[self connection] queryString:[NSString stringWithFormat:grantStatement]];
+			[self checkAndDisplayMySqlError];
+		}
+		
+		// Revoke privileges
+		if ([revokePrivileges count] > 0)
+		{
+			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* TO %@@%@;",
+										 [revokePrivileges componentsJoinedByCommas],
+										 [[[user parent] valueForKey:@"user"] tickQuotedString],
+										 [[user valueForKey:@"host"] tickQuotedString]];
+			NSLog(@"%@", revokeStatement);
+			[[self connection] queryString:[NSString stringWithFormat:revokeStatement]];
+			[self checkAndDisplayMySqlError];
+		}		
+	}
+	return TRUE;
+}
 - (NSArray *)_fetchUserWithUserName:(NSString *)username
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"user == %@", username];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"user == %@ AND parent == nil", username];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
 														 inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
@@ -591,8 +608,10 @@
 	NSManagedObject *user = [[NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
 														  inManagedObjectContext:[self managedObjectContext]] autorelease];
 	
-	[user addObserver:self forKeyPath:@"user" options:NSKeyValueObservingOptionNew context:@"SPUser-user"];
-	[user addObserver:self forKeyPath:@"password" options:NSKeyValueObservingOptionNew context:@"SPUser-password"];
+	[user addObserver:self forKeyPath:@"user" options:(NSKeyValueObservingOptionNew |
+													   NSKeyValueObservingOptionOld) context:@"SPUser-user"];
+	[user addObserver:self forKeyPath:@"password" options:(NSKeyValueObservingOptionNew |
+														   NSKeyValueObservingOptionOld) context:@"SPUser-password"];
 	
 	return user;
 }
@@ -608,8 +627,35 @@
 	}
 }
 
--(void) tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+#pragma mark -
+#pragma mark Tab View Delegate methods
+- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
+	if ([[treeController selectedObjects] count] == 0)
+		return FALSE;
 	
+	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+	if ([[tabViewItem identifier] isEqualToString:@"General"])
+	{
+		if ([selectedObject parent] == nil) {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	} 
+	else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] ||
+		[[tabViewItem identifier] isEqualToString:@"Resources"])
+	{
+		if ([selectedObject parent] != nil) 
+		{
+			return TRUE;
+		} 
+		else 
+		{
+			return FALSE;
+		}
+	}
+	
+	return TRUE;
 }
 @end

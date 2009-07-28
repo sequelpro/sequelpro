@@ -49,4 +49,8 @@
 
 // Core Data Notifications
 - (void)contextDidSave:(NSNotification *)notification;
+- (BOOL)insertUsers:(NSArray *)insertedUsers;
+- (BOOL)deleteUsers:(NSArray *)deletedUsers;
+- (BOOL)updateUsers:(NSArray *)updatedUsers;
+- (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 @end
