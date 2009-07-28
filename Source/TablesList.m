@@ -1835,6 +1835,13 @@
  */
 - (IBAction) updateFilter:(id)sender
 {
+
+	// Don't try and maintain selections of multiple rows through filtering
+	if ([tablesListView numberOfSelectedRows] > 1) {
+		[tablesListView deselectAll:self];
+		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+	}
+
 	if ([[listFilterField stringValue] length]) {
 		if (isTableListFiltered) {
 			[filteredTables release];
@@ -1887,7 +1894,6 @@
 			[filteredTableTypes addObject:[NSNumber numberWithInt:selectedTableType]];
 		}
 		
-//		[self performSelector:@selector(selectTableAtIndex:) withObject:[NSNumber numberWithInt:[filteredTables indexOfObject:selectedTableName]] afterDelay:0.0];
 		isTableListFiltered = YES;
 	} else if (isTableListFiltered) {
 		isTableListFiltered = NO;
@@ -1895,9 +1901,6 @@
 		filteredTables = tables;
 		[filteredTableTypes release];
 		filteredTableTypes = tableTypes;
-		if (selectedTableName) {
-//			[self performSelector:@selector(selectTableAtIndex:) withObject:[NSNumber numberWithInt:[tables indexOfObject:selectedTableName]] afterDelay:0.0];
-		}
 	}
 
 	// Reselect correct row and reload the table view display
