@@ -1506,6 +1506,12 @@
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
+
+	// During imports the table view sometimes appears to request items beyond the end of the array.
+	// Using a hinted noteNumberOfRowsChanged after dropping tables fixes this but then seems to stick
+	// even after override, so check here for the time being and display empty rows during import.
+	if (rowIndex >= [filteredTables count]) return @"";
+
 	return [filteredTables objectAtIndex:rowIndex];
 }
 

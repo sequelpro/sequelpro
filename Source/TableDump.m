@@ -86,12 +86,11 @@
 	[exportMultipleXMLTableView reloadData];
 }
 
-- (IBAction)closeSheet:(id)sender
 /*
- ends the modal session
+ * Common method for ending modal sessions
  */
+- (IBAction)closeSheet:(id)sender
 {
-	[NSApp endSheet:exportWindow];
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
@@ -473,7 +472,6 @@
 		unsigned long queryCount = [queries count];
 
 		[singleProgressBar stopAnimation:self];
-		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
 		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
 		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Executing %d statements...", @"text showing that app is executing x statements"), queryCount]];
@@ -524,7 +522,6 @@
 				  contextInfo:nil];
 
 			[NSApp runModalForWindow:errorsSheet];
-
 			[NSApp endSheet:errorsSheet];
 			[errorsSheet orderOut:nil];
 		}
@@ -633,7 +630,6 @@
 				  contextInfo:nil];
 			
 			code = [NSApp runModalForWindow:fieldMappingSheet];
-			
 			[NSApp endSheet:fieldMappingSheet];
 			[fieldMappingSheet orderOut:nil];
 			
@@ -652,6 +648,7 @@
 				   didEndSelector:nil
 					  contextInfo:nil];
 				
+				[singleProgressBar setUsesThreadedAnimation:NO];
 				[singleProgressSheet makeKeyWindow];
 				[singleProgressText setStringValue:NSLocalizedString(@"Creating rows...", @"text showing that app is importing rows from CSV")];
 				[singleProgressText displayIfNeeded];
@@ -724,8 +721,7 @@
 			   didEndSelector:nil
 				  contextInfo:nil];
 			
-			[NSApp runModalForWindow:errorsSheet];
-			
+			[NSApp runModalForWindow:errorsSheet];			
 			[NSApp endSheet:errorsSheet];
 			[errorsSheet orderOut:nil];
 		}
@@ -983,7 +979,6 @@
 			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Dumping...", @"text showing that app is writing data for table dump"), (i+1), [selectedTables count], tableName]];
 			[singleProgressText displayIfNeeded];
 			[singleProgressBar stopAnimation:self];
-			[singleProgressBar setUsesThreadedAnimation:NO];
 			[singleProgressBar setIndeterminate:NO];
 			[singleProgressBar setDoubleValue:0];
 			[singleProgressBar displayIfNeeded];
@@ -1138,7 +1133,6 @@
 		   modalForWindow:tableWindow modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
 		[NSApp runModalForWindow:errorsSheet];
-		
 		[NSApp endSheet:errorsSheet];
 		[errorsSheet orderOut:nil];
 	}
@@ -1347,6 +1341,7 @@
 	progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setDoubleValue:0];
+	[singleProgressBar setUsesThreadedAnimation:YES];
 	[singleProgressBar displayIfNeeded];
 	
 	if ( !silently ) {
@@ -1983,8 +1978,7 @@
 		[NSApp beginSheet:errorsSheet
 		   modalForWindow:tableWindow modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
-		[NSApp runModalForWindow:errorsSheet];
-		
+		[NSApp runModalForWindow:errorsSheet];		
 		[NSApp endSheet:errorsSheet];
 		[errorsSheet orderOut:nil];
 	}
