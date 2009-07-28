@@ -379,8 +379,8 @@
 }
 
 - (IBAction)changeTable:(id)sender
-{	
-	[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]]] byExtendingSelection:NO];
+{
+	[tablesListInstance selectTableOrViewWithName:[fieldMappingPopup titleOfSelectedItem]];
 	
 	//set up tableView
 	currentRow = 0;
@@ -603,12 +603,9 @@
 			[fieldMappingPopup selectItemAtIndex:0];
 		}
 		
-		int indexOfFirstTable = [[tablesListInstance tables] indexOfObject:[fieldMappingPopup titleOfSelectedItem]];
-		
-		if( indexOfFirstTable == NSNotFound ){
+		if( ![tablesListInstance selectTableOrViewWithName:[fieldMappingPopup titleOfSelectedItem]] ) {
 			[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR] %@\n", @"error text when trying to import csv data, but we have no tables in the db"), @"Can't import CSV data into a database without any tables!"]];				
 		} else {
-			[tableListView selectRowIndexes:[NSIndexSet indexSetWithIndex:indexOfFirstTable] byExtendingSelection:NO];
 			
 			//set up tableView
 			currentRow = 0;
