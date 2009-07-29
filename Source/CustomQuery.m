@@ -140,7 +140,7 @@
 - (IBAction)chooseQueryFavorite:(id)sender
 {
 	if ( [queryFavoritesButton indexOfSelectedItem] == 1) {
-//save query to favorites
+		//save query to favorites
 		//check if favorite doesn't exist
 		NSEnumerator *enumerator = [queryFavorites objectEnumerator];
 		id favorite;
@@ -161,7 +161,7 @@
 		[prefs setObject:queryFavorites forKey:@"queryFavorites"];
 		[self setFavorites];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] == 2) {
-//edit favorites
+		//edit favorites
 		[NSApp beginSheet:queryFavoritesSheet
 				modalForWindow:tableWindow modalDelegate:self
 				didEndSelector:nil contextInfo:nil];
@@ -534,9 +534,9 @@
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
 	
-	//add query to history
+	// add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	if(!tableReloadAfterEditing) {
+	if(!tableReloadAfterEditing && [usedQuery length]) {
 		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
 
 		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
@@ -583,7 +583,8 @@
 			{
 				BOOL isLookBehind = YES;
 				queryRange = [self queryRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
-				[textView setSelectedRange:queryRange];
+				if(queryRange.length)
+					[textView setSelectedRange:queryRange];
 			} else {
 				// select the query for which the first error was detected
 				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
@@ -1451,6 +1452,7 @@
 	// Order by the column position number to avoid ambiguous name errors
 	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %i %@ ", [[tableColumn identifier] intValue]+1, (isDesc)?@"DESC":@"ASC"];
 	
+	// Remove any comments
 	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
 	[queryString replaceOccurrencesOfRegex:@"--.*?$" withString:@""];
 	[queryString replaceOccurrencesOfRegex:@"/\\*(.|\n)*?\\*/" withString:@""];
@@ -1733,15 +1735,14 @@
 {
 	// Abort if still loading the table
 	if (![cqColumnDefinition count]) return;
-NSLog(@"start");
+
 	// Retrieve the original index of the column from the identifier
 	int columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] intValue];
 	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
-	NSLog(@"1");
+
 	// Don't save if the column doesn't map to an underlying SQL field
 	if (![columnDefinition objectForKey:@"org_name"] || ![[columnDefinition objectForKey:@"org_name"] length])
 		return;
-	NSLog(@"2");
 
 	NSMutableDictionary *tableColumnWidths;
 	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
