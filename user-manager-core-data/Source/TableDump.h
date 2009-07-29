@@ -37,7 +37,6 @@
 	IBOutlet id customQueryInstance;
 
     IBOutlet id tableWindow;
-	IBOutlet id tableListView;
 	
     IBOutlet id exportDumpView;
     IBOutlet id exportCSVView;

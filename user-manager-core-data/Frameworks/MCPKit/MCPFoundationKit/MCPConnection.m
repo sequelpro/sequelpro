@@ -39,7 +39,7 @@
 static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
 
-const unsigned int kMCPConnectionDefaultOption = CLIENT_COMPRESS;
+const unsigned int kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
 const char         *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const unsigned int kMCPConnection_Not_Inited = 1000;
 const unsigned int kLengthOfTruncationForLog = 100;
@@ -295,9 +295,6 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		// detect when this has occurred.  Custom reconnection may be preferable.
 		my_bool trueBool = TRUE;
 		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &trueBool);
-
-		// Ensure compression is enabled where possible
-		mysql_options(mConnection, MYSQL_OPT_COMPRESS, 0);
 	}
 	
 	// Set the host as appropriate

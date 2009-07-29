@@ -49,7 +49,12 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	selectedTable = aTable;
+	if (selectedTable) [selectedTable release];
+	if (aTable == nil) {
+		selectedTable = nil;
+	} else {
+		selectedTable = [[NSString alloc] initWithString:aTable];
+	}
 	[tableSourceView deselectAll:self];
 	[indexView deselectAll:self];
 
@@ -1342,6 +1347,7 @@ traps enter and esc and make/cancel editing without entering next row
 		
 		currentlyEditingRow = -1;
 		defaultValues = nil;
+		selectedTable = nil;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
@@ -1363,6 +1369,7 @@ traps enter and esc and make/cancel editing without entering next row
 	[oldRow release];
 	[enumFields release];
 	if (defaultValues) [defaultValues release];
+	if (selectedTable) [selectedTable release];
 	
 	[super dealloc];
 }

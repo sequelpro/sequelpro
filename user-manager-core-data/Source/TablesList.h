@@ -40,6 +40,7 @@ enum sp_table_types
 @interface NSObject (NSSplitView)
 - (NSView *)collapsibleSubview;
 - (IBAction)toggleCollapse:(id)sender;
+- (BOOL)collapsibleSubviewIsCollapsed;
 - (void)setCollapsibleSubviewCollapsed:(BOOL)flag;
 @end
 
@@ -74,8 +75,11 @@ enum sp_table_types
 	IBOutlet id truncateTableButton;
 	IBOutlet id truncateTableContextButton;
 	IBOutlet NSSplitView *tableListSplitView;
+	IBOutlet NSSplitView *tableListFilterSplitView;
 	IBOutlet NSButton *tableInfoCollapseButton;
-	
+
+	IBOutlet NSSearchField *listFilterField;
+
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
@@ -89,7 +93,13 @@ enum sp_table_types
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 
 	NSMutableArray *tables;
+	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
+	NSMutableArray *filteredTableTypes;
+	int selectedTableType;
+	NSString *selectedTableName;
+	BOOL isTableListFiltered;
+	BOOL tableListContainsViews;
 
 	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
 }
@@ -112,6 +122,7 @@ enum sp_table_types
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)truncateTable;
 - (void)doPerformQueryService:(NSString *)query;
+- (void)updateSelection;
 
 // Getters
 - (NSString *)tableName;
@@ -132,5 +143,12 @@ enum sp_table_types
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
 - (BOOL)selectTableOrViewWithName:(NSString *)theName;
+
+// Table list filter interaction
+- (void) showFilter;
+- (void) hideFilter;
+- (void) clearFilter;
+- (IBAction) updateFilter:(id)sender;
+- (void) selectTableAtIndex:(NSNumber *)rowIndex;
 
 @end

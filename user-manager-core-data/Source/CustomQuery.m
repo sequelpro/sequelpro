@@ -140,7 +140,7 @@
 - (IBAction)chooseQueryFavorite:(id)sender
 {
 	if ( [queryFavoritesButton indexOfSelectedItem] == 1) {
-//save query to favorites
+		//save query to favorites
 		//check if favorite doesn't exist
 		NSEnumerator *enumerator = [queryFavorites objectEnumerator];
 		id favorite;
@@ -161,7 +161,7 @@
 		[prefs setObject:queryFavorites forKey:@"queryFavorites"];
 		[self setFavorites];
 	} else if ( [queryFavoritesButton indexOfSelectedItem] == 2) {
-//edit favorites
+		//edit favorites
 		[NSApp beginSheet:queryFavoritesSheet
 				modalForWindow:tableWindow modalDelegate:self
 				didEndSelector:nil contextInfo:nil];
@@ -526,8 +526,7 @@
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 	
-	if(!tableReloadAfterEditing)
-		lastExecutedQuery = [[tempQueries lastObject] retain];
+	lastExecutedQuery = [[tempQueries lastObject] retain];
 	
 	//perform empty query if no query is given
 	if ( !queryCount ) {
@@ -535,9 +534,9 @@
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
 	
-	//add query to history
+	// add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	if(!tableReloadAfterEditing) {
+	if(!tableReloadAfterEditing && [usedQuery length]) {
 		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
 
 		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
@@ -584,7 +583,8 @@
 			{
 				BOOL isLookBehind = YES;
 				queryRange = [self queryRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
-				[textView setSelectedRange:queryRange];
+				if(queryRange.length)
+					[textView setSelectedRange:queryRange];
 			} else {
 				// select the query for which the first error was detected
 				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
@@ -1452,17 +1452,70 @@
 	// Order by the column position number to avoid ambiguous name errors
 	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %i %@ ", [[tableColumn identifier] intValue]+1, (isDesc)?@"DESC":@"ASC"];
 	
-	//make queryString and perform query
+	// Remove any comments
 	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
 	[queryString replaceOccurrencesOfRegex:@"--.*?$" withString:@""];
 	[queryString replaceOccurrencesOfRegex:@"/\\*(.|\n)*?\\*/" withString:@""];
-	if([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
-		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))" withString:newOrder];
-	else if ([queryString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"])
-		[queryString replaceOccurrencesOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?" withString:newOrder];
+
+	// Remove all quoted strings as a temp string to match the correct clauses
+	NSRange matchedRange;
+	int i;
+	NSMutableString *tmpString = [NSMutableString stringWithString:queryString];
+	NSMutableString *qq = [NSMutableString string];
+	matchedRange = [tmpString rangeOfRegex:@"\"(?:[^\"\\\\]*+|\\\\.)*\""];
+	// Replace all "..." with _'s
+	while(matchedRange.length) {
+		[qq setString:@""];
+		for(i=0; i<matchedRange.length; i++) [qq appendString:@"_"];
+		[tmpString replaceCharactersInRange:matchedRange withString:qq];
+		[tmpString flushCachedRegexData];
+		matchedRange = [tmpString rangeOfRegex:@"\"(?:[^\"\\\\]*+|\\\\.)*\""];
+	}
+	// Replace all '...' with _'s
+	matchedRange = [tmpString rangeOfRegex:@"'(?:[^'\\\\]*+|\\\\.)*'"];
+	while(matchedRange.length) {
+		[qq setString:@""];
+		for(i=0; i<matchedRange.length; i++) [qq appendString:@"_"];
+		[tmpString replaceCharactersInRange:matchedRange withString:qq];
+		[tmpString flushCachedRegexData];
+		matchedRange = [tmpString rangeOfRegex:@"'(?:[^'\\\\]*+|\\\\.)*'"];
+	}
+	// Replace all `...` with _'s
+	matchedRange = [tmpString rangeOfRegex:@"`(?:[^`\\\\]*+|\\\\.)*`"];
+	while(matchedRange.length) {
+		[qq setString:@""];
+		for(i=0; i<matchedRange.length; i++) [qq appendString:@"_"];
+		[tmpString replaceCharactersInRange:matchedRange withString:qq];
+		[tmpString flushCachedRegexData];
+		matchedRange = [tmpString rangeOfRegex:@"`(?:[^`\\\\]*+|\\\\.)*`"];
+	}
+
+	// Check for an existing ORDER clause (in the temp string),
+	// if so replace it by the new one (in the actual string)
+	// Test for ORDER clause inside a statement
+	if([tmpString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
+		{
+			matchedRange = [tmpString rangeOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"];
+			[queryString replaceCharactersInRange:matchedRange withString:newOrder];
+		}
+	// Test for ORDER clause at the end
+	else if ([tmpString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"])
+		{
+			matchedRange = [tmpString rangeOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"];
+			[queryString replaceCharactersInRange:matchedRange withString:newOrder];
+		}
+	// No ORDER clause found
+	// ORDER clause has to be inserted before LIMIT, PROCEDURE, INTO, FOR, or LOCK due to MySQL syntax for SELECT
+	else if([tmpString isMatchedByRegex:@"(?i)\\bSELECT\\b((.|\\n)+?)\\s*(?=(\\sLIMIT\\s|\\sPROCEDURE\\s|\\sINTO\\s|\\sFOR\\s|\\sLOCK\\s))"])
+		{
+			matchedRange = [tmpString rangeOfRegex:@"(?i)\\bSELECT\\b((.|\\n)+?)(?=(\\sLIMIT\\s|\\sPROCEDURE\\s|\\sINTO\\s|\\sFOR\\s|\\sLOCK\\s))" capture:1];
+			NSString *orderHeader = [NSString stringWithFormat:@"%@ %@", [queryString substringWithRange:matchedRange], newOrder];
+			[queryString replaceCharactersInRange:matchedRange withString:orderHeader];
+		}
+	// Otherwise append the new ORDER clause at the end
 	else
 		[queryString appendFormat:@" %@", newOrder];
-		
+
 	tableReloadAfterEditing = YES;
 	queryIsTableSorter = YES;
 	[self performQueries:[NSArray arrayWithObject:queryString]];
@@ -1682,15 +1735,14 @@
 {
 	// Abort if still loading the table
 	if (![cqColumnDefinition count]) return;
-NSLog(@"start");
+
 	// Retrieve the original index of the column from the identifier
 	int columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] intValue];
 	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
-	NSLog(@"1");
+
 	// Don't save if the column doesn't map to an underlying SQL field
 	if (![columnDefinition objectForKey:@"org_name"] || ![[columnDefinition objectForKey:@"org_name"] length])
 		return;
-	NSLog(@"2");
 
 	NSMutableDictionary *tableColumnWidths;
 	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];

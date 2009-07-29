@@ -117,7 +117,6 @@
 	
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
-	[tableListSplitter setDividerStyle:NSSplitViewDividerStyleThin];
 
 	// Add the icon accessory view to the title bar
 	NSView *windowFrame = [[tableWindow contentView] superview];
@@ -2198,7 +2197,7 @@
 		return;
 	
 	// grab the width of the left pane
-	float leftPaneWidth = [dbTablesTableView frame].size.width;
+	float leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 	
 	// subtract some pixels to allow for misc stuff
 	leftPaneWidth -= 12;

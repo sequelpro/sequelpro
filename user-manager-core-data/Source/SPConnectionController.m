@@ -410,7 +410,7 @@
 {
 	
 	// Hide the connection view and restore the main view
-	[connectionView setHidden:YES];
+	[connectionView removeFromSuperviewWithoutNeedingDisplay];
 	[contentView setHidden:NO];
 
 	// Restore the toolbar icons
@@ -823,7 +823,7 @@
  */
 - (void) splitViewDidResizeSubviews:(NSNotification *)aNotification
 {
-	[contentView setPosition:[favoritesTable frame].size.width ofDividerAtIndex:0];
+	[contentView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
 }
 
 

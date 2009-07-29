@@ -96,7 +96,7 @@
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 
-	[[self managedObjectContext] reset];
+//	[[self managedObjectContext] reset];
 	
 	[[self connection] selectDB:@"mysql"];
 	MCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
