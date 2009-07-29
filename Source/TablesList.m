@@ -38,6 +38,7 @@
 
 @implementation TablesList
 
+#pragma mark -
 #pragma mark IBAction methods
 
 /**
@@ -805,6 +806,7 @@
 	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:@"TableInformationPanelCollapsed"];
 }
 
+#pragma mark -
 #pragma mark Alert sheet methods
 
 /**
@@ -839,6 +841,7 @@
 	[NSApp stopModalWithCode:[sender tag]];
 }
 
+#pragma mark -
 #pragma mark Additional methods
 
 /**
@@ -1296,6 +1299,7 @@
 	}
 }
 
+#pragma mark -
 #pragma mark Getter methods
 
 /**
@@ -1426,6 +1430,7 @@
 	return statusLoaded;
 }
 
+#pragma mark -
 #pragma mark Setter methods
 
 /**
@@ -1491,6 +1496,7 @@
 	return YES;
 }
 
+#pragma mark -
 #pragma mark Datasource methods
 
 /**
@@ -1633,6 +1639,7 @@
 	}
 }
 
+#pragma mark -
 #pragma mark TableView delegate methods
 
 /**
@@ -1754,6 +1761,7 @@
 	return (row == 0) ? 25 : 17;
 }
 
+#pragma mark -
 #pragma mark TabView delegate methods
 
 /**
@@ -1806,6 +1814,7 @@
 	return [super validateMenuItem:menuItem];
 }		
 
+#pragma mark -
 #pragma mark Table list filter interaction
 
 /**
@@ -1928,6 +1937,16 @@
 //	[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
 }
 
+#pragma mark -
+#pragma mark SplitView Delegate Methods
+
+- (NSRect)splitView:(NSSplitView *)splitView effectiveRect:(NSRect)proposedEffectiveRect forDrawnRect:(NSRect)drawnRect ofDividerAtIndex:(NSInteger)dividerIndex
+{
+	return (splitView == tableListSplitView ? NSZeroRect : proposedEffectiveRect);
+}
+
+
+#pragma mark -
 #pragma mark Other
 
 /**
