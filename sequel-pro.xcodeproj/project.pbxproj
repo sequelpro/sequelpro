@@ -141,6 +141,7 @@
 		588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */; };
 		588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */; };
 		588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */; };
+		589235321020C1230011DE00 /* SPHistoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 589235301020C1230011DE00 /* SPHistoryController.m */; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
 		58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
@@ -490,6 +491,8 @@
 		588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-connected.png"; sourceTree = "<group>"; };
 		588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-connecting.png"; sourceTree = "<group>"; };
 		588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-disconnected.png"; sourceTree = "<group>"; };
+		589235301020C1230011DE00 /* SPHistoryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHistoryController.m; sourceTree = "<group>"; };
+		589235311020C1230011DE00 /* SPHistoryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHistoryController.h; sourceTree = "<group>"; };
 		58C56EF30F438E120035701E /* SPDataCellFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataCellFormatter.h; sourceTree = "<group>"; };
 		58C56EF40F438E120035701E /* SPDataCellFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataCellFormatter.m; sourceTree = "<group>"; };
 		58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_edit_mode_selected.tiff; sourceTree = "<group>"; };
@@ -879,6 +882,8 @@
 				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
 				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
 				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
+				589235311020C1230011DE00 /* SPHistoryController.h */,
+				589235301020C1230011DE00 /* SPHistoryController.m */,
 				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
 				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
 				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
@@ -1587,6 +1592,7 @@
 				58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */,
 				BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */,
 				584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */,
+				589235321020C1230011DE00 /* SPHistoryController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

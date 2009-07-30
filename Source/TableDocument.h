@@ -46,6 +46,7 @@
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
+	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id spExportControllerInstance;
 
 	IBOutlet id tableWindow;
@@ -64,6 +65,7 @@
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;
 	IBOutlet id chooseDatabaseButton;
+	IBOutlet id historyControl;
 	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
 	
