@@ -1,10 +1,26 @@
 //
+//  $Id: SPUserManager.m 856 2009-06-12 05:31:39Z mltownsend $
+//
 //  SPUserManager.m
 //  sequel-pro
 //
-//  Created by Mark on 1/20/09.
-//  Copyright 2009 __MyCompanyName__. All rights reserved.
+//  Created by Mark Townsend on Jan 01, 2009
 //
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPUserManager.h"
 #import "MCPConnection.h"
@@ -95,8 +111,6 @@
 	
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
-
-//	[[self managedObjectContext] reset];
 	
 	[[self connection] selectDB:@"mysql"];
 	MCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
@@ -338,31 +352,36 @@
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([object isKindOfClass:[NSManagedObject class]])
+	if ([object isKindOfClass:[NSManagedObject class]] && !isInitializing)
 	{
 		NSManagedObject *parent = nil;
 		if ([(NSManagedObject *)object parent] != nil)
 		{
 			parent = [(NSManagedObject *)object parent];
-		} 
-		else 
-		{
-			return;
 		}
 		
-		if ([keyPath isEqualToString:@"user"]) {
-			for (NSManagedObject *child in [parent children]) 
-			{
-				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"user"];
-			}
-		} 
-		else if ([keyPath isEqualToString:@"password"]) 
+		if (parent)
 		{
-			for (NSManagedObject *child in [parent children]) 
+			if ([keyPath isEqualToString:@"user"]) {
+				for (NSManagedObject *child in [parent children]) 
+				{
+					[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"user"];
+				}
+				[outlineView reloadData];
+			} 
+			else if ([keyPath isEqualToString:@"password"]) 
 			{
-				[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"password"];
+				for (NSManagedObject *child in [parent children]) 
+				{
+					[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"password"];
+				}
 			}
+			else if ([keyPath isEqualToString:@"host"])
+			{
+				[outlineView reloadData];
+			}			
 		}
+		[outlineView reloadData];
 	}
 }
 
@@ -418,6 +437,9 @@
 - (IBAction)addHost:(id)sender
 {
 	[treeController addChild:sender];
+	// Need to figure out how to do this right.  I want to be able to have the newly
+	// added item be in edit mode to change the host name.
+//	[outlineView editColumn:0 row:[outlineView selectedRow]	withEvent:nil select:TRUE];		
 }
 
 - (IBAction)removeHost:(id)sender
@@ -609,9 +631,12 @@
 														  inManagedObjectContext:[self managedObjectContext]] autorelease];
 	
 	[user addObserver:self forKeyPath:@"user" options:(NSKeyValueObservingOptionNew |
-													   NSKeyValueObservingOptionOld) context:@"SPUser-user"];
+													   NSKeyValueObservingOptionOld) context:nil];
 	[user addObserver:self forKeyPath:@"password" options:(NSKeyValueObservingOptionNew |
-														   NSKeyValueObservingOptionOld) context:@"SPUser-password"];
+														   NSKeyValueObservingOptionOld) context:nil];
+	[user addObserver:self forKeyPath:@"host" options:(NSKeyValueObservingOptionNew |
+														   NSKeyValueObservingOptionOld) context:nil];
+	
 	
 	return user;
 }

@@ -25,6 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
+#import "SPHistoryController.h"
 
 enum sp_table_types
 {
@@ -54,6 +55,7 @@ enum sp_table_types
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
+	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;

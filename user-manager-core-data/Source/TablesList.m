@@ -1297,6 +1297,8 @@
 		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
 									[tableDocumentInstance name], [tableDocumentInstance database]]];
 	}
+
+	[spHistoryControllerInstance updateHistoryEntries];
 }
 
 #pragma mark -

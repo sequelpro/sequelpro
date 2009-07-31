@@ -43,6 +43,7 @@
 #import "MainController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPConnectionController.h"
+#import "SPHistoryController.h"
 #import "SPPreferenceController.h"
 #import "SPPrintAccessory.h"
 #import "QLPreviewPanel.h"
@@ -169,6 +170,7 @@
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 		selectedDatabase = [[NSString alloc] initWithString:[connectionController database]];
+		[spHistoryControllerInstance updateHistoryEntries];
 	}
 
 	// Update the database list
@@ -417,6 +419,9 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
+
+	// Add a history entry
+	[spHistoryControllerInstance updateHistoryEntries];
 }
 
 /**
@@ -1551,6 +1556,7 @@
 
 	[tableTabView selectTabViewItemAtIndex:0];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
+	[spHistoryControllerInstance updateHistoryEntries];
 }
 
 - (IBAction)viewContent:(id)sender
@@ -1564,6 +1570,7 @@
 
 	[tableTabView selectTabViewItemAtIndex:1];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
+	[spHistoryControllerInstance updateHistoryEntries];
 }
 
 - (IBAction)viewQuery:(id)sender
@@ -1584,6 +1591,7 @@
 
 	[tableTabView selectTabViewItemAtIndex:2];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToRunQueryToolbarItemIdentifier"];
+	[spHistoryControllerInstance updateHistoryEntries];
 
 	// Set the focus on the text field if no query has been run
 	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
@@ -1607,6 +1615,7 @@
 
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableInfoToolbarItemIdentifier"];
+	[spHistoryControllerInstance updateHistoryEntries];
 }
 
 - (IBAction)viewRelations:(id)sender
@@ -1627,6 +1636,7 @@
 	
 	[tableTabView selectTabViewItemAtIndex:4];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableRelationsToolbarItemIdentifier"];
+	[spHistoryControllerInstance updateHistoryEntries];
 }
 
 
@@ -1752,7 +1762,12 @@
 			chooseDatabaseToolbarItem = toolbarItem;
 			[self updateChooseDatabaseToolbarItemWidth];
 		} 
-		
+
+	} else if ([itemIdentifier isEqualToString:@"HistoryNavigationToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"History", @"toolbar item for navigation history")];
+		[toolbarItem setPaletteLabel:[toolbarItem label]];
+		[toolbarItem setView:historyControl];
+
 	} else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
 		//set the text label to be displayed in the toolbar and customization palette 
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
@@ -1833,6 +1848,15 @@
 		[toolbarItem setAction:@selector(viewRelations:)];
 		
 		
+	} else if ([itemIdentifier isEqualToString:@"SwitchToUserManagerToolbarItemIdentifier"]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Show Users", @"tooltip for toolbar item for switching to the User Manager tab")];
+		[toolbarItem setImage:[NSImage imageNamed:NSImageNameEveryone]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(showUserManager:)];
 	} else {
 		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
 		toolbarItem = nil;
@@ -1848,6 +1872,7 @@
 {
 	return [NSArray arrayWithObjects:
 			@"DatabaseSelectToolbarItemIdentifier",
+			@"HistoryNavigationToolbarItemIdentifier",
 			@"ToggleConsoleIdentifier",
 			@"ClearConsoleIdentifier",
 			@"FlushPrivilegesIdentifier",
@@ -1856,6 +1881,7 @@
 			@"SwitchToRunQueryToolbarItemIdentifier",
 			@"SwitchToTableInfoToolbarItemIdentifier",
 			@"SwitchToTableRelationsToolbarItemIdentifier",
+			@"SwitchToUserManagerToolbarItemIdentifier",
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
 			NSToolbarSpaceItemIdentifier,
@@ -1877,6 +1903,7 @@
 			@"SwitchToTableInfoToolbarItemIdentifier",
 			@"SwitchToTableRelationsToolbarItemIdentifier",
 			NSToolbarFlexibleSpaceItemIdentifier,
+			@"SwitchToUserManagerToolbarItemIdentifier",
 			@"ToggleConsoleIdentifier",
 			@"ClearConsoleIdentifier",
 			nil];
@@ -2252,13 +2279,9 @@
 
 - (void)dealloc
 {
-	if (userManagerInstance != nil)
-	{
-		[userManagerInstance release];
-	}
-	
 	[_encoding release];
 	[printWebView release];
+	if (userManagerInstance) [userManagerInstance release];
 	if (connectionController) [connectionController release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (variables) [variables release];
