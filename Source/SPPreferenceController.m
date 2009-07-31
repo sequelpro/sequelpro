@@ -64,6 +64,8 @@
 
 		currentFavorite = nil;
 		keychain = nil;
+		favoriteNameFieldWasTouched = YES;
+		favoriteType = 0;
 	}
 
 	return self;
@@ -285,6 +287,10 @@
 	[favoritesTableView reloadData];
 	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 	[self updateDefaultFavoritePopup];
+	
+	favoriteNameFieldWasTouched = NO;
+	
+	[[self window] makeFirstResponder:favoriteHostTextField];
 }
 
 // -------------------------------------------------------------------------------
@@ -367,6 +373,8 @@
 		[favoritesTableView reloadData];
 		[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 		[self updateDefaultFavoritePopup];
+
+		[[self window] makeFirstResponder:favoriteNameTextField];
 	}
 }
 
@@ -625,6 +633,8 @@
 	NSString *keychainSSHName = [keychain nameForSSHForFavoriteName:[currentFavorite objectForKey:@"name"] id:[currentFavorite objectForKey:@"id"]];
 	NSString *keychainSSHAccount = [keychain accountForSSHUser:[currentFavorite objectForKey:@"sshUser"] sshHost:[currentFavorite objectForKey:@"sshHost"]];
 	[sshPasswordField setStringValue:[keychain getPasswordForName:keychainSSHName account:keychainSSHAccount]];
+	
+	favoriteNameFieldWasTouched = YES;
 }
 
 #pragma mark -
@@ -725,6 +735,58 @@
 }
 
 // -------------------------------------------------------------------------------
+// controlTextDidChange:
+// Trap and control the 'name' field of the selected favorite. If the user pressed
+// 'Add Favorite' the 'name' field is set to "New Favorite". If the user do not
+// change the 'name' field or delete that field it will be set to user@host automatically.
+// -------------------------------------------------------------------------------
+- (void)controlTextDidChange:(NSNotification *)aNotification
+{
+
+	id field = [aNotification object];
+	BOOL nameFieldIsEmpty = (
+		[[favoritesController valueForKeyPath:@"selection.name"] isEqualToString:@""] 
+		|| [[favoriteNameTextField stringValue] isEqualToString:@""]);
+
+	switch(favoriteType) {
+		case 0:
+		if(nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == favoriteUserTextField || field == favoriteHostTextField))) {
+			[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@%@", [favoriteUserTextField stringValue], [favoriteHostTextField stringValue]]];
+			[favoritesController setValue:[favoriteNameTextField stringValue] forKeyPath:@"selection.name"];
+			[prefs synchronize];
+			// if name field is empty enable user@host update
+			if(nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
+		}
+		break;
+		case 1:
+		if(nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == favoriteUserTextFieldSocket)) {
+			[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@%@", [favoriteUserTextFieldSocket stringValue], [favoritesController valueForKeyPath:@"selection.host"]]];
+			[favoritesController setValue:[favoriteNameTextField stringValue] forKeyPath:@"selection.name"];
+			[prefs synchronize];
+			// if name field is empty enable user@host update
+			if(nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
+		}
+		break;
+		case 2:
+		if(nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == favoriteUserTextFieldSSH || field == favoriteHostTextFieldSSH))) {
+			[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@%@", [favoriteUserTextFieldSSH stringValue], [favoriteHostTextFieldSSH stringValue]]];
+			[favoritesController setValue:[favoriteNameTextField stringValue] forKeyPath:@"selection.name"];
+			[prefs synchronize];
+			// if name field is empty enable user@host update
+			if(nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
+		}
+		break;
+		default:
+		break;
+	}
+	
+		
+	if(field == favoriteNameTextField) {
+		favoriteNameFieldWasTouched = YES;
+	}
+
+}
+// -------------------------------------------------------------------------------
 // favoriteTypeDidChange:
 // Update the favorite host when the type changes.
 // -------------------------------------------------------------------------------
@@ -735,6 +797,17 @@
 	} else if ([[favoritesController valueForKeyPath:@"selection.host"] isEqualToString:@"localhost"]) {
 		[favoritesController setValue:@"" forKeyPath:@"selection.host"];
 	}
+
+	favoriteType = [sender indexOfSelectedItem];
+	
+	// Update the name for a new added favorite if not touched by the user
+	if(!favoriteNameFieldWasTouched) {
+		[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@%@", 
+			([favoritesController valueForKeyPath:@"selection.user"]) ? [favoritesController valueForKeyPath:@"selection.user"] : @"", 
+			([favoritesController valueForKeyPath:@"selection.host"]) ? [favoritesController valueForKeyPath:@"selection.host"] : @""]];
+		[favoritesController setValue:[favoriteNameTextField stringValue] forKeyPath:@"selection.name"];
+	}
+	
 
 	// Request a password refresh to keep keychain references in synch with the favorites
 	[self updateFavoritePasswordsFromField:nil];
@@ -833,6 +906,7 @@
 // -------------------------------------------------------------------------------
 - (void)windowWillClose:(NSNotification *)notification
 {
+
 	// Mark the currently selected field in the window as having finished editing, to trigger saves.
 	if ([preferencesWindow firstResponder])
 		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
