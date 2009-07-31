@@ -561,6 +561,8 @@
 							   escapedBy:[importFieldsEscapedField stringValue]
 								lineEnds:[importLinesTerminatedField stringValue]] retain];
 		
+		long importArrayCount = [importArray count];
+		
 		//close progress sheet
 		[NSApp endSheet:singleProgressSheet];
 		[singleProgressSheet orderOut:nil];
@@ -568,7 +570,7 @@
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
 		
-		if([importArray count] == 0){
+		if(importArrayCount == 0){
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil,
@@ -609,8 +611,8 @@
 			if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 			[self setupFieldMappingArray];
 			[rowDownButton setEnabled:NO];
-			[rowUpButton setEnabled:([importArray count] > 1)];
-			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+			[rowUpButton setEnabled:(importArrayCount > 1)];
+			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, importArrayCount]];
 			
 			//set up tableView buttons
 			NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
@@ -663,8 +665,7 @@
 					}
 				}
 				
-				//import array
-				long importArrayCount = [importArray count];
+				// import array
 				long fieldMappingArrayCount = [fieldMappingArray count];
 				insertFormatString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%%@)", 
 											[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString], fNames];
