@@ -243,8 +243,6 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	
-	NSLog(@"%@", tableFields);
 }
 
 /*

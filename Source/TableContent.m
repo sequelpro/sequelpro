@@ -59,14 +59,21 @@
 		
 		selectedTable = nil;
 		sortCol       = nil;
-		lastField     = nil;
+		isDesc		  = NO;
 		// editData	  = nil;
 		keys		  = nil;
-		targetFilterColumn = nil;
-		targetFilterValue = nil;
 
 		areShowingAllRows = false;
 		currentlyEditingRow = -1;
+
+		sortColumnToRestore = nil;
+		sortColumnToRestoreIsAsc = YES;
+		limitStartPositionToRestore = 1;
+		selectionIndexToRestore = nil;
+		selectionViewportToRestore = NSZeroRect;
+		filterFieldToRestore = nil;
+		filterComparisonToRestore = nil;
+		filterValueToRestore = nil;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 		
@@ -89,14 +96,12 @@
 - (void)loadTable:(NSString *)aTable
 {
 	int			i;
-	NSNumber	*colWidth, *savedSortCol = nil;
+	NSNumber	*colWidth, *sortColumnNumberToRestore = nil;
 	NSArray *columnNames;
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
 	NSString	*query;
 	MCPResult	*queryResult;
-	BOOL		preserveCurrentView = [aTable isEqualToString:selectedTable];
-	NSString	*preservedFilterField = nil, *preservedFilterComparison, *preservedFilterValue;
 
 	// Clear the selection, and abort the reload if the user is still editing a row
 	[tableContentView deselectAll:self];
@@ -154,6 +159,9 @@
 		[addButton setEnabled:NO];
 		[copyButton setEnabled:NO];
 		[removeButton setEnabled:NO];
+
+		// Clear restoration settings
+		[self clearDetailsToRestore];
 
 		return;
 	}
@@ -253,8 +261,8 @@
 		}
 		
 		// Set the column to be reselected for sorting if appropriate
-		if (lastField && [lastField isEqualToString:[columnDefinition objectForKey:@"name"]])
-			savedSortCol = [columnDefinition objectForKey:@"datacolumnindex"];
+		if (sortColumnToRestore && [sortColumnToRestore isEqualToString:[columnDefinition objectForKey:@"name"]])
+			sortColumnNumberToRestore = [columnDefinition objectForKey:@"datacolumnindex"];
 		
 		// Add the column to the table
 		[tableContentView addTableColumn:theCol];
@@ -262,11 +270,12 @@
 	}
 
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it. 
-	if (preserveCurrentView && savedSortCol) {
-		theCol = [tableContentView tableColumnWithIdentifier:savedSortCol];
+	if (sortColumnNumberToRestore) {
+		theCol = [tableContentView tableColumnWithIdentifier:sortColumnNumberToRestore];
 		if (sortCol) [sortCol release];
-		sortCol = [savedSortCol copy];
+		sortCol = [sortColumnNumberToRestore copy];
 		[tableContentView setHighlightedTableColumn:theCol];
+		isDesc = !sortColumnToRestoreIsAsc;
 		if ( isDesc ) {
 			[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:theCol];
 		} else {
@@ -282,13 +291,9 @@
 		isDesc = NO;
 	}
 
-	// Preserve the stored filter settings if appropriate
-	if (!targetFilterColumn && preserveCurrentView && [fieldField isEnabled]) {
-		preservedFilterField = [NSString stringWithString:[[fieldField selectedItem] title]];
-		preservedFilterComparison = [NSString stringWithString:[[compareField selectedItem] title]];
-		preservedFilterValue = [NSString stringWithString:[argumentField stringValue]];
-	}
-
+	// Store the current first responder so filter field doesn't steal focus
+	id currentFirstResponder = [tableWindow firstResponder];
+	
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
 	[fieldField removeAllItems];
@@ -302,39 +307,31 @@
 	[argumentField setStringValue:@""];
 	[filterButton setEnabled:YES];
 	
-	// Select the specified target filter settings if set
-	if (targetFilterColumn) {
-		[fieldField selectItemWithTitle:targetFilterColumn];
+	// Restore preserved filter settings if appropriate and valid
+	if (filterFieldToRestore) {
+		[fieldField selectItemWithTitle:filterFieldToRestore];
 		[self setCompareTypes:self];
-		if ([targetFilterValue isEqualToString:[prefs objectForKey:@"NullValue"]]) {
-			[compareField selectItemWithTitle:@"IS NULL"];
-		} else {
-			[compareField selectItemAtIndex:0];	// "=", "IS", etc
-			[argumentField setStringValue:targetFilterValue];
-		}
-		areShowingAllRows = NO;
-		targetFilterColumn = nil;
-		targetFilterValue = nil;
 
-	// Otherwise, restore preserved filter settings if appropriate and valid
-	} else if (preserveCurrentView && preservedFilterField != nil && [fieldField itemWithTitle:preservedFilterField]) {
-		[fieldField selectItemWithTitle:preservedFilterField];
-		[self setCompareTypes:self];
-		
-		if ([fieldField itemWithTitle:preservedFilterField] && [compareField itemWithTitle:preservedFilterComparison]) {
-			[compareField selectItemWithTitle:preservedFilterComparison];
-			[argumentField setStringValue:preservedFilterValue];
+		if ([fieldField itemWithTitle:filterFieldToRestore]
+			&& ((!filterComparisonToRestore && filterValueToRestore)
+				|| [compareField itemWithTitle:filterComparisonToRestore]))
+		{
+			if (filterComparisonToRestore) [compareField selectItemWithTitle:filterComparisonToRestore];
+			if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
 			areShowingAllRows = NO;
 		}
 	}
+
+	// Restore first responder
+	[tableWindow makeFirstResponder:currentFirstResponder];
 
 	// Enable or disable the limit fields according to preference setting
 	if ( [prefs boolForKey:@"LimitResults"] ) {
 
 		// Attempt to preserve the limit value if it's still valid
-		if (!preserveCurrentView || [limitRowsField intValue] < 1 || [limitRowsField intValue] >= numRows) {	
-			[limitRowsField setStringValue:@"1"];
-		}
+		if (limitStartPositionToRestore < 1 || limitStartPositionToRestore >= numRows) limitStartPositionToRestore = 1;
+		[limitRowsField setStringValue:[NSString stringWithFormat:@"%u", limitStartPositionToRestore]];
+
 		[limitRowsField setEnabled:YES];
 		[limitRowsButton setEnabled:YES];
 		[limitRowsStepper setEnabled:YES];
@@ -382,24 +379,28 @@
 	
 	[fullResult setArray:[self fetchResultAsArray:queryResult]];
 	
-	// This to fix an issue where by areShowingAllRows is set to NO above during the restore of the filter options
-	// leading the code to believe that the result set is filtered. If the filtered result set count is the same as the
-	// maximum rows in the table then filtering is currently not in use and we set areShowingAllRows back to YES.
-	if ([filteredResult count] == maxNumRowsOfCurrentTable) {
-		areShowingAllRows = YES;
-	}
-
 	// Apply any filtering and update the row count
 	if (!areShowingAllRows) {
 		[self filterTable:self];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
-	} 
+	}
 	else {
 		[filteredResult setArray:fullResult];
 		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), [fullResult count]]];
 	}
 
-	// Reload the table data
+	// Restore the view origin if appropriate
+	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+		selectionViewportToRestore.size = [tableContentView visibleRect].size;
+		[tableContentView scrollRectToVisible:selectionViewportToRestore];
+	}
+
+	// Restore selection indexes if appropriate
+	if (selectionIndexToRestore) {
+		[tableContentView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+	}
+	
+	// Reload the table data display
 	[tableContentView reloadData];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
@@ -407,6 +408,9 @@
 
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
+	// Clear any details to restore now that they have been restored
+	[self clearDetailsToRestore];
 }
 
 /*
@@ -417,17 +421,14 @@
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
 
-	// Store the current viewport location
-	NSRect viewRect = [tableContentView visibleRect];
+	// Save view details to restore safely if possible
+	[self storeCurrentDetailsForRestoration];
 
 	// Clear the table data column cache
 	[tableDataInstance resetColumnData];
 
 	// Load the table's data
 	[self loadTable:selectedTable];
-	
-	// Restore the viewport
-	[tableContentView scrollRectToVisible:viewRect];
 }
 
 /*
@@ -441,6 +442,9 @@
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
+	// Store the current first responder so filter field doesn't steal focus
+	id currentFirstResponder = [tableWindow firstResponder];
+
 	//enable or disable limit fields
 	if ( [prefs boolForKey:@"LimitResults"] ) {
 		[limitRowsField setEnabled:YES];
@@ -455,6 +459,8 @@
 		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 		[limitRowsField setStringValue:@""];
 	}
+
+	[tableWindow makeFirstResponder:currentFirstResponder];
 	
 	//	queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
@@ -511,6 +517,9 @@
 		[argument release];
 		return;
 	}
+
+	// Update history
+	[spHistoryControllerInstance updateHistoryEntries];
 
 	// Update negative limits
 	if ( [limitRowsField intValue] <= 0 ) {
@@ -1037,15 +1046,22 @@
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
+	// Save existing scroll position and details
+	[spHistoryControllerInstance updateHistoryEntries];
+
 	// Store the filter details to use when next loading the table
-	targetFilterColumn = [refDictionary objectForKey:@"column"];
-	targetFilterValue = [[filteredResult objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
+	NSString *targetFilterValue = [[filteredResult objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
+	NSDictionary *filterSettings = [NSDictionary dictionaryWithObjectsAndKeys:
+										[refDictionary objectForKey:@"column"], @"filterField",
+										targetFilterValue, @"filterValue",
+										([targetFilterValue isEqualToString:[prefs objectForKey:@"NullValue"]]?@"IS NULL":nil), @"filterComparison",
+										nil];
+	[self setFiltersToRestore:filterSettings];
 
 	// Attempt to switch to the new table
 	if (![tablesListInstance selectTableOrViewWithName:[refDictionary objectForKey:@"table"]]) {
 		NSBeep();
-		targetFilterColumn = nil;
-		targetFilterValue = nil;
+		[self setFiltersToRestore:nil];
 	}
 }
 
@@ -1303,7 +1319,6 @@
 		if ( isEditingNewRow ) {
 			if ( [prefs boolForKey:@"ReloadAfterAddingRow"] ) {
 				[self reloadTableValues:self];
-				[tableContentView deselectAll:self];
 				[tableWindow endEditingFor:nil];
 			} else {
 
@@ -1321,7 +1336,6 @@
 		} else {
 			if ( [prefs boolForKey:@"ReloadAfterEditingRow"] ) {
 				[self reloadTableValues:self];
-				[tableContentView deselectAll:self];
 				[tableWindow endEditingFor:nil];
 
 			// TODO: this probably needs looking at... it's reloading it all itself?
@@ -1662,6 +1676,153 @@
 			[error objectAtIndex:1]);
 }
 
+#pragma mark -
+#pragma mark Retrieving and setting table state
+
+/**
+ * Provide a getter for the table's sort column name
+ */
+- (NSString *) sortColumnName
+{
+	if (!sortCol || !dataColumns) return nil;
+
+	return [[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"];
+}
+
+/**
+ * Provide a getter for the table current sort order
+ */
+- (BOOL) sortColumnIsAscending
+{
+	return !isDesc;
+}
+
+/**
+ * Provide a getter for the table's selected rows index set
+ */
+- (NSIndexSet *) selectedRowIndexes
+{
+	return [tableContentView selectedRowIndexes];
+}
+
+/**
+ * Provide a getter for the LIMIT position
+ */
+- (unsigned int) limitStart
+{
+	return [limitRowsField intValue];
+}
+
+/**
+ * Provide a getter for the table's current viewport
+ */
+- (NSRect) viewport
+{
+	return [tableContentView visibleRect];
+}
+
+/**
+ * Provide a getter for the current filter details
+ */
+- (NSDictionary *) filterSettings
+{
+	NSDictionary *theDictionary;
+
+	if (![fieldField isEnabled]) return nil;
+
+	theDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+						[[fieldField selectedItem] title], @"filterField",
+						[[compareField selectedItem] title], @"filterComparison",
+						[argumentField stringValue], @"filterValue",
+						nil];
+
+	return theDictionary;
+}
+
+/**
+ * Set the sort column and sort order to restore on next table load
+ */
+- (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending
+{
+	if (sortColumnToRestore) [sortColumnToRestore release], sortColumnToRestore = nil;
+
+	if (theSortColumnName) {
+		sortColumnToRestore = [[NSString alloc] initWithString:theSortColumnName];
+		sortColumnToRestoreIsAsc = isAscending;
+	}
+}
+
+/**
+ * Sets the value for the limit start position to use on next table load
+ */
+- (void) setLimitStartToRestore:(unsigned int)theLimitStart
+{
+	limitStartPositionToRestore = theLimitStart;
+}
+
+/**
+ * Set the selected row indexes to restore on next table load
+ */
+- (void) setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
+{
+	if (selectionIndexToRestore) [selectionIndexToRestore release], selectionIndexToRestore = nil;
+
+	if (theIndexSet) selectionIndexToRestore = [[NSIndexSet alloc] initWithIndexSet:theIndexSet];
+}
+
+/**
+ * Set the viewport to restore on next table load
+ */
+- (void) setViewportToRestore:(NSRect)theViewport
+{
+	selectionViewportToRestore = theViewport;
+}
+
+/**
+ * Set the filter settings to restore (if possible) on next table load
+ */
+- (void) setFiltersToRestore:(NSDictionary *)filterSettings
+{
+	if (filterFieldToRestore) [filterFieldToRestore release], filterFieldToRestore = nil;
+	if (filterComparisonToRestore) [filterComparisonToRestore release], filterComparisonToRestore = nil;
+	if (filterValueToRestore) [filterValueToRestore release], filterValueToRestore = nil;
+
+	if (filterSettings) {
+		if ([filterSettings objectForKey:@"filterField"])
+			filterFieldToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterField"]];
+		if ([filterSettings objectForKey:@"filterComparison"])
+			filterComparisonToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterComparison"]];
+		if ([filterSettings objectForKey:@"filterValue"])
+			filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+	}
+}
+
+/**
+ * Convenience method for storing all current settings for restoration
+ */
+- (void) storeCurrentDetailsForRestoration
+{
+	[self setSortColumnNameToRestore:[self sortColumnName] isAscending:[self sortColumnIsAscending]];
+	[self setLimitStartToRestore:[self limitStart]];
+	[self setSelectedRowIndexesToRestore:[self selectedRowIndexes]];
+	[self setViewportToRestore:[self viewport]];
+	[self setFiltersToRestore:[self filterSettings]];
+}
+
+/**
+ * Convenience method for clearing any settings to restore
+ */
+- (void) clearDetailsToRestore
+{
+	[self setSortColumnNameToRestore:nil isAscending:YES];
+	[self setLimitStartToRestore:1];
+	[self setSelectedRowIndexesToRestore:nil];
+	[self setViewportToRestore:NSZeroRect];
+	[self setFiltersToRestore:nil];
+}
+
+#pragma mark -
+#pragma mark Table drawing and editing
 
 /**
  * Returns the number of rows in the selected table
@@ -1805,11 +1966,7 @@
 	}
 	if (sortCol) [sortCol release];
 	sortCol = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
-	
-	// Save the sort field name for use when refreshing the table
-	if (lastField) [lastField release];
-	lastField = [[NSString alloc] initWithString:[[dataColumns objectAtIndex:[[tableColumn identifier] intValue]] objectForKey:@"name"]];
-	
+
 	//make queryString and perform query
 	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@ ORDER BY %@", [self fieldListForQuery],
 				   [selectedTable backtickQuotedString], [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
@@ -2161,8 +2318,12 @@
 	// if (editData) [editData release];
 	if (keys) [keys release];
 	if (sortCol) [sortCol release];
-	if (lastField) [lastField release];
 	[usedQuery release];
+	if (sortColumnToRestore) [sortColumnToRestore release];
+	if (selectionIndexToRestore) [selectionIndexToRestore release];
+	if (filterFieldToRestore) filterFieldToRestore = nil;
+	if (filterComparisonToRestore) filterComparisonToRestore = nil;
+	if (filterValueToRestore) filterValueToRestore = nil;
 	
 	[super dealloc];
 }

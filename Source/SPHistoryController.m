@@ -23,6 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "TableDocument.h"
+#import "TableContent.h"
 #import "TablesList.h"
 #import "SPHistoryController.h"
 
@@ -42,6 +43,11 @@
 		restoringHistoryState = NO;
 	}
 	return self;	
+}
+
+- (void) awakeFromNib
+{
+	tableContentInstance = [theDocument valueForKey:@"tableContentInstance"];
 }
 
 - (void) dealloc
@@ -74,6 +80,7 @@
  */
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl
 {
+
 	switch ([theControl selectedSegment]) {
 
 		// Back button clicked:
@@ -120,6 +127,8 @@
  * Call to store or update a history item for the document state. Checks against
  * the latest stored details; if they match, a new history item is not created.
  * This should therefore be called without worry of duplicates.
+ * Table histories are created per table/filter setting, and while view changes
+ * update the current history entry, they don't replace it.
  */
 - (void) updateHistoryEntries
 {
@@ -131,30 +140,44 @@
 	NSString *theDatabase = [theDocument database];
 	NSString *theTable = [theDocument table];
 	unsigned int theView = [self currentlySelectedView];
-
-	// Check for a duplicate against the current entry
-	if (historyPosition != NSNotFound) {
-		NSDictionary *currentHistoryItem = [history objectAtIndex:historyPosition];
-		if ([[currentHistoryItem objectForKey:@"database"] isEqualToString:theDatabase]
-			&& [[currentHistoryItem objectForKey:@"table"] isEqualToString:theTable]
-			&& [[currentHistoryItem objectForKey:@"view"] intValue] == theView)
-		{
-			return;
-		}
-	}
+	NSString *contentSortCol = [tableContentInstance sortColumnName];
+	BOOL contentSortColIsAsc = [tableContentInstance sortColumnIsAscending];
+	unsigned int contentLimitStartPosition = [tableContentInstance limitStart];
+	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
+	NSRect contentViewport = [tableContentInstance viewport];
+	NSDictionary *contentFilter = [tableContentInstance filterSettings];
+	if (!theDatabase) return;
 
 	// If there's any items after the current history position, remove them
 	if (historyPosition != NSNotFound && historyPosition < [history count] - 1) {
 		[history removeObjectsInRange:NSMakeRange(historyPosition + 1, [history count] - historyPosition - 1)];
 
-	// Special case: if the last history item is currently active, and has no table,
-	// but the new selection does - delete the last entry, in order to replace it.
-	// This improves history flow.
-	} else if (historyPosition != NSNotFound && historyPosition == [history count] - 1
-				&& [[[history objectAtIndex:historyPosition] objectForKey:@"database"] isEqualToString:theDatabase]
-				&& ![[history objectAtIndex:historyPosition] objectForKey:@"table"])
-	{
-		[history removeLastObject];		
+	} else if (historyPosition != NSNotFound && historyPosition == [history count] - 1) {
+		NSDictionary *currentHistoryEntry = [history objectAtIndex:historyPosition];
+
+		// If the table is the same, and the filter settings haven't changed, delete the
+		// last entry so it can be replaced.  This updates navigation within a table, rather than
+		// creating a new entry every time detail is changed.
+		if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
+			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
+			&& ([[currentHistoryEntry objectForKey:@"view"] intValue] != theView
+				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && !contentFilter)
+					|| (![currentHistoryEntry objectForKey:@"contentFilter"]
+						&& ![[contentFilter objectForKey:@"filterValue"] length]
+						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NULL"]
+						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NOT NULL"])
+					|| [[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
+		{
+			[history removeLastObject];
+
+		// Special case: if the last history item is currently active, and has no table,
+		// but the new selection does - delete the last entry, in order to replace it.
+		// This improves history flow.
+		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
+			&& ![currentHistoryEntry objectForKey:@"table"])
+		{
+			[history removeLastObject];
+		}
 	}
 
 	// Construct and add the new history entry
@@ -162,8 +185,19 @@
 										theDatabase, @"database",
 										theTable, @"table",
 										[NSNumber numberWithInt:theView], @"view",
+										[NSNumber numberWithBool:contentSortColIsAsc], @"contentSortColIsAsc",
+										[NSNumber numberWithInt:contentLimitStartPosition], @"contentLimitStartPosition",
+										[NSValue valueWithRect:contentViewport], @"contentViewport",
 										nil];
+	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
+	if (contentSelectedIndexSet) [newEntry setObject:contentSelectedIndexSet forKey:@"contentSelectedIndexSet"];
+	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilter"];
+
 	[history addObject:newEntry];
+	
+	// If there are now more than fifty history entries, remove one from the start
+	if ([history count] > 50) [history removeObjectAtIndex:0];
+
 	historyPosition = [history count] - 1;
 	[self updateToolbarItem];
 }
@@ -189,6 +223,24 @@
 	historyPosition = position;
 	NSDictionary *historyEntry = [history objectAtIndex:historyPosition];
 
+	// Set table content details for restore
+	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortCol"] boolValue]];
+	[tableContentInstance setLimitStartToRestore:[[historyEntry objectForKey:@"contentLimitStartPosition"] intValue]];
+	[tableContentInstance setSelectedRowIndexesToRestore:[historyEntry objectForKey:@"contentSelectedIndexSet"]];
+	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
+	[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
+
+	// If the database, table, and view are the same and content - just trigger a table reload (filters)
+	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
+		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
+		&& [[historyEntry objectForKey:@"view"] intValue] == [self currentlySelectedView] == SP_VIEW_CONTENT)
+	{
+		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
+		restoringHistoryState = NO;
+		[self updateToolbarItem];
+		return;
+	}
+
 	// Check and set the database
 	if (![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]) {
 		NSPopUpButton *chooseDatabaseButton = [theDocument valueForKey:@"chooseDatabaseButton"];
@@ -213,6 +265,8 @@
 	} else if (![historyEntry objectForKey:@"table"] && [theDocument table]) {
 		TablesList *tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
 		[[tablesListInstance valueForKey:@"tablesListView"] deselectAll:self];		
+	} else {
+		[[theDocument valueForKey:@"tablesListInstance"] setContentRequiresReload:YES];	
 	}
 
 	// Check and set the view

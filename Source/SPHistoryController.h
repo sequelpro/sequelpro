@@ -24,7 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class TableDocument;
+@class TableDocument, TableContent;
 
 enum sphistory_view_types
 {
@@ -39,6 +39,7 @@ enum sphistory_view_types
 	IBOutlet TableDocument *theDocument;
 	IBOutlet NSSegmentedControl *historyControl;
 
+	TableContent *tableContentInstance;
 	NSMutableArray *history;
 	unsigned int historyPosition;
 	BOOL restoringHistoryState;

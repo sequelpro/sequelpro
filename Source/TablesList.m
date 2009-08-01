@@ -1701,6 +1701,9 @@
 		return;
 	}
 
+	// Save existing scroll position and details
+	[spHistoryControllerInstance updateHistoryEntries];
+
 	[self updateSelection];
 }
 

@@ -402,7 +402,10 @@
 		}
 		return;
 	}
-	
+
+	// Save existing scroll position and details
+	[spHistoryControllerInstance updateHistoryEntries];
+
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
 		if ( [mySQLConnection isConnected] ) {
@@ -1763,7 +1766,7 @@
 		} 
 
 	} else if ([itemIdentifier isEqualToString:@"HistoryNavigationToolbarItemIdentifier"]) {
-		[toolbarItem setLabel:NSLocalizedString(@"History", @"toolbar item for navigation history")];
+		[toolbarItem setLabel:NSLocalizedString(@"Table History", @"toolbar item for navigation history")];
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
 		[toolbarItem setView:historyControl];
 
