@@ -243,6 +243,8 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	
+	NSLog(@"%@", tableFields);
 }
 
 /*
@@ -663,7 +665,7 @@ fetches the result as an array with a dictionary for each row in it
 		// CHANGE syntax
 		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
 			
-			// If the old row and new row dictionaries are equel then the user didn't actually change anything so don't continue 
+			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
 			if ([oldRow isEqualToDictionary:theRow]) {
 				return YES;
 			}
@@ -675,7 +677,7 @@ fetches the result as an array with a dictionary for each row in it
 															[theRow objectForKey:@"Type"]];
 		} 
 		else {
-			// If the old row and new row dictionaries are equel then the user didn't actually change anything so don't continue 
+			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
 			if ([oldRow isEqualToDictionary:theRow]) {
 				return YES;
 			}
@@ -711,8 +713,8 @@ fetches the result as an array with a dictionary for each row in it
 	// Don't provide any defaults for auto-increment fields
 	if ([[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
 		[queryString appendString:@" "];
-	} else {
-
+	} 
+	else {
 		// If a null value has been specified, and null is allowed, specify DEFAULT NULL
 		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
 			if ([[theRow objectForKey:@"Null"] intValue] == 1) {
@@ -720,13 +722,15 @@ fetches the result as an array with a dictionary for each row in it
 			}
 		
 		// Otherwise, if current_timestamp was specified for timestamps, use that
-		} else if ([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] &&
-					[[[theRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
+		} 
+		else if ([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && 
+				 [[[theRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
 		{
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
 
+		}
 		// Otherwise, use the provided default
-		} else {
+		else {
 			[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"Default"]]]];
 		}
 	}
@@ -1019,11 +1023,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	if ( aTableView == tableSourceView ) {
-		return [tableFields count];
-	} else {
-		return [indexes count];
-	}
+	return (aTableView == tableSourceView) ? [tableFields count] : [indexes count];
 }
 
 - (id)tableView:(NSTableView *)aTableView
@@ -1047,19 +1047,16 @@ returns a dictionary containing enum/set field names as key and possible values 
 			forTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex
 {
-    //make sure that the drag operation is for the right table view
+    // Make sure that the drag operation is for the right table view
     if (aTableView!=tableSourceView) return;
 
-	if ( !isEditingRow ) {
+	if (!isEditingRow) {
 		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
-	if ( anObject ) {
-		[[tableFields objectAtIndex:rowIndex] setObject:anObject forKey:[aTableColumn identifier]];
-	} else {
-		[[tableFields objectAtIndex:rowIndex] setObject:@"" forKey:[aTableColumn identifier]];
-	}
+	
+	[[tableFields objectAtIndex:rowIndex] setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
 }
 
 /*

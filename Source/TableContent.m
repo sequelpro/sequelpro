@@ -2033,6 +2033,24 @@
 }
 
 #pragma mark -
+#pragma mark SplitView delegate methods
+
+- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
+{
+	return NO;
+}
+
+- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+{
+	return (proposedMax - 150);
+}
+
+- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+{
+	return (proposedMin + 200);
+}
+
+#pragma mark -
 
 /*
  * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
