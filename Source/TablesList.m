@@ -804,6 +804,7 @@
 {
 	[tableListSplitView toggleCollapse:sender];
 	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:@"TableInformationPanelCollapsed"];
+	[tableInfoCollapseButton setToolTip:([tableInfoCollapseButton state] == NSOffState) ? NSLocalizedString(@"Show Table Information", @"Show Table Information") : NSLocalizedString(@"Hide Table Information", @"Hide Table Information")];
 }
 
 #pragma mark -
@@ -1987,9 +1988,12 @@
 	if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"TableInformationPanelCollapsed"] boolValue]
 		&& [tableListSplitView collapsibleSubview]) {
 		[tableInfoCollapseButton setNextState];
+		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];
 		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
 		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
 		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
+	} else {
+		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Hide Table Information",@"Hide Table Information")];
 	}
 
 	// Start the table filter list collapsed
