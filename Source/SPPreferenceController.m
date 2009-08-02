@@ -263,6 +263,13 @@
 		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:@"favorites"];
 	}
 
+	// For versions prior to r1128 (~0.9.6), reset the main window toolbar items to add new items
+	if (recordedVersionNumber < 1128 && [prefs objectForKey:@"NSToolbar Configuration TableWindowToolbar"]) {
+		NSMutableDictionary *toolbarDict = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"NSToolbar Configuration TableWindowToolbar"]];
+		[toolbarDict removeObjectForKey:@"TB Item Identifiers"];
+		[prefs setObject:[NSDictionary dictionaryWithDictionary:toolbarDict] forKey:@"NSToolbar Configuration TableWindowToolbar"];
+	}
+
 	// Update the prefs revision
 	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];	
 }

@@ -642,6 +642,20 @@
 }
 
 /**
+ * Brings the console to the fron
+ */
+- (void)showConsole:(id)sender
+{
+	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
+
+	if (!isConsoleVisible) {
+		[self toggleConsole:sender];
+	} else {
+		[[[SPQueryConsole sharedQueryConsole] window] makeKeyAndOrderFront:self];
+	}
+}
+
+/**
  * Clears the console by removing all of its messages
  */
 - (void)clearConsole:(id)sender
@@ -1770,23 +1784,16 @@
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
 		[toolbarItem setView:historyControl];
 
-	} else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
-		//set the text label to be displayed in the toolbar and customization palette 
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
-		//set up tooltip and image
-		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
+	} else if ([itemIdentifier isEqualToString:@"ShowConsoleIdentifier"]) {
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"toolbar item for show console")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
 		
-		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
-			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"Hide Console")];
-			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-		} else {
-			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"Show Console")];
-			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
-		}
+		[toolbarItem setLabel:NSLocalizedString(@"Console", @"Console")];
+		[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		
 		//set up the target action
 		[toolbarItem setTarget:self];
-		[toolbarItem setAction:@selector(toggleConsole:)];
+		[toolbarItem setAction:@selector(showConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"ClearConsoleIdentifier"]) {
 		//set the text label to be displayed in the toolbar and customization palette 
@@ -1866,7 +1873,7 @@
 	return [NSArray arrayWithObjects:
 			@"DatabaseSelectToolbarItemIdentifier",
 			@"HistoryNavigationToolbarItemIdentifier",
-			@"ToggleConsoleIdentifier",
+			@"ShowConsoleIdentifier",
 			@"ClearConsoleIdentifier",
 			@"FlushPrivilegesIdentifier",
 			@"SwitchToTableStructureToolbarItemIdentifier",
@@ -1888,15 +1895,14 @@
 {
 	return [NSArray arrayWithObjects:
 			@"DatabaseSelectToolbarItemIdentifier",
-			NSToolbarSeparatorItemIdentifier,
 			@"SwitchToTableStructureToolbarItemIdentifier",
 			@"SwitchToTableContentToolbarItemIdentifier",
-			@"SwitchToRunQueryToolbarItemIdentifier",
-			@"SwitchToTableInfoToolbarItemIdentifier",
 			@"SwitchToTableRelationsToolbarItemIdentifier",
+			@"SwitchToTableInfoToolbarItemIdentifier",
+			@"SwitchToRunQueryToolbarItemIdentifier",
 			NSToolbarFlexibleSpaceItemIdentifier,
-			@"ToggleConsoleIdentifier",
-			@"ClearConsoleIdentifier",
+			@"HistoryNavigationToolbarItemIdentifier",
+			@"ShowConsoleIdentifier",
 			nil];
 }
 
@@ -1924,15 +1930,17 @@
 
 	NSString *identifier = [toolbarItem itemIdentifier];
 	
-	// Toggle console item
-	if ([identifier isEqualToString:@"ToggleConsoleIdentifier"]) {
+	// Show console item
+	if ([identifier isEqualToString:@"ShowConsoleIdentifier"]) {
 		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
-			[toolbarItem setLabel:@"Hide Console"];
-			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-		} 
-		else {
-			[toolbarItem setLabel:@"Show Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
+		} else {
+			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
+		}
+		if ([[[SPQueryConsole sharedQueryConsole] window] isKeyWindow]) {
+			return NO;
+		} else {
+			return YES;
 		}
 	}
 	
