@@ -39,6 +39,7 @@
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
 - (NSManagedObject *)_createNewSPUser;
 - (BOOL)checkAndDisplayMySqlError;
+- (void)_clearData;
 @end
 
 @implementation SPUserManager
@@ -141,7 +142,7 @@
 	for(int i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
-		NSArray *array = [self _fetchUserWithUserName:username];
+		NSArray *array = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
 		
 		if (array != nil && [array count] > 0)
@@ -173,6 +174,7 @@
 		{
 			[[NSApplication sharedApplication] presentError:error];
 		}
+		[array release];
 	}
 }
 
@@ -282,7 +284,7 @@
 
 - (void)show
 {
-	[self _initializeUsers];
+//	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
 	[window makeKeyAndOrderFront:nil];
 }
 
@@ -391,6 +393,7 @@
 {
 	[[self managedObjectContext] rollback];
 	[window close];
+//	[self _clearData];
 }
 
 - (IBAction)doApply:(id)sender
@@ -405,6 +408,7 @@
 	{
 		[window close];
 	}
+//	[self _clearData];
 }
 
 - (IBAction)addUser:(id)sender
@@ -447,6 +451,34 @@
 	[treeController remove:sender];
 }
 
+
+- (void)_clearData
+{
+	NSLog(@"%d", [[treeController content] count]);
+	for (NSManagedObject* item in [[self managedObjectContext] registeredObjects])
+	{	NS_DURING
+		for (NSManagedObject *child in [item children])
+		{
+			NS_DURING
+			if ([child observationInfo] != nil)
+			{
+				[child removeObserver:self forKeyPath:@"user"];
+				[child removeObserver:self forKeyPath:@"password"];
+				[child removeObserver:self forKeyPath:@"host"];			
+			}
+			NS_HANDLER
+			NS_ENDHANDLER
+		}
+		[item removeObserver:self forKeyPath:@"user"];
+		[item removeObserver:self forKeyPath:@"password"];
+		[item removeObserver:self forKeyPath:@"host"];
+		NS_HANDLER
+		NS_ENDHANDLER
+	}
+    [managedObjectContext reset];
+	//[managedObjectContext release];
+//	managedObjectContext = nil;
+}
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(addHost:) ||
@@ -629,7 +661,6 @@
 {
 	NSManagedObject *user = [[NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
 														  inManagedObjectContext:[self managedObjectContext]] autorelease];
-	
 	[user addObserver:self forKeyPath:@"user" options:(NSKeyValueObservingOptionNew |
 													   NSKeyValueObservingOptionOld) context:nil];
 	[user addObserver:self forKeyPath:@"password" options:(NSKeyValueObservingOptionNew |
