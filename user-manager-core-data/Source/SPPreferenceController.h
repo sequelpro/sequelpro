@@ -49,6 +49,12 @@
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshSQLPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
+	IBOutlet NSTextField *favoriteNameTextField;
+	IBOutlet NSTextField *favoriteUserTextField;
+	IBOutlet NSTextField *favoriteHostTextField;
+	IBOutlet NSTextField *favoriteUserTextFieldSocket;
+	IBOutlet NSTextField *favoriteUserTextFieldSSH;
+	IBOutlet NSTextField *favoriteHostTextFieldSSH;
 
 	KeyChain *keychain;
 	NSDictionary *currentFavorite;
@@ -67,6 +73,9 @@
 	NSToolbarItem *shortcutItem;
 
 	NSUserDefaults *prefs;
+	
+	BOOL favoriteNameFieldWasTouched;
+	int favoriteType;
 }
 
 - (void)applyRevisionChanges;

@@ -227,7 +227,7 @@
 		[refreshRelationsButton setEnabled:NO];	
 		[relationsTableView setEnabled:NO];
 		
-		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table does not support relations" : @""];
+		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table currently does not support relations. Only tables that use the InnoDB storage engine support them." : @""];
 	}	
 	
 	[self _refreshRelationDataForcingCacheRefresh:NO];

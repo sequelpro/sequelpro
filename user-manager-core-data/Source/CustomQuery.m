@@ -710,7 +710,12 @@
 			[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
 					setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
 	
+	} else {
+		// scroll to last edited row after refreshing data
+		// TODO: should be improved
+		[customQueryView scrollRowToVisible:[customQueryView selectedRow]];
 	}
+
 	[customQueryView reloadData];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT

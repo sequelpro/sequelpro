@@ -403,7 +403,10 @@
 		}
 		return;
 	}
-	
+
+	// Save existing scroll position and details
+	[spHistoryControllerInstance updateHistoryEntries];
+
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
 		if ( [mySQLConnection isConnected] ) {
@@ -637,6 +640,20 @@
 	
 	// Only update the menu item title if its the menu item and not the toolbar
 	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
+}
+
+/**
+ * Brings the console to the fron
+ */
+- (void)showConsole:(id)sender
+{
+	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
+
+	if (!isConsoleVisible) {
+		[self toggleConsole:sender];
+	} else {
+		[[[SPQueryConsole sharedQueryConsole] window] makeKeyAndOrderFront:self];
+	}
 }
 
 /**
@@ -1764,27 +1781,20 @@
 		} 
 
 	} else if ([itemIdentifier isEqualToString:@"HistoryNavigationToolbarItemIdentifier"]) {
-		[toolbarItem setLabel:NSLocalizedString(@"History", @"toolbar item for navigation history")];
+		[toolbarItem setLabel:NSLocalizedString(@"Table History", @"toolbar item for navigation history")];
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
 		[toolbarItem setView:historyControl];
 
-	} else if ([itemIdentifier isEqualToString:@"ToggleConsoleIdentifier"]) {
-		//set the text label to be displayed in the toolbar and customization palette 
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show/Hide Console", @"toolbar item for show/hide console")];
-		//set up tooltip and image
-		[toolbarItem setToolTip:NSLocalizedString(@"Show or hide the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show/hide console")];
+	} else if ([itemIdentifier isEqualToString:@"ShowConsoleIdentifier"]) {
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"toolbar item for show console")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
 		
-		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
-			[toolbarItem setLabel:NSLocalizedString(@"Hide Console", @"Hide Console")];
-			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-		} else {
-			[toolbarItem setLabel:NSLocalizedString(@"Show Console", @"Show Console")];
-			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
-		}
+		[toolbarItem setLabel:NSLocalizedString(@"Console", @"Console")];
+		[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		
 		//set up the target action
 		[toolbarItem setTarget:self];
-		[toolbarItem setAction:@selector(toggleConsole:)];
+		[toolbarItem setAction:@selector(showConsole:)];
 		
 	} else if ([itemIdentifier isEqualToString:@"ClearConsoleIdentifier"]) {
 		//set the text label to be displayed in the toolbar and customization palette 
@@ -1847,12 +1857,11 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewRelations:)];
 		
-		
 	} else if ([itemIdentifier isEqualToString:@"SwitchToUserManagerToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		//set up tooltip and image
-		[toolbarItem setToolTip:NSLocalizedString(@"Show Users", @"tooltip for toolbar item for switching to the User Manager tab")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the User Manager tab", @"tooltip for toolbar item for switching to the User Manager tab")];
 		[toolbarItem setImage:[NSImage imageNamed:NSImageNameEveryone]];
 		//set up the target action
 		[toolbarItem setTarget:self];
@@ -1873,7 +1882,7 @@
 	return [NSArray arrayWithObjects:
 			@"DatabaseSelectToolbarItemIdentifier",
 			@"HistoryNavigationToolbarItemIdentifier",
-			@"ToggleConsoleIdentifier",
+			@"ShowConsoleIdentifier",
 			@"ClearConsoleIdentifier",
 			@"FlushPrivilegesIdentifier",
 			@"SwitchToTableStructureToolbarItemIdentifier",
@@ -1896,16 +1905,15 @@
 {
 	return [NSArray arrayWithObjects:
 			@"DatabaseSelectToolbarItemIdentifier",
-			NSToolbarSeparatorItemIdentifier,
 			@"SwitchToTableStructureToolbarItemIdentifier",
 			@"SwitchToTableContentToolbarItemIdentifier",
-			@"SwitchToRunQueryToolbarItemIdentifier",
-			@"SwitchToTableInfoToolbarItemIdentifier",
 			@"SwitchToTableRelationsToolbarItemIdentifier",
+			@"SwitchToTableInfoToolbarItemIdentifier",
+			@"SwitchToRunQueryToolbarItemIdentifier",
 			NSToolbarFlexibleSpaceItemIdentifier,
-			@"SwitchToUserManagerToolbarItemIdentifier",
-			@"ToggleConsoleIdentifier",
-			@"ClearConsoleIdentifier",
+			@"HistoryNavigationToolbarItemIdentifier",
+			@"SwitchToUserManagerToolbarItemIdentifier",			
+			@"ShowConsoleIdentifier",
 			nil];
 }
 
@@ -1933,15 +1941,17 @@
 
 	NSString *identifier = [toolbarItem itemIdentifier];
 	
-	// Toggle console item
-	if ([identifier isEqualToString:@"ToggleConsoleIdentifier"]) {
+	// Show console item
+	if ([identifier isEqualToString:@"ShowConsoleIdentifier"]) {
 		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
-			[toolbarItem setLabel:@"Hide Console"];
-			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-		} 
-		else {
-			[toolbarItem setLabel:@"Show Console"];
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
+		} else {
+			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
+		}
+		if ([[[SPQueryConsole sharedQueryConsole] window] isKeyWindow]) {
+			return NO;
+		} else {
+			return YES;
 		}
 	}
 	
@@ -2265,23 +2275,10 @@
 	return theValue;
 }
 
-- (IBAction)showUserManager:(id)sender
-{
-	if (userManagerInstance == nil) 
-	{
-		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
-	}
-	else 
-	{
-		[userManagerInstance show];	
-	}
-}
-
 - (void)dealloc
 {
 	[_encoding release];
 	[printWebView release];
-	if (userManagerInstance) [userManagerInstance release];
 	if (connectionController) [connectionController release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (variables) [variables release];
@@ -2289,6 +2286,16 @@
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	[super dealloc];
+}
+		
+- (void)showUserManager:(id)sender
+{
+	if (userManagerInstance == nil)
+	{
+		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
+	} else {
+		[userManagerInstance show];
+	}
 }
 
 @end

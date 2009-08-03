@@ -34,6 +34,7 @@
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
+#import "RegexKitLite.h"
 
 @implementation TableDump
 
@@ -561,6 +562,8 @@
 							   escapedBy:[importFieldsEscapedField stringValue]
 								lineEnds:[importLinesTerminatedField stringValue]] retain];
 		
+		long importArrayCount = [importArray count];
+		
 		//close progress sheet
 		[NSApp endSheet:singleProgressSheet];
 		[singleProgressSheet orderOut:nil];
@@ -568,7 +571,7 @@
 		[singleProgressBar setUsesThreadedAnimation:NO];
 		[singleProgressBar setIndeterminate:NO];
 		
-		if([importArray count] == 0){
+		if(importArrayCount == 0){
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil,
@@ -576,12 +579,14 @@
 							  nil, nil, nil,
 							  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
 							  );
+			[importArray release], importArray = nil;
 			[pool release];
 			return;
 		}		
 		
 		if (progressCancelled) {
 			progressCancelled = NO;
+			[importArray release], importArray = nil;
 			[pool release];
 			return;
 		}
@@ -606,11 +611,26 @@
 			
 			//set up tableView
 			currentRow = 0;
+
+			// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
+			if ([[importArray objectAtIndex:currentRow] count] > 512) {
+				NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
+								  NSLocalizedString(@"OK", @"OK button"),
+								  nil, nil,
+								  tableWindow, self,
+								  nil, nil, nil,
+								  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
+								  );
+				[importArray release], importArray = nil;
+				[pool release];
+				return;
+			}
+			
 			if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 			[self setupFieldMappingArray];
 			[rowDownButton setEnabled:NO];
-			[rowUpButton setEnabled:([importArray count] > 1)];
-			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+			[rowUpButton setEnabled:(importArrayCount > 1)];
+			[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, importArrayCount]];
 			
 			//set up tableView buttons
 			NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
@@ -663,8 +683,7 @@
 					}
 				}
 				
-				//import array
-				long importArrayCount = [importArray count];
+				// import array
 				long fieldMappingArrayCount = [fieldMappingArray count];
 				insertFormatString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%%@)", 
 											[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString], fNames];
@@ -1503,145 +1522,230 @@
 }
 
 
-- (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
-			  enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds
+- (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)fieldEndString
+			  enclosedBy:(NSString *)fieldQuoteString escapedBy:(NSString *)escapeString lineEnds:(NSString *)lineEndString
 /*
  loads a csv string into an array
  */
 {	
-	NSMutableString *tempTerminated, *tempLineEnds;
+	NSMutableString *tempInputString = [NSMutableString string];
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempRowArray = [NSMutableArray array];
-	NSMutableString *mutableField;
+	NSMutableString *mutableField = [NSMutableString string];
 	NSScanner *scanner;
-	NSString *scanString;
-	NSMutableString *tempString = [NSMutableString string];
-	NSMutableArray *linesArray = [NSMutableArray array];
-	BOOL isEscaped, br;
-	int fieldCount = 0;
-	int x,i,j;
+	NSString *scanString, *stringToLineEnd, *stringToFieldEnd;
+	NSString *escapedFieldEndString, *escapedFieldQuoteString, *escapedEscapeString, *escapedLineEndString;
+	NSString *nullString = [prefs objectForKey:@"NullValue"];
+	NSCharacterSet *whitespaceSet = nil;
+	BOOL isEscaped, escapeStringIsFieldQuoteString, processingLine, processingField, fieldWasQuoted;
+	int fieldCount = NSNotFound;
+	int i,j,csvLength,fieldEndLength,fieldQuoteLength,escapeLength,lineEndLength,skipLength;
 
-	//repare tabs and line ends
-	tempTerminated = [NSMutableString stringWithString:terminated];
-	[tempTerminated replaceOccurrencesOfString:@"\\t" withString:@"\t"
-									   options:NSLiteralSearch
-										 range:NSMakeRange(0, [tempTerminated length])];
-	[tempTerminated replaceOccurrencesOfString:@"\\n" withString:@"\n"
-									   options:NSLiteralSearch
-										 range:NSMakeRange(0, [tempTerminated length])];
-	[tempTerminated replaceOccurrencesOfString:@"\\r" withString:@"\r"
-									   options:NSLiteralSearch
-										 range:NSMakeRange(0, [tempTerminated length])];
-	terminated = [NSString stringWithString:tempTerminated];
-	tempLineEnds = [NSMutableString stringWithString:lineEnds];
-	[tempLineEnds replaceOccurrencesOfString:@"\\t" withString:@"\t"
-									 options:NSLiteralSearch
-									   range:NSMakeRange(0, [tempLineEnds length])];
-	[tempLineEnds replaceOccurrencesOfString:@"\\n" withString:@"\n"
-									 options:NSLiteralSearch
-									   range:NSMakeRange(0, [tempLineEnds length])];
-	[tempLineEnds replaceOccurrencesOfString:@"\\r" withString:@"\r"
-									 options:NSLiteralSearch
-									   range:NSMakeRange(0, [tempLineEnds length])];
-	lineEnds = [NSString stringWithString:tempLineEnds];
+	// Fix tabs and line endings in the inputs
+	for (i = 0; i < 4; i++) {
+		switch (i) {
+			case 0: [tempInputString setString:fieldEndString]; break;
+			case 1: [tempInputString setString:fieldQuoteString]; break;
+			case 2: [tempInputString setString:escapeString]; break;
+			case 3: [tempInputString setString:lineEndString]; break;
+		}
+		[tempInputString replaceOccurrencesOfString:@"\\t" withString:@"\t"
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempInputString length])];
+		[tempInputString replaceOccurrencesOfString:@"\\n" withString:@"\n"
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempInputString length])];
+		[tempInputString replaceOccurrencesOfString:@"\\r" withString:@"\r"
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempInputString length])];
+		switch (i) {
+			case 0: fieldEndString = [NSString stringWithString:tempInputString]; break;
+			case 1: fieldQuoteString = [NSString stringWithString:tempInputString]; break;
+			case 2: escapeString = [NSString stringWithString:tempInputString]; break;
+			case 3: lineEndString = [NSString stringWithString:tempInputString]; break;
+		}
+	}
+	fieldEndLength = [fieldEndString length];
+	fieldQuoteLength = [fieldQuoteString length];
+	escapeLength = [escapeString length];
+	lineEndLength = [lineEndString length];
+	csvLength = [csv length];
+	escapeStringIsFieldQuoteString = [fieldQuoteString isEqualToString:escapeString];
+	escapedFieldEndString = [NSString stringWithFormat:@"%@%@", escapeString, fieldEndString];
+	escapedFieldQuoteString = [NSString stringWithFormat:@"%@%@", escapeString, fieldQuoteString];
+	escapedEscapeString = [NSString stringWithFormat:@"%@%@", escapeString, escapeString];
+	escapedLineEndString = [NSString stringWithFormat:@"%@%@", escapeString, lineEndString];
+
+	// Set up characters it should be possible to trim
+	[tempInputString setString:@""];
+	if (![fieldEndString isEqualToString:@" "] && ![fieldQuoteString isEqualToString:@" "] && ![escapeString isEqualToString:@" "] && ![lineEndString isEqualToString:@" "])
+		[tempInputString appendString:@" "];
+	if (![fieldEndString isEqualToString:@"\t"] && ![fieldQuoteString isEqualToString:@"\t"] && ![escapeString isEqualToString:@"\t"] && ![lineEndString isEqualToString:@"\t"])
+		[tempInputString appendString:@"\t"];
+	if ([tempInputString length]) whitespaceSet = [NSCharacterSet characterSetWithCharactersInString:tempInputString];
 	
-	//array with one line per object
-	scanner = [NSScanner scannerWithString:csv];
+	// Set up the scanner to process the CSV 
+	scanner = [[NSScanner alloc] initWithString:csv];
 	[scanner setCharactersToBeSkipped:nil];
 	
 	while ( ![scanner isAtEnd] && !progressCancelled) {
-		[tempString setString:@""];
-		br = NO;
 		
-		while ( !br ) {
-			scanString = @"";
-			[scanner scanUpToString:lineEnds intoString:&scanString];
-			[tempString appendString:scanString];
-			[scanner scanString:lineEnds intoString:&scanString];
-			
-			//test if lineEnds-character is escaped
-			isEscaped = NO;
-			j = 1;
-			if ( ![escaped isEqualToString:enclosed] && ![escaped isEqualToString:@""] ) {
-				while ( ((j*[escaped length])<=[tempString length]) &&
-					   ([[tempString substringWithRange:NSMakeRange(([tempString length]-(j*[escaped length])),[escaped length])] isEqualToString:escaped]) ) {
-					isEscaped = !isEscaped;
-					j++;
+		// Scan the string line by line into an array for each row.
+		processingLine = YES;
+		[tempRowArray removeAllObjects];
+		while (![scanner isAtEnd] && processingLine) {
+			[mutableField setString:@""];
+			processingField = YES;
+			fieldWasQuoted = NO;
+
+			// Skip unescaped, unquoted whitespace where possible
+			if (whitespaceSet) [scanner scanCharactersFromSet:whitespaceSet intoString:nil];
+
+			i = [scanner scanLocation];
+
+			// Look at the next section of the string, and determine whether it's enclosed in the field quote string
+			if (fieldQuoteLength && i + fieldQuoteLength <= csvLength
+				&& [[csv substringWithRange:NSMakeRange(i, fieldQuoteLength)] isEqualToString:fieldQuoteString])
+			{
+				[scanner setScanLocation:i+fieldQuoteLength];
+				fieldWasQuoted = YES;
+
+				while (![scanner isAtEnd] && processingField) {
+
+					// Process the field until the next quote string
+					if (![scanner scanUpToString:fieldQuoteString intoString:&scanString]) scanString = @"";
+					[mutableField appendString:scanString];
+
+					// Check to see if the quote string encountered was escaped... or an escaper
+					if (escapeLength) {
+						j = 1;
+						isEscaped = NO;
+						if (!escapeStringIsFieldQuoteString) {
+							while (j * escapeLength <= [scanString length]
+									&& ([[mutableField substringWithRange:NSMakeRange(([mutableField length] - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
+							{
+								isEscaped = !isEscaped;
+								j++;
+							}
+							skipLength = fieldQuoteLength;
+						} else {
+							if ([scanner scanLocation] + (2 * fieldQuoteLength) <= csvLength
+								&& [[csv substringWithRange:NSMakeRange([scanner scanLocation] + fieldQuoteLength, fieldQuoteLength)] isEqualToString:fieldQuoteString])
+							{
+								isEscaped = YES;
+								skipLength = 2 * fieldQuoteLength;
+							}
+						}
+						
+						// If it was escaped, keep processing the field
+						if (isEscaped) {
+							if (![scanner isAtEnd]) {
+								[mutableField appendString:[csv substringWithRange:NSMakeRange([scanner scanLocation], skipLength)]];
+								[scanner setScanLocation:[scanner scanLocation] + skipLength];
+							}
+							continue;
+						}
+					}
+
+					// We should now be at the end of the field - but let the code below keep going until
+					// the field end character is actually reached.
+					if (![scanner isAtEnd]) {
+						[scanner setScanLocation:[scanner scanLocation] + fieldQuoteLength];
+						if (whitespaceSet) [scanner scanCharactersFromSet:whitespaceSet intoString:nil];
+					}
+					processingField = NO;
 				}
 			}
-			if ( !isEscaped || [scanner isAtEnd] ) {
-				//end of row
-				br = YES;
-			} else {
-				//lineEnds-character was escaped
-				[tempString appendString:scanString];
+
+			// Process until the next field end string *or* line end string, ugh!
+			processingField = YES;
+			while (![scanner isAtEnd] && processingField) {
+				i = [scanner scanLocation];
+				if (![scanner scanUpToString:lineEndString intoString:&stringToLineEnd]) stringToLineEnd = @"";
+				[scanner setScanLocation:i];
+				if (![scanner scanUpToString:fieldEndString intoString:&stringToFieldEnd]) stringToFieldEnd = @"";
+				if ([stringToFieldEnd length] < [stringToLineEnd length]) {
+					scanString = stringToFieldEnd;
+					skipLength = fieldEndLength;
+				} else {
+					[scanner setScanLocation:i + [stringToLineEnd length]];
+					scanString = stringToLineEnd;
+					processingLine = NO;
+					skipLength = lineEndLength;
+				}
+				[mutableField appendString:scanString];
+				
+				// Check to see if the termination character was escaped
+				if (escapeLength) {
+					j = 1;
+					isEscaped = NO;
+					while (j * escapeLength <= [scanString length]
+							&& ([[mutableField substringWithRange:NSMakeRange(([mutableField length] - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
+					{
+						isEscaped = !isEscaped;
+						j++;
+					}
+					
+					// If it was, continue processing the field
+					if (isEscaped) {
+						if (![scanner isAtEnd]) {
+							[mutableField appendString:[csv substringWithRange:NSMakeRange([scanner scanLocation], skipLength)]];
+							[scanner setScanLocation:[scanner scanLocation] + skipLength];
+						}
+						continue;
+					}
+				}
+
+				// We should be at the end of the field.
+				if (![scanner isAtEnd]) [scanner setScanLocation:[scanner scanLocation] + skipLength];
+				processingField = NO;
 			}
-		}
-		
-		// Skip blank lines
-		if (![tempString length]) continue;
-		// Add the line to the array
-		[linesArray addObject:[NSString stringWithString:tempString]];
-	}
-	
-	for ( x = 0 ; x < [linesArray count] && !progressCancelled; x++ ) {
-		
-		//separate fields
-		[tempRowArray removeAllObjects];
-		[tempRowArray addObjectsFromArray:[self arrayForString:[linesArray objectAtIndex:x] enclosed:enclosed escaped:escaped terminated:terminated]];
-		if ( x == 0 ) {
-			fieldCount = [tempRowArray count];
-		} else {
-			while ( [tempRowArray count] < fieldCount ) {
-				[tempRowArray addObject:[NSString stringWithString:[prefs objectForKey:@"NullValue"]]];
-			}
-		}
-		for ( i = 0 ; i < [tempRowArray count] ; i++ ) {
-			
+
+			// We now have a field content string.
 			// Insert a NSNull object if the cell contains an unescaped null character or an unescaped string
 			// which matches the NULL string set in preferences.
-			if ( [[tempRowArray objectAtIndex:i] isEqualToString:@"\\N"] || [[tempRowArray objectAtIndex:i] isEqualToString:[prefs objectForKey:@"NullValue"]] ) {
-				[tempRowArray replaceObjectAtIndex:i withObject:[NSNull null]];
-				
+			if ([mutableField isEqualToString:@"\\N"]
+				|| (!fieldWasQuoted && [mutableField isEqualToString:nullString]))
+			{
+				[tempRowArray addObject:[NSNull null]];
 			} else {
 				
-				//strip enclosed and escaped characters
-				mutableField = [NSMutableString stringWithString:[tempRowArray objectAtIndex:i]];
+				// Clean up escaped characters
+				if (escapeLength) {
+					if (fieldEndLength)
+						[mutableField replaceOccurrencesOfString:escapedFieldEndString withString:fieldEndString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+					if (fieldQuoteLength)
+						[mutableField replaceOccurrencesOfString:escapedFieldQuoteString withString:fieldQuoteString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+					if (lineEndLength)
+						[mutableField replaceOccurrencesOfString:escapedLineEndString withString:lineEndString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+					[mutableField replaceOccurrencesOfString:escapedEscapeString withString:escapeString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
+				}
 				
-				//strip enclosed characters
-				if ( [mutableField length] >= (2*[enclosed length]) ) {
-					if ( [[mutableField substringToIndex:[enclosed length]] isEqualToString:enclosed] ) {
-						[mutableField deleteCharactersInRange:NSMakeRange(0,[enclosed length])];
-					}
-					if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
-						[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
-					}
-				}
-				if ( [mutableField length] >= [enclosed length] ) {
-					if ( [[mutableField substringFromIndex:([mutableField length]-[enclosed length])] isEqualToString:enclosed] ) {
-						[mutableField deleteCharactersInRange:NSMakeRange(([mutableField length]-[enclosed length]),[enclosed length])];
-					}
-				}
-				//strip escaped characters
-				if ( ![enclosed isEqualToString:@""] ) {
-					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, enclosed] withString:enclosed options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-				} else {
-					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, terminated] withString:terminated options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-				}
-				if ( ![lineEnds isEqualToString:@""] ) {
-					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, lineEnds] withString:lineEnds options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-				}
-				if ( ![escaped isEqualToString:@""] && ![escaped isEqualToString:enclosed] ) {
-					[mutableField replaceOccurrencesOfString:[NSString stringWithFormat:@"%@%@", escaped, escaped] withString:escaped options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-				}
-				//add field to tempRowArray
-				[tempRowArray replaceObjectAtIndex:i withObject:[NSString stringWithString:mutableField]];
+				// Add the field to the row array
+				[tempRowArray addObject:[NSString stringWithString:mutableField]];
 			}
 		}
-		//add row to tempArray
+
+		// Capture the length of the first row and ensure all other rows contain that many items
+		if (fieldCount == NSNotFound) {
+			fieldCount = [tempRowArray count];
+		} else if ([tempRowArray count] < fieldCount) {
+
+			// Skip empty rows
+			if ([tempRowArray count] == 0
+				|| ([tempRowArray count] == 1 && ([[tempRowArray objectAtIndex:0] isNSNull] || ![[tempRowArray objectAtIndex:0] length])))
+			{
+				continue;
+			}
+
+			for (j = [tempRowArray count]; j < fieldCount; j++) [tempRowArray addObject:[NSNull null]];
+		}
+
+		// Add the row to the master output array
 		[tempArray addObject:[NSArray arrayWithArray:tempRowArray]];
 	}
-	
+	[scanner release];
+
 	return [NSArray arrayWithArray:tempArray];
 }
 
@@ -2296,6 +2400,31 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	} else if ([pathExtension isEqualToString:@"CSV"]) {
 		[importFormatPopup selectItemWithTitle:@"CSV"];
 		[self changeFormat:self];
+
+		// Try to detect the line endings using "file"
+		NSTask *fileTask = [[NSTask alloc] init];
+		NSPipe *filePipe = [[NSPipe alloc] init];
+
+		[fileTask setLaunchPath:@"/usr/bin/file"];
+		[fileTask setArguments:[NSArray arrayWithObjects:@"-L", @"-b", [selectedFilenames objectAtIndex:0], nil]];
+		[fileTask setStandardOutput:filePipe];
+		NSFileHandle *fileHandle = [filePipe fileHandleForReading];
+
+		[fileTask launch];
+
+		NSString *fileCheckOutput = [[NSString alloc] initWithData:[fileHandle readDataToEndOfFile] encoding:NSASCIIStringEncoding];
+		if (fileCheckOutput && [fileCheckOutput length]) {
+			NSString *lineEndingString = [fileCheckOutput stringByMatching:@"with ([A-Z]{2,4}) line terminators" capture:1L];
+			if (!lineEndingString && [fileCheckOutput isMatchedByRegex:@"text"]) lineEndingString = @"LF";
+			if (lineEndingString) {
+				if ([lineEndingString isEqualToString:@"LF"]) [importLinesTerminatedField setStringValue:@"\\n"];
+				else if ([lineEndingString isEqualToString:@"CR"]) [importLinesTerminatedField setStringValue:@"\\r"];
+				else if ([lineEndingString isEqualToString:@"CRLF"]) [importLinesTerminatedField setStringValue:@"\\r\\n"];
+			}
+		}
+
+		[fileTask release];
+		[filePipe release];
 	}
 }
 

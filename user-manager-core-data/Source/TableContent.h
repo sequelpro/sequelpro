@@ -28,13 +28,14 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMCopyTable, SPTextAndLinkCell;
+@class CMCopyTable, SPTextAndLinkCell, SPHistoryController;
 
 @interface TableContent : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
+	IBOutlet SPHistoryController *spHistoryControllerInstance;
 	
 	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
@@ -56,14 +57,19 @@
 	
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *fullResult, *filteredResult, *dataColumns, *keys, *oldRow;
-	NSString *compareType, *lastField;
-	NSString *targetFilterColumn, *targetFilterValue;
+	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	NSUserDefaults *prefs;
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
 	bool areShowingAllRows;
-	
+
+	BOOL sortColumnToRestoreIsAsc;
+	NSString *sortColumnToRestore;
+	unsigned int limitStartPositionToRestore;
+	NSIndexSet *selectionIndexToRestore;
+	NSRect selectionViewportToRestore;
+	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore;
 }
 
 //table methods
@@ -100,6 +106,21 @@
 - (int)getNumberOfRows;
 - (int)fetchNumberOfRows;
 - (BOOL)saveRowOnDeselect;
+
+// Retrieving and setting table state
+- (NSString *) sortColumnName;
+- (BOOL) sortColumnIsAscending;
+- (unsigned int) limitStart;
+- (NSIndexSet *) selectedRowIndexes;
+- (NSRect) viewport;
+- (NSDictionary *) filterSettings;
+- (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
+- (void) setLimitStartToRestore:(unsigned int)theLimitStart;
+- (void) setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void) setViewportToRestore:(NSRect)theViewport;
+- (void) setFiltersToRestore:(NSDictionary *)filterSettings;
+- (void) storeCurrentDetailsForRestoration;
+- (void) clearDetailsToRestore;
 
 //tableView datasource methods
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
