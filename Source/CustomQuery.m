@@ -1276,6 +1276,27 @@
 	}
 }
 
+/**
+ * This function changes the text color of text/blob fields whose content is NULL
+ */
+- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
+{	
+
+	if ( aTableView == customQueryView ) {
+
+		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
+		if ([cell respondsToSelector:@selector(setTextColor:)]) {
+		
+			// Note that this approach of changing the color of NULL placeholders is dependent on the cell's value matching that
+			// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
+			// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
+			// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
+			[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
+		}
+	}
+
+}
+
 - (id)tableView:(NSTableView *)aTableView
 			objectValueForTableColumn:(NSTableColumn *)aTableColumn
 			row:(int)rowIndex

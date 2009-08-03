@@ -385,6 +385,19 @@
 	}
 }
 
+/**
+ * Inserts the preference's NULL value set by the user
+ */
+- (IBAction)insertNULLvalue:(id)sender
+{
+	id prefs = [NSUserDefaults standardUserDefaults];
+	if([self respondsToSelector:@selector(insertText:)])
+		if([prefs objectForKey:@"NullValue"] && [[prefs objectForKey:@"NullValue"] length])
+			[self insertText:[prefs objectForKey:@"NullValue"]];
+		else
+			[self insertText:@"NULL"];
+
+}
 
 /*
  * Increase the textView's font size by 1

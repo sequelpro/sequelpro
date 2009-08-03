@@ -40,6 +40,7 @@
 - (IBAction)doPrecomposedStringWithCompatibilityMapping:(id)sender;
 - (IBAction)doTranspose:(id)sender;
 - (IBAction)doRemoveDiacritics:(id)sender;
+- (IBAction)insertNULLvalue:(id)sender;
 
 - (void)makeTextSizeLarger;
 - (void)makeTextSizeSmaller;

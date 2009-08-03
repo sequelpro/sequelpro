@@ -1873,7 +1873,7 @@
  */
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
 {	
-	NSDictionary *column = [dataColumns objectAtIndex:[[aTableColumn identifier] intValue]];	
+	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]);
 	
 	// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 	if ([cell respondsToSelector:@selector(setTextColor:)]) {
@@ -1882,7 +1882,7 @@
 		// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
 		// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
 		// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
-		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
+		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && ![[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
 	}
 
 	// Check if loading of text/blob fields is disabled
