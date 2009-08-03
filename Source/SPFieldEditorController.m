@@ -195,7 +195,6 @@
 	return ( code && isEditable ) ? [sheetEditData retain] : nil;
 }
 
-
 - (IBAction)closeEditSheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
@@ -203,9 +202,102 @@
 
 - (IBAction)openEditSheet:(id)sender
 {
-	NSOpenPanel *panel = [NSOpenPanel openPanel];
-	
-	if ( [panel runModal] == NSOKButton ) {
+	[[NSOpenPanel openPanel] beginSheetForDirectory:nil 
+											   file:@"" 
+									 modalForWindow:[self window] 
+									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) 
+										contextInfo:NULL];
+}
+
+/*
+ * Segement controller for text/image/hex buttons in editSheet
+ */
+- (IBAction)segmentControllerChanged:(id)sender
+{
+	switch([sender selectedSegment]){
+		case 0: // text
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
+			[editImage setHidden:YES];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[[self window] makeFirstResponder:editTextView];
+			break;
+		case 1: // image
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[[self window] makeFirstResponder:editImage];
+			break;
+		case 2: // hex - load on demand
+			[[self window] makeFirstResponder:hexTextView];
+			if([sheetEditData length] && [[hexTextView string] isEqualToString:@""]) {
+				[editSheetProgressBar startAnimation:self];
+				if([sheetEditData isKindOfClass:[NSData class]]) {
+					[hexTextView setString:[sheetEditData dataToFormattedHexString]];
+				} else {
+					[hexTextView setString:[[sheetEditData dataUsingEncoding:encoding allowLossyConversion:YES] dataToFormattedHexString]];
+				}
+				[editSheetProgressBar stopAnimation:self];
+			}
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[hexTextView setHidden:NO];
+			[hexTextScrollView setHidden:NO];
+			break;
+	}
+}
+
+/*
+ * Saves a file containing the content of the editSheet
+ */
+- (IBAction)saveEditSheet:(id)sender
+{	
+	[[NSSavePanel savePanel] beginSheetForDirectory:nil 
+											   file:@"" 
+									 modalForWindow:[self window] 
+									  modalDelegate:self 
+									 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
+										contextInfo:NULL];
+}
+
+/**
+ * Save panel didEndSelector. Writes the current content to disk.
+ */
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode == NSOKButton) {
+		
+		[editSheetProgressBar startAnimation:self];
+		
+		NSString *fileName = [panel filename];
+		
+		// Write binary field types directly to the file
+		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
+			[sheetEditData writeToFile:fileName atomically:YES];
+			
+		// Write other field types' representations to the file via the current encoding
+		} 
+		else {
+			[[sheetEditData description] writeToFile:fileName
+										  atomically:YES
+											encoding:encoding
+											   error:NULL];
+		}
+		
+		[editSheetProgressBar stopAnimation:self];
+	}
+}
+
+/**
+ * Open panel didEndSelector. Opens the selected file.
+ */
+- (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
+{
+	if (returnCode == NSOKButton) {
 		NSString *fileName = [panel filename];
 		NSString *contents = nil;
 		
@@ -265,79 +357,6 @@
 		editSheetWillBeInitialized = NO;
 	}
 }
-
-/*
- * Segement controller for text/image/hex buttons in editSheet
- */
-- (IBAction)segmentControllerChanged:(id)sender
-{
-	switch([sender selectedSegment]){
-		case 0: // text
-			[editTextView setHidden:NO];
-			[editTextScrollView setHidden:NO];
-			[editImage setHidden:YES];
-			[hexTextView setHidden:YES];
-			[hexTextScrollView setHidden:YES];
-			[[self window] makeFirstResponder:editTextView];
-			break;
-		case 1: // image
-			[editTextView setHidden:YES];
-			[editTextScrollView setHidden:YES];
-			[editImage setHidden:NO];
-			[hexTextView setHidden:YES];
-			[hexTextScrollView setHidden:YES];
-			[[self window] makeFirstResponder:editImage];
-			break;
-		case 2: // hex - load on demand
-			[[self window] makeFirstResponder:hexTextView];
-			if([sheetEditData length] && [[hexTextView string] isEqualToString:@""]) {
-				[editSheetProgressBar startAnimation:self];
-				if([sheetEditData isKindOfClass:[NSData class]]) {
-					[hexTextView setString:[sheetEditData dataToFormattedHexString]];
-				} else {
-					[hexTextView setString:[[sheetEditData dataUsingEncoding:encoding allowLossyConversion:YES] dataToFormattedHexString]];
-				}
-				[editSheetProgressBar stopAnimation:self];
-			}
-			[editTextView setHidden:YES];
-			[editTextScrollView setHidden:YES];
-			[editImage setHidden:YES];
-			[hexTextView setHidden:NO];
-			[hexTextScrollView setHidden:NO];
-			break;
-	}
-}
-
-/*
- * Saves a file containing the content of the editSheet
- */
-- (IBAction)saveEditSheet:(id)sender
-{
-	NSSavePanel *panel = [NSSavePanel savePanel];
-	
-	if ( [panel runModal] == NSOKButton ) {
-		
-		[editSheetProgressBar startAnimation:self];
-		
-		NSString *fileName = [panel filename];
-		
-		// Write binary field types directly to the file
-		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
-			[sheetEditData writeToFile:fileName atomically:YES];
-
-		// Write other field types' representations to the file via the current encoding
-		} else {
-			[[sheetEditData description] writeToFile:fileName
-										  atomically:YES
-											encoding:encoding
-											   error:NULL];
-		}
-		
-		[editSheetProgressBar stopAnimation:self];
-		
-	}
-}
-
 
 #pragma mark -
 #pragma mark QuickLook
