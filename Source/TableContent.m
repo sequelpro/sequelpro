@@ -1882,7 +1882,7 @@
 		// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
 		// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
 		// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
-		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor grayColor] : [NSColor blackColor]];
+		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
 	}
 
 	// Check if loading of text/blob fields is disabled
@@ -1903,7 +1903,7 @@
 				if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
 				{
 					// change the text color of the cell to gray
-					[cell setTextColor:[NSColor grayColor]];
+					[cell setTextColor:[NSColor lightGrayColor]];
 				}
 				else {
 					// Change the text color back to black
