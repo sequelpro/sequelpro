@@ -78,6 +78,8 @@
 {
 	NSLog(@"SPUserManager dealloc.");
 	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
 	[managedObjectContext release], managedObjectContext = nil;
     [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
     [managedObjectModel release], managedObjectModel = nil;
@@ -92,6 +94,10 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self 
 											 selector:@selector(contextDidSave:) 
 												 name:NSManagedObjectContextDidSaveNotification 
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(contextDidChange:)
+												 name:NSManagedObjectContextObjectsDidChangeNotification 
 											   object:nil];
 	[tabView selectTabViewItemAtIndex:0];
 	
@@ -349,44 +355,6 @@
 		}
 	}
 }
-#pragma mark -
-#pragma mark Observer Methods
-
-- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
-	if ([object isKindOfClass:[NSManagedObject class]] && !isInitializing)
-	{
-		NSManagedObject *parent = nil;
-		if ([(NSManagedObject *)object parent] != nil)
-		{
-			parent = [(NSManagedObject *)object parent];
-		}
-		
-		if (parent)
-		{
-			if ([keyPath isEqualToString:@"user"]) {
-				for (NSManagedObject *child in [parent children]) 
-				{
-					[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"user"];
-				}
-				[outlineView reloadData];
-			} 
-			else if ([keyPath isEqualToString:@"password"]) 
-			{
-				for (NSManagedObject *child in [parent children]) 
-				{
-					[child setValue:[change objectForKey:NSKeyValueChangeNewKey] forKey:@"password"];
-				}
-			}
-			else if ([keyPath isEqualToString:@"host"])
-			{
-				[outlineView reloadData];
-			}			
-		}
-		[outlineView reloadData];
-	}
-}
-
 
 // General Action Methods 
 - (IBAction)doCancel:(id)sender
@@ -431,11 +399,7 @@
 
 - (IBAction)removeUser:(id)sender
 {
-	NSArray *selectedObjects = [treeController selectedObjects];
-	for (NSManagedObject *user in selectedObjects)
-	{
-		[[self managedObjectContext] deleteObject:user];
-	}
+	[treeController remove:sender];
 }
 
 - (IBAction)addHost:(id)sender
@@ -454,31 +418,9 @@
 
 - (void)_clearData
 {
-	NSLog(@"%d", [[treeController content] count]);
-	for (NSManagedObject* item in [[self managedObjectContext] registeredObjects])
-	{	NS_DURING
-		for (NSManagedObject *child in [item children])
-		{
-			NS_DURING
-			if ([child observationInfo] != nil)
-			{
-				[child removeObserver:self forKeyPath:@"user"];
-				[child removeObserver:self forKeyPath:@"password"];
-				[child removeObserver:self forKeyPath:@"host"];			
-			}
-			NS_HANDLER
-			NS_ENDHANDLER
-		}
-		[item removeObserver:self forKeyPath:@"user"];
-		[item removeObserver:self forKeyPath:@"password"];
-		[item removeObserver:self forKeyPath:@"host"];
-		NS_HANDLER
-		NS_ENDHANDLER
-	}
-    [managedObjectContext reset];
-	//[managedObjectContext release];
-//	managedObjectContext = nil;
+	[managedObjectContext reset];
 }
+
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(addHost:) ||
@@ -536,6 +478,14 @@
 	}
 }
 
+- (void)contextDidChange:(NSNotification *)notification
+{
+	if (!isInitializing)
+	{
+		[outlineView reloadData];
+	}
+}
+
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
 	for (NSManagedObject *user in updatedUsers) {
@@ -556,6 +506,7 @@
 										[[user valueForKey:@"user"] backtickQuotedString], 
 										[[user valueForKey:@"host"] backtickQuotedString]]];
 		}
+		
 	}
 	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
 	[[self connection] queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
@@ -661,12 +612,12 @@
 {
 	NSManagedObject *user = [[NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
 														  inManagedObjectContext:[self managedObjectContext]] autorelease];
-	[user addObserver:self forKeyPath:@"user" options:(NSKeyValueObservingOptionNew |
-													   NSKeyValueObservingOptionOld) context:nil];
-	[user addObserver:self forKeyPath:@"password" options:(NSKeyValueObservingOptionNew |
-														   NSKeyValueObservingOptionOld) context:nil];
-	[user addObserver:self forKeyPath:@"host" options:(NSKeyValueObservingOptionNew |
-														   NSKeyValueObservingOptionOld) context:nil];
+//	[user addObserver:self forKeyPath:@"user" options:(NSKeyValueObservingOptionNew |
+//													   NSKeyValueObservingOptionOld) context:nil];
+//	[user addObserver:self forKeyPath:@"password" options:(NSKeyValueObservingOptionNew |
+//														   NSKeyValueObservingOptionOld) context:nil];
+//	[user addObserver:self forKeyPath:@"host" options:(NSKeyValueObservingOptionNew |
+//														   NSKeyValueObservingOptionOld) context:nil];
 	
 	
 	return user;

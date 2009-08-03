@@ -47,12 +47,13 @@
 - (void)addChildrenObject:(NSManagedObject *)value 
 {    
     NSSet *changedObjects = [[NSSet alloc] initWithObjects:&value count:1];
-    
+
     [self willChangeValueForKey:@"children" withSetMutation:NSKeyValueUnionSetMutation usingObjects:changedObjects];
     [[self primitiveValueForKey:@"children"] addObject:value];
     [self didChangeValueForKey:@"children" withSetMutation:NSKeyValueUnionSetMutation usingObjects:changedObjects];
     
     [changedObjects release];
+	value.user = self.user;
 }
 
 - (void)removeChildrenObject:(NSManagedObject *)value 
