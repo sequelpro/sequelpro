@@ -764,7 +764,7 @@
 	usedQuery = [[NSString alloc] initWithString:query];
 }
 
-
+#pragma mark -
 #pragma mark Edit methods
 
 /*
@@ -1850,7 +1850,9 @@
 	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
 
-// TableView datasource methods
+#pragma mark -
+#pragma mark TableView delegate methods
+
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [filteredResult count];
@@ -1858,10 +1860,9 @@
 
 - (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-
 	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(filteredResult, rowIndex), [[aTableColumn identifier] intValue]);
 
-	if ( [theValue isKindOfClass:[NSData class]] )
+	if ([theValue isKindOfClass:[NSData class]])
 		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
 	return theValue;
@@ -1870,11 +1871,20 @@
 /**
  * This function changes the text color of text/blob fields which are not yet loaded to gray
  */
-- (void)tableView: (CMCopyTable *)aTableView
-	willDisplayCell: (id)cell
-	forTableColumn: (NSTableColumn*)aTableColumn
-	row: (int)row
-{
+- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
+{	
+	NSDictionary *column = [dataColumns objectAtIndex:[[aTableColumn identifier] intValue]];	
+	
+	// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
+	if ([cell respondsToSelector:@selector(setTextColor:)]) {
+		
+		// Note that this approach of changing the color of NULL placeholders is dependent on the cell's value matching that
+		// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
+		// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
+		// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
+		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor grayColor] : [NSColor blackColor]];
+	}
+
 	// Check if loading of text/blob fields is disabled
 	// If not, all text fields are loaded and we don't have to make them gray
 	if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
@@ -1884,39 +1894,30 @@
 		// that don't support this selector
 		if ([cell respondsToSelector:@selector(setTextColor:)])
 		{
-			NSString   *columnTypeGrouping;
-			NSUInteger  indexOfColumn;
-
-			indexOfColumn = [[aTableColumn identifier] intValue];
-
 			// Test if the current column is a text or a blob field
-			columnTypeGrouping = [[dataColumns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
+			NSString *columnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
 			if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
 
 				// now check if the field has been loaded already or not
 				if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
 				{
 					// change the text color of the cell to gray
-					[cell setTextColor: [NSColor grayColor]];
+					[cell setTextColor:[NSColor grayColor]];
 				}
-				else
-				{
+				else {
 					// Change the text color back to black
 					// This is necessary because NSTableView reuses
 					// the NSCell to draw further rows in the column
-					[cell setTextColor: [NSColor blackColor]];
+					[cell setTextColor:[NSColor blackColor]];
 				}
 			}
 		}
 	}
 }
 
-- (void)tableView:(NSTableView *)aTableView
-   setObjectValue:(id)anObject
-   forTableColumn:(NSTableColumn *)aTableColumn
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
@@ -1925,7 +1926,7 @@
 		currentlyEditingRow = rowIndex;
 	}
 	
-	if ( anObject )
+	if (anObject)
 		[NSArrayObjectAtIndex(filteredResult, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
 	else
 		[NSArrayObjectAtIndex(filteredResult, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
@@ -1933,7 +1934,7 @@
 }
 
 #pragma mark -
-#pragma mark tableView delegate methods
+#pragma mark TableView delegate methods
 
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 /*
