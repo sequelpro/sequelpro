@@ -1311,11 +1311,6 @@
 	int i;
 	NSMutableArray *tempResult = [NSMutableArray array];
 	
-	if (variables) {
-		[variables release];
-		variables = nil;
-	}
-	
 	if (variablesFiltered) {
 		[variablesFiltered release];
 		variablesFiltered = nil;
@@ -1332,10 +1327,15 @@
 	
 	variablesFiltered = [[NSArray arrayWithArray:tempResult] retain];
 	
-	// Weak pointer
+	// Weak reference
 	variables = variablesFiltered;
 	
 	[variablesTableView reloadData];
+	
+	// If the search field already has value from when the panel was previously open, apply the filter.
+	if ([[variablesSearchField stringValue] length] > 0) {
+		[self _updateServerVariablesFilterForFilterString:[variablesSearchField stringValue]];
+	}
 	
 	// Show variables sheet
 	[NSApp beginSheet:variablesSheet
@@ -2155,7 +2155,7 @@
 	}
 	
 	if (object == variablesSearchField) {
-		[self _updateServerVariablesFilterForFilterString:[[object stringValue] lowercaseString]];
+		[self _updateServerVariablesFilterForFilterString:[object stringValue]];
 	}
 }
 
@@ -2256,6 +2256,8 @@
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString
 {
 	[saveVariablesButton setEnabled:NO];
+	
+	filterString = [filterString lowercaseString];
 	
 	filterString = [filterString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
