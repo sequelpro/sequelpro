@@ -1909,7 +1909,7 @@
 					// Change the text color back to black
 					// This is necessary because NSTableView reuses
 					// the NSCell to draw further rows in the column
-					[cell setTextColor:[NSColor blackColor]];
+					[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
 				}
 			}
 		}
