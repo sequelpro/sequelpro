@@ -52,6 +52,12 @@
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
 
+@interface TableDocument (PrivateAPI)
+
+- (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
+
+@end
+
 @implementation TableDocument
 
 - (id)init
@@ -1302,29 +1308,43 @@
  */
 - (void)showVariables:(id)sender
 {
-	MCPResult *theResult;
-	NSMutableArray *tempResult = [NSMutableArray array];
 	int i;
+	NSMutableArray *tempResult = [NSMutableArray array];
 	
-	if ( variables ) {
+	if (variables) {
 		[variables release];
 		variables = nil;
 	}
-	//get variables
-	theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
+	
+	if (variablesFiltered) {
+		[variablesFiltered release];
+		variablesFiltered = nil;
+	}
+	
+	// Get variables
+	MCPResult *theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
+	
 	if ([theResult numOfRows]) [theResult dataSeek:0];
+	
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		[tempResult addObject:[theResult fetchRowAsDictionary]];
 	}
-	variables = [[NSArray arrayWithArray:tempResult] retain];
+	
+	variablesFiltered = [[NSArray arrayWithArray:tempResult] retain];
+	
+	// Weak pointer
+	variables = variablesFiltered;
+	
 	[variablesTableView reloadData];
-	//show variables sheet
+	
+	// Show variables sheet
 	[NSApp beginSheet:variablesSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	[NSApp runModalForWindow:variablesSheet];
 	
+	[NSApp runModalForWindow:variablesSheet];
 	[NSApp endSheet:variablesSheet];
+	
 	[variablesSheet orderOut:nil];
 }
 
@@ -1507,7 +1527,7 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"Variables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
 /**
@@ -1678,7 +1698,7 @@
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if (variables) {
+		if ([variables count] > 0) {
 			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
 			
 			for (NSDictionary *variable in variables) 
@@ -2126,10 +2146,16 @@
 /**
  * When adding a database, enable the button only if the new name has a length.
  */
-- (void)controlTextDidChange:(NSNotification *)aNotification
+- (void)controlTextDidChange:(NSNotification *)notification
 {
-	if ([aNotification object] == databaseNameField) {
+	id object = [notification object];
+	
+	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
+	}
+	
+	if (object == variablesSearchField) {
+		[self _updateServerVariablesFilterForFilterString:[[object stringValue] lowercaseString]];
 	}
 }
 
@@ -2141,66 +2167,8 @@
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
-
 	return subview == [[tableInfoTable superview] superview];
 }
-
-/**
- * defines max position of splitView
- */
-//- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-//{
-//	if (sender == contentViewSplitter) {
-//		return 300;
-//	} else {
-//		// 
-//		return proposedMax;//([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
-//	}
-//}
-
-/**
- * defines min position of splitView
- */
-//- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-//{
-//	if (sender == tableListSplitter) {
-//		return [sender frame].size.height - [sender dividerThickness] - 145;
-//		//return [sender frame].size.height - [sender dividerThickness] - ([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
-//	} else {
-//		return 160;
-//	}
-//}
-
-//-(void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize
-//{
-//	[sender adjustSubviews];
-//	
-//	if (sender == tableListSplitter && 
-//		![tableListSplitter isSubviewCollapsed:[[sender subviews] objectAtIndex:1]]) {
-//		
-//		CGFloat dividerThickness = [sender dividerThickness];
-//		NSRect topRect = [[[sender subviews] objectAtIndex:0] frame];
-//		NSRect bottomRect = [[[sender subviews] objectAtIndex:1] frame];
-//		NSRect newFrame = [sender frame];
-//		
-//		topRect.size.height = newFrame.size.height - 145 - dividerThickness;
-//		topRect.size.width = newFrame.size.width;
-//		topRect.origin = NSMakePoint(0, 0);
-//		
-//		bottomRect.size.height = newFrame.size.height - topRect.size.height - dividerThickness;
-//		bottomRect.size.width = newFrame.size.width;
-//		bottomRect.origin.y = topRect.size.height + dividerThickness;
-//		
-//		[[[sender subviews] objectAtIndex:0] setFrame:topRect];
-//		[[[sender subviews] objectAtIndex:1] setFrame:bottomRect];
-//	}
-//}
-
-
-//- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex
-//{
-//	return splitView == tableListSplitter;
-//}
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
@@ -2248,16 +2216,15 @@
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{
-	id theValue;
+{	
+	id theValue = [[variables objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 	
-	theValue = [[variables objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-	
-	if ( [theValue isKindOfClass:[NSData class]] ) {
+	if ([theValue isKindOfClass:[NSData class]]) {
 		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 		if (theValue == nil) {
 			[[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		}
+		
 		if (theValue) [theValue autorelease];
 	}
 	
@@ -2271,10 +2238,56 @@
 	if (connectionController) [connectionController release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (variables) [variables release];
+	if (variablesFiltered) [variablesFiltered release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	[super dealloc];
+}
+
+@end
+
+@implementation TableDocument (PrivateAPI)
+
+/**
+ * Filter the displayed server variables by matching the variable name and value against the
+ * filter string.
+ */
+- (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString
+{
+	[saveVariablesButton setEnabled:NO];
+	
+	filterString = [filterString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	variables = [[NSMutableArray alloc] init];
+	
+	if ([filterString length] == 0) {
+		[variables release];
+		variables = variablesFiltered;
+		
+		[saveVariablesButton setEnabled:YES];
+		[saveVariablesButton setTitle:@"Save As..."];
+		
+		[variablesTableView reloadData];
+		
+		return;
+	}
+	
+	for (NSDictionary *variable in variablesFiltered) 
+	{		
+		if (([[variable objectForKey:@"Variable_name"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+			([[variable objectForKey:@"Value"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))
+		{
+			[variables addObject:variable];
+		}
+	}
+	
+	[variablesTableView reloadData];
+	
+	if ([variables count] > 0) {
+		[saveVariablesButton setEnabled:YES];
+		[saveVariablesButton setTitle:@"Save View As..."];
+	}
 }
 
 @end

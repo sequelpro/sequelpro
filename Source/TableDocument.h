@@ -68,6 +68,8 @@
 	IBOutlet id historyControl;
 	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
+	IBOutlet NSButton *saveVariablesButton;
+	IBOutlet NSSearchField *variablesSearchField;
 	
 	IBOutlet NSTableView *tableInfoTable;
 	IBOutlet NSButton *tableInfoCollapseButton;
@@ -88,7 +90,7 @@
 
 	MCPConnection *mySQLConnection;
 
-	NSArray *variables;
+	NSMutableArray *variables, *variablesFiltered;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
