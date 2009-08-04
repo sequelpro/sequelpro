@@ -430,6 +430,9 @@
 
 	// Add a history entry
 	[spHistoryControllerInstance updateHistoryEntries];
+
+	// Set focus to table list filter field
+	[tableWindow makeFirstResponder:listFilterField];
 }
 
 /**

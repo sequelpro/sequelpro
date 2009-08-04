@@ -49,6 +49,8 @@
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id spExportControllerInstance;
 
+	IBOutlet NSSearchField *listFilterField;
+
 	IBOutlet id tableWindow;
 	
 	IBOutlet id titleAccessoryView;
