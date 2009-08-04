@@ -431,8 +431,13 @@
 	// Add a history entry
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Set focus to table list filter field
-	[tableWindow makeFirstResponder:listFilterField];
+	// Set focus to table list filter field if visible
+	// otherwise set focus to Table List view
+	if ( [[tablesListInstance tables] count] > 20 )
+		[tableWindow makeFirstResponder:listFilterField];
+	else
+		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+
 }
 
 /**
