@@ -30,6 +30,8 @@
 
 @implementation SPHistoryController
 
+@synthesize modifyingHistoryState;
+
 #pragma mark Setup and teardown
 
 /**
@@ -40,7 +42,7 @@
 	if (self = [super init]) {
 		history = [[NSMutableArray alloc] init];
 		historyPosition = NSNotFound;
-		restoringHistoryState = NO;
+		modifyingHistoryState = NO;
 	}
 	return self;	
 }
@@ -134,7 +136,7 @@
 {
 
 	// Don't modify anything if we're in the process of restoring an old history state
-	if (restoringHistoryState) return;
+	if (modifyingHistoryState) return;
 
 	// Work out the current document details
 	NSString *theDatabase = [theDocument database];
@@ -217,7 +219,7 @@
 		return;
 	}
 
-	restoringHistoryState = YES;
+	modifyingHistoryState = YES;
 
 	// Update the position and extract the history entry
 	historyPosition = position;
@@ -236,7 +238,7 @@
 		&& [[historyEntry objectForKey:@"view"] intValue] == [self currentlySelectedView] == SP_VIEW_CONTENT)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
-		restoringHistoryState = NO;
+		modifyingHistoryState = NO;
 		[self updateToolbarItem];
 		return;
 	}
@@ -293,7 +295,7 @@
 		}
 	}
 
-	restoringHistoryState = NO;
+	modifyingHistoryState = NO;
 	[self updateToolbarItem];
 }
 
@@ -304,7 +306,7 @@
 - (void) abortEntryLoad
 {
 	NSBeep();
-	restoringHistoryState = NO;
+	modifyingHistoryState = NO;
 }
 
 @end

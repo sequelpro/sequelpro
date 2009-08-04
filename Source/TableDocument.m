@@ -409,8 +409,12 @@
 		return;
 	}
 
-	// Save existing scroll position and details
-	[spHistoryControllerInstance updateHistoryEntries];
+	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingHistoryState];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance updateHistoryEntries];
+		[spHistoryControllerInstance setModifyingHistoryState:YES];
+	}
 
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
@@ -429,7 +433,10 @@
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
 
 	// Add a history entry
-	[spHistoryControllerInstance updateHistoryEntries];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance setModifyingHistoryState:NO];
+		[spHistoryControllerInstance updateHistoryEntries];
+	}
 
 	// Set focus to table list filter field if visible
 	// otherwise set focus to Table List view

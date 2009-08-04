@@ -42,8 +42,10 @@ enum sphistory_view_types
 	TableContent *tableContentInstance;
 	NSMutableArray *history;
 	unsigned int historyPosition;
-	BOOL restoringHistoryState;
+	BOOL modifyingHistoryState;
 }
+
+@property (readwrite, assign) BOOL modifyingHistoryState;
 
 // Interface interaction
 - (void) updateToolbarItem;

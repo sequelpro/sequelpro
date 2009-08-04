@@ -207,6 +207,7 @@
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
 		selectedTableType = [[tableTypes objectAtIndex:itemToReselect] intValue];
 	} else {
+		if (selectedTableName) [selectedTableName release];
 		selectedTableName = nil;
 		selectedTableType = SP_TABLETYPE_NONE;
 	}
@@ -222,6 +223,8 @@
 		else if (tableListContainsViews) [[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter tables and views", @"Filter placeholder when tables and views are present")];
 		else [[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter the list of tables", @"Filter placeholder when only tables are present")];
 	}
+
+	if (previousSelectedTable) [previousSelectedTable release];
 }
 
 /**
