@@ -162,6 +162,9 @@
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void) refreshCurrentDatabase;
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
+
 
 // Getter methods
 - (NSString *)name;
@@ -177,6 +180,8 @@
 
 // Menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
+- (IBAction)openConnectionSheet:(id)sender;
+- (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)exportTable:(id)sender;

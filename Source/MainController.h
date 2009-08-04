@@ -51,5 +51,6 @@
 
 // Other
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command;
+- (NSString *)contentOfFile:(NSString *)aPath;
 
 @end

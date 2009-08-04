@@ -1481,6 +1481,59 @@
 #pragma mark Menu methods
 
 /**
+ * Opens connection file(s)
+ */
+- (IBAction)openConnectionSheet:(id)sender
+{
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setCanChooseDirectories:NO];
+	[panel setAllowsMultipleSelection:YES];
+	[panel setResolvesAliases:YES];
+	
+	[panel beginSheetForDirectory:nil 
+						   file:@"" 
+						  types:[NSArray arrayWithObjects:@"spf", nil] 
+				 modalForWindow:tableWindow 
+				  modalDelegate:self didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
+					contextInfo:NULL];
+
+}
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
+{
+	if ( returnCode ) {
+		NSArray *fileName = [panel filenames];
+		NSLog(@"open: '%@'", [fileName description]);
+	}
+}
+/**
+ * Saves connection(s) to file
+ */
+- (IBAction)saveConnectionSheet:(id)sender
+{
+	
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
+	[panel setAllowsOtherFileTypes:NO];
+	[panel setCanSelectHiddenExtension:YES];
+	
+	[panel beginSheetForDirectory:nil 
+						   file:[NSString stringWithFormat:@"%@", [self name]] 
+				 modalForWindow:tableWindow 
+				  modalDelegate:self 
+				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
+					contextInfo:NULL];
+}
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+
+	if ( returnCode ) {
+		NSString *fileName = [panel filename];
+		NSLog(@"save as: '%@'", fileName);
+	}
+}
+/**
  * Passes the request to the tableDump object
  */
 - (IBAction)import:(id)sender
