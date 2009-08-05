@@ -37,6 +37,9 @@
 		// force the nib to be loaded
 		(void) [self window];
 		counter = 0;
+		
+		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
+		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
 	}
 	return self;
 	
@@ -51,7 +54,6 @@
 - (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding 
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
-
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
@@ -77,7 +79,6 @@
 	}
 	
 	editSheetWillBeInitialized = YES;
-	
 	
 	encoding = anEncoding;
 
