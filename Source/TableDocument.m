@@ -2338,6 +2338,7 @@
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
+	if(queryEditorInitString) [queryEditorInitString release];
 	[super dealloc];
 }
 
