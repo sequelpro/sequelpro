@@ -151,6 +151,7 @@
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
+- (void)doPerformLoadQueryService:(NSString *)query;
 - (void)selectCurrentQuery;
 - (void)commentOut;
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;

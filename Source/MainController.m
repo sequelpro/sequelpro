@@ -56,17 +56,27 @@
 
 	for( NSString* filename in filenames ) {
 		
-		// Opens a sql file and insert its content to the Custom Query editor
+		// Opens a sql file and insert its content into the Custom Query editor
 		if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
 
 			// Check if at least one document exists
 			if (![[[NSDocumentController sharedDocumentController] documents] count]) {
 				// TODO : maybe open a connection first
-				return;
-			}
+				// return;
+				TableDocument *firstTableDocument;
+
+				// Manually open a new document, setting MainController as sender to trigger autoconnection
+				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+					[firstTableDocument setShouldAutomaticallyConnect:NO];
+					[firstTableDocument initQueryEditorWithString:[self contentOfFile:filename]];
+					[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
+					[firstTableDocument makeWindowControllers];
+					[firstTableDocument showWindows];
+				}
+			} else
 	
-			// Pass query to last created document
-			[[[[NSDocumentController sharedDocumentController] documents] objectAtIndex:([[[NSDocumentController sharedDocumentController] documents] count] - 1)] doPerformQueryService:[self contentOfFile:filename]];
+			// Pass query to the Query editor of the current document
+			[[[NSDocumentController sharedDocumentController] currentDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
 
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {

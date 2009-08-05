@@ -1201,6 +1201,11 @@
 	[textView setString:query];
 	[self runAllQueries:self];
 }
+- (void)doPerformLoadQueryService:(NSString *)query
+{
+	[textView setString:query];
+	[textView insertText:@""];
+}
 
 - (NSString *)usedQuery
 {

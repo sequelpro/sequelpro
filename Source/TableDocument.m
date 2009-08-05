@@ -79,6 +79,7 @@
 		[printWebView setFrameLoadDelegate:self];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		queryEditorInitString = nil;
 
 	}
 
@@ -203,6 +204,14 @@
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
 											  notificationName:@"Connected"];
+											
+	// Insert queryEditorInitString into the Query Editor if defined
+	if(queryEditorInitString && [queryEditorInitString length]) {
+		[self viewQuery:self];
+		[customQueryInstance doPerformLoadQueryService:queryEditorInitString];
+		[queryEditorInitString release];
+		queryEditorInitString = nil;
+	}
 
 }
 
@@ -1276,6 +1285,16 @@
 #pragma mark Other Methods
 
 /**
+ * Set that query which will be inserted into the Query Editor
+ * after establishing the connection
+ */
+
+- (void)initQueryEditorWithString:(NSString *)query
+{
+	queryEditorInitString = [query retain];
+}
+
+/**
  * Invoked when user hits the cancel button or close button in
  * dialogs such as the variableSheet or the createTableSyntaxSheet
  */
@@ -1299,6 +1318,15 @@
 {
 	[tableWindow makeKeyAndOrderFront:self];
 	[tablesListInstance doPerformQueryService:query];
+}
+
+/**
+ * Inserts query into the Custom Query editor
+ */
+- (void)doPerformLoadQueryService:(NSString *)query
+{
+	[self viewQuery:nil];
+	[customQueryInstance doPerformLoadQueryService:query];
 }
 
 /**

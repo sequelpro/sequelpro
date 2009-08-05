@@ -111,9 +111,13 @@
 	WebView *printWebView;
 	
 	NSMutableArray *allDatabases;
+	
+	NSString *queryEditorInitString;
 }
 
 - (NSString *)getHTMLforPrint;
+
+- (void)initQueryEditorWithString:(NSString *)query;
 
 // Connection callback and methods
 - (void) setConnection:(MCPConnection *)theConnection;
@@ -157,6 +161,7 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closeErrorConnectionSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
+- (void)doPerformLoadQueryService:(NSString *)query;
 - (void)flushPrivileges:(id)sender;
 - (void)showVariables:(id)sender;
 - (void)closeConnection;
