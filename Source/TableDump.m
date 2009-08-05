@@ -36,6 +36,7 @@
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
 
+
 @implementation TableDump
 
 //IBAction methods
@@ -52,15 +53,26 @@
 	queryResult = (MCPResult *)[mySQLConnection listTables];
 	
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	NSMutableArray *unsortedTables = [NSMutableArray array];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES], NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), nil]];
+		[unsortedTables addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 	}
 	
+	NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+	NSArray *sortedTables = [unsortedTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+	[desc release];
+	
+	for ( i = 0 ; i < [sortedTables count]; i++ ) {
+		[tables addObject:
+			[NSMutableArray arrayWithObjects:
+				[NSNumber numberWithBool:YES], 
+				[sortedTables objectAtIndex:i], 
+				nil]];
+	}
+		
 	[exportDumpTableView reloadData];
 	[exportMultipleCSVTableView reloadData];
 	[exportMultipleXMLTableView reloadData];
-	
 }
 
 - (IBAction)selectTables:(id)sender
