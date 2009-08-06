@@ -1,5 +1,5 @@
 //
-//  $Id: SPFieldEditorController.h 802 2009-07-18 20:46:57Z bibiko $
+//  $Id$
 //
 //  AMIndeterminateProgressIndicatorCell.m
 //  sequel-pro
