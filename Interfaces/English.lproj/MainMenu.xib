@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="908"/>
+			<integer value="81"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -311,6 +311,7 @@
 								<object class="NSMenuItem" id="934534577">
 									<reference key="NSMenu" ref="709725194"/>
 									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsHidden">YES</bool>
 									<string type="base64-UTF8" key="NSTitle">RXhwb3J04oCmA</string>
 									<string key="NSKeyEquiv">e</string>
 									<int key="NSKeyEquivModMask">1048576</int>
