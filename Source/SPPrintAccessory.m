@@ -47,10 +47,7 @@
 
 - (NSSet *)keyPathsForValuesAffectingPreview
 {
-	return [NSSet setWithObjects:
-			@"defaultsController.values.PrintBackground",
-//			@"defaultsController.values.PrintGrid",
-			nil];
+	return [NSSet setWithObjects:@"defaultsController.values.PrintBackground", nil];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
