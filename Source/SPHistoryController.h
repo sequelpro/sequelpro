@@ -58,5 +58,10 @@ enum sphistory_view_types
 // Loading history entries
 - (void) loadEntryAtPosition:(unsigned int)position;
 - (void) abortEntryLoad;
+- (void) loadEntryFromMenuItem:(id)theMenuItem;
+
+// History entry details and description
+- (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(int)theIndex;
+- (NSString *) nameForHistoryEntryDetails:(NSDictionary *)theEntry;
 
 @end

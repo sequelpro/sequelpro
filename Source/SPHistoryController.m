@@ -68,6 +68,8 @@
 {
 	BOOL backEnabled = NO;
 	BOOL forwardEnabled = NO;
+	int i;
+	NSMenu *navMenu;
 
 	// Set the active state of the segments if appropriate
 	if ([history count] && historyPosition > 0) backEnabled = YES;
@@ -75,6 +77,28 @@
 	
 	[historyControl setEnabled:backEnabled forSegment:0];
 	[historyControl setEnabled:forwardEnabled forSegment:1];
+
+	// Generate back and forward menus as appropriate to reflect the new state
+	if (backEnabled) {
+		navMenu = [[NSMenu alloc] init];
+		for (i = historyPosition - 1; i >= 0; i--) {
+			[navMenu addItem:[self menuEntryForHistoryEntryAtIndex:i]];
+		}
+		[historyControl setMenu:navMenu forSegment:0];
+		[navMenu release];
+	} else {
+		[historyControl setMenu:nil forSegment:0];
+	}
+	if (forwardEnabled) {
+		navMenu = [[NSMenu alloc] init];
+		for (i = historyPosition + 1; i < [history count]; i++) {
+			[navMenu addItem:[self menuEntryForHistoryEntryAtIndex:i]];
+		}
+		[historyControl setMenu:navMenu forSegment:1];
+		[navMenu release];
+	} else {
+		[historyControl setMenu:nil forSegment:1];
+	}
 }
 
 /**
@@ -307,6 +331,63 @@
 {
 	NSBeep();
 	modifyingHistoryState = NO;
+}
+
+/**
+ * Load a history entry from an associated menu item
+ */
+- (void) loadEntryFromMenuItem:(id)theMenuItem
+{
+	[self loadEntryAtPosition:[theMenuItem tag]];
+}
+
+#pragma mark -
+#pragma mark History entry details and description
+
+/**
+ * Returns a menuitem for a history entry at a supplied index
+ */
+- (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(int)theIndex
+{
+	NSMenuItem *theMenuItem = [[NSMenuItem alloc] init];
+	NSDictionary *theHistoryEntry = [history objectAtIndex:theIndex];
+
+	[theMenuItem setTag:theIndex];
+	[theMenuItem setTitle:[self nameForHistoryEntryDetails:theHistoryEntry]];
+	[theMenuItem setTarget:self];
+	[theMenuItem setAction:@selector(loadEntryFromMenuItem:)];
+	
+	return [theMenuItem autorelease];
+}
+
+/**
+ * Returns a descriptive name for a history item dictionary
+ */
+- (NSString *) nameForHistoryEntryDetails:(NSDictionary *)theEntry
+{
+	if (![theEntry objectForKey:@"database"]) return NSLocalizedString(@"(no selection)", @"History item title with nothing selected");
+
+	NSMutableString *theName = [NSMutableString stringWithString:[theEntry objectForKey:@"database"]];
+	if (![theEntry objectForKey:@"table"] || ![[theEntry objectForKey:@"table"] length]) return theName;
+
+	[theName appendFormat:@"/%@", [theEntry objectForKey:@"table"]];
+	if (![theEntry objectForKey:@"contentFilter"]) return theName;
+
+	NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
+	if (![filterSettings objectForKey:@"filterField"]) return theName;
+
+	if ([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"IS NULL"]
+		|| [[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"IS NOT NULL"])
+	{
+		[theName appendFormat:@" (%@ %@ %@)", NSLocalizedString(@"Filtered by", @"History item filtered by label"),
+			[filterSettings objectForKey:@"filterField"], [filterSettings objectForKey:@"filterComparison"]];
+	} else if ([filterSettings objectForKey:@"filterValue"] && [[filterSettings objectForKey:@"filterValue"] length]) {
+		[theName appendFormat:@" (%@ %@ %@ %@)", NSLocalizedString(@"Filtered by", @"History item filtered by label"),
+			[filterSettings objectForKey:@"filterField"], [filterSettings objectForKey:@"filterComparison"],
+			[filterSettings objectForKey:@"filterValue"]];
+	}
+
+	return theName;
 }
 
 @end
