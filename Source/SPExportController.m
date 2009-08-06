@@ -28,10 +28,25 @@
 
 @implementation SPExportController
 
-#pragma mark -
-#pragma mark Export Methods
+- (id)init;
+{
+	if ((self = [super init])) {
+		tables = [[NSMutableArray alloc] init];
+	}
+	
+	return self;
+}
 
--(void)export
+- (void)awakeFromNib
+{
+	// Upon awakening select the SQL tab
+	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+}
+
+#pragma mark -
+#pragma mark Export methods
+
+- (void)export
 {
 	if (!exportWindow) {
 		[NSBundle loadNibNamed:@"ExportDialog" owner:self];
@@ -58,7 +73,7 @@
 }
 
 #pragma mark -
-#pragma mark Utility Methods
+#pragma mark Utility methods
 
 - (void)setConnection:(MCPConnection *)theConnection
 {
@@ -67,21 +82,20 @@
 
 - (void)loadTables
 {
-	MCPResult *queryResult;
 	int i;
 	
 	[tables removeAllObjects];
-	queryResult = (MCPResult *)[mySQLConnection listTables];
 	
-	if ([queryResult numOfRows])
-		[queryResult dataSeek:0];
+	MCPResult *queryResult = (MCPResult *)[mySQLConnection listTables];
 	
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	
+	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) 
+	{
 		[tables addObject:[NSMutableArray arrayWithObjects:
 						   [NSNumber numberWithBool:YES],
 						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
-						   nil
-						   ]];
+						   nil]];
 	}
 	
 	[exportTableList reloadData];
@@ -105,38 +119,25 @@
 }
 
 #pragma mark -
-#pragma mark Table View Datasource methods
+#pragma mark Table view datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
 	return [tables count];
 }
 
-- (id)tableView:(NSTableView *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
-{
-	id returnObject = nil;
-	
-	if ( [[aTableColumn identifier] isEqualToString:@"switch"] ) {
-		returnObject = NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], 0);
-	} else {
-		returnObject = NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], 1);
-	}
-	
-	return returnObject;
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+{	
+	return NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], ([[aTableColumn identifier] isEqualToString:@"switch"]) ? 0 : 1);
 }
 
-- (void)tableView:(NSTableView *)aTableView
-   setObjectValue:(id)anObject
-   forTableColumn:(NSTableColumn *)aTableColumn
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
 }
 
 #pragma mark -
-#pragma mark Table View Delegate methods
+#pragma mark Table view delegate methods
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
@@ -148,16 +149,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return (aTableView == exportTableList);
 }
 
-- (void)tableView:(NSTableView *)aTableView 
-  willDisplayCell:(id)aCell 
-   forTableColumn:(NSTableColumn *)aTableColumn 
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-		[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
 
 #pragma mark -
-#pragma mark Toolbar Delegate Methods
+#pragma mark Toolbar delegate methods
 
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
@@ -172,22 +170,13 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
     return items;
 }
 
-- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem
-{
-	return YES;
-}
-
-- (id)init;
-{
-	self = [super init];
-	tables = [[NSMutableArray alloc] init];
-	return self;
-}
-
+#pragma mark -
+#pragma mark Other 
 
 - (void)dealloc
 {	
-    [tables release];
+    [tables release], tables = nil;
 	[super dealloc];
 }
+
 @end
