@@ -73,11 +73,11 @@
 					[firstTableDocument makeWindowControllers];
 					[firstTableDocument showWindows];
 				}
-			} else
-	
-			// Pass query to the Query editor of the current document
-			[[[NSDocumentController sharedDocumentController] currentDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
-			
+			} else {
+				// Pass query to the Query editor of the current document
+				[[[NSDocumentController sharedDocumentController] currentDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
+			}
+
 			break; // open only the first SQL file
 
 		}

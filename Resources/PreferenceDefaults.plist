@@ -72,6 +72,8 @@
 	<false/>
 	<key>CustomQueryAutoHelpDelay</key>
 	<real>1</real>
+	<key>lastSqlFileEncoding</key>
+	<integer>4</integer>
 	<key>SelectLastFavoriteUsed</key>
 	<true/>
 	<key>LastFavoriteIndex</key>

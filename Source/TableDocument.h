@@ -121,8 +121,7 @@ enum {
 	NSMutableArray *allDatabases;
 	
 	NSString *queryEditorInitString;
-	
-	NSArray *encodings;
+
 }
 
 - (NSString *)getHTMLforPrint;
