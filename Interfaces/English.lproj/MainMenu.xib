@@ -242,7 +242,7 @@
 								<object class="NSMenuItem" id="849728981">
 									<reference key="NSMenu" ref="709725194"/>
 									<bool key="NSIsHidden">YES</bool>
-									<string key="NSTitle">Open Connection</string>
+									<string key="NSTitle">Open</string>
 									<string key="NSKeyEquiv">o</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -4355,7 +4355,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{270, 486}, {212, 233}}</string>
+					<string>{{270, 486}, {209, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{180, 535}, {182, 253}}</string>

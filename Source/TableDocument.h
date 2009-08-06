@@ -29,6 +29,11 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
+enum {
+	NoStringEncoding = 0xFFFFFFFF
+};
+
+
 @class SPConnectionController;
 
 /**
@@ -79,6 +84,9 @@
 	IBOutlet NSSplitView *contentViewSplitter;
 	IBOutlet id sidebarGrabber;
 	
+	IBOutlet NSPopUpButton *encodingPopUp;
+	IBOutlet id encodingAccessoryView;
+	
 	IBOutlet NSTextView *customQueryTextView;
 	
 	IBOutlet NSTableView *dbTablesTableView;
@@ -113,6 +121,8 @@
 	NSMutableArray *allDatabases;
 	
 	NSString *queryEditorInitString;
+	
+	NSArray *encodings;
 }
 
 - (NSString *)getHTMLforPrint;

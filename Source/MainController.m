@@ -77,6 +77,8 @@
 	
 			// Pass query to the Query editor of the current document
 			[[[NSDocumentController sharedDocumentController] currentDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
+			
+			break; // open only the first SQL file
 
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {

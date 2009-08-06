@@ -1516,6 +1516,111 @@
 #pragma mark Menu methods
 
 /**
+ * Returns the actual enabled list of encodings for open/save SQL files.
+ */
+- (NSArray *)enabledEncodings
+{
+	static const NSInteger plainTextFileStringEncodingsSupported[] = {
+		kCFStringEncodingUTF8, 
+		kCFStringEncodingUTF16, 
+		kCFStringEncodingUTF16BE, 
+		kCFStringEncodingUTF16LE, 
+		kCFStringEncodingUTF32, 
+		kCFStringEncodingWindowsLatin1, 
+		kCFStringEncodingISOLatin1, 
+		kCFStringEncodingWindowsLatin2, 
+		kCFStringEncodingISOLatin2, 
+		kCFStringEncodingISOLatin3, 
+		kCFStringEncodingISOLatin4, 
+		kCFStringEncodingWindowsLatin5, 
+		kCFStringEncodingKOI8_R, 
+		kCFStringEncodingKOI8_U, 
+		kCFStringEncodingMacRoman, 
+		kCFStringEncodingMacJapanese, 
+		kCFStringEncodingShiftJIS, 
+		kCFStringEncodingEUC_JP, 
+		kCFStringEncodingISO_2022_JP, 
+		kCFStringEncodingMacChineseTrad, 
+		kCFStringEncodingMacChineseSimp, 
+		kCFStringEncodingBig5, 
+		kCFStringEncodingGB_18030_2000, 
+		kCFStringEncodingEUC_CN, 
+		kCFStringEncodingEUC_TW, 
+		kCFStringEncodingMacKorean, 
+		kCFStringEncodingEUC_KR, 
+		-1
+		};
+		if (encodings == nil) {
+			NSMutableArray *encs = [[[NSUserDefaults standardUserDefaults] arrayForKey:@"Encodings"] mutableCopy];
+			if (encs == nil) {
+				NSStringEncoding defaultEncoding = [NSString defaultCStringEncoding];
+				NSStringEncoding encoding;
+				BOOL hasDefault = NO;
+				NSInteger cnt = 0;
+				encs = [[NSMutableArray alloc] init];
+				while (plainTextFileStringEncodingsSupported[cnt] != -1) {
+					if ((encoding = CFStringConvertEncodingToNSStringEncoding(plainTextFileStringEncodingsSupported[cnt++])) != kCFStringEncodingInvalidId) {
+						[encs addObject:[NSNumber numberWithUnsignedInteger:encoding]];
+						if (encoding == defaultEncoding) hasDefault = YES;
+					}
+				}
+				if (!hasDefault) [encs addObject:[NSNumber numberWithUnsignedInteger:defaultEncoding]];
+			}
+			encodings = encs;
+		}
+		return encodings;
+}
+
+/**
+ * This method initializes the provided popup with list of encodings; 
+ * it also sets up the selected encoding as indicated and if includeDefaultItem is YES, 
+ * includes an initial item for selecting "Automatic" choice.  
+ * These non-encoding items all have NoStringEncoding as their tags. 
+ * Otherwise the tags are set to the NSStringEncoding value for the encoding.
+ */
+- (void)setupPopUp:(NSPopUpButton *)popup selectedEncoding:(NSUInteger)selectedEncoding withDefaultEntry:(BOOL)includeDefaultItem
+{
+	NSArray *encs = [self enabledEncodings];
+	NSUInteger cnt, numEncodings, itemToSelect = 0;
+
+	// Put the encodings in the popup
+	[popup removeAllItems];
+
+	// Put the initial "Automatic" item, if desired
+	if (includeDefaultItem) {
+		[popup addItemWithTitle:NSLocalizedString(@"Automatic", @"Encoding popup entry indicating automatic choice of encoding")];
+		[[popup itemAtIndex:0] setTag:NoStringEncoding];
+	}
+
+	// Make sure the initial selected encoding appears in the list
+	if (!includeDefaultItem && (selectedEncoding != NoStringEncoding) && ![encs containsObject:[NSNumber numberWithUnsignedInteger:selectedEncoding]]) encs = [encs arrayByAddingObject:[NSNumber numberWithUnsignedInteger:selectedEncoding]];
+
+	numEncodings = [encs count];
+
+	// Fill with encodings
+	for (cnt = 0; cnt < numEncodings; cnt++) {
+		NSStringEncoding enc = [[encs objectAtIndex:cnt] unsignedIntegerValue];
+		[popup addItemWithTitle:[NSString localizedNameOfStringEncoding:enc]];
+		[[popup lastItem] setTag:enc];
+		[[popup lastItem] setEnabled:YES];
+		if (enc == selectedEncoding) itemToSelect = [popup numberOfItems] - 1;
+	}
+
+	// Add an optional separator and "customize" item at end
+	// if ([popup numberOfItems] > 0) {
+	// 	[[popup menu] addItem:[NSMenuItem separatorItem]];
+	// 	[[popup lastItem] setTag:NoStringEncoding];
+	// }
+	// [popup addItemWithTitle:NSLocalizedString(@"Customize Encodings List\\U2026", @"Encoding popup entry for bringing up the Customize Encodings List panel (this also occurs as the title of the panel itself, they should have the same localization)")];
+	// [[popup lastItem] setAction:@selector(showPanel:)];
+	// [[popup lastItem] setTarget:self];
+	// [[popup lastItem] setTag:NoStringEncoding];
+
+	[popup selectItemAtIndex:itemToSelect];
+}
+
+
+/**
  * Opens connection file(s)
  */
 - (IBAction)openConnectionSheet:(id)sender
@@ -1523,13 +1628,20 @@
 
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
+	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:YES];
 	[panel setResolvesAliases:YES];
+	[panel setAccessoryView:encodingAccessoryView];
+
+	// Set up encoding list
+	// TODO save last used enc in prefs
+	[encodingPopUp setEnabled:NO];
+	[self setupPopUp:encodingPopUp selectedEncoding:4 withDefaultEntry:NO];
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
-						  types:[NSArray arrayWithObjects:@"spf", nil] 
+						  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
 				 modalForWindow:tableWindow 
 				  modalDelegate:self didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
 					contextInfo:NULL];
@@ -1539,9 +1651,28 @@
 {
 	if ( returnCode ) {
 		NSArray *fileName = [panel filenames];
-		NSLog(@"open: '%@'", [fileName description]);
+		NSLog(@"open: '%@' %d", [fileName description], [[encodingPopUp selectedItem] tag]);
 	}
 }
+
+/**
+ * NSOpenPanel delegate to control encoding popup and allowMultipleSelection
+ */
+- (void)panelSelectionDidChange:(id)sender
+{
+
+	if([sender isKindOfClass:[NSOpenPanel class]]) {
+		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+			[encodingPopUp setEnabled:YES];
+			[sender setAllowsMultipleSelection:NO];
+		} else {
+			[encodingPopUp setEnabled:NO];
+			[sender setAllowsMultipleSelection:YES];
+		}
+	}
+	
+}
+
 /**
  * Saves connection(s) to file
  */
