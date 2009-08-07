@@ -71,8 +71,8 @@
  */
 - (IBAction)closeRelationSheet:(id)sender
 {
-	// 0 = success
-	[NSApp stopModalWithCode:0];
+	[NSApp endSheet:addRelationPanel returnCode:0];
+	[addRelationPanel orderOut:self];
 }
 
 /**
@@ -80,6 +80,8 @@
  */
 - (IBAction)confirmAddRelation:(id)sender
 {	
+	[self closeRelationSheet:self];
+	
 	NSString *thisTable  = [tablesListInstance tableName];
 	NSString *thisColumn = [columnPopUpButton titleOfSelectedItem];
 	NSString *thatTable  = [refTablePopUpButton titleOfSelectedItem];
@@ -106,7 +108,16 @@
 	
 	int retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
 		
-	[NSApp stopModalWithCode:retCode];	
+	// 0 indicates success
+	if (retCode) {
+		NSBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
+	} 
+	else {
+		[self _refreshRelationDataForcingCacheRefresh:YES];
+	} 	
 }
 
 /**
@@ -155,22 +166,6 @@
 		modalDelegate:self
 	   didEndSelector:nil 
 		  contextInfo:nil];
-	
-	int code = [NSApp runModalForWindow:addRelationPanel];
-	
-	[NSApp endSheet:addRelationPanel];
-	[addRelationPanel orderOut:nil];
-
-	// 0 indicates success
-	if (code) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
-	} 
-	else {
-		[self _refreshRelationDataForcingCacheRefresh:YES];
-	}
 }
 
 /**
