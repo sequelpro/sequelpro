@@ -436,6 +436,9 @@
  */
 - (IBAction)reloadTableValues:(id)sender
 {
+	// If no table is selected return
+	if (!selectedTable) return;
+
 	NSString *queryString;
 	MCPResult *queryResult;
 	

@@ -403,8 +403,12 @@
 		return;
 	}
 
-	// Save existing scroll position and details
-	[spHistoryControllerInstance updateHistoryEntries];
+	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingHistoryState];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance updateHistoryEntries];
+		[spHistoryControllerInstance setModifyingHistoryState:YES];
+	}
 
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
@@ -423,7 +427,10 @@
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
 
 	// Add a history entry
-	[spHistoryControllerInstance updateHistoryEntries];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance setModifyingHistoryState:NO];
+		[spHistoryControllerInstance updateHistoryEntries];
+	}
 }
 
 /**
@@ -1371,9 +1378,9 @@
 		return [connectionController name];
 	}
 	if ([connectionController type] == SP_CONNECTION_SOCKET) {
-		return [NSString stringWithFormat:@"%@@localhost", [connectionController user]?[connectionController user]:@""];
+		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
-	return [NSString stringWithFormat:@"%@@%@", [connectionController user]?[connectionController user]:@"", [connectionController host]?[connectionController host]:@""];
+	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
 }
 
 /**

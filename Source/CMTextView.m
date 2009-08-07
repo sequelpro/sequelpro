@@ -121,6 +121,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  * the set of unique words, SQL keywords, user-defined funcs/procs, tables etc.
  * NSDic key "display" := the displayed and to be inserted word
  * NSDic key "image" := an image to be shown left from "display" (optional)
+ *
+ * [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
  */
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode
 {
@@ -183,25 +185,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 	}
 
-	// Add predefined keywords
 	if(!isDictMode) {
-		// [possibleCompletions addObjectsFromArray:[self keywords]];
-		NSString *s;
-		enumerate([self keywords], s)
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
-	}
-		
 
-	// Add predefined functions
-	if(!isDictMode) {
-		// [possibleCompletions addObjectsFromArray:[self functions]];
-		NSString *s;
-		enumerate([self functions], s)
+		// Add predefined keywords
+		for (id s in [self keywords])
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
+
+		// Add predefined functions
+		for (id s in [self functions])
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"func-small", @"image", nil]];
 	}
-	
-	// Build array of dictionaries as e.g.:
-	// [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
+
+	// Make suggestions unique
 	for(id suggestion in possibleCompletions)
 		if(![compl containsObject:suggestion])
 			[compl addObject:suggestion];
@@ -912,12 +907,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
 		// Only parse for words if text size is less than 6MB
-		// if([[self string] length]<6000000)
-		// {
-		// 	NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()\"'`-!;=+|?:~@"];
-		// 	NSArray *textViewWords     = [[self string] componentsSeparatedByCharactersInSet:separators];
-		// 	[possibleCompletions addObjectsFromArray:textViewWords];
-		// }
 		if([[self string] length]<6000000)
 		{
 			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
@@ -927,6 +916,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		[possibleCompletions addObjectsFromArray:[self keywords]];
+		[possibleCompletions addObjectsFromArray:[self functions]];
 	}
 	
 	// Check for possible completions
