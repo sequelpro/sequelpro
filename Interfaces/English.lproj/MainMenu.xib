@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="81"/>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1008,9 +1008,9 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
-								<object class="NSMenuItem" id="438779812">
+								<object class="NSMenuItem" id="998300902">
 									<reference key="NSMenu" ref="466354362"/>
-									<string key="NSTitle">Custom Query</string>
+									<string key="NSTitle">Table Relations</string>
 									<string key="NSKeyEquiv">3</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -1026,9 +1026,9 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
-								<object class="NSMenuItem" id="998300902">
+								<object class="NSMenuItem" id="438779812">
 									<reference key="NSMenu" ref="466354362"/>
-									<string key="NSTitle">Table Relations</string>
+									<string key="NSTitle">Custom Query</string>
 									<string key="NSKeyEquiv">5</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -2951,7 +2951,6 @@
 							<reference ref="417888240"/>
 							<reference ref="388367969"/>
 							<reference ref="438779812"/>
-							<reference ref="1058233714"/>
 							<reference ref="510805568"/>
 							<reference ref="551338335"/>
 							<reference ref="924530602"/>
@@ -2959,6 +2958,7 @@
 							<reference ref="173454563"/>
 							<reference ref="358795349"/>
 							<reference ref="998300902"/>
+							<reference ref="1058233714"/>
 						</object>
 						<reference key="parent" ref="401969940"/>
 					</object>
@@ -4180,7 +4180,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{710, 675}, {511, 20}}</string>
+					<string>{{455, 703}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4233,7 +4233,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{578, 390}, {235, 203}}</string>
+					<string>{{647, 500}, {235, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4357,7 +4357,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{816, 442}, {209, 233}}</string>
+					<string>{{604, 435}, {209, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -4985,6 +4985,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>titleAccessoryView</string>
 							<string>titleImageView</string>
 							<string>titleStringView</string>
+							<string>variablesCountTextField</string>
 							<string>variablesSearchField</string>
 							<string>variablesSheet</string>
 							<string>variablesTableView</string>
@@ -5030,6 +5031,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>NSTextField</string>
 							<string>NSSearchField</string>
 							<string>id</string>
 							<string>id</string>
