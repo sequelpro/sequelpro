@@ -2401,7 +2401,7 @@
  */
 - (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
 {	
-	KeyChain *keychain = [[KeyChain alloc] init];
+	SPKeychain *keychain = [[SPKeychain alloc] init];
 	
 	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
 	

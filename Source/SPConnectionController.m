@@ -80,7 +80,7 @@
 		for (int i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:NO];
 		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
-		keychain = [[KeyChain alloc] init];
+		keychain = [[SPKeychain alloc] init];
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
 		favorites = nil;
 		[self updateFavorites];

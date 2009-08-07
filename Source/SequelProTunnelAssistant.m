@@ -23,7 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import "KeyChain.h"
+#import "SPKeychain.h"
 #import "SPSSHTunnel.h"
 #import "RegexKitLite.h"
 
@@ -69,7 +69,7 @@ int main(int argc, const char *argv[])
 		// If the password method is set to use the keychain, use the supplied keychain name to
 		// request the password
 		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] intValue] == SPSSH_PASSWORD_USES_KEYCHAIN) {
-			KeyChain *keychain;
+			SPKeychain *keychain;
 			NSString *keychainName = [environment objectForKey:@"SP_KEYCHAIN_ITEM_NAME"];
 			NSString *keychainAccount = [environment objectForKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
 
@@ -79,7 +79,7 @@ int main(int argc, const char *argv[])
 				return 1;
 			}
 
-			keychain = [[KeyChain alloc] init];
+			keychain = [[SPKeychain alloc] init];
 			if (![keychain passwordExistsForName:keychainName account:keychainAccount]) {
 				NSLog(@"SSH Tunnel: specified keychain password not found");
 				[keychain release];
@@ -131,7 +131,7 @@ int main(int argc, const char *argv[])
 		if (keyName) {
 		
 			// Check whether the passphrase is in the keychain, using standard OS X sshagent name and account
-			KeyChain *keychain = [[KeyChain alloc] init];
+			SPKeychain *keychain = [[SPKeychain alloc] init];
 			if ([keychain passwordExistsForName:@"SSH" account:keyName]) {
 				printf("%s\n", [[keychain getPasswordForName:@"SSH" account:keyName] UTF8String]);
 				[keychain release];

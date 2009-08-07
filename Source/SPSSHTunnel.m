@@ -25,7 +25,7 @@
 
 #import "SPSSHTunnel.h"
 #import "RegexKitLite.h"
-#import "KeyChain.h"
+#import "SPKeychain.h"
 #import <netinet/in.h>
 
 @implementation SPSSHTunnel
@@ -510,7 +510,7 @@
 	NSSize queryTextSize;
 	NSRect windowFrameRect;
 	NSString *thePassword;
-	KeyChain *keychain;
+	SPKeychain *keychain;
 
 	// Work out whether a passphrase is being requested, extracting the key name
 	NSString *keyName = [theQuery stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
@@ -543,7 +543,7 @@
 			
 			// Add to keychain if appropriate
 			if (keyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
-				keychain = [[KeyChain alloc] init];
+				keychain = [[SPKeychain alloc] init];
 				[keychain addPassword:thePassword forName:@"SSH" account:keyName withLabel:[NSString stringWithFormat:@"SSH: %@", keyName]];
 				[keychain release];
 			}

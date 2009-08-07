@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  KeyChain.h
+//  SPKeychain.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed Dec 25 2002.
@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 
-@interface KeyChain : NSObject
+@interface SPKeychain : NSObject
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account;
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account withLabel:(NSString *)label;

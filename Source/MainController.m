@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "KeyChain.h"
+#import "SPKeychain.h"
 #import "MainController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"

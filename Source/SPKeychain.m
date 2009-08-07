@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  KeyChain.m
+//  SPKeychain.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed Dec 25 2002.
@@ -23,12 +23,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "KeyChain.h"
+#import "SPKeychain.h"
 
 #import <CoreFoundation/CoreFoundation.h>
 #import <Security/Security.h>
 
-@implementation KeyChain
+@implementation SPKeychain
 
 /**
  * Add the supplied password to the user's Keychain using the supplied name and account.
