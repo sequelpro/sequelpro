@@ -80,7 +80,7 @@
 		17E641650EF01F15001BC333 /* TablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* TablesList.m */; };
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
 		17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */; };
-		17E641750EF01F80001BC333 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
+		17E641750EF01F80001BC333 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417D0EF01FA8001BC333 /* CMCopyTable.m */; };
 		17E641830EF01FA8001BC333 /* CMImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417F0EF01FA8001BC333 /* CMImageView.m */; };
 		17E641840EF01FA8001BC333 /* CMTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641810EF01FA8001BC333 /* CMTextView.m */; };
@@ -147,7 +147,7 @@
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
 		58CDB3400FCE13EF00F8ACA3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */; };
-		58CDB3420FCE142500F8ACA3 /* KeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* KeyChain.m */; };
+		58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2E227101222670063EF1D /* SPTextAndLinkCell.m */; };
 		58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22B101222870063EF1D /* link-arrow-clicked.png */; };
 		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
@@ -407,8 +407,8 @@
 		17E641690EF01F37001BC333 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
 		17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
 		17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
-		17E641730EF01F80001BC333 /* KeyChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyChain.h; sourceTree = "<group>"; };
-		17E641740EF01F80001BC333 /* KeyChain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeyChain.m; sourceTree = "<group>"; };
+		17E641730EF01F80001BC333 /* SPKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPKeychain.h; sourceTree = "<group>"; };
+		17E641740EF01F80001BC333 /* SPKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPKeychain.m; sourceTree = "<group>"; };
 		17E6417C0EF01FA8001BC333 /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
 		17E6417D0EF01FA8001BC333 /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
 		17E6417E0EF01FA8001BC333 /* CMImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMImageView.h; sourceTree = "<group>"; };
@@ -955,8 +955,8 @@
 		17E6416F0EF01F4C001BC333 /* Keychain */ = {
 			isa = PBXGroup;
 			children = (
-				17E641730EF01F80001BC333 /* KeyChain.h */,
-				17E641740EF01F80001BC333 /* KeyChain.m */,
+				17E641730EF01F80001BC333 /* SPKeychain.h */,
+				17E641740EF01F80001BC333 /* SPKeychain.m */,
 			);
 			name = Keychain;
 			sourceTree = "<group>";
@@ -1532,7 +1532,7 @@
 			files = (
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
 				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
-				58CDB3420FCE142500F8ACA3 /* KeyChain.m in Sources */,
+				58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1552,7 +1552,7 @@
 				17E641650EF01F15001BC333 /* TablesList.m in Sources */,
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
 				17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */,
-				17E641750EF01F80001BC333 /* KeyChain.m in Sources */,
+				17E641750EF01F80001BC333 /* SPKeychain.m in Sources */,
 				17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */,
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
 				17E641840EF01FA8001BC333 /* CMTextView.m in Sources */,
