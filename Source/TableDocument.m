@@ -549,6 +549,12 @@
 									  otherButton:nil 
 						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
 	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
