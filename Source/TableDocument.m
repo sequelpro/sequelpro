@@ -257,7 +257,7 @@
 	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
 	
 	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
-	[printAccessory initWithNibName:@"printAccessory" bundle:nil];
+	[printAccessory initWithNibName:@"PrintAccessory" bundle:nil];
 	[printAccessory setPrintView:printWebView];
 	[printPanel addAccessoryController:printAccessory];
 	

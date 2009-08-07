@@ -31,7 +31,7 @@
 {
 	defaultsController = [NSUserDefaultsController sharedUserDefaultsController];
 	printWebView = nil;
-    return [super initWithNibName:@"printAccessory" bundle:nibBundleOrNil];
+    return [super initWithNibName:@"PrintAccessory" bundle:nibBundleOrNil];
 }
 
 - (void)awakeFromNib
