@@ -101,19 +101,19 @@
 	BOOL progressCancelled;
 }
 
-//IBAction methods
+// IBAction methods
 - (IBAction)reloadTables:(id)sender;
 - (IBAction)selectTables:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
 
-//export methods
+// Export methods
 - (void)export;
 - (void)exportFile:(int)tag;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
 
-//import methods
+// Import methods
 - (void)importFile;
 - (IBAction)changeFormat:(id)sender;
 - (IBAction)changeTable:(id)sender;
@@ -146,14 +146,10 @@
 - (IBAction)switchTab:(id)sender;
 - (IBAction)switchInput:(id)sender;
 
-//additional methods
+// Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 
 // Import/export delegate notifications
 - (void)panelSelectionDidChange:(id)sender;
-
-//last but not least
-- (id)init;
-- (void)dealloc;
 
 @end

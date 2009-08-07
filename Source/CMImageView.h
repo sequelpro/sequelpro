@@ -32,10 +32,9 @@
 
 @end
 
-@interface CMImageView : NSImageView {
-
+@interface CMImageView : NSImageView 
+{
 	IBOutlet id delegate;
-
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;

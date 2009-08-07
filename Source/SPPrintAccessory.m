@@ -64,7 +64,7 @@
  * Set the print view that the print accessory controls; set initial 
  * preferences based on user defaults.
  */
-- (void) setPrintView:(WebView *)theWebView
+- (void)setPrintView:(WebView *)theWebView
 {
 	printWebView = theWebView;
 	[[printWebView preferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue]];

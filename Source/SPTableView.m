@@ -32,7 +32,6 @@
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
-
 	// If more than one row is selected only returns the default contextual menu
 	if([self numberOfSelectedRows] > 1)
 		return [self menu];
@@ -43,6 +42,7 @@
 		[self selectRow:row byExtendingSelection:NO];
 		[[self window] makeFirstResponder:self];
 	}
+	
 	return [self menu];
 }
 

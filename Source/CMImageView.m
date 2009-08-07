@@ -106,7 +106,6 @@
 
 - (void)paste:(id)sender
 {
-	
 	// [super paste:sender];
 	id delegateForUse = nil;
 
@@ -122,7 +121,6 @@
 	}
 	if (delegateForUse)
 		[delegateForUse processPasteImageData];
-	
 }
 
 @end

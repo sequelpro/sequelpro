@@ -36,13 +36,13 @@ enum sp_table_types
 	SP_TABLETYPE_FUNC = 3
 };
 
-@class CMMCResult, MCPConnection;
-
 @interface NSObject (NSSplitView)
+
 - (NSView *)collapsibleSubview;
 - (IBAction)toggleCollapse:(id)sender;
 - (BOOL)collapsibleSubviewIsCollapsed;
 - (void)setCollapsibleSubviewCollapsed:(BOOL)flag;
+
 @end
 
 @interface TablesList : NSObject 

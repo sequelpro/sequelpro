@@ -36,14 +36,15 @@
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
 
-
 @implementation TableDump
 
-//IBAction methods
-- (IBAction)reloadTables:(id)sender
-/*
- get the tables in db
+#pragma mark -
+#pragma mark IBAction methods
+
+/**
+ * Get the tables in db
  */
+- (IBAction)reloadTables:(id)sender
 {
 	MCPResult *queryResult;
 	int i;
@@ -75,10 +76,10 @@
 	[exportMultipleXMLTableView reloadData];
 }
 
-- (IBAction)selectTables:(id)sender
-/*
- selects or deselects all tables
+/**
+ * Selects or deselects all tables
  */
+- (IBAction)selectTables:(id)sender
 {
 	NSEnumerator *enumerator;
 	id theObject;
@@ -99,7 +100,7 @@
 	[exportMultipleXMLTableView reloadData];
 }
 
-/*
+/**
  * Common method for ending modal sessions
  */
 - (IBAction)closeSheet:(id)sender
@@ -108,7 +109,7 @@
 }
 
 #pragma mark -
-#pragma mark export methods
+#pragma mark Export methods
 
 - (void)export
 {
@@ -360,7 +361,7 @@
 }
 
 #pragma mark -
-#pragma mark import methods
+#pragma mark Import methods
 
 - (void)importFile
 /*
@@ -848,8 +849,7 @@
 }
 
 #pragma mark -
-#pragma mark format methods
-
+#pragma mark Format methods
 
 /*
  Dump the selected tables to a file handle in SQL format.
@@ -2325,7 +2325,7 @@
 }
 
 #pragma mark -
-#pragma mark tableView datasource methods
+#pragma mark Table view datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
@@ -2442,7 +2442,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 
 #pragma mark -
-#pragma mark other
+#pragma mark Other
 
 - (void)awakeFromNib
 {
@@ -2493,6 +2493,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
     return items;
 }
 
+#pragma mark -
 #pragma mark New Export methods
 
 - (IBAction)switchTab:(id)sender
