@@ -77,6 +77,7 @@ enum {
 	IBOutlet NSTabView *tableTabView;
 	IBOutlet NSButton *saveVariablesButton;
 	IBOutlet NSSearchField *variablesSearchField;
+	IBOutlet NSTextField *variablesCountTextField;
 	
 	IBOutlet NSTableView *tableInfoTable;
 	IBOutlet NSButton *tableInfoCollapseButton;
@@ -121,7 +122,6 @@ enum {
 	NSMutableArray *allDatabases;
 	
 	NSString *queryEditorInitString;
-
 }
 
 - (NSString *)getHTMLforPrint;

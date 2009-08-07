@@ -1358,26 +1358,24 @@
 - (void)showVariables:(id)sender
 {
 	int i;
-	NSMutableArray *tempResult = [NSMutableArray array];
 	
-	if (variablesFiltered) {
-		[variablesFiltered release];
-		variablesFiltered = nil;
-	}
+	[variablesCountTextField setStringValue:@""];
+	
+	if (variables) [variables release], variables = nil;
 	
 	// Get variables
 	MCPResult *theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
 	
 	if ([theResult numOfRows]) [theResult dataSeek:0];
 	
+	variables = [[NSMutableArray alloc] init];
+	
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[tempResult addObject:[theResult fetchRowAsDictionary]];
+		[variables addObject:[theResult fetchRowAsDictionary]];
 	}
-	
-	variablesFiltered = [[NSArray arrayWithArray:tempResult] retain];
-	
+		
 	// Weak reference
-	variables = variablesFiltered;
+	variablesFiltered = variables;
 	
 	[variablesTableView reloadData];
 	
@@ -1395,6 +1393,13 @@
 	[NSApp endSheet:variablesSheet];
 	
 	[variablesSheet orderOut:nil];
+	
+	// If the filtered array is allocated and its not a reference to the variables array get rid of it
+	if ((variablesFiltered) && (variablesFiltered != variables)) {
+		[variablesFiltered release], variablesFiltered = nil;
+	}
+	
+	if (variables) [variables release], variables = nil;
 }
 
 - (void)closeConnection
@@ -1984,10 +1989,10 @@
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if ([variables count] > 0) {
+		if ([variablesFiltered count] > 0) {
 			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
 			
-			for (NSDictionary *variable in variables) 
+			for (NSDictionary *variable in variablesFiltered) 
 			{
 				[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
 			}
@@ -2498,12 +2503,12 @@
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [variables count];
+	return [variablesFiltered count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {	
-	id theValue = [[variables objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	id theValue = [[variablesFiltered objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 	
 	if ([theValue isKindOfClass:[NSData class]]) {
 		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
@@ -2524,7 +2529,6 @@
 	if (connectionController) [connectionController release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (variables) [variables release];
-	if (variablesFiltered) [variablesFiltered release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
@@ -2544,39 +2548,45 @@
 {
 	[saveVariablesButton setEnabled:NO];
 	
-	filterString = [filterString lowercaseString];
+	filterString = [[filterString lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
-	filterString = [filterString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	// If the filtered array is allocated and its not a reference to the variables array
+	// relase it to prevent memory leaks upon the next allocation.
+	if ((variablesFiltered) && (variablesFiltered != variables)) {
+		[variablesFiltered release], variablesFiltered = nil;
+	}
 	
-	variables = [[NSMutableArray alloc] init];
+	variablesFiltered = [[NSMutableArray alloc] init];
 	
 	if ([filterString length] == 0) {
-		[variables release];
-		variables = variablesFiltered;
+		[variablesFiltered release];
+		variablesFiltered = variables;
 		
 		[saveVariablesButton setEnabled:YES];
 		[saveVariablesButton setTitle:@"Save As..."];
+		[variablesCountTextField setStringValue:@""];
 		
 		[variablesTableView reloadData];
 		
 		return;
 	}
 	
-	for (NSDictionary *variable in variablesFiltered) 
+	for (NSDictionary *variable in variables) 
 	{		
 		if (([[variable objectForKey:@"Variable_name"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			([[variable objectForKey:@"Value"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))
 		{
-			[variables addObject:variable];
+			[variablesFiltered addObject:variable];
 		}
 	}
 	
 	[variablesTableView reloadData];
+	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered server variables count"), [variablesFiltered count], [variables count]]];
 	
-	if ([variables count] > 0) {
-		[saveVariablesButton setEnabled:YES];
-		[saveVariablesButton setTitle:@"Save View As..."];
-	}
+	if ([variablesFiltered count] == 0) return;
+	
+	[saveVariablesButton setEnabled:YES];
+	[saveVariablesButton setTitle:@"Save View As..."];
 }
 
 @end
