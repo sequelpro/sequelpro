@@ -1445,9 +1445,9 @@
 		return [connectionController name];
 	}
 	if ([connectionController type] == SP_CONNECTION_SOCKET) {
-		return [NSString stringWithFormat:@"%@@localhost", [connectionController user]?[connectionController user]:@""];
+		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
-	return [NSString stringWithFormat:@"%@@%@", [connectionController user]?[connectionController user]:@"", [connectionController host]?[connectionController host]:@""];
+	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
 }
 
 /**
