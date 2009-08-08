@@ -1724,6 +1724,7 @@
 
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
+								fieldName:[columnDefinition objectForKey:@"name"]
 								usingEncoding:[mySQLConnection encoding] 
 								isObjectBlob:isBlob 
 								isEditable:isFieldEditable 

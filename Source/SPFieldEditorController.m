@@ -51,7 +51,7 @@
 	[super dealloc];
 }
 
-- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding 
+- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
 	prefs = [NSUserDefaults standardUserDefaults];
@@ -63,6 +63,7 @@
 	}
 	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 
+	[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), fieldName]];
 
 	// hide all views in editSheet
 	[hexTextView setHidden:YES];

@@ -2141,7 +2141,10 @@
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 					
 		id editData = [[fieldEditor editWithObject:[[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
-								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob isEditable:YES withWindow:tableWindow] retain];
+								 	 fieldName:[[aTableColumn headerCell] stringValue]
+								 usingEncoding:[mySQLConnection encoding] 
+								  isObjectBlob:isBlob 
+									isEditable:YES withWindow:tableWindow] retain];
 
 		if (editData) {
 			if (!isEditingRow) {

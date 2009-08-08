@@ -38,6 +38,7 @@
 	IBOutlet id editSheetCancelButton;
 	IBOutlet id editSheetOkButton;
 	IBOutlet id editSheetOpenButton;
+	IBOutlet id editSheetFieldName;
 	
 	id sheetEditData;
 	BOOL editSheetWillBeInitialized;
@@ -60,7 +61,9 @@
 - (IBAction)quickLookFormatButton:(id)sender;
 - (IBAction)dropImage:(id)sender;
 
-- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;
+
+- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
+	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;
 
 - (void)processPasteImageData;
 - (void)processUpdatedImageData:(NSData *)data;

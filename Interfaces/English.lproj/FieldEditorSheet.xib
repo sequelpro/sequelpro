@@ -2,13 +2,12 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9J61</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.46</string>
+		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="23"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -37,7 +36,7 @@
 			<object class="NSWindowTemplate" id="172882781">
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{364, 195}, {667, 416}}</string>
+				<string key="NSWindowRect">{{364, 183}, {667, 428}}</string>
 				<int key="NSWTFlags">544735232</int>
 				<string key="NSWindowTitle">Field Editor</string>
 				<string key="NSWindowClass">NSPanel</string>
@@ -53,8 +52,9 @@
 						<object class="NSBox" id="92171076">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">34</int>
-							<string key="NSFrame">{{0, 36}, {667, 5}}</string>
+							<string key="NSFrame">{{0, 48}, {667, 5}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
 								<int key="NSCellFlags">67239424</int>
@@ -87,8 +87,9 @@
 						<object class="NSButton" id="315097820">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{581, 7}, {66, 25}}</string>
+							<string key="NSFrame">{{581, 10}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="630700737">
@@ -118,8 +119,9 @@
 						<object class="NSButton" id="760872156">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{507, 7}, {66, 25}}</string>
+							<string key="NSFrame">{{507, 10}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="617021739">
 								<int key="NSCellFlags">67239424</int>
@@ -143,8 +145,9 @@
 						<object class="NSButton" id="212849560">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">256</int>
-							<string key="NSFrame">{{94, 7}, {66, 25}}</string>
+							<string key="NSFrame">{{94, 10}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="1054617135">
 								<int key="NSCellFlags">67239424</int>
@@ -164,8 +167,9 @@
 						<object class="NSButton" id="16151679">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">256</int>
-							<string key="NSFrame">{{20, 7}, {66, 25}}</string>
+							<string key="NSFrame">{{20, 10}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="369856023">
 								<int key="NSCellFlags">67239424</int>
@@ -185,8 +189,9 @@
 						<object class="NSPopUpButton" id="766971294">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">292</int>
-							<string key="NSFrame">{{328, 7}, {48, 25}}</string>
+							<string key="NSFrame">{{328, 10}, {48, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="583599991">
 								<int key="NSCellFlags">71433792</int>
@@ -323,7 +328,6 @@
 										</object>
 									</object>
 								</object>
-								<int key="NSSelectedIndex">7</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -334,8 +338,9 @@
 						<object class="NSSegmentedControl" id="13679998">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">292</int>
-							<string key="NSFrame">{{183, 10}, {137, 19}}</string>
+							<string key="NSFrame">{{183, 13}, {137, 19}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSegmentedCell" key="NSCell" id="772630454">
 								<int key="NSCellFlags">-2080244224</int>
@@ -401,6 +406,7 @@
 											</object>
 											<string key="NSFrameSize">{667, 14}</string>
 											<reference key="NSSuperview" ref="1068411389"/>
+											<reference key="NSWindow"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="222392072">
 												<object class="NSLayoutManager" key="NSLayoutManager">
 													<object class="NSTextStorage" key="NSTextStorage">
@@ -440,7 +446,7 @@
 															<int key="NSColorSpace">6</int>
 															<string key="NSCatalogName">System</string>
 															<string key="NSColorName">selectedTextBackgroundColor</string>
-															<object class="NSColor" key="NSColor">
+															<object class="NSColor" key="NSColor" id="394290367">
 																<int key="NSColorSpace">3</int>
 																<bytes key="NSWhite">MC42NjY2NjY2OQA</bytes>
 															</object>
@@ -465,6 +471,7 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="983787914"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="459839028"/>
 									<reference key="NSDocView" ref="459839028"/>
 									<reference key="NSBGColor" ref="940290613"/>
@@ -479,6 +486,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{220, 1}, {11, 141}}</string>
 									<reference key="NSSuperview" ref="983787914"/>
+									<reference key="NSWindow"/>
 									<int key="NSsFlags">256</int>
 									<reference key="NSTarget" ref="983787914"/>
 									<string key="NSAction">_doScroller:</string>
@@ -489,6 +497,7 @@
 									<int key="NSvFlags">256</int>
 									<string key="NSFrame">{{-100, -100}, {87, 18}}</string>
 									<reference key="NSSuperview" ref="983787914"/>
+									<reference key="NSWindow"/>
 									<int key="NSsFlags">257</int>
 									<reference key="NSTarget" ref="983787914"/>
 									<string key="NSAction">_doScroller:</string>
@@ -496,8 +505,9 @@
 									<double key="NSPercent">9.456522e-01</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
+							<string key="NSFrame">{{0, 51}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="1068411389"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="977735067"/>
@@ -519,8 +529,9 @@
 									<string>NeXT TIFF v4.0 pasteboard type</string>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
+							<string key="NSFrame">{{0, 51}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSImageCell" key="NSCell" id="521189288">
 								<int key="NSCellFlags">270663168</int>
@@ -570,6 +581,7 @@
 											</object>
 											<string key="NSFrameSize">{667, 14}</string>
 											<reference key="NSSuperview" ref="967441740"/>
+											<reference key="NSWindow"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="872196016">
 												<object class="NSLayoutManager" key="NSLayoutManager">
 													<object class="NSTextStorage" key="NSTextStorage">
@@ -638,6 +650,7 @@
 									</object>
 									<string key="NSFrameSize">{667, 370}</string>
 									<reference key="NSSuperview" ref="604699677"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="702566211"/>
 									<reference key="NSDocView" ref="702566211"/>
 									<reference key="NSBGColor" ref="940290613"/>
@@ -649,6 +662,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{639, 2}, {11, 359}}</string>
 									<reference key="NSSuperview" ref="604699677"/>
+									<reference key="NSWindow"/>
 									<int key="NSsFlags">256</int>
 									<reference key="NSTarget" ref="604699677"/>
 									<string key="NSAction">_doScroller:</string>
@@ -659,6 +673,7 @@
 									<int key="NSvFlags">256</int>
 									<string key="NSFrame">{{-100, -100}, {87, 18}}</string>
 									<reference key="NSSuperview" ref="604699677"/>
+									<reference key="NSWindow"/>
 									<int key="NSsFlags">257</int>
 									<reference key="NSTarget" ref="604699677"/>
 									<string key="NSAction">_doScroller:</string>
@@ -666,8 +681,9 @@
 									<double key="NSPercent">9.456522e-01</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 39}, {667, 370}}</string>
+							<string key="NSFrame">{{0, 51}, {667, 370}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="967441740"/>
 							<int key="NSsFlags">528</int>
 							<reference key="NSVScroller" ref="699979333"/>
@@ -678,8 +694,9 @@
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">1325</int>
 							<object class="NSPSMatrix" key="NSDrawMatrix"/>
-							<string key="NSFrame">{{325, 220}, {32, 32}}</string>
+							<string key="NSFrame">{{325, 232}, {32, 32}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<int key="NSpiFlags">28682</int>
 							<double key="NSMinValue">1.600000e+01</double>
 							<double key="NSMaxValue">1.000000e+02</double>
@@ -687,8 +704,9 @@
 						<object class="NSBox" id="398943605">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">10</int>
-							<string key="NSFrame">{{0, 407}, {667, 5}}</string>
+							<string key="NSFrame">{{0, 419}, {667, 5}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
 								<int key="NSCellFlags">67239424</int>
@@ -706,9 +724,41 @@
 							<int key="NSTitlePosition">0</int>
 							<bool key="NSTransparent">NO</bool>
 						</object>
+						<object class="NSTextField" id="730447074">
+							<reference key="NSNextResponder" ref="559857537"/>
+							<int key="NSvFlags">257</int>
+							<string key="NSFrame">{{284, 36}, {362, 11}}</string>
+							<reference key="NSSuperview" ref="559857537"/>
+							<reference key="NSWindow"/>
+							<bool key="NSEnabled">YES</bool>
+							<object class="NSTextFieldCell" key="NSCell" id="581551870">
+								<int key="NSCellFlags">67239488</int>
+								<int key="NSCellFlags2">1145309184</int>
+								<string key="NSContents">Label</string>
+								<object class="NSFont" key="NSSupport">
+									<string key="NSName">LucidaGrande</string>
+									<double key="NSSize">9.000000e+00</double>
+									<int key="NSfFlags">3614</int>
+								</object>
+								<reference key="NSControlView" ref="730447074"/>
+								<object class="NSColor" key="NSBackgroundColor">
+									<int key="NSColorSpace">6</int>
+									<string key="NSCatalogName">System</string>
+									<string key="NSColorName">controlColor</string>
+									<reference key="NSColor" ref="394290367"/>
+								</object>
+								<object class="NSColor" key="NSTextColor">
+									<int key="NSColorSpace">6</int>
+									<string key="NSCatalogName">System</string>
+									<string key="NSColorName">controlTextColor</string>
+									<reference key="NSColor" ref="1021276550"/>
+								</object>
+							</object>
+						</object>
 					</object>
-					<string key="NSFrameSize">{667, 416}</string>
+					<string key="NSFrameSize">{667, 428}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -966,6 +1016,14 @@
 					</object>
 					<int key="connectionID">70</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">editSheetFieldName</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="730447074"/>
+					</object>
+					<int key="connectionID">75</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1023,6 +1081,7 @@
 							<reference ref="16151679"/>
 							<reference ref="315097820"/>
 							<reference ref="92171076"/>
+							<reference ref="730447074"/>
 						</object>
 						<reference key="parent" ref="172882781"/>
 					</object>
@@ -1263,6 +1322,20 @@
 						<reference key="object" ref="393370468"/>
 						<reference key="parent" ref="604699677"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">73</int>
+						<reference key="object" ref="730447074"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="581551870"/>
+						</object>
+						<reference key="parent" ref="559857537"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">74</int>
+						<reference key="object" ref="581551870"/>
+						<reference key="parent" ref="730447074"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1331,6 +1404,8 @@
 					<string>7.CustomClassName</string>
 					<string>7.IBPluginDependency</string>
 					<string>7.ImportedFromIB2</string>
+					<string>73.IBPluginDependency</string>
+					<string>74.IBPluginDependency</string>
 					<string>8.IBAttributePlaceholdersKey</string>
 					<string>8.IBPluginDependency</string>
 					<string>9.IBPluginDependency</string>
@@ -1342,8 +1417,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{795, 333}, {667, 416}}</string>
-					<string>{{795, 333}, {667, 416}}</string>
+					<string>{{263, 324}, {667, 428}}</string>
+					<string>{{263, 324}, {667, 428}}</string>
 					<reference ref="9"/>
 					<integer value="0" id="8"/>
 					<boolean value="NO"/>
@@ -1366,7 +1441,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1112, 192}, {126, 173}}</string>
+					<string>{{580, 195}, {126, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1401,6 +1476,8 @@
 					<string>CMImageView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
@@ -1435,7 +1512,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">70</int>
+			<int key="maxID">75</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1621,6 +1698,75 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPFieldEditorController.h</string>
+					</object>
+				</object>
+			</object>
+			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPFieldEditorController</string>
+					<string key="superclassName">NSWindowController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeEditSheet:</string>
+							<string>dropImage:</string>
+							<string>openEditSheet:</string>
+							<string>quickLookFormatButton:</string>
+							<string>saveEditSheet:</string>
+							<string>segmentControllerChanged:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>editImage</string>
+							<string>editSheet</string>
+							<string>editSheetCancelButton</string>
+							<string>editSheetFieldName</string>
+							<string>editSheetOkButton</string>
+							<string>editSheetOpenButton</string>
+							<string>editSheetProgressBar</string>
+							<string>editSheetQuickLookButton</string>
+							<string>editSheetSegmentControl</string>
+							<string>editTextScrollView</string>
+							<string>editTextView</string>
+							<string>hexTextScrollView</string>
+							<string>hexTextView</string>
+							<string>sheetEditData</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/SPFieldEditorController.h</string>
 					</object>
 				</object>
 			</object>
