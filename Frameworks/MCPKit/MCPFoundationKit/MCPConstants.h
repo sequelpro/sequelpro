@@ -1,5 +1,5 @@
 //
-//  $Id: MCPConstants.h 1036 2009-07-17 00:29:44Z stuart02 $
+//  $Id$
 //
 //  MCPConstants.h
 //  MCPKit

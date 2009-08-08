@@ -1,5 +1,5 @@
 //
-//  $Id: MCPConnection.h 1069 2009-07-19 23:12:50Z rowanb $
+//  $Id$
 //
 //  MCPConnection.h
 //  MCPKit

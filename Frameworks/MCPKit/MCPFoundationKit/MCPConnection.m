@@ -1,5 +1,5 @@
 //
-//  $Id: MCPConnection.m 1070 2009-07-19 23:21:19Z rowanb $
+//  $Id$
 //
 //  MCPConnection.m
 //  MCPKit

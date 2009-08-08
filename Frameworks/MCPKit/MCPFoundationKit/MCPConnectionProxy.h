@@ -1,5 +1,5 @@
 //
-//  $Id: MCPConnectionProxy.h 1052 2009-07-17 17:49:07Z stuart02 $
+//  $Id$
 //
 //  MCPConnectionProxy.h
 //  MCPKit

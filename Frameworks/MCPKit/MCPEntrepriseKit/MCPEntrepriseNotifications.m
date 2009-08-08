@@ -1,5 +1,5 @@
 //
-//  $Id: MCPEntrepriseNotifications.m 482 2009-04-05 01:38:48Z stuart02 $
+//  $Id$
 //
 //  MCPEnterpriseNotifications.m
 //  MCPKit

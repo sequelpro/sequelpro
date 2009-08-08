@@ -1,5 +1,5 @@
 //
-//  $Id: MCPModel+MCPEntreprise.m 482 2009-04-05 01:38:48Z stuart02 $
+//  $Id$
 //
 //  MCPModel+MCPEntreprise.m
 //  MCPKit
