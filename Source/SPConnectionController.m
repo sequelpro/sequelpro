@@ -219,7 +219,7 @@
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
 		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-	} else {
+	} else if (sshPassword) {
 		[sshTunnel setPassword:[self sshPassword]];
 	}
 
@@ -281,7 +281,7 @@
 	}
 
 	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
-	if (!connectionKeychainItemName) {
+	if (!connectionKeychainItemName && [self password]) {
 		[mySQLConnection setPassword:[self password]];
 	}
 	
