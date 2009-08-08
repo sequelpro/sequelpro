@@ -438,7 +438,7 @@
 
 
 		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
-		// for superclass of class 'MainController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
+		// for superclass of class 'SPAppController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
 		[ql setShowsAddToiPhotoButton:NO];
 		[ql setShowsiChatTheaterButton:NO];
 		// Since we are inside of editSheet we have to avoid full-screen zooming

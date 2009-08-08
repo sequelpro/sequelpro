@@ -70,7 +70,7 @@
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
-		17E641570EF01EF6001BC333 /* MainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* MainController.m */; };
+		17E641570EF01EF6001BC333 /* SPAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* SPAppController.m */; };
 		17E641580EF01EF6001BC333 /* SPGrowlController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414D0EF01EF6001BC333 /* SPGrowlController.m */; };
 		17E641590EF01EF6001BC333 /* TableContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414F0EF01EF6001BC333 /* TableContent.m */; };
 		17E6415A0EF01EF6001BC333 /* TableDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641510EF01EF6001BC333 /* TableDocument.m */; };
@@ -387,8 +387,8 @@
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
 		17E641490EF01EF6001BC333 /* CustomQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomQuery.m; sourceTree = "<group>"; };
-		17E6414A0EF01EF6001BC333 /* MainController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainController.h; sourceTree = "<group>"; };
-		17E6414B0EF01EF6001BC333 /* MainController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainController.m; sourceTree = "<group>"; };
+		17E6414A0EF01EF6001BC333 /* SPAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAppController.h; sourceTree = "<group>"; };
+		17E6414B0EF01EF6001BC333 /* SPAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAppController.m; sourceTree = "<group>"; };
 		17E6414C0EF01EF6001BC333 /* SPGrowlController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGrowlController.h; sourceTree = "<group>"; };
 		17E6414D0EF01EF6001BC333 /* SPGrowlController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGrowlController.m; sourceTree = "<group>"; };
 		17E6414E0EF01EF6001BC333 /* TableContent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableContent.h; sourceTree = "<group>"; };
@@ -870,8 +870,8 @@
 			children = (
 				17E641480EF01EF6001BC333 /* CustomQuery.h */,
 				17E641490EF01EF6001BC333 /* CustomQuery.m */,
-				17E6414A0EF01EF6001BC333 /* MainController.h */,
-				17E6414B0EF01EF6001BC333 /* MainController.m */,
+				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
+				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
@@ -1542,7 +1542,7 @@
 			files = (
 				17E641460EF01EB5001BC333 /* main.m in Sources */,
 				17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */,
-				17E641570EF01EF6001BC333 /* MainController.m in Sources */,
+				17E641570EF01EF6001BC333 /* SPAppController.m in Sources */,
 				17E641580EF01EF6001BC333 /* SPGrowlController.m in Sources */,
 				17E641590EF01EF6001BC333 /* TableContent.m in Sources */,
 				17E6415A0EF01EF6001BC333 /* TableDocument.m in Sources */,

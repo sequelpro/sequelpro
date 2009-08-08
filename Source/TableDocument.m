@@ -40,7 +40,7 @@
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-#import "MainController.h"
+#import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPConnectionController.h"
 #import "SPHistoryController.h"
@@ -1663,7 +1663,7 @@
 					// return;
 					TableDocument *firstTableDocument;
 
-					// Manually open a new document, setting MainController as sender to trigger autoconnection
+					// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 					if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
 						[firstTableDocument setShouldAutomaticallyConnect:NO];
 						[firstTableDocument initQueryEditorWithString:content];

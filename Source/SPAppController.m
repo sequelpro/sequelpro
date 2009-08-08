@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  MainController.m
+//  SPAppController.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPKeychain.h"
-#import "MainController.h"
+#import "SPAppController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
 
@@ -35,7 +35,7 @@
 #define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
 #define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
 
-@implementation MainController
+@implementation SPAppController
 
 
 - (id) init
@@ -65,7 +65,7 @@
 				// return;
 				TableDocument *firstTableDocument;
 
-				// Manually open a new document, setting MainController as sender to trigger autoconnection
+				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
 					[firstTableDocument setShouldAutomaticallyConnect:NO];
 					[firstTableDocument initQueryEditorWithString:[self contentOfFile:filename]];
@@ -110,10 +110,10 @@
 	
 	prefsController = [[SPPreferenceController alloc] init];
 	
-	// Register MainController as services provider
+	// Register SPAppController as services provider
 	[NSApp setServicesProvider:self];
 	
-	// Register MainController for AppleScript events
+	// Register SPAppController for AppleScript events
 	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
 	
 	isNewFavorite = NO;
@@ -219,7 +219,7 @@
 {
 	TableDocument *firstTableDocument;
 	
-	// Manually open a new document, setting MainController as sender to trigger autoconnection
+	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"]) {
 			[firstTableDocument setShouldAutomaticallyConnect:YES];

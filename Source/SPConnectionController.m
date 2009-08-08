@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionController.h"
-#import "MainController.h"
+#import "SPAppController.h"
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
 
