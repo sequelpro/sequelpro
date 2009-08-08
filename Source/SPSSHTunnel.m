@@ -160,7 +160,7 @@
 {
 	localPort = 0;
 	
-	if (connectionState != PROXY_STATE_IDLE || (!passwordInKeychain && !password)) return;
+	if (connectionState != PROXY_STATE_IDLE) return;
 	[debugMessages removeAllObjects];
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
 }
@@ -286,8 +286,10 @@
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 		[taskEnvironment setObject:keychainName forKey:@"SP_KEYCHAIN_ITEM_NAME"];
 		[taskEnvironment setObject:keychainAccount forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
-	} else {
+	} else if (password) {
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+	} else {
+		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_NO_PASSWORD] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 	}
 	[task setEnvironment:taskEnvironment];
 
@@ -536,7 +538,11 @@
 		case 1:
 			thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
 			[sshPasswordField setStringValue:@""];
-			[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+			if ([delegate respondsToSelector:@selector(setUndoManager:)] && [delegate undoManager]) {
+				[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+			} else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
+				[[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];
+			}
 			requestedPassphrase = [[NSString alloc] initWithString:thePassword];
 			
 			// Add to keychain if appropriate
