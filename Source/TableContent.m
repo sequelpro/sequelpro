@@ -2090,76 +2090,77 @@
 	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
 }
 
-/*
- * Confirm whether to allow editing of a row.  Returns YES by default, unless the multipleLineEditingButton is in
+/**
+ * Confirm whether to allow editing of a row. Returns YES by default, unless the multipleLineEditingButton is in
  * the ON state, or for blob or text fields - in those cases opens a sheet for editing instead and returns NO.
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	int i;
 	NSString *query, *wherePart = nil;
-
-	NSArray *tempRow;
 	NSMutableArray *modifiedRow = [NSMutableArray array];
-	// id theValue;
 	MCPResult *tempResult;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
-	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow ) {
+	if ([prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow) {
 
 		// If the table does contain blob or text fields, load the values ready for editing.
-		if ( [self tableContainsBlobOrTextColumns] ) {
+		if ([self tableContainsBlobOrTextColumns]) {
 			wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
-			if([wherePart length]==0)
-				return NO;
-			query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart];
+			
+			if ([wherePart length] == 0) return NO;
+			
+			// Only get the data for the selected column, not all of them
+			query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
+			
 			tempResult = [mySQLConnection queryString:query];
-			if ( ![tempResult numOfRows] ) {
+			
+			if (![tempResult numOfRows]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 				return NO;
 			}
-			tempRow = [tempResult fetchRowAsArray];
-			for ( i = 0; i < [tempRow count]; i++ ) {
-				if ( [[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]] ) {
-					[modifiedRow addObject:[prefs stringForKey:@"NullValue"]];
-				} else {
-					[modifiedRow addObject:[tempRow objectAtIndex:i]];
-				}
+			
+			NSArray *tempRow = [tempResult fetchRowAsArray];
+			
+			for (i = 0; i < [tempRow count]; i++) 
+			{
+				[modifiedRow addObject:([[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]]) ? [prefs stringForKey:@"NullValue"] : [tempRow objectAtIndex:i]];
 			}
-			[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableArray arrayWithArray:modifiedRow]];
+						
+			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[modifiedRow objectAtIndex:0]];
 			[tableContentView reloadData];
 		}
 	}
 	
 	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
+				
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-	if ( [multipleLineEditingButton state] == NSOnState || isBlob ) {
+	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 		
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+					
 		id editData = [[fieldEditor editWithObject:[[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
 								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob isEditable:YES withWindow:tableWindow] retain];
 
-		if ( editData ) {
-			if ( !isEditingRow ) {
+		if (editData) {
+			if (!isEditingRow) {
 				[oldRow setArray:[filteredResult objectAtIndex:rowIndex]];
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
+			
 			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
 		}
 
 		[fieldEditor release];
 
-		if ( editData ) [editData release];
+		if (editData) [editData release];
 
 		return NO;
-
-	} else {
-
-		return YES;
-
 	}
+
+	return YES;
 }
 
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows 
