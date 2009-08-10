@@ -28,6 +28,7 @@
 #import "SPTextViewAdditions.h"
 #import "SPDataAdditions.h"
 #import "QLPreviewPanel.h"
+#import "SPDataCellFormatter.h"
 
 @implementation SPFieldEditorController
 
@@ -37,6 +38,7 @@
 		// force the nib to be loaded
 		(void) [self window];
 		counter = 0;
+		maxTextLength = 0;
 		
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
@@ -49,6 +51,11 @@
 {
 	if ( sheetEditData ) [sheetEditData release];
 	[super dealloc];
+}
+
+- (void)setTextMaxLength:(unsigned long long)length
+{
+	maxTextLength = length;
 }
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
@@ -594,12 +601,51 @@
 	}
 }
 
+#pragma mark -
+#pragma mark Delegates
+
+/*
+ Validate editTextView for max text length
+ */
+- (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
+{
+	if(textView == editTextView && maxTextLength > 0) {
+		
+		int newLength;
+
+		// Pure attribute changes are ok.
+		if (!replacementString) return YES;
+
+		// The exact change isn't known. Disallow the change to be safe.
+		if (r.location==NSNotFound) return NO;
+
+		// Calculate the length of the text after the change.
+		newLength=[[textView textStorage] length]+[replacementString length]-r.length;
+
+		// If it's too long, disallow the change.
+		// If the user pastes something into insert it partially to maxTextLength.
+		if (newLength>maxTextLength) {
+			
+			if(maxTextLength-[[textView textStorage] length] < [replacementString length]) {
+				[textView insertText:[replacementString substringToIndex:maxTextLength-[[textView textStorage] length]]];
+			}
+			NSBeep();
+			return NO;
+		}
+
+		// Otherwise, allow it.
+		return YES;
+
+	}
+	return YES;
+}
+
 /*
  invoked when the user changes the string in the editSheet
  */
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
-	
+
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
 	if(editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))
 		return;

@@ -49,6 +49,7 @@
 	NSString *tmpFileName;
 	
 	int counter;
+	unsigned long long maxTextLength;
 	
 	NSUserDefaults *prefs;
 }
@@ -64,6 +65,8 @@
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
 	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;
+
+- (void)setTextMaxLength:(unsigned long long)length;
 
 - (void)processPasteImageData;
 - (void)processUpdatedImageData:(NSData *)data;

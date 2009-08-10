@@ -237,7 +237,7 @@
 
 		// Set the line break mode and an NSFormatter subclass which truncates long strings for display
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		//[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
@@ -1876,9 +1876,17 @@
  * This function changes the text color of text/blob fields which are not yet loaded to gray
  */
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
-{	
+{
+
+	// If user wants to edit 'cell' set text color to black and return to avoid
+	// writing in gray if value was NULL
+	if ( [aTableView editedColumn] == [[aTableColumn identifier] intValue] && [aTableView editedRow] == row) {
+		[cell setTextColor:[NSColor blackColor]];
+		return;
+	}
+
 	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]);
-	
+
 	// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 	if ([cell respondsToSelector:@selector(setTextColor:)]) {
 		
@@ -2139,7 +2147,7 @@
 	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 		
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
-					
+		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
 		id editData = [[fieldEditor editWithObject:[[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
 								 usingEncoding:[mySQLConnection encoding] 
@@ -2152,7 +2160,7 @@
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
-			
+
 			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
 		}
 
