@@ -1723,6 +1723,11 @@
 
 
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+		// Set max text length
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
+		 && [columnDefinition valueForKey:@"char_length"])
+			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] intValue]];
+
 		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
 								fieldName:[columnDefinition objectForKey:@"name"]
 								usingEncoding:[mySQLConnection encoding] 

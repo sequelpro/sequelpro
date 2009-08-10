@@ -29,6 +29,7 @@
 #import "SPDataAdditions.h"
 #import "QLPreviewPanel.h"
 #import "SPDataCellFormatter.h"
+#import "RegexKitLite.h"
 
 @implementation SPFieldEditorController
 
@@ -39,7 +40,10 @@
 		(void) [self window];
 		counter = 0;
 		maxTextLength = 0;
-		
+
+		// Used for max text length recognition if last typed char is a non-space char
+		editTextViewWasChanged = NO;
+
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
 	}
@@ -613,6 +617,12 @@
 		
 		int newLength;
 
+		// Auxilary to ensure that eg textViewDidChangeSelection:
+		// saves a non-space char + base char if that combination
+		// occurs at the end of a sequence of typing before saving
+		// (OK button).
+		editTextViewWasChanged = ([replacementString length] == 1);
+
 		// Pure attribute changes are ok.
 		if (!replacementString) return YES;
 
@@ -647,7 +657,7 @@
 {
 
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
-	if(editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))
+	if(!editTextViewWasChanged && (editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0)))
 		return;
 	
 	// clear the image and hex (since i doubt someone can "type" a gif)

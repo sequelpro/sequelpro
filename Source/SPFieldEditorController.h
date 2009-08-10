@@ -50,6 +50,7 @@
 	
 	int counter;
 	unsigned long long maxTextLength;
+	BOOL editTextViewWasChanged;
 	
 	NSUserDefaults *prefs;
 }
