@@ -30,8 +30,22 @@
 #import <WebKit/WebKit.h>
 
 
-@interface SPTooltip : NSWindow {
+@interface SPTooltip : NSWindow
+{
+	WebView*		webView;
+	WebPreferences*	webPreferences;
+	NSTimer*		animationTimer;
+	NSDate*			animationStart;
 
+	// ignore mouse moves for the next second
+	NSDate*			didOpenAtDate;
+	
+	NSPoint			mousePositionWhenOpened;
+	
+	NSString* SPTooltipPreferencesIdentifier;
 }
+
++ (void)showWithObject:(id)content ofType:(NSString *)type transparent:(BOOL)transparent;
++ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type transparent:(BOOL)transparent;
 
 @end
