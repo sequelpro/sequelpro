@@ -1,10 +1,10 @@
 //
-//  $Id$
+//  $Id: SPUserMO.h 856 2009-06-12 05:31:39Z mltownsend $
 //
-//  SPArrayAdditions.h
+//  SPUserMO.h
 //  sequel-pro
 //
-//  Created by Jakob Egger on March 24, 2009
+//  Created by Mark Townsend on Jan 01, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,16 +22,20 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import <CoreData/CoreData.h>
 
-static inline id NSArrayObjectAtIndex(NSArray* self, NSUInteger i) {
-	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
-}
+@interface NSManagedObject (CoreDataGeneratedAccessors)
 
-@interface NSArray (SPArrayAdditions)
+@property(nonatomic, retain) NSString *user;
+@property(nonatomic, retain) NSString *host;
+@property(nonatomic, retain) NSManagedObject *parent;
+@property (nonatomic, retain) NSSet *children;
 
-- (NSString *)componentsJoinedAndBacktickQuoted;
-- (NSString *)componentsJoinedByCommas;
-- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
+- (NSString *)displayName;
+- (void)setDisplayName:(NSString *)value;
+
+// Access to-many relationship via -[NSObject mutableSetValueForKey:]
+- (void)addChildrenObject:(NSManagedObject *)value;
+- (void)removeChildrenObject:(NSManagedObject *)value;
 
 @end

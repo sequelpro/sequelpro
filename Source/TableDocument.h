@@ -53,6 +53,8 @@ enum {
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id spExportControllerInstance;
+	IBOutlet id userManagerInstance;
+	
 
 	IBOutlet NSSearchField *listFilterField;
 
@@ -126,8 +128,8 @@ enum {
 
 - (NSString *)getHTMLforPrint;
 
+- (IBAction)showUserManager:(id)sender;
 - (void)initQueryEditorWithString:(NSString *)query;
-
 // Connection callback and methods
 - (void) setConnection:(MCPConnection *)theConnection;
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;

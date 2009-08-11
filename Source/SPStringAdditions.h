@@ -44,6 +44,8 @@ static inline const char* NSStringUTF8String(NSString* self) {
 + (NSString *)stringForTimeInterval:(float)timeInterval;
 
 - (NSString *)backtickQuotedString;
+- (NSString *)tickQuotedString;
+- (NSString *)replaceUnderscoreWithSpace;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 

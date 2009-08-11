@@ -8,6 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="951"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1449,6 +1450,30 @@
 							<string key="NSString"/>
 						</object>
 					</object>
+					<object class="NSMenuItem" id="909284423">
+						<reference key="NSMenu" ref="171386461"/>
+						<string key="NSTitle">Tools</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="625762401"/>
+						<reference key="NSMixedImage" ref="315854375"/>
+						<string key="NSAction">submenuAction:</string>
+						<object class="NSMenu" key="NSSubmenu" id="661845796">
+							<string key="NSTitle"/>
+							<object class="NSMutableArray" key="NSMenuItems">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSMenuItem" id="356281746">
+									<reference key="NSMenu" ref="661845796"/>
+									<string key="NSTitle">User Manager</string>
+									<string key="NSKeyEquiv">u</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+							</object>
+						</object>
+					</object>
 					<object class="NSMenuItem" id="228261277">
 						<reference key="NSMenu" ref="171386461"/>
 						<string key="NSTitle">Table</string>
@@ -2521,6 +2546,14 @@
 					</object>
 					<int key="connectionID">949</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showUserManager:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="356281746"/>
+					</object>
+					<int key="connectionID">955</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2564,6 +2597,7 @@
 							<reference ref="401969940"/>
 							<reference ref="693420496"/>
 							<reference ref="228261277"/>
+							<reference ref="909284423"/>
 						</object>
 						<reference key="parent" ref="201414690"/>
 						<string key="objectName">MainMenu</string>
@@ -3744,6 +3778,29 @@
 						<reference key="object" ref="256715652"/>
 						<reference key="parent" ref="709725194"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">950</int>
+						<reference key="object" ref="909284423"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="661845796"/>
+						</object>
+						<reference key="parent" ref="171386461"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">951</int>
+						<reference key="object" ref="661845796"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="356281746"/>
+						</object>
+						<reference key="parent" ref="909284423"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">952</int>
+						<reference key="object" ref="356281746"/>
+						<reference key="parent" ref="661845796"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4086,6 +4143,10 @@
 					<string>941.IBPluginDependency</string>
 					<string>943.IBPluginDependency</string>
 					<string>944.IBPluginDependency</string>
+					<string>950.IBPluginDependency</string>
+					<string>951.IBEditorWindowLastContentRect</string>
+					<string>951.IBPluginDependency</string>
+					<string>952.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4179,7 +4240,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{455, 703}, {511, 20}}</string>
+					<string>{{300, 703}, {567, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4468,6 +4529,10 @@ w6gg4oaSIGZhY2FkZV0</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{623, 680}, {172, 23}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -4490,7 +4555,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">949</int>
+			<int key="maxID">955</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4890,6 +4955,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>setDatabases:</string>
 							<string>showCreateTableSyntax:</string>
 							<string>showMySQLHelp:</string>
+							<string>showUserManager:</string>
 							<string>showVariables:</string>
 							<string>viewContent:</string>
 							<string>viewQuery:</string>
@@ -4899,6 +4965,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -4976,6 +5043,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>titleAccessoryView</string>
 							<string>titleImageView</string>
 							<string>titleStringView</string>
+							<string>userManagerInstance</string>
 							<string>variablesCountTextField</string>
 							<string>variablesSearchField</string>
 							<string>variablesSheet</string>
@@ -5017,6 +5085,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSTabView</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

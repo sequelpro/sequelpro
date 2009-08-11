@@ -42,6 +42,21 @@
     return result;
 }
 
+- (NSString *)componentsJoinedByCommas
+{
+	NSString *result = [NSString string];
+	for (NSString *component in self)
+	{
+		if ([result length])
+		{
+			result = [result stringByAppendingString:@","];
+		}
+		
+		result = [result stringByAppendingString:component];
+	}
+	return result;
+}
+
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes
 {
 	NSMutableArray *subArray  = [NSMutableArray arrayWithCapacity:[indexes count]];
