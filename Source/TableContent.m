@@ -404,7 +404,7 @@
 
 	// Add sorting details if appropriate
 	if (sortCol) {
-		[queryString appendFormat:@" ORDER BY @%", [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+		[queryString appendFormat:@" ORDER BY %@", [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
 		if (isDesc) [queryString appendString:@" DESC"];
 	}
 
