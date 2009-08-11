@@ -741,7 +741,7 @@
 				[singleProgressSheet orderOut:nil];
 			}
 			
-			[tableContentInstance reloadTableValues:self];
+			[tableContentInstance loadTableValues];
 		}
 		
 		//display errors

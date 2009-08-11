@@ -51,18 +51,17 @@
 	IBOutlet id limitRowsField;
 	IBOutlet id limitRowsButton;
 	IBOutlet id limitRowsStepper;
-	IBOutlet id limitRowsText;
 	
 	MCPConnection *mySQLConnection;
 	
 	NSString *selectedTable, *usedQuery;
-	NSMutableArray *fullResult, *filteredResult, *dataColumns, *keys, *oldRow;
+	NSMutableArray *tableValues, *dataColumns, *keys, *oldRow;
 	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
+	BOOL isFiltered, isLimited;
 	NSUserDefaults *prefs;
 	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
-	bool areShowingAllRows;
 
 	BOOL sortColumnToRestoreIsAsc;
 	NSString *sortColumnToRestore;
@@ -72,15 +71,18 @@
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore;
 }
 
-//table methods
-- (void)loadTable:(NSString *)aTable;
-- (IBAction)reloadTable:(id)sender;
-- (IBAction)reloadTableValues:(id)sender;
-- (IBAction)filterTable:(id)sender;
-- (IBAction)showAll:(id)sender;
-- (IBAction)toggleFilterField:(id)sender;
-- (NSString *)usedQuery;
-- (void)setUsedQuery:(NSString *)query;
+// Table loading methods and information
+- (void) loadTable:(NSString *)aTable;
+- (void) loadTableValues;
+- (NSString *) tableFilterString;
+- (void) updateCountText;
+
+// Table interface actions
+- (IBAction) reloadTable:(id)sender;
+- (IBAction) filterTable:(id)sender;
+- (IBAction) toggleFilterField:(id)sender;
+- (NSString *) usedQuery;
+- (void) setUsedQuery:(NSString *)query;
 
 //edit methods
 - (IBAction)addRow:(id)sender;
@@ -135,7 +137,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 //tableView delegate methods
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
-- (void)tableViewSelectionIsChanging:(NSNotification *)aNotification;
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification;
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
