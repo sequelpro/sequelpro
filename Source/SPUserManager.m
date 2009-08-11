@@ -95,10 +95,10 @@
 											 selector:@selector(contextDidSave:) 
 												 name:NSManagedObjectContextDidSaveNotification 
 											   object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(contextDidChange:)
-												 name:NSManagedObjectContextObjectsDidChangeNotification 
-											   object:nil];
+	//[[NSNotificationCenter defaultCenter] addObserver:self
+//											 selector:@selector(contextDidChange:)
+//												 name:NSManagedObjectContextObjectsDidChangeNotification 
+//											   object:nil];
 	[tabView selectTabViewItemAtIndex:0];
 	
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
@@ -107,7 +107,8 @@
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
 		
-	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
+	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
+	[window makeKeyAndOrderFront:nil];
 }
 
 - (void)_initializeUsers
@@ -182,6 +183,7 @@
 		}
 		[array release];
 	}
+	[outlineView reloadData];
 }
 
 - (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item
@@ -529,16 +531,18 @@
 	[[self connection] selectDB:@"mysql"];
 	for(NSManagedObject *user in insertedUsers)
 	{
-		NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
-									 [[[user parent] valueForKey:@"user"] tickQuotedString], 
-									 [[user valueForKey:@"host"] tickQuotedString],
-									 [[[user parent] valueForKey:@"password"] tickQuotedString]];
-		// Create user in database
-		[[self connection] queryString:[NSString stringWithFormat:createStatement]];
-		
-		if ([self checkAndDisplayMySqlError])
-		{
-			[self grantPrivilegesToUser:user];
+		if ([user parent] != nil) {
+			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
+										 [[[user parent] valueForKey:@"user"] tickQuotedString], 
+										 [[user valueForKey:@"host"] tickQuotedString],
+										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
+			// Create user in database
+			[[self connection] queryString:[NSString stringWithFormat:createStatement]];
+			
+			if ([self checkAndDisplayMySqlError])
+			{
+				[self grantPrivilegesToUser:user];
+			}			
 		}
 	}
 	
