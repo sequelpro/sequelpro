@@ -1222,6 +1222,7 @@
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database
 {
 	NSArray *dataRow;
+	NSDictionary *theRow;
 	id field;
 
 	//Look for all columns which are coming from "tableForColumn"
@@ -1234,9 +1235,33 @@
 	// Try to identify the field bijectively
 	NSMutableString *fieldIDQueryStr = [NSMutableString string];
 	[fieldIDQueryStr setString:@"WHERE ("];
-	
-	// Build WHERE clause
+
+	// --- Build WHERE clause ---
 	dataRow = [fullResult objectAtIndex:rowIndex];
+
+	// Get the primary key if there is one
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
+		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
+	if ([theResult numOfRows]) [theResult dataSeek:0];
+	int i;
+	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+		theRow = [theResult fetchRowAsDictionary];
+		if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
+			for(field in columnsForFieldTableName) {
+				id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
+				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
+					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)", 
+						[database backtickQuotedString], 
+						[tableForColumn backtickQuotedString], 
+						[[theRow objectForKey:@"Field"] backtickQuotedString], 
+						[aValue description]];
+					return fieldIDQueryStr;
+				}
+			}
+		}
+	}
+	
+	// If there is no primary key, all found fields belonging to the same table are used in the argument
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
@@ -1394,7 +1419,7 @@
 		// NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
 		
 		// Check if the IDstring identifies the current field bijectively
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 		if(numberOfPossibleUpdateRows == 1) {
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 			
@@ -1707,12 +1732,15 @@
 			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 	
 			// Actual check whether field can be identified bijectively
-			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 
 			isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
 
 			if(!isFieldEditable)
-			 	[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+				if(numberOfPossibleUpdateRows == 0)
+					[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", tableForColumn]];
+				else
+			 		[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
 
 		} else {
 			// no table/databse name are given
