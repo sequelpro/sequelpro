@@ -2096,7 +2096,9 @@
  * Invoked when the current connection needs a password from the Keychain.
  */
 - (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
-{	
+{
+	if (![connectionController connectionKeychainItemName]) return @"";
+
 	KeyChain *keychain = [[KeyChain alloc] init];
 	
 	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
