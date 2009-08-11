@@ -2426,11 +2426,14 @@
  * Invoked when the current connection needs a password from the Keychain.
  */
 - (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
-{	
+{
+	
+	// If no keychain item is available, return an empty password
+	if (![connectionController connectionKeychainItemName]) return @"";
+
+	// Otherwise, pull the password from the keychain using the details from this connection
 	SPKeychain *keychain = [[SPKeychain alloc] init];
-	
 	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
-	
 	[keychain release];
 		
 	return password;

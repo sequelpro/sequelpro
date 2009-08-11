@@ -48,7 +48,12 @@
 	SecAccessRef passwordAccessRef;
 	SecKeychainAttribute attributes[4];
 	SecKeychainAttributeList attList;
-	
+
+	// Check supplied variables and replaces nils with empty strings
+	if (!name) name = @"";
+	if (!account) account = @"";
+	if (!label) label = @"";
+
 	// Check if password already exists before adding
 	if (![self passwordExistsForName:name account:account]) {
 
@@ -109,7 +114,11 @@
 	UInt32 passwordLength;
 	SecKeychainItemRef itemRef;
 	NSString *password = @"";
-	
+
+	// Check supplied variables and replaces nils with empty strings
+	if (!name) name = @"";
+	if (!account) account = @"";
+
 	status = SecKeychainFindGenericPassword(
 											NULL,						// default keychain
 											strlen([name UTF8String]),		// length of service name (bytes)
@@ -141,6 +150,10 @@
 {
 	OSStatus status;
 	SecKeychainItemRef itemRef = nil;
+
+	// Check supplied variables and replaces nils with empty strings
+	if (!name) name = @"";
+	if (!account) account = @"";
 
 	// Check if password already exists before deleting
 	if ([self passwordExistsForName:name account:account]) {
@@ -177,7 +190,11 @@
     int numberOfItemsFound = 0;
 	SecKeychainAttributeList list;
 	SecKeychainAttribute attributes[2];
-	
+
+	// Check supplied variables and replaces nils with empty strings
+	if (!name) name = @"";
+	if (!account) account = @"";
+
 	attributes[0].tag    = kSecAccountItemAttr;
 	attributes[0].data   = (void *)[account UTF8String];	// Account name
 	attributes[0].length = strlen([account UTF8String]);	// Length of account name (bytes)
@@ -209,7 +226,7 @@
 	NSString *keychainItemName;
 
 	keychainItemName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)",
-							theName,
+							theName?theName:@"",
 							[theID intValue]];
 
 	return keychainItemName;
@@ -238,7 +255,7 @@
 	NSString *sshKeychainItemName;
 
 	sshKeychainItemName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)",
-							theName,
+							theName?theName:@"",
 							[theID intValue]];
 
 	return sshKeychainItemName;
