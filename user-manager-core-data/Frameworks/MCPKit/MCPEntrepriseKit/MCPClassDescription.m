@@ -1,5 +1,5 @@
 //
-//  $Id: MCPClassDescription.m 545 2009-04-10 14:49:45Z stuart02 $
+//  $Id$
 //
 //  MCPClassDescription.m
 //  MCPKit

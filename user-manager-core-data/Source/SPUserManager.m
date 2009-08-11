@@ -361,7 +361,6 @@
 {
 	[[self managedObjectContext] rollback];
 	[window close];
-//	[self _clearData];
 }
 
 - (IBAction)doApply:(id)sender
@@ -404,6 +403,13 @@
 
 - (IBAction)addHost:(id)sender
 {
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil)
+		{
+			[self _selectParentFromSelection];
+		}
+	}
 	[treeController addChild:sender];
 	// Need to figure out how to do this right.  I want to be able to have the newly
 	// added item be in edit mode to change the host name.
@@ -419,6 +425,8 @@
 - (void)_clearData
 {
 	[managedObjectContext reset];
+	[managedObjectContext release];
+	managedObjectContext = nil;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
@@ -427,7 +435,7 @@
 		[menuItem action] == @selector(removeHost:))
 	{
 		return (([[treeController selectedObjects] count] > 0) && 
-				[[[treeController selectedObjects] objectAtIndex:0] parent] == nil);
+				[[[treeController selectedObjects] objectAtIndex:0] parent] != nil);
 	}
 	return TRUE;
 }
@@ -480,6 +488,8 @@
 
 - (void)contextDidChange:(NSNotification *)notification
 {
+	NSLog(@"contextDidChange:");
+	
 	if (!isInitializing)
 	{
 		[outlineView reloadData];
@@ -611,14 +621,7 @@
 - (NSManagedObject *)_createNewSPUser
 {
 	NSManagedObject *user = [[NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
-														  inManagedObjectContext:[self managedObjectContext]] autorelease];
-//	[user addObserver:self forKeyPath:@"user" options:(NSKeyValueObservingOptionNew |
-//													   NSKeyValueObservingOptionOld) context:nil];
-//	[user addObserver:self forKeyPath:@"password" options:(NSKeyValueObservingOptionNew |
-//														   NSKeyValueObservingOptionOld) context:nil];
-//	[user addObserver:self forKeyPath:@"host" options:(NSKeyValueObservingOptionNew |
-//														   NSKeyValueObservingOptionOld) context:nil];
-	
+														  inManagedObjectContext:[self managedObjectContext]] autorelease];	
 	
 	return user;
 }
@@ -627,7 +630,16 @@
 {
 	if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
 	{
-		NSBeginAlertSheet(@"MySQL Error", @"OK", nil, nil, window, self, NULL, NULL, nil, [[self connection] getLastErrorMessage]);
+		NSBeginAlertSheet(@"MySQL Error", 
+						  nil, 
+						  nil, 
+						  nil, 
+						  window, 
+						  self, 
+						  NULL, 
+						  NULL, 
+						  nil, 
+						  [[self connection] getLastErrorMessage]);
 		return FALSE;
 	} else {
 		return TRUE;

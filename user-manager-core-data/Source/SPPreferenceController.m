@@ -26,7 +26,7 @@
 #import "SPPreferenceController.h"
 #import "SPWindowAdditions.h"
 #import "SPFavoriteTextFieldCell.h"
-#import "KeyChain.h"
+#import "SPKeychain.h"
 #import "TableDocument.h"
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
@@ -78,7 +78,7 @@
 {	
 	[self _setupToolbar];
 	
-	keychain = [[KeyChain alloc] init];
+	keychain = [[SPKeychain alloc] init];
 	
 	SPFavoriteTextFieldCell *tableCell = [[[SPFavoriteTextFieldCell alloc] init] autorelease];
 	
@@ -206,7 +206,7 @@
 		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
 		NSMutableDictionary *favorite;
 		NSString *password, *keychainName, *keychainAccount;
-		KeyChain *upgradeKeychain = [[KeyChain alloc] init];
+		SPKeychain *upgradeKeychain = [[SPKeychain alloc] init];
 
 		// Cycle through the favorites, generating a timestamp-derived ID for each and renaming associated keychain items.
 		for (i = 0; i < [favoritesArray count]; i++) {

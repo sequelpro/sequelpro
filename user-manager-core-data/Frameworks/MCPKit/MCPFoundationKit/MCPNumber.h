@@ -1,5 +1,5 @@
 //
-//  $Id: MCPNumber.h 1033 2009-07-16 23:09:12Z stuart02 $
+//  $Id$
 //
 //  MCPNumber.h
 //  MCPKit

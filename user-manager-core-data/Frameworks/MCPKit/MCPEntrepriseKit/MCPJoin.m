@@ -1,5 +1,5 @@
 //
-//  $Id: MCPJoin.m 545 2009-04-10 14:49:45Z stuart02 $
+//  $Id$
 //
 //  MCPJoin.m
 //  MCPKit

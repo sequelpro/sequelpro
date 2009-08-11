@@ -27,7 +27,7 @@
 #import <MCPKit/MCPKit.h>
 
 #import "TableDocument.h"
-#import "KeyChain.h"
+#import "SPKeychain.h"
 #import "SPSSHTunnel.h"
 
 enum spconnection_types
@@ -48,7 +48,7 @@ enum spconnection_types
 	TableDocument *tableDocument;
 	NSWindow *documentWindow;
 	NSSplitView *contentView;
-	KeyChain *keychain;
+	SPKeychain *keychain;
 	NSUserDefaults *prefs;
 	NSMutableArray *favorites;
 	SPSSHTunnel *sshTunnel;

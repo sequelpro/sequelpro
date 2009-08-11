@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  MainController.h
+//  SPAppController.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -27,7 +27,7 @@
 
 @class SPPreferenceController;
 
-@interface MainController : NSObject 
+@interface SPAppController : NSObject 
 {
 	BOOL isNewFavorite;
 	
@@ -51,5 +51,6 @@
 
 // Other
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command;
+- (NSString *)contentOfFile:(NSString *)aPath;
 
 @end

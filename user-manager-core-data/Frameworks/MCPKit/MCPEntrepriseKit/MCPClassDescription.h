@@ -1,5 +1,5 @@
 //
-//  $Id: MCPClassDescription.h 927 2009-06-24 10:53:07Z stuart02 $
+//  $Id$
 //
 //  MCPClassDescription.h
 //  MCPKit

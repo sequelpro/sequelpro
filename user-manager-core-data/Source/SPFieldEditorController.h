@@ -1,5 +1,5 @@
 //
-//  $Id: SPFieldEditorController.h 802 2009-06-03 20:46:57Z bibiko $
+//  $Id$
 //
 //  SPFieldEditorController.m
 //  sequel-pro
@@ -38,6 +38,7 @@
 	IBOutlet id editSheetCancelButton;
 	IBOutlet id editSheetOkButton;
 	IBOutlet id editSheetOpenButton;
+	IBOutlet id editSheetFieldName;
 	
 	id sheetEditData;
 	BOOL editSheetWillBeInitialized;
@@ -48,6 +49,8 @@
 	NSString *tmpFileName;
 	
 	int counter;
+	unsigned long long maxTextLength;
+	BOOL editTextViewWasChanged;
 	
 	NSUserDefaults *prefs;
 }
@@ -60,7 +63,11 @@
 - (IBAction)quickLookFormatButton:(id)sender;
 - (IBAction)dropImage:(id)sender;
 
-- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;
+
+- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
+	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;
+
+- (void)setTextMaxLength:(unsigned long long)length;
 
 - (void)processPasteImageData;
 - (void)processUpdatedImageData:(NSData *)data;

@@ -1,5 +1,5 @@
 //
-//  $Id: MCPResult.m 1065 2009-07-19 10:58:17Z stuart02 $
+//  $Id$
 //
 //  MCPResult.m
 //  MCPKit
@@ -1105,12 +1105,11 @@ const OUR_CHARSET our_charsets60[] =
 		return @"";
 	}
 		
-	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
+	theData = [[NSData alloc] initWithBytes:theCString length:(strlen(theCString))];
 	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
 	
-	if (theString) {
-		[theString autorelease];
-	}
+	if (theData) [theData release];
+	if (theString) [theString autorelease];
 	
 	return theString;
 }

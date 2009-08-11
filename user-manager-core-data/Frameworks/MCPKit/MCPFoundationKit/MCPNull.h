@@ -1,5 +1,5 @@
 //
-//  $Id: MCPNull.h 482 2009-04-05 01:38:48Z stuart02 $
+//  $Id$
 //
 //  MCPNull.h
 //  MCPKit

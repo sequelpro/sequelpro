@@ -1,5 +1,5 @@
 //
-//  $Id: MCPKit.h 1058 2009-07-18 14:53:57Z stuart02 $
+//  $Id$
 //
 //  MCPKit.h
 //  MCPKit

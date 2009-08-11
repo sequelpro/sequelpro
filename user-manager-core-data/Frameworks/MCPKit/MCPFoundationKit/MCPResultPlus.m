@@ -1,5 +1,5 @@
 //
-//  $Id: MCPResultPlus.m 1056 2009-07-18 10:42:29Z stuart02 $
+//  $Id$
 //
 //  MCPResultPlus.m
 //  MCPKit

@@ -1,5 +1,5 @@
 //
-//  $Id: SPFieldEditorController.m 802 2009-06-03 20:46:57Z bibiko $
+//  $Id$
 //
 //  SPFieldEditorController.m
 //  sequel-pro
@@ -28,6 +28,8 @@
 #import "SPTextViewAdditions.h"
 #import "SPDataAdditions.h"
 #import "QLPreviewPanel.h"
+#import "SPDataCellFormatter.h"
+#import "RegexKitLite.h"
 
 @implementation SPFieldEditorController
 
@@ -37,6 +39,13 @@
 		// force the nib to be loaded
 		(void) [self window];
 		counter = 0;
+		maxTextLength = 0;
+
+		// Used for max text length recognition if last typed char is a non-space char
+		editTextViewWasChanged = NO;
+
+		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
+		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
 	}
 	return self;
 	
@@ -48,10 +57,14 @@
 	[super dealloc];
 }
 
-- (id)editWithObject:(id)data usingEncoding:(NSStringEncoding)anEncoding 
+- (void)setTextMaxLength:(unsigned long long)length
+{
+	maxTextLength = length;
+}
+
+- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
-
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
@@ -61,6 +74,7 @@
 	}
 	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 
+	[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), fieldName]];
 
 	// hide all views in editSheet
 	[hexTextView setHidden:YES];
@@ -77,7 +91,6 @@
 	}
 	
 	editSheetWillBeInitialized = YES;
-	
 	
 	encoding = anEncoding;
 
@@ -437,7 +450,7 @@
 
 
 		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
-		// for superclass of class 'MainController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
+		// for superclass of class 'SPAppController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
 		[ql setShowsAddToiPhotoButton:NO];
 		[ql setShowsiChatTheaterButton:NO];
 		// Since we are inside of editSheet we have to avoid full-screen zooming
@@ -592,14 +605,59 @@
 	}
 }
 
+#pragma mark -
+#pragma mark Delegates
+
+/*
+ Validate editTextView for max text length
+ */
+- (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
+{
+	if(textView == editTextView && maxTextLength > 0) {
+		
+		int newLength;
+
+		// Auxilary to ensure that eg textViewDidChangeSelection:
+		// saves a non-space char + base char if that combination
+		// occurs at the end of a sequence of typing before saving
+		// (OK button).
+		editTextViewWasChanged = ([replacementString length] == 1);
+
+		// Pure attribute changes are ok.
+		if (!replacementString) return YES;
+
+		// The exact change isn't known. Disallow the change to be safe.
+		if (r.location==NSNotFound) return NO;
+
+		// Calculate the length of the text after the change.
+		newLength=[[textView textStorage] length]+[replacementString length]-r.length;
+
+		// If it's too long, disallow the change.
+		// If the user pastes something into insert it partially to maxTextLength.
+		if (newLength>maxTextLength) {
+			
+			if(maxTextLength-[[textView textStorage] length] < [replacementString length]) {
+				[textView insertText:[replacementString substringToIndex:maxTextLength-[[textView textStorage] length]]];
+			}
+			NSBeep();
+			return NO;
+		}
+
+		// Otherwise, allow it.
+		return YES;
+
+	}
+	return YES;
+}
+
 /*
  invoked when the user changes the string in the editSheet
  */
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
-	
+
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
-	if(editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))
+	if(!editTextViewWasChanged && (editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0)))
 		return;
 	
 	// clear the image and hex (since i doubt someone can "type" a gif)

@@ -1,4 +1,6 @@
 //
+//  $Id$
+// 
 //  SPSSHTunnel.m
 //  sequel-pro
 //
@@ -23,7 +25,7 @@
 
 #import "SPSSHTunnel.h"
 #import "RegexKitLite.h"
-#import "KeyChain.h"
+#import "SPKeychain.h"
 #import <netinet/in.h>
 
 @implementation SPSSHTunnel
@@ -160,7 +162,7 @@
 {
 	localPort = 0;
 	
-	if (connectionState != PROXY_STATE_IDLE || (!passwordInKeychain && !password)) return;
+	if (connectionState != PROXY_STATE_IDLE) return;
 	[debugMessages removeAllObjects];
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
 }
@@ -286,8 +288,10 @@
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 		[taskEnvironment setObject:keychainName forKey:@"SP_KEYCHAIN_ITEM_NAME"];
 		[taskEnvironment setObject:keychainAccount forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
-	} else {
+	} else if (password) {
 		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+	} else {
+		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_NO_PASSWORD] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 	}
 	[task setEnvironment:taskEnvironment];
 
@@ -508,7 +512,7 @@
 	NSSize queryTextSize;
 	NSRect windowFrameRect;
 	NSString *thePassword;
-	KeyChain *keychain;
+	SPKeychain *keychain;
 
 	// Work out whether a passphrase is being requested, extracting the key name
 	NSString *keyName = [theQuery stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
@@ -536,12 +540,16 @@
 		case 1:
 			thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
 			[sshPasswordField setStringValue:@""];
-			[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+			if ([delegate respondsToSelector:@selector(setUndoManager:)] && [delegate undoManager]) {
+				[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+			} else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
+				[[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];			
+			}
 			requestedPassphrase = [[NSString alloc] initWithString:thePassword];
 			
 			// Add to keychain if appropriate
 			if (keyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
-				keychain = [[KeyChain alloc] init];
+				keychain = [[SPKeychain alloc] init];
 				[keychain addPassword:thePassword forName:@"SSH" account:keyName withLabel:[NSString stringWithFormat:@"SSH: %@", keyName]];
 				[keychain release];
 			}

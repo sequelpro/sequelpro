@@ -40,7 +40,7 @@
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-#import "MainController.h"
+#import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPConnectionController.h"
 #import "SPHistoryController.h"
@@ -52,6 +52,12 @@
 // Used for printing
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
+
+@interface TableDocument (PrivateAPI)
+
+- (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
+
+@end
 
 @implementation TableDocument
 
@@ -74,6 +80,7 @@
 		[printWebView setFrameLoadDelegate:self];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		queryEditorInitString = nil;
 
 	}
 
@@ -198,6 +205,14 @@
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
 											  notificationName:@"Connected"];
+											
+	// Insert queryEditorInitString into the Query Editor if defined
+	if(queryEditorInitString && [queryEditorInitString length]) {
+		[self viewQuery:self];
+		[customQueryInstance doPerformLoadQueryService:queryEditorInitString];
+		[queryEditorInitString release];
+		queryEditorInitString = nil;
+	}
 
 }
 
@@ -243,7 +258,7 @@
 	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
 	
 	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
-	[printAccessory initWithNibName:@"printAccessory" bundle:nil];
+	[printAccessory initWithNibName:@"PrintAccessory" bundle:nil];
 	[printAccessory setPrintView:printWebView];
 	[printPanel addAccessoryController:printAccessory];
 	
@@ -404,8 +419,12 @@
 		return;
 	}
 
-	// Save existing scroll position and details
-	[spHistoryControllerInstance updateHistoryEntries];
+	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingHistoryState];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance updateHistoryEntries];
+		[spHistoryControllerInstance setModifyingHistoryState:YES];
+	}
 
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
@@ -424,7 +443,18 @@
 	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", mySQLVersion, [self name], [self database]]];
 
 	// Add a history entry
-	[spHistoryControllerInstance updateHistoryEntries];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance setModifyingHistoryState:NO];
+		[spHistoryControllerInstance updateHistoryEntries];
+	}
+
+	// Set focus to table list filter field if visible
+	// otherwise set focus to Table List view
+	if ( [[tablesListInstance tables] count] > 20 )
+		[tableWindow makeFirstResponder:listFilterField];
+	else
+		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+
 }
 
 /**
@@ -519,6 +549,12 @@
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									  otherButton:nil 
 						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -1256,6 +1292,16 @@
 #pragma mark Other Methods
 
 /**
+ * Set that query which will be inserted into the Query Editor
+ * after establishing the connection
+ */
+
+- (void)initQueryEditorWithString:(NSString *)query
+{
+	queryEditorInitString = [query retain];
+}
+
+/**
  * Invoked when user hits the cancel button or close button in
  * dialogs such as the variableSheet or the createTableSyntaxSheet
  */
@@ -1282,6 +1328,15 @@
 }
 
 /**
+ * Inserts query into the Custom Query editor
+ */
+- (void)doPerformLoadQueryService:(NSString *)query
+{
+	[self viewQuery:nil];
+	[customQueryInstance doPerformLoadQueryService:query];
+}
+
+/**
  * Flushes the mysql privileges
  */
 - (void)flushPrivileges:(id)sender
@@ -1303,30 +1358,49 @@
  */
 - (void)showVariables:(id)sender
 {
-	MCPResult *theResult;
-	NSMutableArray *tempResult = [NSMutableArray array];
 	int i;
 	
-	if ( variables ) {
-		[variables release];
-		variables = nil;
-	}
-	//get variables
-	theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
+	[variablesCountTextField setStringValue:@""];
+	
+	if (variables) [variables release], variables = nil;
+	
+	// Get variables
+	MCPResult *theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
+	
 	if ([theResult numOfRows]) [theResult dataSeek:0];
+	
+	variables = [[NSMutableArray alloc] init];
+	
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[tempResult addObject:[theResult fetchRowAsDictionary]];
+		[variables addObject:[theResult fetchRowAsDictionary]];
 	}
-	variables = [[NSArray arrayWithArray:tempResult] retain];
+		
+	// Weak reference
+	variablesFiltered = variables;
+	
 	[variablesTableView reloadData];
-	//show variables sheet
+	
+	// If the search field already has value from when the panel was previously open, apply the filter.
+	if ([[variablesSearchField stringValue] length] > 0) {
+		[self _updateServerVariablesFilterForFilterString:[variablesSearchField stringValue]];
+	}
+	
+	// Show variables sheet
 	[NSApp beginSheet:variablesSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	[NSApp runModalForWindow:variablesSheet];
 	
+	[NSApp runModalForWindow:variablesSheet];
 	[NSApp endSheet:variablesSheet];
+	
 	[variablesSheet orderOut:nil];
+	
+	// If the filtered array is allocated and its not a reference to the variables array get rid of it
+	if ((variablesFiltered) && (variablesFiltered != variables)) {
+		[variablesFiltered release], variablesFiltered = nil;
+	}
+	
+	if (variables) [variables release], variables = nil;
 }
 
 - (void)closeConnection
@@ -1372,9 +1446,9 @@
 		return [connectionController name];
 	}
 	if ([connectionController type] == SP_CONNECTION_SOCKET) {
-		return [NSString stringWithFormat:@"%@@localhost", [connectionController user]?[connectionController user]:@""];
+		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
-	return [NSString stringWithFormat:@"%@@%@", [connectionController user]?[connectionController user]:@"", [connectionController host]?[connectionController host]:@""];
+	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
 }
 
 /**
@@ -1454,6 +1528,243 @@
 #pragma mark Menu methods
 
 /**
+ * Returns the actual enabled list of encodings for open/save SQL files.
+ */
+- (NSArray *)enabledEncodings
+{
+	static const NSInteger plainTextFileStringEncodingsSupported[] = {
+		kCFStringEncodingUTF8, 
+		kCFStringEncodingUTF16, 
+		kCFStringEncodingUTF16BE, 
+		kCFStringEncodingUTF16LE, 
+		kCFStringEncodingUTF32, 
+		kCFStringEncodingWindowsLatin1, 
+		kCFStringEncodingISOLatin1, 
+		kCFStringEncodingWindowsLatin2, 
+		kCFStringEncodingISOLatin2, 
+		kCFStringEncodingISOLatin3, 
+		kCFStringEncodingISOLatin4, 
+		kCFStringEncodingWindowsLatin5, 
+		kCFStringEncodingKOI8_R, 
+		kCFStringEncodingKOI8_U, 
+		kCFStringEncodingMacRoman, 
+		kCFStringEncodingMacJapanese, 
+		kCFStringEncodingShiftJIS, 
+		kCFStringEncodingEUC_JP, 
+		kCFStringEncodingISO_2022_JP, 
+		kCFStringEncodingMacChineseTrad, 
+		kCFStringEncodingMacChineseSimp, 
+		kCFStringEncodingBig5, 
+		kCFStringEncodingGB_18030_2000, 
+		kCFStringEncodingEUC_CN, 
+		kCFStringEncodingEUC_TW, 
+		kCFStringEncodingMacKorean, 
+		kCFStringEncodingEUC_KR, 
+		-1
+		};
+		NSStringEncoding encoding;
+		NSInteger cnt = 0;
+		NSMutableArray *encs = [NSMutableArray array];
+		while (plainTextFileStringEncodingsSupported[cnt] != -1)
+			if ((encoding = CFStringConvertEncodingToNSStringEncoding(plainTextFileStringEncodingsSupported[cnt++])) != kCFStringEncodingInvalidId)
+				[encs addObject:[NSNumber numberWithUnsignedInteger:encoding]];
+
+		return encs;
+}
+
+/**
+ * This method initializes the provided popup with list of encodings; 
+ * it also sets up the selected encoding as indicated and if includeDefaultItem is YES. 
+ * Otherwise the tags are set to the NSStringEncoding value for the encoding.
+ */
+- (void)setupPopUp:(NSPopUpButton *)popup selectedEncoding:(NSUInteger)selectedEncoding withDefaultEntry:(BOOL)includeDefaultItem
+{
+	NSArray *encs = [self enabledEncodings];
+	NSUInteger cnt, numEncodings, itemToSelect = 0;
+
+	// Put the encodings in the popup
+	[popup removeAllItems];
+
+	// Make sure the initial selected encoding appears in the list
+	if (!includeDefaultItem && (selectedEncoding != NoStringEncoding) && ![encs containsObject:[NSNumber numberWithUnsignedInteger:selectedEncoding]]) encs = [encs arrayByAddingObject:[NSNumber numberWithUnsignedInteger:selectedEncoding]];
+
+	numEncodings = [encs count];
+
+	// Fill with encodings
+	for (cnt = 0; cnt < numEncodings; cnt++) {
+		NSStringEncoding enc = [[encs objectAtIndex:cnt] unsignedIntegerValue];
+		[popup addItemWithTitle:[NSString localizedNameOfStringEncoding:enc]];
+		[[popup lastItem] setTag:enc];
+		[[popup lastItem] setEnabled:YES];
+		if (enc == selectedEncoding) itemToSelect = [popup numberOfItems] - 1;
+	}
+
+	[popup selectItemAtIndex:itemToSelect];
+}
+
+
+/**
+ * Opens SP session file(s) or a SQL file
+ */
+- (IBAction)openConnectionSheet:(id)sender
+{
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setDelegate:self];
+	[panel setCanChooseDirectories:NO];
+	[panel setAllowsMultipleSelection:YES];
+	[panel setResolvesAliases:YES];
+	[panel setAccessoryView:encodingAccessoryView];
+
+	// Set up encoding list
+	[encodingPopUp setEnabled:NO];
+	
+	// If no lastSqlFileEncoding in prefs set it to UTF-8
+	if(![prefs integerForKey:@"lastSqlFileEncoding"]) {
+		[prefs setInteger:4 forKey:@"lastSqlFileEncoding"];
+		[prefs synchronize];
+	}
+
+	[self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
+	
+	[panel beginSheetForDirectory:nil 
+						   file:@"" 
+						  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
+				 modalForWindow:tableWindow 
+				  modalDelegate:self didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
+					contextInfo:NULL];
+
+}
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
+{
+	if ( returnCode ) {
+		NSArray *fileNames = [panel filenames];
+		NSString *filename;
+		
+		for(filename in fileNames) {
+			if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+
+				NSError *err;
+				NSString *content = [NSString stringWithContentsOfFile:filename encoding:[[encodingPopUp selectedItem] tag] error:&err];
+				
+				// If file couldn't read show an alert and return
+				if(!content) {
+					NSAlert *errorAlert = [NSAlert alertWithError:err];
+					[errorAlert runModal];
+					return;
+				}
+				
+				// Save last used encoding
+				[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+
+				// Check if at least one document exists
+				if (![[[NSDocumentController sharedDocumentController] documents] count]) {
+					// TODO : maybe open a connection first
+					// return;
+					TableDocument *firstTableDocument;
+
+					// Manually open a new document, setting SPAppController as sender to trigger autoconnection
+					if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+						[firstTableDocument setShouldAutomaticallyConnect:NO];
+						[firstTableDocument initQueryEditorWithString:content];
+						[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
+						[firstTableDocument makeWindowControllers];
+						[firstTableDocument showWindows];
+					}
+				} else {
+					// Pass query to the Query editor of the current document
+					[[[NSDocumentController sharedDocumentController] currentDocument] doPerformLoadQueryService:content];
+				}
+
+				break; // open only the first SQL file
+			}
+			else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
+				NSLog(@"open connection %@", filename);
+			}
+			else {
+				NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
+			}
+		}
+	}
+}
+
+/**
+ * NSOpenPanel delegate to control encoding popup and allowMultipleSelection
+ */
+- (void)panelSelectionDidChange:(id)sender
+{
+
+	if([sender isKindOfClass:[NSOpenPanel class]]) {
+		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+			[encodingPopUp setEnabled:YES];
+			[sender setAllowsMultipleSelection:NO];
+		} else {
+			[encodingPopUp setEnabled:NO];
+			[sender setAllowsMultipleSelection:YES];
+		}
+	}
+	
+}
+
+/**
+ * Saves SP session or if Custom Query tab is active the editor's content as SQL file
+ */
+- (IBAction)saveConnectionSheet:(id)sender
+{
+	
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	NSString *filename;
+
+	[panel setAllowsOtherFileTypes:NO];
+	[panel setCanSelectHiddenExtension:YES];
+	
+	if( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2 ) {
+
+		// Custom Query tab is active thus save the editor's content as SQL file
+		[panel setAccessoryView:encodingAccessoryView];
+		[panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
+		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
+		filename = [NSString stringWithString:@""];
+
+		// If no lastSqlFileEncoding in prefs set it to UTF-8
+		if(![prefs integerForKey:@"lastSqlFileEncoding"]) {
+			[prefs setInteger:4 forKey:@"lastSqlFileEncoding"];
+			[prefs synchronize];
+		}
+
+		// Set up encoding list
+		[encodingPopUp setEnabled:YES];
+		[self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
+
+	} else {
+
+		// Save current session (open connection windows as SPF file)
+		[panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
+		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
+		filename = [NSString stringWithFormat:@"%@", [self name]];
+
+	}
+	
+	[panel beginSheetForDirectory:nil 
+						   file:filename 
+				 modalForWindow:tableWindow 
+				  modalDelegate:self 
+				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
+					contextInfo:NULL];
+}
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+
+	if ( returnCode ) {
+		NSString *fileName = [panel filename];
+		NSLog(@"save as: '%@'", fileName);
+		
+		[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+		
+	}
+}
+/**
  * Passes the request to the tableDump object
  */
 - (IBAction)import:(id)sender
@@ -1508,7 +1819,7 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"Variables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
 /**
@@ -1679,10 +1990,10 @@
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if (variables) {
+		if ([variablesFiltered count] > 0) {
 			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
 			
-			for (NSDictionary *variable in variables) 
+			for (NSDictionary *variable in variablesFiltered) 
 			{
 				[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
 			}
@@ -2101,7 +2412,7 @@
  */
 - (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
 {	
-	KeyChain *keychain = [[KeyChain alloc] init];
+	SPKeychain *keychain = [[SPKeychain alloc] init];
 	
 	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
 	
@@ -2137,10 +2448,16 @@
 /**
  * When adding a database, enable the button only if the new name has a length.
  */
-- (void)controlTextDidChange:(NSNotification *)aNotification
+- (void)controlTextDidChange:(NSNotification *)notification
 {
-	if ([aNotification object] == databaseNameField) {
+	id object = [notification object];
+	
+	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
+	}
+	
+	if (object == variablesSearchField) {
+		[self _updateServerVariablesFilterForFilterString:[object stringValue]];
 	}
 }
 
@@ -2152,66 +2469,8 @@
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
-
 	return subview == [[tableInfoTable superview] superview];
 }
-
-/**
- * defines max position of splitView
- */
-//- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
-//{
-//	if (sender == contentViewSplitter) {
-//		return 300;
-//	} else {
-//		// 
-//		return proposedMax;//([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
-//	}
-//}
-
-/**
- * defines min position of splitView
- */
-//- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
-//{
-//	if (sender == tableListSplitter) {
-//		return [sender frame].size.height - [sender dividerThickness] - 145;
-//		//return [sender frame].size.height - [sender dividerThickness] - ([tableInfoTable rowHeight] * [tableInfoTable numberOfRows] + 25);
-//	} else {
-//		return 160;
-//	}
-//}
-
-//-(void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize
-//{
-//	[sender adjustSubviews];
-//	
-//	if (sender == tableListSplitter && 
-//		![tableListSplitter isSubviewCollapsed:[[sender subviews] objectAtIndex:1]]) {
-//		
-//		CGFloat dividerThickness = [sender dividerThickness];
-//		NSRect topRect = [[[sender subviews] objectAtIndex:0] frame];
-//		NSRect bottomRect = [[[sender subviews] objectAtIndex:1] frame];
-//		NSRect newFrame = [sender frame];
-//		
-//		topRect.size.height = newFrame.size.height - 145 - dividerThickness;
-//		topRect.size.width = newFrame.size.width;
-//		topRect.origin = NSMakePoint(0, 0);
-//		
-//		bottomRect.size.height = newFrame.size.height - topRect.size.height - dividerThickness;
-//		bottomRect.size.width = newFrame.size.width;
-//		bottomRect.origin.y = topRect.size.height + dividerThickness;
-//		
-//		[[[sender subviews] objectAtIndex:0] setFrame:topRect];
-//		[[[sender subviews] objectAtIndex:1] setFrame:bottomRect];
-//	}
-//}
-
-
-//- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex
-//{
-//	return splitView == tableListSplitter;
-//}
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
@@ -2255,20 +2514,19 @@
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [variables count];
+	return [variablesFiltered count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{
-	id theValue;
+{	
+	id theValue = [[variablesFiltered objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 	
-	theValue = [[variables objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-	
-	if ( [theValue isKindOfClass:[NSData class]] ) {
+	if ([theValue isKindOfClass:[NSData class]]) {
 		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 		if (theValue == nil) {
 			[[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		}
+		
 		if (theValue) [theValue autorelease];
 	}
 	
@@ -2285,6 +2543,7 @@
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
+	if(queryEditorInitString) [queryEditorInitString release];
 	[super dealloc];
 }
 		
@@ -2296,6 +2555,59 @@
 	} else {
 		[userManagerInstance show];
 	}
+}
+
+@end
+
+@implementation TableDocument (PrivateAPI)
+
+/**
+ * Filter the displayed server variables by matching the variable name and value against the
+ * filter string.
+ */
+- (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString
+{
+	[saveVariablesButton setEnabled:NO];
+	
+	filterString = [[filterString lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	// If the filtered array is allocated and its not a reference to the variables array
+	// relase it to prevent memory leaks upon the next allocation.
+	if ((variablesFiltered) && (variablesFiltered != variables)) {
+		[variablesFiltered release], variablesFiltered = nil;
+	}
+	
+	variablesFiltered = [[NSMutableArray alloc] init];
+	
+	if ([filterString length] == 0) {
+		[variablesFiltered release];
+		variablesFiltered = variables;
+		
+		[saveVariablesButton setEnabled:YES];
+		[saveVariablesButton setTitle:@"Save As..."];
+		[variablesCountTextField setStringValue:@""];
+		
+		[variablesTableView reloadData];
+		
+		return;
+	}
+	
+	for (NSDictionary *variable in variables) 
+	{		
+		if (([[variable objectForKey:@"Variable_name"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+			([[variable objectForKey:@"Value"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))
+		{
+			[variablesFiltered addObject:variable];
+		}
+	}
+	
+	[variablesTableView reloadData];
+	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered server variables count"), [variablesFiltered count], [variables count]]];
+	
+	if ([variablesFiltered count] == 0) return;
+	
+	[saveVariablesButton setEnabled:YES];
+	[saveVariablesButton setTitle:@"Save View As..."];
 }
 
 @end

@@ -31,7 +31,7 @@
 {
 	defaultsController = [NSUserDefaultsController sharedUserDefaultsController];
 	printWebView = nil;
-    return [super initWithNibName:@"printAccessory" bundle:nibBundleOrNil];
+    return [super initWithNibName:@"PrintAccessory" bundle:nibBundleOrNil];
 }
 
 - (void)awakeFromNib
@@ -47,10 +47,7 @@
 
 - (NSSet *)keyPathsForValuesAffectingPreview
 {
-	return [NSSet setWithObjects:
-			@"defaultsController.values.PrintBackground",
-//			@"defaultsController.values.PrintGrid",
-			nil];
+	return [NSSet setWithObjects:@"defaultsController.values.PrintBackground", nil];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -67,7 +64,7 @@
  * Set the print view that the print accessory controls; set initial 
  * preferences based on user defaults.
  */
-- (void) setPrintView:(WebView *)theWebView
+- (void)setPrintView:(WebView *)theWebView
 {
 	printWebView = theWebView;
 	[[printWebView preferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue]];

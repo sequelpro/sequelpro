@@ -1,5 +1,5 @@
 //
-//  $Id: MCPRelation.m 927 2009-06-24 10:53:07Z stuart02 $
+//  $Id$
 //
 //  MCPRelation.m
 //  MCPKit

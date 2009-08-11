@@ -1,4 +1,6 @@
 //
+//  $Id$
+//
 //  SPSSHTunnel.h
 //  sequel-pro
 //
@@ -27,7 +29,8 @@
 enum spsshtunnel_password_modes
 {
 	SPSSH_PASSWORD_USES_KEYCHAIN = 0,
-	SPSSH_PASSWORD_ASKS_UI = 1
+	SPSSH_PASSWORD_ASKS_UI = 1,
+	SPSSH_NO_PASSWORD = 2
 };
 
 @interface SPSSHTunnel : NSObject <MCPConnectionProxy>

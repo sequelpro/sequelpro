@@ -1,5 +1,5 @@
 //
-//  $Id: MCPObject.h 545 2009-04-10 14:49:45Z stuart02 $
+//  $Id$
 //
 //  MCPObject.h
 //  MCPKit

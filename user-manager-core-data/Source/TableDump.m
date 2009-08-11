@@ -38,11 +38,13 @@
 
 @implementation TableDump
 
-//IBAction methods
-- (IBAction)reloadTables:(id)sender
-/*
- get the tables in db
+#pragma mark -
+#pragma mark IBAction methods
+
+/**
+ * Get the tables in db
  */
+- (IBAction)reloadTables:(id)sender
 {
 	MCPResult *queryResult;
 	int i;
@@ -52,21 +54,32 @@
 	queryResult = (MCPResult *)[mySQLConnection listTables];
 	
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	NSMutableArray *unsortedTables = [NSMutableArray array];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES], NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0), nil]];
+		[unsortedTables addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
 	}
 	
+	NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+	NSArray *sortedTables = [unsortedTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+	[desc release];
+	
+	for ( i = 0 ; i < [sortedTables count]; i++ ) {
+		[tables addObject:
+			[NSMutableArray arrayWithObjects:
+				[NSNumber numberWithBool:YES], 
+				[sortedTables objectAtIndex:i], 
+				nil]];
+	}
+		
 	[exportDumpTableView reloadData];
 	[exportMultipleCSVTableView reloadData];
 	[exportMultipleXMLTableView reloadData];
-	
 }
 
-- (IBAction)selectTables:(id)sender
-/*
- selects or deselects all tables
+/**
+ * Selects or deselects all tables
  */
+- (IBAction)selectTables:(id)sender
 {
 	NSEnumerator *enumerator;
 	id theObject;
@@ -87,7 +100,7 @@
 	[exportMultipleXMLTableView reloadData];
 }
 
-/*
+/**
  * Common method for ending modal sessions
  */
 - (IBAction)closeSheet:(id)sender
@@ -96,7 +109,7 @@
 }
 
 #pragma mark -
-#pragma mark export methods
+#pragma mark Export methods
 
 - (void)export
 {
@@ -348,7 +361,7 @@
 }
 
 #pragma mark -
-#pragma mark import methods
+#pragma mark Import methods
 
 - (void)importFile
 /*
@@ -728,7 +741,7 @@
 				[singleProgressSheet orderOut:nil];
 			}
 			
-			[tableContentInstance reloadTableValues:self];
+			[tableContentInstance loadTableValues];
 		}
 		
 		//display errors
@@ -836,8 +849,7 @@
 }
 
 #pragma mark -
-#pragma mark format methods
-
+#pragma mark Format methods
 
 /*
  Dump the selected tables to a file handle in SQL format.
@@ -2313,7 +2325,7 @@
 }
 
 #pragma mark -
-#pragma mark tableView datasource methods
+#pragma mark Table view datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
@@ -2430,7 +2442,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 
 
 #pragma mark -
-#pragma mark other
+#pragma mark Other
 
 - (void)awakeFromNib
 {
@@ -2481,6 +2493,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
     return items;
 }
 
+#pragma mark -
 #pragma mark New Export methods
 
 - (IBAction)switchTab:(id)sender

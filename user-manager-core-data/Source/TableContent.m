@@ -52,8 +52,7 @@
 {
 	if ((self == [super init])) {
 		
-		fullResult     = [[NSMutableArray alloc] init];
-		filteredResult = [[NSMutableArray alloc] init];
+		tableValues      = [[NSMutableArray alloc] init];
 		dataColumns    = [[NSMutableArray alloc] init];
 		oldRow         = [[NSMutableArray alloc] init];
 		
@@ -63,7 +62,6 @@
 		// editData	  = nil;
 		keys		  = nil;
 
-		areShowingAllRows = false;
 		currentlyEditingRow = -1;
 
 		sortColumnToRestore = nil;
@@ -74,6 +72,8 @@
 		filterFieldToRestore = nil;
 		filterComparisonToRestore = nil;
 		filterValueToRestore = nil;
+		isFiltered = NO;
+		isLimited = NO;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 		
@@ -89,9 +89,12 @@
 	[tableContentView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
+#pragma mark -
+#pragma mark Table loading methods and information
+
 /*
  * Loads aTable, retrieving column information and updating the tableViewColumns before
- * reloading table data into the fullResults array and redrawing the table.
+ * reloading table data into the data array and redrawing the table.
  */
 - (void)loadTable:(NSString *)aTable
 {
@@ -100,8 +103,6 @@
 	NSArray *columnNames;
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
-	NSString	*query;
-	MCPResult	*queryResult;
 
 	// Clear the selection, and abort the reload if the user is still editing a row
 	[tableContentView deselectAll:self];
@@ -131,10 +132,10 @@
 	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isKindOfClass:[NSNull class]] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
 	{
 		// Empty the stored data arrays
-		[fullResult removeAllObjects];
-		[filteredResult removeAllObjects];
+		[tableValues removeAllObjects];
 		[tableContentView reloadData];
-		areShowingAllRows = YES;
+		isFiltered = NO;
+		isLimited = NO;
 		[countText setStringValue:@""];
 
 		// Empty and disable filter options
@@ -150,7 +151,6 @@
 
 		// Empty and disable the limit field
 		[limitRowsField setStringValue:@""];
-		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 		[limitRowsField setEnabled:NO];
 		[limitRowsButton setEnabled:NO];
 		[limitRowsStepper setEnabled:NO];
@@ -195,9 +195,8 @@
 	// to adjustify "Limit From:"
 	maxNumRowsOfCurrentTable = [[[tableDataInstance statusValues] objectForKey:@"Rows"] intValue];
 
-	// Retrieve the number of rows in the table and initially mark all as being visible.
+	// Retrieve the number of rows in the table
 	numRows = [self getNumberOfRows];
-	areShowingAllRows = YES;
 	
 	NSString *nullValue = [prefs objectForKey:@"NullValue"];
 	
@@ -237,7 +236,7 @@
 
 		// Set the line break mode and an NSFormatter subclass which truncates long strings for display
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-		//[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
@@ -318,7 +317,6 @@
 		{
 			if (filterComparisonToRestore) [compareField selectItemWithTitle:filterComparisonToRestore];
 			if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
-			areShowingAllRows = NO;
 		}
 	}
 
@@ -335,59 +333,20 @@
 		[limitRowsField setEnabled:YES];
 		[limitRowsButton setEnabled:YES];
 		[limitRowsStepper setEnabled:YES];
-		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-									   [prefs integerForKey:@"LimitResultsValue"]]];
-		if ([prefs integerForKey:@"LimitResultsValue"] < numRows)
-			areShowingAllRows = NO;
 	} else {
 		[limitRowsField setEnabled:NO];
 		[limitRowsButton setEnabled:NO];
 		[limitRowsStepper setEnabled:NO];
 		[limitRowsField setStringValue:@""];
-		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
 	}
 
-	// set the state of the table buttons
+	// Set the state of the table buttons
 	[addButton setEnabled:YES];
 	[copyButton setEnabled:NO];
 	[removeButton setEnabled:NO];
 
-	// Perform the data query and store the result as an array containing a dictionary per result row
-	query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-	if ( sortCol ) {
-		query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
-		if ( isDesc )
-			query = [query stringByAppendingString:@" DESC"];
-	}
-	
-	if ( [prefs boolForKey:@"LimitResults"] ) {
-		if ( [limitRowsField intValue] <= 0 ) {
-			[limitRowsField setStringValue:@"1"];
-		}
-		query = [query stringByAppendingString:
-					[NSString stringWithFormat:@" LIMIT %d,%d",
-						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
-	}
-
-	[self setUsedQuery:query];
-	
-	queryResult = [mySQLConnection queryString:query];
-	if ( queryResult == nil ) {
-		NSLog(@"Loading table data for %@ failed, query string was: %@", aTable, query);
-		return;
-	}
-	
-	[fullResult setArray:[self fetchResultAsArray:queryResult]];
-	
-	// Apply any filtering and update the row count
-	if (!areShowingAllRows) {
-		[self filterTable:self];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
-	}
-	else {
-		[filteredResult setArray:fullResult];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), [fullResult count]]];
-	}
+	// Trigger a data refresh
+	[self loadTableValues];
 
 	// Restore the view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
@@ -404,7 +363,7 @@
 	[tableContentView reloadData];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInstance:self withTableData:filteredResult withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
+	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -412,6 +371,303 @@
 	// Clear any details to restore now that they have been restored
 	[self clearDetailsToRestore];
 }
+
+/**
+ * Reload the table data without reconfiguring the tableView,
+ * using filters and limits as appropriate.
+ * Will not refresh the table view itself.
+ */
+- (void) loadTableValues
+{
+	// If no table is selected, return
+	if(!selectedTable) return;
+
+	NSMutableString *queryString;
+	NSString *queryStringBeforeLimit = nil;
+	NSString *filterString;
+	MCPResult *queryResult;
+	
+	// Notify any listeners that a query has started
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	
+	// Start construction of the query string
+	queryString = [NSMutableString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
+
+	// Add a filter string if appropriate
+	filterString = [self tableFilterString];
+	if (filterString) {
+		[queryString appendFormat:@" WHERE %@", filterString];
+		isFiltered = YES;
+	} else {
+		isFiltered = NO;
+	}
+
+	// Add sorting details if appropriate
+	if (sortCol) {
+		[queryString appendFormat:@" ORDER BY @%", [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+		if (isDesc) [queryString appendString:@" DESC"];
+	}
+
+	// Check to see if a limit needs to be applied
+	if ([prefs boolForKey:@"LimitResults"]) {
+
+		// Ensure the limit isn't negative
+		if ([limitRowsField intValue] <= 0) {
+			[limitRowsField setStringValue:@"1"];
+		}
+
+		// If the result set is being limited, take a copy of the string to allow resetting limit
+		// if no results are found
+		if ([limitRowsField intValue] > 1) {
+			queryStringBeforeLimit = [NSString stringWithString:queryString];
+		}
+
+		// Append the limit settings
+		[queryString appendFormat:@" LIMIT %d,%d", [limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
+	}
+	
+	[self setUsedQuery:queryString];
+	
+	// Run the query and capture the result
+	queryResult = [mySQLConnection queryString:queryString];
+	[tableValues setArray:[self fetchResultAsArray:queryResult]];
+	numRows = [self getNumberOfRows];
+
+	// If the result is empty, and a limit is active, reset the limit
+	if ([prefs boolForKey:@"LimitResults"] && queryStringBeforeLimit && ![tableValues count]) {
+		[limitRowsField setStringValue:@"1"];
+		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:@"LimitResultsValue"]];
+		[self setUsedQuery:queryString];
+		queryResult = [mySQLConnection queryString:queryString];
+		[tableValues setArray:[self fetchResultAsArray:queryResult]];
+		numRows = [self getNumberOfRows];
+	}
+
+	if ([prefs boolForKey:@"LimitResults"]
+		&& ([limitRowsField intValue] > 1
+			|| [tableValues count] == [prefs integerForKey:@"LimitResultsValue"]))
+	{
+		isLimited = YES;
+	} else {
+		isLimited = NO;
+	}
+
+	// Set the filter text
+	[self updateCountText];
+	
+	// Notify listenters that the query has finished
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+}
+
+/**
+ * Returns the query string for the current filter settings,
+ * ready to be dropped into a WHERE clause, or nil if no filtering
+ * is active.
+ */
+- (NSString *) tableFilterString
+{
+	BOOL doQuote = YES;
+	BOOL ignoreArgument = NO;
+	int i;
+	int tag = [[compareField selectedItem] tag];
+	NSString *filterString;
+	NSString *compareOperator = @"";
+	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
+
+	// If the filter field is empty and the selected filter is not looking
+	// for NULLs or NOT NULLs, then no filtering is required - return nil.
+	if (([argument length] == 0)
+		&& (![[[compareField selectedItem] title] hasSuffix:@"NULL"]))
+	{
+		[argument release];
+		return nil;
+	}
+
+	// Construct the filter string
+	if (![compareType isEqualToString:@""]) {
+		if ([compareType isEqualToString:@"string"]) {
+			// String comparision
+			switch (tag) {
+				case 0:
+					compareOperator = @"LIKE";
+					break;
+				case 1:
+					compareOperator = @"NOT LIKE";
+					break;
+				case 2:
+					compareOperator = @"LIKE";
+					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
+					break;
+				case 3:
+					compareOperator = @"NOT LIKE";
+					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
+					break;
+				case 4:
+					compareOperator = @"IN";
+					doQuote = NO;
+					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+					break;
+				case 5:
+					compareOperator = @"IS NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+				case 6:
+					compareOperator = @"IS NOT NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+			}
+		} else if ( [compareType isEqualToString:@"number"] ) {
+			//number comparision
+			switch ( tag ) {
+				case 0:
+					compareOperator = @"=";
+					break;
+				case 1:
+					compareOperator = @"!=";
+					break;
+				case 2:
+					compareOperator = @">";
+					break;
+				case 3:
+					compareOperator = @"<";
+					break;
+				case 4:
+					compareOperator = @">=";
+					break;
+				case 5:
+					compareOperator = @"<=";
+					break;
+				case 6:
+					compareOperator = @"IN";
+					doQuote = NO;
+					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
+					break;
+				case 7:
+					compareOperator = @"LIKE";
+					doQuote = YES;
+					ignoreArgument = YES;
+					break;
+				case 8:
+					compareOperator = @"IS NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+				case 9:
+					compareOperator = @"IS NOT NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+			}
+		} else if ( [compareType isEqualToString:@"date"] ) {
+			//date comparision
+			switch ( tag ) {
+				case 0:
+					compareOperator = @"=";
+					break;
+				case 1:
+					compareOperator = @"!=";
+					break;
+				case 2:
+					compareOperator = @">";
+					break;
+				case 3:
+					compareOperator = @"<";
+					break;
+				case 4:
+					compareOperator = @">=";
+					break;
+				case 5:
+					compareOperator = @"<=";
+					break;
+				case 6:
+					compareOperator = @"IS NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+				case 7:
+					compareOperator = @"IS NOT NULL";
+					doQuote = NO;
+					ignoreArgument = YES;
+					break;
+			}
+		} else {
+			doQuote = NO;
+			ignoreArgument = YES;
+			NSLog(@"ERROR: unknown compare type %@", compareType);
+		}
+		
+		if (doQuote) {
+			//escape special characters
+			for ( i = 0 ; i < [argument length] ; i++ ) {
+				if ( [argument characterAtIndex:i] == '\\' ) {
+					[argument insertString:@"\\" atIndex:i];
+					i++;
+				}
+			}
+			[argument setString:[mySQLConnection prepareString:argument]];
+			filterString = [NSString stringWithFormat:@"%@ %@ \"%@\"",
+							[[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, argument];			
+		} else {
+			filterString = [NSString stringWithFormat:@"%@ %@ %@",
+							[[fieldField titleOfSelectedItem] backtickQuotedString],
+							compareOperator, (ignoreArgument) ? @"" : argument];
+		}
+	}
+	
+	[argument release];
+
+	// Return the filter string
+	return filterString;
+}
+
+/*
+ * Update the table count/selection text
+ */
+- (void) updateCountText
+{
+	NSString *rowString;
+	NSMutableString *countString = [NSMutableString string];
+
+	// If no filter or limit is active, show just the count of rows in the table
+	if (!isFiltered && !isLimited) {
+		if ([tableValues count] == 1)
+			[countString appendFormat:NSLocalizedString(@"%d row in table", @"text showing a single row in the result"), [tableValues count]];
+		else
+			[countString appendFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), [tableValues count]];
+
+	// If a limit is active, display a string suggesting a limit is active
+	} else if (!isFiltered && isLimited) {
+		[countString appendFormat:NSLocalizedString(@"Rows %d-%d from table", @"text showing how many rows are in the limited result"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1];
+
+	// If just a filter is active, show a count and an indication a filter is active
+	} else if (isFiltered && !isLimited) {
+		if ([tableValues count] == 1)
+			[countString appendFormat:NSLocalizedString(@"%d row matches filter", @"text showing how a single rows matched filter"), [tableValues count]];
+		else
+			[countString appendFormat:NSLocalizedString(@"%d rows match filter", @"text showing how many rows matched filter"), [tableValues count]];
+
+	// If both a filter and limit is active, display full string
+	} else {
+		[countString appendFormat:NSLocalizedString(@"Rows %d-%d rows from filter matches", @"text showing how many rows are in the limited filter match"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1];
+	}
+
+	// If rows are selected, append selection count
+	if ([tableContentView numberOfSelectedRows] > 0) {
+		[countString appendString:@"; "];
+		if ([tableContentView numberOfSelectedRows] == 1)
+			rowString = [NSString stringWithString:NSLocalizedString(@"row", @"singular word for row")];
+		else
+			rowString = [NSString stringWithString:NSLocalizedString(@"rows", @"plural word for rows")];
+		[countString appendFormat:NSLocalizedString(@"%d %@ selected", @"text showing how many rows are selected"), [tableContentView numberOfSelectedRows], rowString];
+	}
+
+	[countText setStringValue:countString];
+}
+
+#pragma mark -
+#pragma mark Table interface actions
 
 /*
  * Reloads the current table data, performing a new SQL query. Now attempts to preserve sort order, filters, and viewport.
@@ -432,89 +688,13 @@
 }
 
 /*
- * Reload the table values without reconfiguring the tableView (with filter and limit if set)
- */
-- (IBAction)reloadTableValues:(id)sender
-{
-	NSString *queryString;
-	MCPResult *queryResult;
-	
-	//query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-	
-	// Store the current first responder so filter field doesn't steal focus
-	id currentFirstResponder = [tableWindow firstResponder];
-
-	//enable or disable limit fields
-	if ( [prefs boolForKey:@"LimitResults"] ) {
-		[limitRowsField setEnabled:YES];
-		[limitRowsButton setEnabled:YES];
-		[limitRowsStepper setEnabled:YES];
-		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-									   [prefs integerForKey:@"LimitResultsValue"]]];
-	} else {
-		[limitRowsField setEnabled:NO];
-		[limitRowsButton setEnabled:NO];
-		[limitRowsStepper setEnabled:NO];
-		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
-		[limitRowsField setStringValue:@""];
-	}
-
-	[tableWindow makeFirstResponder:currentFirstResponder];
-	
-	//	queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-	if ( sortCol ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
-		//		queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
-		if ( isDesc )
-			queryString = [queryString stringByAppendingString:@" DESC"];
-	}
-	if ( [prefs boolForKey:@"LimitResults"] ) {
-		if ( [limitRowsField intValue] <= 0 ) {
-			[limitRowsField setStringValue:@"1"];
-		}
-		queryString = [queryString stringByAppendingString:
-					   [NSString stringWithFormat:@" LIMIT %d,%d",
-						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
-		[limitRowsField selectText:self];
-	}
-	
-	[self setUsedQuery:queryString];
-	
-	queryResult = [mySQLConnection queryString:queryString];
-	//	[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
-	[fullResult setArray:[self fetchResultAsArray:queryResult]];
-	numRows = [self getNumberOfRows];
-	if ( !areShowingAllRows ) {
-		[self filterTable:self];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
-	} else {
-		[filteredResult setArray:fullResult];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
-	}
-	[tableContentView reloadData];
-	
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-}
-
-
-/*
  * Filter the table with arguments given by the user
  */
 - (IBAction)filterTable:(id)sender
 {
-	MCPResult *theResult;
-	int tag = [[compareField selectedItem] tag];
-	NSString *compareOperator = @"";
-	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
-	NSString *queryString;
-	int i;
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) {
-		[argument release];
 		return;
 	}
 
@@ -526,222 +706,18 @@
 		[limitRowsField setStringValue:@"1"];
 	}
 
-	// If limitRowsField > number of total found rows show the last limitRowsValue rows
+	// If limitRowsField > number of total table rows show the last limitRowsValue rows
 	if ( [prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRowsOfCurrentTable ) {
 		int newLimit = maxNumRowsOfCurrentTable - [prefs integerForKey:@"LimitResultsValue"];
 		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
 	}
 
-	
-	// If the filter field is empty, the limit field is at 1, and the selected filter is not looking
-	// for NULLs or NOT NULLs, then don't allow filtering.
-	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"]) && (![prefs boolForKey:@"LimitResults"] || [limitRowsField intValue] == 1)) {
-		[argument release];
-		[self showAll:sender];
-		return;
-	}
-	
-	// Query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-	
-	BOOL doQuote = YES;
-	BOOL ignoreArgument = NO;
-
-	// Start building the query string
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];			
-
-	// Add filter if appropriate
-	if (([argument length] > 0) || [[[compareField selectedItem] title] hasSuffix:@"NULL"]) {
-		if (![compareType isEqualToString:@""]) {
-			if ([compareType isEqualToString:@"string"]) {
-				// String comparision
-				switch (tag) {
-					case 0:
-						compareOperator = @"LIKE";
-						break;
-					case 1:
-						compareOperator = @"NOT LIKE";
-						break;
-					case 2:
-						compareOperator = @"LIKE";
-						[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-						break;
-					case 3:
-						compareOperator = @"NOT LIKE";
-						[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-						break;
-					case 4:
-						compareOperator = @"IN";
-						doQuote = NO;
-						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-						break;
-					case 5:
-						compareOperator = @"IS NULL";
-						doQuote = NO;
-						ignoreArgument = YES;
-						break;
-					case 6:
-						compareOperator = @"IS NOT NULL";
-						doQuote = NO;
-						ignoreArgument = YES;
-						break;
-				}
-			} else if ( [compareType isEqualToString:@"number"] ) {
-				//number comparision
-				switch ( tag ) {
-					case 0:
-						compareOperator = @"=";
-						break;
-					case 1:
-						compareOperator = @"!=";
-						break;
-					case 2:
-						compareOperator = @">";
-						break;
-					case 3:
-						compareOperator = @"<";
-						break;
-					case 4:
-						compareOperator = @">=";
-						break;
-					case 5:
-						compareOperator = @"<=";
-						break;
-					case 6:
-						compareOperator = @"IN";
-						doQuote = NO;
-						[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-						break;
-					case 7:
-						compareOperator = @"LIKE";
-						doQuote = YES;
-						ignoreArgument = YES;
-						break;
-					case 8:
-						compareOperator = @"IS NULL";
-						doQuote = NO;
-						ignoreArgument = YES;
-						break;
-					case 9:
-						compareOperator = @"IS NOT NULL";
-						doQuote = NO;
-						ignoreArgument = YES;
-						break;
-				}
-			} else if ( [compareType isEqualToString:@"date"] ) {
-				//date comparision
-				switch ( tag ) {
-					case 0:
-						compareOperator = @"=";
-						break;
-					case 1:
-						compareOperator = @"!=";
-						break;
-					case 2:
-						compareOperator = @">";
-						break;
-					case 3:
-						compareOperator = @"<";
-						break;
-					case 4:
-						compareOperator = @">=";
-						break;
-					case 5:
-						compareOperator = @"<=";
-						break;
-					case 6:
-						compareOperator = @"IS NULL";
-						doQuote = NO;
-						ignoreArgument = YES;
-						break;
-					case 7:
-						compareOperator = @"IS NOT NULL";
-						doQuote = NO;
-						ignoreArgument = YES;
-						break;
-				}
-			} else {
-				doQuote = NO;
-				ignoreArgument = YES;
-				NSLog(@"ERROR: unknown compare type %@", compareType);
-			}
-			
-			if (doQuote) {
-				//escape special characters
-				for ( i = 0 ; i < [argument length] ; i++ ) {
-					if ( [argument characterAtIndex:i] == '\\' ) {
-						[argument insertString:@"\\" atIndex:i];
-						i++;
-					}
-				}
-				[argument setString:[mySQLConnection prepareString:argument]];
-				queryString = [NSString stringWithFormat:@"%@ WHERE %@ %@ \"%@\"",
-								queryString, [[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, argument];			
-			} else {
-				queryString = [NSString stringWithFormat:@"%@ WHERE %@ %@ %@",
-								queryString, [[fieldField titleOfSelectedItem] backtickQuotedString],
-								compareOperator, (ignoreArgument) ? @"" : argument];
-			}
-		}
-	}
-
-	// Add sorting details if appropriate
-	if ( sortCol ) {
-		queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
-		if ( isDesc )
-			queryString = [queryString stringByAppendingString:@" DESC"];
-	}
-
-	// retain the query before LIMIT
-	// to redo the query if nothing found for LIMIT > 1
-	NSString* tempQueryString;
-	// LIMIT if appropriate
-	if ( [prefs boolForKey:@"LimitResults"] ) {
-		tempQueryString = [NSString stringWithString:queryString];
-		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", queryString,
-						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
-	}
-
-	[self setUsedQuery:queryString];
-	
-	theResult = [mySQLConnection queryString:queryString];
-	[filteredResult setArray:[self fetchResultAsArray:theResult]];
-	
-	// try it again if theResult is empty and limitRowsField > 1 by setting LIMIT to 0, limitRowsValue
-	if([prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] > 1 && [filteredResult count] == 0) {
-		queryString = [NSString stringWithFormat:@"%@ LIMIT %d,%d", tempQueryString,
-						0, [prefs integerForKey:@"LimitResultsValue"]];
-		theResult = [mySQLConnection queryString:queryString];
-		[limitRowsField setStringValue:@"1"];
-		[filteredResult setArray:[self fetchResultAsArray:theResult]];
-	}
-	
-	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"), [filteredResult count], numRows]];
+	// Reload data using the new filter settings
+	[self loadTableValues];
 	
 	// Reset the table view
 	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
 	[tableContentView reloadData];
-	areShowingAllRows = NO;
-	
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	[argument release];
-}
-
-/**
- * reload tableView with all results shown (no new mysql-query, it uses simply the fullResult array)
- */
-- (IBAction)showAll:(id)sender
-{
-
-	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
-
-	[filteredResult setArray:fullResult];
-	[tableContentView reloadData];
-	areShowingAllRows = YES;
-	
-	[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
 }
 
 /**
@@ -764,7 +740,7 @@
 	usedQuery = [[NSString alloc] initWithString:query];
 }
 
-
+#pragma mark -
 #pragma mark Edit methods
 
 /*
@@ -787,7 +763,7 @@
 			[newRow addObject:[column objectForKey:@"default"]];
 		}
 	}
-	[filteredResult addObject:newRow];
+	[tableValues addObject:newRow];
 
 	[tableContentView reloadData];
 	[tableContentView selectRow:[tableContentView numberOfRows]-1 byExtendingSelection:NO];
@@ -820,8 +796,8 @@
 	}
 	
 	//copy row
-	tempRow = [NSMutableArray arrayWithArray:[filteredResult objectAtIndex:[tableContentView selectedRow]]];
-	[filteredResult insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
+	tempRow = [NSMutableArray arrayWithArray:[tableValues objectAtIndex:[tableContentView selectedRow]]];
+	[tableValues insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
 	
 	//if we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
@@ -937,7 +913,7 @@
 		[tempRow removeAllObjects];
 		enumerator = [tableColumns objectEnumerator];
 		while ( (tableColumn = [enumerator nextObject]) ) {
-			id o = [NSArrayObjectAtIndex(fullResult, i) objectAtIndex:[[tableColumn identifier] intValue]];
+			id o = [NSArrayObjectAtIndex(tableValues, i) objectAtIndex:[[tableColumn identifier] intValue]];
 			if([o isKindOfClass:[NSNull class]])
 				[tempRow addObject:@"NULL"];
 			else if([o isKindOfClass:[NSString class]])
@@ -1020,11 +996,7 @@
 		[argumentField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	[limitRowsStepper setEnabled:NO];
-	if ( [prefs boolForKey:@"LimitResults"] ) {
-		[limitRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Limited to %d rows starting with row", @"text showing the number of rows the result is limited to"),
-									   [prefs integerForKey:@"LimitResultsValue"]]];
-	} else {
-		[limitRowsText setStringValue:NSLocalizedString(@"No limit", @"text showing that the result isn't limited")];
+	if ( ![prefs boolForKey:@"LimitResults"] ) {
 		[limitRowsField setStringValue:@""];
 	}
 }
@@ -1050,7 +1022,7 @@
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	// Store the filter details to use when next loading the table
-	NSString *targetFilterValue = [[filteredResult objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
+	NSString *targetFilterValue = [[tableValues objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
 	NSDictionary *filterSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 										[refDictionary objectForKey:@"column"], @"filterField",
 										targetFilterValue, @"filterValue",
@@ -1213,8 +1185,6 @@
 {
 	NSArray *columnNames;
 	NSMutableString *queryString;
-	NSString *query;
-	MCPResult *queryResult;
 	id rowObject;
 	NSMutableString *rowValue = [NSMutableString string];
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
@@ -1227,7 +1197,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
-	if (!isEditingNewRow && [oldRow isEqualToArray:[filteredResult objectAtIndex:currentlyEditingRow]]) {
+	if (!isEditingNewRow && [oldRow isEqualToArray:[tableValues objectAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -1241,7 +1211,7 @@
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	// Get the field values
 	for ( i = 0 ; i < [columnNames count] ; i++ ) {
-		rowObject = [NSArrayObjectAtIndex(filteredResult, currentlyEditingRow) objectAtIndex:i];
+		rowObject = [NSArrayObjectAtIndex(tableValues, currentlyEditingRow) objectAtIndex:i];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -1304,7 +1274,7 @@
 		} else {
 			NSBeep();
 		}
-		[filteredResult replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableArray arrayWithArray:oldRow]];
+		[tableValues replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableArray arrayWithArray:oldRow]];
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
@@ -1318,44 +1288,28 @@
 		// New row created successfully
 		if ( isEditingNewRow ) {
 			if ( [prefs boolForKey:@"ReloadAfterAddingRow"] ) {
-				[self reloadTableValues:self];
+				[self loadTableValues];
 				[tableWindow endEditingFor:nil];
+				[tableContentView reloadData];
 			} else {
 
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [dataColumns count] ; i++ ) {
 					if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"autoincrement"] intValue]) {
-						[[filteredResult objectAtIndex:currentlyEditingRow] replaceObjectAtIndex:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
+						[[tableValues objectAtIndex:currentlyEditingRow] replaceObjectAtIndex:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
 					}
 				}
-				[fullResult addObject:[filteredResult objectAtIndex:currentlyEditingRow]];
 			}
 			isEditingNewRow = NO;
 
 		// Existing row edited successfully
 		} else {
-			if ( [prefs boolForKey:@"ReloadAfterEditingRow"] ) {
-				[self reloadTableValues:self];
-				[tableWindow endEditingFor:nil];
 
-			// TODO: this probably needs looking at... it's reloading it all itself?
-			} else {
-				query = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-				if ( sortCol ) {
-					query = [NSString stringWithFormat:@"%@ ORDER BY %@", query, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
-					if ( isDesc )
-						query = [query stringByAppendingString:@" DESC"];
-				}
-				if ( [prefs boolForKey:@"LimitResults"] ) {
-					if ( [limitRowsField intValue] <= 0 ) {
-						[limitRowsField setStringValue:@"1"];
-					}
-					query = [query stringByAppendingString:
-							 [NSString stringWithFormat:@" LIMIT %d,%d",
-							  [limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
-				}
-				queryResult = [mySQLConnection queryString:query];
-				[fullResult setArray:[self fetchResultAsArray:queryResult]];
+			// Reload table if set to - otherwise no action required.
+			if ( [prefs boolForKey:@"ReloadAfterEditingRow"] ) {
+				[self loadTableValues];
+				[tableWindow endEditingFor:nil];
+				[tableContentView reloadData];
 			}
 		}
 		currentlyEditingRow = -1;
@@ -1459,7 +1413,7 @@
 
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			tempValue = [NSArrayObjectAtIndex(filteredResult, row) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
+			tempValue = [NSArrayObjectAtIndex(tableValues, row) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
 
 		// Otherwise use the oldRow
 		} else {
@@ -1543,8 +1497,7 @@
 	NSNumber *index;
 	NSMutableArray *tempArray = [NSMutableArray array];
 	NSMutableArray *tempResult = [NSMutableArray array];
-	NSString *queryString, *wherePart;
-	MCPResult *queryResult;
+	NSString *wherePart;
 	int i, errors;
 	
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
@@ -1555,11 +1508,11 @@
 			[tableContentView editColumn:0 row:[tableContentView selectedRow] withEvent:nil select:YES];
 		} else {
 			if ( !isEditingNewRow ) {
-				[filteredResult replaceObjectAtIndex:[tableContentView selectedRow]
+				[tableValues replaceObjectAtIndex:[tableContentView selectedRow]
 										  withObject:[NSMutableArray arrayWithArray:oldRow]];
 				isEditingRow = NO;
 			} else {
-				[filteredResult removeObjectAtIndex:[tableContentView selectedRow]];
+				[tableValues removeObjectAtIndex:[tableContentView selectedRow]];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
@@ -1568,11 +1521,6 @@
 		[tableContentView reloadData];
 	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-			/*
-			 if ( ([tableContentView numberOfSelectedRows] == [self numberOfRowsInTableView:tableContentView]) &&
-			 areShowingAllRows &&
-			 ([tableContentView numberOfSelectedRows] < [prefs integerForKey:@"LimitResultsValue"]) ) {
-			 */
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 				[self reloadTable:self];
@@ -1620,44 +1568,16 @@
 
 			//do deleting (after enumerating)
 			if ( [prefs boolForKey:@"ReloadAfterRemovingRow"] ) {
-				[self reloadTableValues:self];
+				[self loadTableValues];
+				[tableContentView reloadData];
 			} else {
-				for ( i = 0 ; i < [filteredResult count] ; i++ ) {
+				for ( i = 0 ; i < [tableValues count] ; i++ ) {
 					if ( ![tempArray containsObject:[NSNumber numberWithInt:i]] )
-						[tempResult addObject:NSArrayObjectAtIndex(filteredResult, i)];
+						[tempResult addObject:NSArrayObjectAtIndex(tableValues, i)];
 				}
-				[filteredResult setArray:tempResult];
+				[tableValues setArray:tempResult];
 				numRows = [self getNumberOfRows];
-				if ( !areShowingAllRows ) {
-					//					queryString = [@"SELECT * FROM " stringByAppendingString:selectedTable];
-					queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
-					if ( sortCol ) {
-						//						queryString = [queryString stringByAppendingString:[NSString stringWithFormat:@" ORDER BY %@", [sortField backtickQuotedString]]];
-						queryString = [NSString stringWithFormat:@"%@ ORDER BY %@", queryString, [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
-						if ( isDesc )
-							queryString = [queryString stringByAppendingString:@" DESC"];
-					}
-					if ( [prefs boolForKey:@"LimitResults"] ) {
-						if ( [limitRowsField intValue] <= 0 ) {
-							[limitRowsField setStringValue:@"1"];
-						}
-						queryString = [queryString stringByAppendingString:
-									   [NSString stringWithFormat:@" LIMIT %d,%d",
-										[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
-					}
-					
-					[self setUsedQuery:queryString];
-					queryResult = [mySQLConnection queryString:queryString];
-					//						[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
-					[fullResult setArray:[self fetchResultAsArray:queryResult]];
-					[tableContentView reloadData];
-					[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows of %d selected", @"text showing how many rows are in the filtered result"),
-											   [filteredResult count], numRows]];
-				} else {
-					[fullResult setArray:filteredResult];
-					[tableContentView reloadData];
-					[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), numRows]];
-				}
+				[tableContentView reloadData];
 			}
 			[tableContentView deselectAll:self];
 		}
@@ -1833,7 +1753,7 @@
 	if ([prefs boolForKey:@"LimitResults"] && [prefs boolForKey:@"FetchCorrectRowCount"]) {
 		numRows = [self fetchNumberOfRows];
 	} else {
-		numRows = [fullResult count];
+		numRows = [tableValues count];
 	}
 		
 	// Update table data cache with the more accurate row count
@@ -1850,18 +1770,19 @@
 	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
 }
 
-// TableView datasource methods
+#pragma mark -
+#pragma mark TableView delegate methods
+
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [filteredResult count];
+	return [tableValues count];
 }
 
 - (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
+	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] intValue]);
 
-	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(filteredResult, rowIndex), [[aTableColumn identifier] intValue]);
-
-	if ( [theValue isKindOfClass:[NSData class]] )
+	if ([theValue isKindOfClass:[NSData class]])
 		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
 	return theValue;
@@ -1870,11 +1791,28 @@
 /**
  * This function changes the text color of text/blob fields which are not yet loaded to gray
  */
-- (void)tableView: (CMCopyTable *)aTableView
-	willDisplayCell: (id)cell
-	forTableColumn: (NSTableColumn*)aTableColumn
-	row: (int)row
+- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
 {
+
+	// If user wants to edit 'cell' set text color to black and return to avoid
+	// writing in gray if value was NULL
+	if ( [aTableView editedColumn] == [[aTableColumn identifier] intValue] && [aTableView editedRow] == row) {
+		[cell setTextColor:[NSColor blackColor]];
+		return;
+	}
+
+	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]);
+
+	// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
+	if ([cell respondsToSelector:@selector(setTextColor:)]) {
+		
+		// Note that this approach of changing the color of NULL placeholders is dependent on the cell's value matching that
+		// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
+		// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
+		// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
+		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
+	}
+
 	// Check if loading of text/blob fields is disabled
 	// If not, all text fields are loaded and we don't have to make them gray
 	if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
@@ -1884,56 +1822,47 @@
 		// that don't support this selector
 		if ([cell respondsToSelector:@selector(setTextColor:)])
 		{
-			NSString   *columnTypeGrouping;
-			NSUInteger  indexOfColumn;
-
-			indexOfColumn = [[aTableColumn identifier] intValue];
-
 			// Test if the current column is a text or a blob field
-			columnTypeGrouping = [[dataColumns objectAtIndex:indexOfColumn] objectForKey:@"typegrouping"];
+			NSString *columnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
 			if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
 
 				// now check if the field has been loaded already or not
 				if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
 				{
 					// change the text color of the cell to gray
-					[cell setTextColor: [NSColor grayColor]];
+					[cell setTextColor:[NSColor lightGrayColor]];
 				}
-				else
-				{
+				else {
 					// Change the text color back to black
 					// This is necessary because NSTableView reuses
 					// the NSCell to draw further rows in the column
-					[cell setTextColor: [NSColor blackColor]];
+					[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
 				}
 			}
 		}
 	}
 }
 
-- (void)tableView:(NSTableView *)aTableView
-   setObjectValue:(id)anObject
-   forTableColumn:(NSTableColumn *)aTableColumn
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
-		[oldRow setArray:NSArrayObjectAtIndex(filteredResult, rowIndex)];
+		[oldRow setArray:NSArrayObjectAtIndex(tableValues, rowIndex)];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
 	
-	if ( anObject )
-		[NSArrayObjectAtIndex(filteredResult, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
+	if (anObject)
+		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
 	else
-		[NSArrayObjectAtIndex(filteredResult, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
+		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
 
 }
 
 #pragma mark -
-#pragma mark tableView delegate methods
+#pragma mark TableView delegate methods
 
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 /*
@@ -1941,17 +1870,12 @@
  if clicked twice, order is descending
  */
 {
-	NSString *queryString;
-	MCPResult *queryResult;
 	
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
 		return;
 	
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
-
-	//query started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 		
 	//sets order descending if a header is clicked twice
 	if ( [[tableColumn identifier] isEqualTo:sortCol] ) {
@@ -1967,23 +1891,8 @@
 	if (sortCol) [sortCol release];
 	sortCol = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
 
-	//make queryString and perform query
-	queryString = [NSString stringWithFormat:@"SELECT %@ FROM %@ ORDER BY %@", [self fieldListForQuery],
-				   [selectedTable backtickQuotedString], [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
-	if ( isDesc )
-		queryString = [queryString stringByAppendingString:@" DESC"];
-	if ( [prefs boolForKey:@"LimitResults"] ) {
-		if ( [limitRowsField intValue] <= 0 ) {
-			[limitRowsField setStringValue:@"1"];
-		}
-		queryString = [queryString stringByAppendingString:
-					   [NSString stringWithFormat:@" LIMIT %d,%d",
-						[limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]]];
-	}
-	queryResult = [mySQLConnection queryString:queryString];
-	
-	//	[fullResult setArray:[[self fetchResultAsArray:queryResult] retain]];
-	[fullResult setArray:[self fetchResultAsArray:queryResult]];
+	// Update data using the new sort order
+	[self loadTableValues];
 	
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -1998,17 +1907,8 @@
 	} else {
 		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
 	}
-	
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	
-	//if filter is activated filters the result, otherwise shows fullResult
-	if ( !areShowingAllRows ) {
-		[self filterTable:self];
-	} else {
-		[filteredResult setArray:fullResult];
-		[tableContentView reloadData];
-	}
+
+	[tableContentView reloadData];
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
@@ -2025,27 +1925,13 @@
 	if ( [tableContentView numberOfSelectedRows] > 0 ) {
         [copyButton setEnabled:YES];
         [removeButton setEnabled:YES];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d rows selected", @"Text showing how many rows are selected"), [tableContentView numberOfSelectedRows], [tableContentView numberOfRows]]];
 	} else {
         [copyButton setEnabled:NO];
         [removeButton setEnabled:NO];
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows", @"Text showing how many rows are in the result"), [tableContentView numberOfRows]]];
 	}
-}
 
-- (void)tableViewSelectionIsChanging:(NSNotification *)aNotification
-{
-	// Check our notification object is our table content view
-	if ([aNotification object] != tableContentView)
-		return;
-	
-	if ( [tableContentView numberOfSelectedRows] > 0 ) {
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d rows selected", @"Text showing how many rows are selected"), [tableContentView numberOfSelectedRows], [tableContentView numberOfRows]]];
-	} else {
-		[countText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d rows", @"Text showing how many rows are in the result"), [tableContentView numberOfRows]]];
-	}
+	[self updateCountText];
 }
-
 
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
 /*
@@ -2085,76 +1971,80 @@
 	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
 }
 
-/*
- * Confirm whether to allow editing of a row.  Returns YES by default, unless the multipleLineEditingButton is in
+/**
+ * Confirm whether to allow editing of a row. Returns YES by default, unless the multipleLineEditingButton is in
  * the ON state, or for blob or text fields - in those cases opens a sheet for editing instead and returns NO.
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	int i;
 	NSString *query, *wherePart = nil;
-
-	NSArray *tempRow;
 	NSMutableArray *modifiedRow = [NSMutableArray array];
-	// id theValue;
 	MCPResult *tempResult;
 	
 	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
-	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow ) {
+	if ([prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow) {
 
 		// If the table does contain blob or text fields, load the values ready for editing.
-		if ( [self tableContainsBlobOrTextColumns] ) {
+		if ([self tableContainsBlobOrTextColumns]) {
 			wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
-			if([wherePart length]==0)
-				return NO;
-			query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart];
+			
+			if ([wherePart length] == 0) return NO;
+			
+			// Only get the data for the selected column, not all of them
+			query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
+			
 			tempResult = [mySQLConnection queryString:query];
-			if ( ![tempResult numOfRows] ) {
+			
+			if (![tempResult numOfRows]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 				return NO;
 			}
-			tempRow = [tempResult fetchRowAsArray];
-			for ( i = 0; i < [tempRow count]; i++ ) {
-				if ( [[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]] ) {
-					[modifiedRow addObject:[prefs stringForKey:@"NullValue"]];
-				} else {
-					[modifiedRow addObject:[tempRow objectAtIndex:i]];
-				}
+			
+			NSArray *tempRow = [tempResult fetchRowAsArray];
+			
+			for (i = 0; i < [tempRow count]; i++) 
+			{
+				[modifiedRow addObject:([[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]]) ? [prefs stringForKey:@"NullValue"] : [tempRow objectAtIndex:i]];
 			}
-			[filteredResult replaceObjectAtIndex:rowIndex withObject:[NSMutableArray arrayWithArray:modifiedRow]];
+						
+			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[modifiedRow objectAtIndex:0]];
 			[tableContentView reloadData];
 		}
 	}
 	
 	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
+				
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-	if ( [multipleLineEditingButton state] == NSOnState || isBlob ) {
+	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 		
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
-		id editData = [[fieldEditor editWithObject:[[filteredResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
-								 usingEncoding:[mySQLConnection encoding] isObjectBlob:isBlob isEditable:YES withWindow:tableWindow] retain];
+		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
+		id editData = [[fieldEditor editWithObject:[[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
+								 	 fieldName:[[aTableColumn headerCell] stringValue]
+								 usingEncoding:[mySQLConnection encoding] 
+								  isObjectBlob:isBlob 
+									isEditable:YES withWindow:tableWindow] retain];
 
-		if ( editData ) {
-			if ( !isEditingRow ) {
-				[oldRow setArray:[filteredResult objectAtIndex:rowIndex]];
+		if (editData) {
+			if (!isEditingRow) {
+				[oldRow setArray:[tableValues objectAtIndex:rowIndex]];
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
-			[[filteredResult objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
+
+			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
 		}
 
 		[fieldEditor release];
 
-		if ( editData ) [editData release];
+		if (editData) [editData release];
 
 		return NO;
-
-	} else {
-
-		return YES;
-
 	}
+
+	return YES;
 }
 
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows 
@@ -2262,11 +2152,11 @@
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
 			isEditingRow = NO;
-			[filteredResult replaceObjectAtIndex:row withObject:[NSMutableArray arrayWithArray:oldRow]];
+			[tableValues replaceObjectAtIndex:row withObject:[NSMutableArray arrayWithArray:oldRow]];
 		} else if ( isEditingNewRow ) {
 			isEditingRow = NO;
 			isEditingNewRow = NO;
-			[filteredResult removeObjectAtIndex:row];
+			[tableValues removeObjectAtIndex:row];
 			[tableContentView reloadData];
 		}
 		currentlyEditingRow = -1;
@@ -2311,8 +2201,7 @@
 // Last but not least
 - (void)dealloc
 {
-	[fullResult release];
-	[filteredResult release];
+	[tableValues release];
 	[dataColumns release];
 	[oldRow release];
 	// if (editData) [editData release];

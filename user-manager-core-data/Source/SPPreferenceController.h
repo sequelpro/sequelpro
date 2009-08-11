@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class KeyChain;
+@class SPKeychain;
 
 @interface SPPreferenceController : NSWindowController
 {
@@ -56,7 +56,7 @@
 	IBOutlet NSTextField *favoriteUserTextFieldSSH;
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
 
-	KeyChain *keychain;
+	SPKeychain *keychain;
 	NSDictionary *currentFavorite;
 
 	IBOutlet NSTextField *editorFontName;

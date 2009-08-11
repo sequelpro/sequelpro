@@ -34,6 +34,6 @@
 	WebView *printWebView;
 }
 
-- (void) setPrintView:(WebView *)theWebView;
+- (void)setPrintView:(WebView *)theWebView;
 
 @end

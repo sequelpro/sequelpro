@@ -29,6 +29,11 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
+enum {
+	NoStringEncoding = 0xFFFFFFFF
+};
+
+
 @class SPConnectionController;
 
 /**
@@ -51,6 +56,8 @@
 	IBOutlet id userManagerInstance;
 	
 
+	IBOutlet NSSearchField *listFilterField;
+
 	IBOutlet id tableWindow;
 	
 	IBOutlet id titleAccessoryView;
@@ -70,12 +77,18 @@
 	IBOutlet id historyControl;
 	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
+	IBOutlet NSButton *saveVariablesButton;
+	IBOutlet NSSearchField *variablesSearchField;
+	IBOutlet NSTextField *variablesCountTextField;
 	
 	IBOutlet NSTableView *tableInfoTable;
 	IBOutlet NSButton *tableInfoCollapseButton;
 	IBOutlet NSSplitView *tableListSplitter;
 	IBOutlet NSSplitView *contentViewSplitter;
 	IBOutlet id sidebarGrabber;
+	
+	IBOutlet NSPopUpButton *encodingPopUp;
+	IBOutlet id encodingAccessoryView;
 	
 	IBOutlet NSTextView *customQueryTextView;
 	
@@ -90,7 +103,7 @@
 
 	MCPConnection *mySQLConnection;
 
-	NSArray *variables;
+	NSMutableArray *variables, *variablesFiltered;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
@@ -109,12 +122,14 @@
 	WebView *printWebView;
 	
 	NSMutableArray *allDatabases;
+	
+	NSString *queryEditorInitString;
 }
 
 - (NSString *)getHTMLforPrint;
 
 - (IBAction)showUserManager:(id)sender;
-
+- (void)initQueryEditorWithString:(NSString *)query;
 // Connection callback and methods
 - (void) setConnection:(MCPConnection *)theConnection;
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
@@ -157,11 +172,15 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closeErrorConnectionSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
+- (void)doPerformLoadQueryService:(NSString *)query;
 - (void)flushPrivileges:(id)sender;
 - (void)showVariables:(id)sender;
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void) refreshCurrentDatabase;
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
+
 
 // Getter methods
 - (NSString *)name;
@@ -177,6 +196,8 @@
 
 // Menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
+- (IBAction)openConnectionSheet:(id)sender;
+- (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)exportTable:(id)sender;

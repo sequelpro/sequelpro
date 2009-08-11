@@ -61,7 +61,6 @@
 	NSUserDefaults *prefs;
 }
 
-
 //table methods
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;

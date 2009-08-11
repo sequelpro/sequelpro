@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionController.h"
-#import "MainController.h"
+#import "SPAppController.h"
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
 
@@ -80,7 +80,7 @@
 		for (int i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:NO];
 		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
-		keychain = [[KeyChain alloc] init];
+		keychain = [[SPKeychain alloc] init];
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
 		favorites = nil;
 		[self updateFavorites];
@@ -219,7 +219,7 @@
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
 		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-	} else {
+	} else if (sshPassword) {
 		[sshTunnel setPassword:[self sshPassword]];
 	}
 
@@ -281,7 +281,7 @@
 	}
 
 	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
-	if (!connectionKeychainItemName) {
+	if (!connectionKeychainItemName && [self password]) {
 		[mySQLConnection setPassword:[self password]];
 	}
 	
@@ -657,8 +657,8 @@
 {
 	NSString *thePassword, *theSSHPassword;
 	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", [self user], [self host]];
-	if (![[self name] length] && ![[self database] isEqualToString:@""])
+	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", [self host]];
+	if (![[self name] length] && [self database] && ![[self database] isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", [self database], favoriteName];
 	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
@@ -676,21 +676,20 @@
 	// Ensure that a socket connection is not inadvertently used
 	if (![self checkHost]) return;
 	
-	// Construct the favorite details
-	NSDictionary *newFavorite = [NSDictionary dictionaryWithObjectsAndKeys:
-									[NSNumber numberWithInt:[self type]], @"type",
-									favoriteName, @"name",
-									[self host], @"host",
-									[self socket], @"socket",
-									[self user], @"user",
-									[self port], @"port",
-									[self database], @"database",
-									[self sshHost], @"sshHost",
-									[self sshUser], @"sshUser",
-									[self sshPort], @"sshPort",
-									favoriteid, @"id",
-									nil];
-
+	// Construct the favorite details - cannot use only dictionaryWithObjectsAndKeys for possible nil values.
+	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+										[NSNumber numberWithInt:[self type]], @"type",
+										favoriteName, @"name",
+										[self host], @"host",
+										favoriteid, @"id",
+										nil];
+	if ([self socket]) [newFavorite setObject:[self socket] forKey:@"socket"];
+	if ([self user]) [newFavorite setObject:[self user] forKey:@"user"];
+	if ([self port]) [newFavorite setObject:[self port] forKey:@"port"];
+	if ([self database]) [newFavorite setObject:[self database] forKey:@"database"];
+	if ([self sshHost]) [newFavorite setObject:[self sshHost] forKey:@"sshHost"];
+	if ([self sshUser]) [newFavorite setObject:[self sshUser] forKey:@"sshUser"];
+	if ([self sshPort]) [newFavorite setObject:[self sshPort] forKey:@"sshPort"];
 
 	// Add the new favorite to the user defaults array
 	NSMutableArray *currentFavorites;
@@ -708,7 +707,7 @@
 	if (mySQLConnection && connectionKeychainItemName) {
 		thePassword = [keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount];
 	}
-	if (![thePassword isEqualToString:@""]) {
+	if (thePassword && ![thePassword isEqualToString:@""]) {
 		[keychain addPassword:thePassword
 					  forName:[keychain nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
 					  account:[keychain accountForUser:[self user] host:[self host] database:[self database]]];
@@ -719,7 +718,7 @@
 	if (mySQLConnection && connectionSSHKeychainItemName) {
 		theSSHPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 	}
-	if (![theSSHPassword isEqualToString:@""]) {
+	if (theSSHPassword && ![theSSHPassword isEqualToString:@""]) {
 		[keychain addPassword:theSSHPassword
 					  forName:[keychain nameForSSHForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
 					  account:[keychain accountForSSHUser:[self sshUser] sshHost:[self sshHost]]];
