@@ -67,10 +67,6 @@
 						  @"Replication_slave_priv",@"Repl_slave_priv", 
 						  @"Replication_client_priv",@"Repl_client_priv",nil] retain];
 	
-	if (!outlineView) {
-		[NSBundle loadNibNamed:@"UserManagerView" owner:self];
-	}
-	
 	return self;
 }
 
@@ -292,7 +288,10 @@
 
 - (void)show
 {
-//	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];	
+//	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
+	if (!outlineView) {
+		[NSBundle loadNibNamed:@"UserManagerView" owner:self];
+	}
 	[window makeKeyAndOrderFront:nil];
 }
 

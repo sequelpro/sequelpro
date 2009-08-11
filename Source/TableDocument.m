@@ -194,6 +194,14 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
+	if (userManagerInstance == nil)
+	{
+		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
+	} 
+	else 
+	{
+		[userManagerInstance setConnection:mySQLConnection];
+	}
 
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
@@ -679,7 +687,7 @@
 	
 	// Get the menu item for showing and hiding the console. This is isn't the best way to get it as any 
 	// changes to the menu structure will result in the wrong item being selected.
-	NSMenuItem *menuItem = [[[[NSApp mainMenu] itemAtIndex:3] submenu] itemAtIndex:5];
+	NSMenuItem *menuItem = [[[[NSApp mainMenu] itemWithTitle:@"View"] submenu] itemAtIndex:5];
 	
 	// Only update the menu item title if its the menu item and not the toolbar
 	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
@@ -2551,6 +2559,7 @@
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	if(queryEditorInitString) [queryEditorInitString release];
+	if(userManagerInstance) [userManagerInstance release];
 	[super dealloc];
 }
 		
@@ -2559,9 +2568,9 @@
 	if (userManagerInstance == nil)
 	{
 		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
-	} else {
-		[userManagerInstance show];
 	}
+	
+	[userManagerInstance show];
 }
 
 @end

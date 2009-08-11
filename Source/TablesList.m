@@ -1090,7 +1090,7 @@
 
 		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 		// according to the table types
-		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemAtIndex:5] submenu];
+		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
 		
 		if(selectedTableType == SP_TABLETYPE_VIEW)
 		{
