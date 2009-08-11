@@ -2565,11 +2565,6 @@
 		
 - (void)showUserManager:(id)sender
 {
-	if (userManagerInstance == nil)
-	{
-		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
-	}
-	
 	[userManagerInstance show];
 }
 

@@ -102,8 +102,9 @@
 	
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
-		
-	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
+
+	[self _initializeUsers];
+//	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
 	[window makeKeyAndOrderFront:nil];
 }
 
@@ -495,6 +496,11 @@
 	{
 		[outlineView reloadData];
 	}
+}
+
+- (void)windowWillClose:(NSNotification *)notification
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (BOOL)updateUsers:(NSArray *)updatedUsers

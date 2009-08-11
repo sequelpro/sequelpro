@@ -34,7 +34,7 @@ enum {
 };
 
 
-@class SPConnectionController;
+@class SPConnectionController, SPUserManager;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -52,9 +52,7 @@ enum {
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
-	IBOutlet id spExportControllerInstance;
-	IBOutlet id userManagerInstance;
-	
+	IBOutlet id spExportControllerInstance;	
 
 	IBOutlet NSSearchField *listFilterField;
 
@@ -100,7 +98,8 @@ enum {
 	IBOutlet NSWindow *connectionErrorDialog;
 
 	SPConnectionController *connectionController;
-
+	SPUserManager *userManagerInstance;
+	
 	MCPConnection *mySQLConnection;
 
 	NSMutableArray *variables, *variablesFiltered;
