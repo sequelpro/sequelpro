@@ -1450,30 +1450,6 @@
 							<string key="NSString"/>
 						</object>
 					</object>
-					<object class="NSMenuItem" id="909284423">
-						<reference key="NSMenu" ref="171386461"/>
-						<string key="NSTitle">Tools</string>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="625762401"/>
-						<reference key="NSMixedImage" ref="315854375"/>
-						<string key="NSAction">submenuAction:</string>
-						<object class="NSMenu" key="NSSubmenu" id="661845796">
-							<string key="NSTitle">Tools</string>
-							<object class="NSMutableArray" key="NSMenuItems">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSMenuItem" id="356281746">
-									<reference key="NSMenu" ref="661845796"/>
-									<string key="NSTitle">User Manager</string>
-									<string key="NSKeyEquiv">u</string>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-							</object>
-						</object>
-					</object>
 					<object class="NSMenuItem" id="228261277">
 						<reference key="NSMenu" ref="171386461"/>
 						<string key="NSTitle">Table</string>
@@ -1575,6 +1551,30 @@
 									<reference key="NSMenu" ref="1056168652"/>
 									<string key="NSTitle">Checksum Table</string>
 									<string key="NSKeyEquiv"/>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="NSMenuItem" id="909284423">
+						<reference key="NSMenu" ref="171386461"/>
+						<string key="NSTitle">Tools</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="625762401"/>
+						<reference key="NSMixedImage" ref="315854375"/>
+						<string key="NSAction">submenuAction:</string>
+						<object class="NSMenu" key="NSSubmenu" id="661845796">
+							<string key="NSTitle">Tools</string>
+							<object class="NSMutableArray" key="NSMenuItems">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSMenuItem" id="356281746">
+									<reference key="NSMenu" ref="661845796"/>
+									<string key="NSTitle">User Manager</string>
+									<string key="NSKeyEquiv">u</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
@@ -4319,7 +4319,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{628, 440}, {254, 153}}</string>
+					<string>{{486, 550}, {254, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -4388,7 +4388,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{709, 410}, {268, 183}}</string>
+					<string>{{567, 520}, {268, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4530,7 +4530,7 @@ w6gg4oaSIGZhY2FkZV0</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{567, 680}, {172, 23}}</string>
+					<string>{{623, 680}, {172, 23}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
