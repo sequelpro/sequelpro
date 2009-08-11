@@ -213,6 +213,13 @@
 		queryEditorInitString = nil;
 	}
 
+	// Set focus to table list filter field if visible
+	// otherwise set focus to Table List view
+	if ( [[tablesListInstance tables] count] > 20 )
+		[tableWindow makeFirstResponder:listFilterField];
+	else
+		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+
 }
 
 /**
