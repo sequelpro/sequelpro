@@ -215,6 +215,7 @@
 		BC688D811012462600D35128 /* borderlessbackground.png in Resources */ = {isa = PBXBuildFile; fileRef = BC688D801012462600D35128 /* borderlessbackground.png */; };
 		BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8C8531100E0A8000D7A129 /* SPTableView.m */; };
 		BC9F0881100FCF2C00A80D32 /* SPFieldEditorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */; };
+		BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */ = {isa = PBXBuildFile; fileRef = BCA6271B1031B9D40047E5D5 /* SPTooltip.m */; };
 		BCA6F631100FA7D700E80253 /* FieldEditorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCA6F62F100FA7D700E80253 /* FieldEditorSheet.xib */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 /* End PBXBuildFile section */
@@ -578,6 +579,8 @@
 		BC8C8531100E0A8000D7A129 /* SPTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableView.m; sourceTree = "<group>"; };
 		BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldEditorController.h; sourceTree = "<group>"; };
 		BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldEditorController.m; sourceTree = "<group>"; };
+		BCA6271A1031B9D40047E5D5 /* SPTooltip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTooltip.h; sourceTree = "<group>"; };
+		BCA6271B1031B9D40047E5D5 /* SPTooltip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTooltip.m; sourceTree = "<group>"; };
 		BCA6F630100FA7D700E80253 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/FieldEditorSheet.xib; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
@@ -919,6 +922,8 @@
 				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
 				17E641600EF01F15001BC333 /* TablesList.h */,
 				17E641610EF01F15001BC333 /* TablesList.m */,
+				BCA6271A1031B9D40047E5D5 /* SPTooltip.h */,
+				BCA6271B1031B9D40047E5D5 /* SPTooltip.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -1593,6 +1598,7 @@
 				BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */,
 				584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */,
 				589235321020C1230011DE00 /* SPHistoryController.m in Sources */,
+				BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

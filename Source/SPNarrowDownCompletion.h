@@ -1,7 +1,7 @@
 //
 //  $Id: SPNarrowDownCompletion.h 744 2009-05-22 20:00:00Z bibiko $
 //
-//  SPGrowlController.h
+//  SPNarrowDownCompletion.h
 //  sequel-pro
 //
 //  Created by Hans-J. Bibiko on May 14, 2009.
