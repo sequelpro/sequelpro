@@ -1450,7 +1450,7 @@
 							<string key="NSString"/>
 						</object>
 					</object>
-					<object class="NSMenuItem" id="497338073">
+					<object class="NSMenuItem" id="909284423">
 						<reference key="NSMenu" ref="171386461"/>
 						<string key="NSTitle">Tools</string>
 						<string key="NSKeyEquiv"/>
@@ -1458,12 +1458,12 @@
 						<reference key="NSOnImage" ref="625762401"/>
 						<reference key="NSMixedImage" ref="315854375"/>
 						<string key="NSAction">submenuAction:</string>
-						<object class="NSMenu" key="NSSubmenu" id="815537649">
-							<string key="NSTitle">Tools</string>
+						<object class="NSMenu" key="NSSubmenu" id="661845796">
+							<string key="NSTitle"/>
 							<object class="NSMutableArray" key="NSMenuItems">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSMenuItem" id="892787680">
-									<reference key="NSMenu" ref="815537649"/>
+								<object class="NSMenuItem" id="356281746">
+									<reference key="NSMenu" ref="661845796"/>
 									<string key="NSTitle">User Manager</string>
 									<string key="NSKeyEquiv">u</string>
 									<int key="NSKeyEquivModMask">1048576</int>
@@ -2550,7 +2550,7 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">showUserManager:</string>
 						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="892787680"/>
+						<reference key="destination" ref="356281746"/>
 					</object>
 					<int key="connectionID">955</int>
 				</object>
@@ -2597,7 +2597,7 @@
 							<reference ref="401969940"/>
 							<reference ref="693420496"/>
 							<reference ref="228261277"/>
-							<reference ref="497338073"/>
+							<reference ref="909284423"/>
 						</object>
 						<reference key="parent" ref="201414690"/>
 						<string key="objectName">MainMenu</string>
@@ -3780,26 +3780,26 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">950</int>
-						<reference key="object" ref="497338073"/>
+						<reference key="object" ref="909284423"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="815537649"/>
+							<reference ref="661845796"/>
 						</object>
 						<reference key="parent" ref="171386461"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">951</int>
-						<reference key="object" ref="815537649"/>
+						<reference key="object" ref="661845796"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="892787680"/>
+							<reference ref="356281746"/>
 						</object>
-						<reference key="parent" ref="497338073"/>
+						<reference key="parent" ref="909284423"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">952</int>
-						<reference key="object" ref="892787680"/>
-						<reference key="parent" ref="815537649"/>
+						<reference key="object" ref="356281746"/>
+						<reference key="parent" ref="661845796"/>
 					</object>
 				</object>
 			</object>
@@ -4388,7 +4388,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{672, 520}, {268, 183}}</string>
+					<string>{{709, 410}, {268, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
