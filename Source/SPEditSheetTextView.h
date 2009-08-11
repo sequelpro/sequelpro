@@ -28,5 +28,6 @@
 
 - (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
+- (void)saveChangedFontInUserDefaults;
 
 @end

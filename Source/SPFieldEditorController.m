@@ -30,28 +30,34 @@
 #import "QLPreviewPanel.h"
 #import "SPDataCellFormatter.h"
 #import "RegexKitLite.h"
+#import "SPDataCellFormatter.h"
 
 @implementation SPFieldEditorController
 
-- (id) init
+- (id)init
 {
 	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"])) {
 		// force the nib to be loaded
 		(void) [self window];
 		counter = 0;
 		maxTextLength = 0;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
 
 		// Used for max text length recognition if last typed char is a non-space char
 		editTextViewWasChanged = NO;
 
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
+		
+		// [editTextView setFormatter:[[SPDataCellFormatter new] autorelease]];
+
 	}
 	return self;
 	
 }
 
-- (void) dealloc
+- (void)dealloc
 {
 	if ( sheetEditData ) [sheetEditData release];
 	[super dealloc];
@@ -65,13 +71,17 @@
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
-	prefs = [NSUserDefaults standardUserDefaults];
 
-	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
-		[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[editTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+	if ( ![prefs objectForKey:@"FieldEditorSheetFont"] )
+		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+			[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		} else {
+			[editTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			// [prefs setObject:[NSArchiver archivedDataWithRootObject:[editTextView font]] forKey:@"FieldEditorSheetFont"];
+		}
+	else
+		[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
+		
 	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 
 	[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), fieldName]];
@@ -210,7 +220,18 @@
 
 - (IBAction)closeEditSheet:(id)sender
 {
+
+	// Validate the sheet data before saving them.
+	// - for max text length select the part which won't be saved
+	if(sender == editSheetOkButton)
+		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength) {
+			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
+			NSBeep();
+			return;
+		}
+
 	[NSApp stopModalWithCode:[sender tag]];
+	
 }
 
 - (IBAction)openEditSheet:(id)sender
@@ -614,7 +635,7 @@
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
 {
 	if(textView == editTextView && maxTextLength > 0) {
-		
+
 		int newLength;
 
 		// Auxilary to ensure that eg textViewDidChangeSelection:
@@ -629,11 +650,28 @@
 		// The exact change isn't known. Disallow the change to be safe.
 		if (r.location==NSNotFound) return NO;
 
+		// Length checking while using the Input Manager (eg for Japanese)
+		if ([textView hasMarkedText] && maxTextLength > 0 && r.location < maxTextLength)
+			// User tries to insert a new char but max text length was already reached - return NO
+			if( !r.length  && [[textView textStorage] length] >= maxTextLength ) {
+				NSBeep();
+				[textView unmarkText];
+				return NO;
+			}
+			// otherwise allow it if insertion point is valid for eg 
+			// a VARCHAR(3) field filled with two Chinese chars and one inserts the
+			// third char by typing its pronounciation "wo" - 2 Chinese chars plus "wo" would give
+			// 4 which is larger than max length.
+			// TODO this doesn't solve the problem of inserting more than one char. For now
+			// that part which won't be saved will be hilited if user pressed the OK button.
+			else if (r.location < maxTextLength) 
+				return YES;
+
 		// Calculate the length of the text after the change.
 		newLength=[[textView textStorage] length]+[replacementString length]-r.length;
 
-		// If it's too long, disallow the change.
-		// If the user pastes something into insert it partially to maxTextLength.
+		// If it's too long, disallow the change but try 
+		// to insert a text chunk partially to maxTextLength.
 		if (newLength>maxTextLength) {
 			
 			if(maxTextLength-[[textView textStorage] length] < [replacementString length]) {
@@ -659,7 +697,7 @@
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
 	if(!editTextViewWasChanged && (editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0)))
 		return;
-	
+
 	// clear the image and hex (since i doubt someone can "type" a gif)
 	[editImage setImage:nil];
 	[hexTextView setString:@""];
@@ -668,7 +706,7 @@
 	if ( sheetEditData != nil ) {
 		[sheetEditData release];
 	}
-	
+
 	// set edit data to text
 	sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 	
@@ -685,9 +723,10 @@
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
 			[[[NSApp currentEvent] characters] isEqualToString:@"\003"] )
 		{
-			[NSApp stopModalWithCode:1];
-			return YES;
-		} 
+			// [NSApp stopModalWithCode:1];
+			// return YES;
+			[self closeEditSheet:editSheetOkButton];
+		}
 		else
 			return NO;
 	}

@@ -24,6 +24,7 @@
 
 #import "SPEditSheetTextView.h"
 #import "SPTextViewAdditions.h"
+#import "SPFieldEditorController.h"
 
 @implementation SPEditSheetTextView
 
@@ -51,11 +52,13 @@
 		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
+			[self saveChangedFontInUserDefaults];
 			return;
 		}
 		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
+			[self saveChangedFontInUserDefaults];
 			return;
 		}
 	}
@@ -246,5 +249,19 @@
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
 }
 
+// Store the font in the prefs for selected delegates only
+- (void)saveChangedFontInUserDefaults
+{
+	if([[[[self delegate] class] description] isEqualToString:@"SPFieldEditorController"])
+		[[NSUserDefaults standardUserDefaults] setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:@"FieldEditorSheetFont"];
+}
+
+// Action receiver for a font change in the font panel
+- (void)changeFont:(id)sender
+{
+	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[self font]];
+	[self setFont:nf];
+	[self saveChangedFontInUserDefaults];
+}
 
 @end
