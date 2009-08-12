@@ -26,9 +26,37 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+
+//	Usage:
+//	#import "SPTooltip.h"
+//	
+//	[SPTooltip showWithObject:@"<h1>Hello</h1>I am a <b>tooltip</b>" ofType:@"html" 
+//			displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
+//			@"Monaco", @"fontname", 
+//			@"#EEEEEE", @"backgroundcolor", 
+//			@"20", @"fontsize", 
+//			@"transparent", @"transparent", nil]];
+//	
+//	[SPTooltip  showWithObject:(id)content 
+//					atLocation:(NSPoint)point 
+//						ofType:(NSString *)type 
+//				displayOptions:(NSDictionary *)displayOptions]
+//	
+//			content: a NSString with the actual content
+//			  point: n NSPoint where the tooltip should be shown
+//			         if not given it will be shown under the current caret position or
+//			         if no caret could be found in the upper left corner of the current window
+//			   type: a NSString of: "text", or "html"; no type - 'text' is default
+//	 displayOptions: a NSDictionary with the following keys (all values must be of type NSString):
+//	                       fontname, fontsize, backgroundcolor (as #RRGGBB), transparent (any value)
+//	                 if no displayOptions are passed or if a key doesn't exist the following default
+//	                 are taken:
+//	                       "Lucida Grande", "10", "#F9FBC5", NO
+//	
+//	See more possible syntaxa in SPTooltip to init a tooltip
+
 #import "SPTooltip.h"
-
-
+#import "SPTextViewAdditions.h"
 
 static float slow_in_out (float t)
 {
@@ -40,9 +68,12 @@ static float slow_in_out (float t)
 
 
 @interface SPTooltip (Private)
-- (void)setContent:(NSString *)content transparent:(BOOL)transparent;
+- (void)setContent:(NSString *)content withOptions:(NSDictionary *)displayOptions;
 - (void)runUntilUserActivity;
 - (void)stopAnimation:(id)sender;
++ (NSPoint)caretPosition;
++ (void)setDisplayOptions:(NSDictionary *)aDict;
+- (void)initMeWithOptions:(NSDictionary *)displayOptions;
 @end
 
 @interface WebView (LeopardOnly)
@@ -53,38 +84,40 @@ static float slow_in_out (float t)
 // ==================
 // = Setup/teardown =
 // ==================
-+ (void)showWithObject:(id)content ofType:(NSString *)type transparent:(BOOL)transparent
+
++ (void)showWithObject:(id)content atLocation:(NSPoint)point
 {
-	SPTooltip* tip = [SPTooltip new];
-	[tip setFrameTopLeftPoint:[NSEvent mouseLocation]];
-	// The tooltip will show itself automatically when the HTML is loaded
-	if([type isEqualToString:@"text"]) {
-		NSString* html = nil;
-		NSMutableString* text = [[(NSString*)content mutableCopy] autorelease];
-		if(text)
-		{
-			[text replaceOccurrencesOfString:@"&" withString:@"&amp;" options:0 range:NSMakeRange(0, [text length])];
-			[text replaceOccurrencesOfString:@"<" withString:@"&lt;" options:0 range:NSMakeRange(0, [text length])];
-			[text insertString:@"<pre>" atIndex:0];
-			[text appendString:@"</pre>"];
-			html = text;
-		}
-		else
-		{
-			html = @"Error";
-		}
-		[tip setContent:html transparent:transparent];
-	}
-	else if([type isEqualToString:@"html"])
-		[tip setContent:(NSString*)content transparent:transparent];
-		
+	[self showWithObject:content atLocation:point ofType:@"text" displayOptions:[NSDictionary dictionary]];
 }
 
-+ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type transparent:(BOOL)transparent
++ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type
 {
+	[self showWithObject:content atLocation:point ofType:type displayOptions:nil];
+}
+
++ (void)showWithObject:(id)content
+{
+	[self showWithObject:content atLocation:[self caretPosition] ofType:@"text" displayOptions:nil];
+}
+
++ (void)showWithObject:(id)content ofType:(NSString *)type
+{
+	[self showWithObject:content atLocation:[self caretPosition] ofType:type displayOptions:nil];
+}
+
++ (void)showWithObject:(id)content ofType:(NSString *)type displayOptions:(NSDictionary *)options
+{
+	[self showWithObject:content atLocation:[self caretPosition] ofType:type displayOptions:options];
+}
+
++ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type displayOptions:(NSDictionary *)displayOptions
+{
+
 	SPTooltip* tip = [SPTooltip new];
+	[tip initMeWithOptions:displayOptions];
 	[tip setFrameTopLeftPoint:point];
-	// The tooltip will show itself automatically when the HTML is loaded
+	
+	
 	if([type isEqualToString:@"text"]) {
 		NSString* html = nil;
 		NSMutableString* text = [[(NSString*)content mutableCopy] autorelease];
@@ -100,45 +133,59 @@ static float slow_in_out (float t)
 		{
 			html = @"Error";
 		}
-		[tip setContent:html transparent:transparent];
+		[tip setContent:html withOptions:displayOptions];
 	}
-	else if([type isEqualToString:@"html"])
-		[tip setContent:(NSString*)content transparent:transparent];
+	else if([type isEqualToString:@"html"]) {
+		[tip setContent:(NSString*)content withOptions:displayOptions];
+	}
+	else {
+		[tip setContent:(NSString*)content withOptions:displayOptions];
+		NSBeep();
+		NSLog(@"SPTooltip: Type '%@' is not supported. Please use 'text' or 'html'. Tooltip is displayed as type 'html'", type);
+	}
+}
+
+- (void)initMeWithOptions:(NSDictionary *)displayOptions
+{
+	[self setReleasedWhenClosed:YES];
+	[self setAlphaValue:0.97f];
+	[self setOpaque:NO];
+	[self setBackgroundColor:[NSColor colorWithDeviceRed:1.0f green:0.96f blue:0.76f alpha:1.0f]];
+	[self setBackgroundColor:[NSColor clearColor]];
+	[self setHasShadow:YES];
+	[self setLevel:NSStatusWindowLevel];
+	[self setHidesOnDeactivate:YES];
+	[self setIgnoresMouseEvents:YES];
+
+	webPreferences = [[WebPreferences alloc] initWithIdentifier:@"SequelPro Tooltip"];
+	[webPreferences setJavaScriptEnabled:YES];
+
+	NSString *fontName = ([displayOptions objectForKey:@"fontname"]) ? [displayOptions objectForKey:@"fontname"] : @"Lucida Grande";
+	int fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] intValue] : 10;
+	if(fontSize < 5) fontSize = 5;
+	
+	NSFont* font = [NSFont fontWithName:fontName size:fontSize];
+	[webPreferences setStandardFontFamily:[font familyName]];
+	[webPreferences setDefaultFontSize:fontSize];
+	[webPreferences setDefaultFixedFontSize:fontSize];
+
+	webView = [[WebView alloc] initWithFrame:NSZeroRect];
+	[webView setPreferencesIdentifier:@"SequelPro Tooltip"];
+	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[webView setFrameLoadDelegate:self];
+	if ([webView respondsToSelector:@selector(setDrawsBackground:)])
+	    [webView setDrawsBackground:NO];
+
+	[self setContentView:webView];
+	
 }
 
 - (id)init;
 {
-	if(self = [self initWithContentRect:NSMakeRect(1,1,1,1) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+	if(self = [self initWithContentRect:NSMakeRect(1,1,1,1) 
+					styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
 	{
-		[self setReleasedWhenClosed:YES];
-		[self setAlphaValue:0.97f];
-		[self setOpaque:NO];
-		[self setBackgroundColor:[NSColor colorWithDeviceRed:1.0f green:0.96f blue:0.76f alpha:1.0f]];
-		[self setBackgroundColor:[NSColor clearColor]];
-		[self setHasShadow:YES];
-		[self setLevel:NSStatusWindowLevel];
-		[self setHidesOnDeactivate:YES];
-		[self setIgnoresMouseEvents:YES];
-
-		SPTooltipPreferencesIdentifier = @"SequelPro Tooltip";
-
-		webPreferences = [[WebPreferences alloc] initWithIdentifier:SPTooltipPreferencesIdentifier];
-		[webPreferences setJavaScriptEnabled:YES];
-		NSString *fontName = @"Monaco";
-		int fontSize = 12;
-		NSFont* font = [NSFont fontWithName:fontName size:fontSize];
-		[webPreferences setStandardFontFamily:[font familyName]];
-		[webPreferences setDefaultFontSize:fontSize];
-		[webPreferences setDefaultFixedFontSize:fontSize];
-
-		webView = [[WebView alloc] initWithFrame:NSZeroRect];
-		[webView setPreferencesIdentifier:SPTooltipPreferencesIdentifier];
-		[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-		[webView setFrameLoadDelegate:self];
-		if ([webView respondsToSelector:@selector(setDrawsBackground:)])
-		    [webView setDrawsBackground:NO];
-
-		[self setContentView:webView];
+		;
 	}
 	return self;
 }
@@ -151,10 +198,39 @@ static float slow_in_out (float t)
 	[super dealloc];
 }
 
++ (void)setDisplayOptions:(NSDictionary *)aDict
+{
+	// displayOptions = [NSDictionary dictionaryWithDictionary:aDict];
+}
+
++ (NSPoint)caretPosition
+{
+	NSPoint pos;
+	id fr = [[NSApp keyWindow] firstResponder];
+
+	//If first responder is a textview return the caret position
+	if([fr respondsToSelector:@selector(getRangeForCurrentWord)] ) {
+		NSRange range = NSMakeRange([fr getRangeForCurrentWord].location,0);
+		NSRange glyphRange = [[fr layoutManager] glyphRangeForCharacterRange:range actualCharacterRange:NULL];
+		NSRect boundingRect = [[fr layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[fr textContainer]];
+		boundingRect = [fr convertRect: boundingRect toView: NULL];
+		pos = [[fr window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+		NSFont* font = [fr font];
+		pos.y -= [font pointSize]*1.3;
+		return pos;
+	// Otherwise return the upper left corner of the current keyWindow
+	} else {
+		pos = [[NSApp keyWindow] frame].origin;
+		pos.x += 5;
+		pos.y += [[NSApp keyWindow] frame].size.height - 23;
+		return pos;
+	}
+}
+
 // ===========
 // = Webview =
 // ===========
-- (void)setContent:(NSString *)content transparent:(BOOL)transparent
+- (void)setContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
 {
 	NSString *fullContent =	@"<html>"
 				@"<head>"
@@ -173,7 +249,11 @@ static float slow_in_out (float t)
 				@"<body>%@</body>"
 				@"</html>";
 
-	fullContent = [NSString stringWithFormat:fullContent, transparent ? @"transparent" : @"#F6EDC3", content];
+	NSString *bgColor = ([displayOptions objectForKey:@"backgroundcolor"]) ? [displayOptions objectForKey:@"backgroundcolor"] : @"#F9FBC5";
+	BOOL transparent = ([displayOptions objectForKey:@"transparent"]) ? YES : NO;
+
+
+	fullContent = [NSString stringWithFormat:fullContent, transparent ? @"transparent" : bgColor, content];
 	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
 }
 
@@ -224,7 +304,7 @@ static float slow_in_out (float t)
 // ==================
 - (BOOL)shouldCloseForMousePosition:(NSPoint)aPoint
 {
-	float ignorePeriod = [[NSUserDefaults standardUserDefaults] floatForKey:@"OakToolTipMouseMoveIgnorePeriod"];
+	float ignorePeriod = 1.0f;
 	if(-[didOpenAtDate timeIntervalSinceNow] < ignorePeriod)
 		return NO;
 
@@ -239,7 +319,7 @@ static float slow_in_out (float t)
 	float deltaY = p.y - aPoint.y;
 	float dist = sqrtf(deltaX * deltaX + deltaY * deltaY);
 
-	float moveThreshold = 2;
+	float moveThreshold = 20;
 	return dist > moveThreshold;
 }
 

@@ -42,10 +42,15 @@
 	
 	NSPoint			mousePositionWhenOpened;
 	
-	NSString* SPTooltipPreferencesIdentifier;
+	NSString* 		SPTooltipPreferencesIdentifier;
+
 }
 
-+ (void)showWithObject:(id)content ofType:(NSString *)type transparent:(BOOL)transparent;
-+ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type transparent:(BOOL)transparent;
++ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type displayOptions:(NSDictionary *)displayOptions;
++ (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type;
++ (void)showWithObject:(id)content atLocation:(NSPoint)point;
++ (void)showWithObject:(id)content ofType:(NSString *)type displayOptions:(NSDictionary *)displayOptions;
++ (void)showWithObject:(id)content ofType:(NSString *)type;
++ (void)showWithObject:(id)content;
 
 @end
