@@ -53,6 +53,8 @@
 	BOOL editTextViewWasChanged;
 	
 	NSUserDefaults *prefs;
+	
+	int editSheetReturnCode;
 }
 
 - (IBAction)closeEditSheet:(id)sender;

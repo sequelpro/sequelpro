@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDataCellFormatter.h"
-
+#import "SPTooltip.h"
 
 @implementation SPDataCellFormatter
 
@@ -82,13 +82,13 @@
 	
 	// A single character over the length of the string - likely typed.  Prevent the change.
 	if ([partialString length] == textLimit + 1) {
-		NSBeep();
+		[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d.", @"Maximum text length is set to %d."), textLimit]];
 		return NO;
 	}
 	
 	// If the string is considerably longer than the limit, likely pasted.  Accept but truncate.
 	if ([partialString length] > textLimit) {
-		NSBeep();
+		[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d. Inserted text was truncated.", @"Maximum text length is set to %d. Inserted text was truncated."), textLimit]];
 		*newString = [NSString stringWithString:[partialString substringToIndex:textLimit]];
 		return NO;
 	}

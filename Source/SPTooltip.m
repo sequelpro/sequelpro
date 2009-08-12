@@ -116,8 +116,7 @@ static float slow_in_out (float t)
 	SPTooltip* tip = [SPTooltip new];
 	[tip initMeWithOptions:displayOptions];
 	[tip setFrameTopLeftPoint:point];
-	
-	
+
 	if([type isEqualToString:@"text"]) {
 		NSString* html = nil;
 		NSMutableString* text = [[(NSString*)content mutableCopy] autorelease];
@@ -125,8 +124,8 @@ static float slow_in_out (float t)
 		{
 			[text replaceOccurrencesOfString:@"&" withString:@"&amp;" options:0 range:NSMakeRange(0, [text length])];
 			[text replaceOccurrencesOfString:@"<" withString:@"&lt;" options:0 range:NSMakeRange(0, [text length])];
-			[text insertString:@"<pre>" atIndex:0];
-			[text appendString:@"</pre>"];
+			// [text insertString:@"<pre>" atIndex:0];
+			// [text appendString:@"</pre>"];
 			html = text;
 		}
 		else
@@ -143,6 +142,7 @@ static float slow_in_out (float t)
 		NSBeep();
 		NSLog(@"SPTooltip: Type '%@' is not supported. Please use 'text' or 'html'. Tooltip is displayed as type 'html'", type);
 	}
+
 }
 
 - (void)initMeWithOptions:(NSDictionary *)displayOptions
@@ -210,7 +210,7 @@ static float slow_in_out (float t)
 
 	//If first responder is a textview return the caret position
 	if([fr respondsToSelector:@selector(getRangeForCurrentWord)] ) {
-		NSRange range = NSMakeRange([fr getRangeForCurrentWord].location,0);
+		NSRange range = NSMakeRange([fr selectedRange].location,0);
 		NSRange glyphRange = [[fr layoutManager] glyphRangeForCharacterRange:range actualCharacterRange:NULL];
 		NSRect boundingRect = [[fr layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[fr textContainer]];
 		boundingRect = [fr convertRect: boundingRect toView: NULL];
@@ -304,7 +304,7 @@ static float slow_in_out (float t)
 // ==================
 - (BOOL)shouldCloseForMousePosition:(NSPoint)aPoint
 {
-	float ignorePeriod = 1.0f;
+	float ignorePeriod = 0.05f;
 	if(-[didOpenAtDate timeIntervalSinceNow] < ignorePeriod)
 		return NO;
 
@@ -362,12 +362,12 @@ static float slow_in_out (float t)
 
 	[self stopAnimation:self];
 	[self setValue:[NSDate date] forKey:@"animationStart"];
-	[self setValue:[NSTimer scheduledTimerWithTimeInterval:0.02f target:self selector:@selector(animationTick:) userInfo:nil repeats:YES] forKey:@"animationTimer"];
+	[self setValue:[NSTimer scheduledTimerWithTimeInterval:0.01f target:self selector:@selector(animationTick:) userInfo:nil repeats:YES] forKey:@"animationTimer"];
 }
 
 - (void)animationTick:(id)sender
 {
-	float alpha = 0.97f * (1.0f - slow_in_out(-1.5 * [animationStart timeIntervalSinceNow]));
+	float alpha = 0.97f * (1.0f - slow_in_out(-2.8 * [animationStart timeIntervalSinceNow]));
 	if(alpha > 0.0f)
 	{
 		[self setAlphaValue:alpha];

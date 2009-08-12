@@ -31,6 +31,7 @@
 #import "SPDataCellFormatter.h"
 #import "RegexKitLite.h"
 #import "SPDataCellFormatter.h"
+#import "SPTooltip.h"
 
 @implementation SPFieldEditorController
 
@@ -205,33 +206,47 @@
 	editSheetWillBeInitialized = NO;
 	
 	[editSheetProgressBar stopAnimation:self];
-	
+
 	// wait for editSheet
-	int code = [NSApp runModalForWindow:editSheet];
-	
-	[NSApp endSheet:editSheet];
+	NSModalSession session = [NSApp beginModalSessionForWindow:editSheet];
+	int response;
+	for (;;) {
+		if (response = [NSApp runModalSession:session] != NSRunContinuesResponse 
+			|| ![editSheet isVisible]) 
+			break;
+		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+								 beforeDate:[NSDate distantFuture]];
+
+	}
+	[NSApp endModalSession:session];
 	[editSheet orderOut:nil];
-	
+	[NSApp endSheet:editSheet];
+
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
 
-	return ( code && isEditable ) ? [sheetEditData retain] : nil;
+	return ( editSheetReturnCode && isEditable ) ? [sheetEditData retain] : nil;
 }
 
 - (IBAction)closeEditSheet:(id)sender
 {
 
+	editSheetReturnCode = 0;
+
 	// Validate the sheet data before saving them.
 	// - for max text length select the part which won't be saved
-	if(sender == editSheetOkButton)
+	if(sender == editSheetOkButton) {
 		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength) {
 			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
-			NSBeep();
+			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %d.", @"Text is too long. Maximum text length is set to %d."), maxTextLength]];
 			return;
 		}
+		[NSApp stopModal];
+		editSheetReturnCode = 1;
+	}
+	[NSApp abortModal];
 
-	[NSApp stopModalWithCode:[sender tag]];
-	
 }
 
 - (IBAction)openEditSheet:(id)sender
@@ -654,7 +669,7 @@
 		if ([textView hasMarkedText] && maxTextLength > 0 && r.location < maxTextLength)
 			// User tries to insert a new char but max text length was already reached - return NO
 			if( !r.length  && [[textView textStorage] length] >= maxTextLength ) {
-				NSBeep();
+				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d.", @"Maximum text length is set to %d."), maxTextLength]];
 				[textView unmarkText];
 				return NO;
 			}
@@ -674,10 +689,13 @@
 		// to insert a text chunk partially to maxTextLength.
 		if (newLength>maxTextLength) {
 			
-			if(maxTextLength-[[textView textStorage] length] < [replacementString length]) {
-				[textView insertText:[replacementString substringToIndex:maxTextLength-[[textView textStorage] length]]];
+			if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length <= [replacementString length]) {
+				if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length)
+					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d. Inserted text was truncated.", @"Maximum text length is set to %d. Inserted text was truncated."), maxTextLength]];
+				else
+					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d.", @"Maximum text length is set to %d."), maxTextLength]];
+				[textView insertText:[replacementString substringToIndex:maxTextLength-[[textView textStorage] length]+[textView selectedRange].length]];
 			}
-			NSBeep();
 			return NO;
 		}
 
