@@ -105,7 +105,7 @@
 
 	[self _initializeUsers];
 //	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
-	[window makeKeyAndOrderFront:nil];
+	[[self window] makeKeyAndOrderFront:nil];
 }
 
 - (void)_initializeUsers
@@ -293,7 +293,7 @@
 	if (!outlineView) {
 		[NSBundle loadNibNamed:@"UserManagerView" owner:self];
 	}
-	[window makeKeyAndOrderFront:nil];
+	[[self window] makeKeyAndOrderFront:nil];
 }
 
 #pragma mark -
@@ -362,7 +362,7 @@
 - (IBAction)doCancel:(id)sender
 {
 	[[self managedObjectContext] rollback];
-	[window close];
+	[[self window] close];
 }
 
 - (IBAction)doApply:(id)sender
@@ -375,7 +375,7 @@
 	}
 	else
 	{
-		[window close];
+		[[self window] close];
 	}
 //	[self _clearData];
 }
@@ -643,7 +643,7 @@
 						  nil, 
 						  nil, 
 						  nil, 
-						  window, 
+						  [self window], 
 						  self, 
 						  NULL, 
 						  NULL, 

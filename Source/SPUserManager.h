@@ -26,7 +26,7 @@
 
 @class MCPConnection;
 
-@interface SPUserManager : NSObject {
+@interface SPUserManager : NSWindowController {
 	
 	NSPersistentStoreCoordinator *persistentStoreCoordinator;
     NSManagedObjectModel *managedObjectModel;
@@ -40,7 +40,7 @@
 	IBOutlet NSOutlineView* outlineView;
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
-	IBOutlet NSWindow *window;
+//	IBOutlet NSWindow *window;
 	IBOutlet NSPanel *addHostSheet;
 }
 
