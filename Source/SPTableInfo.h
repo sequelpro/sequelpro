@@ -35,4 +35,6 @@
 	NSMutableArray *info;
 }
 
+- (void)tableChanged:(NSNotification *)notification;
+
 @end

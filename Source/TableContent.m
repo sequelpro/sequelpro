@@ -29,6 +29,7 @@
 
 #import "TableContent.h"
 #import "TableDocument.h"
+#import "SPTableInfo.h"
 #import "TablesList.h"
 #import "CMImageView.h"
 #import "CMCopyTable.h"
@@ -190,13 +191,6 @@
 			[dataColumns replaceObjectAtIndex:columnIndex withObject:rowDictionary];
 		}
 	}
-
-	// Retrieve the total number of rows of the current table
-	// to adjustify "Limit From:"
-	maxNumRowsOfCurrentTable = [[[tableDataInstance statusValues] objectForKey:@"Rows"] intValue];
-
-	// Retrieve the number of rows in the table
-	numRows = [self getNumberOfRows];
 	
 	NSString *nullValue = [prefs objectForKey:@"NullValue"];
 	
@@ -326,8 +320,9 @@
 	// Enable or disable the limit fields according to preference setting
 	if ( [prefs boolForKey:@"LimitResults"] ) {
 
-		// Attempt to preserve the limit value if it's still valid
-		if (limitStartPositionToRestore < 1 || limitStartPositionToRestore >= numRows) limitStartPositionToRestore = 1;
+		// Preserve the limit field - if this is beyond the current number of rows,
+		// reloadData will reset as necessary.
+		if (limitStartPositionToRestore < 1) limitStartPositionToRestore = 1;
 		[limitRowsField setStringValue:[NSString stringWithFormat:@"%u", limitStartPositionToRestore]];
 
 		[limitRowsField setEnabled:YES];
@@ -431,7 +426,6 @@
 	// Run the query and capture the result
 	queryResult = [mySQLConnection queryString:queryString];
 	[tableValues setArray:[self fetchResultAsArray:queryResult]];
-	numRows = [self getNumberOfRows];
 
 	// If the result is empty, and a limit is active, reset the limit
 	if ([prefs boolForKey:@"LimitResults"] && queryStringBeforeLimit && ![tableValues count]) {
@@ -440,7 +434,6 @@
 		[self setUsedQuery:queryString];
 		queryResult = [mySQLConnection queryString:queryString];
 		[tableValues setArray:[self fetchResultAsArray:queryResult]];
-		numRows = [self getNumberOfRows];
 	}
 
 	if ([prefs boolForKey:@"LimitResults"]
@@ -451,6 +444,9 @@
 	} else {
 		isLimited = NO;
 	}
+
+	// Update the rows count as necessary
+	[self updateNumberOfRows];
 
 	// Set the filter text
 	[self updateCountText];
@@ -639,18 +635,18 @@
 
 	// If a limit is active, display a string suggesting a limit is active
 	} else if (!isFiltered && isLimited) {
-		[countString appendFormat:NSLocalizedString(@"Rows %d-%d from table", @"text showing how many rows are in the limited result"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1];
+		[countString appendFormat:NSLocalizedString(@"Rows %d-%d of %@%d from table", @"text showing how many rows are in the limited result"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
 
 	// If just a filter is active, show a count and an indication a filter is active
 	} else if (isFiltered && !isLimited) {
 		if ([tableValues count] == 1)
-			[countString appendFormat:NSLocalizedString(@"%d row matches filter", @"text showing how a single rows matched filter"), [tableValues count]];
+			[countString appendFormat:NSLocalizedString(@"%d row of %@%d matches filter", @"text showing how a single rows matched filter"), [tableValues count], maxNumRowsIsEstimate?@"~":@"", maxNumRows];
 		else
-			[countString appendFormat:NSLocalizedString(@"%d rows match filter", @"text showing how many rows matched filter"), [tableValues count]];
+			[countString appendFormat:NSLocalizedString(@"%d rows of %@%d match filter", @"text showing how many rows matched filter"), [tableValues count], maxNumRowsIsEstimate?@"~":@"", maxNumRows];
 
 	// If both a filter and limit is active, display full string
 	} else {
-		[countString appendFormat:NSLocalizedString(@"Rows %d-%d rows from filter matches", @"text showing how many rows are in the limited filter match"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1];
+		[countString appendFormat:NSLocalizedString(@"Rows %d-%d from filtered matches", @"text showing how many rows are in the limited filter match"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1];
 	}
 
 	// If rows are selected, append selection count
@@ -707,8 +703,8 @@
 	}
 
 	// If limitRowsField > number of total table rows show the last limitRowsValue rows
-	if ( [prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRowsOfCurrentTable ) {
-		int newLimit = maxNumRowsOfCurrentTable - [prefs integerForKey:@"LimitResultsValue"];
+	if ( [prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRows ) {
+		int newLimit = maxNumRows - [prefs integerForKey:@"LimitResultsValue"];
 		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
 	}
 
@@ -860,9 +856,7 @@
 	
 	NSString *contextInfo = @"removerow";
 	
-	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && 
-		(([prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self fetchNumberOfRows]) ||
-		 (![prefs boolForKey:@"LimitResults"] && [tableContentView numberOfSelectedRows] == [self getNumberOfRows]))) {
+	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited) {
 		
 		contextInfo = @"removeallrows";
 		
@@ -1113,7 +1107,7 @@
 	if ( [limitRowsStepper intValue] > 0 ) {
 		int newStep = [limitRowsField intValue]+[prefs integerForKey:@"LimitResultsValue"];
 		// if newStep > the total number of rows in the current table retain the old value
-		[limitRowsField setIntValue:(newStep>maxNumRowsOfCurrentTable)?[limitRowsField intValue]:newStep];
+		[limitRowsField setIntValue:(newStep>maxNumRows)?[limitRowsField intValue]:newStep];
 	} else {
 		if ( ([limitRowsField intValue]-[prefs integerForKey:@"LimitResultsValue"]) < 1 ) {
 			[limitRowsField setIntValue:1];
@@ -1576,7 +1570,6 @@
 						[tempResult addObject:NSArrayObjectAtIndex(tableValues, i)];
 				}
 				[tableValues setArray:tempResult];
-				numRows = [self getNumberOfRows];
 				[tableContentView reloadData];
 			}
 			[tableContentView deselectAll:self];
@@ -1745,21 +1738,44 @@
 #pragma mark Table drawing and editing
 
 /**
- * Returns the number of rows in the selected table
- * Queries the number from MySQL if enabled in prefs and result is limited, otherwise just return the fullResult count.
+ * Updates the number of rows in the selected table.
+ * Attempts to use the fullResult count if available, also updating the
+ * table data store; otherwise, uses the table data store if accurate or
+ * falls back to a fetch if necessary and set in preferences.
+ * The prefs option "fetch accurate row counts" is used as a last resort as
+ * it can be very slow on large InnoDB tables which require a full table scan.
  */
-- (int)getNumberOfRows
-{	
-	if ([prefs boolForKey:@"LimitResults"] && [prefs boolForKey:@"FetchCorrectRowCount"]) {
-		numRows = [self fetchNumberOfRows];
+- (void)updateNumberOfRows
+{
+
+	// For unfiltered and non-limited tables, use the result count - and update the status count
+	if (!isLimited && !isFiltered) {
+		maxNumRows = [tableValues count];
+		maxNumRowsIsEstimate = NO;
+		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
+		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
+		[tableInfoInstance tableChanged:nil];
+		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] loadTable:selectedTable];
+
+	// Otherwise, if the table status value is accurate, use it
+	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
+		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
+		maxNumRowsIsEstimate = NO;
+
+	// Choose whether to display an estimate, or to fetch the correct row count, based on prefs
+	} else if ([prefs boolForKey:@"FetchCorrectRowCount"]) {
+		maxNumRows = [self fetchNumberOfRows];
+		maxNumRowsIsEstimate = NO;
+		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
+		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
+		[tableInfoInstance tableChanged:nil];
+		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] loadTable:selectedTable];
+
+	// Use the estimate count
 	} else {
-		numRows = [tableValues count];
+		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
+		maxNumRowsIsEstimate = YES;
 	}
-		
-	// Update table data cache with the more accurate row count
-	//[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", numRows] forKey:@"Rows"];
-	
-	return numRows;
 }
 
 /*

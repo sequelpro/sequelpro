@@ -28,13 +28,14 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMCopyTable, SPTextAndLinkCell, SPHistoryController;
+@class CMCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo;
 
 @interface TableContent : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
+	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 	
 	IBOutlet id tableWindow;
@@ -59,9 +60,9 @@
 	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
-	BOOL isFiltered, isLimited;
+	BOOL isFiltered, isLimited, maxNumRowsIsEstimate;
 	NSUserDefaults *prefs;
-	int numRows, currentlyEditingRow, maxNumRowsOfCurrentTable;
+	int currentlyEditingRow, maxNumRows;
 
 	BOOL sortColumnToRestoreIsAsc;
 	NSString *sortColumnToRestore;
@@ -105,7 +106,7 @@
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
-- (int)getNumberOfRows;
+- (void)updateNumberOfRows;
 - (int)fetchNumberOfRows;
 - (BOOL)saveRowOnDeselect;
 

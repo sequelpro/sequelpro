@@ -128,7 +128,7 @@
 			
 			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
 			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
-				[info addObject:[NSString stringWithFormat:([[tableStatus objectForKey:@"Engine"] isEqualToString:@"MyISAM"]) ? @"rows: %@" : @"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
+				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? @"rows: %@" : @"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
 			} 
 						
 			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] intValue]]]];

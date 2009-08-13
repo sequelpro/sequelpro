@@ -746,14 +746,21 @@
 	if ([status objectForKey:@"Type"]) {
 		[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
 	}
-	
+
+	// Add a note for whether the row count is accurate or not - only for MyISAM
+	if ([[status objectForKey:@"Engine"] isEqualToString:@"MyISAM"]) {
+		[status setObject:@"y" forKey:@"RowsCountAccurate"];
+	} else {
+		[status setObject:@"n" forKey:@"RowsCountAccurate"];
+	}
+
 	// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
 	// this happens e.g. for db "information_schema"
 	if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
 		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 			[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
-
+			[status setObject:@"y" forKey:@"RowsCountAccurate"];
 	}
 
 	return TRUE;

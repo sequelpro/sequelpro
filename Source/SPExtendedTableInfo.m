@@ -375,8 +375,8 @@
 			
 			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
 		}
-		// Prefix number of rows with '~' if this is not a MyISAM table. Only MyISAM tables report the exact row count.
-		else if (([key isEqualToString:@"Rows"]) && (![[infoDict objectForKey:@"Engine"] isEqualToString:@"MyISAM"])) {
+		// Prefix number of rows with '~' if it is not an accurate count
+		else if ([key isEqualToString:@"Rows"] && ![[infoDict objectForKey:@"RowsCountAccurate"] boolValue]) {
 			value = [@"~" stringByAppendingString:value];
 		}
 	}
