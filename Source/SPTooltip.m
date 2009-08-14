@@ -336,17 +336,21 @@ static float slow_in_out (float t)
 	BOOL didAcceptMouseMovedEvents = [keyWindow acceptsMouseMovedEvents];
 	[keyWindow setAcceptsMouseMovedEvents:YES];
 	NSEvent* event;
+	int eventType;
 	while(event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES])
 	{
 		[NSApp sendEvent:event];
-
-		if([event type] == NSLeftMouseDown || [event type] == NSRightMouseDown || [event type] == NSOtherMouseDown || [event type] == NSKeyDown || [event type] == NSScrollWheel)
+		eventType = [event type];
+		if(eventType == NSKeyDown || eventType == NSLeftMouseDown || eventType == NSRightMouseDown || eventType == NSOtherMouseDown || eventType == NSScrollWheel)
 			break;
 
-		if([event type] == NSMouseMoved && [self shouldCloseForMousePosition:[NSEvent mouseLocation]])
+		if(eventType == NSMouseMoved && [self shouldCloseForMousePosition:[NSEvent mouseLocation]])
 			break;
 
 		if(keyWindow != [NSApp keyWindow] || ![NSApp isActive])
+			break;
+		
+		if(spTooltipCounter > 1)
 			break;
 	}
 
