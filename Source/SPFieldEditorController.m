@@ -51,7 +51,7 @@
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
 		
-		// [editTextView setFormatter:[[SPDataCellFormatter new] autorelease]];
+		allowUndo = NO;
 
 	}
 	return self;
@@ -60,6 +60,7 @@
 
 - (void)dealloc
 {
+	if ( esUndoManager ) [esUndoManager release];
 	if ( sheetEditData ) [sheetEditData release];
 	[super dealloc];
 }
@@ -209,11 +210,43 @@
 
 	// wait for editSheet
 	NSModalSession session = [NSApp beginModalSessionForWindow:editSheet];
-	int response;
+	int cycleCounter = 0;
 	for (;;) {
-		if (response = [NSApp runModalSession:session] != NSRunContinuesResponse 
+
+		cycleCounter++;
+
+		// Allow undo grouping if user typed a ' ' (for word level undo)
+		// or a RETURN
+		if([[NSApp currentEvent] type] == NSKeyDown 
+			&& 	(
+				[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
+				|| [[NSApp currentEvent] keyCode] == 36
+				)
+			)
+			cycleCounter=100;
+
+		// After 5 run loops (fast writing forms longer blocks) 
+		// or the user typed a ' ' or RETURN and the textView was changed (allowUndo)
+		// form an undo group
+		if(cycleCounter>5 && allowUndo && ![esUndoManager isUndoing] && ![esUndoManager isRedoing]) {
+			cycleCounter=0;
+			allowUndo = NO;
+			while([esUndoManager groupingLevel] > 0) {
+				[esUndoManager endUndoGrouping];
+				cycleCounter++;
+			}
+			while([esUndoManager groupingLevel] < cycleCounter)
+				[esUndoManager beginUndoGrouping];
+
+			cycleCounter = 0;
+		}
+
+		// Break the run loop if editSheet was closed
+		if ([NSApp runModalSession:session] != NSRunContinuesResponse 
 			|| ![editSheet isVisible]) 
 			break;
+
+		// Execute code on DefaultRunLoop (like displaying a tooltip)
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
 								 beforeDate:[NSDate distantFuture]];
 
@@ -228,6 +261,17 @@
 	return ( editSheetReturnCode && isEditable ) ? [sheetEditData retain] : nil;
 }
 
+/*
+ * Establish and return an UndoManager for editTextView
+ */
+- (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
+{
+	if (!esUndoManager)
+		esUndoManager = [[NSUndoManager alloc] init];
+
+	return esUndoManager;
+}
+
 - (IBAction)closeEditSheet:(id)sender
 {
 
@@ -235,6 +279,7 @@
 
 	// Validate the sheet data before saving them.
 	// - for max text length select the part which won't be saved
+	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
 		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength) {
 			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
@@ -741,15 +786,21 @@
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
 			[[[NSApp currentEvent] characters] isEqualToString:@"\003"] )
 		{
-			// [NSApp stopModalWithCode:1];
-			// return YES;
 			[self closeEditSheet:editSheetOkButton];
+			return YES;
 		}
 		else
 			return NO;
 	}
 	return NO;
 }
+
+- (void)textDidChange:(NSNotification *)aNotification
+{
+	// Allow undo grouping only if the text buffer was really changed
+	allowUndo = YES;
+}
+
 
 
 @end

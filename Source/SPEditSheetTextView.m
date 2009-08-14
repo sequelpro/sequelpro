@@ -28,7 +28,47 @@
 
 @implementation SPEditSheetTextView
 
-- (void) keyDown:(NSEvent *)theEvent
+- (IBAction)undo:(id)sender
+{
+	textWasChanged = NO;
+	[[self undoManager] undo];
+	// Due to the undoManager implementation it could happen that
+	// an action will be recoreded which actually didn't change the
+	// text buffer. That's why repeat undo.
+	if(!textWasChanged) [[self undoManager] undo];
+}
+
+- (IBAction)redo:(id)sender
+{
+	textWasChanged = NO;
+	[[self undoManager] redo];
+	// Due to the undoManager implementation it could happen that
+	// an action will be recoreded which actually didn't change the
+	// text buffer. That's why repeat redo.
+	if(!textWasChanged) [[self undoManager] redo];
+}
+
+/*
+ * Validate undo and redo menu items
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	
+	if ([menuItem action] == @selector(undo:)) {
+		return ([[self undoManager] canUndo]);
+	}
+	if ([menuItem action] == @selector(redo:)) {
+		return ([[self undoManager] canRedo]);
+	}
+	return YES;
+}
+
+- (void)textDidChange:(NSNotification *)aNotification
+{
+	textWasChanged = YES;
+}
+
+- (void)keyDown:(NSEvent *)theEvent
 {
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
@@ -62,9 +102,9 @@
 			return;
 		}
 	}
-	
+
 	[super keyDown: theEvent];
-	
+
 }
 
 /*

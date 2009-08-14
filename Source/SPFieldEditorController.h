@@ -51,10 +51,13 @@
 	int counter;
 	unsigned long long maxTextLength;
 	BOOL editTextViewWasChanged;
+	BOOL allowUndo;
 	
 	NSUserDefaults *prefs;
 	
 	int editSheetReturnCode;
+	
+	NSUndoManager *esUndoManager;
 }
 
 - (IBAction)closeEditSheet:(id)sender;

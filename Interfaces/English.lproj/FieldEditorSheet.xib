@@ -588,7 +588,7 @@
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
-												<int key="NSFlags">4083</int>
+												<int key="NSFlags">4067</int>
 												<reference key="NSBackgroundColor" ref="940290613"/>
 												<reference key="NSInsertionColor" ref="1021276550"/>
 												<object class="NSDictionary" key="NSSelectedAttributes">

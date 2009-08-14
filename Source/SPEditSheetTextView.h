@@ -25,6 +25,9 @@
 #import <Cocoa/Cocoa.h>
 
 @interface SPEditSheetTextView : NSTextView
+{
+	BOOL textWasChanged;
+}
 
 - (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
