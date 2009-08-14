@@ -53,6 +53,7 @@
 	BOOL editTextViewWasChanged;
 	BOOL allowUndo;
 	BOOL wasCutPaste;
+	BOOL selectionChanged;
 	
 	NSUserDefaults *prefs;
 	

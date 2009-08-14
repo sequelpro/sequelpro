@@ -52,6 +52,7 @@
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
 		
 		allowUndo = NO;
+		selectionChanged = NO;
 
 	}
 	return self;
@@ -211,24 +212,8 @@
 	// wait for editSheet
 	NSModalSession session = [NSApp beginModalSessionForWindow:editSheet];
 	int cycleCounter = 0;
+	BOOL doGroupDueToChars = NO;
 	for (;;) {
-
-		// cycleCounter++;
-
-		// Allow undo grouping if user typed a ' ' (for word level undo)
-		// or a RETURN
-		// if([[NSApp currentEvent] type] == NSKeyDown 
-		// 	&& 	(
-		// 		[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
-		// 		|| [[NSApp currentEvent] keyCode] == 36
-		// 		// || [[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
-		// 		)
-		// 	)
-		// 	cycleCounter=100;
-
-		// After 5 run loops (fast writing forms longer blocks) 
-		// or the user typed a ' ' or RETURN and the textView was changed (allowUndo)
-		// form an undo group
 
 		// Break the run loop if editSheet was closed
 		if ([NSApp runModalSession:session] != NSRunContinuesResponse 
@@ -239,20 +224,34 @@
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
 								 beforeDate:[NSDate distantFuture]];
 
-		if( (wasCutPaste || allowUndo) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
+		// Allow undo grouping if user typed a ' ' (for word level undo)
+		// or a RETURN but not for each char due to writing speed
+		if([[NSApp currentEvent] type] == NSKeyDown 
+			&& 	(
+				[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
+				|| [[NSApp currentEvent] keyCode] == 36
+				|| [[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
+				)) {
+			doGroupDueToChars=YES;
+		}
 
-			cycleCounter = 0;
+		// If conditions match create an undo group
+		if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
 			allowUndo = NO;
 			wasCutPaste = NO;
+			doGroupDueToChars = NO;
+			selectionChanged = NO;
+
+			cycleCounter = 0;
 			while([esUndoManager groupingLevel] > 0) {
 				[esUndoManager endUndoGrouping];
 				cycleCounter++;
 			}
 			while([esUndoManager groupingLevel] < cycleCounter)
 				[esUndoManager beginUndoGrouping];
+			
 
 			cycleCounter = 0;
-
 		}
 
 	}
@@ -768,8 +767,11 @@
 {
 
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
-	if(!editTextViewWasChanged && (editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0)))
+	if(!editTextViewWasChanged && (editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))) {
+		// Inform the undo-grouping about the caret movement
+		selectionChanged = YES;
 		return;
+	}
 
 	// clear the image and hex (since i doubt someone can "type" a gif)
 	[editImage setImage:nil];
@@ -804,10 +806,16 @@
 	return NO;
 }
 
+- (void)setAllowedUndo
+{
+	allowUndo = YES;
+}
+
 - (void)textDidChange:(NSNotification *)aNotification
 {
-	// Allow undo grouping only if the text buffer was really changed
-	allowUndo = YES;
+	// Allow undo grouping only if the text buffer was really changed. Inform
+	// the run loop delayed for larger undo groups.
+	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.2];
 }
 
 

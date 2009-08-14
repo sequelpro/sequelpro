@@ -36,6 +36,7 @@
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat undo.
 	if(!textWasChanged) [[self undoManager] undo];
+	if(!textWasChanged) [[self undoManager] undo];
 }
 
 - (IBAction)redo:(id)sender
@@ -46,16 +47,19 @@
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat redo.
 	if(!textWasChanged) [[self undoManager] redo];
+	if(!textWasChanged) [[self undoManager] redo];
 }
 
 - (IBAction)paste:(id)sender
 {
+	// Try to create an undo group
 	[[self delegate] setWasCutPaste];
 	[super paste:sender];
 }
 
 - (IBAction)cut:(id)sender
 {
+	// Try to create an undo group
 	[[self delegate] setWasCutPaste];
 	[super cut:sender];
 }
