@@ -128,8 +128,10 @@ static float slow_in_out (float t)
 		{
 			[text replaceOccurrencesOfString:@"&" withString:@"&amp;" options:0 range:NSMakeRange(0, [text length])];
 			[text replaceOccurrencesOfString:@"<" withString:@"&lt;" options:0 range:NSMakeRange(0, [text length])];
-			// [text insertString:@"<pre>" atIndex:0];
-			// [text appendString:@"</pre>"];
+			[text insertString:[NSString stringWithFormat:@"<pre style=\"font-family:'%@';\">", 
+				([displayOptions objectForKey:@"fontname"]) ? [displayOptions objectForKey:@"fontname"] : @"Lucida Grande"] 
+				atIndex:0];
+			[text appendString:@"</pre>"];
 			html = text;
 		}
 		else
