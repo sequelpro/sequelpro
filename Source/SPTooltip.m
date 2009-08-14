@@ -325,7 +325,7 @@ static float slow_in_out (float t)
 	float deltaY = p.y - aPoint.y;
 	float dist = sqrtf(deltaX * deltaX + deltaY * deltaY);
 
-	float moveThreshold = 20;
+	float moveThreshold = 10;
 	return dist > moveThreshold;
 }
 

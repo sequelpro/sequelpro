@@ -264,4 +264,12 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect) {
 	return lastLinkRow;
 }
 
+/**
+ * Suppress the built-in expansion tooltip
+ */
+- (NSRect)expansionFrameWithFrame:(NSRect)cellFrame inView:(NSView *)view
+{
+	return NSZeroRect;
+}
+
 @end
