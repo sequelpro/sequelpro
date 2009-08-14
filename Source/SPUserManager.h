@@ -40,8 +40,6 @@
 	IBOutlet NSOutlineView* outlineView;
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
-//	IBOutlet NSWindow *window;
-	IBOutlet NSPanel *addHostSheet;
 }
 
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
