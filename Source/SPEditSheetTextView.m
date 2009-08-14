@@ -48,6 +48,18 @@
 	if(!textWasChanged) [[self undoManager] redo];
 }
 
+- (IBAction)paste:(id)sender
+{
+	[[self delegate] setWasCutPaste];
+	[super paste:sender];
+}
+
+- (IBAction)cut:(id)sender
+{
+	[[self delegate] setWasCutPaste];
+	[super cut:sender];
+}
+
 /*
  * Validate undo and redo menu items
  */

@@ -213,33 +213,22 @@
 	int cycleCounter = 0;
 	for (;;) {
 
-		cycleCounter++;
+		// cycleCounter++;
 
 		// Allow undo grouping if user typed a ' ' (for word level undo)
 		// or a RETURN
-		if([[NSApp currentEvent] type] == NSKeyDown 
-			&& 	(
-				[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
-				|| [[NSApp currentEvent] keyCode] == 36
-				)
-			)
-			cycleCounter=100;
+		// if([[NSApp currentEvent] type] == NSKeyDown 
+		// 	&& 	(
+		// 		[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
+		// 		|| [[NSApp currentEvent] keyCode] == 36
+		// 		// || [[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
+		// 		)
+		// 	)
+		// 	cycleCounter=100;
 
 		// After 5 run loops (fast writing forms longer blocks) 
 		// or the user typed a ' ' or RETURN and the textView was changed (allowUndo)
 		// form an undo group
-		if(cycleCounter>5 && allowUndo && ![esUndoManager isUndoing] && ![esUndoManager isRedoing]) {
-			cycleCounter=0;
-			allowUndo = NO;
-			while([esUndoManager groupingLevel] > 0) {
-				[esUndoManager endUndoGrouping];
-				cycleCounter++;
-			}
-			while([esUndoManager groupingLevel] < cycleCounter)
-				[esUndoManager beginUndoGrouping];
-
-			cycleCounter = 0;
-		}
 
 		// Break the run loop if editSheet was closed
 		if ([NSApp runModalSession:session] != NSRunContinuesResponse 
@@ -249,6 +238,22 @@
 		// Execute code on DefaultRunLoop (like displaying a tooltip)
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
 								 beforeDate:[NSDate distantFuture]];
+
+		if( (wasCutPaste || allowUndo) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
+
+			cycleCounter = 0;
+			allowUndo = NO;
+			wasCutPaste = NO;
+			while([esUndoManager groupingLevel] > 0) {
+				[esUndoManager endUndoGrouping];
+				cycleCounter++;
+			}
+			while([esUndoManager groupingLevel] < cycleCounter)
+				[esUndoManager beginUndoGrouping];
+
+			cycleCounter = 0;
+
+		}
 
 	}
 	[NSApp endModalSession:session];
@@ -270,6 +275,11 @@
 		esUndoManager = [[NSUndoManager alloc] init];
 
 	return esUndoManager;
+}
+
+- (void)setWasCutPaste
+{
+	wasCutPaste = YES;
 }
 
 - (IBAction)closeEditSheet:(id)sender
@@ -775,7 +785,8 @@
 	
 }
 
-// TextView delegate methods
+#pragma -
+#pragma TextView delegate methods
 
 /**
  * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
@@ -789,8 +800,6 @@
 			[self closeEditSheet:editSheetOkButton];
 			return YES;
 		}
-		else
-			return NO;
 	}
 	return NO;
 }

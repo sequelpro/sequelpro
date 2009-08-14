@@ -52,6 +52,7 @@
 	unsigned long long maxTextLength;
 	BOOL editTextViewWasChanged;
 	BOOL allowUndo;
+	BOOL wasCutPaste;
 	
 	NSUserDefaults *prefs;
 	
@@ -82,5 +83,7 @@
 
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
 - (void)textViewDidChangeSelection:(NSNotification *)notification;
+
+- (void)setWasCutPaste;
 
 @end

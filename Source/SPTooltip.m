@@ -58,6 +58,8 @@
 #import "SPTooltip.h"
 #import "SPTextViewAdditions.h"
 
+static int spTooltipCounter = 0;
+
 static float slow_in_out (float t)
 {
 	if(t < 1.0f)
@@ -113,6 +115,8 @@ static float slow_in_out (float t)
 + (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type displayOptions:(NSDictionary *)displayOptions
 {
 
+	spTooltipCounter++;
+	
 	SPTooltip* tip = [SPTooltip new];
 	[tip initMeWithOptions:displayOptions];
 	[tip setFrameTopLeftPoint:point];
@@ -367,8 +371,9 @@ static float slow_in_out (float t)
 
 - (void)animationTick:(id)sender
 {
-	float alpha = 0.97f * (1.0f - slow_in_out(-2.8 * [animationStart timeIntervalSinceNow]));
-	if(alpha > 0.0f)
+	float alpha = 0.97f * (1.0f - 40*slow_in_out(-2.2 * [animationStart timeIntervalSinceNow]));
+
+	if(alpha > 0.0f && spTooltipCounter==1)
 	{
 		[self setAlphaValue:alpha];
 	}
@@ -377,6 +382,8 @@ static float slow_in_out (float t)
 		[super orderOut:self];
 		[self stopAnimation:self];
 		[self close];
+		spTooltipCounter--;
+		if(spTooltipCounter < 0) spTooltipCounter = 0;
 	}
 }
 
