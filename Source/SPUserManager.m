@@ -59,7 +59,6 @@
 	
 	[self setConnection:connection];
 	
-	
 	privColumnsMODict = [[[NSDictionary alloc] initWithObjectsAndKeys:
 						  @"grant_option_priv",@"Grant_priv",
 						  @"show_databases_priv",@"Show_db_priv",
@@ -71,9 +70,7 @@
 }
 
 - (void)dealloc
-{
-	NSLog(@"SPUserManager dealloc.");
-	
+{	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[managedObjectContext release], managedObjectContext = nil;
@@ -496,11 +493,6 @@
 	{
 		[outlineView reloadData];
 	}
-}
-
-- (void)windowWillClose:(NSNotification *)notification
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (BOOL)updateUsers:(NSArray *)updatedUsers
