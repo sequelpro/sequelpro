@@ -62,7 +62,7 @@
 	privColumnsMODict = [[[NSDictionary alloc] initWithObjectsAndKeys:
 						  @"grant_option_priv",@"Grant_priv",
 						  @"show_databases_priv",@"Show_db_priv",
-						  @"create_temporary_table_priv",@"Create_tmp_table_priv",
+						  @"create_temporary_tables_priv",@"Create_tmp_tables_priv",
 						  @"Replication_slave_priv",@"Repl_slave_priv", 
 						  @"Replication_client_priv",@"Repl_client_priv",nil] retain];
 	
@@ -114,8 +114,7 @@
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
-	[[self connection] selectDB:@"mysql"];
-	MCPResult *result = [[[self connection] queryString:@"select * from user order by user"] retain];
+	MCPResult *result = [[[self connection] queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"] retain];
 	int rows = [result numOfRows];
 	if (rows > 0)
 	{
@@ -505,7 +504,6 @@
 
 - (BOOL)deleteUsers:(NSArray *)deletedUsers
 {
-	[[self connection] selectDB:@"mysql"];
 	NSMutableString *droppedUsers = [NSMutableString string];
 	for (NSManagedObject *user in deletedUsers)
 	{
@@ -525,7 +523,6 @@
 
 - (BOOL)insertUsers:(NSArray *)insertedUsers
 {
-	[[self connection] selectDB:@"mysql"];
 	for(NSManagedObject *user in insertedUsers)
 	{
 		if ([user parent] != nil) {
@@ -587,7 +584,7 @@
 		// Revoke privileges
 		if ([revokePrivileges count] > 0)
 		{
-			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* TO %@@%@;",
+			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* FROM %@@%@;",
 										 [revokePrivileges componentsJoinedByCommas],
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
