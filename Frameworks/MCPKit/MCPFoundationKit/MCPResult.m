@@ -451,7 +451,7 @@ const OUR_CHARSET our_charsets60[] =
 				case FIELD_TYPE_SET:
 				case FIELD_TYPE_ENUM:
 				case FIELD_TYPE_NEWDATE: // Don't know what the format for this type is...
-					theCurrentObj = [self stringWithCString:theData];
+					theCurrentObj = [NSString stringWithCString:theData encoding:mEncoding];
 					break;
 					
 				case FIELD_TYPE_BIT:
@@ -1098,20 +1098,9 @@ const OUR_CHARSET our_charsets60[] =
  */
 - (NSString *)stringWithCString:(const char *)theCString
 {
-	NSData *theData;
-	NSString *theString;
-	
-	if (theCString == NULL) {
-		return @"";
-	}
-		
-	theData = [[NSData alloc] initWithBytes:theCString length:(strlen(theCString))];
-	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
-	
-	if (theData) [theData release];
-	if (theString) [theString autorelease];
-	
-	return theString;
+	if (theCString == NULL) return @"";
+
+	return [NSString stringWithCString:theCString encoding:mEncoding];
 }
 
 #pragma mark -
