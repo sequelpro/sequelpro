@@ -1088,7 +1088,7 @@
 					queryLength += [sqlString length];
 					
 					// Close this VALUES group and set up the next one if appropriate
-					if (j != rowCount - 1) {
+					if (j != rowCount) {
 						
 						// Add a new INSERT starter command every ~250k of data.
 						if (queryLength > 250000) {
