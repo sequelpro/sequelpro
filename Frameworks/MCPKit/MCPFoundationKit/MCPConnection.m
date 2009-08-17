@@ -28,6 +28,7 @@
 
 #import "MCPConnection.h"
 #import "MCPResult.h"
+#import "MCPStreamingResult.h"
 #import "MCPNumber.h"
 #import "MCPNull.h"
 #import "MCPConnectionProxy.h"
@@ -1230,15 +1231,26 @@ static void forcePingTimeout(int signalNumber)
  */
 - (MCPResult *)queryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding];
+	return [self queryString:query usingEncoding:mEncoding streamingResult:NO];
+}
+
+/**
+ * Takes a query string and returns an MCPStreamingResult representing the result of the query.
+ * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
+ * If no fields are present in the result, nil will be returned.
+ */
+- (MCPStreamingResult *)streamingQueryString:(NSString *)query
+{
+	return [self queryString:query usingEncoding:mEncoding streamingResult:YES];
 }
 
 /**
  * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
+ * If using streamingResult, the caller is responsible for releasing the result set.
  */
-- (MCPResult *)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(BOOL) streamResult
 {
 	MCPResult		*theResult = nil;
 	double			queryStartTime, queryExecutionTime;
@@ -1340,9 +1352,16 @@ static void forcePingTimeout(int signalNumber)
 		if (0 == queryResultCode) {
 			
 			if (mysql_field_count(mConnection) != 0) {
-				theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-
-				[queryLock unlock];
+				
+				// For normal result sets, fetch the results and unlock the connection
+				if (!streamResult) {
+					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+					[queryLock unlock];
+				
+				// For streaming result sets, fetch the result pointer and leave the connection locked
+				} else {
+					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self];
+				}
 				
 				// Ensure no problem occurred during the result fetch
 				if (mysql_errno(mConnection) != 0) {
@@ -1356,9 +1375,13 @@ static void forcePingTimeout(int signalNumber)
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
-			queryAffectedRows = mysql_affected_rows(mConnection);
+			if (!streamResult) {
+				queryAffectedRows = mysql_affected_rows(mConnection);
+			} else {
+				queryAffectedRows = 0;
+			}
 			
-			// On failure, set the error messages and IDs
+		// On failure, set the error messages and IDs
 		} else {
 			[queryLock unlock];
 			
@@ -1375,13 +1398,16 @@ static void forcePingTimeout(int signalNumber)
 		break;
 	}
 	
-	// If the mysql thread id has changed as a result of a connection error,
-	// ensure connection details are still correct
-	if (connectionThreadId != mConnection->thread_id) [self restoreConnectionDetails];
-	
-	// If max_allowed_packet was changed, reset it to default
-	if(currentMaxAllowedPacket > -1)
-		[self setMaxAllowedPacketTo:currentMaxAllowedPacket resetSize:YES];
+	if (!streamResult) {
+		
+		// If the mysql thread id has changed as a result of a connection error,
+		// ensure connection details are still correct
+		if (connectionThreadId != mConnection->thread_id) [self restoreConnectionDetails];
+		
+		// If max_allowed_packet was changed, reset it to default
+		if(currentMaxAllowedPacket > -1)
+			[self setMaxAllowedPacketTo:currentMaxAllowedPacket resetSize:YES];
+	}
 	
 	// Update error strings and IDs
 	lastQueryErrorId = queryErrorId;
@@ -1397,6 +1423,7 @@ static void forcePingTimeout(int signalNumber)
 	(void)(*startKeepAliveTimerResettingStatePtr)(self, startKeepAliveTimerResettingStateSEL, YES);
 	
 	if (!theResult) return nil;
+	if (streamResult) return theResult;
 	return [theResult autorelease];
 }
 
@@ -1432,6 +1459,17 @@ static void forcePingTimeout(int signalNumber)
 	}
 	
 	return 0;
+}
+
+#pragma mark -
+#pragma mark Connection locking
+
+/**
+ * Unlock the connection
+ */
+- (void)unlockConnection
+{
+	[queryLock unlock];
 }
 
 #pragma mark -
@@ -1844,7 +1882,7 @@ static void forcePingTimeout(int signalNumber)
 - (int)getMaxAllowedPacket
 {
 	MCPResult *r;
-	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding];
+	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding streamingResult:NO];
 	if (![[self getLastErrorMessage] isEqualToString:@""]) {
 		if ([self isConnected])
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);

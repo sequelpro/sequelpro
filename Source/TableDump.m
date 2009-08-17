@@ -501,7 +501,7 @@
 				NSString *q = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewline];
 				if (![q length]) continue;
 			
-				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding];
+				[mySQLConnection queryString:q usingEncoding:NSUTF8StringEncoding streamingResult:NO];
 			
 				if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (i+1),[mySQLConnection getLastErrorMessage]]];
@@ -860,6 +860,8 @@
 	// int progressBarWidth;
 	int tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
 	MCPResult *queryResult;
+	MCPStreamingResult *streamingResult;
+	NSAutoreleasePool *exportAutoReleasePool = nil;
 	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
 	NSArray *fieldNames;
 	NSArray *theRow;
@@ -867,7 +869,7 @@
 	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
 	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
-	NSMutableString *sqlString = [NSMutableString string];
+	NSMutableString *sqlString = [[NSMutableString alloc] init];
 	NSMutableString *errors = [NSMutableString string];
 	NSDictionary *tableDetails;
 	NSMutableArray *tableColumnNumericStatus;
@@ -988,10 +990,7 @@
 		
 		// Add the table content if required
 		if ( [addTableContentSwitch state] == NSOnState && tableType == SP_TABLETYPE_TABLE ) {
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
-			fieldNames = [queryResult fetchFieldNames];
-			rowCount = [queryResult numOfRows];
-			
+
 			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
 			tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
 			colCount = [[tableDetails objectForKey:@"columns"] count];
@@ -1005,6 +1004,13 @@
 					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:NO]];
 				}
 			}
+
+			// Retrieve the number of rows in the table for progress bar drawing
+			rowCount = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
+			
+			// Set up a result set in streaming mode
+			streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
+			fieldNames = [queryResult fetchFieldNames];			
 			
 			// Update the progress text and set the progress bar back to determinate
 			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Dumping...", @"text showing that app is writing data for table dump"), (i+1), [selectedTables count], tableName]];
@@ -1015,7 +1021,6 @@
 			[singleProgressBar displayIfNeeded];
 			
 			if (rowCount) {
-				[queryResult dataSeek:0];
 				queryLength = 0;
 				
 				// Lock the table for writing and disable keys if supported
@@ -1029,12 +1034,14 @@
 										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
-				for ( j = 0 ; j < rowCount ; j++ ) {
-					theRow = [queryResult fetchRowAsArray];
+				j = 0;
+				exportAutoReleasePool = [[NSAutoreleasePool alloc] init];
+				while (theRow = [streamingResult fetchNextRowAsArray]) {
+					j++;
 					[sqlString setString:@""];
 					
 					// Update the progress bar
-					[singleProgressBar setDoubleValue:((j+1)*100/rowCount)];
+					[singleProgressBar setDoubleValue:(j*100/rowCount)];
 					if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
 						lastProgressValue = (int)[singleProgressBar doubleValue];
 						[singleProgressBar displayIfNeeded];
@@ -1046,7 +1053,7 @@
 						if ( [[theRow objectAtIndex:t] isMemberOfClass:[NSNull class]] ) {
 							[sqlString appendString:@"NULL"];
 							
-							// Add data types directly as hex data
+						// Add data types directly as hex data
 						} else if ( [[theRow objectAtIndex:t] isKindOfClass:[NSData class]] ) {
 							[sqlString appendString:@"X'"];
 							[sqlString appendString:[mySQLConnection prepareBinaryData:[theRow objectAtIndex:t]]];
@@ -1088,6 +1095,10 @@
 							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(",
 													 [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
 							queryLength = 0;
+							
+							// Use the opportunity to drain and reset the autorelease pool
+							[exportAutoReleasePool drain];
+							exportAutoReleasePool = [[NSAutoreleasePool alloc] init];
 						} else {
 							[sqlString appendString:@"),\n\t("];
 						}
@@ -1115,7 +1126,13 @@
 											   dataUsingEncoding:NSUTF8StringEncoding]];
 					}
 				}
+
+				// Drain the autorelease pool
+				[exportAutoReleasePool drain];
 			}
+
+			// Release the result set
+			[streamingResult release];
 		}
 		
 		// Add an additional separator between tables
@@ -1167,7 +1184,8 @@
 		[NSApp endSheet:errorsSheet];
 		[errorsSheet orderOut:nil];
 	}
-	
+
+	[sqlString release];
 	return TRUE;
 }
 

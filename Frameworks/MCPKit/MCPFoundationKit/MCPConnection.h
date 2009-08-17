@@ -32,7 +32,7 @@
 
 #import "mysql.h"
 
-@class MCPResult;
+@class MCPResult, MCPStreamingResult;
 @protocol MCPConnectionProxy;
 
 /**
@@ -185,10 +185,14 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (NSString *)prepareString:(NSString *)theString;
 - (NSString *)quoteObject:(id)theObject;
 - (MCPResult *)queryString:(NSString *)query;
-- (MCPResult *)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding;
+- (MCPStreamingResult *)streamingQueryString:(NSString *)query;
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(BOOL) streamResult;
 - (double)lastQueryExecutionTime;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;
+
+// Locking
+- (void)unlockConnection;
 
 // Database structure
 - (MCPResult *)listDBs;

@@ -56,7 +56,6 @@
 		17B7B5DD101603B200F057DE /* MCPNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5CE101603B200F057DE /* MCPNumber.m */; };
 		17B7B5DE101603B200F057DE /* MCPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5CF101603B200F057DE /* MCPResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B5DF101603B200F057DE /* MCPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5D0101603B200F057DE /* MCPResult.m */; };
-		17B7B5E0101603B200F057DE /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5D1101603B200F057DE /* MCPResultPlus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5D2101603B200F057DE /* MCPResultPlus.m */; };
 		17B7B5EA101603D200F057DE /* my_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E2101603D200F057DE /* my_alloc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B5EB101603D200F057DE /* my_list.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E3101603D200F057DE /* my_list.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -136,6 +135,7 @@
 		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */; };
 		5822CAE110011C8000DCC3D6 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5822CADF10011C8000DCC3D6 /* ConnectionView.xib */; };
+		583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 583B779810386B0200B21F7E /* MCPStreamingResult.m */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */ = {isa = PBXBuildFile; fileRef = 584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
@@ -146,6 +146,8 @@
 		588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */; };
 		588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */; };
 		589235321020C1230011DE00 /* SPHistoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 589235301020C1230011DE00 /* SPHistoryController.m */; };
+		58BC5E56103898140058C2E6 /* MCPStreamingResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 583B779710386B0200B21F7E /* MCPStreamingResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58BC5E571038983E0058C2E6 /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5D1101603B200F057DE /* MCPResultPlus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
 		58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
@@ -491,6 +493,8 @@
 		5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionController.h; sourceTree = "<group>"; };
 		5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionController.m; sourceTree = "<group>"; };
 		5822CAE010011C8000DCC3D6 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ConnectionView.xib; sourceTree = "<group>"; };
+		583B779710386B0200B21F7E /* MCPStreamingResult.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = MCPStreamingResult.h; sourceTree = "<group>"; };
+		583B779810386B0200B21F7E /* MCPStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPStreamingResult.m; sourceTree = "<group>"; };
 		5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberView.h; sourceTree = "<group>"; };
 		5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoodleLineNumberView.m; sourceTree = "<group>"; };
 		5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray-MultipleSort.h"; sourceTree = "<group>"; };
@@ -793,6 +797,8 @@
 				17B7B5D0101603B200F057DE /* MCPResult.m */,
 				17B7B5D1101603B200F057DE /* MCPResultPlus.h */,
 				17B7B5D2101603B200F057DE /* MCPResultPlus.m */,
+				583B779710386B0200B21F7E /* MCPStreamingResult.h */,
+				583B779810386B0200B21F7E /* MCPStreamingResult.m */,
 			);
 			path = MCPFoundationKit;
 			sourceTree = "<group>";
@@ -1244,7 +1250,8 @@
 				17B7B5DA101603B200F057DE /* MCPNull.h in Headers */,
 				17B7B5DC101603B200F057DE /* MCPNumber.h in Headers */,
 				17B7B5DE101603B200F057DE /* MCPResult.h in Headers */,
-				17B7B5E0101603B200F057DE /* MCPResultPlus.h in Headers */,
+				58BC5E571038983E0058C2E6 /* MCPResultPlus.h in Headers */,
+				58BC5E56103898140058C2E6 /* MCPStreamingResult.h in Headers */,
 				17B7B5EA101603D200F057DE /* my_alloc.h in Headers */,
 				17B7B5EB101603D200F057DE /* my_list.h in Headers */,
 				17B7B5EC101603D200F057DE /* mysql.h in Headers */,
@@ -1536,6 +1543,7 @@
 				17B7B5DD101603B200F057DE /* MCPNumber.m in Sources */,
 				17B7B5DF101603B200F057DE /* MCPResult.m in Sources */,
 				17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */,
+				583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

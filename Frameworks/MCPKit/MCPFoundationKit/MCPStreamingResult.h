@@ -1,13 +1,11 @@
 //
-//  $Id$
+//	$Id$
 //
-//  MCPKit.h
-//  MCPKit
+//  MCPStreamingResult.h
+//  sequel-pro
 //
-//  Created by Serge Cohen (serge.cohen@m4x.org) on 08/12/2001.
-//  Copyright (c) 2001 Serge Cohen. All rights reserved.
-//
-//  Forked by the Sequel Pro team (sequelpro.com), April 2009
+//  Created by Rowan Beentje on Aug 16, 2009
+//  Copyright 2009 Rowan Beentje. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,19 +21,21 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://mysql-cocoa.sourceforge.net/>
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
+#import "MCPResult.h"
 
-#import <MCPKit/MCPConstants.h>
-#import <MCPKit/MCPNull.h>
-#import <MCPKit/MCPResult.h>
-#import <MCPKit/MCPStreamingResult.h>
-#import <MCPKit/MCPConnection.h>
-#import <MCPKit/MCPNumber.h>
-#import <MCPKit/MCPResultPlus.h>
-#import <MCPKit/MCPFastQueries.h>
-#import <MCPKit/MCPConnectionProxy.h>
+@class MCPConnection;
 
-#import "mysql.h"
+@interface MCPStreamingResult : MCPResult
+{
+	MCPConnection *parentConnection;
+
+	MYSQL_FIELD		*fieldDefinitions;
+}
+
+- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection;
+- (NSArray *)fetchNextRowAsArray;
+
+@end
