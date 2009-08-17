@@ -1010,7 +1010,7 @@
 			
 			// Set up a result set in streaming mode
 			streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
-			fieldNames = [queryResult fetchFieldNames];			
+			fieldNames = [streamingResult fetchFieldNames];			
 			
 			// Update the progress text and set the progress bar back to determinate
 			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Dumping...", @"text showing that app is writing data for table dump"), (i+1), [selectedTables count], tableName]];
