@@ -28,6 +28,14 @@
 #import "MCPNull.h"
 #import "MCPNumber.h"
 
+/**
+ * IMPORTANT NOTE
+ *
+ * MCPStreamingResult can produce fast and low-memory result reads, but should not
+ * be widely used for reads as it can result in MySQL thread or table blocking.
+ */
+
+
 @implementation MCPStreamingResult : MCPResult
 
 #pragma mark -
