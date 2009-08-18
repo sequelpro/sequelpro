@@ -146,54 +146,47 @@
 			
 			// Export the full resultset for the currently selected table to a file in CSV format
 		case 6:
-			file = [NSString stringWithString:(NSString *)[tableDocumentInstance table]];
-			[savePanel setRequiredFileType:@"csv"];
+			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportTableContentAsCSV";
 			break;
 			
 			// Export the full resultset for the currently selected table to a file in XML format
 		case 7:
-			file = [NSString stringWithString:(NSString *)[tableDocumentInstance table]];
-			[savePanel setRequiredFileType:@"xml"];
+			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
 			contextInfo = @"exportTableContentAsXML";
 			break;
 			
 			// Export the current "browse" view to a file in CSV format
 		case 8:
-			file = [NSString stringWithFormat:@"%@ view", [tableDocumentInstance table]];
-			[savePanel setRequiredFileType:@"csv"];
+			file = [NSString stringWithFormat:@"%@ view.csv", [tableDocumentInstance table]];
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportBrowseViewAsCSV";
 			break;
 			
 			// Export the current "browse" view to a file in XML format
 		case 9:
-			file = [NSString stringWithFormat:@"%@ view", [tableDocumentInstance table]];
-			[savePanel setRequiredFileType:@"xml"];
+			file = [NSString stringWithFormat:@"%@ view.xml", [tableDocumentInstance table]];
 			contextInfo = @"exportBrowseViewAsXML";
 			break;
 			
 			// Export the current custom query result set to a file in CSV format
 		case 10:
-			file = @"customresult";
-			[savePanel setRequiredFileType:@"csv"];
+			file = @"customresult.csv";
 			[savePanel setAccessoryView:exportCSVView];
 			contextInfo = @"exportCustomResultAsCSV";
 			break;
 			
 			// Export the current custom query result set to a file in XML format
 		case 11:
-			file = @"customresult";
-			[savePanel setRequiredFileType:@"xml"];
+			file = @"customresult.xml";
 			contextInfo = @"exportCustomResultAsXML";
 			break;
 			
 			// Export multiple tables to a file in CSV format
 		case 12:
 			[self reloadTables:self];
-			file = [NSString stringWithString:[tableDocumentInstance database]];
-			[savePanel setRequiredFileType:@"csv"];
+			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
 			[savePanel setAccessoryView:exportMultipleCSVView];
 			contextInfo = @"exportMultipleTablesAsCSV";
 			break;
@@ -201,8 +194,7 @@
 			// Export multiple tables to a file in XML format
 		case 13:
 			[self reloadTables:self];
-			file = [NSString stringWithString:[tableDocumentInstance database]];
-			[savePanel setRequiredFileType:@"xml"];
+			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
 			[savePanel setAccessoryView:exportMultipleXMLView];
 			contextInfo = @"exportMultipleTablesAsXML";
 			break;
