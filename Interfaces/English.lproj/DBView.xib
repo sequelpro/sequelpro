@@ -2,12 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9J61</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.46</string>
+		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="500"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5015,7 +5016,7 @@
 				<string key="NSWindowContentMaxSize">{600, 142}</string>
 				<string key="NSWindowContentMinSize">{269, 142}</string>
 				<object class="NSView" key="NSWindowView" id="846512394">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5024,6 +5025,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{36, 105}, {71, 14}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="967312779">
 								<int key="NSCellFlags">68288064</int>
@@ -5040,6 +5042,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{17, 80}, {90, 14}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="308586219">
 								<int key="NSCellFlags">68288064</int>
@@ -5056,6 +5059,7 @@
 							<int key="NSvFlags">258</int>
 							<string key="NSFrame">{{112, 104}, {137, 18}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="39963071">
 								<int key="NSCellFlags">-1804468671</int>
@@ -5073,6 +5077,7 @@
 							<int key="NSvFlags">257</int>
 							<string key="NSFrame">{{184, 13}, {70, 28}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="805893132">
@@ -5096,6 +5101,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{109, 75}, {143, 22}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="285868883">
 								<int key="NSCellFlags">-2076049856</int>
@@ -5419,6 +5425,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{41, 54}, {66, 14}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="193977111">
 								<int key="NSCellFlags">68288064</int>
@@ -5435,6 +5442,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{109, 50}, {143, 22}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="285541065">
 								<int key="NSCellFlags">-2076049856</int>
@@ -5470,6 +5478,7 @@
 							<int key="NSvFlags">257</int>
 							<string key="NSFrame">{{116, 13}, {70, 28}}</string>
 							<reference key="NSSuperview" ref="846512394"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="783843620">
 								<int key="NSCellFlags">67239424</int>
@@ -5488,6 +5497,8 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{269, 142}</string>
+					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{269, 164}</string>
@@ -5506,7 +5517,7 @@
 				<string key="NSWindowContentMaxSize">{600, 127}</string>
 				<string key="NSWindowContentMinSize">{260, 127}</string>
 				<object class="NSView" key="NSWindowView" id="653204527">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5610,6 +5621,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{260, 127}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{260, 149}</string>
@@ -11805,22 +11817,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<int key="connectionID">423</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeCopyTableSheet:</string>
-						<reference key="source" ref="438574515"/>
-						<reference key="destination" ref="483283663"/>
-					</object>
-					<int key="connectionID">517</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeCopyTableSheet:</string>
-						<reference key="source" ref="438574515"/>
-						<reference key="destination" ref="78676089"/>
-					</object>
-					<int key="connectionID">518</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">copyTableNameField</string>
 						<reference key="source" ref="438574515"/>
@@ -14943,6 +14939,22 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="622219357"/>
 					</object>
 					<int key="connectionID">6352</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSheet:</string>
+						<reference key="source" ref="438574515"/>
+						<reference key="destination" ref="78676089"/>
+					</object>
+					<int key="connectionID">6353</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSheet:</string>
+						<reference key="source" ref="438574515"/>
+						<reference key="destination" ref="483283663"/>
+					</object>
+					<int key="connectionID">6354</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -24376,7 +24388,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">6352</int>
+			<int key="maxID">6354</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -25087,7 +25099,7 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 							<string>CMCopyTable</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>SPTableInfo</string>
 							<string>id</string>
 							<string>id</string>
 						</object>
@@ -25547,7 +25559,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addTable:</string>
-							<string>closeCopyTableSheet:</string>
 							<string>closeSheet:</string>
 							<string>copyTable:</string>
 							<string>removeTable:</string>
@@ -25559,7 +25570,6 @@ Y2hhbmdlIHRoZSBvcmRlcg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

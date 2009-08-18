@@ -61,53 +61,36 @@
 	NSUserDefaults *prefs;
 }
 
-//table methods
+// Table methods
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;
 
-//edit methods
+// Edit methods
 - (IBAction)addField:(id)sender;
 - (IBAction)copyField:(id)sender;
 - (IBAction)addIndex:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (IBAction)removeIndex:(id)sender;
 
-//index sheet methods
+// Index sheet methods
 - (IBAction)openIndexSheet:(id)sender;
 - (IBAction)closeIndexSheet:(id)sender;
 - (IBAction)chooseIndexType:(id)sender;
 - (void)closeAlertSheet;
 
-//key sheet methods
+// Key sheet methods
 - (IBAction)closeKeySheet:(id)sender;
 
-//additional methods
+// Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 
-//getter methods
+// Getter methods
 - (NSString *)defaultValueForField:(NSString *)field;
 - (NSArray *)fieldNames;
 - (NSDictionary *)enumFields;
 - (NSArray *)tableStructureForPrint;
-
-//tableView drag&drop datasource methods
-- (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
-- (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
-	proposedDropOperation:(NSTableViewDropOperation)operation;
-- (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation;
-
-//tableView delegate methods
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
-
-//slitView delegate methods
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset;
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset;
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex;
 
 @end

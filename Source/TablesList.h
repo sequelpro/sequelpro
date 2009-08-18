@@ -116,13 +116,8 @@ enum sp_table_types
 - (IBAction)truncateTable:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
 
-// copyTableSheet methods
-- (IBAction)closeCopyTableSheet:(id)sender;
-
 // Additional methods
-- (void)removeTable;
 - (void)setConnection:(MCPConnection *)theConnection;
-- (void)truncateTable;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)updateSelection;
 

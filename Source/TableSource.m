@@ -390,19 +390,25 @@ reloads the table (performing a new mysql-query)
 	}
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete field?", @"delete field message")
-									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
-								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")  
+								   alternateButton:NSLocalizedString(@"Delete", @"delete button")
 									   otherButton:nil 
 						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"),
 																			  [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removefield"];
 }
 
 /**
- *  Ask the user to confirm that they really want to remove the selected index.
+ * Ask the user to confirm that they really want to remove the selected index.
  */
 - (IBAction)removeIndex:(id)sender
 {
@@ -414,13 +420,19 @@ reloads the table (performing a new mysql-query)
 		return;
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete Index?", @"delete index message")
-									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
-								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button") 
+								   alternateButton:NSLocalizedString(@"Delete", @"delete button") 
 									   otherButton:nil 
 						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"),
 																			  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"]]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeindex"];
 }
@@ -854,7 +866,7 @@ fetches the result as an array with a dictionary for each row in it
 		}
 		[tableSourceView reloadData];
 	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
+		if ( returnCode == NSAlertAlternateReturn ) {
 			//remove row
 			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
 					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
@@ -877,7 +889,7 @@ fetches the result as an array with a dictionary for each row in it
 			}
 		}
 	} else if ( [contextInfo isEqualToString:@"removeindex"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
+		if ( returnCode == NSAlertAlternateReturn ) {
 			//remove index
 			if ( [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
 				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [selectedTable backtickQuotedString]]];
@@ -1209,41 +1221,46 @@ would result in a position change.
 #pragma mark -
 #pragma mark TableView delegate methods
 
+/**
+ * Performs various interface validation
+ */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-
-	//check for which table view the selection changed
-	if ([aNotification object] == tableSourceView) {
+	id object = [aNotification object];
+	
+	// Check for which table view the selection changed
+	if (object == tableSourceView) {
 		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
-		if ( isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow ) {
+		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow) {
 			[self saveRowOnDeselect];
 			isEditingRow = NO;
 		}
+		
 		[copyFieldButton setEnabled:YES];
 
-		// check if there is currently a field selected
-		// and change button state accordingly
+		// Check if there is currently a field selected and change button state accordingly
 		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
 			[removeFieldButton setEnabled:YES];
 		} else {
 			[removeFieldButton setEnabled:NO];
 			[copyFieldButton setEnabled:NO];
 		}
-	}
-	else if ([aNotification object] == indexView) {
-		// check if there is currently an index selected
-		// and change button state accordingly
-		if ([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
-			[removeIndexButton setEnabled:YES];
-		} else {
-			[removeIndexButton setEnabled:NO];
+		
+		// If the table only has one field, disable the remove button. This removes the need to check that the user
+		// is attempting to remove the last field in a table in removeField: above, but leave it in just in case.
+		if ([tableSourceView numberOfRows] == 1) {
+			[removeFieldButton setEnabled:NO];
 		}
+	}
+	else if (object == indexView) {
+		// Check if there is currently an index selected and change button state accordingly
+		[removeIndexButton setEnabled:([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
 	}
 }
 
-/*
-traps enter and esc and make/cancel editing without entering next row
-*/
+/**
+ * Traps enter and esc and make/cancel editing without entering next row
+ */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 	int row, column;
@@ -1330,6 +1347,9 @@ traps enter and esc and make/cancel editing without entering next row
 {	
 	return [structureGrabber convertRect:[structureGrabber bounds] toView:splitView];
 }
+
+#pragma mark -
+#pragma mark Other
 
 // Last but not least
 - (id)init
