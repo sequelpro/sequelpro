@@ -397,11 +397,14 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
  */
 - (void)setTableInstance:(id)anInstance withTableData:(id)theTableData withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
 {
-	columnDefinitions = [[NSArray arrayWithArray:columnDefs] retain];
 	selectedTable     = aTableName;
 	tableData         = theTableData;
 	mySQLConnection   = aMySqlConnection;
 	tableInstance     = anInstance;
+	
+	if (columnDefinitions) [columnDefinitions release];
+	
+	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
 
 @end
