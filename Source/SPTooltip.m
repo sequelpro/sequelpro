@@ -42,11 +42,11 @@
 //						ofType:(NSString *)type 
 //				displayOptions:(NSDictionary *)displayOptions]
 //	
-//			content: a NSString with the actual content
+//			content: a NSString with the actual content; a NSImage object AND type:"image"
 //			  point: n NSPoint where the tooltip should be shown
 //			         if not given it will be shown under the current caret position or
 //			         if no caret could be found in the upper left corner of the current window
-//			   type: a NSString of: "text", or "html"; no type - 'text' is default
+//			   type: a NSString of: "text", "html", or "image"; no type - 'text' is default
 //	 displayOptions: a NSDictionary with the following keys (all values must be of type NSString):
 //	                       fontname, fontsize, backgroundcolor (as #RRGGBB), transparent (any value)
 //	                 if no displayOptions are passed or if a key doesn't exist the following default
@@ -73,6 +73,7 @@ static float slow_in_out (float t)
 - (void)setContent:(NSString *)content withOptions:(NSDictionary *)displayOptions;
 - (void)runUntilUserActivity;
 - (void)stopAnimation:(id)sender;
+- (void)sizeToContent;
 + (NSPoint)caretPosition;
 + (void)setDisplayOptions:(NSDictionary *)aDict;
 - (void)initMeWithOptions:(NSDictionary *)displayOptions;
@@ -142,6 +143,42 @@ static float slow_in_out (float t)
 	}
 	else if([type isEqualToString:@"html"]) {
 		[tip setContent:(NSString*)content withOptions:displayOptions];
+	}
+	else if([type isEqualToString:@"image"]) {
+		[tip setBackgroundColor:[NSColor clearColor]];
+		[tip setOpaque:NO];
+		[tip setLevel:NSNormalWindowLevel];
+		[tip setExcludedFromWindowsMenu:YES];
+		[tip setAlphaValue:1];
+
+		NSSize s = [(NSImage *)content size];
+		
+		// Downsize a large image
+		int w = s.width;
+		int h = s.height;
+		if(w>h) {
+			if(s.width > 200) {
+				w = 200;
+				h = 200/s.width*s.height;
+			}
+		} else {
+			if(s.height > 200) {
+				h = 200;
+				w = 200/s.height*s.width;
+			}
+		}
+		
+		// Show image in a NSImageView
+		NSImageView *backgroundImageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0,0,w, h)];
+		[backgroundImageView setImage:(NSImage *)content];
+		[backgroundImageView setFrameSize:NSMakeSize(w, h)];
+		[tip setContentView:backgroundImageView];
+		[tip setContentSize:NSMakeSize(w,h)];
+		[tip setFrameTopLeftPoint:point];
+		[tip sizeToContent];
+		[tip orderFront:self];
+		[tip performSelector:@selector(runUntilUserActivity) withObject:nil afterDelay:0];
+		[backgroundImageView release];
 	}
 	else {
 		[tip setContent:(NSString*)content withOptions:displayOptions];
@@ -265,6 +302,9 @@ static float slow_in_out (float t)
 
 - (void)sizeToContent
 {
+
+	NSRect frame;
+
 	// Current tooltip position
 	NSPoint pos = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 
@@ -277,25 +317,33 @@ static float slow_in_out (float t)
 			screenFrame = [candidate frame];
 	}
 
-	// The webview is set to a large initial size and then sized down to fit the content
-	[self setContentSize:NSMakeSize(screenFrame.size.width - screenFrame.size.width / 3.0f , screenFrame.size.height)];
+	// is contentView a webView calculate actual rendered size via JavaScript
+	if([[[[self contentView] class] description] isEqualToString:@"WebView"]) {
+		// The webview is set to a large initial size and then sized down to fit the content
+		[self setContentSize:NSMakeSize(screenFrame.size.width - screenFrame.size.width / 3.0f , screenFrame.size.height)];
 
-	int height  = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetHeight + document.body.offsetTop;"] intValue];
-	int width   = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetWidth + document.body.offsetLeft;"] intValue];
+		int height  = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetHeight + document.body.offsetTop;"] intValue];
+		int width   = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetWidth + document.body.offsetLeft;"] intValue];
 	
-	[webView setFrameSize:NSMakeSize(width, height)];
+		[webView setFrameSize:NSMakeSize(width, height)];
 
-	NSRect frame      = [self frameRectForContentRect:[webView frame]];
+		frame = [self frameRectForContentRect:[webView frame]];
+	} else {
+		frame = [self frame];
+	}
+	
+	//Adjust frame to fit into the screenFrame
 	frame.size.width  = MIN(NSWidth(frame), NSWidth(screenFrame));
 	frame.size.height = MIN(NSHeight(frame), NSHeight(screenFrame));
 
-	
 	[self setFrame:frame display:NO];
 
+	//Adjust tooltip origin to fit into the screenFrame
 	pos.x = MAX(NSMinX(screenFrame), MIN(pos.x, NSMaxX(screenFrame)-NSWidth(frame)));
 	pos.y = MIN(MAX(NSMinY(screenFrame)+NSHeight(frame), pos.y), NSMaxY(screenFrame));
 
 	[self setFrameTopLeftPoint:pos];
+	
 }
 
 - (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame;

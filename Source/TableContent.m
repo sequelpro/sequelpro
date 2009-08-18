@@ -1799,6 +1799,8 @@
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(SPTextAndLinkCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
 
+	NSImage *image;
+
 	if([[aCell stringValue] length] < 1) return nil;
 
 	NSPoint pos = [NSEvent mouseLocation];
@@ -1807,21 +1809,16 @@
 	// Get the original data for trying to display the blob data as an image
 	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, row), [[aTableColumn identifier] intValue]);
 	if ([theValue isKindOfClass:[NSData class]]) {
-		NSImage *image = [[NSImage alloc] initWithData:theValue];
+		image = [[NSImage alloc] initWithData:theValue];
 		if(image) {
-			int imageWidth = [image size].width;
-			if (imageWidth > 100) imageWidth = 100;
-			[SPTooltip showWithObject:[NSString stringWithFormat:
-					@"<IMG WIDTH='%d' SRC=\"data:image/auto;base64,%@\">", 
-						imageWidth, 
-						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0]]  
-				atLocation:pos 
-				ofType:@"html" 
-				displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:@"transparent", @"transparent", nil]];
+			[SPTooltip showWithObject:image atLocation:pos ofType:@"image"];
+			[image release];
+			theValue = nil;
+			return nil;
 		}
-		[image release];
-		return nil;
 	}
+
+	if(image) [image release];
 
 	// Show the cell string value as tooltip (including line breaks and tabs)
 	if([[aCell stringValue] length] > 1)
