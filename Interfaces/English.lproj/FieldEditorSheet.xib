@@ -8,6 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -45,7 +46,7 @@
 				</object>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="559857537">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">4370</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -86,7 +87,7 @@
 						<object class="NSButton" id="315097820">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{581, 10}, {66, 25}}</string>
+							<string key="NSFrame">{{581, 13}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
@@ -117,7 +118,7 @@
 						<object class="NSButton" id="760872156">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{507, 10}, {66, 25}}</string>
+							<string key="NSFrame">{{507, 13}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="617021739">
@@ -142,7 +143,7 @@
 						<object class="NSButton" id="212849560">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">256</int>
-							<string key="NSFrame">{{94, 10}, {66, 25}}</string>
+							<string key="NSFrame">{{94, 13}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="1054617135">
@@ -163,7 +164,7 @@
 						<object class="NSButton" id="16151679">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">256</int>
-							<string key="NSFrame">{{20, 10}, {66, 25}}</string>
+							<string key="NSFrame">{{20, 13}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="369856023">
@@ -184,7 +185,7 @@
 						<object class="NSPopUpButton" id="766971294">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">292</int>
-							<string key="NSFrame">{{328, 10}, {48, 25}}</string>
+							<string key="NSFrame">{{328, 13}, {48, 25}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="583599991">
@@ -332,7 +333,7 @@
 						<object class="NSSegmentedControl" id="13679998">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">292</int>
-							<string key="NSFrame">{{183, 13}, {137, 19}}</string>
+							<string key="NSFrame">{{183, 16}, {137, 19}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSegmentedCell" key="NSCell" id="772630454">
@@ -397,7 +398,7 @@
 													<string>NeXT TIFF v4.0 pasteboard type</string>
 												</object>
 											</object>
-											<string key="NSFrameSize">{667, 14}</string>
+											<string key="NSFrameSize">{667, 0}</string>
 											<reference key="NSSuperview" ref="1068411389"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="222392072">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -461,7 +462,7 @@
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
-									<string key="NSFrameSize">{667, 370}</string>
+									<string key="NSFrameSize">{667, 349}</string>
 									<reference key="NSSuperview" ref="983787914"/>
 									<reference key="NSNextKeyView" ref="459839028"/>
 									<reference key="NSDocView" ref="459839028"/>
@@ -494,7 +495,7 @@
 									<double key="NSPercent">9.456522e-01</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 51}, {667, 370}}</string>
+							<string key="NSFrame">{{0, 51}, {667, 349}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<reference key="NSNextKeyView" ref="1068411389"/>
 							<int key="NSsFlags">528</int>
@@ -517,7 +518,7 @@
 									<string>NeXT TIFF v4.0 pasteboard type</string>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 51}, {667, 370}}</string>
+							<string key="NSFrame">{{0, 51}, {667, 349}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSImageCell" key="NSCell" id="521189288">
@@ -566,7 +567,7 @@
 													<string>WebURLsWithTitlesPboardType</string>
 												</object>
 											</object>
-											<string key="NSFrameSize">{667, 14}</string>
+											<string key="NSFrameSize">{667, 1}</string>
 											<reference key="NSSuperview" ref="967441740"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="872196016">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -634,7 +635,7 @@
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
-									<string key="NSFrameSize">{667, 370}</string>
+									<string key="NSFrameSize">{667, 349}</string>
 									<reference key="NSSuperview" ref="604699677"/>
 									<reference key="NSNextKeyView" ref="702566211"/>
 									<reference key="NSDocView" ref="702566211"/>
@@ -664,7 +665,7 @@
 									<double key="NSPercent">9.456522e-01</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 51}, {667, 370}}</string>
+							<string key="NSFrame">{{0, 51}, {667, 349}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<reference key="NSNextKeyView" ref="967441740"/>
 							<int key="NSsFlags">528</int>
@@ -685,7 +686,7 @@
 						<object class="NSBox" id="398943605">
 							<reference key="NSNextResponder" ref="559857537"/>
 							<int key="NSvFlags">10</int>
-							<string key="NSFrame">{{0, 419}, {667, 5}}</string>
+							<string key="NSFrame">{{0, 398}, {667, 5}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
@@ -706,19 +707,15 @@
 						</object>
 						<object class="NSTextField" id="730447074">
 							<reference key="NSNextResponder" ref="559857537"/>
-							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{284, 36}, {362, 11}}</string>
+							<int key="NSvFlags">266</int>
+							<string key="NSFrame">{{9, 408}, {649, 14}}</string>
 							<reference key="NSSuperview" ref="559857537"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="581551870">
 								<int key="NSCellFlags">67239488</int>
-								<int key="NSCellFlags2">1145309184</int>
+								<int key="NSCellFlags2">1078069248</int>
 								<string key="NSContents">Label</string>
-								<object class="NSFont" key="NSSupport">
-									<string key="NSName">LucidaGrande</string>
-									<double key="NSSize">9.000000e+00</double>
-									<int key="NSfFlags">3614</int>
-								</object>
+								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="730447074"/>
 								<object class="NSColor" key="NSBackgroundColor">
 									<int key="NSColorSpace">6</int>
@@ -736,6 +733,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{667, 428}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -1394,8 +1392,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{263, 324}, {667, 428}}</string>
-					<string>{{263, 324}, {667, 428}}</string>
+					<string>{{507, 251}, {667, 428}}</string>
+					<string>{{507, 251}, {667, 428}}</string>
 					<reference ref="9"/>
 					<integer value="0" id="8"/>
 					<boolean value="NO"/>
@@ -1565,12 +1563,14 @@
 							<string>doSelectionTitleCase:</string>
 							<string>doSelectionUpperCase:</string>
 							<string>doTranspose:</string>
+							<string>insertNULLvalue:</string>
 							<string>selectCurrentLine:</string>
 							<string>selectCurrentWord:</string>
 							<string>selectEnclosingBrackets:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1644,73 +1644,6 @@
 							<string>editImage</string>
 							<string>editSheet</string>
 							<string>editSheetCancelButton</string>
-							<string>editSheetOkButton</string>
-							<string>editSheetOpenButton</string>
-							<string>editSheetProgressBar</string>
-							<string>editSheetQuickLookButton</string>
-							<string>editSheetSegmentControl</string>
-							<string>editTextScrollView</string>
-							<string>editTextView</string>
-							<string>hexTextScrollView</string>
-							<string>hexTextView</string>
-							<string>sheetEditData</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/SPFieldEditorController.h</string>
-					</object>
-				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPFieldEditorController</string>
-					<string key="superclassName">NSWindowController</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSMutableArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>closeEditSheet:</string>
-							<string>dropImage:</string>
-							<string>openEditSheet:</string>
-							<string>quickLookFormatButton:</string>
-							<string>saveEditSheet:</string>
-							<string>segmentControllerChanged:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSMutableArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>editImage</string>
-							<string>editSheet</string>
-							<string>editSheetCancelButton</string>
 							<string>editSheetFieldName</string>
 							<string>editSheetOkButton</string>
 							<string>editSheetOpenButton</string>
@@ -1742,8 +1675,8 @@
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPFieldEditorController.h</string>
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPFieldEditorController.h</string>
 					</object>
 				</object>
 			</object>
