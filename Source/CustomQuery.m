@@ -808,6 +808,7 @@
 	if([[textView textStorage] editedMask] != 0) {
 		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 		queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
+		numberOfQueries = [queries count];
 		if(currentQueryRanges)
 			[currentQueryRanges release];
 		currentQueryRanges = [[NSArray arrayWithArray:queries] retain];
@@ -2530,6 +2531,12 @@
 
 #pragma mark -
 #pragma mark Other
+
+
+- (unsigned int)numberOfQueries
+{
+	return numberOfQueries;
+}
 
 /*
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.

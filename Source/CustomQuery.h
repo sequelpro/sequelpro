@@ -101,6 +101,8 @@
 	NSNumber *sortField;
 
 	NSString *fieldIDQueryString;
+	
+	unsigned int numberOfQueries;
 
 }
 
@@ -157,6 +159,6 @@
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
-
+- (unsigned int)numberOfQueries;
 
 @end

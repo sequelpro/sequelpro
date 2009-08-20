@@ -1734,7 +1734,7 @@
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	if( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2 ) {
+	if( [sender tag] == 0 ) {
 
 		// Custom Query tab is active thus save the editor's content as SQL file
 		[panel setAccessoryView:encodingAccessoryView];
@@ -1752,13 +1752,15 @@
 		[encodingPopUp setEnabled:YES];
 		[self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
 
-	} else {
+	} else if([sender tag] == 1){
 
 		// Save current session (open connection windows as SPF file)
-		[panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
+		// [panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
 		filename = [NSString stringWithFormat:@"%@", [self name]];
 
+	} else {
+		return;
 	}
 	
 	[panel beginSheetForDirectory:nil 
@@ -1858,6 +1860,23 @@
 	{
 		return ([self database] != nil);
 	}
+	
+	
+	// Change "Save Query/Queries" menu item title dynamically
+	// and disable it if no query in the editor
+	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
+		if([customQueryInstance numberOfQueries] < 1) {
+			[menuItem setTitle:NSLocalizedString(@"Save Query…",@"Save Query…")];
+			return NO;
+		}
+		else if([customQueryInstance numberOfQueries] == 1)
+			[menuItem setTitle:NSLocalizedString(@"Save Query…",@"Save Query…")];
+		else
+			[menuItem setTitle:NSLocalizedString(@"Save Queries…",@"Save Queries…")];
+		
+		return YES;
+	}
+	
 	
 	if ([menuItem action] == @selector(exportTable:))
 	{
