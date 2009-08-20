@@ -280,7 +280,6 @@
 								</object>
 								<object class="NSMenuItem" id="256715652">
 									<reference key="NSMenu" ref="709725194"/>
-									<bool key="NSIsHidden">YES</bool>
 									<string type="base64-UTF8" key="NSTitle">U2F2ZSBRdWVyeeKApg</string>
 									<string key="NSKeyEquiv">s</string>
 									<int key="NSKeyEquivModMask">1048576</int>
@@ -288,7 +287,7 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
-								<object class="NSMenuItem" id="283468712">
+								<object class="NSMenuItem" id="759865633">
 									<reference key="NSMenu" ref="709725194"/>
 									<bool key="NSIsHidden">YES</bool>
 									<string type="base64-UTF8" key="NSTitle">U2F2ZSBDb25uZWN0aW9u4oCmA</string>
@@ -2599,7 +2598,7 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">saveConnectionSheet:</string>
 						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="283468712"/>
+						<reference key="destination" ref="759865633"/>
 					</object>
 					<int key="connectionID">964</int>
 				</object>
@@ -2828,7 +2827,7 @@
 							<reference ref="849728981"/>
 							<reference ref="320151386"/>
 							<reference ref="256715652"/>
-							<reference ref="283468712"/>
+							<reference ref="759865633"/>
 						</object>
 						<reference key="parent" ref="86447006"/>
 					</object>
@@ -3868,7 +3867,7 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">963</int>
-						<reference key="object" ref="283468712"/>
+						<reference key="object" ref="759865633"/>
 						<reference key="parent" ref="709725194"/>
 					</object>
 				</object>

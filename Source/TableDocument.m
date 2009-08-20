@@ -1730,17 +1730,24 @@
 	
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSString *filename;
+	NSString *contextInfo;
 
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
 	
 	if( [sender tag] == 0 ) {
 
-		// Custom Query tab is active thus save the editor's content as SQL file
+		// Save the editor's content as SQL file
 		[panel setAccessoryView:encodingAccessoryView];
-		[panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
+		// [panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
-		filename = [NSString stringWithString:@""];
+		if(![prefs stringForKey:@"lastSqlFileName"]) {
+			[prefs setObject:@"" forKey:@"lastSqlFileName"];
+			[prefs synchronize];
+		}
+		
+		filename = [prefs stringForKey:@"lastSqlFileName"];
+		contextInfo = @"saveSQLfile";
 
 		// If no lastSqlFileEncoding in prefs set it to UTF-8
 		if(![prefs integerForKey:@"lastSqlFileEncoding"]) {
@@ -1758,6 +1765,7 @@
 		// [panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
 		filename = [NSString stringWithFormat:@"%@", [self name]];
+		contextInfo = @"saveSPFfile";
 
 	} else {
 		return;
@@ -1768,17 +1776,39 @@
 				 modalForWindow:tableWindow 
 				  modalDelegate:self 
 				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
-					contextInfo:NULL];
+					contextInfo:contextInfo];
 }
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 
 	if ( returnCode ) {
+
 		NSString *fileName = [panel filename];
-		NSLog(@"save as: '%@'", fileName);
+		NSError *error = nil;
 		
-		[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
-		
+		// Save file as SQL file by using the chosen encoding
+		if(contextInfo == @"saveSQLfile") {
+
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+			[prefs setObject:[fileName lastPathComponent] forKey:@"lastSqlFileName"];
+			[prefs synchronize];
+
+			NSString *content = [NSString stringWithString:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]];
+			[content writeToFile:fileName
+					  atomically:YES
+						encoding:[[encodingPopUp selectedItem] tag]
+						   error:&error];
+
+			if(error != nil) {
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+			}
+			return;
+		}
+		else if(contextInfo == @"saveSPFfile") {
+			NSLog(@"Save SPF file");
+			return;
+		}
 	}
 }
 /**
