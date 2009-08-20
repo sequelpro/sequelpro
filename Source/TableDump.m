@@ -1001,7 +1001,7 @@
 			rowCount = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
 			
 			// Set up a result set in streaming mode
-			streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
+			streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([sqlFullStreamingSwitch state] == NSOnState)];
 			fieldNames = [streamingResult fetchFieldNames];			
 			
 			// Update the progress text and set the progress bar back to determinate

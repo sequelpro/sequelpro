@@ -75,6 +75,7 @@
     IBOutlet id addCreateTableSwitch;
     IBOutlet id addTableContentSwitch;
     IBOutlet id addErrorsSwitch;
+    IBOutlet id sqlFullStreamingSwitch;
     IBOutlet id errorsSheet;
     IBOutlet id errorsView;
     IBOutlet id singleProgressSheet;

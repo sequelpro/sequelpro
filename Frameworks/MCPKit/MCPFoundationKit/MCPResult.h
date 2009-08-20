@@ -37,7 +37,6 @@
 {
 	MYSQL_RES		 *mResult;		 /* The MYSQL_RES structure of the C API. */
 	NSArray			 *mNames;		 /* An NSArray holding the name of the columns. */
-	NSDictionary	 *mMySQLLocales; /* A Locales dictionary to define the locales of MySQL. */
 	NSStringEncoding mEncoding;		 /* The encoding used by MySQL server, to ISO-1 default. */
 	unsigned int	 mNumOfFields;	 /* The number of fields in the result. */
 	NSTimeZone		 *mTimeZone;	 /* The time zone of the connection when the query was made. */

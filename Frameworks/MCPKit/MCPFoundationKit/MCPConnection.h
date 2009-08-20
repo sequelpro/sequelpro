@@ -32,6 +32,13 @@
 
 #import "mysql.h"
 
+enum mcp_query_streaming_types
+{
+	MCP_NO_STREAMING = 0,
+	MCP_FAST_STREAMING = 1,
+	MCP_LOWMEM_STREAMING = 2
+};
+
 @class MCPResult, MCPStreamingResult;
 @protocol MCPConnectionProxy;
 
@@ -186,7 +193,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (NSString *)quoteObject:(id)theObject;
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query;
-- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(BOOL) streamResult;
+- (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream;
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(int) streamResult;
 - (double)lastQueryExecutionTime;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;

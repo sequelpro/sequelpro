@@ -253,11 +253,7 @@ const OUR_CHARSET our_charsets60[] =
 			[mNames release];
 			mNames = NULL;
 		}
-		
-		if (mMySQLLocales == NULL) {
-			mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
-		}
-		
+
 		mNumOfFields = 0;
 	}
 	
@@ -292,10 +288,6 @@ const OUR_CHARSET our_charsets60[] =
 		else {
 			mNumOfFields = 0;
 		}
-		
-		if (mMySQLLocales == NULL) {
-			mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
-		}
 	}
 	
 	return self;
@@ -329,10 +321,6 @@ const OUR_CHARSET our_charsets60[] =
 		}
 		else {
 			mNumOfFields = 0;
-		}
-
-		if (mMySQLLocales == NULL) {
-			mMySQLLocales = [[MCPConnection getMySQLLocales] retain];
 		}
 	}
 	
@@ -1339,10 +1327,6 @@ const OUR_CHARSET our_charsets60[] =
 	
 	if (mNames) {
 		[mNames autorelease];
-	}
-	
-	if (mMySQLLocales) {
-		[mMySQLLocales autorelease];
 	}
 	
 	[super dealloc];

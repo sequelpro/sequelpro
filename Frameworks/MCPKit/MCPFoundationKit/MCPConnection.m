@@ -1231,17 +1231,31 @@ static void forcePingTimeout(int signalNumber)
  */
 - (MCPResult *)queryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:NO];
+	return [self queryString:query usingEncoding:mEncoding streamingResult:MCP_NO_STREAMING];
 }
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
  * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
+ * Uses safe/fast mode, which may use more memory as results are downloaded.
  */
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:YES];
+	return [self queryString:query usingEncoding:mEncoding streamingResult:MCP_FAST_STREAMING];
+}
+
+/**
+ * Takes a query string and returns an MCPStreamingResult representing the result of the query.
+ * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
+ * If no fields are present in the result, nil will be returned.
+ * Can be used in either fast/safe mode, where data is downloaded as fast as possible to avoid
+ * blocking the server, or in full streaming mode for lowest memory usage but potentially blocking
+ * the table.
+ */
+- (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream
+{
+	return [self queryString:query usingEncoding:mEncoding streamingResult:(fullStream?MCP_LOWMEM_STREAMING:MCP_FAST_STREAMING)];
 }
 
 /**
@@ -1250,7 +1264,7 @@ static void forcePingTimeout(int signalNumber)
  * and the result can be returned or the connection and document have been closed.
  * If using streamingResult, the caller is responsible for releasing the result set.
  */
-- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(BOOL) streamResult
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(int) streamResultType
 {
 	MCPResult		*theResult = nil;
 	double			queryStartTime, queryExecutionTime;
@@ -1354,13 +1368,15 @@ static void forcePingTimeout(int signalNumber)
 			if (mysql_field_count(mConnection) != 0) {
 				
 				// For normal result sets, fetch the results and unlock the connection
-				if (!streamResult) {
+				if (streamResultType == MCP_NO_STREAMING) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
 					[queryLock unlock];
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
-				} else {
-					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self];
+				} else if (streamResultType == MCP_FAST_STREAMING) {
+					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:NO];
+				} else if (streamResultType == MCP_LOWMEM_STREAMING) {
+					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:YES];
 				}
 				
 				// Ensure no problem occurred during the result fetch
@@ -1375,7 +1391,7 @@ static void forcePingTimeout(int signalNumber)
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
-			if (!streamResult) {
+			if (streamResultType == MCP_NO_STREAMING) {
 				queryAffectedRows = mysql_affected_rows(mConnection);
 			} else {
 				queryAffectedRows = 0;
@@ -1398,7 +1414,7 @@ static void forcePingTimeout(int signalNumber)
 		break;
 	}
 	
-	if (!streamResult) {
+	if (streamResultType == MCP_NO_STREAMING) {
 		
 		// If the mysql thread id has changed as a result of a connection error,
 		// ensure connection details are still correct
@@ -1423,7 +1439,7 @@ static void forcePingTimeout(int signalNumber)
 	(void)(*startKeepAliveTimerResettingStatePtr)(self, startKeepAliveTimerResettingStateSEL, YES);
 	
 	if (!theResult) return nil;
-	if (streamResult) return theResult;
+	if (streamResultType != MCP_NO_STREAMING) return theResult;
 	return [theResult autorelease];
 }
 
