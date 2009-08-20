@@ -259,6 +259,10 @@
 	[editSheet orderOut:nil];
 	[NSApp endSheet:editSheet];
 
+	// Ensure all text changes in sheetEditData are returned
+	if([editImage image] == nil)
+		sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
+
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
 
