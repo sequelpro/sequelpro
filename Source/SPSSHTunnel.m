@@ -369,7 +369,7 @@
 	if ([notificationText length]) {
 		messages = [notificationText componentsSeparatedByString:@"\n"];
 		enumerator = [messages objectEnumerator];
-		while (message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {
+		while (message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {			
 			if (![message length]) continue;
 			[debugMessages addObject:[NSString stringWithString:message]];
 
@@ -382,19 +382,27 @@
 				connectionState = PROXY_STATE_WAITING_FOR_AUTH;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
+			
+			if ([message rangeOfString:@"bind: Address already in use"].location != NSNotFound) {
+				connectionState = PROXY_STATE_IDLE;
+				[task terminate];
+				if (lastError) [lastError release];
+				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was unable to bind to the local port. This error may occur if you already have an SSH connection to the same server and are using a 'LocalForward' option in your SSH configuration.", @"SSH tunnel unable to bind to local port message")];
+				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+			}
 
 			if ([message rangeOfString:@"closed by remote host." ].location != NSNotFound) {
 				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
-				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was closed 'by the remote host'.  This may indicate a networking issue or a network timeout.", @"SSH tunnel was closed by remote host message")];
+				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel was closed 'by the remote host'. This may indicate a networking issue or a network timeout.", @"SSH tunnel was closed by remote host message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"Permission denied (" ].location != NSNotFound || [message rangeOfString:@"No more authentication methods to try" ].location != NSNotFound) {
 				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
-				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel could not authenticate with the remote host.  Please check your password and ensure you still have access.", @"SSH tunnel authentication failed message")];
+				lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel could not authenticate with the remote host. Please check your password and ensure you still have access.", @"SSH tunnel authentication failed message")];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 			if ([message rangeOfString:@"connect failed: Connection refused" ].location != NSNotFound) {
@@ -415,7 +423,7 @@
 	if (connectionState != PROXY_STATE_IDLE) {
 		[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 	}
-
+		
 	[notificationText release];
 }
 
