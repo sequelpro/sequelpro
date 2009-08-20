@@ -382,6 +382,15 @@
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
 	MCPResult *queryResult;
+	MCPStreamingResult *streamingResult;
+	NSArray *tempRow;
+	NSMutableArray *modifiedRow = [NSMutableArray array];
+	NSMutableArray *columnBlobStatuses = [NSMutableArray array];
+	int i;
+	Class nullClass = [NSNull class];
+	id prefsNullValue = [prefs objectForKey:@"NullValue"];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+	long columnsCount = [dataColumns count];
 	
 	// Notify any listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -425,8 +434,36 @@
 	[self setUsedQuery:queryString];
 	
 	// Run the query and capture the result
-	queryResult = [mySQLConnection queryString:queryString];
-	[tableValues setArray:[self fetchResultAsArray:queryResult]];
+
+	// Build up an array of which columns are blobs for faster iteration
+	for ( i = 0; i < columnsCount ; i++ ) {
+		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
+	}
+
+	[tableValues removeAllObjects];
+	streamingResult = [mySQLConnection streamingQueryString:queryString];
+	while (tempRow = [streamingResult fetchNextRowAsArray]) {
+		[modifiedRow removeAllObjects];
+		for ( i = 0; i < columnsCount; i++ ) {
+			if ( [NSArrayObjectAtIndex(tempRow, i) isMemberOfClass:nullClass] ) {
+				[modifiedRow addObject:prefsNullValue];
+			} else {
+				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, i)];
+			}
+		}
+
+		// Add values for hidden blob and text fields if appropriate
+		if ( prefsLoadBlobsAsNeeded ) {
+			for ( i = 0 ; i < columnsCount ; i++ ) {
+				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
+					[modifiedRow replaceObjectAtIndex:i withObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
+				}
+			}
+		}
+
+		[tableValues addObject:[NSMutableArray arrayWithArray:modifiedRow]];
+	}
+	[streamingResult release];
 
 	// If the result is empty, and a limit is active, reset the limit
 	if ([prefs boolForKey:@"LimitResults"] && queryStringBeforeLimit && ![tableValues count]) {
