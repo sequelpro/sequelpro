@@ -1684,6 +1684,7 @@
 	theDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 						[[fieldField selectedItem] title], @"filterField",
 						[[compareField selectedItem] title], @"filterComparison",
+						[NSNumber numberWithInt:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
 						nil];
 

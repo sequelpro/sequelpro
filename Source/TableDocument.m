@@ -1806,7 +1806,75 @@
 			return;
 		}
 		else if(contextInfo == @"saveSPFfile") {
-			NSLog(@"Save SPF file");
+
+			NSMutableDictionary *spf = [NSMutableDictionary dictionary];
+
+			NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
+			NSIndexSet *customQuerySelectedIndexSet = [[customQueryInstance valueForKeyPath:@"customQueryView"] selectedRowIndexes];
+
+			[spf setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+
+			[spf setObject:[self name] forKey:@"name"];
+			[spf setObject:[self host] forKey:@"host"];
+			[spf setObject:[self user] forKey:@"user"];
+
+			[spf setObject:[NSNumber numberWithInt:[connectionController type]] forKey:@"connectionType"];
+			if([connectionController type] == 2) {
+				[spf setObject:[connectionController sshHost] forKey:@"sshHost"];
+				[spf setObject:[connectionController sshUser] forKey:@"sshUser"];
+				[spf setObject:[connectionController sshPort] forKey:@"sshPort"];
+			}
+
+			if([connectionController port] &&[[connectionController port] length])
+				[spf setObject:[connectionController port] forKey:@"port"];
+
+			if([[self database] length])
+				[spf setObject:[self database] forKey:@"selectedDatabase"];
+			if([[self table] length])
+				[spf setObject:[self table] forKey:@"selectedTable"];
+			if([tableContentInstance sortColumnName])
+				[spf setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
+
+			[spf setObject:[NSNumber numberWithInt:[spHistoryControllerInstance currentlySelectedView]] forKey:@"view"];
+			[spf setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
+			[spf setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
+			[spf setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
+			if([tableContentInstance filterSettings])
+				[spf setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
+
+			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
+				[spf setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
+
+			if (contentSelectedIndexSet && [contentSelectedIndexSet count])
+				[spf setObject:contentSelectedIndexSet forKey:@"contentSelectedIndexSet"];
+			if (customQuerySelectedIndexSet && [customQuerySelectedIndexSet count])
+				[spf setObject:customQuerySelectedIndexSet forKey:@"customQuerySelectedIndexSet"];
+
+			NSString *err = nil;
+			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spf
+													  format:NSPropertyListBinaryFormat_v1_0
+											errorDescription:&err];
+
+			if(err != nil) {
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:err];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				return;
+			}
+
+			NSError *error = nil;
+			[plist writeToFile:fileName options:NSAtomicWrite error:&error];
+			if(error != nil){
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+				return;
+			}
+
 			return;
 		}
 	}
