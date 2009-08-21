@@ -97,8 +97,14 @@
 			NULL);									// The item reference
 
 		if (passwordAccessRef) CFRelease(passwordAccessRef);
+		
 		if (status != noErr) {
 			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
+			
+			NSBeginAlertSheet(NSLocalizedString(@"Error adding password to Keychain", @"error adding password to keychain message"), 
+							  NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error adding password to keychain informative message"), status]);
 		}
 	}
 }
