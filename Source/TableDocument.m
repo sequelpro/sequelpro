@@ -102,6 +102,23 @@
 		NSPoint topLeftPoint = previousFrame.origin;
 		topLeftPoint.y += previousFrame.size.height;
 		[tableWindow setFrameTopLeftPoint:[tableWindow cascadeTopLeftFromPoint:topLeftPoint]];
+
+		// iTry to check if new frame fits into the screen
+		NSRect screenFrame = [[NSScreen mainScreen] frame];
+		NSScreen* candidate;
+		for(candidate in [NSScreen screens])
+			if(NSMinX([candidate frame]) < topLeftPoint.x && NSMinX([candidate frame]) > NSMinX(screenFrame))
+				screenFrame = [candidate frame];
+
+		previousFrame = [tableWindow frame];
+		topLeftPoint = previousFrame.origin;
+		if(topLeftPoint.x + previousFrame.size.width > screenFrame.size.width-1) {
+			previousFrame.size.width -= 50;
+			previousFrame.size.height -= 50;
+			previousFrame.origin.y += 50;
+			[tableWindow setFrame:previousFrame display:YES];
+		}
+		
 	}
 
 	// Set up the toolbar
