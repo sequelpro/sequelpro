@@ -158,6 +158,7 @@
 		58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22B101222870063EF1D /* link-arrow-clicked.png */; };
 		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
 		58D2E230101222870063EF1D /* link-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22D101222870063EF1D /* link-arrow.png */; };
+		58DA8863103E15B5000B98DF /* SPLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DA8862103E15B5000B98DF /* SPLogger.m */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
@@ -520,6 +521,8 @@
 		58D2E22B101222870063EF1D /* link-arrow-clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-clicked.png"; sourceTree = "<group>"; };
 		58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-highlighted-clicked.png"; sourceTree = "<group>"; };
 		58D2E22D101222870063EF1D /* link-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow.png"; sourceTree = "<group>"; };
+		58DA8861103E15B5000B98DF /* SPLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPLogger.h; sourceTree = "<group>"; };
+		58DA8862103E15B5000B98DF /* SPLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPLogger.m; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
 		58FEF57C0F3B4E9700518E8E /* SPTableData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableData.h; sourceTree = "<group>"; };
@@ -974,6 +977,7 @@
 				17E641710EF01F5C001BC333 /* GUI */,
 				17E641720EF01F6B001BC333 /* SSHTunnel */,
 				B57747D60F7A8990003B34F9 /* Category Additions */,
+				58DA884E103E1597000B98DF /* Debugging & Support */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -1181,6 +1185,15 @@
 				380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */,
 			);
 			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		58DA884E103E1597000B98DF /* Debugging & Support */ = {
+			isa = PBXGroup;
+			children = (
+				58DA8861103E15B5000B98DF /* SPLogger.h */,
+				58DA8862103E15B5000B98DF /* SPLogger.m */,
+			);
+			name = "Debugging & Support";
 			sourceTree = "<group>";
 		};
 		58FEF15E0F23D60A00518E8E /* Parsing */ = {
@@ -1627,6 +1640,7 @@
 				584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */,
 				589235321020C1230011DE00 /* SPHistoryController.m in Sources */,
 				BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */,
+				58DA8863103E15B5000B98DF /* SPLogger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
