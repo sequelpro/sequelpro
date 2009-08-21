@@ -40,6 +40,7 @@
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPDataAdditions.h"
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPConnectionController.h"
@@ -1695,7 +1696,29 @@
 				break; // open only the first SQL file
 			}
 			else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
-				NSLog(@"open connection %@", filename);
+
+
+				NSError *readError = nil;
+				NSString *convError = nil;
+				NSPropertyListFormat format;
+				NSData *pData = [[NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError] decompress];
+				NSDictionary *spfData = [NSPropertyListSerialization propertyListFromData:pData 
+						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
+
+				if(!spfData || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
+					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+													 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+												   alternateButton:nil 
+													  otherButton:nil 
+										informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
+
+					[alert setAlertStyle:NSCriticalAlertStyle];
+					[alert runModal];
+					return;
+				}
+
+				NSLog(@"s: %@", [spfData description]);
+
 			}
 			else {
 				NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
@@ -1810,7 +1833,6 @@
 			NSMutableDictionary *spf = [NSMutableDictionary dictionary];
 
 			NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
-			NSIndexSet *customQuerySelectedIndexSet = [[customQueryInstance valueForKeyPath:@"customQueryView"] selectedRowIndexes];
 
 			[spf setObject:[NSNumber numberWithInt:1] forKey:@"version"];
 
@@ -1845,10 +1867,16 @@
 			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
 				[spf setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
 
-			if (contentSelectedIndexSet && [contentSelectedIndexSet count])
-				[spf setObject:contentSelectedIndexSet forKey:@"contentSelectedIndexSet"];
-			if (customQuerySelectedIndexSet && [customQuerySelectedIndexSet count])
-				[spf setObject:customQuerySelectedIndexSet forKey:@"customQuerySelectedIndexSet"];
+			if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
+				NSMutableArray *indices = [NSMutableArray array];
+				unsigned indexBuffer[[contentSelectedIndexSet count]];
+				unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
+				unsigned idx;
+				for (idx = 0; idx < limit; idx++) {
+					[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
+				}
+				[spf setObject:indices forKey:@"contentSelectedIndexSet"];
+			}
 
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spf
@@ -1868,13 +1896,12 @@
 			}
 
 			NSError *error = nil;
-			[plist writeToFile:fileName options:NSAtomicWrite error:&error];
+			[[plist compress] writeToFile:fileName options:NSAtomicWrite error:&error];
 			if(error != nil){
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
 				return;
 			}
-
 			return;
 		}
 	}

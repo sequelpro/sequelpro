@@ -23,6 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDataAdditions.h"
+#include <zlib.h>
 
 static char base64encodingTable[64] = {
 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
@@ -98,6 +99,84 @@ static char base64encodingTable[64] = {
 	}
 
 	return base64;
+}
+
+- (NSData *)decompress
+{
+	if ([self length] == 0) return self;
+
+	unsigned full_length = [self length];
+	unsigned half_length = [self length] / 2;
+
+	NSMutableData *unzipData = [NSMutableData dataWithLength: full_length + half_length];
+	BOOL done = NO;
+	int status;
+
+	z_stream zlibStream;
+	zlibStream.next_in = (Bytef *)[self bytes];
+	zlibStream.avail_in = [self length];
+	zlibStream.total_out = 0;
+	zlibStream.zalloc = Z_NULL;
+	zlibStream.zfree = Z_NULL;
+
+	if(inflateInit(&zlibStream) != Z_OK) return nil;
+
+	while(!done)
+	{
+		if (zlibStream.total_out >= [unzipData length])
+			[unzipData increaseLengthBy: half_length];
+		zlibStream.next_out = [unzipData mutableBytes] + zlibStream.total_out;
+		zlibStream.avail_out = [unzipData length] - zlibStream.total_out;
+
+		status = inflate (&zlibStream, Z_SYNC_FLUSH);
+		if (status == Z_STREAM_END) done = YES;
+		else if (status != Z_OK) break;
+	}
+	if(inflateEnd (&zlibStream) != Z_OK)
+		return nil;
+
+	if(done) {
+		[unzipData setLength: zlibStream.total_out];
+		return [NSData dataWithData: unzipData];
+	}
+	else 
+		return nil;
+}
+ 
+- (NSData *)compress
+{
+	if ([self length] == 0) return self;
+
+	z_stream zlibStream;
+
+	zlibStream.zalloc = Z_NULL;
+	zlibStream.zfree = Z_NULL;
+	zlibStream.opaque = Z_NULL;
+	zlibStream.total_out = 0;
+	zlibStream.next_in=(Bytef *)[self bytes];
+	zlibStream.avail_in = [self length];
+
+	if (deflateInit(&zlibStream, Z_DEFAULT_COMPRESSION) != Z_OK) return nil;
+
+
+	NSMutableData *zipData = [NSMutableData dataWithLength:16384];
+
+	do{
+
+		if (zlibStream.total_out >= [zipData length])
+			[zipData increaseLengthBy: 16384];
+
+		zlibStream.next_out = [zipData mutableBytes] + zlibStream.total_out;
+		zlibStream.avail_out = [zipData length] - zlibStream.total_out;
+
+		deflate(&zlibStream, Z_FINISH);  
+
+	} while(zlibStream.avail_out == 0);
+
+	deflateEnd(&zlibStream);
+
+	[zipData setLength: zlibStream.total_out];
+	return [NSData dataWithData: zipData];
 }
 
 - (NSString *)dataToFormattedHexString

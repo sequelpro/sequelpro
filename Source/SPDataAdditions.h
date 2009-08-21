@@ -29,5 +29,7 @@
 - (NSString *) base64EncodingWithLineLength:(unsigned int)lineLength;
 - (NSString *) dataToFormattedHexString;
 - (NSString *) shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
+- (NSData *)compress;
+- (NSData *)decompress;
 
 @end
