@@ -52,6 +52,9 @@
 	IBOutlet id limitRowsField;
 	IBOutlet id limitRowsButton;
 	IBOutlet id limitRowsStepper;
+	IBOutlet id firstBetweenField;
+	IBOutlet id secondBetweenField;
+	IBOutlet id betweenTextField;
 	
 	MCPConnection *mySQLConnection;
 	
@@ -85,17 +88,16 @@
 - (NSString *) usedQuery;
 - (void) setUsedQuery:(NSString *)query;
 
-//edit methods
+// Edit methods
 - (IBAction)addRow:(id)sender;
 - (IBAction)copyRow:(id)sender;
 - (IBAction)removeRow:(id)sender;
 
-
-//getter methods
+// Getter methods
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResult;
 
-//additional methods
+// Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
@@ -124,26 +126,5 @@
 - (void) setFiltersToRestore:(NSDictionary *)filterSettings;
 - (void) storeCurrentDetailsForRestoration;
 - (void) clearDetailsToRestore;
-
-//tableView datasource methods
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(CMCopyTable *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex;
-- (void)tableView:(NSTableView *)aTableView
-	 setObjectValue:(id)anObject
-	 forTableColumn:(NSTableColumn *)aTableColumn
-							row:(int)rowIndex;
-
-//tableView delegate methods
-- (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn;
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
-- (void)tableViewColumnDidResize:(NSNotification *)aNotification;
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex;
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard;
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
-
-//textView delegate methods
-// - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
 
 @end

@@ -147,10 +147,20 @@
 		[compareField setEnabled:NO];
 		[compareField removeAllItems];
 		[compareField addItemWithTitle:NSLocalizedString(@"is", @"popup menuitem for field IS value")];
+		[argumentField setHidden:NO];
 		[argumentField setEnabled:NO];
+		[firstBetweenField setEnabled:NO];
+		[secondBetweenField setEnabled:NO];
+		[firstBetweenField setStringValue:@""];
+		[secondBetweenField setStringValue:@""];
 		[argumentField setStringValue:@""];
 		[filterButton setEnabled:NO];
-
+		
+		// Hide BETWEEN operator controls
+		[firstBetweenField setHidden:YES];
+		[secondBetweenField setHidden:YES];
+		[betweenTextField setHidden:YES];
+		
 		// Empty and disable the limit field
 		[limitRowsField setStringValue:@""];
 		[limitRowsField setEnabled:NO];
@@ -400,6 +410,7 @@
 
 	// Add a filter string if appropriate
 	filterString = [self tableFilterString];
+	
 	if (filterString) {
 		[queryString appendFormat:@" WHERE %@", filterString];
 		isFiltered = YES;
@@ -498,23 +509,32 @@
  * ready to be dropped into a WHERE clause, or nil if no filtering
  * is active.
  */
-- (NSString *) tableFilterString
+- (NSString *)tableFilterString
 {
 	BOOL doQuote = YES;
 	BOOL ignoreArgument = NO;
-	int i;
-	int tag = [[compareField selectedItem] tag];
 	NSString *filterString;
 	NSString *compareOperator = @"";
+	int tag = [[compareField selectedItem] tag];
+	
+	// Filter arguments
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
+	NSString *firstBetweenArgument = [firstBetweenField stringValue];
+	NSString *secondBetweenArgument = [secondBetweenField stringValue];
 
 	// If the filter field is empty and the selected filter is not looking
 	// for NULLs or NOT NULLs, then no filtering is required - return nil.
-	if (([argument length] == 0)
-		&& (![[[compareField selectedItem] title] hasSuffix:@"NULL"]))
-	{
+	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"]) && (![[[compareField selectedItem] title] isEqualToString:@"BETWEEN"])) {
 		[argument release];
 		return nil;
+	}
+	
+	// If we are using the BETWEEN operator and either of the argument fields are empty return nil.
+	if ([[[compareField selectedItem] title] isEqualToString:@"BETWEEN"]) {
+		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
+			NSLog(@"reached");
+			return nil;
+		}
 	}
 
 	// Construct the filter string
@@ -542,19 +562,25 @@
 					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
 					break;
 				case 5:
+					compareOperator = @"BETWEEN";
+					doQuote = NO;
+					[argument setString:[NSString stringWithFormat:@"'%@' AND '%@'", [firstBetweenField stringValue], [secondBetweenField stringValue]]];
+					break;
+				case 6:
 					compareOperator = @"IS NULL";
 					doQuote = NO;
 					ignoreArgument = YES;
 					break;
-				case 6:
+				case 7:
 					compareOperator = @"IS NOT NULL";
 					doQuote = NO;
 					ignoreArgument = YES;
 					break;
 			}
-		} else if ( [compareType isEqualToString:@"number"] ) {
-			//number comparision
-			switch ( tag ) {
+		} 
+		else if ([compareType isEqualToString:@"number"]) {
+			// Numeric comparision
+			switch (tag) {
 				case 0:
 					compareOperator = @"=";
 					break;
@@ -584,19 +610,25 @@
 					ignoreArgument = YES;
 					break;
 				case 8:
+					compareOperator = @"BETWEEN";
+					doQuote = NO;
+					[argument setString:[NSString stringWithFormat:@"'%@' AND '%@'", [firstBetweenField stringValue], [secondBetweenField stringValue]]];
+					break;
+				case 9:
 					compareOperator = @"IS NULL";
 					doQuote = NO;
 					ignoreArgument = YES;
 					break;
-				case 9:
+				case 10:
 					compareOperator = @"IS NOT NULL";
 					doQuote = NO;
 					ignoreArgument = YES;
 					break;
 			}
-		} else if ( [compareType isEqualToString:@"date"] ) {
-			//date comparision
-			switch ( tag ) {
+		} 
+		else if ([compareType isEqualToString:@"date"]) {
+			// Date comparision
+			switch (tag) {
 				case 0:
 					compareOperator = @"=";
 					break;
@@ -616,37 +648,45 @@
 					compareOperator = @"<=";
 					break;
 				case 6:
+					compareOperator = @"BETWEEN";
+					doQuote = NO;
+					[argument setString:[NSString stringWithFormat:@"'%@' AND '%@'", [firstBetweenField stringValue], [secondBetweenField stringValue]]];
+					break;
+				case 7:
 					compareOperator = @"IS NULL";
 					doQuote = NO;
 					ignoreArgument = YES;
 					break;
-				case 7:
+				case 8:
 					compareOperator = @"IS NOT NULL";
 					doQuote = NO;
 					ignoreArgument = YES;
 					break;
 			}
-		} else {
+		} 
+		else {
 			doQuote = NO;
 			ignoreArgument = YES;
-			NSLog(@"ERROR: unknown compare type %@", compareType);
+			NSLog(@"ERROR: unknown comparison type %@", compareType);
 		}
 		
 		if (doQuote) {
-			//escape special characters
-			for ( i = 0 ; i < [argument length] ; i++ ) {
-				if ( [argument characterAtIndex:i] == '\\' ) {
+			int i;
+			
+			// Escape special characters
+			for (i = 0 ; i < [argument length]; i++) {
+				if ([argument characterAtIndex:i] == '\\') {
 					[argument insertString:@"\\" atIndex:i];
 					i++;
 				}
 			}
+			
 			[argument setString:[mySQLConnection prepareString:argument]];
-			filterString = [NSString stringWithFormat:@"%@ %@ \"%@\"",
-							[[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, argument];			
-		} else {
-			filterString = [NSString stringWithFormat:@"%@ %@ %@",
-							[[fieldField titleOfSelectedItem] backtickQuotedString],
-							compareOperator, (ignoreArgument) ? @"" : argument];
+			
+			filterString = [NSString stringWithFormat:@"%@ %@ \"%@\"", [[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, argument];			
+		} 
+		else {
+			filterString = [NSString stringWithFormat:@"%@ %@ %@", [[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, (ignoreArgument) ? @"" : argument];
 		}
 	}
 	
@@ -726,22 +766,19 @@
  */
 - (IBAction)filterTable:(id)sender
 {
-
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) {
-		return;
-	}
+	if (![self saveRowOnDeselect]) return;
 
 	// Update history
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	// Update negative limits
-	if ( [limitRowsField intValue] <= 0 ) {
+	if ([limitRowsField intValue] <= 0) {
 		[limitRowsField setStringValue:@"1"];
 	}
 
 	// If limitRowsField > number of total table rows show the last limitRowsValue rows
-	if ( [prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRows ) {
+	if ([prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRows) {
 		int newLimit = maxNumRows - [prefs integerForKey:@"LimitResultsValue"];
 		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
 	}
@@ -759,7 +796,24 @@
  */
 - (IBAction)toggleFilterField:(id)sender
 {
-	// If the user is filtering for NULLs then disabled the filter field, otherwise enable it.
+	NSString *filter = [[compareField selectedItem] title];
+	
+	if ([filter isEqualToString:@"BETWEEN"]) {
+		[argumentField setHidden:YES];
+		[betweenTextField setHidden:NO];
+		[firstBetweenField setHidden:NO];
+		[secondBetweenField setHidden:NO];
+		[firstBetweenField setEnabled:YES];
+		[secondBetweenField setEnabled:YES];
+	}
+	else {
+		[argumentField setHidden:NO];
+		[betweenTextField setHidden:YES];
+		[firstBetweenField setHidden:YES];
+		[secondBetweenField setHidden:YES];
+	}
+	
+	// If the user is filtering for NULLs then disable the filter field, otherwise enable it.
 	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
 }
 
@@ -808,10 +862,10 @@
 		[tableContentView editColumn:0 row:[tableContentView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-- (IBAction)copyRow:(id)sender
-/*
- copies a row of the table-array and goes into edit mode
+/**
+ * Copies a row of the table-array and goes into edit mode
  */
+- (IBAction)copyRow:(id)sender
 {
 	NSMutableArray *tempRow;
 	MCPResult *queryResult;
@@ -1074,10 +1128,10 @@
  */
 - (IBAction)setCompareTypes:(id)sender
 {
-	NSArray *stringTypes  = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", nil];
-	NSArray *numberTypes  = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", @"LIKE", nil];
-	NSArray *dateTypes    = [NSArray arrayWithObjects:NSLocalizedString(@"is", @"popup menuitem for field IS value"), NSLocalizedString(@"is not", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"is after", @"popup menuitem for field AFTER DATE value"), NSLocalizedString(@"is before", @"popup menuitem for field BEFORE DATE value"), NSLocalizedString(@"is after or equal to", @"popup menuitem for field AFTER OR EQUAL TO value"), NSLocalizedString(@"is before or equal to", @"popup menuitem for field BEFORE OR EQUAL TO value"), nil];
-	NSString *fieldTypeGrouping   = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
+	NSArray *stringTypes = [NSArray arrayWithObjects:NSLocalizedString(@"IS", @"popup menuitem for field IS value"), NSLocalizedString(@"IS NOT", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", @"BETWEEN", nil];
+	NSArray *numberTypes = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", @"LIKE", @"BETWEEN", nil];
+	NSArray *dateTypes   = [NSArray arrayWithObjects:NSLocalizedString(@"IS", @"popup menuitem for field IS value"), NSLocalizedString(@"IS NOT", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"is after", @"popup menuitem for field AFTER DATE value"), NSLocalizedString(@"is before", @"popup menuitem for field BEFORE DATE value"), NSLocalizedString(@"is after or equal to", @"popup menuitem for field AFTER OR EQUAL TO value"), NSLocalizedString(@"is before or equal to", @"popup menuitem for field BEFORE OR EQUAL TO value"), @"BETWEEN", nil];
+	NSString *fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
 	
 	int i;
 	
@@ -2011,18 +2065,18 @@
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
 	// Check our notification object is our table content view
-	if ([aNotification object] != tableContentView)
-		return;
+	if ([aNotification object] != tableContentView) return;
 
 	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
-	if ( isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect] ) return;
+	if (isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
 	
 	// Update the row selection count
     // and update the status of the delete/duplicate buttons
-	if ( [tableContentView numberOfSelectedRows] > 0 ) {
+	if ([tableContentView numberOfSelectedRows] > 0) {
         [copyButton setEnabled:YES];
         [removeButton setEnabled:YES];
-	} else {
+	} 
+	else {
         [copyButton setEnabled:NO];
         [removeButton setEnabled:NO];
 	}
@@ -2144,15 +2198,12 @@
 	return YES;
 }
 
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows 
-	 toPasteboard:(NSPasteboard*)pboard
-/*
- enable drag from tableview
+/**
+ * Enable drag from tableview
  */
+- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
 {	
-	if ( tableView == tableContentView )
-	{
-
+	if (tableView == tableContentView) {
 		NSString *tmp;
 		
 		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
@@ -2173,6 +2224,7 @@
 			return YES;
 		}
 	}
+	
 	return NO;
 }
 
@@ -2186,7 +2238,7 @@
 
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
 {
-	return (proposedMax - 150);
+	return (proposedMax - 180);
 }
 
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
