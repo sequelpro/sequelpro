@@ -129,6 +129,7 @@ enum {
 
 - (IBAction)showUserManager:(id)sender;
 - (void)initQueryEditorWithString:(NSString *)query;
+- (void)initWithConnectionFile:(NSString *)path;
 // Connection callback and methods
 - (void) setConnection:(MCPConnection *)theConnection;
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;

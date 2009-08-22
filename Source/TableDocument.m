@@ -161,6 +161,32 @@
 	}
 }
 
+- (void)initWithConnectionFile:(NSString *)path
+{
+
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+	NSData *pData = [[NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError] decompress];
+	NSDictionary *spfData = [NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
+
+	if(!spfData || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return;
+	}
+
+	NSLog(@"s: %@", [spfData description]);
+	
+}
+
 #pragma mark -
 #pragma mark Connection callback and methods
 
@@ -1713,29 +1739,16 @@
 				break; // open only the first SQL file
 			}
 			else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
+				TableDocument *newTableDocument;
 
-
-				NSError *readError = nil;
-				NSString *convError = nil;
-				NSPropertyListFormat format;
-				NSData *pData = [[NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError] decompress];
-				NSDictionary *spfData = [NSPropertyListSerialization propertyListFromData:pData 
-						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
-
-				if(!spfData || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
-					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-													 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-												   alternateButton:nil 
-													  otherButton:nil 
-										informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
-
-					[alert setAlertStyle:NSCriticalAlertStyle];
-					[alert runModal];
-					return;
+				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
+				if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+					[newTableDocument setShouldAutomaticallyConnect:NO];
+					[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
+					[newTableDocument makeWindowControllers];
+					[newTableDocument showWindows];
+					[newTableDocument initWithConnectionFile:filename];
 				}
-
-				NSLog(@"s: %@", [spfData description]);
-
 			}
 			else {
 				NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");

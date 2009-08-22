@@ -47,6 +47,33 @@
 	return self;
 }
 
+- (IBAction)openConnectionSheet:(id)sender
+{
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setDelegate:self];
+	[panel setCanChooseDirectories:NO];
+	[panel setAllowsMultipleSelection:YES];
+	[panel setResolvesAliases:YES];
+	// [panel setAccessoryView:encodingAccessoryView];
+
+	// Set up encoding list
+	// [encodingPopUp setEnabled:NO];
+	
+	// If no lastSqlFileEncoding in prefs set it to UTF-8
+	if(![[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"]) {
+		[[NSUserDefaults standardUserDefaults] setInteger:4 forKey:@"lastSqlFileEncoding"];
+		[[NSUserDefaults standardUserDefaults] synchronize];
+	}
+
+	// [self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
+	int returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
+
+	if( returnCode )
+		[self application:nil openFiles:[panel filenames]];
+
+}
+
 /**
  * Called if user drag and drops files on Sequel Pro's dock item or double-clicked
  * at files *.spf or *.sql
@@ -61,8 +88,7 @@
 
 			// Check if at least one document exists
 			if (![[[NSDocumentController sharedDocumentController] documents] count]) {
-				// TODO : maybe open a connection first
-				// return;
+
 				TableDocument *firstTableDocument;
 
 				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
@@ -82,7 +108,18 @@
 
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
-			NSLog(@"open connection %@", filename);
+
+			TableDocument *newTableDocument;
+
+			// Manually open a new document, setting SPAppController as sender to trigger autoconnection
+			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+				[newTableDocument setShouldAutomaticallyConnect:NO];
+				[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
+				[newTableDocument makeWindowControllers];
+				[newTableDocument showWindows];
+				[newTableDocument initWithConnectionFile:filename];
+			}
+			
 		}
 		else {
 			NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");

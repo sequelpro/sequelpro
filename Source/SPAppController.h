@@ -36,6 +36,7 @@
 
 // IBAction methods
 - (IBAction)openPreferences:(id)sender;
+- (IBAction)openConnectionSheet:(id)sender;
 
 // Services menu methods
 - (void)doPerformQueryService:(NSPasteboard *)pboard userData:(NSString *)data error:(NSString **)error;

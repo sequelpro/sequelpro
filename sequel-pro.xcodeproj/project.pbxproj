@@ -220,6 +220,7 @@
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
 		BC688D811012462600D35128 /* borderlessbackground.png in Resources */ = {isa = PBXBuildFile; fileRef = BC688D801012462600D35128 /* borderlessbackground.png */; };
+		BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */; };
 		BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8C8531100E0A8000D7A129 /* SPTableView.m */; };
 		BC9F0881100FCF2C00A80D32 /* SPFieldEditorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */; };
 		BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */ = {isa = PBXBuildFile; fileRef = BCA6271B1031B9D40047E5D5 /* SPTooltip.m */; };
@@ -593,6 +594,7 @@
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
 		BC688D801012462600D35128 /* borderlessbackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = borderlessbackground.png; sourceTree = "<group>"; };
+		BC8B0DAE104004F900FC02EC /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/EncodingPopupView.xib; sourceTree = "<group>"; };
 		BC8C8530100E0A8000D7A129 /* SPTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableView.h; sourceTree = "<group>"; };
 		BC8C8531100E0A8000D7A129 /* SPTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableView.m; sourceTree = "<group>"; };
 		BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldEditorController.h; sourceTree = "<group>"; };
@@ -1105,6 +1107,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */,
 				4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */,
 				B52460D90F8EF93B00171639 /* Console.xib */,
 				BCA6F62F100FA7D700E80253 /* FieldEditorSheet.xib */,
@@ -1503,6 +1506,7 @@
 				581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */,
 				581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */,
 				4D90B7A2101E0D1500D116A1 /* UserManagerView.xib in Resources */,
+				BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1780,6 +1784,14 @@
 				B5E92F180F75B2D100012500 /* English */,
 			);
 			name = ExportDialog.xib;
+			sourceTree = "<group>";
+		};
+		BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BC8B0DAE104004F900FC02EC /* English */,
+			);
+			name = EncodingPopupView.xib;
 			sourceTree = "<group>";
 		};
 		BCA6F62F100FA7D700E80253 /* FieldEditorSheet.xib */ = {
