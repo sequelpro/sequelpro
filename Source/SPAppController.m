@@ -190,7 +190,7 @@
 				TableDocument *firstTableDocument;
 
 				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
 					[firstTableDocument setShouldAutomaticallyConnect:NO];
 
 					// user comes from a openPanel? if so use the chosen encoding
@@ -225,7 +225,7 @@
 			TableDocument *newTableDocument;
 
 			// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
 				[newTableDocument setShouldAutomaticallyConnect:NO];
 				[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
 				[newTableDocument makeWindowControllers];
@@ -342,7 +342,7 @@
 	TableDocument *firstTableDocument;
 	
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
+	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"]) {
 			[firstTableDocument setShouldAutomaticallyConnect:YES];
 		}
