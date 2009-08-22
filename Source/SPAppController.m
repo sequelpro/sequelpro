@@ -48,7 +48,53 @@
 	return self;
 }
 
+/**
+ * Called even before init so we can register our preference defaults
+ */
++ (void)initialize
+{
+	// Register application defaults
+	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
+}
 
+/**
+ * Initialisation stuff upon nib awakening
+ */
+- (void)awakeFromNib
+{
+	// Set Sparkle delegate
+	[[SUUpdater sharedUpdater] setDelegate:self];
+	
+	prefsController = [[SPPreferenceController alloc] init];
+	
+	// Register SPAppController as services provider
+	[NSApp setServicesProvider:self];
+	
+	// Register SPAppController for AppleScript events
+	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
+	
+	isNewFavorite = NO;
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	if ([menuItem action] == @selector(openConnectionSheet:) && [menuItem tag] == 0)
+	{
+		// Do not allow to open a sql/spf file if SP asks for connection details
+		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
+			if(![[[[NSDocumentController sharedDocumentController] currentDocument] mySQLVersion] length])
+				return NO;
+		}
+	}
+	return YES;
+}
+
+#pragma mark -
+#pragma mark Open methods
+
+/**
+ * NSOpenPanel delegate to control encoding popup and allowMultipleSelection
+ */
 - (void)panelSelectionDidChange:(id)sender
 {
 
@@ -63,18 +109,23 @@
 	}
 	
 }
-
-
+/*
+ * NSOpenPanel for selecting sql or spf file
+ */
 - (IBAction)openConnectionSheet:(id)sender
 {
+	// Avoid opening more than NSOpenPanel
+	if(encodingPopUp){
+		NSBeep();
+		return;
+	}
+	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:YES];
 	[panel setResolvesAliases:YES];
-
-	// // Set up encoding list
 
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
 	if(![[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"]) {
@@ -85,14 +136,35 @@
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"] 
 			includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 
+	// it will enabled if user selects a *.sql file
 	[encodingPopUp setEnabled:NO];
+	
+	// Check if at least one document exists, if so show a sheet
+	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
+		[panel beginSheetForDirectory:nil 
+							   file:@"" 
+							  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
+					 modalForWindow:[[[NSDocumentController sharedDocumentController] currentDocument] valueForKey:@"tableWindow"]
+					  modalDelegate:self 
+					 didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
+						contextInfo:NULL];
+	} else {
+		int returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
 
-	// [self setupPopUp:encodingPopUp selectedEncoding:[[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
-	int returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
+		if( returnCode )
+			[self application:nil openFiles:[panel filenames]];
+			
 
-	if( returnCode )
+		encodingPopUp = nil;
+
+	}
+}
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
+{
+	if ( returnCode )
 		[self application:nil openFiles:[panel filenames]];
 
+	encodingPopUp = nil;
 }
 
 /**
@@ -120,6 +192,8 @@
 				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
 					[firstTableDocument setShouldAutomaticallyConnect:NO];
+
+					// user comes from a openPanel? if so use the chosen encoding
 					if(encodingPopUp) {
 						NSError *error = nil;
 						NSString *content = [NSString stringWithContentsOfFile:filename encoding:[[encodingPopUp selectedItem] tag] error:&error];
@@ -133,6 +207,7 @@
 					}
 					else
 						[firstTableDocument initQueryEditorWithString:[self contentOfFile:filename]];
+
 					[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
 					[firstTableDocument makeWindowControllers];
 					[firstTableDocument showWindows];
@@ -164,34 +239,6 @@
 		}
 	}
 
-}
-
-/**
- * Called even before init so we can register our preference defaults
- */
-+ (void)initialize
-{
-	// Register application defaults
-	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
-}
-
-/**
- * Initialisation stuff upon nib awakening
- */
-- (void)awakeFromNib
-{
-	// Set Sparkle delegate
-	[[SUUpdater sharedUpdater] setDelegate:self];
-	
-	prefsController = [[SPPreferenceController alloc] init];
-	
-	// Register SPAppController as services provider
-	[NSApp setServicesProvider:self];
-	
-	// Register SPAppController for AppleScript events
-	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
-	
-	isNewFavorite = NO;
 }
 
 #pragma mark -

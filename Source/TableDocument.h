@@ -82,7 +82,6 @@
 	IBOutlet id sidebarGrabber;
 	
 	IBOutlet NSPopUpButton *encodingPopUp;
-	IBOutlet id encodingAccessoryView;
 	
 	IBOutlet NSTextView *customQueryTextView;
 	
@@ -174,7 +173,6 @@
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void) refreshCurrentDatabase;
-- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
 
 
@@ -192,7 +190,6 @@
 
 // Menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
-- (IBAction)openConnectionSheet:(id)sender;
 - (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)export:(id)sender;

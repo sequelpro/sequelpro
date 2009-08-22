@@ -1587,119 +1587,6 @@
 #pragma mark -
 #pragma mark Menu methods
 
-/**
- * Opens SP session file(s) or a SQL file
- */
-- (IBAction)openConnectionSheet:(id)sender
-{
-
-	NSOpenPanel *panel = [NSOpenPanel openPanel];
-	[panel setCanSelectHiddenExtension:YES];
-	[panel setDelegate:self];
-	[panel setCanChooseDirectories:NO];
-	[panel setAllowsMultipleSelection:YES];
-	[panel setResolvesAliases:YES];
-	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] 
-			includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
-
-	// Set up encoding list
-	[encodingPopUp setEnabled:NO];
-	
-	// If no lastSqlFileEncoding in prefs set it to UTF-8
-	if(![prefs integerForKey:@"lastSqlFileEncoding"]) {
-		[prefs setInteger:4 forKey:@"lastSqlFileEncoding"];
-		[prefs synchronize];
-	}
-
-	// [self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
-	
-	[panel beginSheetForDirectory:nil 
-						   file:@"" 
-						  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
-				 modalForWindow:tableWindow 
-				  modalDelegate:self didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
-					contextInfo:NULL];
-
-}
-- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
-{
-	if ( returnCode ) {
-		NSArray *fileNames = [panel filenames];
-		NSString *filename;
-		
-		for(filename in fileNames) {
-			if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
-
-				NSError *err;
-				NSString *content = [NSString stringWithContentsOfFile:filename encoding:[[encodingPopUp selectedItem] tag] error:&err];
-				
-				// If file couldn't read show an alert and return
-				if(!content) {
-					NSAlert *errorAlert = [NSAlert alertWithError:err];
-					[errorAlert runModal];
-					return;
-				}
-				
-				// Save last used encoding
-				[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
-
-				// Check if at least one document exists
-				if (![[[NSDocumentController sharedDocumentController] documents] count]) {
-					// TODO : maybe open a connection first
-					// return;
-					TableDocument *firstTableDocument;
-
-					// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-					if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
-						[firstTableDocument setShouldAutomaticallyConnect:NO];
-						[firstTableDocument initQueryEditorWithString:content];
-						[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
-						[firstTableDocument makeWindowControllers];
-						[firstTableDocument showWindows];
-					}
-				} else {
-					// Pass query to the Query editor of the current document
-					[[[NSDocumentController sharedDocumentController] currentDocument] doPerformLoadQueryService:content];
-				}
-
-				break; // open only the first SQL file
-			}
-			else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
-				TableDocument *newTableDocument;
-
-				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-				if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
-					[newTableDocument setShouldAutomaticallyConnect:NO];
-					[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
-					[newTableDocument makeWindowControllers];
-					[newTableDocument showWindows];
-					[newTableDocument initWithConnectionFile:filename];
-				}
-			}
-			else {
-				NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
-			}
-		}
-	}
-}
-
-/**
- * NSOpenPanel delegate to control encoding popup and allowMultipleSelection
- */
-- (void)panelSelectionDidChange:(id)sender
-{
-
-	if([sender isKindOfClass:[NSOpenPanel class]]) {
-		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
-			[encodingPopUp setEnabled:YES];
-			[sender setAllowsMultipleSelection:NO];
-		} else {
-			[encodingPopUp setEnabled:NO];
-			[sender setAllowsMultipleSelection:YES];
-		}
-	}
-	
-}
 
 /**
  * Saves SP session or if Custom Query tab is active the editor's content as SQL file
@@ -1735,9 +1622,7 @@
 			[prefs synchronize];
 		}
 
-		// Set up encoding list
 		[encodingPopUp setEnabled:YES];
-		// [self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
 
 	} else if([sender tag] == 1){
 
@@ -1942,8 +1827,7 @@
 	{
 		return ([self database] != nil);
 	}
-	
-	
+
 	// Change "Save Query/Queries" menu item title dynamically
 	// and disable it if no query in the editor
 	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
