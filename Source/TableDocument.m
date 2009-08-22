@@ -49,6 +49,7 @@
 #import "SPPrintAccessory.h"
 #import "QLPreviewPanel.h"
 #import "SPUserManager.h"
+#import "SPEncodingPopupAccessory.h"
 
 // Used for printing
 #import "MGTemplateEngine.h"
@@ -1587,82 +1588,6 @@
 #pragma mark Menu methods
 
 /**
- * Returns the actual enabled list of encodings for open/save SQL files.
- */
-- (NSArray *)enabledEncodings
-{
-	static const NSInteger plainTextFileStringEncodingsSupported[] = {
-		kCFStringEncodingUTF8, 
-		kCFStringEncodingUTF16, 
-		kCFStringEncodingUTF16BE, 
-		kCFStringEncodingUTF16LE, 
-		kCFStringEncodingUTF32, 
-		kCFStringEncodingWindowsLatin1, 
-		kCFStringEncodingISOLatin1, 
-		kCFStringEncodingWindowsLatin2, 
-		kCFStringEncodingISOLatin2, 
-		kCFStringEncodingISOLatin3, 
-		kCFStringEncodingISOLatin4, 
-		kCFStringEncodingWindowsLatin5, 
-		kCFStringEncodingKOI8_R, 
-		kCFStringEncodingKOI8_U, 
-		kCFStringEncodingMacRoman, 
-		kCFStringEncodingMacJapanese, 
-		kCFStringEncodingShiftJIS, 
-		kCFStringEncodingEUC_JP, 
-		kCFStringEncodingISO_2022_JP, 
-		kCFStringEncodingMacChineseTrad, 
-		kCFStringEncodingMacChineseSimp, 
-		kCFStringEncodingBig5, 
-		kCFStringEncodingGB_18030_2000, 
-		kCFStringEncodingEUC_CN, 
-		kCFStringEncodingEUC_TW, 
-		kCFStringEncodingMacKorean, 
-		kCFStringEncodingEUC_KR, 
-		-1
-		};
-		NSStringEncoding encoding;
-		NSInteger cnt = 0;
-		NSMutableArray *encs = [NSMutableArray array];
-		while (plainTextFileStringEncodingsSupported[cnt] != -1)
-			if ((encoding = CFStringConvertEncodingToNSStringEncoding(plainTextFileStringEncodingsSupported[cnt++])) != kCFStringEncodingInvalidId)
-				[encs addObject:[NSNumber numberWithUnsignedInteger:encoding]];
-
-		return encs;
-}
-
-/**
- * This method initializes the provided popup with list of encodings; 
- * it also sets up the selected encoding as indicated and if includeDefaultItem is YES. 
- * Otherwise the tags are set to the NSStringEncoding value for the encoding.
- */
-- (void)setupPopUp:(NSPopUpButton *)popup selectedEncoding:(NSUInteger)selectedEncoding withDefaultEntry:(BOOL)includeDefaultItem
-{
-	NSArray *encs = [self enabledEncodings];
-	NSUInteger cnt, numEncodings, itemToSelect = 0;
-
-	// Put the encodings in the popup
-	[popup removeAllItems];
-
-	// Make sure the initial selected encoding appears in the list
-	if (!includeDefaultItem && (selectedEncoding != NoStringEncoding) && ![encs containsObject:[NSNumber numberWithUnsignedInteger:selectedEncoding]]) encs = [encs arrayByAddingObject:[NSNumber numberWithUnsignedInteger:selectedEncoding]];
-
-	numEncodings = [encs count];
-
-	// Fill with encodings
-	for (cnt = 0; cnt < numEncodings; cnt++) {
-		NSStringEncoding enc = [[encs objectAtIndex:cnt] unsignedIntegerValue];
-		[popup addItemWithTitle:[NSString localizedNameOfStringEncoding:enc]];
-		[[popup lastItem] setTag:enc];
-		[[popup lastItem] setEnabled:YES];
-		if (enc == selectedEncoding) itemToSelect = [popup numberOfItems] - 1;
-	}
-
-	[popup selectItemAtIndex:itemToSelect];
-}
-
-
-/**
  * Opens SP session file(s) or a SQL file
  */
 - (IBAction)openConnectionSheet:(id)sender
@@ -1674,7 +1599,8 @@
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:YES];
 	[panel setResolvesAliases:YES];
-	[panel setAccessoryView:encodingAccessoryView];
+	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] 
+			includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 
 	// Set up encoding list
 	[encodingPopUp setEnabled:NO];
@@ -1685,7 +1611,7 @@
 		[prefs synchronize];
 	}
 
-	[self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
+	// [self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
@@ -1791,7 +1717,8 @@
 	if( [sender tag] == 0 ) {
 
 		// Save the editor's content as SQL file
-		[panel setAccessoryView:encodingAccessoryView];
+		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] 
+				includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 		// [panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
 		if(![prefs stringForKey:@"lastSqlFileName"]) {
@@ -1810,7 +1737,7 @@
 
 		// Set up encoding list
 		[encodingPopUp setEnabled:YES];
-		[self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
+		// [self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
 
 	} else if([sender tag] == 1){
 

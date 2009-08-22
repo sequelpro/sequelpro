@@ -32,6 +32,8 @@
 	BOOL isNewFavorite;
 	
 	SPPreferenceController *prefsController;
+
+	id encodingPopUp;
 }
 
 // IBAction methods

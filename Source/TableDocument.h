@@ -29,10 +29,6 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-enum {
-	NoStringEncoding = 0xFFFFFFFF
-};
-
 
 @class SPConnectionController, SPUserManager;
 

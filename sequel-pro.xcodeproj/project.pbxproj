@@ -214,6 +214,7 @@
 		B5E92F400F75B32100012500 /* toolbar-export-xml.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */; };
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
+		BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */; };
 		BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = BC05F1C4101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
@@ -585,6 +586,8 @@
 		B5E92F3A0F75B32100012500 /* toolbar-export-xml.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-export-xml.tiff"; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
+		BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEncodingPopupAccessory.h; sourceTree = "<group>"; };
+		BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEncodingPopupAccessory.m; sourceTree = "<group>"; };
 		BC05F1C3101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AMIndeterminateProgressIndicatorCell.h; sourceTree = "<group>"; };
 		BC05F1C4101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AMIndeterminateProgressIndicatorCell.m; sourceTree = "<group>"; };
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
@@ -930,6 +933,8 @@
 				17E641530EF01EF6001BC333 /* TableDump.m */,
 				17E641540EF01EF6001BC333 /* TableSource.h */,
 				17E641550EF01EF6001BC333 /* TableSource.m */,
+				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
+				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -1647,6 +1652,7 @@
 				589235321020C1230011DE00 /* SPHistoryController.m in Sources */,
 				BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */,
 				58DA8863103E15B5000B98DF /* SPLogger.m in Sources */,
+				BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

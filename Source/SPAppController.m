@@ -27,6 +27,7 @@
 #import "SPAppController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
+#import "SPEncodingPopupAccessory.h"
 
 #import <Sparkle/Sparkle.h>
 
@@ -47,6 +48,23 @@
 	return self;
 }
 
+
+- (void)panelSelectionDidChange:(id)sender
+{
+
+	if([sender isKindOfClass:[NSOpenPanel class]]) {
+		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+			[encodingPopUp setEnabled:YES];
+			[sender setAllowsMultipleSelection:NO];
+		} else {
+			[encodingPopUp setEnabled:NO];
+			[sender setAllowsMultipleSelection:YES];
+		}
+	}
+	
+}
+
+
 - (IBAction)openConnectionSheet:(id)sender
 {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -55,18 +73,21 @@
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:YES];
 	[panel setResolvesAliases:YES];
-	// [panel setAccessoryView:encodingAccessoryView];
 
-	// Set up encoding list
-	// [encodingPopUp setEnabled:NO];
-	
+	// // Set up encoding list
+
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
 	if(![[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"]) {
 		[[NSUserDefaults standardUserDefaults] setInteger:4 forKey:@"lastSqlFileEncoding"];
 		[[NSUserDefaults standardUserDefaults] synchronize];
 	}
 
-	// [self setupPopUp:encodingPopUp selectedEncoding:[prefs integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
+	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"] 
+			includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
+
+	[encodingPopUp setEnabled:NO];
+
+	// [self setupPopUp:encodingPopUp selectedEncoding:[[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"] withDefaultEntry:NO];
 	int returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
 
 	if( returnCode )
@@ -86,6 +107,11 @@
 		// Opens a sql file and insert its content into the Custom Query editor
 		if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
 
+			// if encodingPopUp is defined the filename comes from an openPanel and
+			// the encodingPopUp contains the chosen encoding; otherwise autodetect encoding
+			if(encodingPopUp)
+				[[NSUserDefaults standardUserDefaults] setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+
 			// Check if at least one document exists
 			if (![[[NSDocumentController sharedDocumentController] documents] count]) {
 
@@ -94,7 +120,19 @@
 				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"DocumentType" error:nil]) {
 					[firstTableDocument setShouldAutomaticallyConnect:NO];
-					[firstTableDocument initQueryEditorWithString:[self contentOfFile:filename]];
+					if(encodingPopUp) {
+						NSError *error = nil;
+						NSString *content = [NSString stringWithContentsOfFile:filename encoding:[[encodingPopUp selectedItem] tag] error:&error];
+						if(error != nil) {
+							NSAlert *errorAlert = [NSAlert alertWithError:error];
+							[errorAlert runModal];
+							return;
+						}
+						[firstTableDocument initQueryEditorWithString:content];
+						
+					}
+					else
+						[firstTableDocument initQueryEditorWithString:[self contentOfFile:filename]];
 					[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
 					[firstTableDocument makeWindowControllers];
 					[firstTableDocument showWindows];
