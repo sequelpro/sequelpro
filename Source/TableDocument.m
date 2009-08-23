@@ -66,7 +66,7 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		
+
 		_mainNibLoaded = NO;
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
@@ -77,12 +77,14 @@
 		mySQLConnection = nil;
 		mySQLVersion = nil;
 		variables = nil;
-		
+
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
-		
+
 		prefs = [NSUserDefaults standardUserDefaults];
 		queryEditorInitString = nil;
+
+		spf = nil;
 
 	}
 
@@ -169,8 +171,8 @@
 	NSString *convError = nil;
 	NSPropertyListFormat format;
 	NSData *pData = [[NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError] decompress];
-	NSDictionary *spf = [NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
+	spf = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 	if(!spf || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
@@ -183,6 +185,9 @@
 		[alert runModal];
 		return;
 	}
+
+	if([spf objectForKey:@"queries"])
+		[self initQueryEditorWithString:[spf objectForKey:@"queries"]];
 
 	if([spf objectForKey:@"type"])
 		[connectionController setType:[[spf objectForKey:@"type"] intValue]];
@@ -207,13 +212,28 @@
 	if([spf objectForKey:@"selectedDatabase"])
 		[connectionController setDatabase:[spf objectForKey:@"selectedDatabase"]];
 
-	[connectionController initiateConnection:nil];
+	// If password are stored in SPF file auto-connect
+	// otherwise wait for password(s)
+	if([spf objectForKey:@"auth"]) {
+		if([[spf objectForKey:@"type"] intValue] == 2) {
+			if(![spf objectForKey:@"sshAuth"])
+					return;
+			[connectionController initiateConnection:nil];
+			[self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.2];
 
-	[self performSelector:@selector(restoreSessionWith:) withObject:spf afterDelay:0.2];
+		} else {
+			[connectionController initiateConnection:nil];
+		}
+	}
+
 }
 
-- (void)restoreSessionWith:(NSDictionary *)spf
+/*
+ * Restore session from SPF file if given
+ */
+- (void)restoreSession
 {
+
 	// Check and set the table
 	NSArray *tables = [tablesListInstance tables];
 	
@@ -221,15 +241,37 @@
 	int cnt = 0;
 	while(cnt < 5) {
 		if(![tables indexOfObject:[spf objectForKey:@"selectedTable"]] == NSNotFound) break;
-		usleep(1000);
+		usleep(500);
 		cnt++;
 	}
+
 	if([tables indexOfObject:[spf objectForKey:@"selectedTable"]] == NSNotFound) return;
 
 	// Select table
 	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spf objectForKey:@"selectedTable"]]]];
-	[tablesListInstance setContentRequiresReload:YES];	
-	
+
+	// Set table content details for restore
+	if([spf objectForKey:@"contentSortCol"])
+		[tableContentInstance setSortColumnNameToRestore:[spf objectForKey:@"contentSortCol"] isAscending:[[spf objectForKey:@"contentSortCol"] boolValue]];
+	if([spf objectForKey:@"contentLimitStartPosition"])
+		[tableContentInstance setLimitStartToRestore:[[spf objectForKey:@"contentLimitStartPosition"] intValue]];
+	if([spf objectForKey:@"contentSelectedIndexSet"]) {
+		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
+		NSArray *items = [spf objectForKey:@"contentSelectedIndexSet"];
+		unsigned int i;
+		for(i=0; i<[items count]; i++)
+		{
+			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
+		}
+		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+	}
+	if([spf objectForKey:@"contentViewport"])
+		[tableContentInstance setViewportToRestore:NSRectFromString([spf objectForKey:@"contentViewport"])];
+	if([spf objectForKey:@"contentFilter"])
+		[tableContentInstance setFiltersToRestore:[spf objectForKey:@"contentFilter"]];
+
+	[tablesListInstance setContentRequiresReload:YES];
+
 	// Select view
 	if ([spHistoryControllerInstance currentlySelectedView] != [[spf objectForKey:@"view"] intValue]) {
 		switch ([[spf objectForKey:@"view"] intValue]) {
@@ -253,7 +295,10 @@
 			return;
 		}
 	}
-	
+
+	// dealloc spf data
+	[spf release];
+	spf = nil;
 }
 
 #pragma mark -
@@ -341,6 +386,10 @@
 		[tableWindow makeFirstResponder:listFilterField];
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+
+	if(spf != nil)
+		[self restoreSession];
+		// [self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.3];
 
 }
 
@@ -1740,45 +1789,45 @@
 		}
 		else if(contextInfo == @"saveSPFfile") {
 
-			NSMutableDictionary *spf = [NSMutableDictionary dictionary];
+			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
 
 			NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 
-			[spf setObject:[NSNumber numberWithInt:1] forKey:@"version"];
-			[spf setObject:@"session" forKey:@"format"];
+			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spfdata setObject:@"session" forKey:@"format"];
 
-			[spf setObject:[self name] forKey:@"name"];
-			[spf setObject:[self host] forKey:@"host"];
-			[spf setObject:[self user] forKey:@"user"];
-			[spf setObject:[connectionController password] forKey:@"auth"];
+			[spfdata setObject:[self name] forKey:@"name"];
+			[spfdata setObject:[self host] forKey:@"host"];
+			[spfdata setObject:[self user] forKey:@"user"];
+			// [spfdata setObject:[connectionController password] forKey:@"auth"];
 
-			[spf setObject:[NSNumber numberWithInt:[connectionController type]] forKey:@"connectionType"];
+			[spfdata setObject:[NSNumber numberWithInt:[connectionController type]] forKey:@"connectionType"];
 			if([connectionController type] == 2) {
-				[spf setObject:[connectionController sshHost] forKey:@"sshHost"];
-				[spf setObject:[connectionController sshUser] forKey:@"sshUser"];
-				[spf setObject:[connectionController sshPort] forKey:@"sshPort"];
-				[spf setObject:[connectionController sshPassword] forKey:@"sshAuth"];
+				[spfdata setObject:[connectionController sshHost] forKey:@"sshHost"];
+				[spfdata setObject:[connectionController sshUser] forKey:@"sshUser"];
+				[spfdata setObject:[connectionController sshPort] forKey:@"sshPort"];
+				// [spfdata setObject:[connectionController sshPassword] forKey:@"sshAuth"];
 			}
 
 			if([connectionController port] &&[[connectionController port] length])
-				[spf setObject:[connectionController port] forKey:@"port"];
+				[spfdata setObject:[connectionController port] forKey:@"port"];
 
 			if([[self database] length])
-				[spf setObject:[self database] forKey:@"selectedDatabase"];
+				[spfdata setObject:[self database] forKey:@"selectedDatabase"];
 			if([[self table] length])
-				[spf setObject:[self table] forKey:@"selectedTable"];
+				[spfdata setObject:[self table] forKey:@"selectedTable"];
 			if([tableContentInstance sortColumnName])
-				[spf setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
+				[spfdata setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
 
-			[spf setObject:[NSNumber numberWithInt:[spHistoryControllerInstance currentlySelectedView]] forKey:@"view"];
-			[spf setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-			[spf setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
-			[spf setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
+			[spfdata setObject:[NSNumber numberWithInt:[spHistoryControllerInstance currentlySelectedView]] forKey:@"view"];
+			[spfdata setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
+			[spfdata setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
+			[spfdata setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 			if([tableContentInstance filterSettings])
-				[spf setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
+				[spfdata setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
 			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
-				[spf setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
+				[spfdata setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
 
 			if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
 				NSMutableArray *indices = [NSMutableArray array];
@@ -1788,11 +1837,11 @@
 				for (idx = 0; idx < limit; idx++) {
 					[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
 				}
-				[spf setObject:indices forKey:@"contentSelectedIndexSet"];
+				[spfdata setObject:indices forKey:@"contentSelectedIndexSet"];
 			}
 
 			NSString *err = nil;
-			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spf
+			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
 													  format:NSPropertyListBinaryFormat_v1_0
 											errorDescription:&err];
 
@@ -2618,6 +2667,7 @@
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	if(queryEditorInitString) [queryEditorInitString release];
+	if(spf) [spf release];
 	if(userManagerInstance) [userManagerInstance release];
 	[super dealloc];
 }

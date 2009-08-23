@@ -324,10 +324,15 @@
 				|| [compareField itemWithTitle:filterComparisonToRestore]))
 		{
 			if (filterComparisonToRestore) [compareField selectItemWithTitle:filterComparisonToRestore];
+			if([filterComparisonToRestore isEqualToString:@"BETWEEN"]) {
+				[argumentField setHidden:YES];
+				if (firstBetweenValueToRestore) [firstBetweenField setStringValue:firstBetweenValueToRestore];
+				if (secondBetweenValueToRestore) [secondBetweenField setStringValue:secondBetweenValueToRestore];
+			} else {
+				if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
+			}
 			[self toggleFilterField:self];
-			if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
-			if (firstBetweenValueToRestore) [firstBetweenField setStringValue:firstBetweenValueToRestore];
-			if (secondBetweenValueToRestore) [secondBetweenField setStringValue:secondBetweenValueToRestore];
+			
 		}
 	}
 
@@ -1749,7 +1754,7 @@
 						[[compareField selectedItem] title], @"filterComparison",
 						[NSNumber numberWithInt:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
-						[firstBetweenField stringValue], @"firstBetweenValue",
+						[firstBetweenField stringValue], @"firstBetweenField",
 						[secondBetweenField stringValue], @"secondBetweenField",
 						nil];
 
@@ -1809,14 +1814,28 @@
 	if (filterSettings) {
 		if ([filterSettings objectForKey:@"filterField"])
 			filterFieldToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterField"]];
-		if ([filterSettings objectForKey:@"filterComparison"])
+		if ([filterSettings objectForKey:@"filterComparison"]) {
+			// Check if operator is BETWEEN, if so set up input fields
+			if([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]) {
+				[argumentField setHidden:YES];
+				[betweenTextField setHidden:NO];
+				[firstBetweenField setHidden:NO];
+				[secondBetweenField setHidden:NO];
+				[firstBetweenField setEnabled:YES];
+				[secondBetweenField setEnabled:YES];
+			}
+			
 			filterComparisonToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterComparison"]];
-		if ([filterSettings objectForKey:@"filterValue"])
-			filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
-		if ([filterSettings objectForKey:@"firstBetweenField"])
-			firstBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"firstBetweenField"]];
-		if ([filterSettings objectForKey:@"secondBetweenField"])
-			secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
+		}
+		if([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]) {
+			if ([filterSettings objectForKey:@"firstBetweenField"])
+				firstBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"firstBetweenField"]];
+			if ([filterSettings objectForKey:@"secondBetweenField"])
+				secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
+		} else {
+			if ([filterSettings objectForKey:@"filterValue"])
+				filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+		}
 	}
 }
 

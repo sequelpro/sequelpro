@@ -118,6 +118,8 @@
 	NSMutableArray *allDatabases;
 	
 	NSString *queryEditorInitString;
+	
+	NSDictionary *spf;
 }
 
 - (NSString *)getHTMLforPrint;
