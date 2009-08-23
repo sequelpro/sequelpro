@@ -74,7 +74,9 @@
 		filterFieldToRestore = nil;
 		filterComparisonToRestore = nil;
 		filterValueToRestore = nil;
-		betweenFilterValueToRestore = nil;
+		firstBetweenValueToRestore = nil;
+		secondBetweenValueToRestore = nil;
+
 		isFiltered = NO;
 		isLimited = NO;
 		
@@ -324,7 +326,8 @@
 			if (filterComparisonToRestore) [compareField selectItemWithTitle:filterComparisonToRestore];
 			[self toggleFilterField:self];
 			if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
-			if (betweenFilterValueToRestore) [betweenTextField setStringValue:betweenFilterValueToRestore];
+			if (firstBetweenValueToRestore) [firstBetweenField setStringValue:firstBetweenValueToRestore];
+			if (secondBetweenValueToRestore) [secondBetweenField setStringValue:secondBetweenValueToRestore];
 		}
 	}
 
@@ -1746,7 +1749,8 @@
 						[[compareField selectedItem] title], @"filterComparison",
 						[NSNumber numberWithInt:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
-						[betweenTextField stringValue], @"betweenFilterValue",
+						[firstBetweenField stringValue], @"firstBetweenValue",
+						[secondBetweenField stringValue], @"secondBetweenField",
 						nil];
 
 	return theDictionary;
@@ -1799,7 +1803,8 @@
 	if (filterFieldToRestore) [filterFieldToRestore release], filterFieldToRestore = nil;
 	if (filterComparisonToRestore) [filterComparisonToRestore release], filterComparisonToRestore = nil;
 	if (filterValueToRestore) [filterValueToRestore release], filterValueToRestore = nil;
-	if (betweenFilterValueToRestore) [betweenFilterValueToRestore release], betweenFilterValueToRestore = nil;
+	if (firstBetweenValueToRestore) [firstBetweenValueToRestore release], firstBetweenValueToRestore = nil;
+	if (secondBetweenValueToRestore) [secondBetweenValueToRestore release], secondBetweenValueToRestore = nil;
 
 	if (filterSettings) {
 		if ([filterSettings objectForKey:@"filterField"])
@@ -1808,8 +1813,10 @@
 			filterComparisonToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterComparison"]];
 		if ([filterSettings objectForKey:@"filterValue"])
 			filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
-		if ([filterSettings objectForKey:@"betweenFilterValue"])
-			betweenFilterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+		if ([filterSettings objectForKey:@"firstBetweenField"])
+			firstBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"firstBetweenField"]];
+		if ([filterSettings objectForKey:@"secondBetweenField"])
+			secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
 	}
 }
 
@@ -2372,7 +2379,8 @@
 	if (filterFieldToRestore) filterFieldToRestore = nil;
 	if (filterComparisonToRestore) filterComparisonToRestore = nil;
 	if (filterValueToRestore) filterValueToRestore = nil;
-	if (betweenFilterValueToRestore) betweenFilterValueToRestore = nil;
+	if (firstBetweenValueToRestore) firstBetweenValueToRestore = nil;
+	if (secondBetweenValueToRestore) secondBetweenValueToRestore = nil;
 		
 	[super dealloc];
 }
