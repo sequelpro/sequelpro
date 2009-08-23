@@ -123,7 +123,6 @@
 - (IBAction)helpSelectHelpTargetPage:(id)sender;
 - (IBAction)helpSelectHelpTargetWeb:(id)sender;
 
-
 // queryFavoritesSheet methods
 - (IBAction)addQueryFavorite:(id)sender;
 - (IBAction)removeQueryFavorite:(id)sender;
@@ -147,7 +146,6 @@
 - (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
 - (NSWindow *)helpWebViewWindow;
 - (void)setMySQLversion:(NSString *)theVersion;
-
 
 // Other
 - (void)setConnection:(MCPConnection *)theConnection;

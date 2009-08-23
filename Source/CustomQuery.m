@@ -135,43 +135,48 @@
 	[self performQueries:queries];
 }
 
-/*
+/**
  * Insert the choosen favorite query in the query textView or save query to favorites or opens window to edit favorites
  */
 - (IBAction)chooseQueryFavorite:(id)sender
 {
-	if ( [queryFavoritesButton indexOfSelectedItem] == 1) {
-		//save query to favorites
-		//check if favorite doesn't exist
+	if ([queryFavoritesButton indexOfSelectedItem] == 1) {
+		// Save query to favorites
+		// Check if favorite doesn't exist
 		NSEnumerator *enumerator = [queryFavorites objectEnumerator];
 		id favorite;
-		while ( (favorite = [enumerator nextObject]) ) {
-			if ( [favorite isEqualToString:[textView string]] ) {
+		
+		while ((favorite = [enumerator nextObject])) 
+		{
+			if ([favorite isEqualToString:[textView string]]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Query already exists", @"query already exists message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  NSLocalizedString(@"The query you are adding to your favorites already exists.", @"query already exists informative message"));
 				return;
 			}
 		}
-		if ( [[textView string] isEqualToString:@""] ) {
+		
+		if ([[textView string] isEqualToString:@""]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
 				return;
 		}
+		
 		[queryFavorites addObject:[NSString stringWithString:[textView string]]];
 		[queryFavoritesView reloadData];
 		[prefs setObject:queryFavorites forKey:@"queryFavorites"];
 		[self setFavorites];
-	} else if ( [queryFavoritesButton indexOfSelectedItem] == 2) {
-		//edit favorites
+		
+	} 
+	else if ([queryFavoritesButton indexOfSelectedItem] == 2) {
+		// Edit favorites
 		[NSApp beginSheet:queryFavoritesSheet
-				modalForWindow:tableWindow modalDelegate:self
-				didEndSelector:nil contextInfo:nil];
-		[NSApp runModalForWindow:queryFavoritesSheet];
-	
-		[NSApp endSheet:queryFavoritesSheet];
-		[queryFavoritesSheet orderOut:nil];
-	} else if ( [queryFavoritesButton indexOfSelectedItem] != 3) {
-		//choose favorite
+		   modalForWindow:tableWindow 
+			modalDelegate:self
+		   didEndSelector:nil 
+			  contextInfo:nil];
+	} 
+	else if ([queryFavoritesButton indexOfSelectedItem] != 3) {
+		// Choose favorite
 		[textView insertText:[queryFavoritesButton titleOfSelectedItem]];
 	}
 }
@@ -290,7 +295,7 @@
 #pragma mark -
 #pragma mark queryFavoritesSheet methods
 
-/*
+/**
  * Adds a query favorite
  */
 - (IBAction)addQueryFavorite:(id)sender
@@ -300,7 +305,7 @@
 	NSTableColumn *tableColumn;
 	NSCell *cell;
 
-//end editing
+	// End editing
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
@@ -313,8 +318,8 @@
 	[queryFavoritesView editColumn:0 row:[queryFavoritesView numberOfRows]-1 withEvent:nil select:YES];
 }
 
-/*
- * removes a query favorite
+/**
+ * Removes a query favorite
  */
 - (IBAction)removeQueryFavorite:(id)sender
 {
@@ -323,7 +328,7 @@
 	NSTableColumn *tableColumn;
 	NSCell *cell;
 
-//end editing
+	// End editing
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
@@ -336,7 +341,7 @@
 	}
 }
 
-/*
+/**
  * Copies a query favorite
  */
 - (IBAction)copyQueryFavorite:(id)sender
@@ -346,7 +351,7 @@
 	NSTableColumn *tableColumn;
 	NSCell *cell;
 
-//end editing
+	// End editing
 	if ( row != -1 ) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
@@ -363,24 +368,26 @@
 	}
 }
 
-/*
+/**
  * Closes queryFavoritesSheet and saves favorites to preferences
  */
 - (IBAction)closeQueryFavoritesSheet:(id)sender
 {
+	[NSApp endSheet:queryFavoritesSheet returnCode:0];
+	[queryFavoritesSheet orderOut:self];
+	
 	int row = [queryFavoritesView editedRow];
 	int column = [queryFavoritesView editedColumn];
 	NSTableColumn *tableColumn;
 	NSCell *cell;
 
-//end editing
-	if ( row != -1 ) {
+	// End editing
+	if (row != -1) {
 		tableColumn = [[queryFavoritesView tableColumns] objectAtIndex:column]; 
 		cell = [tableColumn dataCellForRow:row]; 
 		[cell endEditing:[queryFavoritesView currentEditor]]; 
 	}
 
-	[NSApp stopModal];
 	[prefs setObject:queryFavorites forKey:@"queryFavorites"];
 	[self setFavorites];
 }
