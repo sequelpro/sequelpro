@@ -74,6 +74,7 @@
 		filterFieldToRestore = nil;
 		filterComparisonToRestore = nil;
 		filterValueToRestore = nil;
+		betweenFilterValueToRestore = nil;
 		isFiltered = NO;
 		isLimited = NO;
 		
@@ -321,7 +322,9 @@
 				|| [compareField itemWithTitle:filterComparisonToRestore]))
 		{
 			if (filterComparisonToRestore) [compareField selectItemWithTitle:filterComparisonToRestore];
+			[self toggleFilterField:self];
 			if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
+			if (betweenFilterValueToRestore) [betweenTextField setStringValue:betweenFilterValueToRestore];
 		}
 	}
 
@@ -699,7 +702,7 @@
 /*
  * Update the table count/selection text
  */
-- (void) updateCountText
+- (void)updateCountText
 {
 	NSString *rowString;
 	NSMutableString *countString = [NSMutableString string];
@@ -805,16 +808,19 @@
 		[secondBetweenField setHidden:NO];
 		[firstBetweenField setEnabled:YES];
 		[secondBetweenField setEnabled:YES];
+		[firstBetweenField selectText:self];
 	}
 	else {
 		[argumentField setHidden:NO];
 		[betweenTextField setHidden:YES];
 		[firstBetweenField setHidden:YES];
 		[secondBetweenField setHidden:YES];
+		[argumentField selectText:self];
 	}
-	
+
 	// If the user is filtering for NULLs then disable the filter field, otherwise enable it.
 	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
+
 }
 
 - (NSString *)usedQuery
@@ -1740,6 +1746,7 @@
 						[[compareField selectedItem] title], @"filterComparison",
 						[NSNumber numberWithInt:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
+						[betweenTextField stringValue], @"betweenFilterValue",
 						nil];
 
 	return theDictionary;
@@ -1792,6 +1799,7 @@
 	if (filterFieldToRestore) [filterFieldToRestore release], filterFieldToRestore = nil;
 	if (filterComparisonToRestore) [filterComparisonToRestore release], filterComparisonToRestore = nil;
 	if (filterValueToRestore) [filterValueToRestore release], filterValueToRestore = nil;
+	if (betweenFilterValueToRestore) [betweenFilterValueToRestore release], betweenFilterValueToRestore = nil;
 
 	if (filterSettings) {
 		if ([filterSettings objectForKey:@"filterField"])
@@ -1800,6 +1808,8 @@
 			filterComparisonToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterComparison"]];
 		if ([filterSettings objectForKey:@"filterValue"])
 			filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+		if ([filterSettings objectForKey:@"betweenFilterValue"])
+			betweenFilterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
 	}
 }
 
@@ -2362,7 +2372,8 @@
 	if (filterFieldToRestore) filterFieldToRestore = nil;
 	if (filterComparisonToRestore) filterComparisonToRestore = nil;
 	if (filterValueToRestore) filterValueToRestore = nil;
-	
+	if (betweenFilterValueToRestore) betweenFilterValueToRestore = nil;
+		
 	[super dealloc];
 }
 

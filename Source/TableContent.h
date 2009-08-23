@@ -72,7 +72,7 @@
 	unsigned int limitStartPositionToRestore;
 	NSIndexSet *selectionIndexToRestore;
 	NSRect selectionViewportToRestore;
-	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore;
+	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *betweenFilterValueToRestore;
 }
 
 // Table loading methods and information
