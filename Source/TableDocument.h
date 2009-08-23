@@ -92,6 +92,12 @@
 	IBOutlet NSWindow *createTableSyntaxWindow;
 	IBOutlet NSWindow *connectionErrorDialog;
 
+	IBOutlet id saveConnectionAccessory;
+	IBOutlet id saveConnectionIncludeData;
+	IBOutlet id saveConnectionSavePassword;
+	IBOutlet id saveConnectionEncrypt;
+	IBOutlet NSSecureTextField *saveConnectionEncryptString;
+
 	SPConnectionController *connectionController;
 	SPUserManager *userManagerInstance;
 	
@@ -176,7 +182,7 @@
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void) refreshCurrentDatabase;
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
-
+- (IBAction)saveConnectionAccessoryPasswordButton:(id)sender;
 
 // Getter methods
 - (NSString *)name;

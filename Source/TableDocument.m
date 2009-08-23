@@ -1746,6 +1746,13 @@
 		// Save current session (open connection windows as SPF file)
 		// [panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
+		[saveConnectionEncryptString setDelegate:self];
+		[saveConnectionEncryptString setEnabled:YES];
+		[saveConnectionEncryptString setStringValue:@""];
+		[saveConnectionEncryptString setEnabled:NO];
+		[saveConnectionSavePassword setState:NSOffState];
+		[self saveConnectionAccessoryPasswordButton:nil];
+		[panel setAccessoryView:saveConnectionAccessory];
 		filename = [NSString stringWithFormat:@"%@", [self name]];
 		contextInfo = @"saveSPFfile";
 
@@ -1760,6 +1767,36 @@
 				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
 					contextInfo:contextInfo];
 }
+/**
+ * Control the save connection panel's encrypt checkbox and text field
+ • if user changed the status of "Save passwords" and "Encrypt" resp.
+ */
+- (IBAction)saveConnectionAccessoryPasswordButton:(id)sender
+{
+
+	if([saveConnectionSavePassword state] == NSOnState) {
+		[saveConnectionEncrypt setEnabled:YES];
+		if([saveConnectionEncrypt state] == NSOnState) {
+			[saveConnectionEncryptString setEnabled:YES];
+			[saveConnectionEncryptString selectText:nil];
+		} else {
+			[saveConnectionEncryptString setEnabled:YES];
+			[saveConnectionEncryptString setStringValue:@""];
+			[saveConnectionEncryptString setHidden:YES];
+			[saveConnectionEncryptString setHidden:NO];
+			[saveConnectionEncryptString setEnabled:NO];
+		}
+	} else {
+		[saveConnectionEncrypt setEnabled:NO];
+		[saveConnectionEncryptString setEnabled:YES];
+		[saveConnectionEncryptString setStringValue:@""];
+		[saveConnectionEncryptString setHidden:YES];
+		[saveConnectionEncryptString setHidden:NO];
+		[saveConnectionEncryptString setEnabled:NO];
+	}
+
+}
+
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 
