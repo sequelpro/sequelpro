@@ -169,10 +169,10 @@
 	NSString *convError = nil;
 	NSPropertyListFormat format;
 	NSData *pData = [[NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError] decompress];
-	NSDictionary *spfData = [NSPropertyListSerialization propertyListFromData:pData 
+	NSDictionary *spf = [NSPropertyListSerialization propertyListFromData:pData 
 			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
 
-	if(!spfData || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
+	if(!spf || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
@@ -184,7 +184,75 @@
 		return;
 	}
 
-	NSLog(@"s: %@", [spfData description]);
+	if([spf objectForKey:@"type"])
+		[connectionController setType:[[spf objectForKey:@"type"] intValue]];
+	if([spf objectForKey:@"name"])
+		[connectionController setName:[spf objectForKey:@"name"]];
+	if([spf objectForKey:@"user"])
+		[connectionController setUser:[spf objectForKey:@"user"]];
+	if([spf objectForKey:@"host"])
+		[connectionController setHost:[spf objectForKey:@"host"]];
+	if([spf objectForKey:@"auth"])
+		[connectionController setPassword:[spf objectForKey:@"auth"]];
+	if([spf objectForKey:@"port"])
+		[connectionController setPort:[spf objectForKey:@"port"]];
+	if([spf objectForKey:@"sshHost"])
+		[connectionController setSshHost:[spf objectForKey:@"sshHost"]];
+	if([spf objectForKey:@"sshUser"])
+		[connectionController setSshUser:[spf objectForKey:@"sshUser"]];
+	if([spf objectForKey:@"sshAuth"])
+		[connectionController setSshPassword:[spf objectForKey:@"sshAuth"]];
+	if([spf objectForKey:@"sshPort"])
+		[connectionController setSshPort:[spf objectForKey:@"sshPort"]];
+	if([spf objectForKey:@"selectedDatabase"])
+		[connectionController setDatabase:[spf objectForKey:@"selectedDatabase"]];
+
+	[connectionController initiateConnection:nil];
+
+	[self performSelector:@selector(restoreSessionWith:) withObject:spf afterDelay:0.2];
+}
+
+- (void)restoreSessionWith:(NSDictionary *)spf
+{
+	// Check and set the table
+	NSArray *tables = [tablesListInstance tables];
+	
+	// Give SP a bit time to load the table list
+	int cnt = 0;
+	while(cnt < 5) {
+		if(![tables indexOfObject:[spf objectForKey:@"selectedTable"]] == NSNotFound) break;
+		usleep(1000);
+		cnt++;
+	}
+	if([tables indexOfObject:[spf objectForKey:@"selectedTable"]] == NSNotFound) return;
+
+	// Select table
+	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spf objectForKey:@"selectedTable"]]]];
+	[tablesListInstance setContentRequiresReload:YES];	
+	
+	// Select view
+	if ([spHistoryControllerInstance currentlySelectedView] != [[spf objectForKey:@"view"] intValue]) {
+		switch ([[spf objectForKey:@"view"] intValue]) {
+			case SP_VIEW_STRUCTURE:
+				[self viewStructure:self];
+				break;
+			case SP_VIEW_CONTENT:
+				[self viewContent:self];
+				break;
+			case SP_VIEW_CUSTOMQUERY:
+				[self viewQuery:self];
+				break;
+			case SP_VIEW_STATUS:
+				[self viewStatus:self];
+				break;
+			case SP_VIEW_RELATIONS:
+				[self viewRelations:self];
+				break;
+		}
+		if ([spHistoryControllerInstance currentlySelectedView] != [[spf objectForKey:@"view"] intValue]) {
+			return;
+		}
+	}
 	
 }
 
@@ -1677,16 +1745,19 @@
 			NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 
 			[spf setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spf setObject:@"session" forKey:@"format"];
 
 			[spf setObject:[self name] forKey:@"name"];
 			[spf setObject:[self host] forKey:@"host"];
 			[spf setObject:[self user] forKey:@"user"];
+			[spf setObject:[connectionController password] forKey:@"auth"];
 
 			[spf setObject:[NSNumber numberWithInt:[connectionController type]] forKey:@"connectionType"];
 			if([connectionController type] == 2) {
 				[spf setObject:[connectionController sshHost] forKey:@"sshHost"];
 				[spf setObject:[connectionController sshUser] forKey:@"sshUser"];
 				[spf setObject:[connectionController sshPort] forKey:@"sshPort"];
+				[spf setObject:[connectionController sshPassword] forKey:@"sshAuth"];
 			}
 
 			if([connectionController port] &&[[connectionController port] length])

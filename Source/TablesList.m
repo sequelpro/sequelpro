@@ -1513,13 +1513,13 @@
  * Select the supplied row index; added for convenience to allow
  * use with performSelector:withObject:afterDelay: for re-selection.
  */
-- (void) selectTableAtIndex:(NSNumber *)rowIndex
+- (void) selectTableAtIndex:(NSNumber *)row
 {
-//	int rowIndex = [rowIndex intValue];
-//	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE)
-//		return;
-//
-//	[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
+	int rowIndex = [row intValue];
+	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE)
+		return;
+
+	[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
 }
 
 #pragma mark -

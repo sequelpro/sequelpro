@@ -120,6 +120,7 @@ enum sp_table_types
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)updateSelection;
+- (void)selectTableAtIndex:(NSNumber *)row;
 
 // Getters
 - (NSString *)tableName;
@@ -146,6 +147,5 @@ enum sp_table_types
 - (void) hideFilter;
 - (void) clearFilter;
 - (IBAction) updateFilter:(id)sender;
-- (void) selectTableAtIndex:(NSNumber *)rowIndex;
 
 @end
