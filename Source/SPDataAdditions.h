@@ -26,9 +26,11 @@
 
 @interface NSData (SPDataAdditions)
 
-- (NSString *) base64EncodingWithLineLength:(unsigned int)lineLength;
-- (NSString *) dataToFormattedHexString;
-- (NSString *) shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
+- (NSString *)base64EncodingWithLineLength:(unsigned int)lineLength;
+- (NSString *)dataToFormattedHexString;
+- (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
+- (NSData*)dataEncryptedWithPassword:(NSString*)password;
+- (NSData*)dataDecryptedWithPassword:(NSString*)password;
 - (NSData *)compress;
 - (NSData *)decompress;
 

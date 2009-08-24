@@ -83,6 +83,7 @@
 
 		prefs = [NSUserDefaults standardUserDefaults];
 		queryEditorInitString = nil;
+		[saveConnectionEncryptString setStringValue:@""];
 
 		spf = nil;
 
@@ -114,12 +115,12 @@
 				screenFrame = [candidate frame];
 
 		previousFrame = [tableWindow frame];
-		topLeftPoint = previousFrame.origin;
-		if(topLeftPoint.x + previousFrame.size.width > screenFrame.size.width-1) {
+		if(previousFrame.origin.x - screenFrame.origin.x + previousFrame.size.width > screenFrame.size.width-1) {
 			previousFrame.size.width -= 50;
 			previousFrame.size.height -= 50;
 			previousFrame.origin.y += 50;
-			[tableWindow setFrame:previousFrame display:YES];
+			if(previousFrame.size.width >= [tableWindow minSize].width && previousFrame.size.height >= [tableWindow minSize].height)
+				[tableWindow setFrame:previousFrame display:YES];
 		}
 		
 	}
@@ -170,6 +171,8 @@
 	NSError *readError = nil;
 	NSString *convError = nil;
 	NSPropertyListFormat format;
+	NSString *encryptpw = nil;
+	
 	NSData *pData = [[NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError] decompress];
 	spf = [[NSPropertyListSerialization propertyListFromData:pData 
 			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
@@ -186,27 +189,65 @@
 		return;
 	}
 
+	// Init Custom Query editor with the stored queries if given
 	if([spf objectForKey:@"queries"])
 		[self initQueryEditorWithString:[spf objectForKey:@"queries"]];
 
-	if([spf objectForKey:@"type"])
-		[connectionController setType:[[spf objectForKey:@"type"] intValue]];
+	// Clean fields
+	[connectionController setName:@""];
+	[connectionController setUser:@""];
+	[connectionController setHost:@""];
+	[connectionController setPort:@""];
+	[connectionController setSshHost:@""];
+	[connectionController setSshUser:@""];
+	[connectionController setSshPort:@""];
+	[connectionController setDatabase:@""];
+	[connectionController setPassword:@""];
+	[connectionController setSshPassword:@""];
+	
+	// NSLog(@"%@", spf);
+	
+	// Ask for a password if SPF file passwords were encrypted
+	if([spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")
+			defaultButton:@"OK"
+			alternateButton:@"Cancel"
+			otherButton:nil
+			informativeTextWithFormat:NSLocalizedString(@"Please enter the password:",@"Please enter the password")];
+
+		NSTextField *input = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 220, 24)];
+		[input setStringValue:@""];
+		[alert setAccessoryView:input];
+		[[alert window] setInitialFirstResponder:input];
+		[[alert window] makeFirstResponder:input];
+		[input selectText:[alert window]];
+		NSInteger button = [alert runModal];
+		if (button == NSAlertDefaultReturn) {
+			encryptpw = [input stringValue];
+			[input release];
+		} else {
+			[input release];
+			return;
+		}
+	}
+
+	if([spf objectForKey:@"connectionType"]) {
+		[connectionController setType:[[spf objectForKey:@"connectionType"] intValue]];
+		[connectionController resizeTabViewToConnectionType:[connectionController type] animating:NO];
+	}
+
 	if([spf objectForKey:@"name"])
 		[connectionController setName:[spf objectForKey:@"name"]];
 	if([spf objectForKey:@"user"])
 		[connectionController setUser:[spf objectForKey:@"user"]];
 	if([spf objectForKey:@"host"])
 		[connectionController setHost:[spf objectForKey:@"host"]];
-	if([spf objectForKey:@"auth"])
-		[connectionController setPassword:[spf objectForKey:@"auth"]];
 	if([spf objectForKey:@"port"])
 		[connectionController setPort:[spf objectForKey:@"port"]];
 	if([spf objectForKey:@"sshHost"])
 		[connectionController setSshHost:[spf objectForKey:@"sshHost"]];
 	if([spf objectForKey:@"sshUser"])
 		[connectionController setSshUser:[spf objectForKey:@"sshUser"]];
-	if([spf objectForKey:@"sshAuth"])
-		[connectionController setSshPassword:[spf objectForKey:@"sshAuth"]];
 	if([spf objectForKey:@"sshPort"])
 		[connectionController setSshPort:[spf objectForKey:@"sshPort"]];
 	if([spf objectForKey:@"selectedDatabase"])
@@ -215,16 +256,46 @@
 	// If password are stored in SPF file auto-connect
 	// otherwise wait for password(s)
 	if([spf objectForKey:@"auth"]) {
-		if([[spf objectForKey:@"type"] intValue] == 2) {
-			if(![spf objectForKey:@"sshAuth"])
-					return;
+
+		NSString *sauth;
+		if(encryptpw != nil && [spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState)
+			sauth = [[NSString alloc] initWithData:[[spf objectForKey:@"auth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
+		else
+			sauth = [[NSString alloc] initWithData:[spf objectForKey:@"auth"] encoding:NSUTF8StringEncoding];
+		[connectionController setPassword:sauth];
+		[sauth release];
+
+		if([connectionController type] == SP_CONNECTION_SSHTUNNEL) {
+
+			if(![spf objectForKey:@"sshAuth"]) {
+				[connectionController setSshPassword:@""];
+				[[connectionController valueForKeyPath:@"sshSSHPasswordField"] selectText:self];
+				return;
+			}
+
+			NSString *sshauth;
+			if(encryptpw != nil && [spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState)
+				sshauth = [[NSString alloc] initWithData:[[spf objectForKey:@"auth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
+			else
+				sshauth = [[NSString alloc] initWithData:[spf objectForKey:@"auth"] encoding:NSUTF8StringEncoding];
+
+			[connectionController setSshPassword:sshauth];
+			[sshauth release];
 			[connectionController initiateConnection:nil];
-			[self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.2];
 
 		} else {
+
 			[connectionController initiateConnection:nil];
+
 		}
+	} else {
+
+		[connectionController setPassword:@""];
+		[connectionController setSshPassword:@""];
+		[[connectionController valueForKeyPath:@"standardPasswordField"] selectText:self];
+
 	}
+	encryptpw = nil;
 
 }
 
@@ -249,22 +320,13 @@
 
 	// Select table
 	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spf objectForKey:@"selectedTable"]]]];
+	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spf objectForKey:@"selectedTable"]]];
 
 	// Set table content details for restore
 	if([spf objectForKey:@"contentSortCol"])
 		[tableContentInstance setSortColumnNameToRestore:[spf objectForKey:@"contentSortCol"] isAscending:[[spf objectForKey:@"contentSortCol"] boolValue]];
 	if([spf objectForKey:@"contentLimitStartPosition"])
 		[tableContentInstance setLimitStartToRestore:[[spf objectForKey:@"contentLimitStartPosition"] intValue]];
-	if([spf objectForKey:@"contentSelectedIndexSet"]) {
-		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-		NSArray *items = [spf objectForKey:@"contentSelectedIndexSet"];
-		unsigned int i;
-		for(i=0; i<[items count]; i++)
-		{
-			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
-		}
-		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
-	}
 	if([spf objectForKey:@"contentViewport"])
 		[tableContentInstance setViewportToRestore:NSRectFromString([spf objectForKey:@"contentViewport"])];
 	if([spf objectForKey:@"contentFilter"])
@@ -294,6 +356,17 @@
 		if ([spHistoryControllerInstance currentlySelectedView] != [[spf objectForKey:@"view"] intValue]) {
 			return;
 		}
+	}
+
+	if([spf objectForKey:@"contentSelectedIndexSet"]) {
+		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
+		NSArray *items = [spf objectForKey:@"contentSelectedIndexSet"];
+		unsigned int i;
+		for(i=0; i<[items count]; i++)
+		{
+			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
+		}
+		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
 	}
 
 	// dealloc spf data
@@ -1746,8 +1819,9 @@
 		// Save current session (open connection windows as SPF file)
 		// [panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
-		[saveConnectionEncryptString setDelegate:self];
+		// [saveConnectionEncryptString setDelegate:self];
 		[saveConnectionEncryptString setEnabled:YES];
+		[saveConnectionEncryptString selectText:self];
 		[saveConnectionEncryptString setStringValue:@""];
 		[saveConnectionEncryptString setEnabled:NO];
 		[saveConnectionSavePassword setState:NSOffState];
@@ -1778,9 +1852,10 @@
 		[saveConnectionEncrypt setEnabled:YES];
 		if([saveConnectionEncrypt state] == NSOnState) {
 			[saveConnectionEncryptString setEnabled:YES];
-			[saveConnectionEncryptString selectText:nil];
+			[saveConnectionEncryptString selectText:self];
 		} else {
 			[saveConnectionEncryptString setEnabled:YES];
+			[saveConnectionEncryptString selectText:self];
 			[saveConnectionEncryptString setStringValue:@""];
 			[saveConnectionEncryptString setHidden:YES];
 			[saveConnectionEncryptString setHidden:NO];
@@ -1789,6 +1864,7 @@
 	} else {
 		[saveConnectionEncrypt setEnabled:NO];
 		[saveConnectionEncryptString setEnabled:YES];
+		[saveConnectionEncryptString selectText:self];
 		[saveConnectionEncryptString setStringValue:@""];
 		[saveConnectionEncryptString setHidden:YES];
 		[saveConnectionEncryptString setHidden:NO];
@@ -1824,7 +1900,12 @@
 			}
 			return;
 		}
+		
+		// Save connection and session as SPF file
 		else if(contextInfo == @"saveSPFfile") {
+
+			[saveConnectionEncryptString abortEditing];
+			[saveConnectionEncryptString selectText:nil];
 
 			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
 
@@ -1836,14 +1917,25 @@
 			[spfdata setObject:[self name] forKey:@"name"];
 			[spfdata setObject:[self host] forKey:@"host"];
 			[spfdata setObject:[self user] forKey:@"user"];
-			// [spfdata setObject:[connectionController password] forKey:@"auth"];
+
+			if([saveConnectionEncrypt isEnabled])
+				[spfdata setObject:[NSNumber numberWithInt:[saveConnectionEncrypt state]] forKey:@"encrypted"];
 
 			[spfdata setObject:[NSNumber numberWithInt:[connectionController type]] forKey:@"connectionType"];
 			if([connectionController type] == 2) {
 				[spfdata setObject:[connectionController sshHost] forKey:@"sshHost"];
 				[spfdata setObject:[connectionController sshUser] forKey:@"sshUser"];
 				[spfdata setObject:[connectionController sshPort] forKey:@"sshPort"];
-				// [spfdata setObject:[connectionController sshPassword] forKey:@"sshAuth"];
+			}
+
+			if([saveConnectionSavePassword state] == NSOnState) {
+				if([saveConnectionEncrypt state] == NSOffState) {
+					[spfdata setObject:[[connectionController password] dataUsingEncoding:NSUTF8StringEncoding] forKey:@"auth"];
+					[spfdata setObject:[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] forKey:@"sshAuth"];
+				} else {
+					[spfdata setObject:[[[connectionController password] dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"auth"];
+					[spfdata setObject:[[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"sshAuth"];
+				}
 			}
 
 			if([connectionController port] &&[[connectionController port] length])

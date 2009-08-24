@@ -4,6 +4,11 @@
 //  SPDataAdditions.m
 //  sequel-pro
 //
+//  dataEncryptedWithPassword and dataDecryptedWithPassword:
+//   License: FREEWARE http://aquaticmac.com/cocoa.php
+//    Copyright (c) 2005, Lucas Newman
+//    All rights reserved.
+//
 //  Created by Hans-Jörg Bibiko on June 19, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -24,6 +29,8 @@
 
 #import "SPDataAdditions.h"
 #include <zlib.h>
+#include <openssl/aes.h>
+#include <openssl/sha.h>
 
 static char base64encodingTable[64] = {
 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
@@ -99,6 +106,82 @@ static char base64encodingTable[64] = {
 	}
 
 	return base64;
+}
+
+- (NSData*)dataEncryptedWithPassword:(NSString*)password
+{
+	// Create a random 128-bit initialization vector
+	srand(time(NULL));
+	int ivIndex;
+	unsigned char iv[16];
+	for (ivIndex = 0; ivIndex < 16; ivIndex++)
+		iv[ivIndex] = rand() & 0xff;
+		
+	// Calculate the 16-byte AES block padding
+	int dataLength = [self length];
+	int paddedLength = dataLength + (32 - (dataLength % 16));
+	int totalLength = paddedLength + 16; // Data plus IV
+	
+	// Allocate enough space for the IV + ciphertext
+	unsigned char *encryptedBytes = calloc(1, totalLength);
+	// The first block of the ciphertext buffer is the IV
+	memcpy(encryptedBytes, iv, 16);
+	
+	unsigned char *paddedBytes = calloc(1, paddedLength);
+	memcpy(paddedBytes, [self bytes], dataLength);
+	
+	// The last 32-bit chunk is the size of the plaintext, which is encrypted with the plaintext
+	int bigIntDataLength = NSSwapHostIntToBig(dataLength);
+	memcpy(paddedBytes + (paddedLength - 4), &bigIntDataLength, 4);
+	
+	// Create the key from first 128-bits of the 160-bit password hash
+	unsigned char passwordDigest[20];
+	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
+	AES_KEY aesKey;
+	AES_set_encrypt_key(passwordDigest, 128, &aesKey);
+	
+	// AES-128-cbc encrypt the data, filling in the buffer after the IV
+	AES_cbc_encrypt(paddedBytes, encryptedBytes + 16, paddedLength, &aesKey, iv, AES_ENCRYPT);
+	free(paddedBytes);
+    
+	return [NSData dataWithBytesNoCopy:encryptedBytes length:totalLength];
+}
+
+- (NSData*)dataDecryptedWithPassword:(NSString*)password
+{
+	// Create the key from the password hash
+	unsigned char passwordDigest[20];
+	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
+	
+	// AES-128-cbc decrypt the data
+	AES_KEY aesKey;
+	AES_set_decrypt_key(passwordDigest, 128, &aesKey);
+	
+	// Total length = encrypted length + IV
+	int totalLength = [self length];
+	int encryptedLength = totalLength - 16;
+	
+	// Take the IV from the first 128-bit block
+	unsigned char iv[16];
+	memcpy(iv, [self bytes], 16);
+	
+	// Decrypt the data
+	unsigned char *decryptedBytes = (unsigned char*)malloc(encryptedLength);
+	AES_cbc_encrypt([self bytes] + 16, decryptedBytes, encryptedLength, &aesKey, iv, AES_DECRYPT);
+	
+	// If decryption was successful, these blocks will be zeroed
+	if ( *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 4)) ||
+		 *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
+		 *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 2)) )
+	{
+		return nil;
+	}
+	
+	// Get the size of the data from the last 32-bit chunk
+	int bigIntDataLength = *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 1));
+	int dataLength = NSSwapBigIntToHost(bigIntDataLength);
+	
+	return [NSData dataWithBytesNoCopy:decryptedBytes length:dataLength];
 }
 
 - (NSData *)decompress
