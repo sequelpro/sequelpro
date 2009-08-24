@@ -204,31 +204,40 @@
 	[connectionController setDatabase:@""];
 	[connectionController setPassword:@""];
 	[connectionController setSshPassword:@""];
-	
-	// NSLog(@"%@", spf);
-	
-	// Ask for a password if SPF file passwords were encrypted
-	if([spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState) {
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")
-			defaultButton:@"OK"
-			alternateButton:@"Cancel"
-			otherButton:nil
-			informativeTextWithFormat:NSLocalizedString(@"Please enter the password:",@"Please enter the password")];
 
-		NSTextField *input = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 220, 24)];
-		[input setStringValue:@""];
-		[alert setAccessoryView:input];
-		[[alert window] setInitialFirstResponder:input];
-		[[alert window] makeFirstResponder:input];
-		[input selectText:[alert window]];
-		NSInteger button = [alert runModal];
-		if (button == NSAlertDefaultReturn) {
-			encryptpw = [input stringValue];
-			[input release];
-		} else {
-			[input release];
-			return;
+	// Ask for a password if SPF file passwords were encrypted as sheet
+	if([spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState) {
+
+		[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
+		[inputTextWindowMessage setStringValue:NSLocalizedString(@"Please enter the password:",@"Please enter the password")];
+		[inputTextWindowSecureTextField setStringValue:@""];
+		[inputTextWindowSecureTextField selectText:nil];
+		
+		[NSApp beginSheet:inputTextWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		
+		// wait for encryption password
+		NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
+		for (;;) {
+
+			// Break the run loop if editSheet was closed
+			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
+				|| ![inputTextWindow isVisible]) 
+				break;
+
+			// Execute code on DefaultRunLoop
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+									 beforeDate:[NSDate distantFuture]];
+
 		}
+		[NSApp endModalSession:session];
+		[inputTextWindow orderOut:nil];
+		[NSApp endSheet:inputTextWindow];
+		
+		if(passwordSheetReturnCode)
+			encryptpw = [inputTextWindowSecureTextField stringValue];
+		else
+			return;
+
 	}
 
 	if([spf objectForKey:@"connectionType"]) {
@@ -259,9 +268,16 @@
 
 		NSString *sauth;
 		if(encryptpw != nil && [spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState)
-			sauth = [[NSString alloc] initWithData:[[spf objectForKey:@"auth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
+			if([[spf objectForKey:@"auth"] length])
+				sauth = [[NSString alloc] initWithData:[[spf objectForKey:@"auth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
+			else
+				sauth = @"";
 		else
-			sauth = [[NSString alloc] initWithData:[spf objectForKey:@"auth"] encoding:NSUTF8StringEncoding];
+			if([[spf objectForKey:@"auth"] length])
+				sauth = [[NSString alloc] initWithData:[spf objectForKey:@"auth"] encoding:NSUTF8StringEncoding];
+			else
+				sauth = @"";
+
 		[connectionController setPassword:sauth];
 		[sauth release];
 
@@ -275,9 +291,15 @@
 
 			NSString *sshauth;
 			if(encryptpw != nil && [spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState)
-				sshauth = [[NSString alloc] initWithData:[[spf objectForKey:@"auth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
+				if([[spf objectForKey:@"sshAuth"] length])
+					sshauth = [[NSString alloc] initWithData:[[spf objectForKey:@"sshAuth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
+				else
+					sshauth = @"";
 			else
-				sshauth = [[NSString alloc] initWithData:[spf objectForKey:@"auth"] encoding:NSUTF8StringEncoding];
+				if([[spf objectForKey:@"sshAuth"] length])
+					sshauth = [[NSString alloc] initWithData:[spf objectForKey:@"sshAuth"] encoding:NSUTF8StringEncoding];
+				else
+					sshauth = @"";
 
 			[connectionController setSshPassword:sshauth];
 			[sshauth release];
@@ -373,6 +395,20 @@
 	[spf release];
 	spf = nil;
 }
+
+/*
+ * Set the return code for entering the encryption passowrd sheet
+ */
+- (IBAction)closePasswordSheet:(id)sender
+{
+	passwordSheetReturnCode = 0;
+	if([sender tag]) {
+		[NSApp stopModal];
+		passwordSheetReturnCode = 1;
+	}
+	[NSApp abortModal];
+}
+
 
 #pragma mark -
 #pragma mark Connection callback and methods
@@ -1929,12 +1965,26 @@
 			}
 
 			if([saveConnectionSavePassword state] == NSOnState) {
+				NSString *pw = [self keychainPasswordForConnection:nil];
+				if(![pw length]) pw = [connectionController password];
 				if([saveConnectionEncrypt state] == NSOffState) {
-					[spfdata setObject:[[connectionController password] dataUsingEncoding:NSUTF8StringEncoding] forKey:@"auth"];
-					[spfdata setObject:[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] forKey:@"sshAuth"];
+					if([pw length])
+						[spfdata setObject:[pw dataUsingEncoding:NSUTF8StringEncoding] forKey:@"auth"];
+					else
+						[spfdata setObject:[NSData data] forKey:@"auth"];
+					if([[connectionController sshPassword] length])
+						[spfdata setObject:[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] forKey:@"sshAuth"];
+					else
+						[spfdata setObject:[NSData data] forKey:@"sshAuth"];
 				} else {
-					[spfdata setObject:[[[connectionController password] dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"auth"];
-					[spfdata setObject:[[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"sshAuth"];
+					if([pw length])
+						[spfdata setObject:[[pw dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"auth"];
+					else
+						[spfdata setObject:[NSData data] forKey:@"auth"];
+					if([[connectionController sshPassword] length])
+						[spfdata setObject:[[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"sshAuth"];
+					else
+						[spfdata setObject:[NSData data] forKey:@"sshAuth"];
 				}
 			}
 
@@ -1943,32 +1993,36 @@
 
 			if([[self database] length])
 				[spfdata setObject:[self database] forKey:@"selectedDatabase"];
-			if([[self table] length])
-				[spfdata setObject:[self table] forKey:@"selectedTable"];
-			if([tableContentInstance sortColumnName])
-				[spfdata setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
 
-			[spfdata setObject:[NSNumber numberWithInt:[spHistoryControllerInstance currentlySelectedView]] forKey:@"view"];
-			[spfdata setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-			[spfdata setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
-			[spfdata setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
-			if([tableContentInstance filterSettings])
-				[spfdata setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
+			// Include session data like selected table, view etc. ?
+			if([saveConnectionIncludeData state] == NSOnState) {
+				if([[self table] length])
+					[spfdata setObject:[self table] forKey:@"selectedTable"];
+				if([tableContentInstance sortColumnName])
+					[spfdata setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
 
-			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
-				[spfdata setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
+				[spfdata setObject:[NSNumber numberWithInt:[spHistoryControllerInstance currentlySelectedView]] forKey:@"view"];
+				[spfdata setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
+				[spfdata setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
+				[spfdata setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
+				if([tableContentInstance filterSettings])
+					[spfdata setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
-			if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
-				NSMutableArray *indices = [NSMutableArray array];
-				unsigned indexBuffer[[contentSelectedIndexSet count]];
-				unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-				unsigned idx;
-				for (idx = 0; idx < limit; idx++) {
-					[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
+				if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
+					[spfdata setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
+
+				if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
+					NSMutableArray *indices = [NSMutableArray array];
+					unsigned indexBuffer[[contentSelectedIndexSet count]];
+					unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
+					unsigned idx;
+					for (idx = 0; idx < limit; idx++) {
+						[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
+					}
+					[spfdata setObject:indices forKey:@"contentSelectedIndexSet"];
 				}
-				[spfdata setObject:indices forKey:@"contentSelectedIndexSet"];
 			}
-
+			
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
 													  format:NSPropertyListBinaryFormat_v1_0

@@ -97,6 +97,12 @@
 	IBOutlet id saveConnectionSavePassword;
 	IBOutlet id saveConnectionEncrypt;
 	IBOutlet NSSecureTextField *saveConnectionEncryptString;
+	
+	IBOutlet id inputTextWindow;
+	IBOutlet id inputTextWindowHeader;
+	IBOutlet id inputTextWindowMessage;
+	IBOutlet id inputTextWindowSecureTextField;
+	int passwordSheetReturnCode;
 
 	SPConnectionController *connectionController;
 	SPUserManager *userManagerInstance;
@@ -183,6 +189,7 @@
 - (void) refreshCurrentDatabase;
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)saveConnectionAccessoryPasswordButton:(id)sender;
+- (IBAction)closePasswordSheet:(id)sender;
 
 // Getter methods
 - (NSString *)name;
