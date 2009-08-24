@@ -294,6 +294,7 @@
 
 #pragma mark -
 #pragma mark OutlineView Delegate Methods
+
 - (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
@@ -330,12 +331,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)olv shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-	if ([[[item representedObject] children] count] == 0)
-	{
-		return TRUE;
-	}
-	return FALSE;
-	
+	return ([[[item representedObject] children] count] == 0);
 }
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
@@ -652,25 +648,10 @@
 		return FALSE;
 	
 	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
-	if ([[tabViewItem identifier] isEqualToString:@"General"])
-	{
-		if ([selectedObject parent] == nil) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	} 
-	else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] ||
-		[[tabViewItem identifier] isEqualToString:@"Resources"])
-	{
-		if ([selectedObject parent] != nil) 
-		{
-			return TRUE;
-		} 
-		else 
-		{
-			return FALSE;
-		}
+	if ([[tabViewItem identifier] isEqualToString:@"General"]) {
+		return ([selectedObject parent] == nil);
+	} else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
+		return ([selectedObject parent] != nil);
 	}
 	
 	return TRUE;
