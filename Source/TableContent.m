@@ -402,16 +402,8 @@
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
-	MCPResult *queryResult;
 	MCPStreamingResult *streamingResult;
-	NSArray *tempRow;
-	NSMutableArray *modifiedRow = [NSMutableArray array];
-	NSMutableArray *columnBlobStatuses = [NSMutableArray array];
-	int i;
-	Class nullClass = [NSNull class];
-	id prefsNullValue = [prefs objectForKey:@"NullValue"];
-	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
-	long columnsCount = [dataColumns count];
+	int rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
 	
 	// Notify any listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -451,40 +443,16 @@
 
 		// Append the limit settings
 		[queryString appendFormat:@" LIMIT %d,%d", [limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
+
+		// Update the approximate count of the rows to load
+		rowsToLoad = rowsToLoad - ([limitRowsField intValue]-1);
+		if (rowsToLoad > [prefs integerForKey:@"LimitResultsValue"]) rowsToLoad = [prefs integerForKey:@"LimitResultsValue"];
 	}
 	
+	// Perform and process the query
 	[self setUsedQuery:queryString];
-	
-	// Run the query and capture the result
-
-	// Build up an array of which columns are blobs for faster iteration
-	for ( i = 0; i < columnsCount ; i++ ) {
-		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
-	}
-
-	[tableValues removeAllObjects];
 	streamingResult = [mySQLConnection streamingQueryString:queryString];
-	while (tempRow = [streamingResult fetchNextRowAsArray]) {
-		[modifiedRow removeAllObjects];
-		for ( i = 0; i < columnsCount; i++ ) {
-			if ( [NSArrayObjectAtIndex(tempRow, i) isMemberOfClass:nullClass] ) {
-				[modifiedRow addObject:prefsNullValue];
-			} else {
-				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, i)];
-			}
-		}
-
-		// Add values for hidden blob and text fields if appropriate
-		if ( prefsLoadBlobsAsNeeded ) {
-			for ( i = 0 ; i < columnsCount ; i++ ) {
-				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
-					[modifiedRow replaceObjectAtIndex:i withObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
-				}
-			}
-		}
-
-		[tableValues addObject:[NSMutableArray arrayWithArray:modifiedRow]];
-	}
+	[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
 	[streamingResult release];
 
 	// If the result is empty, and a limit is active, reset the limit
@@ -492,8 +460,9 @@
 		[limitRowsField setStringValue:@"1"];
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:@"LimitResultsValue"]];
 		[self setUsedQuery:queryString];
-		queryResult = [mySQLConnection queryString:queryString];
-		[tableValues setArray:[self fetchResultAsArray:queryResult]];
+		streamingResult = [mySQLConnection streamingQueryString:queryString];
+		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:@"LimitResultsValue"]];
+		[streamingResult release];
 	}
 
 	if ([prefs boolForKey:@"LimitResults"]
@@ -1225,54 +1194,85 @@
 }
 
 /*
- * Fetches the result as an array, with an array for each row in it
+ * Processes a supplied streaming result set, loading it into the data array.
  */
-- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
+- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(long)targetRowCount
 {
-	unsigned long numOfRows = [theResult numOfRows];
-	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
-
 	NSArray *tempRow;
-	NSMutableArray *modifiedRow = [NSMutableArray array];
-	NSMutableArray *columnBlobStatuses = [NSMutableArray array];
-	int i, j;
-	Class nullClass = [NSNull class];
-	id prefsNullValue = [prefs objectForKey:@"NullValue"];
-	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
-
+	NSMutableArray *newRow;
+	NSMutableArray *columnBlobStatuses = [[NSMutableArray alloc] init];
+	int i;
+	int lastProgressValue = 0;
+	long rowsProcessed = 0;
 	long columnsCount = [dataColumns count];
+	NSAutoreleasePool *dataLoadingPool;
+	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
+	id prefsNullValue = [[prefs objectForKey:@"NullValue"] retain];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+	Class nullClass = [NSNull class];
 
 	// Build up an array of which columns are blobs for faster iteration
 	for ( i = 0; i < columnsCount ; i++ ) {
 		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
 	}
-	
-	if (numOfRows) [theResult dataSeek:0];
-	for ( i = 0 ; i < numOfRows ; i++ ) {
-		[modifiedRow removeAllObjects];
-		tempRow = [theResult fetchRowAsArray];
 
-		for ( j = 0; j < columnsCount; j++ ) {
-			if ( [NSArrayObjectAtIndex(tempRow, j) isMemberOfClass:nullClass] ) {
-				[modifiedRow addObject:prefsNullValue];
+	// Remove all items from the table and reset the progress indicator
+	[tableValues removeAllObjects];
+	if (targetRowCount) [dataLoadingIndicator setIndeterminate:NO];
+	[dataLoadingIndicator setDoubleValue:0];
+	[dataLoadingIndicator display];
+
+	// Set up an autorelease pool for row processing
+	dataLoadingPool = [[NSAutoreleasePool alloc] init];
+
+	// Loop through the result rows as they become available
+	while (tempRow = [theResult fetchNextRowAsArray]) {
+		NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithCapacity:columnsCount]);
+		newRow = NSArrayObjectAtIndex(tableValues, rowsProcessed);
+
+		// Process the retrieved row
+		for ( i = 0; i < columnsCount; i++ ) {
+			if ( [NSArrayObjectAtIndex(tempRow, i) isMemberOfClass:nullClass] ) {
+				NSMutableArrayAddObject(newRow, prefsNullValue);
 			} else {
-				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, j)];
+				NSMutableArrayAddObject(newRow, NSArrayObjectAtIndex(tempRow, i));
 			}
 		}
 
 		// Add values for hidden blob and text fields if appropriate
 		if ( prefsLoadBlobsAsNeeded ) {
-			for ( j = 0 ; j < columnsCount ; j++ ) {
-				if ( [NSArrayObjectAtIndex(columnBlobStatuses, j) boolValue] ) {
-					[modifiedRow replaceObjectAtIndex:j withObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
+			for ( i = 0 ; i < columnsCount ; i++ ) {
+				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
+					[newRow replaceObjectAtIndex:i withObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				}
 			}
 		}
 
-		[tempResult addObject:[NSMutableArray arrayWithArray:modifiedRow]];
-	}
+		// Update the progress bar as necessary, minimising updates
+		rowsProcessed++;
+		if (rowsProcessed == targetRowCount) {
+			[dataLoadingIndicator setIndeterminate:YES];
+		} else if (rowsProcessed < targetRowCount) {
+			[dataLoadingIndicator setDoubleValue:(rowsProcessed*100/targetRowCount)];
+			if ((int)[dataLoadingIndicator doubleValue] > lastProgressValue) {
+				[dataLoadingIndicator display];
+				lastProgressValue = (int)[dataLoadingIndicator doubleValue];
+			}
+		}
 
-	return tempResult;
+		// Drain and reset the autorelease pool every ~1024 rows
+		if (!(rowsProcessed % 1024)) {
+			[dataLoadingPool drain];
+			dataLoadingPool = [[NSAutoreleasePool alloc] init];
+		}
+	}
+	
+	// Clean up the autorelease pool and reset the progress indicator
+	[dataLoadingPool drain];
+	[dataLoadingIndicator setIndeterminate:YES];
+	
+	[columnBlobStatuses release];
+	[prefsNullValue release];
 }
 
 

@@ -1485,7 +1485,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (void)unlockConnection
 {
-	[queryLock unlock];
+	[queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
 }
 
 #pragma mark -

@@ -74,6 +74,7 @@
 		mTimeZone = [theTimeZone retain];
 		parentConnection = theConnection;
 		fullyStreaming = useFullStreaming;
+		connectionUnlocked = NO;
 
 		if (mResult) {
 			mysql_free_result(mResult);
@@ -122,9 +123,9 @@
 /**
  * Deallocate the result and unlock the parent connection for further use
  */
-	- (void) dealloc
+- (void) dealloc
 {
-	[parentConnection unlockConnection];
+	if (!connectionUnlocked) [parentConnection unlockConnection];
 
 	[super dealloc];
 }
@@ -169,6 +170,8 @@
 		// once all memory has been freed
 		if (processedRowCount == downloadedRowCount) {
 			while (!dataFreed) usleep(1000);
+			[parentConnection unlockConnection];
+			connectionUnlocked = YES;
 			return nil;
 		}
 

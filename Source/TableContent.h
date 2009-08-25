@@ -103,7 +103,7 @@
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
 - (IBAction)stepLimitRows:(id)sender;
-- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
+- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(long)targetRowCount;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(int)row;
 - (BOOL)tableContainsBlobOrTextColumns;

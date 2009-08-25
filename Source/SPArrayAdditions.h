@@ -28,6 +28,13 @@ static inline id NSArrayObjectAtIndex(NSArray* self, NSUInteger i) {
 	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
 }
 
+static inline void NSMutableArrayAddObject(NSArray* self, id anObject) {
+	typedef void (*SPMutableArrayAddObjectMethodPtr)(NSArray*, SEL, id);
+	static SPMutableArrayAddObjectMethodPtr SPNSMutableArrayAddObject;
+	if (!SPNSMutableArrayAddObject) SPNSMutableArrayAddObject = (SPMutableArrayAddObjectMethodPtr)[self methodForSelector:@selector(addObject:)];
+	SPNSMutableArrayAddObject(self, @selector(addObject:), anObject);
+}
+
 @interface NSArray (SPArrayAdditions)
 
 - (NSString *)componentsJoinedAndBacktickQuoted;

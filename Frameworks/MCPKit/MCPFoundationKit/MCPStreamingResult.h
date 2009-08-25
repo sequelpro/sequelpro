@@ -29,27 +29,28 @@
 @class MCPConnection;
 
 typedef struct SP_MYSQL_ROWS {
-    char *data;
-    unsigned long *dataLengths;
-    struct SP_MYSQL_ROWS *nextRow;
+	char *data;
+	unsigned long *dataLengths;
+	struct SP_MYSQL_ROWS *nextRow;
 } LOCAL_ROW_DATA;
 
 @interface MCPStreamingResult : MCPResult
 {
-    MCPConnection *parentConnection;
+	MCPConnection *parentConnection;
 
-    MYSQL_FIELD *fieldDefinitions;
-    BOOL fullyStreaming;
-    BOOL dataDownloaded;
-    BOOL dataFreed;
-    LOCAL_ROW_DATA *localDataStore;
+	MYSQL_FIELD *fieldDefinitions;
+	BOOL fullyStreaming;
+	BOOL connectionUnlocked;
+	BOOL dataDownloaded;
+	BOOL dataFreed;
+	LOCAL_ROW_DATA *localDataStore;
 	LOCAL_ROW_DATA *currentDataStoreEntry;
-    LOCAL_ROW_DATA *localDataStoreLastEntry;
-    unsigned long localDataRows;
-    unsigned long localDataAllocated;
-    unsigned long downloadedRowCount;
-    unsigned long processedRowCount;
-    unsigned long freedRowCount;
+	LOCAL_ROW_DATA *localDataStoreLastEntry;
+	unsigned long localDataRows;
+	unsigned long localDataAllocated;
+	unsigned long downloadedRowCount;
+	unsigned long processedRowCount;
+	unsigned long freedRowCount;
 }
 
 - (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection;
