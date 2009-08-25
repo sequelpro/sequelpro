@@ -94,7 +94,9 @@
 
 	IBOutlet id saveConnectionAccessory;
 	IBOutlet id saveConnectionIncludeData;
+	IBOutlet id saveConnectionIncludeQuery;
 	IBOutlet id saveConnectionSavePassword;
+	IBOutlet id saveConnectionSavePasswordAlert;
 	IBOutlet id saveConnectionEncrypt;
 	IBOutlet id saveConnectionAutoConnect;
 	IBOutlet NSSecureTextField *saveConnectionEncryptString;

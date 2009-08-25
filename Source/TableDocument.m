@@ -55,6 +55,7 @@
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
 
+
 @interface TableDocument (PrivateAPI)
 
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
@@ -1900,12 +1901,17 @@
 		// [panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
 		// [saveConnectionEncryptString setDelegate:self];
-		[saveConnectionEncryptString setEnabled:YES];
-		[saveConnectionEncryptString selectText:self];
+
+		// Load the accessory view everytime
+		if (![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self])  {
+			NSLog(@"Failed to load SaveSPFAccessory.nib");
+			return;
+		}
 		[saveConnectionEncryptString setStringValue:@""];
-		[saveConnectionEncryptString setEnabled:NO];
-		[saveConnectionSavePassword setState:NSOffState];
+		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
+
 		[self saveConnectionAccessoryPasswordButton:nil];
+
 		[panel setAccessoryView:saveConnectionAccessory];
 		filename = [NSString stringWithFormat:@"%@", [self name]];
 		contextInfo = @"saveSPFfile";
@@ -1922,35 +1928,21 @@
 					contextInfo:contextInfo];
 }
 /**
- * Control the save connection panel's encrypt checkbox and text field
- • if user changed the status of "Save passwords" and "Encrypt" resp.
+ * Control the save connection panel's accessory view
  */
 - (IBAction)saveConnectionAccessoryPasswordButton:(id)sender
 {
 
-	if([saveConnectionSavePassword state] == NSOnState) {
-		[saveConnectionEncrypt setEnabled:YES];
-		if([saveConnectionEncrypt state] == NSOnState) {
-			[saveConnectionEncryptString setEnabled:YES];
-			[saveConnectionEncryptString selectText:self];
-		} else {
-			[saveConnectionEncryptString setEnabled:YES];
-			[saveConnectionEncryptString selectText:self];
-			[saveConnectionEncryptString setStringValue:@""];
-			[saveConnectionEncryptString setHidden:YES];
-			[saveConnectionEncryptString setHidden:NO];
-			[saveConnectionEncryptString setEnabled:NO];
-		}
-	} else {
-		[saveConnectionEncrypt setEnabled:NO];
-		[saveConnectionEncryptString setEnabled:YES];
-		[saveConnectionEncryptString selectText:self];
-		[saveConnectionEncryptString setStringValue:@""];
+	[saveConnectionAutoConnect setEnabled:([saveConnectionSavePassword state] == NSOnState)];
+	[saveConnectionSavePasswordAlert setHidden:([saveConnectionSavePassword state] == NSOffState)];
+	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOnState)
+		[saveConnectionEncryptString selectText:sender];
+	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOffState) {
 		[saveConnectionEncryptString setHidden:YES];
 		[saveConnectionEncryptString setHidden:NO];
-		[saveConnectionEncryptString setEnabled:NO];
 	}
-
+		
+	
 }
 
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
@@ -2087,11 +2079,6 @@
 			if([tableContentInstance filterSettings])
 				[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
-			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
-				if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length] > 50000)
-					[session setObject:[[[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]  dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
-				else
-					[session setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
 			if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
 				NSMutableArray *indices = [NSMutableArray array];
 				unsigned indexBuffer[[contentSelectedIndexSet count]];
@@ -2103,7 +2090,18 @@
 				[session setObject:indices forKey:@"contentSelectedIndexSet"];
 			}
 		}
-		
+
+		if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length] 
+			&& [saveConnectionIncludeQuery state] == NSOnState) {
+				
+			if(session == nil)
+				session = [NSMutableDictionary dictionary];
+				
+			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length] > 50000)
+				[session setObject:[[[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]  dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
+			else
+				[session setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
+		}
 
 		[data setObject:connection forKey:@"connection"];
 		if(session != nil)
