@@ -85,7 +85,7 @@
 		queryEditorInitString = nil;
 		[saveConnectionEncryptString setStringValue:@""];
 
-		spf = nil;
+		spfSession = nil;
 
 	}
 
@@ -171,13 +171,20 @@
 	NSError *readError = nil;
 	NSString *convError = nil;
 	NSPropertyListFormat format;
+
 	NSString *encryptpw = nil;
-	
-	NSData *pData = [[NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError] decompress];
+	NSDictionary *data = nil;
+	NSDictionary *connection = nil;
+	NSDictionary *spf = nil;
+
+	int connectionType;
+
+	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
+
 	spf = [[NSPropertyListSerialization propertyListFromData:pData 
 			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
-	if(!spf || readError != nil || [convError length] | format != NSPropertyListBinaryFormat_v1_0) {
+	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
@@ -189,15 +196,30 @@
 		return;
 	}
 
-	// Init Custom Query editor with the stored queries if given
-	if([spf objectForKey:@"queries"])
-		[self initQueryEditorWithString:[spf objectForKey:@"queries"]];
+	// For dispatching later
+	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+		NSLog(@"SPF file format is not 'connection'.");
+		return;
+	}
+
+	if(![spf objectForKey:@"data"]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"No data found.", @"no data found")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return;
+	}
 
 	// Clean fields
 	[connectionController setName:@""];
 	[connectionController setUser:@""];
 	[connectionController setHost:@""];
 	[connectionController setPort:@""];
+	[connectionController setSocket:@""];
 	[connectionController setSshHost:@""];
 	[connectionController setSshUser:@""];
 	[connectionController setSshPort:@""];
@@ -206,10 +228,10 @@
 	[connectionController setSshPassword:@""];
 
 	// Ask for a password if SPF file passwords were encrypted as sheet
-	if([spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState) {
+	if([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
 
 		[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
-		[inputTextWindowMessage setStringValue:NSLocalizedString(@"Please enter the password:",@"Please enter the password")];
+		[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Enter password for ‘%@’:",@"Please enter the password"), [path lastPathComponent]]];
 		[inputTextWindowSecureTextField setStringValue:@""];
 		[inputTextWindowSecureTextField selectText:nil];
 		
@@ -240,84 +262,113 @@
 
 	}
 
-	if([spf objectForKey:@"connectionType"]) {
-		[connectionController setType:[[spf objectForKey:@"connectionType"] intValue]];
-		[connectionController resizeTabViewToConnectionType:[connectionController type] animating:NO];
-	}
+	if([[spf objectForKey:@"data"] isKindOfClass:[NSDictionary class]])
+		data = [NSDictionary dictionaryWithDictionary:[spf objectForKey:@"data"]];
+	else if([[spf objectForKey:@"data"] isKindOfClass:[NSData class]]) {
+		NSData *decryptdata = nil;
+		decryptdata = [[[NSMutableData alloc] initWithData:[(NSData *)[spf objectForKey:@"data"] dataDecryptedWithPassword:encryptpw]] autorelease];
+		if(decryptdata != nil && [decryptdata length]) {
+			NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:decryptdata] autorelease];
+			data = (NSDictionary *)[unarchiver decodeObjectForKey:@"data"];
+			[unarchiver finishDecoding];
+		}
+		if(data == nil) {
+			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											  otherButton:nil 
+								informativeTextWithFormat:NSLocalizedString(@"Wrong data format or password.", @"wrong data format or password")];
 
-	if([spf objectForKey:@"name"])
-		[connectionController setName:[spf objectForKey:@"name"]];
-	if([spf objectForKey:@"user"])
-		[connectionController setUser:[spf objectForKey:@"user"]];
-	if([spf objectForKey:@"host"])
-		[connectionController setHost:[spf objectForKey:@"host"]];
-	if([spf objectForKey:@"port"])
-		[connectionController setPort:[spf objectForKey:@"port"]];
-	if([spf objectForKey:@"sshHost"])
-		[connectionController setSshHost:[spf objectForKey:@"sshHost"]];
-	if([spf objectForKey:@"sshUser"])
-		[connectionController setSshUser:[spf objectForKey:@"sshUser"]];
-	if([spf objectForKey:@"sshPort"])
-		[connectionController setSshPort:[spf objectForKey:@"sshPort"]];
-	if([spf objectForKey:@"selectedDatabase"])
-		[connectionController setDatabase:[spf objectForKey:@"selectedDatabase"]];
-
-	// If password are stored in SPF file auto-connect
-	// otherwise wait for password(s)
-	if([spf objectForKey:@"auth"]) {
-
-		NSString *sauth;
-		if(encryptpw != nil && [spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState)
-			if([[spf objectForKey:@"auth"] length])
-				sauth = [[NSString alloc] initWithData:[[spf objectForKey:@"auth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
-			else
-				sauth = @"";
-		else
-			if([[spf objectForKey:@"auth"] length])
-				sauth = [[NSString alloc] initWithData:[spf objectForKey:@"auth"] encoding:NSUTF8StringEncoding];
-			else
-				sauth = @"";
-
-		[connectionController setPassword:sauth];
-		[sauth release];
-
-		if([connectionController type] == SP_CONNECTION_SSHTUNNEL) {
-
-			if(![spf objectForKey:@"sshAuth"]) {
-				[connectionController setSshPassword:@""];
-				[[connectionController valueForKeyPath:@"sshSSHPasswordField"] selectText:self];
-				return;
-			}
-
-			NSString *sshauth;
-			if(encryptpw != nil && [spf objectForKey:@"encrypted"] && [[spf objectForKey:@"encrypted"] intValue] == NSOnState)
-				if([[spf objectForKey:@"sshAuth"] length])
-					sshauth = [[NSString alloc] initWithData:[[spf objectForKey:@"sshAuth"] dataDecryptedWithPassword:encryptpw] encoding:NSUTF8StringEncoding];
-				else
-					sshauth = @"";
-			else
-				if([[spf objectForKey:@"sshAuth"] length])
-					sshauth = [[NSString alloc] initWithData:[spf objectForKey:@"sshAuth"] encoding:NSUTF8StringEncoding];
-				else
-					sshauth = @"";
-
-			[connectionController setSshPassword:sshauth];
-			[sshauth release];
-			[connectionController initiateConnection:nil];
-
-		} else {
-
-			[connectionController initiateConnection:nil];
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert runModal];
+			return;
 
 		}
-	} else {
+	}
 
+	if(data == nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"Wrong data format.", @"wrong data format")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return;
+
+	}
+
+	encryptpw = nil;
+
+	if(![data objectForKey:@"connection"]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"No connection data found.", @"no connection data found")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return;
+	}
+
+	connection = [NSDictionary dictionaryWithDictionary:[data objectForKey:@"connection"]];
+
+	if([connection objectForKey:@"type"]) {
+
+		if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_TCPIP"])
+			connectionType = SP_CONNECTION_TCPIP;
+		else if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_SOCKET"])
+			connectionType = SP_CONNECTION_SOCKET;
+		else if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_SSHTUNNEL"])
+			connectionType = SP_CONNECTION_SSHTUNNEL;
+		else
+			connectionType = SP_CONNECTION_TCPIP;
+
+		[connectionController setType:connectionType];
+		[connectionController resizeTabViewToConnectionType:connectionType animating:NO];
+	}
+
+	if([connection objectForKey:@"name"])
+		[connectionController setName:[connection objectForKey:@"name"]];
+	if([connection objectForKey:@"user"])
+		[connectionController setUser:[connection objectForKey:@"user"]];
+	if([connection objectForKey:@"host"])
+		[connectionController setHost:[connection objectForKey:@"host"]];
+	if([connection objectForKey:@"port"])
+		[connectionController setPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"port"]]];
+	if([connection objectForKey:@"password"])
+		[connectionController setPassword:[connection objectForKey:@"password"]];
+	if(connectionType == SP_CONNECTION_SOCKET && [connection objectForKey:@"socket"])
+		[connectionController setSocket:[connection objectForKey:@"socket"]];
+		
+	if(connectionType == SP_CONNECTION_SSHTUNNEL) {
+		if([connection objectForKey:@"ssh_host"])
+			[connectionController setSshHost:[connection objectForKey:@"ssh_host"]];
+		if([connection objectForKey:@"ssh_user"])
+			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
+		if([connection objectForKey:@"ssh_port"])
+			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"ssh_port"]]];
+		if([connection objectForKey:@"ssh_password"])
+			[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
+	}
+	
+	if([connection objectForKey:@"database"])
+		[connectionController setDatabase:[connection objectForKey:@"database"]];
+
+	if([data objectForKey:@"session"])
+		spfSession = [[NSDictionary dictionaryWithDictionary:[data objectForKey:@"session"]] retain];
+
+	if(![connection objectForKey:@"password"]) {
 		[connectionController setPassword:@""];
 		[connectionController setSshPassword:@""];
 		[[connectionController valueForKeyPath:@"standardPasswordField"] selectText:self];
-
+		return;
 	}
-	encryptpw = nil;
+
+	if([connection objectForKey:@"auto_connect"] && [[connection valueForKey:@"auto_connect"] boolValue])
+		[connectionController initiateConnection:nil];
 
 }
 
@@ -330,70 +381,51 @@
 	// Check and set the table
 	NSArray *tables = [tablesListInstance tables];
 	
-	// Give SP a bit time to load the table list
-	int cnt = 0;
-	while(cnt < 5) {
-		if(![tables indexOfObject:[spf objectForKey:@"selectedTable"]] == NSNotFound) break;
-		usleep(500);
-		cnt++;
-	}
+	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) return;
 
-	if([tables indexOfObject:[spf objectForKey:@"selectedTable"]] == NSNotFound) return;
-
-	// Select table
-	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spf objectForKey:@"selectedTable"]]]];
-	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spf objectForKey:@"selectedTable"]]];
-
-	// Set table content details for restore
-	if([spf objectForKey:@"contentSortCol"])
-		[tableContentInstance setSortColumnNameToRestore:[spf objectForKey:@"contentSortCol"] isAscending:[[spf objectForKey:@"contentSortCol"] boolValue]];
-	if([spf objectForKey:@"contentLimitStartPosition"])
-		[tableContentInstance setLimitStartToRestore:[[spf objectForKey:@"contentLimitStartPosition"] intValue]];
-	if([spf objectForKey:@"contentViewport"])
-		[tableContentInstance setViewportToRestore:NSRectFromString([spf objectForKey:@"contentViewport"])];
-	if([spf objectForKey:@"contentFilter"])
-		[tableContentInstance setFiltersToRestore:[spf objectForKey:@"contentFilter"]];
-
-	[tablesListInstance setContentRequiresReload:YES];
-
-	// Select view
-	if ([spHistoryControllerInstance currentlySelectedView] != [[spf objectForKey:@"view"] intValue]) {
-		switch ([[spf objectForKey:@"view"] intValue]) {
-			case SP_VIEW_STRUCTURE:
-				[self viewStructure:self];
-				break;
-			case SP_VIEW_CONTENT:
-				[self viewContent:self];
-				break;
-			case SP_VIEW_CUSTOMQUERY:
-				[self viewQuery:self];
-				break;
-			case SP_VIEW_STATUS:
-				[self viewStatus:self];
-				break;
-			case SP_VIEW_RELATIONS:
-				[self viewRelations:self];
-				break;
-		}
-		if ([spHistoryControllerInstance currentlySelectedView] != [[spf objectForKey:@"view"] intValue]) {
-			return;
-		}
-	}
-
-	if([spf objectForKey:@"contentSelectedIndexSet"]) {
+	// TODO up to now it doesn't work
+	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
 		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-		NSArray *items = [spf objectForKey:@"contentSelectedIndexSet"];
+		NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
 		unsigned int i;
 		for(i=0; i<[items count]; i++)
-		{
 			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
-		}
+
 		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
 	}
 
-	// dealloc spf data
-	[spf release];
-	spf = nil;
+	// Set table content details for restore
+	if([spfSession objectForKey:@"contentSortCol"])
+		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
+	if([spfSession objectForKey:@"contentLimitStartPosition"])
+		[tableContentInstance setLimitStartToRestore:[[spfSession objectForKey:@"contentLimitStartPosition"] intValue]];
+	if([spfSession objectForKey:@"contentViewport"])
+		[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
+	if([spfSession objectForKey:@"contentFilter"])
+		[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
+
+
+	// Select table
+	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+	// [tablesListInstance setContentRequiresReload:YES];
+	
+	// Select view
+	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
+		[self viewStructure:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
+		[self viewContent:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
+		[self viewQuery:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
+		[self viewStatus:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
+		[self viewRelations:self];
+
+	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
+
+	// dealloc spfSession data
+	[spfSession release];
+	spfSession = nil;
 }
 
 /*
@@ -481,6 +513,18 @@
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
 											  notificationName:@"Connected"];
 											
+
+	// Init Custom Query editor with the stored queries in a spf file if given.
+	if(spfSession != nil && [spfSession objectForKey:@"queries"]) {
+		if([[spfSession objectForKey:@"queries"] isKindOfClass:[NSData class]]) {
+			NSString *q = [[NSString alloc] initWithData:[[spfSession objectForKey:@"queries"] decompress] encoding:NSUTF8StringEncoding];
+			[self initQueryEditorWithString:q];
+			[q release];
+		}
+		else
+			[self initQueryEditorWithString:[spfSession objectForKey:@"queries"]];
+	}
+
 	// Insert queryEditorInitString into the Query Editor if defined
 	if(queryEditorInitString && [queryEditorInitString length]) {
 		[self viewQuery:self];
@@ -496,7 +540,7 @@
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
-	if(spf != nil)
+	if(spfSession != nil)
 		[self restoreSession];
 		// [self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.3];
 
@@ -1942,115 +1986,167 @@
 
 			[saveConnectionEncryptString abortEditing];
 			[saveConnectionEncryptString selectText:nil];
+			[self saveSPFtoFile:fileName];
 
-			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
-
-			NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
-
-			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
-			[spfdata setObject:@"session" forKey:@"format"];
-
-			[spfdata setObject:[self name] forKey:@"name"];
-			[spfdata setObject:[self host] forKey:@"host"];
-			[spfdata setObject:[self user] forKey:@"user"];
-
-			if([saveConnectionEncrypt isEnabled])
-				[spfdata setObject:[NSNumber numberWithInt:[saveConnectionEncrypt state]] forKey:@"encrypted"];
-
-			[spfdata setObject:[NSNumber numberWithInt:[connectionController type]] forKey:@"connectionType"];
-			if([connectionController type] == 2) {
-				[spfdata setObject:[connectionController sshHost] forKey:@"sshHost"];
-				[spfdata setObject:[connectionController sshUser] forKey:@"sshUser"];
-				[spfdata setObject:[connectionController sshPort] forKey:@"sshPort"];
-			}
-
-			if([saveConnectionSavePassword state] == NSOnState) {
-				NSString *pw = [self keychainPasswordForConnection:nil];
-				if(![pw length]) pw = [connectionController password];
-				if([saveConnectionEncrypt state] == NSOffState) {
-					if([pw length])
-						[spfdata setObject:[pw dataUsingEncoding:NSUTF8StringEncoding] forKey:@"auth"];
-					else
-						[spfdata setObject:[NSData data] forKey:@"auth"];
-					if([[connectionController sshPassword] length])
-						[spfdata setObject:[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] forKey:@"sshAuth"];
-					else
-						[spfdata setObject:[NSData data] forKey:@"sshAuth"];
-				} else {
-					if([pw length])
-						[spfdata setObject:[[pw dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"auth"];
-					else
-						[spfdata setObject:[NSData data] forKey:@"auth"];
-					if([[connectionController sshPassword] length])
-						[spfdata setObject:[[[connectionController sshPassword] dataUsingEncoding:NSUTF8StringEncoding] dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"sshAuth"];
-					else
-						[spfdata setObject:[NSData data] forKey:@"sshAuth"];
-				}
-			}
-
-			if([connectionController port] &&[[connectionController port] length])
-				[spfdata setObject:[connectionController port] forKey:@"port"];
-
-			if([[self database] length])
-				[spfdata setObject:[self database] forKey:@"selectedDatabase"];
-
-			// Include session data like selected table, view etc. ?
-			if([saveConnectionIncludeData state] == NSOnState) {
-				if([[self table] length])
-					[spfdata setObject:[self table] forKey:@"selectedTable"];
-				if([tableContentInstance sortColumnName])
-					[spfdata setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
-
-				[spfdata setObject:[NSNumber numberWithInt:[spHistoryControllerInstance currentlySelectedView]] forKey:@"view"];
-				[spfdata setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-				[spfdata setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
-				[spfdata setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
-				if([tableContentInstance filterSettings])
-					[spfdata setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
-
-				if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
-					[spfdata setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
-
-				if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
-					NSMutableArray *indices = [NSMutableArray array];
-					unsigned indexBuffer[[contentSelectedIndexSet count]];
-					unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-					unsigned idx;
-					for (idx = 0; idx < limit; idx++) {
-						[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
-					}
-					[spfdata setObject:indices forKey:@"contentSelectedIndexSet"];
-				}
-			}
-			
-			NSString *err = nil;
-			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
-													  format:NSPropertyListBinaryFormat_v1_0
-											errorDescription:&err];
-
-			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:err];
-
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-				return;
-			}
-
-			NSError *error = nil;
-			[[plist compress] writeToFile:fileName options:NSAtomicWrite error:&error];
-			if(error != nil){
-				NSAlert *errorAlert = [NSAlert alertWithError:error];
-				[errorAlert runModal];
-				return;
-			}
-			return;
 		}
 	}
 }
+
+- (void)saveSPFtoFile:(NSString *)fileName
+{
+		NSString *aString;
+
+		NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
+		NSMutableDictionary *connection = [NSMutableDictionary dictionary];
+		NSMutableDictionary *session = nil;
+		NSMutableDictionary *data = [NSMutableDictionary dictionary];
+
+		NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
+
+		[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+		[spfdata setObject:@"connection" forKey:@"format"];
+		if([saveConnectionEncrypt isEnabled])
+			[spfdata setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
+
+		if([saveConnectionSavePassword state] == NSOnState)
+			[connection setObject:[NSNumber numberWithBool:([saveConnectionAutoConnect state]==NSOnState) ? YES : NO ] forKey:@"auto_connect"];
+
+		[connection setObject:[self name] forKey:@"name"];
+		[connection setObject:[self host] forKey:@"host"];
+		[connection setObject:[self user] forKey:@"user"];
+
+		switch([connectionController type]) {
+			case SP_CONNECTION_TCPIP:
+			aString = @"SP_CONNECTION_TCPIP";
+			break;
+			case SP_CONNECTION_SOCKET:
+			aString = @"SP_CONNECTION_SOCKET";
+			[connection setObject:[connectionController socket] forKey:@"socket"];
+			break;
+			case SP_CONNECTION_SSHTUNNEL:
+			aString = @"SP_CONNECTION_SSHTUNNEL";
+			[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
+			[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
+			if([connectionController port] && [[connectionController port] length])
+				[connection setObject:[NSNumber numberWithInt:[[connectionController sshPort] intValue]] forKey:@"ssh_port"];
+			break;
+			default:
+			aString = @"SP_CONNECTION_TCPIP";
+		}
+		[connection setObject:aString forKey:@"type"];
+		
+
+		if([saveConnectionSavePassword state] == NSOnState) {
+			NSString *pw = [self keychainPasswordForConnection:nil];
+			if(![pw length]) pw = [connectionController password];
+			[connection setObject:pw forKey:@"password"];
+			if([connectionController type] == SP_CONNECTION_SSHTUNNEL)
+				[connection setObject:[connectionController sshPassword] forKey:@"ssh_password"];
+		}
+
+		if([connectionController port] && [[connectionController port] length])
+			[connection setObject:[NSNumber numberWithInt:[[connectionController port] intValue]] forKey:@"port"];
+
+		if([[self database] length])
+			[connection setObject:[self database] forKey:@"database"];
+
+		// Include session data like selected table, view etc. ?
+		if([saveConnectionIncludeData state] == NSOnState) {
+			
+			session = [NSMutableDictionary dictionary];
+			
+			if([[self table] length])
+				[session setObject:[self table] forKey:@"table"];
+			if([tableContentInstance sortColumnName])
+				[session setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
+
+			switch([spHistoryControllerInstance currentlySelectedView]){
+				case SP_VIEW_STRUCTURE:
+				aString = @"SP_VIEW_STRUCTURE";
+				break;
+				case SP_VIEW_CONTENT:
+				aString = @"SP_VIEW_CONTENT";
+				break;
+				case SP_VIEW_CUSTOMQUERY:
+				aString = @"SP_VIEW_CUSTOMQUERY";
+				break;
+				case SP_VIEW_STATUS:
+				aString = @"SP_VIEW_STATUS";
+				break;
+				case SP_VIEW_RELATIONS:
+				aString = @"SP_VIEW_RELATIONS";
+				break;
+				default:
+				aString = @"SP_VIEW_STRUCTURE";
+			}
+			[session setObject:aString forKey:@"view"];
+			
+			[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
+			[session setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
+			[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
+			if([tableContentInstance filterSettings])
+				[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
+
+			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
+				if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length] > 50000)
+					[session setObject:[[[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]  dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
+				else
+					[session setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
+			if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
+				NSMutableArray *indices = [NSMutableArray array];
+				unsigned indexBuffer[[contentSelectedIndexSet count]];
+				unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
+				unsigned idx;
+				for (idx = 0; idx < limit; idx++) {
+					[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
+				}
+				[session setObject:indices forKey:@"contentSelectedIndexSet"];
+			}
+		}
+		
+
+		[data setObject:connection forKey:@"connection"];
+		if(session != nil)
+			[data setObject:session forKey:@"session"];
+			
+		if([saveConnectionEncrypt state] == NSOffState) {
+			[spfdata setObject:data forKey:@"data"];
+		} else {
+			NSMutableData *encryptdata = [[[NSMutableData alloc] init] autorelease];
+			NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:encryptdata] autorelease];
+			[archiver encodeObject:data forKey:@"data"];
+			[archiver finishEncoding];
+			[spfdata setObject:[encryptdata dataEncryptedWithPassword:[saveConnectionEncryptString stringValue]] forKey:@"data"];
+		}
+
+		// NSLog(@"%@", spfdata);
+
+		NSString *err = nil;
+		NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
+												  format:NSPropertyListXMLFormat_v1_0
+										errorDescription:&err];
+
+		if(err != nil) {
+			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											  otherButton:nil 
+								informativeTextWithFormat:err];
+
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert runModal];
+			return;
+		}
+
+		NSError *error = nil;
+		[plist writeToFile:fileName options:NSAtomicWrite error:&error];
+		if(error != nil){
+			NSAlert *errorAlert = [NSAlert alertWithError:error];
+			[errorAlert runModal];
+		}
+
+}
+
 /**
  * Passes the request to the tableDump object
  */
@@ -2850,7 +2946,7 @@
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	if(queryEditorInitString) [queryEditorInitString release];
-	if(spf) [spf release];
+	if(spfSession) [spfSession release];
 	if(userManagerInstance) [userManagerInstance release];
 	[super dealloc];
 }

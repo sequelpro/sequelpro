@@ -96,6 +96,7 @@
 	IBOutlet id saveConnectionIncludeData;
 	IBOutlet id saveConnectionSavePassword;
 	IBOutlet id saveConnectionEncrypt;
+	IBOutlet id saveConnectionAutoConnect;
 	IBOutlet NSSecureTextField *saveConnectionEncryptString;
 	
 	IBOutlet id inputTextWindow;
@@ -131,7 +132,7 @@
 	
 	NSString *queryEditorInitString;
 	
-	NSDictionary *spf;
+	NSDictionary *spfSession;
 }
 
 - (NSString *)getHTMLforPrint;
@@ -186,9 +187,10 @@
 - (void)showVariables:(id)sender;
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
-- (void) refreshCurrentDatabase;
+- (void)refreshCurrentDatabase;
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)saveConnectionAccessoryPasswordButton:(id)sender;
+- (void)saveSPFtoFile:(NSString *)fileName;
 - (IBAction)closePasswordSheet:(id)sender;
 
 // Getter methods
