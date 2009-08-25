@@ -407,7 +407,10 @@
 	[treeController addChild:sender];
 	// Need to figure out how to do this right.  I want to be able to have the newly
 	// added item be in edit mode to change the host name.
-//	[outlineView editColumn:0 row:[outlineView selectedRow]	withEvent:nil select:TRUE];		
+	NSLog(@"selectedRow: %d", [outlineView selectedRow]);
+	NSIndexPath *indexPath = [treeController selectionIndexPath];
+	NSLog(@"selectedChild: %d", [indexPath indexAtPosition:[outlineView selectedRow]]);
+	[outlineView editColumn:0 row:[outlineView selectedRow]	withEvent:nil select:TRUE];		
 }
 
 - (IBAction)removeHost:(id)sender
@@ -425,11 +428,14 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if ([menuItem action] == @selector(addHost:) ||
-		[menuItem action] == @selector(removeHost:))
+	if ([menuItem action] == @selector(removeHost:))
 	{
 		return (([[treeController selectedObjects] count] > 0) && 
 				[[[treeController selectedObjects] objectAtIndex:0] parent] != nil);
+	} 
+	else if ([menuItem action] == @selector(addHost:))
+	{
+		return ([[treeController selectedObjects] count] > 0);
 	}
 	return TRUE;
 }

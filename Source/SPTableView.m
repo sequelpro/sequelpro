@@ -54,4 +54,20 @@
 	return [self menu];
 }
 
+-(BOOL)acceptsFirstResponder
+{
+	return YES;
+}
+
+- (void)keyDown:(NSEvent *)theEvent
+{
+	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
+	{
+		[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
+	}
+	else {
+		[super keyDown:theEvent];
+	}
+}
+
 @end
