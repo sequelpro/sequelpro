@@ -85,6 +85,8 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		queryEditorInitString = nil;
 		[saveConnectionEncryptString setStringValue:@""];
+		saveConnectionAccessory = nil;
+		saveConnectionAutoConnect = nil;
 
 		spfSession = nil;
 
@@ -164,6 +166,10 @@
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
+	if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self])  {
+		NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
+		return;
+	}
 }
 
 - (void)initWithConnectionFile:(NSString *)path
@@ -180,40 +186,8 @@
 
 	int connectionType;
 
-	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
-
-	spf = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		return;
-	}
-
-	// For dispatching later
-	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
-		NSLog(@"SPF file format is not 'connection'.");
-		return;
-	}
-
-	if(![spf objectForKey:@"data"]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"No data found.", @"no data found")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		return;
-	}
+	// Inform about the data source in the window title bar
+	[tableWindow setTitle:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ – Connecting…",@"‘%@’ – Connecting…"), [path lastPathComponent]]];
 
 	// Clean fields
 	[connectionController setName:@""];
@@ -228,6 +202,47 @@
 	[connectionController setPassword:@""];
 	[connectionController setSshPassword:@""];
 
+	// Deselect all favorites
+	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
+
+	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
+
+	spf = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		[self close];
+		return;
+	}
+
+	// For dispatching later
+	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+		NSLog(@"SPF file format is not 'connection'.");
+		[self close];
+		return;
+	}
+
+	if(![spf objectForKey:@"data"]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"No data found.", @"no data found")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		[self close];
+		return;
+	}
+
 	// Ask for a password if SPF file passwords were encrypted as sheet
 	if([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
 
@@ -241,6 +256,10 @@
 		// wait for encryption password
 		NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
 		for (;;) {
+
+			// Execute code on DefaultRunLoop
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+									 beforeDate:[NSDate distantFuture]];
 
 			// Break the run loop if editSheet was closed
 			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
@@ -258,8 +277,10 @@
 		
 		if(passwordSheetReturnCode)
 			encryptpw = [inputTextWindowSecureTextField stringValue];
-		else
+		else {
+			[self close];
 			return;
+		}
 
 	}
 
@@ -282,8 +303,8 @@
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
+			[self close];
 			return;
-
 		}
 	}
 
@@ -296,8 +317,8 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
+		[self close];
 		return;
-
 	}
 
 	encryptpw = nil;
@@ -311,13 +332,13 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
+		[self close];
 		return;
 	}
 
 	connection = [NSDictionary dictionaryWithDictionary:[data objectForKey:@"connection"]];
 
 	if([connection objectForKey:@"type"]) {
-
 		if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_TCPIP"])
 			connectionType = SP_CONNECTION_TCPIP;
 		else if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_SOCKET"])
@@ -362,14 +383,13 @@
 		spfSession = [[NSDictionary dictionaryWithDictionary:[data objectForKey:@"session"]] retain];
 
 	if(![connection objectForKey:@"password"]) {
-		[connectionController setPassword:@""];
-		[connectionController setSshPassword:@""];
-		[[connectionController valueForKeyPath:@"standardPasswordField"] selectText:self];
+		// TODO How to set the focus to standardPasswordField in the connection nib?
+		// [[connectionController valueForKeyPath:@"standardPasswordField"] selectText:connectionController];
 		return;
 	}
 
 	if([connection objectForKey:@"auto_connect"] && [[connection valueForKey:@"auto_connect"] boolValue])
-		[connectionController initiateConnection:nil];
+		[connectionController initiateConnection:self];
 
 }
 
@@ -1898,20 +1918,16 @@
 	} else if([sender tag] == 1){
 
 		// Save current session (open connection windows as SPF file)
-		// [panel setMessage:NSLocalizedString(@"Save Sequel Pro session", @"Save Sequel Pro session")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
-		// [saveConnectionEncryptString setDelegate:self];
 
-		// Load the accessory view everytime
-		if (![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self])  {
-			NSLog(@"Failed to load SaveSPFAccessory.nib");
-			return;
-		}
 		[saveConnectionEncryptString setStringValue:@""];
 		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
 
+		// Update accessory button states
 		[self saveConnectionAccessoryPasswordButton:nil];
 
+		// TODO note: it seems that one has problems with a NSSecureTextField
+		// inside an accessory view - ask HansJB
 		[panel setAccessoryView:saveConnectionAccessory];
 		filename = [NSString stringWithFormat:@"%@", [self name]];
 		contextInfo = @"saveSPFfile";
@@ -1937,12 +1953,24 @@
 	[saveConnectionSavePasswordAlert setHidden:([saveConnectionSavePassword state] == NSOffState)];
 	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOnState)
 		[saveConnectionEncryptString selectText:sender];
+
+	// Unfocus saveConnectionEncryptString
 	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOffState) {
+		// [saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
+		// TODO how can one make it better ?
+		[saveConnectionEncryptString setHidden:YES];
+		[saveConnectionEncryptString setHidden:NO];
+	}
+	
+	// Enforce to clear the password string after invoking NSSavePanel
+	// TODO Why I cannot set it in saveConnectionSheet ?
+	if(sender == NULL) {
+		[saveConnectionEncryptString selectText:sender];
 		[saveConnectionEncryptString setHidden:YES];
 		[saveConnectionEncryptString setHidden:NO];
 	}
 		
-	
+
 }
 
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
@@ -1975,9 +2003,11 @@
 		
 		// Save connection and session as SPF file
 		else if(contextInfo == @"saveSPFfile") {
-
+			// Abort editing of saveConnectionEncryptString
+			// TODO How can one make it better?
 			[saveConnectionEncryptString abortEditing];
-			[saveConnectionEncryptString selectText:nil];
+			[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
+			
 			[self saveSPFtoFile:fileName];
 
 		}
