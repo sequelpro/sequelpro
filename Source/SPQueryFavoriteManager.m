@@ -201,48 +201,6 @@
 }
 
 #pragma mark -
-#pragma mark Favorite methods
-
-/**
- * Returns the query favorite at the supplied index.
- */
-- (NSString *)queryFavoriteAtIndex:(NSInteger)index
-{
-	return [[[queryFavoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"query"];
-}
-
-/**
- * Adds the supplied query the user's favorites. 
- */
-- (SPQueryFavoriteAddition)addQueryToFavorites:(NSString *)query
-{
-	if ([query isEqualToString:@""]) return SPQueryFavoriteIsBlank;
-	
-	// Check that the favorite doesn't already exist
-	for (NSDictionary *favorite in [queryFavoritesController arrangedObjects])
-	{
-		if ([[favorite objectForKey:@"query"] isEqualToString:query]) {
-			return SPQueryFavoriteExists;
-		}
-	}
-	
-	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"test", query, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
-	
-	[queryFavoritesController addObject:favorite];
-	[queryFavoritesController setSelectionIndex:([[queryFavoritesController arrangedObjects] count] - 1)];
-	
-	[favoritesTableView reloadData];
-	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
-		
-	// Inform the delegate that the query favorites have been updated
-	if (delegateRespondsToFavoriteUpdates) {
-		[delegate queryFavoritesHaveBeenUpdated:self];
-	}
-	
-	return SPQueryFavoriteAdded;
-}
-
-#pragma mark -
 #pragma mark SplitView delegate methods
 
 /**
@@ -279,21 +237,6 @@
 {
 	return [[[queryFavoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
-
-#pragma mark -
-#pragma mark TableView delegate methods
-
-/**
- * Called whenever the user's changes the currently selected favorite.
- */
-/*- (void)tableViewSelectionDidChange:(NSNotification *)notification
-{
-	[favoriteQueryTextView setString:@""];
-	
-	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		[favoriteQueryTextView setString:[[[queryFavoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]] objectForKey:@"query"]];
-	}
-}*/
 
 #pragma mark -
 #pragma mark Menu validation

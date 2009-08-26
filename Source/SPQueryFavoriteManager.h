@@ -25,13 +25,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-// Query favorite addition constants
-typedef enum {
-	SPQueryFavoriteAdded = 0,
-	SPQueryFavoriteIsBlank = 1,
-	SPQueryFavoriteExists = 2
-} SPQueryFavoriteAddition;
-
 @interface NSObject (SPQueryFavoriteManagerDelegate)
 
 - (void)queryFavoritesHaveBeenUpdated:(id)manager;
@@ -66,9 +59,5 @@ typedef enum {
 - (IBAction)copyQueryFavorite:(id)sender;
 - (IBAction)saveFavoriteToFile:(id)sender;
 - (IBAction)closeQueryManagerSheet:(id)sender;
-
-// Favorite methods
-- (NSString *)queryFavoriteAtIndex:(NSInteger)index;
-- (SPQueryFavoriteAddition)addQueryToFavorites:(NSString *)query;
 
 @end
