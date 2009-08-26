@@ -33,8 +33,10 @@
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
 
+@class SPQueryFavoriteManager;
+
 @interface CustomQuery : NSObject 
-{
+{	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
 	IBOutlet id queryFavoritesButton;
@@ -45,10 +47,6 @@
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
 	IBOutlet id valueTextField;
-	IBOutlet id queryFavoritesSheet;
-	IBOutlet id queryFavoritesView;
-	IBOutlet id removeQueryFavoriteButton;
-	IBOutlet id copyQueryFavoriteButton;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
 	IBOutlet id multipleLineEditingButton;
@@ -66,17 +64,20 @@
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
 
+	IBOutlet NSWindow *queryFavoritesSheet;
+	IBOutlet NSButton *saveQueryFavoriteButton;
+	IBOutlet NSTextField *queryFavoriteNameTextField;
+	
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
-
+	
+	SPQueryFavoriteManager *favoritesManager;
 
 	NSUserDefaults *prefs;
-	NSMutableArray *queryFavorites;
-	
 	MCPConnection *mySQLConnection;
 	
 	NSString *usedQuery;
@@ -103,7 +104,6 @@
 	NSString *fieldIDQueryString;
 	
 	unsigned int numberOfQueries;
-
 }
 
 // IBAction methods
@@ -122,12 +122,6 @@
 - (IBAction)helpSelectHelpTargetMySQL:(id)sender;
 - (IBAction)helpSelectHelpTargetPage:(id)sender;
 - (IBAction)helpSelectHelpTargetWeb:(id)sender;
-
-// queryFavoritesSheet methods
-- (IBAction)addQueryFavorite:(id)sender;
-- (IBAction)removeQueryFavorite:(id)sender;
-- (IBAction)copyQueryFavorite:(id)sender;
-- (IBAction)closeQueryFavoritesSheet:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries;
@@ -149,7 +143,6 @@
 
 // Other
 - (void)setConnection:(MCPConnection *)theConnection;
-- (void)setFavorites;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;
 - (void)selectCurrentQuery;

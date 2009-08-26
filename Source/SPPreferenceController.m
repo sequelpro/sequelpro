@@ -111,6 +111,7 @@
 // -------------------------------------------------------------------------------
 - (void)applyRevisionChanges
 {
+	int i;
 	int currentVersionNumber, recordedVersionNumber = 0;
 
 	// Get the current bundle version number (the SVN build number) for per-version upgrades
@@ -202,7 +203,6 @@
 
 	// For versions prior to r567 (0.9.5), add a timestamp-based identifier to favorites and keychain entries
 	if (recordedVersionNumber < 567 && [prefs objectForKey:@"favorites"]) {
-		int i;
 		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
 		NSMutableDictionary *favorite;
 		NSString *password, *keychainName, *keychainAccount;
@@ -231,7 +231,6 @@
 
 	// For versions prior to r981 (~0.9.6), upgrade the favourites to include a connection type for each
 	if (recordedVersionNumber < 981 && [prefs objectForKey:@"favorites"]) {
-		int i;
 		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
 		NSMutableDictionary *favorite;
 
@@ -268,6 +267,25 @@
 		NSMutableDictionary *toolbarDict = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"NSToolbar Configuration TableWindowToolbar"]];
 		[toolbarDict removeObjectForKey:@"TB Item Identifiers"];
 		[prefs setObject:[NSDictionary dictionaryWithDictionary:toolbarDict] forKey:@"NSToolbar Configuration TableWindowToolbar"];
+	}
+	
+	// For versions prior to r1263 (~0.9.7), convert the query favorites array to an array of dictionaries
+	if (recordedVersionNumber < 1263 && [prefs objectForKey:@"queryFavorites"]) {
+		NSMutableArray *queryFavoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"queryFavorites"]];
+		
+		for (i = 0; i < [queryFavoritesArray count]; i++)
+		{
+			id favorite = [queryFavoritesArray objectAtIndex:i];
+			
+			if (([favorite isKindOfClass:[NSDictionary class]]) && ([favorite objectForKey:@"name"]) && ([favorite objectForKey:@"query"])) continue;
+			
+			// By default make the query's name the first 32 characters of the query with '...' appended
+			NSString *favoriteName = [[[favorite stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] substringToIndex:32] stringByAppendingString:@"..."];
+						
+			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, favorite, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+		}
+		
+		[prefs setObject:queryFavoritesArray forKey:@"queryFavorites"];
 	}
 
 	// Update the prefs revision
