@@ -407,4 +407,9 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
 
+- (BOOL)acceptsFirstResponder
+{
+	return NO;
+}
+
 @end
