@@ -46,7 +46,7 @@
 	if ([theClass isSubclassOfClass:[MCPObject class]]) {
 		
 		NSString *theClassName = NSStringFromClass(theClass);
-		unsigned int index = [self indexOfClassDescription:theClassName];
+		NSUInteger index = [self indexOfClassDescription:theClassName];
 		
 		if (NSNotFound != index) {
 			[NSClassDescription registerClassDescription:(NSClassDescription *)[self objectInClassDescriptionsAtIndex:index] forClass:theClass];

@@ -66,7 +66,7 @@
 - (MCPRelation *) relation;
 - (MCPAttribute *) origin;
 - (MCPAttribute *) destination;
-- (unsigned int) index;
+- (NSUInteger) index;
 
 #pragma mark Some general methods:
 - (BOOL) isEqual:(id) iObject;

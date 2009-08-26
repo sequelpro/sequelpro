@@ -96,7 +96,7 @@
 }
 
 #pragma mark Making new class description
-- (MCPClassDescription *) addNewClassDescriptionWithName:(NSString *) iName inPosition:(int) index;
+- (MCPClassDescription *) addNewClassDescriptionWithName:(NSString *) iName inPosition:(NSInteger) index;
 {
 	MCPClassDescription		*theClassDescription = [[MCPClassDescription alloc] initInModel:self withName:iName];
 	
@@ -125,13 +125,13 @@
 	}
 }
 
-- (void) insertObject:(MCPClassDescription *) iClassDescription inClassDescriptionsAtIndex:(unsigned int) index
+- (void) insertObject:(MCPClassDescription *) iClassDescription inClassDescriptionsAtIndex:(NSUInteger) index
 {
 	[classDescriptions insertObject:iClassDescription atIndex:index];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:self];	
 }
 
-- (void) removeObjectFromClassDescriptionsAtIndex:(unsigned int) index
+- (void) removeObjectFromClassDescriptionsAtIndex:(NSUInteger) index
 {
 	[classDescriptions removeObjectAtIndex:index];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:self];
@@ -171,12 +171,12 @@
 	return [NSArray arrayWithArray:classDescriptions];
 }
 
-- (unsigned int) countOfClassDescriptions
+- (NSUInteger) countOfClassDescriptions
 {
 	return [classDescriptions count];
 }
 
-- (MCPClassDescription *) objectInClassDescriptionsAtIndex:(unsigned int) index
+- (MCPClassDescription *) objectInClassDescriptionsAtIndex:(NSUInteger) index
 {
 	return (MCPClassDescription *)((NSNotFound != index) ? [classDescriptions objectAtIndex:index] : nil);
 }
@@ -190,11 +190,11 @@
 	}
 	return (i == [classDescriptions count]) ? nil : (MCPClassDescription *)[classDescriptions objectAtIndex:i];
 	*/
-	unsigned int   theIndex = [classDescriptions indexOfObject:iClassDescriptionClassName];
+	NSUInteger   theIndex = [classDescriptions indexOfObject:iClassDescriptionClassName];
 	return (NSNotFound == theIndex) ? nil : [classDescriptions objectAtIndex:theIndex];
 }
 
-- (unsigned int) indexOfClassDescription:(id) iClassDescription
+- (NSUInteger) indexOfClassDescription:(id) iClassDescription
 {
 	return [classDescriptions indexOfObject:iClassDescription];
 }

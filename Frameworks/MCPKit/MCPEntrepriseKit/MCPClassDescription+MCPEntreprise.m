@@ -38,7 +38,7 @@
 {
 	NSArray				*theRet;
    NSMutableArray		*theKeys =[[NSMutableArray alloc] init];
-   unsigned int		i;
+   NSUInteger		i;
 
 	for (i=0; i != [self countOfAttributes]; ++i) {
 		[theKeys insertObject:[(MCPAttribute *)[self objectInAttributesAtIndex:i] name] atIndex:i];
@@ -50,7 +50,7 @@
 
 - (NSString *) inverseRelationshipKey:(NSString *) relationshipKey
 {
-	unsigned int		index = [self indexOfRelation:relationshipKey];
+	NSUInteger		index = [self indexOfRelation:relationshipKey];
 
 	if (NSNotFound != index) {
 		MCPRelation			*theRelation;
@@ -65,7 +65,7 @@
 {
 	NSArray				*theRet;
 	NSMutableArray		*theToManyRel = [[NSMutableArray alloc] init];
-	unsigned int		i, j;
+	NSUInteger		i, j;
 
 	j=0;
 	for (i=0; i != [self countOfRelations]; ++i) {
@@ -85,7 +85,7 @@
 {
 	NSArray				*theRet;
 	NSMutableArray		*theToOneRel = [[NSMutableArray alloc] init];
-	unsigned int		i, j;
+	NSUInteger		i, j;
 	
 	j=0;
 	for (i=0; i != [self countOfRelations]; ++i) {
@@ -105,7 +105,7 @@
 - (NSArray *) primaryKeyAttributes
 {
 	NSMutableArray		*theRet = [NSMutableArray array];
-	unsigned int		i, j;
+	NSUInteger		i, j;
 
 	j = 0;
 	for (i=0; i != [self countOfAttributes]; ++i) {
@@ -122,7 +122,7 @@
 - (NSArray *) identityAttributes
 {
 	NSMutableArray		*theRet = [NSMutableArray array];
-	unsigned int		i, j;
+	NSUInteger		i, j;
 	
 	j = 0;
 	for (i=0; i != [self countOfAttributes]; ++i) {
@@ -144,7 +144,7 @@
 
 	return (NSNotFound != index) ? (MCPAttribute *)[self objectInAttributesAtIndex:index] : nil ;
 */
-	unsigned int		i;
+	NSUInteger		i;
 	
 	for (i = 0; [attributes count] != i; ++i) {
 		if ([[(MCPAttribute *)[attributes objectAtIndex:i] name] isEqualToString:iName]) {
@@ -161,7 +161,7 @@
 	
 	return (NSNotFound != index) ? (MCPRelation *)[relations objectAtIndex:index] : nil;
 */
-	unsigned int		i;
+	NSUInteger		i;
 
 	for (i = 0; [relations count] != i; ++i) {
 		if ([[(MCPRelation *)[relations objectAtIndex:i] name] isEqualToString:iRelationName]) {

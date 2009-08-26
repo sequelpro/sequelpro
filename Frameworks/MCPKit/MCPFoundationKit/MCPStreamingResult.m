@@ -142,7 +142,7 @@
 	MYSQL_ROW theRow;
 	char *theRowData;
 	unsigned long *fieldLengths;
-	int i, copiedDataLength;
+	NSInteger i, copiedDataLength;
 	NSMutableArray *returnArray;
 
 	// Retrieve the next row according to the mode this result set is in.
@@ -257,7 +257,7 @@
 				break;
 
 				default:
-				NSLog(@"in fetchNextRowAsArray : Unknown type : %d for column %d, sending back a NSData object", (int)fieldDefinitions[i].type, (int)i);
+				NSLog(@"in fetchNextRowAsArray : Unknown type : %ld for column %ld, sending back a NSData object", (NSInteger)fieldDefinitions[i].type, (NSInteger)i);
 				cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 				break;
 			}
@@ -355,7 +355,7 @@
 	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
 	MYSQL_ROW theRow;
 	unsigned long *fieldLengths;
-	int i, dataCopiedLength, rowDataLength;
+	NSInteger i, dataCopiedLength, rowDataLength;
 	LOCAL_ROW_DATA *newRowStore;
 
 	size_t sizeOfLocalRowData = sizeof(LOCAL_ROW_DATA);

@@ -50,11 +50,11 @@ static NSArray *MCPexistingDeleteRules;
 
 		[self setVersion:010101]; // Ma.Mi.Re -> MaMiRe
 
-		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInt:OnDeleteNullify], @"tag", @"Nullify", @"name", nil]];
-		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInt:OnDeleteDeny], @"tag", @"Deny", @"name", nil]];
-		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInt:OnDeleteCascade], @"tag", @"Cascade", @"name", nil]];
-		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInt:OnDeleteDefault], @"tag", @"Default", @"name", nil]];
-		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInt:OnDeleteNoAction], @"tag", @"No Action", @"name", nil]];
+		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:OnDeleteNullify], @"tag", @"Nullify", @"name", nil]];
+		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:OnDeleteDeny], @"tag", @"Deny", @"name", nil]];
+		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:OnDeleteCascade], @"tag", @"Cascade", @"name", nil]];
+		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:OnDeleteDefault], @"tag", @"Default", @"name", nil]];
+		[theExistingDeleteRules addObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:OnDeleteNoAction], @"tag", @"No Action", @"name", nil]];
 		MCPexistingDeleteRules = [[NSArray alloc] initWithArray:theExistingDeleteRules];
 		[theExistingDeleteRules release];
 	}
@@ -188,7 +188,7 @@ static NSArray *MCPexistingDeleteRules;
 - (void) removeJoinFrom:(MCPAttribute *) iFrom to:(MCPAttribute *) iTo
 {
 	NSDictionary		*theJoinDict = [[NSDictionary alloc] initWithObjectsAndKeys:self, @"relation", iFrom, @"origin", iTo, @"destination", nil];
-	unsigned int      i = [joins indexOfObject:theJoinDict];
+	NSUInteger      i = [joins indexOfObject:theJoinDict];
 	
 	if (NSNotFound != i) {
 		[[self objectInJoinsAtIndex:i] invalidate];
@@ -263,12 +263,12 @@ static NSArray *MCPexistingDeleteRules;
 	}
 }
 
-- (void) insertObject:(MCPJoin *) iJoin inJoinsAtIndex:(unsigned int) index
+- (void) insertObject:(MCPJoin *) iJoin inJoinsAtIndex:(NSUInteger) index
 {
 	[joins insertObject:iJoin atIndex:index];
 }
 
-- (void) removeObjectFromJoinsAtIndex:(unsigned int) index
+- (void) removeObjectFromJoinsAtIndex:(NSUInteger) index
 {
 	[joins removeObjectAtIndex:index];
 }
@@ -334,17 +334,17 @@ static NSArray *MCPexistingDeleteRules;
 	return [NSArray arrayWithArray:joins];
 }
 
-- (unsigned int) countOfJoins
+- (NSUInteger) countOfJoins
 {
 	return [joins count];
 }
 
-- (MCPJoin *) objectInJoinsAtIndex:(unsigned int) index
+- (MCPJoin *) objectInJoinsAtIndex:(NSUInteger) index
 {
 	return (MCPJoin *)((NSNotFound != index) ? [joins objectAtIndex:index] : nil);
 }
 
-- (unsigned int) indexOfJoinIdenticalTo:(id) iJoin
+- (NSUInteger) indexOfJoinIdenticalTo:(id) iJoin
 {
 	return [joins indexOfObjectIdenticalTo:iJoin];
 }
@@ -368,7 +368,7 @@ static NSArray *MCPexistingDeleteRules;
 
 - (MCPAttribute *) destinationAttributeForOrigin:(MCPAttribute *) iFrom
 {
-	unsigned int      i;
+	NSUInteger      i;
 	
 	for (i=0; ([joins count] != i) && ([[(MCPJoin *)[joins objectAtIndex:i] origin] isEqual:iFrom]); ++i) {
 	}
@@ -377,7 +377,7 @@ static NSArray *MCPexistingDeleteRules;
 
 - (MCPAttribute *) originAttributeForDestination:(MCPAttribute *) iTo
 {
-	unsigned int      i;
+	NSUInteger      i;
 	
 	for (i=0; ([joins count] != i) && ([[(MCPJoin *)[joins objectAtIndex:i] destination] isEqual:iTo]); ++i) {
 	}
@@ -404,7 +404,7 @@ static NSArray *MCPexistingDeleteRules;
 - (NSString *) descriptionWithLocale:(NSDictionary *) locale
 {
 	NSMutableString		*theRet = [NSMutableString stringWithFormat:@"MCPRelation named %@, going from %@ to %@. Joins :\n", name, [origin name], [destination name]];
-	unsigned int			i;
+	NSUInteger			i;
 
 	for (i = 0; [joins count] != i; ++i) {
 		MCPJoin			*tmpJoin = (MCPJoin *)[joins objectAtIndex:i];

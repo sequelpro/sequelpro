@@ -27,38 +27,40 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 // Result type constants
-typedef enum {
+enum {
     MCPTypeArray = 1,
     MCPTypeDictionary = 2,
     MCPTypeFlippedArray = 3,
     MCPTypeFlippedDictionary = 4
-} MCPReturnType;
+};
+typedef NSUInteger MCPReturnType;
 
 // Connection check constants
-typedef enum {
+enum {
 	MCPConnectionCheckRetry = 0,
 	MCPConnectionCheckReconnect = 1,
 	MCPConnectionCheckDisconnect = 2
-} MCPConnectionCheck;
+};
+typedef NSUInteger MCPConnectionCheck;
 
 // Charcater set mapping constants
 typedef struct _OUR_CHARSET
 {
-	unsigned int nr;
+	NSUInteger nr;
 	const char	 *name;
 	const char	 *collation;
-	unsigned int char_minlen;
-	unsigned int char_maxlen;
+	NSUInteger char_minlen;
+	NSUInteger char_maxlen;
 } OUR_CHARSET;
 
 // Deafult connection option
-extern const unsigned int kMCPConnectionDefaultOption;
+extern const NSUInteger kMCPConnectionDefaultOption;
 
 // Default socket (from the mysql.h used at compile time)
 extern const char *kMCPConnectionDefaultSocket;
 
 // Added to MySQL error code
-extern const unsigned int kMCPConnectionNotInited;
+extern const NSUInteger kMCPConnectionNotInited;
 
 // The length of the truncation if required
-extern const unsigned int kLengthOfTruncationForLog;
+extern const NSUInteger kLengthOfTruncationForLog;

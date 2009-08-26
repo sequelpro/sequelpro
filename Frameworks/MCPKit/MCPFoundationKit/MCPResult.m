@@ -345,7 +345,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Return the number of fields selected by the query. As a side effect it forces an update of the number of fields.
  */
-- (unsigned int)numOfFields
+- (NSUInteger)numOfFields
 {
 	if (mResult) {
 		return mNumOfFields = mysql_num_fields(mResult);
@@ -375,7 +375,7 @@ const OUR_CHARSET our_charsets60[] =
 	MYSQL_ROW		theRow;
 	unsigned long	*theLengths;
 	MYSQL_FIELD		*theField;
-	int				i;
+	NSInteger				i;
 	id				theReturn;
 	
 	if (mResult == NULL) {
@@ -461,7 +461,7 @@ const OUR_CHARSET our_charsets60[] =
 					break;
 					
 				default:
-					NSLog (@"in fetchRowAsType : Unknown type : %d for column %d, send back a NSData object", (int)theField[i].type, (int)i);
+					NSLog (@"in fetchRowAsType : Unknown type : %ld for column %ld, send back a NSData object", (NSInteger)theField[i].type, (NSInteger)i);
 					theCurrentObj = [NSData dataWithBytes:theData length:theLengths[i]];
 					break;
 			}
@@ -529,8 +529,8 @@ const OUR_CHARSET our_charsets60[] =
  */
 - (NSArray *)fetchFieldNames
 {
-	int	i;
-	unsigned int theNumFields;
+	NSInteger	i;
+	NSUInteger theNumFields;
 	NSMutableArray *theNamesArray;
 	MYSQL_FIELD	*theField;
 	
@@ -553,7 +553,7 @@ const OUR_CHARSET our_charsets60[] =
 			[theNamesArray addObject:theName];
 		}
 		else {
-			[theNamesArray addObject:[NSString stringWithFormat:@"Column %d", i]];
+			[theNamesArray addObject:[NSString stringWithFormat:@"Column %ld", i]];
 		}
 	}
 	
@@ -568,7 +568,7 @@ const OUR_CHARSET our_charsets60[] =
  */
 - (id)fetchTypesAsType:(MCPReturnType)aType
 {
-	int i;
+	NSInteger i;
 	id theTypes;
 	MYSQL_FIELD	*theField;
 	
@@ -670,7 +670,7 @@ const OUR_CHARSET our_charsets60[] =
 				break;
 			default:
 				theType = @"unknown";
-				NSLog (@"in fetchTypesAsArray : Unknown type for column %d of the MCPResult, type = %d", (int)i, (int)theField[i].type);
+				NSLog (@"in fetchTypesAsArray : Unknown type for column %ld of the MCPResult, type = %ld", (NSInteger)i, (NSInteger)theField[i].type);
 				break;
 		}
 		
@@ -723,8 +723,8 @@ const OUR_CHARSET our_charsets60[] =
 	
 	NSMutableArray *structureResult = [NSMutableArray array];
 	
-	unsigned int i;
-	unsigned int numFields = mysql_num_fields(mResult);
+	NSUInteger i;
+	NSUInteger numFields = mysql_num_fields(mResult);
 	
 	if (mResult == NULL) return nil;
 	
@@ -735,7 +735,7 @@ const OUR_CHARSET our_charsets60[] =
 		NSMutableDictionary *fieldStructure = [NSMutableDictionary dictionaryWithCapacity:39];
 		
 		/* Original column position */
-		[fieldStructure setObject:[NSNumber numberWithInt:i] forKey:@"datacolumnindex"];
+		[fieldStructure setObject:[NSNumber numberWithInteger:i] forKey:@"datacolumnindex"];
 		
 		/* Name of column */
 		[fieldStructure setObject:[self stringWithCString:theField[i].name] forKey:@"name"];
@@ -796,10 +796,10 @@ const OUR_CHARSET our_charsets60[] =
 		// [fieldStructure setObject:[NSNumber numberWithInt:(theField[i].flags & BINCMP_FLAG) ? 1 : 0] forKey:@"BINCMP_FLAG"];
 		
 		/* Number of decimals in field */
-		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].decimals] forKey:@"decimals"];
+		[fieldStructure setObject:[NSNumber numberWithUnsignedInteger:theField[i].decimals] forKey:@"decimals"];
 		
 		/* Character set */
-		[fieldStructure setObject:[NSNumber numberWithUnsignedInt:theField[i].charsetnr] forKey:@"charsetnr"];
+		[fieldStructure setObject:[NSNumber numberWithUnsignedInteger:theField[i].charsetnr] forKey:@"charsetnr"];
 		[fieldStructure setObject:[self findCharsetName:theField[i].charsetnr] forKey:@"charset_name"];
 		[fieldStructure setObject:[self findCharsetCollation:theField[i].charsetnr] forKey:@"charset_collation"];
 		
@@ -827,10 +827,10 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Return the MySQL flags of the column at the given index... Can be used to check if a number is signed or not...
  */
-- (unsigned int)fetchFlagsAtIndex:(unsigned int)index
+- (NSUInteger)fetchFlagsAtIndex:(NSUInteger)index
 {
-   unsigned int theRet;
-   unsigned int theNumFields;
+   NSUInteger theRet;
+   NSUInteger theNumFields;
    MYSQL_FIELD *theField;
    
    if (mResult == NULL) {
@@ -855,10 +855,10 @@ const OUR_CHARSET our_charsets60[] =
 /**
  *
  */
-- (unsigned int)fetchFlagsForKey:(NSString *)key
+- (NSUInteger)fetchFlagsForKey:(NSString *)key
 {
-   unsigned int theRet;
-   unsigned int theNumFields, index;
+   NSUInteger theRet;
+   NSUInteger theNumFields, index;
    MYSQL_FIELD *theField;
 	
    if (mResult == NULL) {
@@ -896,10 +896,10 @@ const OUR_CHARSET our_charsets60[] =
  * #{NOTE} That the current version handles properly TEXT, and returns those as NSString (and not NSData as 
  * it used to be).
  */
-- (BOOL)isBlobAtIndex:(unsigned int)index
+- (BOOL)isBlobAtIndex:(NSUInteger)index
 {
 	BOOL theRet;
-	unsigned int theNumFields;
+	NSUInteger theNumFields;
 	MYSQL_FIELD	*theField;
 	
 	if (mResult == NULL) {
@@ -944,7 +944,7 @@ const OUR_CHARSET our_charsets60[] =
 - (BOOL)isBlobForKey:(NSString *)key
 {
 	BOOL theRet;
-	unsigned int theNumFields, index;
+	NSUInteger theNumFields, index;
 	MYSQL_FIELD *theField;
 	
 	if (mResult == NULL) {
@@ -1016,13 +1016,14 @@ const OUR_CHARSET our_charsets60[] =
 	}
 	else {
 		NSMutableString  *theString = [NSMutableString stringWithCapacity:0];
-		int				 i;
+		NSInteger				 i;
 		NSArray			 *theRow;
 		MYSQL_ROW_OFFSET thePosition;
 		BOOL			 trunc = [MCPConnection truncateLongField];
 		
 		// First line, saying we are displaying a MCPResult
-		[theString appendFormat:@"MCPResult: (encoding : %d, dim %d x %d)\n", (long)mEncoding, (long)mNumOfFields, (long)[self numOfRows]];
+		[theString appendFormat:@"MCPResult: (encoding : %ld, dim %ld x %ld)\n", (long)mEncoding, (long)mNumOfFields, (long)[self numOfRows]];
+		
 		// Second line: the field names, tab separated
 		[self fetchFieldNames];
 		
@@ -1097,7 +1098,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Convert a mysql_type to a string
  */
-- (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length
+- (NSString *)mysqlTypeToStringForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags withLength:(unsigned long long)length
 {
 	// BOOL isUnsigned = (flags & UNSIGNED_FLAG) != 0;
 	// BOOL isZerofill = (flags & ZEROFILL_FLAG) != 0;
@@ -1146,7 +1147,7 @@ const OUR_CHARSET our_charsets60[] =
 		case MYSQL_TYPE_BLOB:
 		{
 			BOOL isBlob = (charsetnr == MAGIC_BINARY_CHARSET_NR);
-			switch ((int)length/[self findCharsetMaxByteLengthPerChar:charsetnr]) {
+			switch ((NSInteger)length/[self findCharsetMaxByteLengthPerChar:charsetnr]) {
 				case 255: return isBlob? @"TINYBLOB":@"TINYTEXT";
 				case 65535: return isBlob? @"BLOB":@"TEXT";
 				case 16777215: return isBlob? @"MEDIUMBLOB":@"MEDIUMTEXT";
@@ -1202,7 +1203,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Merge mysql_types into type groups
  */
-- (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags
+- (NSString *)mysqlTypeToGroupForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags
 {
 	switch(type){
 		case FIELD_TYPE_BIT:
@@ -1268,7 +1269,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Convert a mysql_charsetnr into a charset name as string
  */
-- (NSString *)findCharsetName:(unsigned int)charsetnr
+- (NSString *)findCharsetName:(NSUInteger)charsetnr
 {
 	const OUR_CHARSET * c = our_charsets60;
 	
@@ -1284,7 +1285,7 @@ const OUR_CHARSET our_charsets60[] =
 /**
  * Convert a mysql_charsetnr into a collation name as string
  */
-- (NSString *)findCharsetCollation:(unsigned int)charsetnr
+- (NSString *)findCharsetCollation:(NSUInteger)charsetnr
 {
 	const OUR_CHARSET * c = our_charsets60;
 	
@@ -1301,7 +1302,7 @@ const OUR_CHARSET our_charsets60[] =
  * Return the max byte length to store a char by using
  * a specific mysql_charsetnr
  */
-- (unsigned int)findCharsetMaxByteLengthPerChar:(unsigned int)charsetnr
+- (NSUInteger)findCharsetMaxByteLengthPerChar:(NSUInteger)charsetnr
 {
 	const OUR_CHARSET * c = our_charsets60;
 	

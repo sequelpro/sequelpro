@@ -97,7 +97,7 @@
  * Get a column (as an NSArray) of the result from the query aQuery. The column is choosen from it's index, 
  * starting from 0.
  */
-- (NSArray *)getQuery:(NSString *)query colWithIndex:(unsigned int)col
+- (NSArray *)getQuery:(NSString *)query colWithIndex:(NSUInteger)col
 {    
 	return [[self queryString:query] fetchColAtIndex:col];
 }

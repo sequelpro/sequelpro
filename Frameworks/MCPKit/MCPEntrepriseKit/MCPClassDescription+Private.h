@@ -33,13 +33,13 @@
 #pragma mark Setters
 - (void) setAttributes:(NSArray *) iAttributes;
 - (void) setRelations:(NSArray *) iRelations;
-- (void) insertObject:(MCPRelation *) iRelation inIncomingsAtIndex:(unsigned int) index;
-- (void) removeObjectFromIncomingsAtIndex:(unsigned int) index;
+- (void) insertObject:(MCPRelation *) iRelation inIncomingsAtIndex:(NSUInteger) index;
+- (void) removeObjectFromIncomingsAtIndex:(NSUInteger) index;
 
 #pragma mark Getters
 - (NSArray *) incomings;
-- (unsigned int) countOfIncomings;
-- (MCPRelation *) objectInIncomingsAtIndex:(unsigned int) index;
-- (unsigned int) indexOfIncoming:(id) iRelation;
+- (NSUInteger) countOfIncomings;
+- (MCPRelation *) objectInIncomingsAtIndex:(NSUInteger) index;
+- (NSUInteger) indexOfIncoming:(id) iRelation;
 
 @end

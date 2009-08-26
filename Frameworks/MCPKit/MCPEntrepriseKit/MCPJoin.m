@@ -60,11 +60,11 @@
 - (void) invalidate
 {
 	[self retain];
-	NSLog(@"Enterring -[MCPJoin invalidate], retain count is %u (after retaining : should be 4)", [self retainCount]);
+	NSLog(@"Enterring -[MCPJoin invalidate], retain count is %ld (after retaining : should be 4)", [self retainCount]);
 	[origin removeObjectFromJoinsAtIndex:[origin indexOfJoinIdenticalTo:self]];
 	[destination removeObjectFromJoinsAtIndex:[destination indexOfJoinIdenticalTo:self]];
 	[relation removeObjectFromJoinsAtIndex:[relation indexOfJoinIdenticalTo:self]];
-	NSLog(@"Enterring -[MCPJoin invalidate], retain count is %u (before releasing : should be 1)", [self retainCount]);
+	NSLog(@"Enterring -[MCPJoin invalidate], retain count is %ld (before releasing : should be 1)", [self retainCount]);
 	[self release];
 	return;
 }
@@ -144,7 +144,7 @@
 	return destination;
 }
 
-- (unsigned int) index
+- (NSUInteger) index
 {
 	return [relation indexOfJoinIdenticalTo:self];
 }

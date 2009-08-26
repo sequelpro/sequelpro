@@ -38,7 +38,7 @@
 	MYSQL_RES		 *mResult;		 /* The MYSQL_RES structure of the C API. */
 	NSArray			 *mNames;		 /* An NSArray holding the name of the columns. */
 	NSStringEncoding mEncoding;		 /* The encoding used by MySQL server, to ISO-1 default. */
-	unsigned int	 mNumOfFields;	 /* The number of fields in the result. */
+	NSUInteger	 mNumOfFields;	 /* The number of fields in the result. */
 	NSTimeZone		 *mTimeZone;	 /* The time zone of the connection when the query was made. */
 }
 
@@ -48,7 +48,7 @@
 
 // Result info
 - (my_ulonglong)numOfRows;
-- (unsigned int)numOfFields;
+- (NSUInteger)numOfFields;
 
 // Rows
 - (void)dataSeek:(my_ulonglong)row;
@@ -63,10 +63,10 @@
 - (NSDictionary *)fetchTypesAsDictionary;
 - (NSArray *)fetchResultFieldsStructure;
 
-- (unsigned int)fetchFlagsAtIndex:(unsigned int)index;
-- (unsigned int)fetchFlagsForKey:(NSString *)key;
+- (NSUInteger)fetchFlagsAtIndex:(NSUInteger)index;
+- (NSUInteger)fetchFlagsForKey:(NSString *)key;
 
-- (BOOL)isBlobAtIndex:(unsigned int)index;
+- (BOOL)isBlobAtIndex:(NSUInteger)index;
 - (BOOL)isBlobForKey:(NSString *)key;
 
 // Conversion
@@ -75,10 +75,10 @@
 - (NSString *)stringWithCString:(const char *)theCString;
 
 // Other
-- (NSString *)mysqlTypeToStringForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags withLength:(unsigned long long)length;
-- (NSString *)mysqlTypeToGroupForType:(unsigned int)type withCharsetNr:(unsigned int)charsetnr withFlags:(unsigned int)flags;
-- (NSString *)findCharsetName:(unsigned int)charsetnr;
-- (NSString *)findCharsetCollation:(unsigned int)charsetnr;
-- (unsigned int)findCharsetMaxByteLengthPerChar:(unsigned int)charsetnr;
+- (NSString *)mysqlTypeToStringForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags withLength:(unsigned long long)length;
+- (NSString *)mysqlTypeToGroupForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags;
+- (NSString *)findCharsetName:(NSUInteger)charsetnr;
+- (NSString *)findCharsetCollation:(NSUInteger)charsetnr;
+- (NSUInteger)findCharsetMaxByteLengthPerChar:(NSUInteger)charsetnr;
 
 @end

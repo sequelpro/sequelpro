@@ -55,12 +55,12 @@
 
 + (MCPNumber *)numberWithInt:(int)value
 {
-	return [[[MCPNumber alloc] initWithInt:value] autorelease];
+	return [[[MCPNumber alloc] initWithInteger:value] autorelease];
 }
 
 + (MCPNumber *)numberWithUnsignedInt:(unsigned int)value
 {
-	return [[[MCPNumber alloc] initWithUnsignedInt:value] autorelease];
+	return [[[MCPNumber alloc] initWithUnsignedInteger:value] autorelease];
 }
 
 + (MCPNumber *)numberWithLong:(long)value
@@ -85,7 +85,7 @@
 
 + (MCPNumber *)numberWithFloat:(float)value
 {
-	return [[[MCPNumber alloc] initWithFloat:value] autorelease];
+	return [[[MCPNumber alloc] initWithDouble:value] autorelease];
 }
 
 + (MCPNumber *)numberWithDouble:(double)value
@@ -135,16 +135,16 @@
 
 - (id)initWithInt:(int)value
 {
-   typeCode = @encode(int);
-   number = [[NSNumber alloc] initWithInt:value];
+   typeCode = @encode(NSInteger);
+   number = [[NSNumber alloc] initWithInteger:value];
 	
    return self;
 }
 
 - (id)initWithUnsignedInt:(unsigned int)value
 {
-   typeCode = @encode(unsigned int);
-   number = [[NSNumber alloc] initWithUnsignedInt:value];
+   typeCode = @encode(NSUInteger);
+   number = [[NSNumber alloc] initWithUnsignedInteger:value];
 	
    return self;
 }
@@ -183,8 +183,8 @@
 
 - (id)initWithFloat:(float)value
 {
-   typeCode = @encode(float);
-   number = [[NSNumber alloc] initWithFloat:value];
+   typeCode = @encode(CGFloat);
+   number = [[NSNumber alloc] initWithDouble:value];
 	
    return self;
 }
@@ -246,12 +246,12 @@
 
 - (int)intValue
 {
-   return [number intValue];
+   return [number integerValue];
 }
 
 - (unsigned int)unsignedIntValue
 {
-   return [number unsignedIntValue];
+   return [number unsignedIntegerValue];
 }
 
 - (long)longValue
@@ -276,7 +276,7 @@
 
 - (float)floatValue
 {
-   return [number floatValue];
+   return [number doubleValue];
 }
 
 - (double)doubleValue

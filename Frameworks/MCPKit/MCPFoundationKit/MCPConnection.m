@@ -38,12 +38,12 @@
 #include <mach/mach_time.h>
 
 static jmp_buf pingTimeoutJumpLocation;
-static void forcePingTimeout(int signalNumber);
+static void forcePingTimeout(NSInteger signalNumber);
 
-const unsigned int kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
+const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
 const char         *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
-const unsigned int kMCPConnection_Not_Inited = 1000;
-const unsigned int kLengthOfTruncationForLog = 100;
+const NSUInteger kMCPConnection_Not_Inited = 1000;
+const NSUInteger kLengthOfTruncationForLog = 100;
 
 static BOOL	sTruncateLongFieldInLogs = YES;
 
@@ -99,7 +99,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		connectionProxy = nil;
 		lastKeepAliveSuccess = nil;
 		connectionStartTime = -1;
-		lastQueryExecutedAtTime = INT_MAX;
+		lastQueryExecutedAtTime = CGFLOAT_MAX;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -137,7 +137,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 /**
  * Inialize connection using the supplied host details.
  */
-- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port
+- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(NSInteger)port
 {
 	if ((self = [self init])) {
 		if (!host) host = @"";
@@ -203,7 +203,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 /**
  * Sets or updates the connection port - for use with tunnels.
  */
-- (BOOL)setPort:(int)thePort
+- (BOOL)setPort:(NSInteger)thePort
 {
 	connectionPort = thePort;
 	
@@ -249,7 +249,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  */
 - (void)connectionProxyStateChange:(id <MCPConnectionProxy>)proxy
 {
-	int newState = [proxy state];
+	NSInteger newState = [proxy state];
 	
 	// Restart the tunnel if it dies
 	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
@@ -614,7 +614,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  * This function is paired with pingConnection, and provides a method of enforcing the connection
  * timeout when mysql_ping does not respect the specified limits.
  */
-static void forcePingTimeout(int signalNumber)
+static void forcePingTimeout(NSInteger signalNumber)
 {
 	longjmp(pingTimeoutJumpLocation, 1);
 }
@@ -744,7 +744,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * rReturn the server major version or -1 on fail
  */
-- (int)serverMajorVersion
+- (NSInteger)serverMajorVersion
 {
 	
 	if (mConnected) {
@@ -753,7 +753,7 @@ static void forcePingTimeout(int signalNumber)
 		}
 
 		if (serverVersionString != nil) {
-			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] integerValue];
 		} 
 	} 
 	
@@ -763,7 +763,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * Return the server minor version or -1 on fail
  */
-- (int)serverMinorVersion
+- (NSInteger)serverMinorVersion
 {
 	
 	if (mConnected) {
@@ -772,7 +772,7 @@ static void forcePingTimeout(int signalNumber)
 		}
 		
 		if(serverVersionString != nil) {
-			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] intValue];
+			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] integerValue];
 		}
 	}
 	
@@ -782,7 +782,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * Return the server release version or -1 on fail
  */
-- (int)serverReleaseVersion
+- (NSInteger)serverReleaseVersion
 {
 	if (mConnected) {
 		if (serverVersionString == nil) {
@@ -791,7 +791,7 @@ static void forcePingTimeout(int signalNumber)
 		
 		if (serverVersionString != nil) {
 			NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
-			return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] intValue];
+			return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] integerValue];
 		}
 	}
 	
@@ -964,7 +964,7 @@ static void forcePingTimeout(int signalNumber)
  * [theConnect connectToHost:albert.com withLogin:@"toto" password:@"albert" port:0];
  *
  */
-- (BOOL)setConnectionOption:(int)option toValue:(BOOL)value
+- (BOOL)setConnectionOption:(NSInteger)option toValue:(BOOL)value
 {
 	// So far do nothing except for testing if it's proper time for setting option 
 	// What about if some option where setted and a connection is made again with connectTo...
@@ -994,7 +994,7 @@ static void forcePingTimeout(int signalNumber)
  * The socket is used if the host is set to !{@"localhost"}, to an empty or a !{nil} string
  * For the moment the implementation might not be safe if you have a nil pointer to one of the NSString* variables (underestand: I don't know what the result will be).
  */
-- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(int)port socket:(NSString *)socket
+- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSInteger)port socket:(NSString *)socket
 {
 	const char *theLogin  = [self cStringFromString:login];
 	const char *theHost	  = [self cStringFromString:host];
@@ -1105,7 +1105,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * Returns the ErrorID of the last MySQL error on the connection.
  */
-- (unsigned int)getLastErrorID
+- (NSUInteger)getLastErrorID
 {
 	return lastQueryErrorId;
 }
@@ -1113,7 +1113,7 @@ static void forcePingTimeout(int signalNumber)
 /**
  * Determines whether a supplied error number can be classed as a connection error.
  */
-+ (BOOL)isErrorNumberConnectionError:(int)theErrorNumber
++ (BOOL)isErrorNumberConnectionError:(NSInteger)theErrorNumber
 {
 	
 	switch (theErrorNumber) {
@@ -1264,16 +1264,16 @@ static void forcePingTimeout(int signalNumber)
  * and the result can be returned or the connection and document have been closed.
  * If using streamingResult, the caller is responsible for releasing the result set.
  */
-- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(int) streamResultType
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResultType
 {
 	MCPResult		*theResult = nil;
 	double			queryStartTime, queryExecutionTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
-	int				queryResultCode;
-	int				queryErrorId = 0;
+	NSInteger				queryResultCode;
+	NSInteger				queryErrorId = 0;
 	my_ulonglong	queryAffectedRows = 0;
-	int				currentMaxAllowedPacket = -1;
+	NSInteger				currentMaxAllowedPacket = -1;
 	BOOL			isQueryRetry = NO;
 	NSString		*queryErrorMessage = nil;
 	
@@ -1322,9 +1322,9 @@ static void forcePingTimeout(int signalNumber)
 			
 		} else {
 			
-			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %d bytes is larger than max_allowed_packet size (%d).", 
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %ld bytes is larger than max_allowed_packet size (%ld).", 
 																				  @"error message if max_allowed_packet < query size"),
-									  theCQueryLength, maxAllowedPacketSize];
+									  (unsigned long)theCQueryLength, maxAllowedPacketSize];
 			
 			// Write a log entry and update the connection error messages for those uses that check it
 			if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:errorMessage connection:self];
@@ -1687,7 +1687,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (NSNumber *)protoInfo
 {
-	return [MCPNumber numberWithUnsignedInt:mysql_get_proto_info(mConnection)];
+	return [MCPNumber numberWithUnsignedInteger:mysql_get_proto_info(mConnection)];
 }
 
 /**
@@ -1720,7 +1720,7 @@ static void forcePingTimeout(int signalNumber)
  */
 - (BOOL)killProcess:(unsigned long)pid
 {	
-	int theErrorCode = mysql_kill(mConnection, pid);
+	NSInteger theErrorCode = mysql_kill(mConnection, pid);
 
 	return (theErrorCode) ? NO : YES;
 }
@@ -1745,7 +1745,7 @@ static void forcePingTimeout(int signalNumber)
 										@"/Applications/MAMP/tmp/mysql/mysql.sock",	// MAMP default location
 										nil];
 	
-	for (int i = 0; i < [possibleSocketLocations count]; i++) 
+	for (NSInteger i = 0; i < [possibleSocketLocations count]; i++) 
 	{
 		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
 			return [possibleSocketLocations objectAtIndex:i];
@@ -1881,7 +1881,7 @@ static void forcePingTimeout(int signalNumber)
 			[r autorelease];
 			if([a count]) {
 				[queryLock unlock];
-				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] intValue];
+				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] integerValue];
 				return true;
 			}
 		}
@@ -1895,7 +1895,7 @@ static void forcePingTimeout(int signalNumber)
  * Retrieves max_allowed_packet size set as global variable.
  * It returns -1 if it fails.
  */
-- (int)getMaxAllowedPacket
+- (NSInteger)getMaxAllowedPacket
 {
 	MCPResult *r;
 	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding streamingResult:NO];
@@ -1906,7 +1906,7 @@ static void forcePingTimeout(int signalNumber)
 	}
 	NSArray *a = [r fetchRowAsArray];
 	if([a count])
-		return [[a objectAtIndex:0] intValue];
+		return [[a objectAtIndex:0] integerValue];
 	
 	return -1;
 }
@@ -1917,20 +1917,20 @@ static void forcePingTimeout(int signalNumber)
  * if the maximal size was reached (e.g. set it to 4GB it'll return 1GB up to now).
  * If something failed it return -1;
  */
-- (int)setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset
+- (NSInteger)setMaxAllowedPacketTo:(NSInteger)newSize resetSize:(BOOL)reset
 {
 	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return maxAllowedPacketSize;
 	
 	[queryLock lock];
-	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %d", newSize] UTF8String]);
+	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %ld", newSize] UTF8String]);
 	[queryLock unlock];
 
 	// Inform the user via a log entry about that change according to reset value
 	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:connection:)])
 		if(reset)
-			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %d for new session", newSize] connection:self];
+			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %ld for new session", newSize] connection:self];
 		else
-			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %d for the current session to allow query to succeed", newSize] connection:self];
+			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %ld for the current session to allow query to succeed", newSize] connection:self];
 	
 	return maxAllowedPacketSize;
 }

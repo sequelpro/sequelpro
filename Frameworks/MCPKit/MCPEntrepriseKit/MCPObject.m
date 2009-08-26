@@ -66,7 +66,7 @@
 {
 	self = [super init];
 	if (self) {
-		unsigned int		i;
+		NSUInteger		i;
 		NSArray				*attrArray;
 		
       classDescription = [[NSClassDescription classDescriptionForClass:[self class]] retain];
@@ -113,7 +113,7 @@
 {
    NSArray        *theAttributes = [classDescription attributes];
 //   NSArray        *thePrimKeys = [classDescription primaryKeyAttributes];
-   unsigned       i;
+   NSUInteger       i;
    
    for (i=0; [theAttributes count] != i; ++i) {
       MCPAttribute   *theAttribute = (MCPAttribute *) [theAttributes objectAtIndex:i];
@@ -179,7 +179,7 @@ Otherwise, the search will be performed in the following order : iTableName.colu
 {
    NSArray     *theAttributeKeys = [classDescription attributeKeys];
    NSArray     *thePrefixArray;
-   unsigned    i;
+   NSUInteger    i;
    
 // Depending on the value of iTableName, get the search order.
    if ((nil == iTableName) || ([@"" isEqualToString:iTableName])) {
@@ -191,7 +191,7 @@ Otherwise, the search will be performed in the following order : iTableName.colu
    for (i=0; [theAttributeKeys count] != i; ++i) {
       id                theValue = nil;
       MCPAttribute      *theAttribute = [classDescription attributeWithName:[theAttributeKeys objectAtIndex:i]];
-      unsigned          j;
+      NSUInteger          j;
       
       for (j=0; [thePrefixArray count] != j; ++j) {
          if (theValue = [iDictionary objectForKey:[NSString stringWithFormat:@"%@%@", [thePrefixArray objectAtIndex:j], [theAttribute externalName]]]) {
@@ -214,7 +214,7 @@ Otherwise, the search will be performed in the following order : iTableName.colu
 {
    BOOL                 missingKey = NO;
    NSArray              *theKeyAttr = [classDescription primaryKeyAttributes];
-   unsigned             i;
+   NSUInteger             i;
    NSMutableString      *query = [NSMutableString stringWithFormat:@"SELECT * FROM %@ WHERE ", [classDescription externalName]];
    MCPResult            *result;
    NSDictionary         *row;
@@ -287,17 +287,17 @@ If the identityAttributes of the class description is empty, the entry will alwa
    NSArray                 *theKeyAttr = [classDescription primaryKeyAttributes];
    MCPConnection           *theConnection = [self connection];
    MCPResult               *theResult;
-   unsigned int            i;
+   NSUInteger            i;
    
    if (! theConnection) {
-      return [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:MCPDBReturnNoConnection], @"MCPDBReturnCode"];
+      return [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:MCPDBReturnNoConnection], @"MCPDBReturnCode"];
    }
    if (! [theKeyAttr count]) { // There is no primary key for this object.
-      [theKeys setObject:[NSNumber numberWithInt:MCPDBReturnNoKey] forKey:@"MCPDBReturnCode"];
+      [theKeys setObject:[NSNumber numberWithInteger:MCPDBReturnNoKey] forKey:@"MCPDBReturnCode"];
       return [NSDictionary dictionaryWithDictionary:theKeys];
    }
    if (! [theIdAttr count]) { // Identity is not defined for this object.
-      [theKeys setObject:[NSNumber numberWithInt:MCPDBReturnNoIdentity] forKey:@"MCPDBReturnCode"];
+      [theKeys setObject:[NSNumber numberWithInteger:MCPDBReturnNoIdentity] forKey:@"MCPDBReturnCode"];
       for (i=0; [theKeyAttr count] != i; ++i) {
          NSString       *theKey = [(MCPAttribute*)[theKeyAttr objectAtIndex:i] name];
          [theKeys setObject:[self valueForKey:theKey] forKey:theKey];
@@ -329,7 +329,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
       }
  */
       if (([[(MCPAttribute *)[theIdAttr objectAtIndex:i] valueClass] isSubclassOfClass:[NSString class]]) && ([(MCPAttribute *)[theIdAttr objectAtIndex:i] width] != 0)) {
-         [theQuery appendFormat:@"(%@ = SUBSTRING(%@ FROM 1 FOR %u))", [(MCPAttribute *)[theIdAttr objectAtIndex:i] externalName], [theConnection quoteObject:[self valueForKey:[(MCPAttribute *)[theIdAttr objectAtIndex:i] name]]], [(MCPAttribute *)[theIdAttr objectAtIndex:i] width]];
+         [theQuery appendFormat:@"(%@ = SUBSTRING(%@ FROM 1 FOR %ld))", [(MCPAttribute *)[theIdAttr objectAtIndex:i] externalName], [theConnection quoteObject:[self valueForKey:[(MCPAttribute *)[theIdAttr objectAtIndex:i] name]]], [(MCPAttribute *)[theIdAttr objectAtIndex:i] width]];
       }
       else {
          [theQuery appendFormat:@"(%@ = %@)", [(MCPAttribute *)[theIdAttr objectAtIndex:i] externalName], [theConnection quoteObject:[self valueForKey:[(MCPAttribute *)[theIdAttr objectAtIndex:i] name]]]];
@@ -346,11 +346,11 @@ If the identityAttributes of the class description is empty, the entry will alwa
    if ([theResult numOfRows]) { // the object was found.
       NSDictionary      *theFirstRow = [theResult fetchRowAsDictionary];
       if ([theResult numOfRows] != 1) {
-         NSLog(@"in MCPObject -checkDBIdWithConnection: method.... not only one (as expected) but %i results were found, will take the first one.");
-         [theKeys setObject:[NSNumber numberWithInt:MCPDBReturnMultiple] forKey:@"MCPDBReturnCode"];
+         NSLog(@"in MCPObject -checkDBIdWithConnection: method.... not only one (as expected) but %ld results were found, will take the first one.");
+         [theKeys setObject:[NSNumber numberWithInteger:MCPDBReturnMultiple] forKey:@"MCPDBReturnCode"];
       }
       else {
-         [theKeys setObject:[NSNumber numberWithInt:MCPDBReturnOK] forKey:@"MCPDBReturnCode"];
+         [theKeys setObject:[NSNumber numberWithInteger:MCPDBReturnOK] forKey:@"MCPDBReturnCode"];
       }
       [theKeys addEntriesFromDictionary:theFirstRow];
 // Setting the value of self for the primary key to the one just found.
@@ -369,7 +369,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
          }
          [theKeys setObject:[self valueForKey:[theAttribute name]] forKey:[theAttribute name]];
       }
-      [theKeys setObject:[NSNumber numberWithInt:MCPDBReturnNone] forKey:@"MCPDBReturnCode"];
+      [theKeys setObject:[NSNumber numberWithInteger:MCPDBReturnNone] forKey:@"MCPDBReturnCode"];
 // Setting the value of self for the primary key to the default values.
 /*
       for (i=0; [theKeyAttr count] != i; ++i) {
@@ -395,9 +395,9 @@ If the identityAttributes of the class description is empty, the entry will alwa
    MCPConnection        *theConnection = [self connection];
    NSDictionary         *theCheckReturn = [self checkDBId];
    NSMutableDictionary  *theRet;
-   int                  theCheckCode = [(NSNumber *)[theCheckReturn objectForKey:@"MCPDBReturnCode"] intValue];
-   unsigned             i;
-   unsigned             j;
+   NSInteger            theCheckCode = [(NSNumber *)[theCheckReturn objectForKey:@"MCPDBReturnCode"] integerValue];
+   NSUInteger           i;
+   NSUInteger           j;
    NSMutableString      *theQuery = [NSMutableString string];
    NSArray              *theAttr = [classDescription attributes];
 
@@ -409,7 +409,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
                            //      NSLog(@"in saveUsingConnection: the entry already existed so will update the one with key : %@", theCheckReturn);
          theCheckCode = [self updateInDB];
          theRet = [NSMutableDictionary dictionaryWithDictionary:[self primaryKey]];
-         [theRet setObject:[NSNumber numberWithInt:theCheckCode] forKey:@"MCPDBReturnCode"];
+         [theRet setObject:[NSNumber numberWithInteger:theCheckCode] forKey:@"MCPDBReturnCode"];
          return [NSDictionary dictionaryWithDictionary:theRet];
          break;
          
@@ -417,7 +417,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
          NSLog(@"Multiple entries found with the same identity ... will update the first one.");
          theCheckCode = [self updateInDB];
          theRet = [NSMutableDictionary dictionaryWithDictionary:[self primaryKey]];
-         [theRet setObject:[NSNumber numberWithInt:theCheckCode] forKey:@"MCPDBReturnCode"];
+         [theRet setObject:[NSNumber numberWithInteger:theCheckCode] forKey:@"MCPDBReturnCode"];
          return [NSDictionary dictionaryWithDictionary:theRet];
          break;
          
@@ -429,7 +429,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
          break;
       
       default : // We should not arrive here anyway.
-         NSLog(@"For some resons we got a unexpected result from checkDBId : %i", theCheckCode);
+         NSLog(@"For some resons we got a unexpected result from checkDBId : %ld", theCheckCode);
          break;
    }
       
@@ -462,7 +462,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
 // Now we perform the query...
    [theConnection queryString:theQuery];
    if (1 != (i = [theConnection affectedRows])) { // More than one row affected ... Should NEVER occure.
-      NSLog(@"Problem while saving a MCPObject to the database : number of inserted rows is : %i !!!", i);
+      NSLog(@"Problem while saving a MCPObject to the database : number of inserted rows is : %ld !!!", i);
       NSLog(@"Maybe there is an error : %@ ", [theConnection getLastErrorMessage]);
       NSLog(@"The class of the object is : %@, and it's description is :\n%@", [self className], [self descriptionWithLocale:nil]);
       theCheckCode = (i == 0) ? MCPDBReturnNone : MCPDBReturnMultiple;
@@ -479,7 +479,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
    }
    [self getAutoGenerated];
    theRet = [NSMutableDictionary dictionaryWithDictionary:[self primaryKey]];
-   [theRet setObject:[NSNumber numberWithInt:theCheckCode] forKey:@"MCPDBReturnCode"];
+   [theRet setObject:[NSNumber numberWithInteger:theCheckCode] forKey:@"MCPDBReturnCode"];
    
    return [NSDictionary dictionaryWithDictionary:theRet];
 }
@@ -501,9 +501,9 @@ some auto-generated attributes.
    NSMutableArray    *theAutoAttr = [NSMutableArray array];
    NSArray           *theAttr = [classDescription attributes];
    NSArray           *theKeyAttr = [classDescription primaryKeyAttributes];
-   unsigned          i,j;
+   NSUInteger          i,j;
    NSMutableString   *theQuery;
-   int               theCheckCode;
+   NSInteger               theCheckCode;
    MCPResult         *theResult;
    NSDictionary      *theRow;
    MCPConnection     *theConnection = [self connection];
@@ -513,7 +513,7 @@ some auto-generated attributes.
    }
 
 	if (0 != [[classDescription identityAttributes] count]) {
-      theCheckCode = [(NSNumber *)[[self checkDBId] objectForKey:@"MCPDBReturnCode"] intValue];
+      theCheckCode = [(NSNumber *)[[self checkDBId] objectForKey:@"MCPDBReturnCode"] integerValue];
       if ((MCPDBReturnOK != theCheckCode) && (MCPDBReturnMultiple != theCheckCode)) {
          NSLog(@"Unable to get the primary key for the object, will abort now the fetch of autoGenerated attributes (left unchanged)!");
          return theCheckCode;
@@ -586,8 +586,8 @@ some auto-generated attributes.
    NSArray                 *theAttributes = [classDescription attributes];
    NSArray                 *thePrimKeyAttributes = [classDescription primaryKeyAttributes];
    NSMutableString         *theQuery = [NSMutableString string];
-   int                     theCheckCode;
-   unsigned                i, j;
+   NSInteger                     theCheckCode;
+   NSUInteger                i, j;
    MCPConnection           *theConnection = [self connection];
    
    if (! theConnection) {
@@ -644,7 +644,7 @@ some auto-generated attributes.
    }
    else {
       NSDictionary         *theKeyCheck = [self checkDBId];
-      int                  theIdCheckCode = [(NSNumber *) [theKeyCheck objectForKey:@"MCPDBReturnCode"] intValue];
+      NSInteger                  theIdCheckCode = [(NSNumber *) [theKeyCheck objectForKey:@"MCPDBReturnCode"] integerValue];
 
       if (MCPDBReturnOK == theIdCheckCode) {
          theCheckCode = [self updateInDB];
@@ -665,9 +665,9 @@ some auto-generated attributes.
 {
    NSArray                 *theKeyAttributes = [classDescription primaryKeyAttributes];
    NSArray                 *theAttributes = [classDescription attributes];
-   unsigned                i;
+   NSUInteger                i;
 //   NSMutableDictionary     *theKeyValue = [NSMutableDictionary dictionary];
-   int                     theCheckCode = MCPDBReturnOK;
+   NSInteger                     theCheckCode = MCPDBReturnOK;
    MCPConnection     *theConnection = [self connection];
    
    if (! theConnection) {
@@ -676,14 +676,14 @@ some auto-generated attributes.
 // Get the value of the primary key:
    for (i=0; [theKeyAttributes count] != i; ++i) {
       id       theValue = [self valueForKey:[(MCPAttribute*) [theKeyAttributes objectAtIndex:i] name]];
-      if ((! theValue) || ([theValue isKindOfClass:[NSNumber class]] && (0 == [theValue intValue]))) {
+      if ((! theValue) || ([theValue isKindOfClass:[NSNumber class]] && (0 == [theValue integerValue]))) {
          theCheckCode = MCPDBReturnIncompleteKey;
          break;
       }
    }
 // If incomplete, try to find the rest, and perform again:
    if (MCPDBReturnIncompleteKey == theCheckCode) {
-      if (MCPDBReturnOK == [(NSNumber *)[[self checkDBId] objectForKey:@"MCPDBReturnCode"] intValue]) {
+      if (MCPDBReturnOK == [(NSNumber *)[[self checkDBId] objectForKey:@"MCPDBReturnCode"] integerValue]) {
          return [self deleteInDB];
       }
       else {
@@ -715,7 +715,7 @@ some auto-generated attributes.
    NSMutableString            *theQuery = [NSMutableString string];
    MCPClassDescription        *theClassDescription = (MCPClassDescription *) [NSClassDescription classDescriptionForClass:[self class]];
    NSArray                    *theKeyAttributes = [theClassDescription primaryKeyAttributes];
-   unsigned                   i;
+   NSUInteger                   i;
 
    if (! [iConnection checkConnection]) {
       return MCPDBReturnNoConnection;
@@ -762,7 +762,7 @@ Also the returned object is ALWAYS autoreleased before being returned.
 	NSArray						*keys;
 	NSArray						*ids;
 	MCPResult					*result;
-	unsigned int				i;
+	NSUInteger				i;
 	NSDictionary				*theRow;
 	id								theRet;
 
@@ -851,7 +851,7 @@ Also the returned object is ALWAYS autoreleased before being returned.
 Obviuosly this method is taking care of only to-one relation. It will hence check that iRelation is a to-one relation starting from self.
 Finally, you can use setTarget:nil forRelation:... to 'delete' a previously establlished relation (if the model and DB permit it)."*/
 {
-	unsigned int		i;
+	NSUInteger		i;
 	MCPObject			*oldTarget;
 
 	if (! [connection isConnected]) {
@@ -891,10 +891,10 @@ Finally, you can use setTarget:nil forRelation:... to 'delete' a previously esta
 	return (theRelation) ? [self setTarget:iTarget forRelation:theRelation] : MCPDBReturnNoSuchRelation;
 }
 
-- (unsigned int) countTargetForRelation:(MCPRelation *) iRelation
+- (NSUInteger) countTargetForRelation:(MCPRelation *) iRelation
 {
 	NSMutableString			*theQuery;
-	unsigned int				i;
+	NSUInteger				i;
 	NSArray						*theJoinArray;
 	MCPResult					*theResult;
 	NSDictionary				*theRow;
@@ -914,30 +914,30 @@ Finally, you can use setTarget:nil forRelation:... to 'delete' a previously esta
 	theResult = [connection queryString:theQuery];
 	[theQuery release];
 	theRow = [theResult fetchRowAsDictionary];
-	return [(NSNumber *)[theRow objectForKey:@"COUNT(*)"] unsignedIntValue];
+	return [(NSNumber *)[theRow objectForKey:@"COUNT(*)"] unsignedIntegerValue];
 }
 
-- (unsigned int) countTargetForRelationNamed:(NSString *) iRelationName
+- (NSUInteger) countTargetForRelationNamed:(NSString *) iRelationName
 {
 	MCPRelation		*theRelation = [classDescription relationWithName:iRelationName];
 	return (theRelation) ? [self countTargetForRelation:theRelation] : 0;
 }
 
 
-- (MCPObject *) getTargetOfRelation:(MCPRelation *) iRelation atIndex:(unsigned int) iIndex
+- (MCPObject *) getTargetOfRelation:(MCPRelation *) iRelation atIndex:(NSUInteger) iIndex
 /*" This method will return the specific object which is the iIndex'th object of th relation (after ordering the object using the destination identity).
 
 This method (like other assuming order in the relation targets) will be doubtfull if the class does NOT have a single identity attribute."*/
 {
 	NSMutableString			*query;
 	MCPClassDescription		*destinationDesc;
-	NSArray						*joins;
-	NSArray						*keys;
-	NSArray						*ids;
-	MCPResult					*result;
-	unsigned int				i;
-	NSDictionary				*theRow;
-	MCPObject					*theRet;
+	NSArray					*joins;
+	NSArray					*keys;
+	NSArray					*ids;
+	MCPResult				*result;
+	NSUInteger				i;
+	NSDictionary			*theRow;
+	MCPObject				*theRet;
 	
 	if (! iRelation) {
 		NSLog(@"Tried to get the target of a relation... but the relation object is nil");
@@ -983,7 +983,7 @@ This method (like other assuming order in the relation targets) will be doubtful
 		[query appendString:[(MCPAttribute *)[ids objectAtIndex:i] externalName]];
 	}
 */
-	[query appendFormat:@" LIMIT 1 OFFSET %u", iIndex];
+	[query appendFormat:@" LIMIT 1 OFFSET %ld", iIndex];
 	result = [connection queryString:query];
 	[query release];
 	
@@ -1000,7 +1000,7 @@ This method (like other assuming order in the relation targets) will be doubtful
 	return theRet;
 }
 
-- (MCPObject *) getTargetOfRelationNamed:(NSString *) iRelationName atIndex:(unsigned int) iIndex
+- (MCPObject *) getTargetOfRelationNamed:(NSString *) iRelationName atIndex:(NSUInteger) iIndex
 /*"This is the equivalent of the getTargetOfRelation:atIndex:, but giving a relation name instead of the MCPRelation object itself."*/
 {
 	MCPRelation		*theRelation = [classDescription relationWithName:iRelationName];
@@ -1014,7 +1014,7 @@ If any value corresping to an attribute of self i modified in the DB, then it wi
 Obviuosly this method is taking care of only to-many relation. It will hence check that iRelation is a to-many relation starting from self."*/
 {
 	NSArray					*joins;
-	unsigned int			i;
+	NSUInteger			i;
 	NSDictionary			*saveReturn;
 
 	if (! [connection isConnected]) {
@@ -1036,7 +1036,7 @@ Obviuosly this method is taking care of only to-many relation. It will hence che
 		[iTarget setConnection:connection];
 	}
 	saveReturn = [iTarget saveInDB];
-	return (MCPDBReturnCode)[(NSNumber *)[saveReturn objectForKey:@"MCPDBReturnCode"] unsignedIntValue];
+	return (MCPDBReturnCode)[(NSNumber *)[saveReturn objectForKey:@"MCPDBReturnCode"] unsignedIntegerValue];
 }
 
 - (MCPDBReturnCode) addTarget:(MCPObject *) iTarget toRelationNamed:(NSString *) iRelationName
@@ -1052,7 +1052,7 @@ If any value corresping to an attribute of self i modified in the DB, then it wi
 Obviuosly this method is taking care of only to-many relation. It will hence check that iRelation is a to-many relation starting from self."*/
 {
 	NSArray					*joins;
-	unsigned int			i;
+	NSUInteger			i;
 //	NSDictionary			*saveReturn;
 	BOOL						targetIsTarget  = YES;
 	MCPDBReturnCode		returnCode;
@@ -1083,7 +1083,7 @@ Obviuosly this method is taking care of only to-many relation. It will hence che
 		[iTarget setValue:[[join destination] defaultValue] forKey:[[join destination] name]];
 	}
 	if (! [iRelation ownsDestination]) {
-		returnCode = [(NSNumber *)[[iTarget saveInDB] objectForKey:@"MCPDBReturnCode"] unsignedIntValue];
+		returnCode = [(NSNumber *)[[iTarget saveInDB] objectForKey:@"MCPDBReturnCode"] unsignedIntegerValue];
 	}
 	return returnCode;
 }
@@ -1094,7 +1094,7 @@ Obviuosly this method is taking care of only to-many relation. It will hence che
 	return (theRelation) ? [self removeTarget:iTarget toRelation:theRelation] : MCPDBReturnNoSuchRelation;	
 }
 
-- (MCPDBReturnCode) removeTargetToRelation:(MCPRelation *) iRelation atIndex:(unsigned int) iIndex
+- (MCPDBReturnCode) removeTargetToRelation:(MCPRelation *) iRelation atIndex:(NSUInteger) iIndex
 /*" This method will use an index t first query the object that it should remove from the relation, then uses the -[MCPObject removeTarget:toRelation:]
 	method to remove the object from the relation. If the index is out of bound (the returned object is nil), it will return MCPDBReturnNone, to signal
 	there was no object with this index in the relation."*/
@@ -1119,20 +1119,20 @@ Obviuosly this method is taking care of only to-many relation. It will hence che
 	}
 }
 
-- (MCPDBReturnCode) removeTargetToRelationNamed:(NSString *) iRelationName atIndex:(unsigned int) iIndex
+- (MCPDBReturnCode) removeTargetToRelationNamed:(NSString *) iRelationName atIndex:(NSUInteger) iIndex
 {
 	MCPRelation		*theRelation = [classDescription relationWithName:iRelationName];
 	return (theRelation) ? [self removeTargetToRelation:theRelation atIndex:iIndex] : MCPDBReturnNoSuchRelation;
 }
 
-- (unsigned int) indexOfTarget:(MCPObject *) iTarget inRelation:(MCPRelation *) iRelation
+- (NSUInteger) indexOfTarget:(MCPObject *) iTarget inRelation:(MCPRelation *) iRelation
 /*" Returns the index of the target object within the relation. Return NSNotFound if the objkect is NOT in the relation!!"*/
 {
 	NSMutableString		*query;
 	NSArray					*joins;
 	NSArray					*keys;
 	NSArray					*ids;
-	unsigned int			i;
+	NSUInteger			i;
 	MCPResult				*result;
 	NSDictionary			*row;
 	NSMutableDictionary	*targetKey;
@@ -1195,7 +1195,7 @@ Obviuosly this method is taking care of only to-many relation. It will hence che
 	return NSNotFound;
 }
 
-- (unsigned int) indexOfTarget:(MCPObject *) iTarget inRelationNamed:(NSString *) iRelationName
+- (NSUInteger) indexOfTarget:(MCPObject *) iTarget inRelationNamed:(NSString *) iRelationName
 /*" The equivalent of -[MCPObject indexOfTarget:inRelation:] but using relation name instead of a MCPRelation
 object. Indeed after getting the MCPRelation object corresponding to the name, this method will only return
 the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."*/
@@ -1219,7 +1219,7 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
       id             theRet;
  
       if ([theAttrClass isSubclassOfClass:[NSNumber class]]) {
-         return [NSNumber numberWithInt:0];
+         return [NSNumber numberWithInteger:0];
       }
       theRet = [[[theAttrClass alloc] init] autorelease];
       if (nil == theRet) {
@@ -1235,7 +1235,7 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
 {
    NSMutableDictionary     *theRet = [NSMutableDictionary dictionary];
    NSArray                 *theIdAttr = [classDescription primaryKeyAttributes];
-   unsigned                i;
+   NSUInteger                i;
    
    for (i=0; [theIdAttr count] != i; ++i) {
       NSString       *theKey = [(MCPAttribute *)[theIdAttr objectAtIndex:i] name];
@@ -1254,7 +1254,7 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
 - (BOOL) isEqual:(id) iObject
 {
 	NSArray					*theIdAttr;
-	unsigned int			i;
+	NSUInteger			i;
 	BOOL						theRet;
 
 	if (self == iObject) {
@@ -1281,15 +1281,17 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
 
 - (NSString *) descriptionWithLocale:(NSDictionary *) locale
 {
-   NSMutableString      *theOutput = [NSMutableString string];
-   unsigned int         i;
-   NSArray              *theAttributes = [classDescription attributes];
-	BOOL						trunc = [MCPConnection truncateLongField];
+	NSMutableString *theOutput = [NSMutableString string];
+	NSUInteger		i;
+	NSArray			*theAttributes = [classDescription attributes];
+	BOOL			trunc = [MCPConnection truncateLongField];
 
-   [theOutput appendFormat:@"MCPObject subclass : %@\n", [self className]];
-   for (i=0; [theAttributes count] != i; ++i) {
-      MCPAttribute      *theAttribute = (MCPAttribute *) [theAttributes objectAtIndex:i];
-		id						theValue = [self valueForKey:[theAttribute name]];
+	[theOutput appendFormat:@"MCPObject subclass : %@\n", [self className]];
+	
+	for (i = 0; [theAttributes count] != i; ++i) 
+	{
+		MCPAttribute *theAttribute = (MCPAttribute *) [theAttributes objectAtIndex:i];
+		id theValue = [self valueForKey:[theAttribute name]];
 
 		if (trunc) {
 			if (([theValue isKindOfClass:[NSString class]]) && (kLengthOfTruncationForLog < [(NSString *)theValue length])) {
@@ -1299,10 +1301,13 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
 				theValue = [NSData dataWithBytes:[theValue bytes] length:kLengthOfTruncationForLog];
 			}
 		}
-      [theOutput appendFormat:@"\tAttribute %u : name = %@, value = %@\n", i, [theAttribute name], theValue];
-   }
-   [theOutput appendString:@"\n"];
-   return theOutput;
+		
+		[theOutput appendFormat:@"\tAttribute %ld : name = %@, value = %@\n", i, [theAttribute name], theValue];
+	}
+	
+	[theOutput appendString:@"\n"];
+	
+	return theOutput;
 }
 
 #pragma mark Ordering the array for relations
@@ -1310,7 +1315,7 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
 {
 	NSMutableArray			*theAttributes = [[NSMutableArray alloc] initWithArray:[iClassDescription identityAttributes]];
 	NSMutableString		*theReturn = [NSMutableString string];
-	unsigned int			i;
+	NSUInteger			i;
 
 	for (i = 0; [[iClassDescription primaryKeyAttributes] count] != i; ++i) {
 		[theAttributes insertObject:[[iClassDescription primaryKeyAttributes] objectAtIndex:i] atIndex:[theAttributes count]];
@@ -1331,7 +1336,7 @@ the result of the corresponding call to -[MCPObject indexOfTarget:inRelation:]."
 - (void) setNilValueForKey:(NSString *) iKey
 {
    NSLog(@"Try to set %@ to nil .... not possible, will set it to zero instead...", iKey);
-   [self setValue:[NSNumber numberWithInt:0] forKey:iKey];
+   [self setValue:[NSNumber numberWithInteger:0] forKey:iKey];
 }
 
 @end

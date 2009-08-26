@@ -59,29 +59,29 @@
 - (void) encodeWithCoder:(NSCoder *) encoder;
 
 #pragma mark Making new attributes and relations
-- (MCPAttribute *) addNewAttributeWithName:(NSString *) iName inPosition:(int) index;
-- (MCPRelation *) addNewRelationTo:(MCPClassDescription *) iTo name:(NSString *) iName inPostion:(int) index;
+- (MCPAttribute *) addNewAttributeWithName:(NSString *) iName inPosition:(NSInteger) index;
+- (MCPRelation *) addNewRelationTo:(MCPClassDescription *) iTo name:(NSString *) iName inPostion:(NSInteger) index;
 
 #pragma mark Setters
 - (void) setName:(NSString *) iName;
 - (void) setExternalName:(NSString *) iExternalName;
-- (void) insertObject:(MCPAttribute *) iAttribute inAttributesAtIndex:(unsigned int) index;
-- (void) removeObjectFromAttributesAtIndex:(unsigned int) index;
-- (void) insertObject:(MCPRelation *) iRelation inRelationsAtIndex:(unsigned int) index;
-- (void) removeObjectFromRelationsAtIndex:(unsigned int) index;
+- (void) insertObject:(MCPAttribute *) iAttribute inAttributesAtIndex:(NSUInteger) index;
+- (void) removeObjectFromAttributesAtIndex:(NSUInteger) index;
+- (void) insertObject:(MCPRelation *) iRelation inRelationsAtIndex:(NSUInteger) index;
+- (void) removeObjectFromRelationsAtIndex:(NSUInteger) index;
 
 #pragma mark Getters
 - (MCPModel *) model;
 - (NSString *) name;
 - (NSString *) externalName;
 - (NSArray *) attributes;
-- (unsigned int) countOfAttributes;
-- (MCPAttribute *) objectInAttributesAtIndex:(unsigned int) index;
-- (unsigned int) indexOfAttribute:(id) iAttribute;
+- (NSUInteger) countOfAttributes;
+- (MCPAttribute *) objectInAttributesAtIndex:(NSUInteger) index;
+- (NSUInteger) indexOfAttribute:(id) iAttribute;
 - (NSArray *) relations;
-- (unsigned int) countOfRelations;
-- (MCPRelation *) objectInRelationsAtIndex:(unsigned int) index;
-- (unsigned int) indexOfRelation:(id) iRelation;
+- (NSUInteger) countOfRelations;
+- (MCPRelation *) objectInRelationsAtIndex:(NSUInteger) index;
+- (NSUInteger) indexOfRelation:(id) iRelation;
 - (Class) representedClass;
 
 #pragma mark Some general methods:

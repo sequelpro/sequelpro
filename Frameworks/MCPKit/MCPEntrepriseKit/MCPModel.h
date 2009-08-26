@@ -54,13 +54,13 @@
 - (void) encodeWithCoder:(NSCoder *) encoder;
 
 #pragma mark Making new class description
-- (MCPClassDescription *) addNewClassDescriptionWithName:(NSString *) iName inPosition:(int) index;
+- (MCPClassDescription *) addNewClassDescriptionWithName:(NSString *) iName inPosition:(NSInteger) index;
 
 #pragma mark Setters
 - (void) setName:(NSString *) iName;
 - (void) setClassDescriptions:(NSArray *) iClassDescriptions;
-- (void) insertObject:(MCPClassDescription *) iClassDescription inClassDescriptionsAtIndex:(unsigned int) index;
-- (void) removeObjectFromClassDescriptionsAtIndex:(unsigned int) index;
+- (void) insertObject:(MCPClassDescription *) iClassDescription inClassDescriptionsAtIndex:(NSUInteger) index;
+- (void) removeObjectFromClassDescriptionsAtIndex:(NSUInteger) index;
 - (void) setUsesInnoDBTables:(BOOL) iUsesInnoDB;
 
 // Deprecated : non KVC
@@ -70,9 +70,9 @@
 #pragma mark Getters
 - (NSString *) name;
 - (NSArray *) classDescriptions;
-- (unsigned int) countOfClassDescriptions;
-- (MCPClassDescription *) objectInClassDescriptionsAtIndex:(unsigned int) index;
-- (unsigned int) indexOfClassDescription:(id) iClassDescription;
+- (NSUInteger) countOfClassDescriptions;
+- (MCPClassDescription *) objectInClassDescriptionsAtIndex:(NSUInteger) index;
+- (NSUInteger) indexOfClassDescription:(id) iClassDescription;
 - (BOOL) usesInnoDBTables;
 
 // Deprecated : non KVC

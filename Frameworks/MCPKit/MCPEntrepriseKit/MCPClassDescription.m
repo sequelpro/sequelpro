@@ -121,7 +121,7 @@
 }
 
 #pragma mark Making new attributes and relations
-- (MCPAttribute *) addNewAttributeWithName:(NSString *) iName inPosition:(int) index
+- (MCPAttribute *) addNewAttributeWithName:(NSString *) iName inPosition:(NSInteger) index
 {
 	MCPAttribute			*theAttribute = [[MCPAttribute alloc] initForClassDescription:self withName:iName];
 	
@@ -131,7 +131,7 @@
 	return theAttribute;
 }
 
-- (MCPRelation *) addNewRelationTo:(MCPClassDescription *) iTo name:(NSString *) iName inPostion:(int) index
+- (MCPRelation *) addNewRelationTo:(MCPClassDescription *) iTo name:(NSString *) iName inPostion:(NSInteger) index
 {
 	MCPRelation	*theRelation = [[MCPRelation alloc] initWithName:iName from:self to:iTo];
 	
@@ -161,28 +161,28 @@
 	}
 }
 
-- (void) insertObject:(MCPAttribute *) iAttribute inAttributesAtIndex:(unsigned int) index
+- (void) insertObject:(MCPAttribute *) iAttribute inAttributesAtIndex:(NSUInteger) index
 {
 	[attributes insertObject:iAttribute atIndex:index];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:model];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPClassDescriptionChangedNotification object:self];
 }
 
-- (void) removeObjectFromAttributesAtIndex:(unsigned int) index
+- (void) removeObjectFromAttributesAtIndex:(NSUInteger) index
 {
 	[attributes removeObjectAtIndex:index];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:model];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPClassDescriptionChangedNotification object:self];
 }
 
-- (void) insertObject:(MCPRelation *) iRelation inRelationsAtIndex:(unsigned int) index
+- (void) insertObject:(MCPRelation *) iRelation inRelationsAtIndex:(NSUInteger) index
 {
 	[relations insertObject:iRelation atIndex:index];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:model];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPClassDescriptionChangedNotification object:self];
 }
 
-- (void) removeObjectFromRelationsAtIndex:(unsigned int) index
+- (void) removeObjectFromRelationsAtIndex:(NSUInteger) index
 {
 	[relations removeObjectAtIndex:index];
 	[[NSNotificationCenter defaultCenter] postNotificationName:MCPModelChangedNotification object:model];
@@ -210,17 +210,17 @@
 	return [NSArray arrayWithArray:attributes];
 }
 
-- (unsigned int) countOfAttributes
+- (NSUInteger) countOfAttributes
 {
 	return [attributes count];
 }
 
-- (MCPAttribute *) objectInAttributesAtIndex:(unsigned int) index
+- (MCPAttribute *) objectInAttributesAtIndex:(NSUInteger) index
 {
 	return (MCPAttribute *)((NSNotFound != index) ? [attributes objectAtIndex:index] : nil);
 }
 
-- (unsigned int) indexOfAttribute:(id) iAttribute
+- (NSUInteger) indexOfAttribute:(id) iAttribute
 {
 	return [attributes indexOfObject:iAttribute];
 }
@@ -230,17 +230,17 @@
 	return [NSArray arrayWithArray:relations];
 }
 
-- (unsigned int) countOfRelations
+- (NSUInteger) countOfRelations
 {
 	return [relations count];
 }
 
-- (MCPRelation *) objectInRelationsAtIndex:(unsigned int) index
+- (MCPRelation *) objectInRelationsAtIndex:(NSUInteger) index
 {
 	return (MCPRelation *)((NSNotFound != index) ? [relations objectAtIndex:index] : nil);
 }
 
-- (unsigned int) indexOfRelation:(id) iRelation
+- (NSUInteger) indexOfRelation:(id) iRelation
 {
 	return [relations indexOfObject:iRelation];
 }
@@ -281,14 +281,15 @@
 */
 
 #pragma mark Output for logging
-- (NSString *) descriptionWithLocale:(NSDictionary *) locale
+
+- (NSString *)descriptionWithLocale:(NSDictionary *) locale
 {
-   NSMutableString         *theOutput = [NSMutableString string];
-   unsigned                i;
+	NSUInteger i;
+	NSMutableString *theOutput = [NSMutableString string];
 
    [theOutput appendFormat:@"MCPClassDescription for class : %@ (table : %@)\n", [self name], [self externalName]];
    for (i=0; [attributes count] != i; ++i) {
-      MCPAttribute      *theAttribute = (MCPAttribute *) [attributes objectAtIndex:i];
+      MCPAttribute *theAttribute = (MCPAttribute *) [attributes objectAtIndex:i];
 		
       [theOutput appendFormat:@"attribute %u, name = %@, column = %@. Allows null : %c\n", i, [theAttribute name], [theAttribute externalName], ([theAttribute allowsNull] ? 'Y' : 'N')];
    }
@@ -333,7 +334,7 @@
 	}
 }
 
-- (void) insertObject:(MCPRelation *) iRelation inIncomingsAtIndex:(unsigned int) index
+- (void) insertObject:(MCPRelation *) iRelation inIncomingsAtIndex:(NSUInteger) index
 {
 	if ([iRelation destination] == self) {
 		[incomings insertObject:iRelation atIndex:index];
@@ -343,7 +344,7 @@
 	}
 }
 
-- (void) removeObjectFromIncomingsAtIndex:(unsigned int) index
+- (void) removeObjectFromIncomingsAtIndex:(NSUInteger) index
 {
 	[incomings removeObjectAtIndex:index];
 }
@@ -354,17 +355,17 @@
 	return [NSArray arrayWithArray:incomings];
 }
 
-- (unsigned int) countOfIncomings
+- (NSUInteger) countOfIncomings
 {
 	return [incomings count];
 }
 
-- (MCPRelation *) objectInIncomingsAtIndex:(unsigned int) index
+- (MCPRelation *) objectInIncomingsAtIndex:(NSUInteger) index
 {
 	return (MCPRelation *)[incomings objectAtIndex:index];
 }
 
-- (unsigned int) indexOfIncoming:(id) iRelation
+- (NSUInteger) indexOfIncoming:(id) iRelation
 {
 	return [incomings indexOfObject:iRelation];
 }

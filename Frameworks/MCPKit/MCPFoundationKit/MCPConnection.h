@@ -32,12 +32,13 @@
 
 #import "mysql.h"
 
-enum mcp_query_streaming_types
+enum
 {
 	MCP_NO_STREAMING = 0,
 	MCP_FAST_STREAMING = 1,
 	MCP_LOWMEM_STREAMING = 2
 };
+typedef NSUInteger mcp_query_streaming_types;
 
 @class MCPResult, MCPStreamingResult;
 @protocol MCPConnectionProxy;
@@ -45,9 +46,9 @@ enum mcp_query_streaming_types
 /**
  * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
  */
-static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encoding, int lossy) 
+static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger encoding, NSInteger lossy) 
 {
-	typedef NSData* (*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, int, int);
+	typedef NSData* (*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, NSInteger, NSInteger);
 	static SPStringDataUsingLossyEncodingMethodPtr SPNSStringDataUsingLossyEncoding;
 	if (!SPNSStringDataUsingLossyEncoding) SPNSStringDataUsingLossyEncoding = (SPStringDataUsingLossyEncodingMethodPtr)[self methodForSelector:@selector(dataUsingEncoding:allowLossyConversion:)];
 	NSData* to_return = SPNSStringDataUsingLossyEncoding(self, @selector(dataUsingEncoding:allowLossyConversion:), encoding, lossy);
@@ -73,30 +74,30 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 	BOOL			 mConnected;       /* Reflect the fact that the connection is already in place or not. */
 	NSStringEncoding mEncoding;        /* The encoding used by MySQL server, to ISO-1 default. */
 	NSTimeZone		 *mTimeZone;       /* The time zone of the session. */
-	unsigned int	 mConnectionFlags; /* The flags to be used for the connection to the database. */
+	NSUInteger	 mConnectionFlags; /* The flags to be used for the connection to the database. */
 	id				 delegate;         /* Connection delegate */
 	
 	NSLock			 *queryLock;	   /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
 
 	BOOL useKeepAlive;
-	int connectionTimeout;
-	float keepAliveInterval;
+	NSInteger connectionTimeout;
+	CGFloat keepAliveInterval;
 	
 	id <MCPConnectionProxy> connectionProxy;
 	NSString *connectionLogin;
 	NSString *connectionPassword;
 	NSString *connectionHost;
-	int connectionPort;
+	NSInteger connectionPort;
 	NSString *connectionSocket;
-	int maxAllowedPacketSize;
+	NSInteger maxAllowedPacketSize;
 	unsigned long connectionThreadId;
 	
-	int currentProxyState;
+	NSInteger currentProxyState;
 	
 	double lastQueryExecutionTime;
 	double lastQueryExecutedAtTime;
 	NSString *lastQueryErrorMessage;
-	unsigned int lastQueryErrorId;
+	NSUInteger lastQueryErrorId;
 	my_ulonglong lastQueryAffectedRows;
 	
 	BOOL isMaxAllowedPacketEditable;
@@ -128,11 +129,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 
 @property (readwrite, assign) BOOL useKeepAlive;
 @property (readwrite, assign) BOOL delegateQueryLogging;
-@property (readwrite, assign) int connectionTimeout;
-@property (readwrite, assign) float keepAliveInterval;
+@property (readwrite, assign) NSInteger connectionTimeout;
+@property (readwrite, assign) CGFloat keepAliveInterval;
 
 // Initialisation
-- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(int)port;
+- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(NSInteger)port;
 - (id)initToSocket:(NSString *)socket withLogin:(NSString *)login;
 
 // Delegate
@@ -140,7 +141,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (void)setDelegate:(id)connectionDelegate;
 
 // Connection details
-- (BOOL)setPort:(int)thePort;
+- (BOOL)setPort:(NSInteger)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
 
 // Proxy
@@ -163,29 +164,29 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (double)timeConnected;
 
 // Server versions
-- (int)serverMajorVersion;
-- (int)serverMinorVersion;
-- (int)serverReleaseVersion;
+- (NSInteger)serverMajorVersion;
+- (NSInteger)serverMinorVersion;
+- (NSInteger)serverReleaseVersion;
 
 // MySQL defaults
 + (NSDictionary *)getMySQLLocales;
 + (NSStringEncoding)encodingForMySQLEncoding:(const char *)mysqlEncoding;
 + (NSStringEncoding)defaultMySQLEncoding;
-+ (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
++ (BOOL)isErrorNumberConnectionError:(NSInteger)theErrorNumber;
 
 // Class maintenance
 + (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag;
 + (BOOL)truncateLongField;
-- (BOOL)setConnectionOption:(int)option toValue:(BOOL)value;
-- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(int)port socket:(NSString *)socket;
+- (BOOL)setConnectionOption:(NSInteger)option toValue:(BOOL)value;
+- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSInteger)port socket:(NSString *)socket;
 
 - (BOOL)selectDB:(NSString *)dbName;
 
 // Error information
 - (NSString *)getLastErrorMessage;
 - (void)setLastErrorMessage:(NSString *)theErrorMessage;
-- (unsigned int)getLastErrorID;
-+ (BOOL)isErrorNumberConnectionError:(int)theErrorNumber;
+- (NSUInteger)getLastErrorID;
++ (BOOL)isErrorNumberConnectionError:(NSInteger)theErrorNumber;
 
 // Queries
 - (NSString *)prepareBinaryData:(NSData *)theData;
@@ -194,7 +195,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream;
-- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(int) streamResult;
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResult;
 - (double)lastQueryExecutionTime;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;
@@ -230,9 +231,9 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, int encodin
 
 // Packet size
 - (BOOL)fetchMaxAllowedPacket;
-- (int)getMaxAllowedPacket;
+- (NSInteger)getMaxAllowedPacket;
 - (BOOL)isMaxAllowedPacketEditable;
-- (int)setMaxAllowedPacketTo:(int)newSize resetSize:(BOOL)reset;
+- (NSInteger)setMaxAllowedPacketTo:(NSInteger)newSize resetSize:(BOOL)reset;
 
 // Data conversion
 - (const char *)cStringFromString:(NSString *)theString;

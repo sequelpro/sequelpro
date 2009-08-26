@@ -81,8 +81,8 @@ typedef enum {
 - (void) setName:(NSString *) iName;
 - (void) setDeleteRule:(MCPRelationDeleteRule) iDeleteRule;
 - (void) setInverseRelation:(MCPRelation *) iInverseRelation;
-- (void) insertObject:(MCPJoin *) iJoin inJoinsAtIndex:(unsigned int) index;
-- (void) removeObjectFromJoinsAtIndex:(unsigned int) index;
+- (void) insertObject:(MCPJoin *) iJoin inJoinsAtIndex:(NSUInteger) index;
+- (void) removeObjectFromJoinsAtIndex:(NSUInteger) index;
 - (void) setIsToMany:(BOOL) iIsToMany;
 - (void) setIsMandatory:(BOOL) iIsMandatory;
 - (void) setOwnsDestintation:(BOOL) iOwnsDestination;
@@ -94,9 +94,9 @@ typedef enum {
 - (MCPClassDescription *) origin;
 - (MCPClassDescription *) destination;
 - (NSArray *) joins;
-- (unsigned int) countOfJoins;
-- (MCPJoin *) objectInJoinsAtIndex:(unsigned int) index;
-- (unsigned int) indexOfJoinIdenticalTo:(id) iJoin;
+- (NSUInteger) countOfJoins;
+- (MCPJoin *) objectInJoinsAtIndex:(NSUInteger) index;
+- (NSUInteger) indexOfJoinIdenticalTo:(id) iJoin;
 - (BOOL) isToMany;
 - (BOOL) isMandatory;
 - (BOOL) ownsDestination;

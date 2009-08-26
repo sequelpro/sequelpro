@@ -40,7 +40,7 @@
 - (id)getFirstFieldFromQuery:(NSString *)query;
 - (id)getFirstRowFromQuery:(NSString *)query asType:(MCPReturnType)type;
 - (id)getAllRowsFromQuery:(NSString *)query asType:(MCPReturnType)type;
-- (NSArray *)getQuery:(NSString *)query colWithIndex:(unsigned int)col;
+- (NSArray *)getQuery:(NSString *)query colWithIndex:(NSUInteger)col;
 - (NSArray *)getQuery:(NSString *)query colWithName:(NSString *)colName;
 
 @end

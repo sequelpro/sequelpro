@@ -29,7 +29,7 @@
 #import <Foundation/Foundation.h>
 
 /*" Possible return code on some operations of the database interaction. "*/
-typedef enum {
+enum {
 	MCPDBReturnUnknown         = 0,     /*"Unknown state, should not happen."*/
 	MCPDBReturnDeleted         = 1,     /*"The entry have been successfuly deleted from DB."*/
 	MCPDBReturnUsed            = 2,     /*"The entry can not be removed, because some entries are still connected to it (some delete restrict/inhibit delete)."*/
@@ -46,7 +46,8 @@ typedef enum {
 	MCPDBReturnNoSuchRelation	= 13,		/*"There is no relation with such a name starting from this class."*/
 	MCPDBReturnNotTarget			= 14,		/*"Tried to remove an object from a relation, while the objects does NOT belong to the relation."*/
 	MCPDBReturnOK              = 100    /*"Everything went OK."*/
-} MCPDBReturnCode;
+};
+typedef NSUInteger MCPDBReturnCode;
 
 @class MCPConnection;
 @class MCPClassDescription;
@@ -91,18 +92,18 @@ typedef enum {
 - (id) getTargetOfRelationNamed:(NSString *) iRelationName;
 - (MCPDBReturnCode) setTarget:(id) iTarget forRelation:(MCPRelation *) iRelation;
 - (MCPDBReturnCode) setTarget:(id) iTarget forRelationNamed:(NSString *) iRelationName;
-- (unsigned int) countTargetForRelation:(MCPRelation *) iRelation;
-- (unsigned int) countTargetForRelationNamed:(NSString *) iRelationName;
-- (MCPObject *) getTargetOfRelation:(MCPRelation *) iRelation atIndex:(unsigned int) iIndex;
-- (MCPObject *) getTargetOfRelationNamed:(NSString *) iRelationName atIndex:(unsigned int) iIndex;
+- (NSUInteger) countTargetForRelation:(MCPRelation *) iRelation;
+- (NSUInteger) countTargetForRelationNamed:(NSString *) iRelationName;
+- (MCPObject *) getTargetOfRelation:(MCPRelation *) iRelation atIndex:(NSUInteger) iIndex;
+- (MCPObject *) getTargetOfRelationNamed:(NSString *) iRelationName atIndex:(NSUInteger) iIndex;
 - (MCPDBReturnCode) addTarget:(MCPObject *) iTarget toRelation:(MCPRelation *) iRelation;
 - (MCPDBReturnCode) addTarget:(MCPObject *) iTarget toRelationNamed:(NSString *) iRelationName;
 - (MCPDBReturnCode) removeTarget:(MCPObject *) iTarget toRelation:(MCPRelation *) iRelation;
 - (MCPDBReturnCode) removeTarget:(MCPObject *) iTarget toRelationNamed:(NSString *) iRelationName;
-- (MCPDBReturnCode) removeTargetToRelation:(MCPRelation *) iRelation atIndex:(unsigned int) iIndex;
-- (MCPDBReturnCode) removeTargetToRelationNamed:(NSString *) iRelationName atIndex:(unsigned int) iIndex;
-- (unsigned int) indexOfTarget:(MCPObject *) iTarget inRelation:(MCPRelation *) iRelation;
-- (unsigned int) indexOfTarget:(MCPObject *) iTarget inRelationNamed:(NSString *) iRelationName;
+- (MCPDBReturnCode) removeTargetToRelation:(MCPRelation *) iRelation atIndex:(NSUInteger) iIndex;
+- (MCPDBReturnCode) removeTargetToRelationNamed:(NSString *) iRelationName atIndex:(NSUInteger) iIndex;
+- (NSUInteger) indexOfTarget:(MCPObject *) iTarget inRelation:(MCPRelation *) iRelation;
+- (NSUInteger) indexOfTarget:(MCPObject *) iTarget inRelationNamed:(NSString *) iRelationName;
 
 #pragma mark Utilities
 /*" Utility methods "*/

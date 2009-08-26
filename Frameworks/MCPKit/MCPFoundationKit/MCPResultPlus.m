@@ -40,7 +40,7 @@
  * The index 0 of the returned array always correspond to the first row (ie: returned NSArray is indexed 
  * by row number), the read position is restored after to it's initial position after the read. 
  */
-- (NSArray *)fetchColAtIndex:(unsigned int)col
+- (NSArray *)fetchColAtIndex:(NSUInteger)col
 {
     NSMutableArray   *theCol = [NSMutableArray arrayWithCapacity:[self numOfRows]];
     MYSQL_ROW_OFFSET thePosition;
@@ -52,7 +52,7 @@
     }
     if (col >= mNumOfFields) {
 		// Bad column number
-        NSLog (@"The index : %d is not within the range 0 - %d\n", (long)col, (long)mNumOfFields);
+        NSLog (@"The index : %ld is not within the range 0 - %ld\n", (long)col, (long)mNumOfFields);
         return nil;
     }
 
@@ -78,7 +78,7 @@
  */
 - (NSArray *)fetchColWithName:(NSString *)colName
 {
-    unsigned int theCol;
+    NSUInteger theCol;
     
     if (mResult == NULL) {
 		// If there is no results, returns nil.
@@ -117,7 +117,7 @@
 {
     id				 theTable, theVect;
     MYSQL_ROW_OFFSET thePosition;
-    unsigned int	 i;
+    NSUInteger	 i;
 
     if (mResult == NULL) {
 		// If there is no results, returns nil.
@@ -175,7 +175,7 @@
             theTable = [NSDictionary dictionaryWithDictionary:theTable];
             break;
         default :
-            NSLog (@"Unknown MCPReturnType : %d; return nil\n", (int)type);
+            NSLog (@"Unknown MCPReturnType : %ld; return nil\n", (NSInteger)type);
             theTable = nil;
             break;
     }
