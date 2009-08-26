@@ -1031,7 +1031,6 @@
 		toObject: [NSUserDefaultsController sharedUserDefaultsController]
 		withKeyPath:@"values.CustomQueryEditorBackgroundColor"
 		options:bindingOptions];
-	[textView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];
 	[textView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBackgroundColor"]]];
 	[textView setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]]];
 	[textView setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCaretColor"]]];
@@ -1804,7 +1803,10 @@
 - (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
 {
 	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
-	if (prefs) [prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+	// And check for [textView font] != nil which occurs while awaking from nib.
+	if (prefs && [textView font] != nil)
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+
 }
 
 #pragma mark -
