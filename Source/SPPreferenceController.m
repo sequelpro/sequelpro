@@ -280,7 +280,7 @@
 			if (([favorite isKindOfClass:[NSDictionary class]]) && ([favorite objectForKey:@"name"]) && ([favorite objectForKey:@"query"])) continue;
 			
 			// By default make the query's name the first 32 characters of the query with '...' appended
-			int idx = ( [favorite length] > 32 ) ? 32 : [favorite length];
+			int idx = ( [favorite length] > 32 ) ? 32 : [favorite length]-1;
 			NSString *favoriteName = [[[favorite stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] substringToIndex:idx] stringByAppendingString:@"..."];
 						
 			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, favorite, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
