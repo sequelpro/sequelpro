@@ -39,8 +39,13 @@
 {	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
+	
 	IBOutlet id queryFavoritesButton;
+	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
+	IBOutlet id queryFavoritesSearchFieldView;
+	IBOutlet NSSearchField *queryFavoritesSearchField;
 	IBOutlet id queryHistoryButton;
+	
 	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet id errorText;
@@ -122,6 +127,7 @@
 - (IBAction)helpSelectHelpTargetMySQL:(id)sender;
 - (IBAction)helpSelectHelpTargetPage:(id)sender;
 - (IBAction)helpSelectHelpTargetWeb:(id)sender;
+- (IBAction)filterQueryFavorites:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries;

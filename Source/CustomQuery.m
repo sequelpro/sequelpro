@@ -153,8 +153,8 @@
 			modalDelegate:self 
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"addNewQueryFavorite"];
-	} 
-	else if ([queryFavoritesButton indexOfSelectedItem] == 2) {	
+	}
+	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {	
 		// Open query favorite manager
 		[NSApp beginSheet:[favoritesManager window] 
 		   modalForWindow:tableWindow 
@@ -162,9 +162,12 @@
 		   didEndSelector:nil 
 			  contextInfo:nil];
 	} 
-	else if ([queryFavoritesButton indexOfSelectedItem] > 3) {
+	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite
-		[textView insertText:[[[prefs objectForKey:@"queryFavorites"] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 4)] objectForKey:@"query"]];
+		if([prefs boolForKey:@"QueryFavoriteReplacesContent"])
+			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
+
+		[textView insertText:[[[prefs objectForKey:@"queryFavorites"] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
 	}
 }
 
@@ -1808,12 +1811,16 @@
 #pragma mark TextField delegate methods
 
 /**
- * Called whenever the user changes the name of the new query favorite.
+ * Called whenever the user changes the name of the new query favorite or
+ * the user changed the query favorite search string.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	if ([notification object] == queryFavoriteNameTextField) {
 		[saveQueryFavoriteButton setEnabled:[[queryFavoriteNameTextField stringValue] length]];
+	}
+	else if ([notification object] == queryFavoritesSearchField) {
+		[self filterQueryFavorites:nil];
 	}
 }
 
@@ -2342,15 +2349,16 @@
 	NSMutableArray *favorites = ([favoritesManager queryFavorites]) ? [favoritesManager queryFavorites] : [prefs objectForKey:@"queryFavorites"];
 
 	// Remove all favorites beginning from the end
-	while([queryFavoritesButton numberOfItems] > 4)
+	while([queryFavoritesButton numberOfItems] > 6)
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Re-add favorites and allow menu items with the same name
 	NSMenu *menu = [queryFavoritesButton menu];
-	int i = 4;
+	int i = 6;
 	for (NSDictionary *favorite in favorites) {
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:@"name"] action:NULL keyEquivalent:@""];
 		[item setTag:i++];
+		[item setToolTip:[favorite objectForKey:@"query"]];
 		[menu addItem:item];
 		[item release];
 	}
@@ -2470,18 +2478,31 @@
 	return self;
 }
 
+- (IBAction)filterQueryFavorites:(id)sender
+{
+	int i;
+	NSMenu *menu = [queryFavoritesButton menu];
+	for (i=6; i< [menu numberOfItems]; i++)
+		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryFavoritesSearchField stringValue]]])];
+	
+}
+
 - (void)awakeFromNib
 {
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	
+	// Add the searchfield to the Query Favorite popup button list
+	[queryFavoritesSearchMenuItem setView:queryFavoritesSearchFieldView];
+	
 	// Populate the query favorites popup button
 	NSMenu *menu = [queryFavoritesButton menu];
-	int i = 4;
+	int i = 6;
 	for (NSDictionary *favorite in [prefs objectForKey:@"queryFavorites"])
 	{
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:@"name"] action:NULL keyEquivalent:@""];
 		[item setTag:i++];
+		[item setToolTip:[favorite objectForKey:@"query"]];
 		[menu addItem:item];
 		[item release];
 	}
