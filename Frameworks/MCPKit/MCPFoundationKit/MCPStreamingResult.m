@@ -285,13 +285,57 @@
 	return returnArray;
 }
 
+/*
+ * Ensure the result set is fully processed and freed without any processing
+ */
+- (void) cancelResultLoad
+{
+	MYSQL_ROW theRow;
+
+	// Loop through all the rows and ensure the rows are fetched.
+	// If fully streaming, loop through the rows directly
+	if (fullyStreaming) {
+		while (1) {
+			theRow = mysql_fetch_row(mResult);
+
+			// If no data was returned, we're at the end of the result set - return.
+			if (theRow == NULL) return;
+		}
+
+	// If in cached-streaming/fast download mode, loop until all data is fetched and freed
+	} else {
+
+		while (1) {
+		
+			// Check to see whether we need to wait for the data to be availabe
+			// - if so, wait 1ms before checking again
+			while (!dataDownloaded && processedRowCount == downloadedRowCount) usleep(1000);
+
+			// If all rows have been processed, we're at the end of the result set - return
+			// once all memory has been freed
+			if (processedRowCount == downloadedRowCount) {
+				while (!dataFreed) usleep(1000);
+				[parentConnection unlockConnection];
+				connectionUnlocked = YES;
+				return;
+			}
+			processedRowCount++;
+		}
+	}
+}
+
 #pragma mark -
 #pragma mark Overrides for safety
 
+/**
+ * If numOfRows is used before the data is fully downloaded, -1 will be returned;
+ * otherwise the number of rows is returned.
+ */
 - (my_ulonglong)numOfRows
 {
-	NSLog(@"numOfRows cannot be used with streaming results");
-	return 0;
+	if (!dataDownloaded) return -1;
+
+	return downloadedRowCount;
 }
 
 - (void)dataSeek:(my_ulonglong) row

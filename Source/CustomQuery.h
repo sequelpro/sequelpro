@@ -137,7 +137,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
-- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
+- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
 
 // MySQL Help
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;

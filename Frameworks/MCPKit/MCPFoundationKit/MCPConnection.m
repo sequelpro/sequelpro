@@ -1365,6 +1365,8 @@ static void forcePingTimeout(int signalNumber)
 		// On success, capture the results
 		if (0 == queryResultCode) {
 			
+			queryAffectedRows = mysql_affected_rows(mConnection);
+
 			if (mysql_field_count(mConnection) != 0) {
 				
 				// For normal result sets, fetch the results and unlock the connection
@@ -1391,10 +1393,8 @@ static void forcePingTimeout(int signalNumber)
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
-			if (streamResultType == MCP_NO_STREAMING) {
+			if (streamResultType == MCP_NO_STREAMING && queryAffectedRows == -1) {
 				queryAffectedRows = mysql_affected_rows(mConnection);
-			} else {
-				queryAffectedRows = 0;
 			}
 			
 		// On failure, set the error messages and IDs

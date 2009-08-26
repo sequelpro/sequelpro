@@ -58,5 +58,6 @@ typedef struct SP_MYSQL_ROWS {
 
 // Results fetching
 - (NSArray *)fetchNextRowAsArray;
+- (void) cancelResultLoad;
 
 @end

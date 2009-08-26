@@ -79,6 +79,7 @@
 	tableReloadAfterEditing = NO;
 
 	[self performQueries:queries];
+
 	// If no error was selected reconstruct a given selection
 	if([textView selectedRange].length == 0)
 		[textView setSelectedRange:curRange];
@@ -403,11 +404,11 @@
 - (void)performQueries:(NSArray *)queries;
 {	
 	
-	NSArray         *theColumns;
-	NSTableColumn   *theCol;
-	MCPResult     *theResult  = nil;
-	NSMutableArray  *menuItems  = [NSMutableArray array];
-	NSMutableString *errors     = [NSMutableString string];
+	NSArray				*theColumns;
+	NSTableColumn		*theCol;
+	MCPStreamingResult	*streamingResult  = nil;
+	NSMutableArray		*menuItems  = [NSMutableArray array];
+	NSMutableString		*errors     = [NSMutableString string];
 	
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
@@ -454,13 +455,22 @@
 		[tempQueries addObject:query];
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		theResult = [mySQLConnection queryString:query];
+		streamingResult = [mySQLConnection streamingQueryString:query];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
+
+		// If this is the last query, retrieve and store the result; otherwise,
+		// discard the result without fully loading.
+		if (totalQueriesRun == queryCount)
+			[self processResultIntoDataStorage:streamingResult];
+		else
+			[streamingResult cancelResultLoad];
 
 		// Record any affected rows
 		if ( [mySQLConnection affectedRows] != -1 )
 			totalAffectedRows += [mySQLConnection affectedRows];
+		else if ( [streamingResult numOfRows] )
+			totalAffectedRows += [streamingResult numOfRows];
 
 		// Store any error messages
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
@@ -536,9 +546,10 @@
 	
 	lastExecutedQuery = [[tempQueries lastObject] retain];
 	
-	//perform empty query if no query is given
+	// Perform empty query if no query is given
 	if ( !queryCount ) {
-		theResult = [mySQLConnection queryString:@""];
+		streamingResult = [mySQLConnection streamingQueryString:@""];
+		[streamingResult cancelResultLoad];
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
 	
@@ -640,9 +651,9 @@
 
 	// Restore automatic query retries
 	[mySQLConnection setAllowQueryRetries:YES];
-
+	
 	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( !theResult || ![theResult numOfRows] ) {
+	if ( ![fullResult count] ) {
 		[customQueryView reloadData];
 
 		// Notify any listeners that the query has completed
@@ -653,15 +664,12 @@
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
                                                   notificationName:@"Query Finished"];
 
+		[streamingResult release];
 		return;
 	}
 
 	// get column definitions for the result array
-	cqColumnDefinition = [[theResult fetchResultFieldsStructure] retain];
-
-	// set datasource
-	[fullResult removeAllObjects];
-	[fullResult setArray:[self fetchResultAsArray:theResult]];
+	cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
 
 	// Find result table name for copying as SQL INSERT.
 	// If more than one table name is found set resultTableName to nil.
@@ -678,10 +686,10 @@
 	}
 
 	// Add columns corresponding to the query result
-	theColumns = [theResult fetchFieldNames];
+	theColumns = [streamingResult fetchFieldNames];
 
 	if(!tableReloadAfterEditing) {
-		for ( i = 0 ; i < [theResult numOfFields] ; i++) {
+		for ( i = 0 ; i < [streamingResult numOfFields] ; i++) {
 			NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,i);
 			theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 			[theCol setResizingMask:NSTableColumnUserResizingMask];
@@ -739,55 +747,52 @@
 }
 
 /*
- * Fetches the result as an array, with an array for each row in it
+ * Processes a supplied streaming result set, loading it into the data array.
  */
-- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
+- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
 {
-	// NSArray *columns;
-	unsigned long numOfRows = [theResult numOfRows];
-	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
-
 	NSArray *tempRow;
-	NSMutableArray *modifiedRow = [NSMutableArray array];
-	int i, j, numOfFields;
+	NSMutableArray *newRow;
+	int i;
+	long rowsProcessed = 0;
+	long columnsCount = 0;
+	NSAutoreleasePool *dataLoadingPool;
+	id prefsNullValue = [[prefs objectForKey:@"NullValue"] retain];
 	Class nullClass = [NSNull class];
-	id prefsNullValue = [prefs objectForKey:@"NullValue"];
-	// BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
 
-	// columns = [customQueryView columns];
-	// long columnsCount = [cqColumnDefinition count];
+	// Remove all items from the table
+	[fullResult removeAllObjects];
 
-	if (numOfRows) [theResult dataSeek:0];
-	for ( i = 0 ; i < numOfRows ; i++ ) {
-		tempRow = [theResult fetchRowAsArray];
+	// Set up an autorelease pool for row processing
+	dataLoadingPool = [[NSAutoreleasePool alloc] init];
 
-		if ( i == 0 ) numOfFields = [tempRow count];
+	// Loop through the result rows as they become available
+	while (tempRow = [theResult fetchNextRowAsArray]) {
+		if (columnsCount == 0) columnsCount = [tempRow count];
 
-		for ( j = 0; j < numOfFields; j++) {
-			if ( [NSArrayObjectAtIndex(tempRow, j) isMemberOfClass:nullClass] ) {
-				[modifiedRow addObject:prefsNullValue];
-			} else {
-				[modifiedRow addObject:NSArrayObjectAtIndex(tempRow, j)];
-			}
+		NSMutableArrayAddObject(fullResult, [NSMutableArray arrayWithArray:tempRow]);
+		newRow = NSArrayObjectAtIndex(fullResult, rowsProcessed);
+
+		// Process the retrieved row
+		for ( i = 0; i < columnsCount; i++ ) {
+			if ( [NSArrayObjectAtIndex(tempRow, i) isMemberOfClass:nullClass] )
+				[newRow replaceObjectAtIndex:i withObject:prefsNullValue];
 		}
 
-		// Add values for hidden blob and text fields if appropriate
-		// if ( prefsLoadBlobsAsNeeded ) {
-		// 	for ( j = 0 ; j < columnsCount ; j++ ) {
-		// 		if ( [[NSArrayObjectAtIndex(cqColumnDefinition, j) objectForKey:@"typegrouping"] isEqualToString:@"blobdata"] ||
-		// 		 	[[NSArrayObjectAtIndex(cqColumnDefinition, j) objectForKey:@"typegrouping"] isEqualToString:@"textdata"]) {
-		// 			[modifiedRow setObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields") forKey:[NSArrayObjectAtIndex(cqColumnDefinition, j) objectForKey:@"name"]];
-		// 		}
-		// 	}
-		// }
+		// Update the count of rows processed
+		rowsProcessed++;
 
-		[tempResult addObject:[NSArray arrayWithArray:modifiedRow]];
-		[modifiedRow removeAllObjects];
+		// Drain and reset the autorelease pool every ~1024 rows
+		if (!(rowsProcessed % 1024)) {
+			[dataLoadingPool drain];
+			dataLoadingPool = [[NSAutoreleasePool alloc] init];
+		}
 	}
-
-	return tempResult;
+	
+	// Clean up the autorelease pool
+	[dataLoadingPool drain];
+	[prefsNullValue release];
 }
-
 
 /*
  * Retrieve the range of the query at a position specified 
