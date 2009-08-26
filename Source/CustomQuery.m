@@ -2338,20 +2338,23 @@
  */
 - (void)queryFavoritesHaveBeenUpdated:(id)manager
 {
-	NSInteger i;
+	// NSInteger i;
 	NSMutableArray *favorites = ([favoritesManager queryFavorites]) ? [favoritesManager queryFavorites] : [prefs objectForKey:@"queryFavorites"];
-	
-	// Remove all favorites
-	for (i = 4; i < [queryFavoritesButton numberOfItems]; i++) 
-	{
-		[queryFavoritesButton removeItemAtIndex:i];
+
+	// Remove all favorites beginning from the end
+	while([queryFavoritesButton numberOfItems] > 4)
+		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
+
+	// Re-add favorites and allow menu items with the same name
+	NSMenu *menu = [queryFavoritesButton menu];
+	int i = 4;
+	for (NSDictionary *favorite in favorites) {
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:@"name"] action:NULL keyEquivalent:@""];
+		[item setTag:i++];
+		[menu addItem:item];
+		[item release];
 	}
 	
-	// Re-add favorites
-	for (NSDictionary *favorite in favorites)
-	{
-		[queryFavoritesButton addItemWithTitle:[favorite objectForKey:@"name"]];
-	}
 }
 
 #pragma mark -
@@ -2386,8 +2389,20 @@
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
 			NSMutableArray *favorites = [NSMutableArray arrayWithArray:[prefs objectForKey:@"queryFavorites"]];
-						
-			[favorites addObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [textView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+			
+			// What should be saved
+			NSString *queryToBeAddded;
+			// First check for a selection
+			if([textView selectedRange].length)
+				queryToBeAddded = [[textView string] substringWithRange:[textView selectedRange]];
+			// then for a current query
+			else if(currentQueryRange.length)
+				queryToBeAddded = [[textView string] substringWithRange:currentQueryRange];
+			// otherwise take the entire string
+			else
+				queryToBeAddded = [textView string];
+				
+			[favorites addObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 			
 			[prefs setObject:favorites forKey:@"queryFavorites"];
 			[prefs synchronize];
@@ -2460,11 +2475,17 @@
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	
-	// Populate the query favorites popup button	
+	// Populate the query favorites popup button
+	NSMenu *menu = [queryFavoritesButton menu];
+	int i = 4;
 	for (NSDictionary *favorite in [prefs objectForKey:@"queryFavorites"])
 	{
-		[queryFavoritesButton addItemWithTitle:[favorite objectForKey:@"name"]];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:@"name"] action:NULL keyEquivalent:@""];
+		[item setTag:i++];
+		[menu addItem:item];
+		[item release];
 	}
+
 }
 
 - (void)dealloc

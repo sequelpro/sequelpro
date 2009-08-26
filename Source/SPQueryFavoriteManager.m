@@ -38,7 +38,7 @@
 {
 	if ((self = [super initWithWindowNibName:@"QueryFavoriteManager"])) {
 		delegate = managerDelegate;
-		
+
 		prefs = [NSUserDefaults standardUserDefaults];
 		
 		delegateRespondsToFavoriteUpdates = [delegate respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)];
@@ -105,6 +105,8 @@
 	[favoritesTableView reloadData];
 	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
 	
+	[prefs synchronize];
+	
 	// Inform the delegate that the query favorites have been updated
 	if (delegateRespondsToFavoriteUpdates) {
 		[delegate queryFavoritesHaveBeenUpdated:self];
@@ -120,7 +122,12 @@
 		[queryFavoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
 		
 		[favoritesTableView reloadData];
-		
+
+		[prefs synchronize];
+
+		// Set focus to favorite list to avoid an unstable state
+		[[self window] makeFirstResponder:favoritesTableView];
+
 		// Inform the delegate that the query favorites have been updated
 		if (delegateRespondsToFavoriteUpdates) {
 			[delegate queryFavoritesHaveBeenUpdated:self];
@@ -196,8 +203,19 @@
  */
 - (IBAction)closeQueryManagerSheet:(id)sender
 {
+
+	// Ensure taht last changes will be written to prefs
+	[[self window] makeFirstResponder:favoritesTableView];
+	[prefs synchronize];
+	
 	[NSApp endSheet:[self window] returnCode:0];
 	[[self window] orderOut:self];
+	
+	// Inform the delegate that the query favorites have been updated
+	if (delegateRespondsToFavoriteUpdates) {
+		[delegate queryFavoritesHaveBeenUpdated:self];
+	}
+	
 }
 
 #pragma mark -
