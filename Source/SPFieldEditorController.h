@@ -36,6 +36,7 @@
 	IBOutlet id hexTextScrollView;
 	IBOutlet id editSheet;
 	IBOutlet id editSheetCancelButton;
+	IBOutlet id editSheetIsNotEditableCancelButton;
 	IBOutlet id editSheetOkButton;
 	IBOutlet id editSheetOpenButton;
 	IBOutlet id editSheetFieldName;

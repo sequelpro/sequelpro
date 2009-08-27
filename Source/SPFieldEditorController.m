@@ -97,9 +97,9 @@
 	[editTextScrollView setHidden:YES];
 	
 	if(!isEditable) {
-		[editSheetOkButton setTitle:NSLocalizedString(@"Close", @"close button title")];
-		[editSheetOkButton setKeyEquivalent:@"\033"]; // ESC key
+		[editSheetOkButton setHidden:YES];
 		[editSheetCancelButton setHidden:YES];
+		[editSheetIsNotEditableCancelButton setHidden:NO];
 		[editSheetOpenButton setEnabled:NO];
 	}
 	
