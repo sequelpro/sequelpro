@@ -61,7 +61,6 @@
 		selectedTable = nil;
 		sortCol       = nil;
 		isDesc		  = NO;
-		// editData	  = nil;
 		keys		  = nil;
 
 		currentlyEditingRow = -1;
@@ -1980,7 +1979,6 @@
  */
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
 {
-
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
 	if ( [aTableView editedColumn] == [[aTableColumn identifier] intValue] && [aTableView editedRow] == row) {
@@ -2162,26 +2160,23 @@
  * Confirm whether to allow editing of a row. Returns YES by default, unless the multipleLineEditingButton is in
  * the ON state, or for blob or text fields - in those cases opens a sheet for editing instead and returns NO.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{
-	int i;
-	NSString *query, *wherePart = nil;
-	NSMutableArray *modifiedRow = [NSMutableArray array];
-	MCPResult *tempResult;
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex
+{		
+	NSUInteger i;
 	
-	// If not isEditingRow and the preference value for not showing blobs is set, check whether the row contains any blobs.
-	if ([prefs boolForKey:@"LoadBlobsAsNeeded"] && !isEditingRow) {
+	// If the preference value for not showing blobs is set, check whether the row contains any blobs.
+	if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 		// If the table does contain blob or text fields, load the values ready for editing.
 		if ([self tableContainsBlobOrTextColumns]) {
-			wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
+			NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
 			
 			if ([wherePart length] == 0) return NO;
-			
+						
 			// Only get the data for the selected column, not all of them
-			query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
+			NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
 			
-			tempResult = [mySQLConnection queryString:query];
+			MCPResult *tempResult = [mySQLConnection queryString:query];
 			
 			if (![tempResult numOfRows]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -2190,12 +2185,13 @@
 			}
 			
 			NSArray *tempRow = [tempResult fetchRowAsArray];
+			NSMutableArray *modifiedRow = [NSMutableArray array];
 			
 			for (i = 0; i < [tempRow count]; i++) 
 			{
 				[modifiedRow addObject:([[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]]) ? [prefs stringForKey:@"NullValue"] : [tempRow objectAtIndex:i]];
 			}
-						
+												
 			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[modifiedRow objectAtIndex:0]];
 			[tableContentView reloadData];
 		}
@@ -2207,12 +2203,15 @@
 	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 		
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+		
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
+		
 		id editData = [[fieldEditor editWithObject:[[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
 								 usingEncoding:[mySQLConnection encoding] 
 								  isObjectBlob:isBlob 
-									isEditable:YES withWindow:tableWindow] retain];
+									isEditable:YES 
+									withWindow:tableWindow] retain];
 
 		if (editData) {
 			if (!isEditingRow) {
@@ -2220,7 +2219,7 @@
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
-
+			
 			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
 		}
 
@@ -2283,6 +2282,7 @@
 }
 
 #pragma mark -
+#pragma mark Other methods
 
 /*
  * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
