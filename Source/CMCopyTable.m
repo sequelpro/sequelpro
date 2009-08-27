@@ -407,9 +407,27 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
 
-- (BOOL)acceptsFirstResponder
+- (void)keyDown:(NSEvent *)theEvent
 {
-	return NO;
+
+	// RETURN or ENTER invoke editing mode for selected row
+	// by calling tableView:shouldEditTableColumn: to validate
+	if([[[[self delegate] class] description] isEqualToString:@"TableContent"]) {
+
+		id tableContentView = [[self delegate] valueForKeyPath:@"tableContentView"];
+		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
+			if([[self delegate] tableView:tableContentView shouldEditTableColumn:[[tableContentView tableColumns] objectAtIndex:0] row:[tableContentView selectedRow]]) {
+				[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
+				return;
+			}
+		}
+
+	}
+
+	[super keyDown:theEvent];
+
 }
+
+
 
 @end
