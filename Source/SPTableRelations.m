@@ -95,12 +95,12 @@
 	
 	// If required add ON DELETE
 	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [onDeletePopUpButton titleOfSelectedItem]]];
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [[onDeletePopUpButton titleOfSelectedItem] uppercaseString]]];
 	}
 	
 	// If required add ON UPDATE
 	if ([onUpdatePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [onUpdatePopUpButton titleOfSelectedItem]]];
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [[onUpdatePopUpButton titleOfSelectedItem] uppercaseString]]];
 	}
 	
 	// Execute query
@@ -176,12 +176,18 @@
 	if ([relationsTableView numberOfSelectedRows] > 0) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete relation", @"delete relation message") 
-										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
-									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+										 defaultButton:NSLocalizedString(@"Cancel", @"cancel button") 
+									   alternateButton:NSLocalizedString(@"Delete", @"delete button")
 										   otherButton:nil 
 							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone.", @"delete selected relation informative message")];
 		
 		[alert setAlertStyle:NSCriticalAlertStyle];
+		
+		NSArray *buttons = [alert buttons];
+		
+		// Change the alert's cancel button to have the key equivalent of return
+		[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 		
 		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
 	}
@@ -271,7 +277,7 @@
 {
 	if ([contextInfo isEqualToString:@"removeRelation"]) {
 		
-		if (returnCode == NSAlertDefaultReturn) {
+		if (returnCode == NSAlertAlternateReturn) {
 			
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];

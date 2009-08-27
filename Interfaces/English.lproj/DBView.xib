@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="6431"/>
+			<integer value="5597"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2242,8 +2242,8 @@
 																			<bool key="NS.raise.underflow">YES</bool>
 																			<bool key="NS.raise.dividebyzero">YES</bool>
 																		</object>
-																		<string key="NS.decimal">,</string>
-																		<string key="NS.thousand">.</string>
+																		<string key="NS.decimal">.</string>
+																		<string key="NS.thousand">,</string>
 																		<bool key="NS.hasthousands">NO</bool>
 																		<bool key="NS.localized">YES</bool>
 																		<bool key="NS.allowsfloats">NO</bool>
@@ -3279,7 +3279,7 @@
 																					<reference key="NSControlView" ref="363916571"/>
 																					<int key="NSButtonFlags">-2042609409</int>
 																					<int key="NSButtonFlags2">35</int>
-																					<object class="NSCustomResource" key="NSNormalImage" id="1031579662">
+																					<object class="NSCustomResource" key="NSNormalImage">
 																						<string key="NSClassName">NSImage</string>
 																						<string key="NSResourceName">button_action</string>
 																					</object>
@@ -3294,7 +3294,10 @@
 																						<string key="NSKeyEquiv"/>
 																						<int key="NSKeyEquivModMask">1048576</int>
 																						<int key="NSMnemonicLoc">2147483647</int>
-																						<reference key="NSImage" ref="1031579662"/>
+																						<object class="NSCustomResource" key="NSImage">
+																							<string key="NSClassName">NSImage</string>
+																							<string key="NSResourceName">button_action</string>
+																						</object>
 																						<string key="NSAction">_popUpItemAction:</string>
 																						<reference key="NSTarget" ref="984501775"/>
 																					</object>
@@ -6361,7 +6364,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="842408319">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6526,9 +6529,19 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 													<object class="NSMutableArray" key="NSMenuItems">
 														<bool key="EncodedWithXMLCoder">YES</bool>
 														<reference ref="567224194"/>
+														<object class="NSMenuItem" id="518367431">
+															<reference key="NSMenu" ref="109754481"/>
+															<string key="NSTitle">Restrict</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="450876295"/>
+															<reference key="NSMixedImage" ref="414351669"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="431726441"/>
+														</object>
 														<object class="NSMenuItem" id="81745657">
 															<reference key="NSMenu" ref="109754481"/>
-															<string key="NSTitle">No Action</string>
+															<string key="NSTitle">Cascade</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
@@ -6550,17 +6563,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 														</object>
 														<object class="NSMenuItem" id="281475594">
 															<reference key="NSMenu" ref="109754481"/>
-															<string key="NSTitle">Cascade</string>
-															<string key="NSKeyEquiv"/>
-															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="450876295"/>
-															<reference key="NSMixedImage" ref="414351669"/>
-															<string key="NSAction">_popUpItemAction:</string>
-															<reference key="NSTarget" ref="431726441"/>
-														</object>
-														<object class="NSMenuItem" id="518367431">
-															<reference key="NSMenu" ref="109754481"/>
-															<string key="NSTitle">Delete</string>
+															<string key="NSTitle">No Action</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<reference key="NSOnImage" ref="450876295"/>
@@ -6613,7 +6616,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 														<reference ref="534113829"/>
 														<object class="NSMenuItem" id="1073288544">
 															<reference key="NSMenu" ref="558688828"/>
-															<string key="NSTitle">No Action</string>
+															<string key="NSTitle">Restrict</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
@@ -6624,7 +6627,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 														</object>
 														<object class="NSMenuItem" id="411599339">
 															<reference key="NSMenu" ref="558688828"/>
-															<string key="NSTitle">Set NULL</string>
+															<string key="NSTitle">Cascade</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
@@ -6635,7 +6638,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 														</object>
 														<object class="NSMenuItem" id="203809714">
 															<reference key="NSMenu" ref="558688828"/>
-															<string key="NSTitle">Cascade</string>
+															<string key="NSTitle">Set NULL</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<reference key="NSOnImage" ref="450876295"/>
@@ -6645,7 +6648,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 														</object>
 														<object class="NSMenuItem" id="972878527">
 															<reference key="NSMenu" ref="558688828"/>
-															<string key="NSTitle">Delete</string>
+															<string key="NSTitle">No Action</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<reference key="NSOnImage" ref="450876295"/>
@@ -6958,6 +6961,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 					</object>
 					<string key="NSFrameSize">{302, 307}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -11339,7 +11343,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="532635418">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">4364</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -11409,7 +11413,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 				</object>
 				<string key="NSFrameSize">{217, 20}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="461189245">
@@ -19571,11 +19574,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="object" ref="109754481"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="518367431"/>
 							<reference ref="281475594"/>
 							<reference ref="479071597"/>
 							<reference ref="81745657"/>
 							<reference ref="567224194"/>
+							<reference ref="518367431"/>
 						</object>
 						<reference key="parent" ref="431726441"/>
 					</object>
@@ -24122,7 +24125,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{489, 572}, {180, 103}}</string>
+					<string>{{698, 398}, {170, 88}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24131,7 +24134,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{489, 572}, {180, 103}}</string>
+					<string>{{698, 368}, {170, 88}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24833,6 +24836,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 							<string>chooseQueryFavorite:</string>
 							<string>chooseQueryHistory:</string>
 							<string>closeSheet:</string>
+							<string>filterQueryFavorites:</string>
 							<string>gearMenuItemSelected:</string>
 							<string>helpSearchFindNextInPage:</string>
 							<string>helpSearchFindPreviousInPage:</string>
@@ -24848,6 +24852,7 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -24890,6 +24895,9 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 							<string>multipleLineEditingButton</string>
 							<string>queryFavoriteNameTextField</string>
 							<string>queryFavoritesButton</string>
+							<string>queryFavoritesSearchField</string>
+							<string>queryFavoritesSearchFieldView</string>
+							<string>queryFavoritesSearchMenuItem</string>
 							<string>queryFavoritesSheet</string>
 							<string>queryHistoryButton</string>
 							<string>runAllButton</string>
@@ -24927,6 +24935,9 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>id</string>
+							<string>NSSearchField</string>
+							<string>id</string>
+							<string>NSMenuItem</string>
 							<string>NSWindow</string>
 							<string>id</string>
 							<string>id</string>
@@ -26078,141 +26089,6 @@ aGUgYWN0aXZlIHNlbGVjdGlvbiAo4oyl4oyYUik</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
-					</object>
-				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">CustomQuery</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSMutableArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>chooseQueryFavorite:</string>
-							<string>chooseQueryHistory:</string>
-							<string>closeSheet:</string>
-							<string>filterQueryFavorites:</string>
-							<string>gearMenuItemSelected:</string>
-							<string>helpSearchFindNextInPage:</string>
-							<string>helpSearchFindPreviousInPage:</string>
-							<string>helpSegmentDispatcher:</string>
-							<string>helpSelectHelpTargetMySQL:</string>
-							<string>helpSelectHelpTargetPage:</string>
-							<string>helpSelectHelpTargetWeb:</string>
-							<string>helpTargetDispatcher:</string>
-							<string>runAllQueries:</string>
-							<string>runSelectedQueries:</string>
-							<string>showHelpForCurrentWord:</string>
-							<string>showHelpForSearchString:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSMutableArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>affectedRowsText</string>
-							<string>autohelpMenuItem</string>
-							<string>autoindentMenuItem</string>
-							<string>autopairMenuItem</string>
-							<string>autouppercaseKeywordsMenuItem</string>
-							<string>clearHistoryMenuItem</string>
-							<string>commentCurrentQueryMenuItem</string>
-							<string>commentLineOrSelectionMenuItem</string>
-							<string>completionListMenuItem</string>
-							<string>customQueryView</string>
-							<string>editorFontMenuItem</string>
-							<string>errorText</string>
-							<string>helpNavigator</string>
-							<string>helpSearchField</string>
-							<string>helpSearchFieldCell</string>
-							<string>helpTargetSelector</string>
-							<string>helpWebView</string>
-							<string>helpWebViewWindow</string>
-							<string>multipleLineEditingButton</string>
-							<string>queryFavoriteNameTextField</string>
-							<string>queryFavoritesButton</string>
-							<string>queryFavoritesSearchField</string>
-							<string>queryFavoritesSearchFieldView</string>
-							<string>queryFavoritesSearchMenuItem</string>
-							<string>queryFavoritesSheet</string>
-							<string>queryHistoryButton</string>
-							<string>runAllButton</string>
-							<string>runSelectionButton</string>
-							<string>runSelectionMenuItem</string>
-							<string>saveQueryFavoriteButton</string>
-							<string>shiftLeftMenuItem</string>
-							<string>shiftRightMenuItem</string>
-							<string>tableDocumentInstance</string>
-							<string>tableWindow</string>
-							<string>textView</string>
-							<string>valueSheet</string>
-							<string>valueTextField</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>CMCopyTable</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>NSSegmentedControl</string>
-							<string>NSSearchField</string>
-							<string>NSSearchFieldCell</string>
-							<string>NSSegmentedControl</string>
-							<string>WebView</string>
-							<string>NSWindow</string>
-							<string>id</string>
-							<string>NSTextField</string>
-							<string>id</string>
-							<string>NSSearchField</string>
-							<string>id</string>
-							<string>NSMenuItem</string>
-							<string>NSWindow</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSMenuItem</string>
-							<string>NSButton</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>id</string>
-							<string>CMTextView</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/CustomQuery.h</string>
 					</object>
 				</object>
 			</object>
