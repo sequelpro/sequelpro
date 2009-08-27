@@ -2108,8 +2108,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	yyuoffset = textRange.location; yyuleng = 0;
 	yy_switch_to_buffer(yy_scan_string(NSStringUTF8String([selfstr substringWithRange:textRange])));
 
+	// NO if lexer doesn't find a token to suppress auto-uppercasing
+	// and continue earlier.
+	BOOL allowToCheckForUpperCase;
+
 	// now loop through all the tokens
 	while (token=yylex()){
+		allowToCheckForUpperCase = YES;
 		switch (token) {
 			case SPT_SINGLE_QUOTED_TEXT:
 			case SPT_DOUBLE_QUOTED_TEXT:
@@ -2131,25 +2136,25 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			    tokenColor = variableColor;
 			    break;
 			case SPT_WHITESPACE:
-			    tokenColor = nil;
+			    continue;
 			    break;
 			default:
 			    tokenColor = textColor;
+				allowToCheckForUpperCase = NO;
 		}
-
-		if (!tokenColor) continue;
 
 		tokenRange = NSMakeRange(yyuoffset, yyuleng);
 
 		// make sure that tokenRange is valid (and therefore within textRange)
 		// otherwise a bug in the lex code could cause the the TextView to crash
-		tokenRange = NSIntersectionRange(tokenRange, textRange);
-		if (!tokenRange.length) continue;
+		// NOTE Disabled for testing purposes for speed it up
+		// tokenRange = NSIntersectionRange(tokenRange, textRange);
+		// if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (autouppercaseKeywords && !delBackwardsWasPressed
+		if (allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
 			&& [[textStore attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
@@ -2173,6 +2178,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			}
 
 		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
+
+		if(!allowToCheckForUpperCase) continue;
 
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
