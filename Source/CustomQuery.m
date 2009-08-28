@@ -154,7 +154,7 @@
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"addNewQueryFavorite"];
 	}
-	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {	
+	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {
 		// Open query favorite manager
 		[NSApp beginSheet:[favoritesManager window] 
 		   modalForWindow:tableWindow 
@@ -176,7 +176,11 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
-	[textView insertText:[queryHistoryButton titleOfSelectedItem]];
+	if ([queryHistoryButton indexOfSelectedItem] > 3) {
+		if([prefs boolForKey:@"QueryHistoryReplacesContent"])
+			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
+		[textView insertText:[queryHistoryButton titleOfSelectedItem]];
+	}
 }
 
 /*
@@ -196,8 +200,11 @@
 {
 	// "Clear History" menu item - clear query history
 	if (sender == clearHistoryMenuItem) {
-		[queryHistoryButton removeAllItems];
-		[queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
+		// Remove all history buttons beginning from the end
+		while([queryHistoryButton numberOfItems] > 4)
+			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+
+		// [queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
 		[prefs setObject:[NSArray array] forKey:@"queryHistory"];
 	}
 
@@ -443,14 +450,15 @@
 	// add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
 	if(!tableReloadAfterEditing && [usedQuery length]) {
-		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:1];
+
+		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:4];
 
 		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
 
-		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 1 )
+		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 4 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
-		for ( i = 1 ; i < [queryHistoryButton numberOfItems] ; i++ )
+		for ( i = 4 ; i < [queryHistoryButton numberOfItems] ; i++ )
 			[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
 
 		[prefs setObject:menuItems forKey:@"queryHistory"];
@@ -1818,11 +1826,39 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-	if ([notification object] == queryFavoriteNameTextField) {
+	if ([notification object] == queryFavoriteNameTextField)
 		[saveQueryFavoriteButton setEnabled:[[queryFavoriteNameTextField stringValue] length]];
-	}
-	else if ([notification object] == queryFavoritesSearchField) {
+	else if ([notification object] == queryFavoritesSearchField){
 		[self filterQueryFavorites:nil];
+		[[saveQueryFavoriteButton menu] sizeToFit];
+	}
+	else if ([notification object] == queryHistorySearchField) {
+		[self filterQueryHistory:nil];
+		[[queryHistoryButton menu] sizeToFit];
+	}
+
+}
+
+/*
+ * TODO !! If user hit RETURN in fav/history search field
+ * the next menu item if any should be highlighted and the
+ * menu list should become the first responder - but how?
+ */
+- (void)controlTextDidEndEditing:(NSNotification *)notification
+{
+	if ([notification object] == queryFavoritesSearchField) {
+		[self filterQueryFavorites:nil];
+		if( [queryFavoritesButton numberOfItems] > 6 ) {
+			// TODO How to select the next menu item if user hits ENTER in search field?
+			// [queryFavoritesButton selectItemAtIndex:6];
+		}
+	}
+	else if ([notification object] == queryHistorySearchField) {
+		[self filterQueryHistory:nil];
+		if( [queryHistoryButton numberOfItems] > 4 ) {
+			// TODO How to select the next menu item if user hits ENTER in search field?
+			// [queryHistoryButton selectItemAtIndex:4];
+		}
 	}
 }
 
@@ -2429,11 +2465,16 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	// Use the menu item's title instead of its action as all menu items in the drop down have the same action
-	if ([[menuItem title] isEqualToString:@"Save Query to Favorites"]) {
-		return ([[textView string] length] > 0);
+	// Control "Save ... to Favorites" = tag is set to 1000
+	if ( [menuItem tag] == 1000 ) {
+		if ([[textView string] length] < 1) return NO;
+		if([textView selectedRange].length)
+			[menuItem setTitle:NSLocalizedString(@"Save Selection to Favorites",@"Save Selection to Favorites")];
+		else if(currentQueryRange.length)
+			[menuItem setTitle:NSLocalizedString(@"Save Current Query to Favorites",@"Save Current Query to Favorites")];
+		else
+			[menuItem setTitle:NSLocalizedString(@"Save All to Favorites",@"Save All to Favorites")];
 	}
-	
 	return YES;
 }
 
@@ -2489,6 +2530,15 @@
 	
 }
 
+- (IBAction)filterQueryHistory:(id)sender
+{
+	int i;
+	NSMenu *menu = [queryHistoryButton menu];
+	for (i=4; i< [menu numberOfItems]; i++)
+		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryHistorySearchField stringValue]]])];
+	
+}
+
 - (void)awakeFromNib
 {
 	// Set the structure and index view's vertical gridlines if required
@@ -2496,7 +2546,12 @@
 	
 	// Add the searchfield to the Query Favorite popup button list
 	[queryFavoritesSearchMenuItem setView:queryFavoritesSearchFieldView];
-	
+	[queryFavoritesSearchField setNextKeyView:queryFavoritesButton];
+
+	// Add the searchfield to the Query Favorite popup button list
+	[queryHistorySearchMenuItem setView:queryHistorySearchFieldView];
+	[queryHistorySearchField setNextKeyView:queryHistoryButton];
+
 	// Populate the query favorites popup button
 	NSMenu *menu = [queryFavoritesButton menu];
 	int i = 6;

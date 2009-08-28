@@ -42,6 +42,8 @@
 	<false/>
 	<key>QueryFavoriteReplacesContent</key>
 	<false/>
+	<key>QueryHistoryReplacesContent</key>
+	<false/>
 	<key>CustomQueryEditorFont</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaRiEBVsyNGNdBgAAAA4AAAD//k0AbwBuAGEAYwBvAAAAhAFmCoQBYwCYAZgAmACG</data>
 	<key>CustomQueryEditorBackgroundColor</key>

@@ -42,9 +42,13 @@
 	
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
+	IBOutlet NSMenuItem *queryFavoritesSaveAsMenuItem;
 	IBOutlet id queryFavoritesSearchFieldView;
 	IBOutlet NSSearchField *queryFavoritesSearchField;
 	IBOutlet id queryHistoryButton;
+	IBOutlet NSMenuItem *queryHistorySearchMenuItem;
+	IBOutlet id queryHistorySearchFieldView;
+	IBOutlet NSSearchField *queryHistorySearchField;
 	
 	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
@@ -128,6 +132,7 @@
 - (IBAction)helpSelectHelpTargetPage:(id)sender;
 - (IBAction)helpSelectHelpTargetWeb:(id)sender;
 - (IBAction)filterQueryFavorites:(id)sender;
+- (IBAction)filterQueryHistory:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries;
