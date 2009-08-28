@@ -2446,7 +2446,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to proceed with %.1f MB of data?", @"message of panel asking for confirmation for inserting large text from dragging action"),
 						 [filesize unsignedLongValue]/1048576.0]];
 					[alert setHelpAnchor:filepath];
-					[alert setMessageText:NSLocalizedString(@"Warning",@"Warning")];
+					[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
 					[alert setAlertStyle:NSWarningAlertStyle];
 					[alert beginSheetModalForWindow:[self window] 
 						modalDelegate:self 

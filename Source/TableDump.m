@@ -433,7 +433,7 @@
 	}
 
 	if (errorStr) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
@@ -577,7 +577,7 @@
 		[singleProgressBar setIndeterminate:NO];
 		
 		if(importArrayCount == 0){
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil,
 							  tableWindow, self,
@@ -619,7 +619,7 @@
 
 			// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
 			if ([[importArray objectAtIndex:currentRow] count] > 512) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
+				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 								  NSLocalizedString(@"OK", @"OK button"),
 								  nil, nil,
 								  tableWindow, self,

@@ -1026,7 +1026,7 @@
 	NSMenuItem *menuItem = [[[[NSApp mainMenu] itemWithTitle:@"View"] submenu] itemAtIndex:5];
 	
 	// Only update the menu item title if its the menu item and not the toolbar
-	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"Show Console")];
+	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"show console")];
 }
 
 /**
@@ -2524,7 +2524,7 @@
 		[toolbarItem setView:historyControl];
 
 	} else if ([itemIdentifier isEqualToString:@"ShowConsoleIdentifier"]) {
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"toolbar item for show console")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"show console")];
 		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
 		
 		[toolbarItem setLabel:NSLocalizedString(@"Console", @"Console")];
