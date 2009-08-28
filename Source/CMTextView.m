@@ -84,6 +84,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	autouppercaseKeywordsEnabled = YES;
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
+	startListeningToBoundChanges = NO;
 	
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -215,7 +216,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	// Refresh quote attributes
 	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
-	[self insertText:@""];
+	// [self insertText:@""];
 	
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
@@ -2025,7 +2026,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSTextStorage *textStore = [self textStorage];
 	NSString *selfstr        = [self string];
-	long strlength           = [selfstr length];
+	NSUInteger strlength     = [selfstr length];
 
 	NSRange textRange;
 		
@@ -2111,10 +2112,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// NO if lexer doesn't find a token to suppress auto-uppercasing
 	// and continue earlier.
 	BOOL allowToCheckForUpperCase;
-
+	
 	// now loop through all the tokens
 	while (token=yylex()){
+
 		allowToCheckForUpperCase = YES;
+		
 		switch (token) {
 			case SPT_SINGLE_QUOTED_TEXT:
 			case SPT_DOUBLE_QUOTED_TEXT:
@@ -2148,8 +2151,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// make sure that tokenRange is valid (and therefore within textRange)
 		// otherwise a bug in the lex code could cause the the TextView to crash
 		// NOTE Disabled for testing purposes for speed it up
-		// tokenRange = NSIntersectionRange(tokenRange, textRange);
-		// if (!tokenRange.length) continue;
+		tokenRange = NSIntersectionRange(tokenRange, textRange);
+		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
@@ -2210,6 +2213,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[numericColor release];
 	[variableColor release];
 	[textColor release];
+
 }
 
 
@@ -2330,7 +2334,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) boundsDidChangeNotification:(NSNotification *)notification
 {
 	// Invoke syntax highlighting if text view port was changed for large text
-	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+	if(startListeningToBoundChanges && [[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 	{
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(doSyntaxHighlighting) 
@@ -2366,6 +2370,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([textStore editedMask] != 1){
 		[self doSyntaxHighlighting];
 	}
+
+	startListeningToBoundChanges = YES;
 
 }
 
@@ -2550,7 +2556,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		{
 			[self insertText:content];
 			[result release];
-			[self insertText:@""]; // Invoke keyword uppercasing
+			// [self insertText:@""]; // Invoke keyword uppercasing
 			return;
 		}
 		// If UNIX "file" failed try cocoa's encoding detection
@@ -2559,7 +2565,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		{
 			[self insertText:content];
 			[result release];
-			[self insertText:@""]; // Invoke keyword uppercasing
+			// [self insertText:@""]; // Invoke keyword uppercasing
 			return;
 		}
 	}

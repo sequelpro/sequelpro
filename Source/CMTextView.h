@@ -50,6 +50,8 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	BOOL autohelpEnabled;
 	NoodleLineNumberView *lineNumberView;
 	
+	BOOL startListeningToBoundChanges;
+	
 	NSString *showMySQLHelpFor;
 	
 	IBOutlet NSScrollView *scrollView;

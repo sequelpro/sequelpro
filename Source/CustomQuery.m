@@ -1067,7 +1067,7 @@
 - (void)doPerformLoadQueryService:(NSString *)query
 {
 	[textView setString:query];
-	[textView insertText:@""];
+	// [textView insertText:@""];
 }
 
 - (NSString *)usedQuery
