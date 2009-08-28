@@ -147,12 +147,28 @@
 							  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
 			return;
 		}
-		
+
 		[NSApp beginSheet:queryFavoritesSheet 
 		   modalForWindow:tableWindow 
 			modalDelegate:self 
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-			  contextInfo:@"addNewQueryFavorite"];
+			  contextInfo:@"addSelectionToNewQueryFavorite"];
+	}
+	if ([queryFavoritesButton indexOfSelectedItem] == 2) {
+		
+		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
+		// only be enabled if the query text view has at least one character present.
+		if ([[textView string] isEqualToString:@""]) {
+			NSBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
+			return;
+		}
+
+		[NSApp beginSheet:queryFavoritesSheet 
+		   modalForWindow:tableWindow 
+			modalDelegate:self 
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:@"addAllToNewQueryFavorite"];
 	}
 	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {
 		// Open query favorite manager
@@ -164,7 +180,11 @@
 	} 
 	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite
-		if([prefs boolForKey:@"QueryFavoriteReplacesContent"])
+		BOOL replaceContent = [prefs boolForKey:@"QueryFavoriteReplacesContent"];
+
+		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
+			replaceContent = !replaceContent;
+		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
 		[textView insertText:[[[prefs objectForKey:@"queryFavorites"] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
@@ -177,9 +197,15 @@
 - (IBAction)chooseQueryHistory:(id)sender
 {
 	// Choose history item
-	if ([queryHistoryButton indexOfSelectedItem] > 3) {
-		if([prefs boolForKey:@"QueryHistoryReplacesContent"])
+	if ([queryHistoryButton indexOfSelectedItem] > 1) {
+;
+		BOOL replaceContent = [prefs boolForKey:@"QueryHistoryReplacesContent"];
+
+		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
+			replaceContent = !replaceContent;
+		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
+
 		[textView insertText:[queryHistoryButton titleOfSelectedItem]];
 	}
 }
@@ -202,7 +228,7 @@
 	// "Clear History" menu item - clear query history
 	if (sender == clearHistoryMenuItem) {
 		// Remove all history buttons beginning from the end
-		while([queryHistoryButton numberOfItems] > 4)
+		while([queryHistoryButton numberOfItems] > 2)
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
 		// [queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
@@ -452,14 +478,14 @@
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
 	if(!tableReloadAfterEditing && [usedQuery length]) {
 
-		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:4];
+		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:2];
 
 		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
 
-		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 4 )
+		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 2 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
-		for ( i = 4 ; i < [queryHistoryButton numberOfItems] ; i++ )
+		for ( i = 2 ; i < [queryHistoryButton numberOfItems] ; i++ )
 			[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
 
 		[prefs setObject:menuItems forKey:@"queryHistory"];
@@ -1831,11 +1857,9 @@
 		[saveQueryFavoriteButton setEnabled:[[queryFavoriteNameTextField stringValue] length]];
 	else if ([notification object] == queryFavoritesSearchField){
 		[self filterQueryFavorites:nil];
-		[[saveQueryFavoriteButton menu] sizeToFit];
 	}
 	else if ([notification object] == queryHistorySearchField) {
 		[self filterQueryHistory:nil];
-		[[queryHistoryButton menu] sizeToFit];
 	}
 
 }
@@ -2408,25 +2432,30 @@
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
-	if ([contextInfo isEqualToString:@"addNewQueryFavorite"]) {
+	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
 		if (returnCode == NSOKButton) {
 			
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
 			NSMutableArray *favorites = [NSMutableArray arrayWithArray:[prefs objectForKey:@"queryFavorites"]];
-			
+
 			// What should be saved
 			NSString *queryToBeAddded;
-			// First check for a selection
-			if([textView selectedRange].length)
-				queryToBeAddded = [[textView string] substringWithRange:[textView selectedRange]];
-			// then for a current query
-			else if(currentQueryRange.length)
-				queryToBeAddded = [[textView string] substringWithRange:currentQueryRange];
-			// otherwise take the entire string
-			else
+
+			if([contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
+				// First check for a selection
+				if([textView selectedRange].length)
+					queryToBeAddded = [[textView string] substringWithRange:[textView selectedRange]];
+				// then for a current query
+				else if(currentQueryRange.length)
+					queryToBeAddded = [[textView string] substringWithRange:currentQueryRange];
+				// otherwise take the entire string
+				else
+					queryToBeAddded = [textView string];
+			} else {
 				queryToBeAddded = [textView string];
-				
+			}
+			
 			[favorites addObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 			
 			[prefs setObject:favorites forKey:@"queryFavorites"];
@@ -2453,6 +2482,10 @@
 			[menuItem setTitle:NSLocalizedString(@"Save Current Query to Favorites",@"Save Current Query to Favorites")];
 		else
 			[menuItem setTitle:NSLocalizedString(@"Save All to Favorites",@"Save All to Favorites")];
+	}
+	// Control "Save All to Favorites" = tag is set to 1001
+	if ( [menuItem tag] == 1001 ) {
+		if ([[textView string] length] < 1) return NO;
 	}
 	return YES;
 }
@@ -2513,7 +2546,7 @@
 {
 	int i;
 	NSMenu *menu = [queryHistoryButton menu];
-	for (i=4; i< [menu numberOfItems]; i++)
+	for (i=2; i< [menu numberOfItems]; i++)
 		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryHistorySearchField stringValue]]])];
 	
 }
