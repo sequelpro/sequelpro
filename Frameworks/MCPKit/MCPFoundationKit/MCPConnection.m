@@ -192,8 +192,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 {
 	delegate = connectionDelegate;
 	
-	// Check that the delegate implements willQueryString:connection: and cache the result as its used
-	// vert frequently.
+	// Check that the delegate implements willQueryString:connection: and cache the result as its used very frequently.
 	delegateResponseToWillQueryString = [delegate respondsToSelector:@selector(willQueryString:connection:)];
 }
 
@@ -273,11 +272,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  */
 - (BOOL)connect
 {
-	const char	*theLogin = [self cStringFromString:connectionLogin];
-	const char	*theHost;
-	const char	*thePass;
-	const char	*theSocket;
-	void		*theRet;
+	const char *theLogin = [self cStringFromString:connectionLogin];
+	const char *theHost;
+	const char *thePass;
+	const char *theSocket;
+	void	   *theRet;
 	
 	// Disconnect if a connection is already active
 	if (mConnected) {
@@ -301,8 +300,6 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	// Set the host as appropriate
 	if (!connectionHost || ![connectionHost length]) {
 		theHost = NULL;
-		
-		
 	} else {
 		theHost = [self cStringFromString:connectionHost];
 	}
@@ -559,7 +556,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  * ping, but cause long queries to be terminated.
  * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
  */
-- (BOOL) pingConnection
+- (BOOL)pingConnection
 {
 	struct sigaction timeoutAction;
 	NSDate *startDate = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
@@ -1531,7 +1528,7 @@ static void forcePingTimeout(NSInteger signalNumber)
 		const char *theCDBsName = (const char *)[self cStringFromString:dbsName];
 		
 		if (theResPtr = mysql_list_dbs(mConnection, theCDBsName)) {
-			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			[theResult initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
 		}
 		else {
 			[theResult init];
@@ -1593,11 +1590,13 @@ static void forcePingTimeout(NSInteger signalNumber)
 			[theResult init];
 		}
 	}
+	
 	[queryLock unlock];
 
 	if (theResult) {
 		[theResult autorelease];
 	}
+	
 	return theResult;
 }
 

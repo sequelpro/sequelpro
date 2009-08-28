@@ -27,6 +27,7 @@
 #import "SPAppController.h"
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
+#import "RegexKitLite.h"
 
 @implementation SPConnectionController
 
@@ -145,7 +146,6 @@
  */
 - (IBAction)initiateConnection:(id)sender
 {
-
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SP_CONNECTION_TCPIP || [self type] == SP_CONNECTION_SSHTUNNEL) && ![[self host] length]) {
 		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
@@ -260,6 +260,7 @@
 		[progressIndicatorText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
 	else
 		[progressIndicatorText setStringValue:NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
+	
 	[progressIndicatorText display];
 
 	// Initialise to socket if appropriate.
@@ -366,6 +367,8 @@
  */
 - (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail
 {
+	BOOL isSSHTunnelBindError = NO;
+	
 	// Clean up the interface
 	[progressIndicator stopAnimation:self];
 	[progressIndicator display];
@@ -376,14 +379,21 @@
 	[tableDocument clearStatusIcon];
 	
 	// Release as appropriate
-	if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+	if (sshTunnel) {
+		[sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+		
+		// If the SSH tunnel connection failed because the port it was trying to bind to was already in use take note
+		// of it so we can give the user the option of connecting via standard connection and use the existing tunnel. 
+		if ([theErrorMessage rangeOfString:@"bind"].location != NSNotFound) {
+			isSSHTunnelBindError = YES;
+		}
+	}
 	
 	if (errorDetail) [errorDetailText setString:errorDetail];
 
 	// Display the connection error message
-	NSBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), errorDetail?NSLocalizedString(@"Show detail", @"Show detail button"):nil, nil, documentWindow, self, nil, @selector(errorSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	NSBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, nil, @selector(errorSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 }
-
 
 /**
  * Alert sheet callback method - invoked when an error sheet is closed.
@@ -391,14 +401,36 @@
 - (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {	
 	[sheet orderOut:self];
-	if (returnCode == NSAlertAlternateReturn) [errorDetailWindow makeKeyAndOrderFront:self];
-		
+	
 	// Restore the passwords from keychain for editing if appropriate
 	if (connectionKeychainItemName) {
 		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 	}
 	if (connectionSSHKeychainItemName) {
 		[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
+	}
+	
+	if (returnCode == NSAlertAlternateReturn) {
+		[errorDetailWindow makeKeyAndOrderFront:self];
+	}
+	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
+	// this will definitely need to be updated.
+	else if (returnCode == NSAlertOtherReturn) {
+		// Extract the local port number that SSH attempted to bind to from the debug output
+		NSString *tunnelPort = [[[errorDetailText string] componentsMatchedByRegex:@"LOCALHOST:([0-9]+)" capture:1L] lastObject];
+		
+		// Change the connection type to standard TCP/IP
+		[self setType:SP_CONNECTION_TCPIP];
+				
+		// Change connection details
+		[self setPort:tunnelPort];
+		[self setHost:@"127.0.0.1"];
+				
+		// Change to standard TCP/IP connection view
+		[self resizeTabViewToConnectionType:SP_CONNECTION_TCPIP animating:YES];
+		
+		// Initiate the connection after half a second to give the connection view a chance to resize
+		[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.5];				
 	}
 }
 

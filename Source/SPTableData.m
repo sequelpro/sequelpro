@@ -433,9 +433,8 @@
 
 				int nextOffs = 12;
 				if( [parts count] > 8 ) {
-					// NOTE: this won't get SET NULL | NO ACTION
+					// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
 					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
-						//NSLog( @"update: %@", [parts objectAtIndex:10] );
 						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
@@ -450,7 +449,6 @@
 						}
 					} 
 					else if( [NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"] ) {
-						//NSLog( @"delete: %@", [parts objectAtIndex:10] );
 						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
@@ -467,7 +465,6 @@
 				}
 				if( [parts count] > nextOffs - 1 ) {
 					if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
-						//NSLog( @"update: %@", [parts objectAtIndex:13] );
 						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
@@ -480,7 +477,6 @@
 						}
 					} 
 					else if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"DELETE"] ) {
-						//NSLog( @"delete: %@", [parts objectAtIndex:13] );
 						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
@@ -498,7 +494,6 @@
 			}
 			// primary key
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] ) {
-				//NSLog( @"pkey is %@", [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );
 			}
 			// key
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"KEY"] ) {
