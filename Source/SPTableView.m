@@ -64,8 +64,9 @@
 	// Check if ENTER or RETURN is hit and edit the column.
 	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
 	{
-		if (![[[[self delegate] class] description] isEqualToString:@"CustomQuery"]){
-			[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];			
+		if (![[[[self delegate] class] description] isEqualToString:@"CustomQuery"] &&
+			![[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]){
+			[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 			return;
 		}
 	}

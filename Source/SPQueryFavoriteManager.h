@@ -58,6 +58,9 @@
 - (IBAction)removeAllQueryFavorites:(id)sender;
 - (IBAction)copyQueryFavorite:(id)sender;
 - (IBAction)saveFavoriteToFile:(id)sender;
+- (IBAction)exportFavorites:(id)sender;
+- (IBAction)importFavoritesByAdding:(id)sender;
+- (IBAction)importFavoritesByReplacing:(id)sender;
 - (IBAction)closeQueryManagerSheet:(id)sender;
 
 @end

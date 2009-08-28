@@ -27,6 +27,8 @@
 #import "SPEncodingPopupAccessory.h"
 
 #define DEFAULT_QUERY_FAVORITE_FILE_EXTENSION @"sql"
+#define DEFAULT_SEQUELPRO_FILE_EXTENSION @"spf"
+
 #define QUERY_FAVORITES_PB_DRAG_TYPE @"SequelProQueryFavoritesPasteboard"
 
 @implementation SPQueryFavoriteManager
@@ -118,21 +120,21 @@
  */
 - (IBAction)removeQueryFavorite:(id)sender
 {
-	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		[queryFavoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
-		
-		[favoritesTableView reloadData];
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected query favorites?", @"remove selected query favorites message") 
+									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")
+								   alternateButton:NSLocalizedString(@"Remove", @"remove button")
+									   otherButton:nil
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected query favorites? This action cannot be undone.", @"remove all selected query favorites informative message")];
 
-		[prefs synchronize];
-
-		// Set focus to favorite list to avoid an unstable state
-		[[self window] makeFirstResponder:favoritesTableView];
-
-		// Inform the delegate that the query favorites have been updated
-		if (delegateRespondsToFavoriteUpdates) {
-			[delegate queryFavoritesHaveBeenUpdated:self];
-		}
-	}
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@""];
+	
+	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFavorites"];
 }
 
 /**
@@ -190,12 +192,37 @@
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
-	
+	[panel setCanCreateDirectories:YES];
+
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 	
 	[encodingPopUp setEnabled:YES];
 	
-	[panel beginSheetForDirectory:nil file:[favoriteNameTextField stringValue] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil file:[favoriteNameTextField stringValue] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveQuery"];
+}
+
+- (IBAction)exportFavorites:(id)sender
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:DEFAULT_SEQUELPRO_FILE_EXTENSION];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:NO];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setCanCreateDirectories:YES];
+
+	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFavorites"];
+}
+
+- (IBAction)importFavoritesByAdding:(id)sender
+{
+	
+}
+
+- (IBAction)importFavoritesByReplacing:(id)sender
+{
+	
 }
 
 /**
@@ -266,11 +293,15 @@
 {
 	SEL action = [menuItem action];
 	
-	if ((action == @selector(removeQueryFavorite:))	|| 
-		(action == @selector(copyQueryFavorite:))	|| 
+	if ( (action == @selector(copyQueryFavorite:))	|| 
 		(action == @selector(saveFavoriteToFile:))) 
 	{
 		return ([favoritesTableView numberOfSelectedRows] == 1);
+	}
+	else if ( (action == @selector(removeQueryFavorite:))	||
+		( action == @selector(exportFavorites:)))
+	{
+		return ([favoritesTableView numberOfSelectedRows] > 0);
 	}
 	else if (action == @selector(removeAllQueryFavorites:)) {
 		return ([[queryFavoritesController arrangedObjects] count] > 0);
@@ -354,6 +385,31 @@
 			[queryFavoritesController removeObjects:[queryFavoritesController arrangedObjects]];
 		}
 	}
+	if([contextInfo isEqualToString:@"removeSelectedFavorites"]) {
+		if (returnCode == NSAlertAlternateReturn) {
+			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
+
+			// get last index
+			NSUInteger currentIndex = [indexes lastIndex];
+
+			while (currentIndex != NSNotFound) {
+				[queryFavoritesController removeObjectAtArrangedObjectIndex:currentIndex];
+				// get next index (beginning from the end)
+				currentIndex = [indexes indexLessThanIndex:currentIndex];
+			}
+
+			[favoritesTableView reloadData];
+
+			[prefs synchronize];
+
+			// Set focus to favorite list to avoid an unstable state
+			[[self window] makeFirstResponder:favoritesTableView];
+
+			// Inform the delegate that the query favorites have been updated
+			if (delegateRespondsToFavoriteUpdates)
+				[delegate queryFavoritesHaveBeenUpdated:self];
+		}
+	}
 }
 
 /**
@@ -361,15 +417,66 @@
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
-	if (returnCode == NSOKButton) {
-		NSError *error = nil;
+
+	if([contextInfo isEqualToString:@"saveQuery"]) {
+		if (returnCode == NSOKButton) {
+			NSError *error = nil;
 		
-		[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
-		[prefs synchronize];
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+			[prefs synchronize];
 		
-		[[favoriteQueryTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
+			[[favoriteQueryTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
 		
-		if (error) [[NSAlert alertWithError:error] runModal];
+			if (error) [[NSAlert alertWithError:error] runModal];
+		}
+	}
+	else if([contextInfo isEqualToString:@"exportFavorites"]) {
+		if (returnCode == NSOKButton) {
+
+			// Build a SPF with format = "query favorites"
+			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
+			NSMutableArray *favoriteData = [NSMutableArray array];
+			NSMutableDictionary *data = [NSMutableDictionary dictionary];
+			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spfdata setObject:@"query favorites" forKey:@"format"];
+			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+
+			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
+
+			// get last index
+			NSUInteger currentIndex = [indexes lastIndex];
+
+			while (currentIndex != NSNotFound) {
+				[favoriteData addObject:[[self queryFavorites] objectAtIndex:currentIndex]];
+				
+				// get next index (beginning from the end)
+				currentIndex = [indexes indexLessThanIndex:currentIndex];
+			}
+			[data setObject:favoriteData forKey:@"queryFavorites"];
+			[spfdata setObject:data forKey:@"data"];
+			
+			NSString *err = nil;
+			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
+													  format:NSPropertyListXMLFormat_v1_0
+											errorDescription:&err];
+
+			if(err != nil) {
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting query favorite data", @"error while converting query favorite data")]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:err];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				return;
+			}
+
+			NSError *error = nil;
+			[plist writeToFile:[panel filename] options:NSAtomicWrite error:&error];
+			if (error) [[NSAlert alertWithError:error] runModal];
+
+		}
 	}
 }
 
