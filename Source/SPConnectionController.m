@@ -844,7 +844,6 @@
 	}
 }
 
-
 #pragma mark -
 #pragma mark NSSplitView delegate methods
 
@@ -857,9 +856,23 @@
 	[contentView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
 }
 
+/**
+ * Return the maximum possible size of the splitview.
+ */
+- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+{
+	return (proposedMax - 450);
+}
+
+/**
+ * Return the minimum possible size of the splitview.
+ */
+- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+{
+	return (proposedMin + 80);
+}
 
 @end
-
 
 #pragma mark -
 #pragma mark NSView subclass - flipped view for simpler drawing
