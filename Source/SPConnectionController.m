@@ -163,6 +163,7 @@
 
 	// Basic details have validated - start the connection process animating
 	[addToFavoritesButton setHidden:YES];
+	[helpButton setHidden:YES];
 	[connectButton setEnabled:NO];
 	[progressIndicator startAnimation:self];
 	[progressIndicatorText setHidden:NO];
@@ -861,7 +862,7 @@
  */
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
 {
-	return (proposedMax - 450);
+	return (proposedMax - 445);
 }
 
 /**

@@ -40,7 +40,9 @@ enum spconnection_types
 @class BWAnchoredButtonBar;
 
 @interface NSObject (BWAnchoredButtonBar)
+
 - (void)setSplitViewDelegate:(id)splitViewDelegate;
+
 @end
 
 @interface SPConnectionController : NSObject 
@@ -68,7 +70,7 @@ enum spconnection_types
 	NSString *sshUser;
 	NSString *sshPassword;
 	NSString *sshPort;
-	
+
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
@@ -78,26 +80,28 @@ enum spconnection_types
 	IBOutlet NSSplitView *connectionSplitView;
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
 	IBOutlet NSTableView *favoritesTable;
-	
+
 	IBOutlet NSWindow *errorDetailWindow;
 	IBOutlet NSTextView *errorDetailText;
-	
+
 	IBOutlet NSView *connectionResizeContainer;
 	IBOutlet NSView *standardConnectionFormContainer;
 	IBOutlet NSView *socketConnectionFormContainer;
 	IBOutlet NSView *sshConnectionFormContainer;
-	
+
 	IBOutlet NSTextField *standardSQLHostField;
 	IBOutlet NSTextField *sshSQLHostField;
 	IBOutlet NSSecureTextField *standardPasswordField;
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
 	IBOutlet NSSecureTextField *sshSSHPasswordField;
-	
+
 	IBOutlet NSButton *addToFavoritesButton;
 	IBOutlet NSButton *connectButton;
+	IBOutlet NSButton *helpButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
+
 }
 
 @property (readwrite, assign) int type;
@@ -118,7 +122,7 @@ enum spconnection_types
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
 
-- (id) initWithDocument:(TableDocument *)theTableDocument;
+- (id)initWithDocument:(TableDocument *)theTableDocument;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
@@ -127,23 +131,23 @@ enum spconnection_types
 - (void)initiateMySQLConnection;
 - (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
 - (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
-- (void) addConnectionToDocument;
+- (void)addConnectionToDocument;
 
 // Interface interaction
-- (IBAction) editFavorites:(id)sender;
-- (IBAction) showHelp:(id)sender;
-- (void) resizeTabViewToConnectionType:(unsigned int)theType animating:(BOOL)animate;
+- (IBAction)editFavorites:(id)sender;
+- (IBAction)showHelp:(id)sender;
+- (void)resizeTabViewToConnectionType:(unsigned int)theType animating:(BOOL)animate;
 
 // Connection details interaction
-- (BOOL) checkHost;
+- (BOOL)checkHost;
 
 // Favorites interaction
-- (void) updateFavorites;
-- (void) updateFavoriteSelection:(id)sender;
-- (id) selectedFavorite;
-- (IBAction) addFavorite:(id)sender;
+- (void)updateFavorites;
+- (void)updateFavoriteSelection:(id)sender;
+- (id)selectedFavorite;
+- (IBAction)addFavorite:(id)sender;
 
-- (void) splitViewDidResizeSubviews:(NSNotification *)aNotification;
+- (void)splitViewDidResizeSubviews:(NSNotification *)aNotification;
 
 @end
 
