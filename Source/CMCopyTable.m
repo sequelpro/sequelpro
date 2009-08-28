@@ -418,13 +418,13 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 			if([[self delegate] tableView:tableContentView shouldEditTableColumn:[[tableContentView tableColumns] objectAtIndex:0] row:[tableContentView selectedRow]]) {
 				[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
-				return;
 			}
 		}
-
+	} else {
+		[super keyDown:theEvent];		
 	}
 
-	[super keyDown:theEvent];
+
 
 }
 
