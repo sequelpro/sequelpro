@@ -176,6 +176,7 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
+	// Choose history item
 	if ([queryHistoryButton indexOfSelectedItem] > 3) {
 		if([prefs boolForKey:@"QueryHistoryReplacesContent"])
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
@@ -1839,28 +1840,6 @@
 
 }
 
-/*
- * TODO !! If user hit RETURN in fav/history search field
- * the next menu item if any should be highlighted and the
- * menu list should become the first responder - but how?
- */
-- (void)controlTextDidEndEditing:(NSNotification *)notification
-{
-	if ([notification object] == queryFavoritesSearchField) {
-		[self filterQueryFavorites:nil];
-		if( [queryFavoritesButton numberOfItems] > 6 ) {
-			// TODO How to select the next menu item if user hits ENTER in search field?
-			// [queryFavoritesButton selectItemAtIndex:6];
-		}
-	}
-	else if ([notification object] == queryHistorySearchField) {
-		[self filterQueryHistory:nil];
-		if( [queryHistoryButton numberOfItems] > 4 ) {
-			// TODO How to select the next menu item if user hits ENTER in search field?
-			// [queryHistoryButton selectItemAtIndex:4];
-		}
-	}
-}
 
 #pragma mark -
 #pragma mark SplitView delegate methods
@@ -2543,14 +2522,6 @@
 {
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	
-	// Add the searchfield to the Query Favorite popup button list
-	[queryFavoritesSearchMenuItem setView:queryFavoritesSearchFieldView];
-	[queryFavoritesSearchField setNextKeyView:queryFavoritesButton];
-
-	// Add the searchfield to the Query Favorite popup button list
-	[queryHistorySearchMenuItem setView:queryHistorySearchFieldView];
-	[queryHistorySearchField setNextKeyView:queryHistoryButton];
 
 	// Populate the query favorites popup button
 	NSMenu *menu = [queryFavoritesButton menu];
