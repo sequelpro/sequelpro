@@ -28,7 +28,9 @@
 /**
  * This class is designed to be the base class of all data exporters and provide basic functionality
  * common to each of them. Each data exporter (i.e. CSV, SQL, XML, etc.) should be implemented as a subclass
- * of this class, with the end result being an uncomplicated export architecture defined by export type.
+ * of this class, with the end result being a modular export architecture separated by export type. All exporters
+ * should also conform to the SPExporterAccess protocol to allow generic access to the exporter's state and common
+ * functionality.
  *
  * All export functionality is initially controlled by SPExportController, which is the single point within the
  * architecture that controls the user interface and provides user feedback. When the user starts an export 

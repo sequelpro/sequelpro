@@ -49,22 +49,26 @@
 
 @synthesize csvOutputEncoding;
 
+@synthesize csvExportIsRunning;
+@synthesize csvThreadShouldExit;
+
 /**
- * Initialize an instance of the exporter using the supplied file handle.
+ * Initialize an instance of the exporter setting some default values
  */
-- (id)initWithFileHandle:(NSFileHandle *)fileHandle
+- (id)init
 {
 	if ((self == [super init])) {
-		[self setCsvFileHandle:fileHandle];
+		[self setCsvExportIsRunning:NO];
+		[self setCsvThreadShouldExit:NO];
 	}
 	
 	return self;
 }
 
 /**
- *
+ * Start the CSV export process.
  */
-- (BOOL)startCSVExport
+- (BOOL)startExportProcess
 {	
 	// Check that we have all the required info before starting the export
 	if ((![self csvFileHandle]) ||
@@ -94,14 +98,30 @@
 	if (delegate && [delegate respondsToSelector:@selector(exportProcessDidStart:)]) {
 		[delegate exportProcessDidStart:self];
 	}
+	
+	[self setCsvExportIsRunning:YES];
 		
 	// Start the export in a new thread
 	[NSThread detachNewThreadSelector:@selector(startCSVExportInBackgroundThread) toTarget:self withObject:nil];
+	
+	[self setCsvExportIsRunning:NO];
 	
 	// Tell the delegate that the export process has ended
 	if (delegate && [delegate respondsToSelector:@selector(exportProcessDidEnd:)]) {
 		[delegate exportProcessDidEnd:self];
 	}
+	
+	return YES;
+}
+
+/**
+ * Stop the CSV export process by killing the export thread and cleaning up if its running.
+ */
+- (BOOL)stopExportProcess
+{
+	if (![self csvExportIsRunning]) return NO;
+	
+	// Kill the running thread here
 	
 	return YES;
 }
@@ -210,6 +230,13 @@
 	// Walk through the supplied data constructing the CSV string
 	for (i = startingRow; i < totalRows; i++) 
 	{
+		// Check if we should stop and exit the export operation
+		if ([self csvThreadShouldExit]) {
+			[pool release];
+			
+			return;
+		}
+		
 		// Update the progress value
 		if (totalRows) [self setProgressValue:(((i + 1) * 100) / totalRows)];
 		

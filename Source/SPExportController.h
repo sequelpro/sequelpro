@@ -46,21 +46,28 @@ typedef NSUInteger SPExportSource;
 
 @interface SPExportController : NSObject 
 {
-	// Table Document
+	// Table document
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
 	
-	// Tables List
+	// Tables list
 	IBOutlet id tablesListInstance;
 	
-	// Export Window
+	// Export window
 	IBOutlet id exportWindow;
 	IBOutlet id exportToolbar;
+	IBOutlet id exportPathField;
 	IBOutlet id	exportTableList;
 	IBOutlet id exportTabBar;	
 	IBOutlet id exportInputMatrix;
 	IBOutlet id exportFilePerTableCheck;
 	IBOutlet id exportFilePerTableNote;
+	
+	// Export progress sheet
+	IBOutlet id exportProgressWindow;
+	IBOutlet id exportProgressTitle;
+	IBOutlet id exportProgressText;
+	IBOutlet id exportProgressIndicator;
 	
 	// SQL
 	IBOutlet id exportSQLIncludeStructureCheck;
@@ -87,13 +94,13 @@ typedef NSUInteger SPExportSource;
 	// PDF
 	IBOutlet id exportPDFIncludeStructureCheck;
 	
-	// Token Name View
+	// Token name view
 	IBOutlet id tokenNameView;
 	IBOutlet id tokenNameField;
 	IBOutlet id tokenNameTokensField;
 	IBOutlet id exampleNameLabel;
 	
-	// Local Variables
+	// Local variables
 	MCPConnection *mySQLConnection;
 	NSMutableArray *tables;
 }
@@ -101,6 +108,8 @@ typedef NSUInteger SPExportSource;
 // Export Methods
 - (void)export;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)cancelExport:(id)sender;
+- (IBAction)changeExportOutputPath:(id)sender;
 
 // Utility Methods
 - (void)setConnection:(MCPConnection *)theConnection;

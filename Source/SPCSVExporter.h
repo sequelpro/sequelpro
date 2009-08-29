@@ -25,10 +25,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "SPExporter.h"
 #import "MCPKit.h"
+#import "SPExporter.h"
+#import "SPExporterAccess.h"
 
-@interface SPCSVExporter : SPExporter 
+@interface SPCSVExporter : SPExporter <SPExporterAccess>
 {
 	// CSV file
 	NSFileHandle *csvFileHandle;
@@ -48,6 +49,10 @@
 	
 	// CSV encoding
 	NSStringEncoding csvOutputEncoding;
+	
+	// Operational
+	BOOL csvExportIsRunning;
+	BOOL csvThreadShouldExit;
 }
 
 @property (readwrite, retain) NSFileHandle *csvFileHandle;
@@ -65,8 +70,10 @@
 
 @property (readwrite, assign) NSStringEncoding csvOutputEncoding;
 
-- (id)initWithFileHandle:(NSFileHandle *)fileHandle;
+@property (readwrite, assign) BOOL csvExportIsRunning;
+@property (readwrite, assign) BOOL csvThreadShouldExit;
 
-- (BOOL)startCSVExport;
+- (BOOL)startExportProcess;
+- (BOOL)stopExportProcess;
 
 @end

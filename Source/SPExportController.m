@@ -23,12 +23,17 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportController.h"
+#import "SPCSVExporter.h"
 #import "TablesList.h"
+#import "TableDocument.h"
 #import "SPArrayAdditions.h"
 
 @implementation SPExportController
 
-- (id)init;
+/**
+ * Initializes an instance of SPExportController
+ */
+- (id)init
 {
 	if ((self = [super init])) {
 		tables = [[NSMutableArray alloc] init];
@@ -37,6 +42,9 @@
 	return self;
 }
 
+/**
+ * Upon awakening select the first toolbar item
+ */
 - (void)awakeFromNib
 {
 	// Upon awakening select the SQL tab
@@ -46,13 +54,16 @@
 #pragma mark -
 #pragma mark Export methods
 
+/**
+ * Display the export window allowing the user to select what and of what type to export.
+ */
 - (void)export
 {
-	if (!exportWindow) {
-		[NSBundle loadNibNamed:@"ExportDialog" owner:self];
-	}
+	if (!exportWindow) [NSBundle loadNibNamed:@"ExportDialog" owner:self];
 	
 	[self loadTables];
+
+	[exportPathField setStringValue:NSHomeDirectory()];
 	
 	[NSApp beginSheet:exportWindow
 	   modalForWindow:tableWindow
@@ -61,10 +72,32 @@
 		  contextInfo:nil];
 }
 
+/**
+ * Close the export dialog
+ */
 - (IBAction)closeSheet:(id)sender
 {
 	[NSApp endSheet:exportWindow returnCode:[sender tag]];
 	[exportWindow orderOut:self];
+}
+
+/**
+ *
+ */
+- (IBAction)cancelExport:(id)sender
+{
+	// Cancel the export operation here
+}
+
+- (IBAction)changeExportOutputPath:(id)sender
+{
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	
+	[panel setCanChooseFiles:NO];
+	[panel setCanChooseDirectories:YES];
+	[panel setCanCreateDirectories:YES];
+	
+	[panel beginSheetForDirectory:NSHomeDirectory() file:nil modalForWindow:exportWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
@@ -83,8 +116,81 @@
 			}
 		}
 		
-		// Determine what data to use (filtered result, custom query result or selected tables)
+		// Determine what data to use (filtered result, custom query result or selected tables) for the export operation
 		SPExportSource exportSource = ([exportInputMatrix selectedRow] + 1);
+		
+		NSMutableArray *exportTables = [NSMutableArray array];
+		
+		// Get the data depending on the source
+		switch (exportSource) 
+		{
+			case SP_FILTERED_EXPORT:
+				
+				break;
+			case SP_CUSTOM_QUERY_EXPORT:
+				
+				break;
+			case SP_TABLE_EXPORT:
+				// Create an array of tables to export
+				for (NSMutableArray *table in tables)
+				{
+					if ([[table objectAtIndex:0] boolValue]) {
+						[exportTables addObject:[table objectAtIndex:1]];
+					}
+				}
+				
+				break;
+		}
+		
+		// Create the file handle
+		
+		
+		SPExporter *exporter;
+		SPCSVExporter *csvExporter;
+		
+		// Based on the type of export create a new instance of the corresponding exporter and set it's specific options
+		switch (exportType)
+		{
+			case SP_SQL_EXPORT:
+				
+				break;
+			case SP_CSV_EXPORT:
+				csvExporter = [[SPCSVExporter alloc] init];
+				
+				[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
+				[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
+				[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
+				[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
+				[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
+				
+				[csvExporter setCsvOutputEncoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+				[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:@"NullValue"]];
+				
+				exporter = csvExporter;
+				break;
+			case SP_XML_EXPORT:
+				
+				break;
+			case SP_PDF_EXPORT:
+				
+				break;
+			case SP_HTML_EXPORT:
+				
+				break;
+			case SP_EXCEL_EXPORT:
+				
+				break;
+		}
+		
+		// Set the exporter's delegate
+		[exporter setDelegate:self];
+	}
+}
+
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode == NSOKButton) {
+		[exportPathField setStringValue:[panel directory]];
 	}
 }
 
