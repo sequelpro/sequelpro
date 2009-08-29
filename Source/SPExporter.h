@@ -42,8 +42,22 @@
  * used within a separate thread can be reclaimed immediately after the thread completes its cycle and it's 
  * autorelease pool is released).
  */
-@interface SPExporter : NSObject 
 
-// Implement functionality common to all exporters here
+@interface NSObject (SPExporterDelegate)
+
+- (void)exportProcessDidStart:(id)exporter;
+- (void)exportProcessDidEnd:(id)exporter;
+
+@end
+
+@interface SPExporter : NSObject 
+{
+	id delegate;
+	
+	double progressValue;
+}
+
+@property (readwrite, assign) id delegate;
+@property (readwrite, assign) double progressValue;
 
 @end

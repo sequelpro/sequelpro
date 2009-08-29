@@ -73,6 +73,18 @@
 	if (returnCode == NSOKButton) {
 		
 		// First determine what type of export the user selected
+		SPExportType exportType = 0;
+		
+		for (NSToolbarItem *item in [exportToolbar items])
+		{
+			if ([[item itemIdentifier] isEqualToString:[exportToolbar selectedItemIdentifier]]) {
+				exportType = [item tag];
+				break;
+			}
+		}
+		
+		// Determine what data to use (filtered result, custom query result or selected tables)
+		SPExportSource exportSource = ([exportInputMatrix selectedRow] + 1);
 	}
 }
 
@@ -86,7 +98,7 @@
 
 - (void)loadTables
 {
-	int i;
+	NSUInteger i;
 	
 	[tables removeAllObjects];
 	
@@ -130,12 +142,12 @@
 	return [tables count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {	
 	return NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], ([[aTableColumn identifier] isEqualToString:@"switch"]) ? 0 : 1);
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
 }
@@ -153,7 +165,7 @@
 	return (aTableView == exportTableList);
 }
 
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
@@ -166,7 +178,7 @@
 	NSMutableArray *items = [NSMutableArray arrayWithCapacity:6];
 	
 	for (NSToolbarItem *item in [toolbar items])
-	{
+	{	
 		[items addObject:[item itemIdentifier]];
 	}
 	

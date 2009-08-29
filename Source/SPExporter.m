@@ -27,4 +27,7 @@
 
 @implementation SPExporter
 
+@synthesize delegate;
+@synthesize progressValue;
+
 @end

@@ -43,7 +43,11 @@
 	NSString *csvEnclosingCharacterString;
 	NSString *csvEscapeString;
 	NSString *csvLineEndingString;
+	NSString *csvNULLString;
 	NSArray  *csvTableColumnNumericStatus;
+	
+	// CSV encoding
+	NSStringEncoding csvOutputEncoding;
 }
 
 @property (readwrite, retain) NSFileHandle *csvFileHandle;
@@ -51,13 +55,18 @@
 @property (readwrite, retain) NSArray *csvDataArray;
 @property (readwrite, retain) MCPResult *csvDataResult;
 
-@property (readwrite) BOOL csvOutputFieldNames;
+@property (readwrite, assign) BOOL csvOutputFieldNames;
 @property (readwrite, retain) NSString *csvFieldSeparatorString;
 @property (readwrite, retain) NSString *csvEnclosingCharacterString;
 @property (readwrite, retain) NSString *csvEscapeString;
 @property (readwrite, retain) NSString *csvLineEndingString;
+@property (readwrite, retain) NSString *csvNULLString;
 @property (readwrite, retain) NSArray  *csvTableColumnNumericStatus;
 
+@property (readwrite, assign) NSStringEncoding csvOutputEncoding;
+
 - (id)initWithFileHandle:(NSFileHandle *)fileHandle;
+
+- (BOOL)startCSVExport;
 
 @end
