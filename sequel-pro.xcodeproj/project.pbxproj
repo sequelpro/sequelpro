@@ -108,6 +108,8 @@
 		17E6420A0EF020CB001BC333 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E642060EF020CB001BC333 /* DBView.xib */; };
 		17E6423B0EF0216C001BC333 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17E642390EF0216C001BC333 /* Credits.rtf */; };
 		17E6423E0EF0218B001BC333 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17E6423C0EF0218B001BC333 /* InfoPlist.strings */; };
+		17F5B1511048C4E400FC794F /* SPCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5B1501048C4E400FC794F /* SPCSVExporter.m */; };
+		17F5B1541048C50D00FC794F /* SPExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5B1531048C50D00FC794F /* SPExporter.m */; };
 		296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC89E0F8FD336002A3258 /* WebKit.framework */; };
 		296DC8B60F909194002A3258 /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8A70F909194002A3258 /* MGTemplateEngine.m */; };
 		296DC8B70F909194002A3258 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
@@ -458,6 +460,10 @@
 		17E642070EF020CB001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DBView.xib; sourceTree = "<group>"; };
 		17E6423A0EF0216C001BC333 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = Interfaces/English.lproj/Credits.rtf; sourceTree = SOURCE_ROOT; };
 		17E6423D0EF0218B001BC333 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = Interfaces/English.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		17F5B14F1048C4E400FC794F /* SPCSVExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCSVExporter.h; sourceTree = "<group>"; };
+		17F5B1501048C4E400FC794F /* SPCSVExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCSVExporter.m; sourceTree = "<group>"; };
+		17F5B1521048C50D00FC794F /* SPExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExporter.h; sourceTree = "<group>"; };
+		17F5B1531048C50D00FC794F /* SPExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExporter.m; sourceTree = "<group>"; };
 		296DC89E0F8FD336002A3258 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
 		296DC8A50F909194002A3258 /* MGTemplateMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGTemplateMarker.h; sourceTree = "<group>"; };
 		296DC8A60F909194002A3258 /* MGTemplateFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGTemplateFilter.h; sourceTree = "<group>"; };
@@ -907,6 +913,7 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				17F5B1491048C4C000FC794F /* Data Export */,
 				17E641480EF01EF6001BC333 /* CustomQuery.h */,
 				17E641490EF01EF6001BC333 /* CustomQuery.m */,
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
@@ -915,8 +922,6 @@
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
 				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
-				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
-				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
 				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
 				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
 				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
@@ -1142,6 +1147,19 @@
 				173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */,
 			);
 			path = Interfaces;
+			sourceTree = "<group>";
+		};
+		17F5B1491048C4C000FC794F /* Data Export */ = {
+			isa = PBXGroup;
+			children = (
+				17F5B1521048C50D00FC794F /* SPExporter.h */,
+				17F5B1531048C50D00FC794F /* SPExporter.m */,
+				17F5B14F1048C4E400FC794F /* SPCSVExporter.h */,
+				17F5B1501048C4E400FC794F /* SPCSVExporter.m */,
+				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
+				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
+			);
+			name = "Data Export";
 			sourceTree = "<group>";
 		};
 		19C28FB0FE9D524F11CA2CBB /* Products */ = {
@@ -1673,6 +1691,8 @@
 				BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */,
 				173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */,
 				173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */,
+				17F5B1511048C4E400FC794F /* SPCSVExporter.m in Sources */,
+				17F5B1541048C50D00FC794F /* SPExporter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

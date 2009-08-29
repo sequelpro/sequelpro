@@ -63,13 +63,17 @@
 
 - (IBAction)closeSheet:(id)sender
 {
-	[NSApp endSheet:exportWindow];
-	[NSApp stopModalWithCode:[sender tag]];
+	[NSApp endSheet:exportWindow returnCode:[sender tag]];
+	[exportWindow orderOut:self];
 }
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
-	[sheet orderOut:self];
+	// Perform the export
+	if (returnCode == NSOKButton) {
+		
+		// First determine what type of export the user selected
+	}
 }
 
 #pragma mark -
@@ -159,10 +163,9 @@
 
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	NSArray *array = [toolbar items];
 	NSMutableArray *items = [NSMutableArray arrayWithCapacity:6];
 	
-	for (NSToolbarItem *item in array)
+	for (NSToolbarItem *item in [toolbar items])
 	{
 		[items addObject:[item itemIdentifier]];
 	}
@@ -176,6 +179,7 @@
 - (void)dealloc
 {	
     [tables release], tables = nil;
+	
 	[super dealloc];
 }
 
