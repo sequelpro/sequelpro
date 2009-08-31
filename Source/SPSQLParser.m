@@ -476,7 +476,11 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (long) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	return [self firstOccurrenceOfCharacter:character afterIndex:-1 skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
+	if (character != parsedToChar) {
+		parsedToChar = character;
+		parsedToPosition = -1;
+	}
+	return [self firstOccurrenceOfCharacter:character afterIndex:parsedToPosition skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
 }
 
 
@@ -485,6 +489,10 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
+	if (character != parsedToChar) {
+		parsedToChar = '\0';
+		parsedToPosition = -1;
+	}
 	return [self firstOccurrenceOfCharacter:character afterIndex:startIndex skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
 }
 
@@ -495,6 +503,11 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	unichar currentCharacter;
 	long stringLength = [string length];
 	int bracketingLevel = 0;
+
+	if (character != parsedToChar) {
+		parsedToChar = character;
+		parsedToPosition = -1;
+	}
 
 	// Cache frequently used selectors, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
@@ -510,6 +523,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		// Check for the ending character, and if it has been found and quoting/brackets is valid, return.
 		if (currentCharacter == character) {
 			if (!skipBrackets || bracketingLevel <= 0) {
+				parsedToPosition = currentStringIndex;
 				return currentStringIndex;
 			}
 		}
@@ -524,6 +538,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				if (!ignoreQuotedStrings) break;
 				quotedStringEndIndex = (long)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
 				if (quotedStringEndIndex == NSNotFound) {
+					parsedToPosition = currentStringIndex;
 					return NSNotFound;
 				}
 				currentStringIndex = quotedStringEndIndex;
@@ -560,6 +575,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	}
 
 	// If no matches have been made in this string, return NSNotFound.
+	parsedToPosition = stringLength - 1;
 	return NSNotFound;
 }
 
@@ -824,6 +840,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	}
 	charCacheEnd = -1;
 	charCacheStart = 0;
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 }
 - (void) deleteCharactersInRange:(NSRange)aRange
 {
@@ -842,6 +860,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString string] retain];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
@@ -849,6 +869,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytes:bytes length:length encoding:encoding];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
@@ -856,6 +878,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytesNoCopy:bytes length:length encoding:encoding freeWhenDone:flag];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
@@ -863,6 +887,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString stringWithCapacity:capacity] retain];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
@@ -870,17 +896,23 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCharactersNoCopy:characters length:length freeWhenDone:flag];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
 - (id) initWithContentsOfFile:(id)path {
-	charCacheEnd = -1;
+	parsedToChar = '\0';
+	parsedToPosition = 0;
+	parsedToPosition = -1;
 	return [self initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
 }
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)encoding error:(NSError **)error {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithContentsOfFile:path encoding:encoding error:error];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
@@ -888,6 +920,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCString:nullTerminatedCString encoding:encoding];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }
@@ -896,6 +930,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	va_start(argList, format);
 	id str = [self initWithFormat:format arguments:argList];
 	va_end(argList);
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return str;
 }
@@ -903,6 +939,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithFormat:format arguments:argList];
 	}
+	parsedToChar = '\0';
+	parsedToPosition = -1;
 	charCacheEnd = -1;
 	return self;
 }

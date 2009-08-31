@@ -116,6 +116,8 @@
 
 // Import methods
 - (void)importFile;
+- (void) importSQLFile:(NSString *)filename;
+- (void) importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
 - (IBAction)changeTable:(id)sender;
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;

@@ -54,14 +54,14 @@
  *
  * It is anticipated that characterAtIndex: is currently the parsing weak point, and that in future
  * this class could be further optimised by working with the underlying object/characters directly.
- * This class could also be improved by maintaining an internal parsedTo number to allow streaming
- * processing to occur without repetition.
  */
 
 @interface SPSQLParser : NSMutableString
 {
 	id string;
 	unichar *stringCharCache;
+	unichar parsedToChar;
+	long parsedToPosition;
 	long charCacheStart;
 	long charCacheEnd;
 	NSString *delimiter;
