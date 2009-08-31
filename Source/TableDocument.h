@@ -32,6 +32,13 @@
 
 @class SPConnectionController, SPUserManager;
 
+enum sp_current_query_mode
+{
+	SP_QUERYMODE_INTERFACE = 0,
+	SP_QUERYMODE_CUSTOMQUERY = 1,
+	SP_QUERYMODE_IMPORTEXPORT = 2
+};
+
 /**
  * The TableDocument class controls the primary database view window.
  */
@@ -124,6 +131,7 @@
 	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
 	BOOL _mainNibLoaded;
+	int _queryMode;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -180,6 +188,7 @@
 - (IBAction)checksumTable:(id)sender;
 
 // Other methods
+- (void) setQueryMode:(int)theQueryMode;
 - (NSString *)host;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closeErrorConnectionSheet:(id)sender;

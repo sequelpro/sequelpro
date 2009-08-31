@@ -71,6 +71,7 @@
 		_mainNibLoaded = NO;
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
+		_queryMode = SP_QUERYMODE_INTERFACE;
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
 		connectionController = nil;
@@ -1049,6 +1050,14 @@
 - (void)clearConsole:(id)sender
 {
 	[[SPQueryConsole sharedQueryConsole] clearConsole:sender];
+}
+
+/**
+ * Set a query mode, used to control logging dependant on preferences
+ */
+- (void) setQueryMode:(int)theQueryMode
+{
+	_queryMode = theQueryMode;
 }
 
 #pragma mark -
@@ -2802,9 +2811,15 @@
  * Invoked when the framework is about to perform a query.
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
-{		
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"ConsoleEnableLogging"]) {
-		[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+{
+	NSLog(@"Mode is %i, bool is %@", _queryMode, [prefs boolForKey:@"ConsoleEnableImportExportLogging"]?@"on":@"off");
+	if ([prefs boolForKey:@"ConsoleEnableLogging"]) {
+		if ((_queryMode == SP_QUERYMODE_INTERFACE && [prefs boolForKey:@"ConsoleEnableInterfaceLogging"])
+			|| (_queryMode == SP_QUERYMODE_CUSTOMQUERY && [prefs boolForKey:@"ConsoleEnableCustomQueryLogging"])
+			|| (_queryMode == SP_QUERYMODE_IMPORTEXPORT && [prefs boolForKey:@"ConsoleEnableImportExportLogging"]))
+		{
+			[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+		}
 	}
 }
 
@@ -2813,7 +2828,9 @@
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {	
-	[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
+	if ([prefs boolForKey:@"ConsoleEnableLogging"] && [prefs boolForKey:@"ConsoleEnableErrorLogging"]) {
+		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
+	}
 }
 
 /**

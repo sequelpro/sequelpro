@@ -340,6 +340,7 @@
 	// BOOL queriesSeparatedByDelimiter = NO;
 	
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_CUSTOMQUERY];
 
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -573,6 +574,8 @@
 
 	// Restore automatic query retries
 	[mySQLConnection setAllowQueryRetries:YES];
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 	
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( ![fullResult count] ) {

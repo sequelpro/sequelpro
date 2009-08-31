@@ -462,6 +462,8 @@
 	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[singleProgressSheet makeKeyWindow];
 
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
+
 	// Read in the file in a loop
 	sqlParser = [[SPSQLParser alloc] init];
 	sqlDataBuffer = [[NSMutableData alloc] init];
@@ -480,6 +482,7 @@
 			[sqlParser release];
 			[sqlDataBuffer release];
 			[importPool drain];
+			[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 			return;
 		}
 
@@ -526,6 +529,7 @@
 						[sqlParser release];
 						[sqlDataBuffer release];
 						[importPool drain];
+						[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 						return;
 					}
 				}
@@ -601,6 +605,7 @@
 	[sqlParser release];
 	[sqlDataBuffer release];
 	[importPool drain];
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 
 	// Close progress sheet
 	[NSApp endSheet:singleProgressSheet];
@@ -657,6 +662,8 @@
 	   didEndSelector:nil 
 		  contextInfo:nil];
 	[singleProgressSheet makeKeyWindow];
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
 	
 	// Read the file with the current connection encoding.
 	dumpFile = [NSString stringWithContentsOfFile:filename
@@ -673,6 +680,7 @@
 						  nil, nil, nil,
 						  [errorStr localizedDescription]
 						  );
+		[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 		return;
 	}
 	
@@ -705,12 +713,14 @@
 						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
 						  );
 		[importArray release], importArray = nil;
+		[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 		return;
 	}		
 	
 	if (progressCancelled) {
 		progressCancelled = NO;
 		[importArray release], importArray = nil;
+		[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 		return;
 	}
 	MCPResult *theResult;
@@ -745,6 +755,7 @@
 							  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
 							  );
 			[importArray release], importArray = nil;
+			[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 			return;
 		}
 		
@@ -870,6 +881,8 @@
 	//free arrays
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[importArray release], importArray = nil;
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -999,7 +1012,9 @@
 	[NSApp beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
+
 	// Copy over the selected table names into a table in preparation for iteration
 	for ( i = 0 ; i < [tables count] ; i++ ) {
 		if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
@@ -1291,6 +1306,8 @@
 		[NSApp endSheet:errorsSheet];
 		[errorsSheet orderOut:nil];
 	}
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 
 	[sqlString release];
 	return TRUE;
@@ -2067,6 +2084,8 @@
 	[singleProgressText displayIfNeeded];
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
 	
 	// Open the progress sheet
 	[NSApp beginSheet:singleProgressSheet
@@ -2223,6 +2242,8 @@
 		[NSApp endSheet:errorsSheet];
 		[errorsSheet orderOut:nil];
 	}
+
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 	
 	return TRUE;
 }

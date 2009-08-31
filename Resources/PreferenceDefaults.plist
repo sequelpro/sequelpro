@@ -88,6 +88,14 @@
 	<false/>
 	<key>ConsoleEnableLogging</key>
 	<true/>
+	<key>ConsoleEnableInterfaceLogging</key>
+	<true/>
+	<key>ConsoleEnableCustomQueryLogging</key>
+	<true/>
+	<key>ConsoleEnableImportExportLogging</key>
+	<false/>
+	<key>ConsoleEnableErrorLogging</key>
+	<true/>
 	<key>ConsoleShowTimestamps</key>
 	<true/>
 	<key>ConsoleShowSelectsAndShows</key>
