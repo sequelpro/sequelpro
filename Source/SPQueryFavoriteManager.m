@@ -303,6 +303,13 @@
 - (IBAction)closeQueryManagerSheet:(id)sender
 {
 
+	// First check for ESC if pressed while inline editing
+	if(![sender tag] && isTableCellEditing) {
+		[favoritesTableView abortEditing];
+		isTableCellEditing = NO;
+		return;
+	}
+
 	[NSApp endSheet:[self window] returnCode:0];
 	[[self window] orderOut:self];
 
@@ -485,7 +492,12 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	return ([[favoriteProperties objectAtIndex:rowIndex] intValue] == SP_FAVORITETYPE_HEADER) ? NO : YES;
+	if([[favoriteProperties objectAtIndex:rowIndex] intValue] == SP_FAVORITETYPE_HEADER) {
+		return NO;
+	} else {
+		isTableCellEditing = YES;
+		return YES;
+	}
 }
 
 /*
@@ -495,7 +507,13 @@
 {
 	return ([[favoriteProperties objectAtIndex:rowIndex] intValue] == SP_FAVORITETYPE_HEADER) ? YES : NO;
 }
-
+/*
+ * Detect if inline editing was done - then ESC to close the sheet will be activate
+ */ 
+- (void)controlTextDidEndEditing:(NSNotification *)aNotification
+{
+	isTableCellEditing = NO;
+}
 /*
  * Changes in the name text field will be saved in data source directly
  * to update the table view accordingly

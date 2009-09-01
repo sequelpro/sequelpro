@@ -59,6 +59,7 @@ enum sp_favorite_types
 	NSMutableString *pendingQueryString;
 	
 	NSUInteger selectedRowBeforeChangingSelection;
+	BOOL isTableCellEditing;
 }
 
 - (id)initWithDelegate:(id)managerDelegate;

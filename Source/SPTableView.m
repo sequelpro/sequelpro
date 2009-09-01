@@ -23,6 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableView.h"
+#import "SPQueryFavoriteManager.h"
 #import "SPArrayAdditions.h"
 
 @implementation SPTableView
@@ -44,6 +45,10 @@
 		// Check for TablesList if right-click on header, then suppress context menu
 		if([[[[self delegate] class] description] isEqualToString:@"TablesList"]) {
 			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) intValue] == -1)
+				return nil;
+		}
+		if([[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {
+			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"favoriteProperties"], row) intValue] == SP_FAVORITETYPE_HEADER)
 				return nil;
 		}
 		
