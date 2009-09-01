@@ -511,7 +511,6 @@
 	// If we are using the BETWEEN operator and either of the argument fields are empty return nil.
 	if ([[[compareField selectedItem] title] isEqualToString:@"BETWEEN"]) {
 		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
-			NSLog(@"reached");
 			return nil;
 		}
 	}

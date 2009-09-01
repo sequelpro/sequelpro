@@ -2812,7 +2812,6 @@
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {
-	NSLog(@"Mode is %i, bool is %@", _queryMode, [prefs boolForKey:@"ConsoleEnableImportExportLogging"]?@"on":@"off");
 	if ([prefs boolForKey:@"ConsoleEnableLogging"]) {
 		if ((_queryMode == SP_QUERYMODE_INTERFACE && [prefs boolForKey:@"ConsoleEnableInterfaceLogging"])
 			|| (_queryMode == SP_QUERYMODE_CUSTOMQUERY && [prefs boolForKey:@"ConsoleEnableCustomQueryLogging"])

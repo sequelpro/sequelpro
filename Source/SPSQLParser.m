@@ -218,9 +218,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 {
 	long stringIndex;
 	NSString *resultString;
-	
+
+	if (character != parsedToChar) {
+		parsedToChar = character;
+		parsedToPosition = -1;
+	}
+
 	// Get the first occurrence of the specified character, returning nil if it could not be found
-	stringIndex = [self firstOccurrenceOfCharacter:character ignoringQuotedStrings:ignoreQuotedStrings];
+	stringIndex = [self firstOccurrenceOfCharacter:character afterIndex:parsedToPosition ignoringQuotedStrings:ignoreQuotedStrings];
 	if (stringIndex == NSNotFound) return nil;
 	
 	// Select the appropriate string range, truncate the current string, and return the selected string
@@ -476,11 +481,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (long) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	if (character != parsedToChar) {
-		parsedToChar = character;
-		parsedToPosition = -1;
-	}
-	return [self firstOccurrenceOfCharacter:character afterIndex:parsedToPosition skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
+	return [self firstOccurrenceOfCharacter:character afterIndex:-1 skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
 }
 
 
@@ -489,10 +490,6 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	if (character != parsedToChar) {
-		parsedToChar = '\0';
-		parsedToPosition = -1;
-	}
 	return [self firstOccurrenceOfCharacter:character afterIndex:startIndex skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
 }
 
@@ -503,11 +500,6 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	unichar currentCharacter;
 	long stringLength = [string length];
 	int bracketingLevel = 0;
-
-	if (character != parsedToChar) {
-		parsedToChar = character;
-		parsedToPosition = -1;
-	}
 
 	// Cache frequently used selectors, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
@@ -538,7 +530,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				if (!ignoreQuotedStrings) break;
 				quotedStringEndIndex = (long)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
 				if (quotedStringEndIndex == NSNotFound) {
-					parsedToPosition = currentStringIndex;
+					parsedToPosition = stringLength - 1;
 					return NSNotFound;
 				}
 				currentStringIndex = quotedStringEndIndex;
@@ -903,8 +895,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 - (id) initWithContentsOfFile:(id)path {
 	parsedToChar = '\0';
-	parsedToPosition = 0;
 	parsedToPosition = -1;
+	charCacheEnd = -1;
 	return [self initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
 }
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)encoding error:(NSError **)error {
