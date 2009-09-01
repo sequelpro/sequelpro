@@ -25,6 +25,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+enum sp_favorite_types
+{
+	SP_FAVORITETYPE_HEADER     = 0,
+	SP_FAVORITETYPE_GLOBAL     = 1,
+	SP_FAVORITETYPE_CONNECTION = 2,
+};
+
+
 @interface NSObject (SPQueryFavoriteManagerDelegate)
 
 - (void)queryFavoritesHaveBeenUpdated:(id)manager;
@@ -43,13 +51,21 @@
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSTextField *favoriteNameTextField;
 	IBOutlet NSTextView  *favoriteQueryTextView;
-	IBOutlet NSArrayController *queryFavoritesController;
+	IBOutlet id removeButton;
+
+	NSMutableArray *favorites;
+	NSMutableArray *favoriteProperties;
+	
+	NSMutableString *pendingQueryString;
+	
+	NSUInteger selectedRowBeforeChangingSelection;
 }
 
 - (id)initWithDelegate:(id)managerDelegate;
 
 // Accessors
-- (NSMutableArray *)queryFavorites;
+- (NSMutableArray *)globalQueryFavorites;
+- (NSMutableArray *)connectionQueryFavorites;
 - (id)customQueryInstance;
 
 // IBAction methods

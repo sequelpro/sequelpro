@@ -171,6 +171,12 @@
 			  contextInfo:@"addAllToNewQueryFavorite"];
 	}
 	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {
+
+		// init query favorites controller
+		[prefs synchronize];
+		if(favoritesManager) [favoritesManager release];
+		favoritesManager = [[SPQueryFavoriteManager alloc] initWithDelegate:self];
+
 		// Open query favorite manager
 		[NSApp beginSheet:[favoritesManager window] 
 		   modalForWindow:tableWindow 
@@ -187,7 +193,9 @@
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
-		[textView insertText:[[[prefs objectForKey:@"queryFavorites"] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
+		// [textView insertText:[[[prefs objectForKey:@"queryFavorites"] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
+		// The actual query strings have been already stored as tooltip
+		[textView insertText:[[queryFavoritesButton selectedItem] toolTip]];
 	}
 }
 
@@ -196,9 +204,12 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
+
+	[prefs synchronize];
+
 	// Choose history item
 	if ([queryHistoryButton indexOfSelectedItem] > 1) {
-;
+
 		BOOL replaceContent = [prefs boolForKey:@"QueryHistoryReplacesContent"];
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
@@ -233,6 +244,7 @@
 
 		// [queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
 		[prefs setObject:[NSArray array] forKey:@"queryHistory"];
+		[prefs synchronize];
 	}
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
@@ -2389,8 +2401,20 @@
  */
 - (void)queryFavoritesHaveBeenUpdated:(id)manager
 {
-	// NSInteger i;
-	NSMutableArray *favorites = ([favoritesManager queryFavorites]) ? [favoritesManager queryFavorites] : [prefs objectForKey:@"queryFavorites"];
+
+	NSMutableArray *favorites = [[NSMutableArray alloc] init];
+
+	// Invoked after adding a favorite from inside CustomQuery
+	if(manager == nil) {
+		[favorites addObjectsFromArray:[prefs objectForKey:@"queryFavorites"]];
+	}
+	// Invoked by the query favorite manager
+	else if(manager == favoritesManager){
+		// Update global query favorites
+		[favorites addObjectsFromArray:[favoritesManager globalQueryFavorites]];
+		[prefs setObject:favorites forKey:@"queryFavorites"];
+		[prefs synchronize];
+	}
 
 	// Remove all favorites beginning from the end
 	while([queryFavoritesButton numberOfItems] > 6)
@@ -2400,13 +2424,19 @@
 	NSMenu *menu = [queryFavoritesButton menu];
 	int i = 6;
 	for (NSDictionary *favorite in favorites) {
-		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:@"name"] action:NULL keyEquivalent:@""];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
 		[item setTag:i++];
-		[item setToolTip:[favorite objectForKey:@"query"]];
+		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
 		[menu addItem:item];
 		[item release];
 	}
+
+	[favorites release];
+
+	[prefs synchronize];
 	
+	[queryFavoritesSearchField setStringValue:@""];
+
 }
 
 #pragma mark -
@@ -2459,7 +2489,9 @@
 				queryToBeAddded = [textView string];
 			}
 			
-			[favorites addObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+			[favorites addObject:[NSDictionary dictionaryWithObjects:
+				[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] 
+						forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 			
 			[prefs setObject:favorites forKey:@"queryFavorites"];
 			[prefs synchronize];
@@ -2526,9 +2558,6 @@
 		
 		// init tableView's data source
 		fullResult = [[NSMutableArray alloc] init];
-		
-		// init query favorites controller
-		favoritesManager = [[SPQueryFavoriteManager alloc] initWithDelegate:self];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
