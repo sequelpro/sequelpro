@@ -35,7 +35,7 @@
 /*
  * Returns a human readable version string of the supplied byte size.
  */
-+ (NSString *)stringForByteSize:(int)byteSize
++ (NSString *)stringForByteSize:(long long)byteSize
 {
 	float size = byteSize;
 	
@@ -67,7 +67,15 @@
 	
 	size = (size / 1024);
 	
-	[numberFormatter setFormat:@"#,##0.0 GB"];
+	if (size < 1023) {
+		[numberFormatter setFormat:@"#,##0.0 GB"];
+		
+		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
+	}
+
+	size = (size / 1024);
+	
+	[numberFormatter setFormat:@"#,##0.0 TB"];
 	
 	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
 }

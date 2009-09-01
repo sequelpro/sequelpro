@@ -40,7 +40,7 @@ static inline const char* NSStringUTF8String(NSString* self) {
 
 @interface NSString (SPStringAdditions)
 
-+ (NSString *)stringForByteSize:(int)byteSize;
++ (NSString *)stringForByteSize:(long long)byteSize;
 + (NSString *)stringForTimeInterval:(float)timeInterval;
 
 - (NSString *)backtickQuotedString;

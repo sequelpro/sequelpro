@@ -71,6 +71,8 @@
 - (void)tableChanged:(NSNotification *)notification
 {
 	NSDictionary *tableStatus;
+	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];	
+	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 	[info removeAllObjects];
 
@@ -128,14 +130,16 @@
 			
 			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
 			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
-				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? @"rows: %@" : @"rows: ~%@", [tableStatus objectForKey:@"Rows"]]];
+				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? @"rows: %@" : @"rows: ~%@",
+					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
 			} 
 						
-			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] intValue]]]];
+			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
 			[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
 			
 			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
-				[info addObject:[NSString stringWithFormat:@"auto_increment: %@", [tableStatus objectForKey:@"Auto_increment"]]];
+				[info addObject:[NSString stringWithFormat:@"auto_increment: %@",
+					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Auto_increment"] longLongValue]]]]];
 			}
 		}
 	}

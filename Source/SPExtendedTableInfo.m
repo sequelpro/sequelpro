@@ -359,7 +359,7 @@
 			[key isEqualToString:@"Index_length"]    || 
 			[key isEqualToString:@"Data_free"]) {
 			
-			value = [NSString stringForByteSize:[value intValue]];
+			value = [NSString stringForByteSize:[value longLongValue]];
 		}
 		// Format date strings to the user's long date format
 		else if ([key isEqualToString:@"Create_time"] ||
@@ -375,9 +375,19 @@
 			
 			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
 		}
-		// Prefix number of rows with '~' if it is not an accurate count
-		else if ([key isEqualToString:@"Rows"] && ![[infoDict objectForKey:@"RowsCountAccurate"] boolValue]) {
-			value = [@"~" stringByAppendingString:value];
+		// Format numbers
+		else if ([key isEqualToString:@"Rows"] ||
+				 [key isEqualToString:@"Avg_row_length"] || 
+				 [key isEqualToString:@"Auto_increment"]) {
+			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];	
+			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+
+			value = [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[value longLongValue]]];
+
+			// Prefix number of rows with '~' if it is not an accurate count
+			if ([key isEqualToString:@"Rows"] && ![[infoDict objectForKey:@"RowsCountAccurate"] boolValue]) {
+				value = [@"~" stringByAppendingString:value];
+			}
 		}
 	}
 		
