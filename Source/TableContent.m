@@ -835,7 +835,7 @@
 	[tableValues addObject:newRow];
 
 	[tableContentView reloadData];
-	[tableContentView selectRow:[tableContentView numberOfRows]-1 byExtendingSelection:NO];
+	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView numberOfRows]-1] byExtendingSelection:NO];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableContentView selectedRow];
@@ -899,7 +899,7 @@
 	
 	//select row and go in edit mode
 	[tableContentView reloadData];
-	[tableContentView selectRow:[tableContentView selectedRow]+1 byExtendingSelection:NO];
+	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView selectedRow]+1] byExtendingSelection:NO];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableContentView selectedRow];
@@ -1446,7 +1446,7 @@
 	}
 
 	// Saving failed - reselect the old row and return failure.
-	[tableContentView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
 	isSavingRow = NO;
 	return NO;
 }

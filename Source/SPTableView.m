@@ -52,7 +52,7 @@
 				return nil;
 		}
 		
-		[self selectRow:row byExtendingSelection:NO];
+		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 		[[self window] makeFirstResponder:self];
 	}
 	

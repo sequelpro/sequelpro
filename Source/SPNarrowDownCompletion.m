@@ -63,7 +63,7 @@
 		if(keyCode == key_movements[i].key)
 		{
 			int row = MAX(0, MIN([self selectedRow] + key_movements[i].rows, [self numberOfRows]-1));
-			[self selectRow:row byExtendingSelection:NO];
+			[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 			[self scrollRowToVisible:row];
 
 			return YES;

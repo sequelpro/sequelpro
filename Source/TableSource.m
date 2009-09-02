@@ -275,7 +275,7 @@ reloads the table (performing a new mysql-query)
 					  atIndex:insertIndex];
 
 	[tableSourceView reloadData];
-	[tableSourceView selectRow:insertIndex byExtendingSelection:NO];
+	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableSourceView selectedRow];
@@ -303,7 +303,7 @@ reloads the table (performing a new mysql-query)
 	[tempRow setObject:@"None" forKey:@"Extra"];
 	[tableFields addObject:tempRow];
 	[tableSourceView reloadData];
-	[tableSourceView selectRow:[tableSourceView numberOfRows]-1 byExtendingSelection:NO];
+	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableSourceView numberOfRows]-1] byExtendingSelection:NO];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableSourceView selectedRow];
@@ -630,7 +630,7 @@ fetches the result as an array with a dictionary for each row in it
 	}
 
 	// Saving failed - reselect the old row and return failure.
-	[tableSourceView selectRow:currentlyEditingRow byExtendingSelection:NO];
+	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
 	isSavingRow = NO;
 	return NO;
 }
@@ -1206,9 +1206,9 @@ would result in a position change.
 		[tablesListInstance setContentRequiresReload:YES];
 
 		if ( originalRowIndex < destinationRowIndex ) {
-			[tableSourceView selectRow:destinationRowIndex-1 byExtendingSelection:NO];
+			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex-1] byExtendingSelection:NO];
 		} else {
-			[tableSourceView selectRow:destinationRowIndex byExtendingSelection:NO];
+			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex] byExtendingSelection:NO];
 		}
 	}
 
@@ -1276,10 +1276,10 @@ would result in a position change.
 		if ( column == 9 ) {
 			if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
 				if ( row < ([tableSourceView numberOfRows] - 1) ) {
-					[tableSourceView selectRow:row+1 byExtendingSelection:NO];
+					[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
 					[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
 				} else {
-					[tableSourceView selectRow:0 byExtendingSelection:NO];
+					[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 					[tableSourceView editColumn:0 row:0 withEvent:nil select:YES];
 				}
 			}

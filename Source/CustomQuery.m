@@ -1546,7 +1546,7 @@
 		[queryFavorites insertObject:draggedRow atIndex:destinationRow];
 		
 		[queryFavoritesView reloadData];
-		[queryFavoritesView selectRow:destinationRow byExtendingSelection:NO];
+		[queryFavoritesView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
 	
 		return YES;
 	} else {
