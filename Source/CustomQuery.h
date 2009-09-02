@@ -36,10 +36,10 @@
 @class SPQueryFavoriteManager;
 
 @interface CustomQuery : NSObject 
-{	
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
-	
+
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
 	IBOutlet NSMenuItem *queryFavoritesSaveAsMenuItem;
@@ -49,7 +49,7 @@
 	IBOutlet NSMenuItem *queryHistorySearchMenuItem;
 	IBOutlet id queryHistorySearchFieldView;
 	IBOutlet NSSearchField *queryHistorySearchField;
-	
+
 	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet id errorText;
@@ -76,43 +76,47 @@
 	IBOutlet NSWindow *queryFavoritesSheet;
 	IBOutlet NSButton *saveQueryFavoriteButton;
 	IBOutlet NSTextField *queryFavoriteNameTextField;
-	
+
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
-	
+
 	SPQueryFavoriteManager *favoritesManager;
 
 	NSUserDefaults *prefs;
 	MCPConnection *mySQLConnection;
-	
+
 	NSString *usedQuery;
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
 	BOOL hasBackgroundAttribute;
 	NSString *mySQLversion;
-		
+
 	int queryStartPosition;
-	
+
 	int helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
-	
+
 	NSMutableArray *fullResult;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
-	
+
 	BOOL tableReloadAfterEditing;
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
 
 	NSString *fieldIDQueryString;
-	
+
 	unsigned int numberOfQueries;
+	
+	NSMutableArray *localFavorites;
+	NSMutableArray *localHistoryItems;
+
 }
 
 // IBAction methods
@@ -143,6 +147,8 @@
 // Accessors
 - (NSArray *)currentResult;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
+- (NSArray *)localFavorites;
+- (NSArray *)localHistoryItems;
 
 // MySQL Help
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;

@@ -783,9 +783,9 @@
 			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
 
 		}
+
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
-									[tableDocumentInstance name], [tableDocumentInstance database], selectedTableName]];
+		[tableWindow setTitle:[tableDocumentInstance displayName]];
 
 		// Update the "Show Create Syntax" window if it's already opened
 		// according to the selected table/view/proc/func
@@ -874,8 +874,8 @@
 		[separatorTableContextMenuItem setHidden:YES];
 
 		// set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
-									[tableDocumentInstance name], [tableDocumentInstance database]]];
+		[tableWindow setTitle:[tableDocumentInstance displayName]];
+
 	}
 
 	[spHistoryControllerInstance updateHistoryEntries];
@@ -1207,8 +1207,8 @@
 			}
 			
 			// Set window title
-			[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
-								  [tableDocumentInstance name], [tableDocumentInstance database], anObject]];
+			[tableWindow setTitle:[tableDocumentInstance displayName]];
+
 		} 
 		else {
 			// Error while renaming
@@ -1665,8 +1665,7 @@
 	[tablesListView reloadData];
 	
 	// set window title
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@", [tableDocumentInstance mySQLVersion],
-						   [tableDocumentInstance name], [tableDocumentInstance database]]];
+	[tableWindow setTitle:[tableDocumentInstance displayName]];
 	
 	if ( error ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -1774,7 +1773,7 @@
 		else if (selectedIndex == 3) {
 			[extendedTableInfoInstance loadTable:tableName];
 			structureLoaded = NO;
-			contentLoaded = NO; 			
+			contentLoaded = NO;
 			statusLoaded = YES;
 		} 
 		else {
@@ -1784,8 +1783,7 @@
 		}
 		
 		// Set window title
-		[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
-							   [tableDocumentInstance name], [tableDocumentInstance database], tableName]];
+		[tableWindow setTitle:[tableDocumentInstance displayName]];
 	} 
 	else {
 		// Error while creating new table
@@ -2059,8 +2057,7 @@
 	}
 	
 	// Set window title
-	[tableWindow setTitle:[NSString stringWithFormat:@"(MySQL %@) %@/%@/%@", [tableDocumentInstance mySQLVersion],
-						   [tableDocumentInstance name], [tableDocumentInstance database], [tableRenameField stringValue]]];
+	[tableWindow setTitle:[tableDocumentInstance displayName]];
 }
 
 @end

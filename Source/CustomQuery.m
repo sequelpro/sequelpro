@@ -1057,6 +1057,22 @@
 	return currentResult;
 }
 
+/*
+ * Return the document-based favourites
+ */
+- (NSArray *)localFavorites
+{
+	return localFavorites;
+}
+
+/*
+ * Return the document-based history items
+ */
+- (NSArray *)localHistoryItems
+{
+	return localHistoryItems;
+}
+
 
 #pragma mark -
 #pragma mark Additional methods
@@ -2559,6 +2575,10 @@
 		// init tableView's data source
 		fullResult = [[NSMutableArray alloc] init];
 		
+		// init local favorite and history item array
+		localHistoryItems = [[NSMutableArray alloc] init];
+		localFavorites = [[NSMutableArray alloc] init];
+		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
 
@@ -2607,7 +2627,8 @@
 	[usedQuery release];
 	[fullResult release];
 	[favoritesManager release];
-	
+	if (localFavorites) [localFavorites release];
+	if (localHistoryItems) [localHistoryItems release];
 	if (sortField) [sortField release];
 	
 	[super dealloc];
