@@ -116,15 +116,29 @@
 		NSScreen* candidate;
 		for(candidate in [NSScreen screens])
 			if(NSMinX([candidate frame]) < topLeftPoint.x && NSMinX([candidate frame]) > NSMinX(screenFrame))
-				screenFrame = [candidate frame];
+				screenFrame = [candidate visibleFrame];
 
 		previousFrame = [tableWindow frame];
-		if(previousFrame.origin.x - screenFrame.origin.x + previousFrame.size.width > screenFrame.size.width-1) {
-			previousFrame.size.width -= 50;
-			previousFrame.size.height -= 50;
-			previousFrame.origin.y += 50;
-			if(previousFrame.size.width >= [tableWindow minSize].width && previousFrame.size.height >= [tableWindow minSize].height)
+
+		// Determine if move/resize is required
+		if(previousFrame.origin.x - screenFrame.origin.x + previousFrame.size.width >= screenFrame.size.width
+			|| previousFrame.origin.y - screenFrame.origin.y + previousFrame.size.height >= screenFrame.size.height)
+		{
+
+			// First try to move the window back onto the screen if it will fit
+			if (previousFrame.size.width <= screenFrame.size.width && previousFrame.size.height <= screenFrame.size.height) {
+				previousFrame.origin.x -= (previousFrame.origin.x + previousFrame.size.width) - (screenFrame.origin.x + screenFrame.size.width);
+				previousFrame.origin.y -= (previousFrame.origin.y + previousFrame.size.height) - (screenFrame.origin.y + screenFrame.size.height);
 				[tableWindow setFrame:previousFrame display:YES];
+
+			// Otherwise, resize and de-cascade a little
+			} else {
+				previousFrame.size.width -= 50;
+				previousFrame.size.height -= 50;
+				previousFrame.origin.y += 50;
+				if(previousFrame.size.width >= [tableWindow minSize].width && previousFrame.size.height >= [tableWindow minSize].height)
+					[tableWindow setFrame:previousFrame display:YES];
+			}
 		}
 		
 	}
