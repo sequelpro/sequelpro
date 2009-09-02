@@ -594,7 +594,7 @@
 	if(spfSession != nil)
 		[self restoreSession];
 		// [self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.3];
-	NSLog(@"r %@",[[NSDocumentController sharedDocumentController] recentDocumentURLs]);
+
 }
 
 /**
