@@ -408,6 +408,7 @@
 	}
 	
 	[self setFileURL:[NSURL URLWithString:path]];
+	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:path]];
 
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
@@ -593,7 +594,7 @@
 	if(spfSession != nil)
 		[self restoreSession];
 		// [self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.3];
-
+	NSLog(@"r %@",[[NSDocumentController sharedDocumentController] recentDocumentURLs]);
 }
 
 /**
@@ -2067,6 +2068,9 @@
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
 			}
+			
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:fileName]];
+			
 			return;
 		}
 		
@@ -2170,6 +2174,8 @@
 			NSAlert *errorAlert = [NSAlert alertWithError:error];
 			[errorAlert runModal];
 		}
+
+		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
 
 		return;
 
