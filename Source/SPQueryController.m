@@ -457,6 +457,11 @@ static SPQueryController *sharedQueryController = nil;
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 }
 
+- (NSString *)windowFrameAutosaveName
+{
+	return @"QueryConsole";
+}
+
 /**
  * Standard dealloc.
  */
