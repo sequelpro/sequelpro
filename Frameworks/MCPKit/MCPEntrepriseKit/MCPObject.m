@@ -290,7 +290,7 @@ If the identityAttributes of the class description is empty, the entry will alwa
    NSUInteger            i;
    
    if (! theConnection) {
-      return [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:MCPDBReturnNoConnection], @"MCPDBReturnCode"];
+      return [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:MCPDBReturnNoConnection], @"MCPDBReturnCode", nil];
    }
    if (! [theKeyAttr count]) { // There is no primary key for this object.
       [theKeys setObject:[NSNumber numberWithInteger:MCPDBReturnNoKey] forKey:@"MCPDBReturnCode"];
