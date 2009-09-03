@@ -87,7 +87,7 @@
 		queryEditorInitString = nil;
 
 		spfSession = nil;
-		spfPreferences = nil;
+		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
 
 	}
@@ -411,13 +411,10 @@
 	[self setFileURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 
-	if([spf objectForKey:@"queryFavorites"] || [spf objectForKey:@"queryHistory"]) {
-		spfPreferences = [NSDictionary dictionaryWithObjectsAndKeys:
-			[spf objectForKey:@"queryFavorites"], @"queryFavorites",
-			[spf objectForKey:@"queryHistory"], @"queryHistory",
-			nil];
-	}
-
+	if([spf objectForKey:@"queryFavorites"])
+		[spfPreferences setObject:[spf objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
+	if([spf objectForKey:@"queryHistory"])
+		[spfPreferences setObject:[spf objectForKey:@"queryHistory"] forKey:@"queryHistory"];
 
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
@@ -600,8 +597,10 @@
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
-	NSURL *anURL = [[SPQueryConsole sharedQueryConsole] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences];
+	NSURL *anURL = [[SPQueryConsole sharedQueryConsole] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]];
 	[self setFileURL:anURL];
+
+	[spfPreferences release];
 
 	if(spfSession != nil)
 		[self restoreSession];
@@ -1924,9 +1923,12 @@
  */
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-	// Auto-save spf file based connection
+	// Auto-save preferences to spf file based connection
 	if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"])
-		[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
+		if(![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES]) {
+			NSLog(@"Preference data for file ‘%@’ could not be saved.", [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+			NSBeep();
+		}
 
 	[tablesListInstance selectionShouldChangeInTableView:nil];
 }
@@ -1975,9 +1977,9 @@
 	// Save As… or Save
 	} else if([sender tag] == 1005 || [sender tag] == 1004) {
 
-		// If Save was invoked check for fileURL and save the spf file without save panel
+		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if([sender tag] == 1004 && [[[self fileURL] absoluteString] length]) {
+		if([sender tag] == 1004 && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO];
 			return;
 		}
@@ -2096,11 +2098,11 @@
 	}
 }
 
-- (void)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences
+- (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences
 {
 	// Do not save if no connection is/was available
 	if(saveInBackground && ([self mySQLVersion] == nil || ![[self mySQLVersion] length]))
-		return;
+		return NO;
 
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
 	
@@ -2128,7 +2130,7 @@
 		
 		// Check for save file URL
 		// TODO maybe alert ?
-		if(![[[self fileURL] absoluteString] length]) return;
+		if(![[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"]) return NO;
 		
 		NSError *readError = nil;
 		NSString *convError = nil;
@@ -2145,19 +2147,19 @@
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
 											  otherButton:nil 
-								informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
+								informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name")];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
-			[self close];
-			return;
+			// [self close];
+			return NO;
 		}
 
 		// For dispatching later
 		if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
 			NSLog(@"SPF file format is not 'connection'.");
-			[self close];
-			return;
+			// [self close];
+			return NO;
 		}
 
 		// Update the keys
@@ -2179,7 +2181,7 @@
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
-			return;
+			return NO;
 		}
 
 		NSError *error = nil;
@@ -2187,11 +2189,12 @@
 		if(error != nil){
 			NSAlert *errorAlert = [NSAlert alertWithError:error];
 			[errorAlert runModal];
+			return NO;
 		}
 
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
 
-		return;
+		return YES;
 
 	}
 
@@ -2346,7 +2349,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
-		return;
+		return NO;
 	}
 
 	NSError *error = nil;
@@ -2354,6 +2357,7 @@
 	if(error != nil){
 		NSAlert *errorAlert = [NSAlert alertWithError:error];
 		[errorAlert runModal];
+		return NO;
 	}
 
 	// TODO take favs and history frm untitle or old file name with me
@@ -2366,6 +2370,8 @@
 	// Store doc data permanently
 	[spfDocData removeAllObjects];
 	[spfDocData addEntriesFromDictionary:spfDocData_temp];
+	
+	return YES;
 
 }
 
@@ -2966,8 +2972,15 @@
 		return NO;
 	} else {
 		// Auto-save spf file based connection
-		if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"])
-			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
+		if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+			BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
+			if(isSaved)
+				[[SPQueryConsole sharedQueryConsole] removeRegisteredDocumentWithFileURL:[self fileURL]];
+			return isSaved;
+		} else if([self fileURL] && [[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+			[[SPQueryConsole sharedQueryConsole] removeRegisteredDocumentWithFileURL:[self fileURL]];
+			return YES;
+		}
 	}
 	return YES;
 }

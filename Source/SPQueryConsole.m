@@ -328,13 +328,14 @@ static SPQueryConsole *sharedQueryConsole = nil;
 #pragma mark -
 #pragma mark DocumentsController
 
-- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSDictionary *)contextInfo
+- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
 {
 
 	// Register a new untiled document and return its URL
 	if(fileURL == nil) {
 			NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 			untitledDocumentCounter++;
+
 			if(![favoritesContainer objectForKey:[new absoluteString]])
 				[favoritesContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
 			if(![historyContainer objectForKey:[new absoluteString]])
@@ -342,23 +343,46 @@ static SPQueryConsole *sharedQueryConsole = nil;
 
 			return new;
 	}
-	
-	// Register a spf file
-	// if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
-	// 	if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] != nil)
-	// 		[favoritesContainer setObject:[[contextInfo objectForKey:@"queryFavorites"] mutableCopy] forKey:[fileURL absoluteString]];
-	// 	else
-	// 		[favoritesContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
-	// }
-	// if(![historyContainer objectForKey:[fileURL absoluteString]]) {
-	// 	if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] != nil)
-	// 		[historyContainer setObject:[[contextInfo objectForKey:@"queryHistory"] mutableCopy] forKey:[fileURL absoluteString]];
-	// 	else
-	// 		[historyContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
-	// }
+
+	// Register a spf file to manage all query favorites and query history items
+	// file path based in a dictionary whereby the key represents the file name.
+	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] && [[contextInfo objectForKey:@"queryFavorites"] count]) {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryFavorites"]];
+			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		} else {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		}
+	}
+	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] && [[contextInfo objectForKey:@"queryHistory"] count]) {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryHistory"]];
+			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		} else {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		}
+	}
 
 	return fileURL;
 	
+}
+
+- (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
+{
+
+	if([favoritesContainer objectForKey:[fileURL absoluteString]])
+		[favoritesContainer removeObjectForKey:[fileURL absoluteString]];
+	if([historyContainer objectForKey:[fileURL absoluteString]])
+		[historyContainer removeObjectForKey:[fileURL absoluteString]];
+
 }
 
 - (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL

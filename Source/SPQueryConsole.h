@@ -65,7 +65,8 @@
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;
 
-- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSDictionary *)contextInfo;
+- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;
+- (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL;
 - (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL;
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
 - (void)favoritesForFileURL:(NSURL *)fileURL;
