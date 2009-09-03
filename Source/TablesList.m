@@ -497,7 +497,7 @@
 	} 
 	else if ([contextInfo isEqualToString:@"removeRow"]) {		
 		if (returnCode == NSAlertDefaultReturn) {
-			[self removeTable];
+			[self performSelector:@selector(removeTable) withObject:nil afterDelay:0.0];
 		}
 	}
 	else if ([contextInfo isEqualToString:@"truncateTable"]) {		
@@ -1303,9 +1303,9 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)rowIndex
 {
-	//return (row == 0);	
-	if( [filteredTableTypes count] == 0 )
-		return (rowIndex == 0 );
+	// For empty tables - title still present - or while lists are being altered
+	if (rowIndex >= [filteredTableTypes count]) return (rowIndex == 0 );
+
 	return ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE );
 }
 
@@ -1314,7 +1314,8 @@
  */
 - (void)tableView:(NSTableView *)aTableView  willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-	if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"tables"]) {
+	if (rowIndex > 0 && rowIndex < [filteredTableTypes count]
+		&& [[aTableColumn identifier] isEqualToString:@"tables"]) {
 		if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_VIEW) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
 		} else if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_TABLE) { 
@@ -1608,8 +1609,6 @@
 - (void)removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
-	NSString *errorText;
-	BOOL error = FALSE;
 	
 	// get last index
 	unsigned currentIndex = [indexes lastIndex];
@@ -1633,7 +1632,8 @@
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
 		} 
-		
+
+		// If no error is recorded, the table was successfully dropped - remove it from the list
 		if ([[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
 			//dropped table with success
 			if (isTableListFiltered) {
@@ -1643,14 +1643,35 @@
 			}
 			[filteredTables removeObjectAtIndex:currentIndex];
 			[filteredTableTypes removeObjectAtIndex:currentIndex];
+
+			// Get next index (beginning from the end)
+			currentIndex = [indexes indexLessThanIndex:currentIndex];
+
+		// Otherwise, display an alert - and if there's tables left, ask whether to proceed
 		} else {
-			//couldn't drop table
-			error = TRUE;
-			errorText = [mySQLConnection getLastErrorMessage];
+
+			NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
+				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+			} else {
+				[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
+				[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
+			}
+			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
+			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove '%@'.\nMySQL said: %@", @"message of panel when an item cannot be removed"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+			[alert setAlertStyle:NSWarningAlertStyle];
+			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
+				[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+				currentIndex = NSNotFound;
+			} else {
+				int choice = [alert runModal];
+				if (choice == NSAlertFirstButtonReturn) {
+					currentIndex = [indexes indexLessThanIndex:currentIndex];
+				} else {
+					currentIndex = NSNotFound;
+				}
+			}
 		}
-		
-		// get next index (beginning from the end)
-		currentIndex = [indexes indexLessThanIndex:currentIndex];
 	}
 	
 	// Remove the isolated "current selection" item for filtered lists if appropriate
@@ -1666,12 +1687,7 @@
 	
 	// set window title
 	[tableWindow setTitle:[tableDocumentInstance displayName]];
-	
-	if ( error ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove '%@'.\nMySQL said: %@", @"message of panel when an item cannot be removed"), [tables objectAtIndex:currentIndex], errorText]);
-	}
-	
+
 	[tablesListView deselectAll:self];
 }
 
