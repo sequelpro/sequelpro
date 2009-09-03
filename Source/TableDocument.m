@@ -2015,7 +2015,7 @@
 
 		// Set file name
 		if([[[self fileURL] absoluteString] length])
-			filename = [[[self fileURL] absoluteString] lastPathComponent];
+			filename = [[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
 		else
 			filename = [NSString stringWithFormat:@"%@", [self name]];
 
@@ -2103,7 +2103,9 @@
 		return;
 
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
-	NSString *myFilePath = [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+	
+	if(fileName == nil)
+		fileName = [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
 	// Store save panel settings or take them from spfDocData
 	if(!saveInBackground) {
@@ -2133,7 +2135,7 @@
 		NSPropertyListFormat format;
 		NSMutableDictionary *spf = [[NSMutableDictionary alloc] init];
 		
-		NSData *pData = [NSData dataWithContentsOfFile:myFilePath options:NSUncachedRead error:&readError];
+		NSData *pData = [NSData dataWithContentsOfFile:fileName options:NSUncachedRead error:&readError];
 
 		[spf addEntriesFromDictionary:[NSPropertyListSerialization propertyListFromData:pData 
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError]];
@@ -2181,7 +2183,7 @@
 		}
 
 		NSError *error = nil;
-		[plist writeToFile:myFilePath options:NSAtomicWrite error:&error];
+		[plist writeToFile:fileName options:NSAtomicWrite error:&error];
 		if(error != nil){
 			NSAlert *errorAlert = [NSAlert alertWithError:error];
 			[errorAlert runModal];
