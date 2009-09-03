@@ -143,8 +143,9 @@ enum sp_current_query_mode
 	NSString *queryEditorInitString;
 	
 	NSDictionary *spfSession;
+	NSDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
-
+	
 }
 
 - (NSString *)getHTMLforPrint;
@@ -203,7 +204,7 @@ enum sp_current_query_mode
 - (void)refreshCurrentDatabase;
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)validateSaveConnectionAccessory:(id)sender;
-- (void)saveSPFtoFile:(NSString *)fileName saveInBackground:(BOOL)saveInBackground saveOnlyPreferences:(BOOL)saveOnlyPreferences;
+- (void)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences;
 - (IBAction)closePasswordSheet:(id)sender;
 
 // Getter methods

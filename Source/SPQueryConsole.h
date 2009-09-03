@@ -42,6 +42,11 @@
 	BOOL filterIsActive;
 
 	NSMutableString *activeFilterString;
+	
+	NSUInteger untitledDocumentCounter;
+	NSMutableDictionary *favoritesContainer;
+	NSMutableDictionary *historyContainer;
+
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
@@ -59,6 +64,13 @@
 
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;
+
+- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSDictionary *)contextInfo;
+- (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL;
+- (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
+- (void)favoritesForFileURL:(NSURL *)fileURL;
+- (void)historyForFileURL:(NSURL *)fileURL;
+
 
 - (NSUInteger)consoleMessageCount;
 

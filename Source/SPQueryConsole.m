@@ -95,6 +95,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
 
 		// Weak reference to active messages set - starts off as full set
 		messagesVisibleSet = messagesFullSet;
+
+		untitledDocumentCounter = 1;
+
+		favoritesContainer = [[NSMutableDictionary alloc] init];
+		historyContainer = [[NSMutableDictionary alloc] init];
 	}
 
 	return self;
@@ -321,6 +326,62 @@ static SPQueryConsole *sharedQueryConsole = nil;
 }
 
 #pragma mark -
+#pragma mark DocumentsController
+
+- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSDictionary *)contextInfo
+{
+
+	// Register a new untiled document and return its URL
+	if(fileURL == nil) {
+			NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+			untitledDocumentCounter++;
+			if(![favoritesContainer objectForKey:[new absoluteString]])
+				[favoritesContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
+			if(![historyContainer objectForKey:[new absoluteString]])
+				[historyContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
+
+			return new;
+	}
+	
+	// Register a spf file
+	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] != nil)
+			[favoritesContainer setObject:[[contextInfo objectForKey:@"queryFavorites"] mutableCopy] forKey:[fileURL absoluteString]];
+		else
+			[favoritesContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
+	}
+	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] != nil)
+			[historyContainer setObject:[[contextInfo objectForKey:@"queryHistory"] mutableCopy] forKey:[fileURL absoluteString]];
+		else
+			[historyContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
+	}
+	NSLog(@"shared %@ %@", historyContainer, favoritesContainer);
+	return fileURL;
+	
+}
+
+- (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL
+{
+	
+}
+
+- (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
+{
+	
+}
+
+- (void)favoritesForFileURL:(NSURL *)fileURL
+{
+	
+}
+
+- (void)historyForFileURL:(NSURL *)fileURL
+{
+	
+}
+
+#pragma mark -
 #pragma mark Other
 
 /**
@@ -382,6 +443,9 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	[messagesFullSet release], messagesFullSet = nil;
 	[messagesFilteredSet release], messagesFilteredSet = nil;
 	[activeFilterString release], activeFilterString = nil;
+
+	[favoritesContainer release];
+	[historyContainer release];
 
 	[super dealloc];
 }

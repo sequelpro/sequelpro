@@ -87,6 +87,7 @@
 		queryEditorInitString = nil;
 
 		spfSession = nil;
+		spfPreferences = nil;
 		spfDocData = [[NSMutableDictionary alloc] init];
 
 	}
@@ -407,8 +408,16 @@
 		return;
 	}
 	
-	[self setFileURL:[NSURL URLWithString:path]];
-	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:path]];
+	[self setFileURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+
+	if([spf objectForKey:@"queryFavorites"] || [spf objectForKey:@"queryHistory"]) {
+		spfPreferences = [NSDictionary dictionaryWithObjectsAndKeys:
+			[spf objectForKey:@"queryFavorites"], @"queryFavorites",
+			[spf objectForKey:@"queryHistory"], @"queryHistory",
+			nil];
+	}
+
 
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
@@ -591,9 +600,11 @@
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
+	NSURL *anURL = [[SPQueryConsole sharedQueryConsole] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences];
+	[self setFileURL:anURL];
+
 	if(spfSession != nil)
 		[self restoreSession];
-		// [self performSelector:@selector(restoreSession) withObject:nil afterDelay:0.3];
 
 }
 
@@ -1914,8 +1925,8 @@
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
 	// Auto-save spf file based connection
-	if([self fileURL] && [[[self fileURL] absoluteString] length])
-		[self saveSPFtoFile:[[self fileURL] absoluteString] saveInBackground:YES saveOnlyPreferences:YES];
+	if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"])
+		[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
 
 	[tablesListInstance selectionShouldChangeInTableView:nil];
 }
@@ -1967,7 +1978,7 @@
 		// If Save was invoked check for fileURL and save the spf file without save panel
 		// otherwise ask for file name
 		if([sender tag] == 1004 && [[[self fileURL] absoluteString] length]) {
-			[self saveSPFtoFile:[[self fileURL] absoluteString] saveInBackground:YES saveOnlyPreferences:NO];
+			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO];
 			return;
 		}
 
@@ -2079,19 +2090,20 @@
 			// Save changes of saveConnectionEncryptString
 			[[saveConnectionEncryptString window] makeFirstResponder:[[saveConnectionEncryptString window] initialFirstResponder]];
 			
-			[self saveSPFtoFile:fileName saveInBackground:NO saveOnlyPreferences:NO];
+			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO];
 
 		}
 	}
 }
 
-- (void)saveSPFtoFile:(NSString *)fileName saveInBackground:(BOOL)saveInBackground saveOnlyPreferences:(BOOL)saveOnlyPreferences
+- (void)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences
 {
 	// Do not save if no connection is/was available
 	if(saveInBackground && ([self mySQLVersion] == nil || ![[self mySQLVersion] length]))
 		return;
 
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
+	NSString *myFilePath = [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
 	// Store save panel settings or take them from spfDocData
 	if(!saveInBackground) {
@@ -2121,7 +2133,7 @@
 		NSPropertyListFormat format;
 		NSMutableDictionary *spf = [[NSMutableDictionary alloc] init];
 		
-		NSData *pData = [NSData dataWithContentsOfFile:[[self fileURL] absoluteString] options:NSUncachedRead error:&readError];
+		NSData *pData = [NSData dataWithContentsOfFile:myFilePath options:NSUncachedRead error:&readError];
 
 		[spf addEntriesFromDictionary:[NSPropertyListSerialization propertyListFromData:pData 
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError]];
@@ -2169,7 +2181,7 @@
 		}
 
 		NSError *error = nil;
-		[plist writeToFile:[[self fileURL] absoluteString] options:NSAtomicWrite error:&error];
+		[plist writeToFile:myFilePath options:NSAtomicWrite error:&error];
 		if(error != nil){
 			NSAlert *errorAlert = [NSAlert alertWithError:error];
 			[errorAlert runModal];
@@ -2342,8 +2354,11 @@
 		[errorAlert runModal];
 	}
 
-	[self setFileURL:[NSURL URLWithString:fileName]];
-	
+	// TODO take favs and history frm untitle or old file name with me
+	[[SPQueryConsole sharedQueryConsole] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:nil];
+
+	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+
 	[tableWindow setTitle:[self displayName]];
 	
 	// Store doc data permanently
@@ -2949,8 +2964,8 @@
 		return NO;
 	} else {
 		// Auto-save spf file based connection
-		if([self fileURL] && [[[self fileURL] absoluteString] length])
-			[self saveSPFtoFile:[[self fileURL] absoluteString] saveInBackground:YES saveOnlyPreferences:YES];
+		if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"])
+			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
 	}
 	return YES;
 }
@@ -2970,11 +2985,11 @@
 - (NSString *)displayName
 {
 	if (!_isConnected) return [NSString stringWithFormat:@"%@%@", 
-		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ – ",[[[self fileURL] absoluteString] lastPathComponent]] : @"",
+		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"",
 		NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
 	
 	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
-		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ – ",[[[self fileURL] absoluteString] lastPathComponent]] : @"",
+		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"",
 		mySQLVersion,
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
