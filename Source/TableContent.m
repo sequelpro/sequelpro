@@ -35,7 +35,7 @@
 #import "CMCopyTable.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
-#import "SPQueryConsole.h"
+#import "SPQueryController.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
@@ -1376,7 +1376,7 @@
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
-		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
+		[[SPQueryController sharedQueryController] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
 		return YES;
 
 	// On success...

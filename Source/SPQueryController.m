@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPQueryConsole.m
+//  SPQueryController.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Jan 30, 2009
@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPQueryConsole.h"
+#import "SPQueryController.h"
 #import "SPConsoleMessage.h"
 #import "SPArrayAdditions.h"
 
@@ -39,7 +39,7 @@
 #define TABLEVIEW_MESSAGE_COLUMN_IDENTIFIER @"message"
 #define TABLEVIEW_DATE_COLUMN_IDENTIFIER @"messageDate"
 
-@interface SPQueryConsole (PrivateAPI)
+@interface SPQueryController (PrivateAPI)
 
 - (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps;
 
@@ -49,33 +49,33 @@
 
 @end
 
-static SPQueryConsole *sharedQueryConsole = nil;
+static SPQueryController *sharedQueryController = nil;
 
-@implementation SPQueryConsole
+@implementation SPQueryController
 
 @synthesize consoleFont;
 
 /*
  * Returns the shared query console.
  */
-+ (SPQueryConsole *)sharedQueryConsole
++ (SPQueryController *)sharedQueryController
 {
     @synchronized(self) {
-        if (sharedQueryConsole == nil) {
+        if (sharedQueryController == nil) {
             [[self alloc] init];
         }
     }
     
-    return sharedQueryConsole;
+    return sharedQueryController;
 }
 
 + (id)allocWithZone:(NSZone *)zone
 {    
     @synchronized(self) {
-        if (sharedQueryConsole == nil) {
-            sharedQueryConsole = [super allocWithZone:zone];
+        if (sharedQueryController == nil) {
+            sharedQueryController = [super allocWithZone:zone];
             
-            return sharedQueryConsole;
+            return sharedQueryController;
         }
     }
     
@@ -87,21 +87,21 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	if ((self = [super initWithWindowNibName:@"Console"])) {
 		messagesFullSet		= [[NSMutableArray alloc] init];
 		messagesFilteredSet	= [[NSMutableArray alloc] init];
-
+		
 		showSelectStatementsAreDisabled = NO;
 		showHelpStatementsAreDisabled = NO;
 		filterIsActive = NO;
 		activeFilterString = [[NSMutableString alloc] init];
-
+		
 		// Weak reference to active messages set - starts off as full set
 		messagesVisibleSet = messagesFullSet;
-
+		
 		untitledDocumentCounter = 1;
-
+		
 		favoritesContainer = [[NSMutableDictionary alloc] init];
 		historyContainer = [[NSMutableDictionary alloc] init];
 	}
-
+	
 	return self;
 }
 
@@ -142,37 +142,37 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)copy:(id)sender
 {
 	NSResponder *firstResponder = [[self window] firstResponder];
-
+	
 	if ((firstResponder == consoleTableView) && ([consoleTableView numberOfSelectedRows] > 0)) {
-
+		
 		NSString *string = @"";
 		NSIndexSet *rows = [consoleTableView selectedRowIndexes];
-
+		
 		NSUInteger i = [rows firstIndex];
-
+		
 		while (i != NSNotFound) 
 		{
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
-
+				
 				NSString *consoleMessage = [message message];
-
+				
 				// If the timestamp column is not hidden we need to include them in the copy
 				if (![[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] isHidden]) {
-
+					
 					NSString *dateString = [[message messageDate] descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
-
+					
 					consoleMessage = [NSString stringWithFormat:@"/* MySQL %@ */ %@", dateString, consoleMessage];
 				}
-
+				
 				string = [string stringByAppendingFormat:@"%@\n", consoleMessage];
 			}
-
+			
 			i = [rows indexGreaterThanIndex:i];
 		}
-
+		
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-
+		
 		// Copy the string to the pasteboard
 		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
@@ -186,7 +186,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 {
 	[messagesFullSet removeAllObjects];
 	[messagesFilteredSet removeAllObjects];
-
+	
 	[consoleTableView reloadData];
 }
 
@@ -196,15 +196,15 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (IBAction)saveConsoleAs:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-
+	
 	[panel setRequiredFileType:DEFAULT_CONSOLE_LOG_FILE_EXTENSION];
-
+	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
-
+	
 	[panel setAccessoryView:saveLogView];
-
+	
 	[panel beginSheetForDirectory:nil file:DEFAULT_CONSOLE_LOG_FILENAME modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
@@ -289,29 +289,29 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSUInteger)row
 {
 	NSString *returnValue = nil;
-
+	
 	id object = [[messagesVisibleSet objectAtIndex:row] valueForKey:[tableColumn identifier]];
-
+	
 	if ([[tableColumn identifier] isEqualToString:TABLEVIEW_DATE_COLUMN_IDENTIFIER]) {
-
+		
 		NSString *dateString = [(NSDate *)object descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
-
+		
 		returnValue = [NSString stringWithFormat:@"/* MySQL %@ */", dateString];
 	} 
 	else {
 		if ([(NSString *)object length] > MESSAGE_TRUNCATE_CHARACTER_LENGTH) {
 			object = [NSString stringWithFormat:@"%@...", [object substringToIndex:MESSAGE_TRUNCATE_CHARACTER_LENGTH]];
 		}
-
+		
 		returnValue = object;
 	}
-
+	
 	NSMutableDictionary *stringAtributes = nil;
-
+	
 	if (consoleFont) {
 		stringAtributes = [NSMutableDictionary dictionaryWithObject:consoleFont forKey:NSFontAttributeName];
 	}
-
+	
 	// If this is an error message give it a red colour
 	if ([(SPConsoleMessage *)[messagesVisibleSet objectAtIndex:row] isError]) {
 		if (stringAtributes) {
@@ -321,7 +321,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 			stringAtributes = [NSMutableDictionary dictionaryWithObject:[NSColor redColor] forKey:NSForegroundColorAttributeName];
 		}
 	}
-		 
+	
 	return [[[NSAttributedString alloc] initWithString:returnValue attributes:stringAtributes] autorelease];
 }
 
@@ -330,20 +330,20 @@ static SPQueryConsole *sharedQueryConsole = nil;
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
 {
-
+	
 	// Register a new untiled document and return its URL
 	if(fileURL == nil) {
-			NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-			untitledDocumentCounter++;
-
-			if(![favoritesContainer objectForKey:[new absoluteString]])
-				[favoritesContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
-			if(![historyContainer objectForKey:[new absoluteString]])
-				[historyContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
-
-			return new;
+		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		untitledDocumentCounter++;
+		
+		if(![favoritesContainer objectForKey:[new absoluteString]])
+			[favoritesContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
+		if(![historyContainer objectForKey:[new absoluteString]])
+			[historyContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
+		
+		return new;
 	}
-
+	
 	// Register a spf file to manage all query favorites and query history items
 	// file path based in a dictionary whereby the key represents the file name.
 	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
@@ -370,19 +370,19 @@ static SPQueryConsole *sharedQueryConsole = nil;
 			[arr release];
 		}
 	}
-
+	
 	return fileURL;
 	
 }
 
 - (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
 {
-
+	
 	if([favoritesContainer objectForKey:[fileURL absoluteString]])
 		[favoritesContainer removeObjectForKey:[fileURL absoluteString]];
 	if([historyContainer objectForKey:[fileURL absoluteString]])
 		[historyContainer removeObjectForKey:[fileURL absoluteString]];
-
+	
 }
 
 - (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL
@@ -414,13 +414,13 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	id object = [notification object];
-
+	
 	if ([object isEqualTo:consoleSearchField]) {
-
+		
 		// Store the state of the text filter and the current filter string for later quick reference
 		[activeFilterString setString:[[object stringValue] lowercaseString]];
 		filterIsActive = [activeFilterString length]?YES:NO;
-
+		
 		[self _updateFilterState];
 	} 
 }
@@ -443,11 +443,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	if ([menuItem action] == @selector(copy:)) {
 		return ([consoleTableView numberOfSelectedRows] > 0);
 	}
-
+	
 	if ([menuItem action] == @selector(clearConsole:)) {
 		return ([self consoleMessageCount] > 0);
 	}
-
+	
 	return [[self window] validateMenuItem:menuItem];
 }
 
@@ -463,20 +463,20 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)dealloc
 {
 	messagesVisibleSet = nil;
-
+	
 	[messagesFullSet release], messagesFullSet = nil;
 	[messagesFilteredSet release], messagesFilteredSet = nil;
 	[activeFilterString release], activeFilterString = nil;
-
+	
 	[favoritesContainer release];
 	[historyContainer release];
-
+	
 	[super dealloc];
 }
 
 @end
 
-@implementation SPQueryConsole (PrivateAPI)
+@implementation SPQueryController (PrivateAPI)
 
 /**
  * Creates and returns a string made entirely of all of the console's messages and includes the message
@@ -485,18 +485,18 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps
 {
 	NSMutableString *consoleString = [[[NSMutableString alloc] init] autorelease];
-
+	
 	for (SPConsoleMessage *message in messagesVisibleSet) 
 	{
 		if (timeStamps) {
 			NSString *dateString = [[message messageDate] descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
-
+			
 			[consoleString appendString:[NSString stringWithFormat:@"/* MySQL %@ */ ", dateString]];
 		}
-
+		
 		[consoleString appendString:[NSString stringWithFormat:@"%@\n", [message message]]];
 	}
-
+	
 	return consoleString;
 }
 
@@ -507,63 +507,63 @@ static SPQueryConsole *sharedQueryConsole = nil;
  */
 - (void)_updateFilterState
 {
-
+	
 	// Display start progress spinner
 	[progressIndicator setHidden:NO];
 	[progressIndicator startAnimation:self];
-
+	
 	// Don't allow clearing the console while filtering its content
 	[saveConsoleButton setEnabled:NO];
 	[clearConsoleButton setEnabled:NO];
-
+	
 	[messagesFilteredSet removeAllObjects];
-
+	
 	// If filtering is disabled and all show/selects are shown, empty the filtered
 	// result set and set the full set to visible.
 	if (!filterIsActive && !showSelectStatementsAreDisabled && !showHelpStatementsAreDisabled) {
 		messagesVisibleSet = messagesFullSet;
-
+		
 		[consoleTableView reloadData];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
-
+		
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
-
+		
 		[saveConsoleButton setTitle:@"Save As..."];
-
+		
 		// Hide progress spinner
 		[progressIndicator setHidden:YES];
 		[progressIndicator stopAnimation:self];
 		return;
 	}
-
+	
 	// Cache frequently used selector, avoiding dynamic binding overhead
 	IMP messageMatchesFilters = [self methodForSelector:@selector(_messageMatchesCurrentFilters:)];
-
+	
 	// Loop through all the messages in the full set to determine which should be
 	// added to the filtered set.
 	for (SPConsoleMessage *message in messagesFullSet) { 
-
+		
 		// Add a reference to the message to the filtered set if filters are active and the
 		// current message matches them
 		if ((messageMatchesFilters)(self, @selector(_messageMatchesCurrentFilters:), [message message])) {
 			[messagesFilteredSet addObject:message];
 		}
 	}
-
+	
 	// Ensure that the filtered set is marked as the currently visible set.
 	messagesVisibleSet = messagesFilteredSet;
-
+	
 	[consoleTableView reloadData];
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
-
+	
 	if ([messagesVisibleSet count] > 0) {
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
 	}
-
+	
 	[saveConsoleButton setTitle:@"Save View As..."];
-
+	
 	// Hide progress spinner
 	[progressIndicator setHidden:YES];
 	[progressIndicator stopAnimation:self];
@@ -575,11 +575,11 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (void)_addMessageToConsole:(NSString *)message isError:(BOOL)error
 {
 	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "] stringByAppendingString:@";"] date:[NSDate date]];
-
+	
 	[consoleMessage setIsError:error];
-
+	
 	[messagesFullSet addObject:consoleMessage];
-
+	
 	// If filtering is active, determine whether to add a reference to the filtered set
 	if ((showSelectStatementsAreDisabled || showHelpStatementsAreDisabled || filterIsActive)
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
@@ -588,7 +588,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
 	}
-
+	
 	// Reload the table and scroll to the new message if it's visible (for speed)
 	if ( [[self window] isVisible] ) {
 		[consoleTableView reloadData];
@@ -603,14 +603,14 @@ static SPQueryConsole *sharedQueryConsole = nil;
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message
 {	
 	BOOL messageMatchesCurrentFilters = YES;
-
+	
 	// Check whether to hide the message based on the current filter text, if any
 	if (filterIsActive
 		&& [message rangeOfString:activeFilterString options:NSCaseInsensitiveSearch].location == NSNotFound)
 	{
 		messageMatchesCurrentFilters = NO;
 	}
-
+	
 	// If hiding SELECTs and SHOWs is toggled to on, check whether the message is a SELECT or SHOW
 	if (messageMatchesCurrentFilters
 		&& showSelectStatementsAreDisabled
@@ -625,7 +625,7 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	{
 		messageMatchesCurrentFilters = NO;
 	}
-
+	
 	return messageMatchesCurrentFilters;
 }
 

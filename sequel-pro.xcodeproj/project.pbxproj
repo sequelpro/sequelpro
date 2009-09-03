@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		170088CE0F5870E200DD6B51 /* SPQueryConsole.m in Sources */ = {isa = PBXBuildFile; fileRef = 170088CD0F5870E200DD6B51 /* SPQueryConsole.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
@@ -224,6 +223,7 @@
 		BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = BC05F1C4101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
+		BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC29C37E10501EFD00DD6C6E /* SPQueryController.m */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
 		BC688D811012462600D35128 /* borderlessbackground.png in Resources */ = {isa = PBXBuildFile; fileRef = BC688D801012462600D35128 /* borderlessbackground.png */; };
@@ -307,8 +307,6 @@
 
 /* Begin PBXFileReference section */
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		170088CC0F5870E200DD6B51 /* SPQueryConsole.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryConsole.h; sourceTree = "<group>"; };
-		170088CD0F5870E200DD6B51 /* SPQueryConsole.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryConsole.m; sourceTree = "<group>"; };
 		1703EF2B0F0B0742005BBE7E /* bar.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = bar.gif; sourceTree = "<group>"; };
 		1703EF2C0F0B0742005BBE7E /* english_help idx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "english_help idx"; sourceTree = "<group>"; };
 		1703EF2D0F0B0742005BBE7E /* icon.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = icon.gif; sourceTree = "<group>"; };
@@ -612,6 +610,8 @@
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
 		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
 		BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small-square.tiff"; sourceTree = "<group>"; };
+		BC29C37D10501EFD00DD6C6E /* SPQueryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryController.h; sourceTree = "<group>"; };
+		BC29C37E10501EFD00DD6C6E /* SPQueryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryController.m; sourceTree = "<group>"; };
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
@@ -936,8 +936,6 @@
 				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
 				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
 				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
-				170088CC0F5870E200DD6B51 /* SPQueryConsole.h */,
-				170088CD0F5870E200DD6B51 /* SPQueryConsole.m */,
 				173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */,
 				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
 				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
@@ -956,6 +954,8 @@
 				17E641550EF01EF6001BC333 /* TableSource.m */,
 				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
 				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
+				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
+				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -1657,7 +1657,6 @@
 				1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */,
 				58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */,
 				58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */,
-				170088CE0F5870E200DD6B51 /* SPQueryConsole.m in Sources */,
 				172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */,
 				179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */,
 				B5E92F1C0F75B2E800012500 /* SPExportController.m in Sources */,
@@ -1701,6 +1700,7 @@
 				17F5B1511048C4E400FC794F /* SPCSVExporter.m in Sources */,
 				17F5B1541048C50D00FC794F /* SPExporter.m in Sources */,
 				17F5B39C1049B96A00FC794F /* SPSQLExporter.m in Sources */,
+				BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

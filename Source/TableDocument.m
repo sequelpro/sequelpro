@@ -34,7 +34,7 @@
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPExportController.h"
-#import "SPQueryConsole.h"
+#import "SPQueryController.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
@@ -154,7 +154,7 @@
 	[prefs addObserver:customQueryInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Register observers for when the logging preference changes
-	[prefs addObserver:[SPQueryConsole sharedQueryConsole] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
 	
 	// Register a second observer for when the logging preference changes so we can tell the current connection about it
 	[prefs addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
@@ -597,7 +597,7 @@
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
-	NSURL *anURL = [[SPQueryConsole sharedQueryConsole] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]];
+	NSURL *anURL = [[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]];
 	[self setFileURL:anURL];
 
 	[spfPreferences release];
@@ -1053,16 +1053,16 @@
  */
 - (void)toggleConsole:(id)sender
 {
-	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
+	BOOL isConsoleVisible = [[[SPQueryController sharedQueryController] window] isVisible];
 
 	// If the Console window is not visible data are not reloaded (for speed).
 	// Due to that update list if user opens the Console window.
 	if(!isConsoleVisible) {
-		[[SPQueryConsole sharedQueryConsole] updateEntries];
+		[[SPQueryController sharedQueryController] updateEntries];
 	}
 
 	// Show or hide the console
-	[[[SPQueryConsole sharedQueryConsole] window] setIsVisible:(!isConsoleVisible)];
+	[[[SPQueryController sharedQueryController] window] setIsVisible:(!isConsoleVisible)];
 	
 	// Get the menu item for showing and hiding the console. This is isn't the best way to get it as any 
 	// changes to the menu structure will result in the wrong item being selected.
@@ -1077,12 +1077,12 @@
  */
 - (void)showConsole:(id)sender
 {
-	BOOL isConsoleVisible = [[[SPQueryConsole sharedQueryConsole] window] isVisible];
+	BOOL isConsoleVisible = [[[SPQueryController sharedQueryController] window] isVisible];
 
 	if (!isConsoleVisible) {
 		[self toggleConsole:sender];
 	} else {
-		[[[SPQueryConsole sharedQueryConsole] window] makeKeyAndOrderFront:self];
+		[[[SPQueryController sharedQueryController] window] makeKeyAndOrderFront:self];
 	}
 }
 
@@ -1091,7 +1091,7 @@
  */
 - (void)clearConsole:(id)sender
 {
-	[[SPQueryConsole sharedQueryConsole] clearConsole:sender];
+	[[SPQueryController sharedQueryController] clearConsole:sender];
 }
 
 /**
@@ -2361,7 +2361,7 @@
 	}
 
 	// TODO take favs and history frm untitle or old file name with me
-	[[SPQueryConsole sharedQueryConsole] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:nil];
+	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:nil];
 
 	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 
@@ -2881,12 +2881,12 @@
 	
 	// Show console item
 	if ([identifier isEqualToString:@"ShowConsoleIdentifier"]) {
-		if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) {
+		if ([[[SPQueryController sharedQueryController] window] isVisible]) {
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		} else {
 			[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
 		}
-		if ([[[SPQueryConsole sharedQueryConsole] window] isKeyWindow]) {
+		if ([[[SPQueryController sharedQueryController] window] isKeyWindow]) {
 			return NO;
 		} else {
 			return YES;
@@ -2895,7 +2895,7 @@
 	
 	// Clear console item
 	if ([identifier isEqualToString:@"ClearConsoleIdentifier"]) {
-		return ([[SPQueryConsole sharedQueryConsole] consoleMessageCount] > 0);
+		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
 	
 	return YES;
@@ -2934,14 +2934,14 @@
 	
 	//set up interface
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
-		[[SPQueryConsole sharedQueryConsole] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 	} else {
-		[[SPQueryConsole sharedQueryConsole] setConsoleFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[syntaxViewContent setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -2958,7 +2958,7 @@
 {
 	[mySQLConnection setDelegate:nil];
 	if ([mySQLConnection isConnected]) [self closeConnection];
-	if ([[[SPQueryConsole sharedQueryConsole] window] isVisible]) [self toggleConsole:self];
+	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -2975,10 +2975,10 @@
 		if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
 			BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
 			if(isSaved)
-				[[SPQueryConsole sharedQueryConsole] removeRegisteredDocumentWithFileURL:[self fileURL]];
+				[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
 			return isSaved;
 		} else if([self fileURL] && [[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"]) {
-			[[SPQueryConsole sharedQueryConsole] removeRegisteredDocumentWithFileURL:[self fileURL]];
+			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
 			return YES;
 		}
 	}
@@ -3025,7 +3025,7 @@
 			|| (_queryMode == SP_QUERYMODE_CUSTOMQUERY && [prefs boolForKey:@"ConsoleEnableCustomQueryLogging"])
 			|| (_queryMode == SP_QUERYMODE_IMPORTEXPORT && [prefs boolForKey:@"ConsoleEnableImportExportLogging"]))
 		{
-			[[SPQueryConsole sharedQueryConsole] showMessageInConsole:query];
+			[[SPQueryController sharedQueryController] showMessageInConsole:query];
 		}
 	}
 }
@@ -3036,7 +3036,7 @@
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {	
 	if ([prefs boolForKey:@"ConsoleEnableLogging"] && [prefs boolForKey:@"ConsoleEnableErrorLogging"]) {
-		[[SPQueryConsole sharedQueryConsole] showErrorInConsole:error];
+		[[SPQueryController sharedQueryController] showErrorInConsole:error];
 	}
 }
 

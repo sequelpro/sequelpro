@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPQueryConsole.h
+//  SPQueryController.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on Jan 30, 2009
@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPQueryConsole : NSWindowController 
+@interface SPQueryController : NSWindowController 
 {
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
@@ -40,18 +40,18 @@
 	BOOL showSelectStatementsAreDisabled;
 	BOOL showHelpStatementsAreDisabled;
 	BOOL filterIsActive;
-
+	
 	NSMutableString *activeFilterString;
 	
 	NSUInteger untitledDocumentCounter;
 	NSMutableDictionary *favoritesContainer;
 	NSMutableDictionary *historyContainer;
-
+	
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
 
-+ (SPQueryConsole *)sharedQueryConsole;
++ (SPQueryController *)sharedQueryController;
 
 - (IBAction)copy:(id)sender;
 - (IBAction)clearConsole:(id)sender;
