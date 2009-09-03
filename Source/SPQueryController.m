@@ -286,7 +286,7 @@ static SPQueryController *sharedQueryController = nil;
 /**
  * Table view delegate method. Returns the specific object for the request column and row.
  */
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSUInteger)row
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
 	NSString *returnValue = nil;
 	
