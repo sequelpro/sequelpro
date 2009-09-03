@@ -116,7 +116,9 @@
 		NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
 		theResult = [mySQLConnection queryString:pQuery];
 		
-		if( [theResult numOfRows] ) {
+		// Check for mysql errors - if information_schema is not accessible for some reasons
+		// omit adding procedures and functions
+		if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
 			// add the header row
 			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
 			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
