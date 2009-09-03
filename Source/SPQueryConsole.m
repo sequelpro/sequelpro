@@ -344,19 +344,19 @@ static SPQueryConsole *sharedQueryConsole = nil;
 	}
 	
 	// Register a spf file
-	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] != nil)
-			[favoritesContainer setObject:[[contextInfo objectForKey:@"queryFavorites"] mutableCopy] forKey:[fileURL absoluteString]];
-		else
-			[favoritesContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
-	}
-	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] != nil)
-			[historyContainer setObject:[[contextInfo objectForKey:@"queryHistory"] mutableCopy] forKey:[fileURL absoluteString]];
-		else
-			[historyContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
-	}
-	NSLog(@"shared %@ %@", historyContainer, favoritesContainer);
+	// if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
+	// 	if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] != nil)
+	// 		[favoritesContainer setObject:[[contextInfo objectForKey:@"queryFavorites"] mutableCopy] forKey:[fileURL absoluteString]];
+	// 	else
+	// 		[favoritesContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
+	// }
+	// if(![historyContainer objectForKey:[fileURL absoluteString]]) {
+	// 	if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] != nil)
+	// 		[historyContainer setObject:[[contextInfo objectForKey:@"queryHistory"] mutableCopy] forKey:[fileURL absoluteString]];
+	// 	else
+	// 		[historyContainer setObject:[NSMutableArray array] forKey:[fileURL absoluteString]];
+	// }
+
 	return fileURL;
 	
 }
