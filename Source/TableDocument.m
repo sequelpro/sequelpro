@@ -1925,7 +1925,7 @@
 {
 	// Auto-save preferences to spf file based connection
 	if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"])
-		if(![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES]) {
+		if(_isConnected && ![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES]) {
 			NSLog(@"Preference data for file ‘%@’ could not be saved.", [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
 			NSBeep();
 		}
@@ -2128,9 +2128,12 @@
 	// Update only query favourites, history, etc. by reading the file again
 	if(saveOnlyPreferences) {
 		
-		// Check for save file URL
-		// TODO maybe alert ?
-		if(![[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"]) return NO;
+		// Check URL for safety reasons
+		if(![[[self fileURL] absoluteString] length] || ![[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+			NSLog(@"Couldn't save data. No file URL found!");
+			NSBeep();
+			return NO;
+		}
 		
 		NSError *readError = nil;
 		NSString *convError = nil;
@@ -2976,13 +2979,29 @@
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
 		return NO;
 	} else {
+		
+		if(!_isConnected) return YES;
+		
 		// Auto-save spf file based connection
 		if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
 			BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
 			if(isSaved)
 				[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
 			return isSaved;
+
+		// Before removing an Untitled doc check if it contains any defined query favorites.
+		// If so save them globally. TODO: How to do it better ? 
 		} else if([self fileURL] && [[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+			if([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]) {
+
+				NSMutableArray *favs = [[[NSMutableArray alloc] init] autorelease];
+				[favs addObjectsFromArray:[prefs objectForKey:@"queryFavorites"]];
+				[favs addObjectsFromArray:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]]];
+				[prefs setObject:favs forKey:@"queryFavorites"];
+
+				if(![prefs synchronize])
+					NSLog(@"Sorry, couldn't backup query favorites from Untitled document.");
+			}
 			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
 			return YES;
 		}

@@ -32,6 +32,20 @@
 #import "RegexKitLite.h"
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
+#define SP_HELP_SEARCH_IN_MYSQL   0
+#define SP_HELP_SEARCH_IN_PAGE    1
+#define SP_HELP_SEARCH_IN_WEB     2
+#define SP_HELP_GOBACK_BUTTON     0
+#define SP_HELP_SHOW_TOC_BUTTON   1
+#define SP_HELP_GOFORWARD_BUTTON  2
+#define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
+
+#define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
+
+#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
+#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
+#define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
+
 
 @class SPQueryFavoriteManager;
 
@@ -43,8 +57,15 @@
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
 	IBOutlet NSMenuItem *queryFavoritesSaveAsMenuItem;
+	IBOutlet NSMenuItem *queryFavoritesSaveAllMenuItem;
 	IBOutlet id queryFavoritesSearchFieldView;
 	IBOutlet NSSearchField *queryFavoritesSearchField;
+
+	IBOutlet NSWindow *queryFavoritesSheet;
+	IBOutlet NSButton *saveQueryFavoriteButton;
+	IBOutlet NSTextField *queryFavoriteNameTextField;
+	IBOutlet id saveQueryFavoriteGlobal;
+
 	IBOutlet id queryHistoryButton;
 	IBOutlet NSMenuItem *queryHistorySearchMenuItem;
 	IBOutlet id queryHistorySearchFieldView;
@@ -72,11 +93,6 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
-
-	IBOutlet NSWindow *queryFavoritesSheet;
-	IBOutlet NSButton *saveQueryFavoriteButton;
-	IBOutlet NSTextField *queryFavoriteNameTextField;
-	IBOutlet id saveQueryFavoriteGlobal;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
