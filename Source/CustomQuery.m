@@ -154,6 +154,7 @@
 			modalDelegate:self 
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"addSelectionToNewQueryFavorite"];
+
 	}
 	if ([queryFavoritesButton indexOfSelectedItem] == 2) {
 		
@@ -2489,14 +2490,20 @@
 				queryToBeAddded = [textView string];
 			}
 			
-			[favorites addObject:[NSDictionary dictionaryWithObjects:
-				[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] 
-						forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+			if([saveQueryFavoriteGlobal state] == NSOnState) {
+				[favorites addObject:[NSDictionary dictionaryWithObjects:
+					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] 
+							forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 			
-			[prefs setObject:favorites forKey:@"queryFavorites"];
-			[prefs synchronize];
-			
+				[prefs setObject:favorites forKey:@"queryFavorites"];
+			} else {
+				[SPTooltip showWithObject:@"Not yet implemented"];
+			}
+
+			[saveQueryFavoriteGlobal setState:NSOffState];
+
 			[self queryFavoritesHaveBeenUpdated:nil];
+
 		}
 	}
 	

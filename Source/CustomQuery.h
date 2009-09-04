@@ -76,6 +76,7 @@
 	IBOutlet NSWindow *queryFavoritesSheet;
 	IBOutlet NSButton *saveQueryFavoriteButton;
 	IBOutlet NSTextField *queryFavoriteNameTextField;
+	IBOutlet id saveQueryFavoriteGlobal;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
