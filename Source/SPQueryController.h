@@ -27,6 +27,8 @@
 
 @interface SPQueryController : NSWindowController 
 {
+
+	// QueryConsoleController
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
 	IBOutlet NSSearchField *consoleSearchField;
@@ -43,9 +45,13 @@
 	
 	NSMutableString *activeFilterString;
 	
+	// DocumentsController
 	NSUInteger untitledDocumentCounter;
 	NSMutableDictionary *favoritesContainer;
 	NSMutableDictionary *historyContainer;
+	NSUInteger numberOfMaxAllowedHistory;
+
+	NSUserDefaults *prefs;
 	
 }
 
@@ -53,6 +59,9 @@
 
 + (SPQueryController *)sharedQueryController;
 
+#pragma mark ----------------------
+
+// QueryConsoleController
 - (IBAction)copy:(id)sender;
 - (IBAction)clearConsole:(id)sender;
 - (IBAction)saveConsoleAs:(id)sender;
@@ -65,14 +74,18 @@
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;
 
+- (NSUInteger)consoleMessageCount;
+
+#pragma mark ----------------------
+
+// DocumentsController
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;
 - (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL;
-- (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL;
+- (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL;
+- (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL;
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
-- (void)favoritesForFileURL:(NSURL *)fileURL;
-- (void)historyForFileURL:(NSURL *)fileURL;
-
-
-- (NSUInteger)consoleMessageCount;
+- (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL;
+- (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
+- (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
 
 @end

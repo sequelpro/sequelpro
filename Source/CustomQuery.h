@@ -114,9 +114,6 @@
 
 	unsigned int numberOfQueries;
 	
-	NSMutableArray *localFavorites;
-	NSMutableArray *localHistoryItems;
-
 }
 
 // IBAction methods
@@ -147,8 +144,6 @@
 // Accessors
 - (NSArray *)currentResult;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
-- (NSArray *)localFavorites;
-- (NSArray *)localHistoryItems;
 
 // MySQL Help
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)aString;

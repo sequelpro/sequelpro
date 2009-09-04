@@ -38,6 +38,7 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPQueryFavoriteManager.h"
+#import "SPQueryController.h"
 
 #define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
 #define SP_HELP_SEARCH_IN_MYSQL   0
@@ -238,13 +239,14 @@
 {
 	// "Clear History" menu item - clear query history
 	if (sender == clearHistoryMenuItem) {
-		// Remove all history buttons beginning from the end
+
+		// Remove all history buttons except the search field beginning from the end
 		while([queryHistoryButton numberOfItems] > 2)
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
-		// [queryHistoryButton addItemWithTitle:NSLocalizedString(@"Query History…",@"Title of query history popup button")];
-		[prefs setObject:[NSArray array] forKey:@"queryHistory"];
-		[prefs synchronize];
+		// Remove all items from the queryController
+		[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
+
 	}
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
@@ -340,7 +342,6 @@
 	NSArray				*theColumns;
 	NSTableColumn		*theCol;
 	MCPStreamingResult	*streamingResult  = nil;
-	NSMutableArray		*menuItems  = [NSMutableArray array];
 	NSMutableString		*errors     = [NSMutableString string];
 	
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
@@ -491,17 +492,17 @@
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
 	if(!tableReloadAfterEditing && [usedQuery length]) {
 
+		// Register new history item
+		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
+
+		// Add it to the document's current popup list
 		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:2];
 
-		int maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
-
+		// Check for max history
+		NSUInteger maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
 		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 2 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
-		for ( i = 2 ; i < [queryHistoryButton numberOfItems] ; i++ )
-			[menuItems addObject:[queryHistoryButton itemTitleAtIndex:i]];
-
-		[prefs setObject:menuItems forKey:@"queryHistory"];
 	}
 
 	// Error checking
@@ -1057,23 +1058,6 @@
 	return currentResult;
 }
 
-/*
- * Return the document-based favourites
- */
-- (NSArray *)localFavorites
-{
-	return localFavorites;
-}
-
-/*
- * Return the document-based history items
- */
-- (NSArray *)localHistoryItems
-{
-	return localHistoryItems;
-}
-
-
 #pragma mark -
 #pragma mark Additional methods
 
@@ -1113,9 +1097,9 @@
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]?NSOnState:NSOffState)];
 	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]];
 
-	if ( [prefs objectForKey:@"queryHistory"] )
+	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
 	{
-		[queryHistoryButton addItemsWithTitles:[prefs objectForKey:@"queryHistory"]];
+		[queryHistoryButton addItemsWithTitles:[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]]];
 	}
 	
 	// Disable runSelectionMenuItem in the gear menu
@@ -2575,10 +2559,6 @@
 		// init tableView's data source
 		fullResult = [[NSMutableArray alloc] init];
 		
-		// init local favorite and history item array
-		localHistoryItems = [[NSMutableArray alloc] init];
-		localFavorites = [[NSMutableArray alloc] init];
-		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
 
@@ -2627,8 +2607,6 @@
 	[usedQuery release];
 	[fullResult release];
 	[favoritesManager release];
-	if (localFavorites) [localFavorites release];
-	if (localHistoryItems) [localHistoryItems release];
 	if (sortField) [sortField release];
 	
 	[super dealloc];

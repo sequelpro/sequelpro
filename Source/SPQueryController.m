@@ -97,9 +97,11 @@ static SPQueryController *sharedQueryController = nil;
 		messagesVisibleSet = messagesFullSet;
 		
 		untitledDocumentCounter = 1;
+		numberOfMaxAllowedHistory = 100;
 		
 		favoritesContainer = [[NSMutableDictionary alloc] init];
 		historyContainer = [[NSMutableDictionary alloc] init];
+
 	}
 	
 	return self;
@@ -124,7 +126,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)awakeFromNib
 {
-	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+	prefs = [NSUserDefaults standardUserDefaults];
 	
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
 	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:@"ConsoleShowTimestamps"]];
@@ -135,6 +137,27 @@ static SPQueryController *sharedQueryController = nil;
 	
 	[loggingDisabledTextField setStringValue:([prefs boolForKey:@"ConsoleEnableLogging"]) ? @"" : @"Query logging is currently disabled"];
 }
+
+/**
+ * Standard dealloc.
+ */
+- (void)dealloc
+{
+	messagesVisibleSet = nil;
+
+	[messagesFullSet release], messagesFullSet = nil;
+	[messagesFilteredSet release], messagesFilteredSet = nil;
+	[activeFilterString release], activeFilterString = nil;
+	
+	[favoritesContainer release];
+	[historyContainer release];
+
+	[super dealloc];
+}
+
+#pragma mark ----------------------
+#pragma mark QueryConsoleController
+
 
 /**
  * Copy implementation for console table view.
@@ -325,85 +348,6 @@ static SPQueryController *sharedQueryController = nil;
 	return [[[NSAttributedString alloc] initWithString:returnValue attributes:stringAtributes] autorelease];
 }
 
-#pragma mark -
-#pragma mark DocumentsController
-
-- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
-{
-	
-	// Register a new untiled document and return its URL
-	if(fileURL == nil) {
-		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-		untitledDocumentCounter++;
-		
-		if(![favoritesContainer objectForKey:[new absoluteString]])
-			[favoritesContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
-		if(![historyContainer objectForKey:[new absoluteString]])
-			[historyContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
-		
-		return new;
-	}
-	
-	// Register a spf file to manage all query favorites and query history items
-	// file path based in a dictionary whereby the key represents the file name.
-	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] && [[contextInfo objectForKey:@"queryFavorites"] count]) {
-			NSMutableArray *arr = [[NSMutableArray alloc] init];
-			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryFavorites"]];
-			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
-			[arr release];
-		} else {
-			NSMutableArray *arr = [[NSMutableArray alloc] init];
-			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
-			[arr release];
-		}
-	}
-	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] && [[contextInfo objectForKey:@"queryHistory"] count]) {
-			NSMutableArray *arr = [[NSMutableArray alloc] init];
-			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryHistory"]];
-			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
-			[arr release];
-		} else {
-			NSMutableArray *arr = [[NSMutableArray alloc] init];
-			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
-			[arr release];
-		}
-	}
-	
-	return fileURL;
-	
-}
-
-- (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
-{
-	
-	if([favoritesContainer objectForKey:[fileURL absoluteString]])
-		[favoritesContainer removeObjectForKey:[fileURL absoluteString]];
-	if([historyContainer objectForKey:[fileURL absoluteString]])
-		[historyContainer removeObjectForKey:[fileURL absoluteString]];
-	
-}
-
-- (void)addFavorite:(NSString *)favorite forFileURL:(NSURL *)fileURL
-{
-	
-}
-
-- (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
-{
-	
-}
-
-- (void)favoritesForFileURL:(NSURL *)fileURL
-{
-	
-}
-
-- (void)historyForFileURL:(NSURL *)fileURL
-{
-	
-}
 
 #pragma mark -
 #pragma mark Other
@@ -462,21 +406,166 @@ static SPQueryController *sharedQueryController = nil;
 	return @"QueryConsole";
 }
 
-/**
- * Standard dealloc.
- */
-- (void)dealloc
+#pragma mark ----------------------
+#pragma mark DocumentsController
+
+- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
 {
-	messagesVisibleSet = nil;
 	
-	[messagesFullSet release], messagesFullSet = nil;
-	[messagesFilteredSet release], messagesFilteredSet = nil;
-	[activeFilterString release], activeFilterString = nil;
+	// Register a new untiled document and return its URL
+	if(fileURL == nil) {
+		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		untitledDocumentCounter++;
+		
+		if(![favoritesContainer objectForKey:[new absoluteString]]) {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[favoritesContainer setObject:arr forKey:[new absoluteString]];
+			[arr release];
+		}
+
+		// Set the global history coming from the Prefs as default if available
+		if(![historyContainer objectForKey:[new absoluteString]]) {
+			if([prefs objectForKey:@"queryHistory"]) {
+				NSMutableArray *arr = [[NSMutableArray alloc] init];
+				[arr addObjectsFromArray:[prefs objectForKey:@"queryHistory"]];
+				[historyContainer setObject:arr forKey:[new absoluteString]];
+				[arr release];
+			} else {
+				NSMutableArray *arr = [[NSMutableArray alloc] init];
+				[historyContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
+				[arr release];
+			}
+		}
+
+		return new;
+
+	}
 	
-	[favoritesContainer release];
-	[historyContainer release];
+	// Register a spf file to manage all query favorites and query history items
+	// file path based (incl. Untitled docs) in a dictionary whereby the key represents the file URL as string.
+	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] && [[contextInfo objectForKey:@"queryFavorites"] count]) {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryFavorites"]];
+			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		} else {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		}
+	}
+	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] && [[contextInfo objectForKey:@"queryHistory"] count]) {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryHistory"]];
+			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		} else {
+			NSMutableArray *arr = [[NSMutableArray alloc] init];
+			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
+			[arr release];
+		}
+	}
 	
-	[super dealloc];
+	return fileURL;
+	
+}
+
+- (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
+{
+
+	// Check for multiple instance of the same document.
+	// Remove it if only one instance was registerd.
+	NSArray *allDocs = [[NSDocumentController sharedDocumentController] documents];
+	NSMutableArray *allURLs = [NSMutableArray array];
+	for(id doc in allDocs) {
+		if([allURLs containsObject:[doc fileURL]])
+			return;
+		else
+			[allURLs addObject:[doc fileURL]];
+	}
+
+	if([favoritesContainer objectForKey:[fileURL absoluteString]])
+		[favoritesContainer removeObjectForKey:[fileURL absoluteString]];
+	if([historyContainer objectForKey:[fileURL absoluteString]])
+		[historyContainer removeObjectForKey:[fileURL absoluteString]];
+
+}
+
+- (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
+{
+	
+}
+
+- (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL
+{
+	if([favoritesContainer objectForKey:[fileURL absoluteString]])
+		[favoritesContainer setObject:favoritesArray forKey:[fileURL absoluteString]];
+}
+
+- (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL
+{
+	if([historyContainer objectForKey:[fileURL absoluteString]])
+		[historyContainer setObject:historyArray forKey:[fileURL absoluteString]];
+}
+
+- (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
+{
+
+	NSUInteger maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
+
+	// Save each history item due to its document source
+	if([historyContainer objectForKey:[fileURL absoluteString]]) {
+
+		// Remove all duplicates by using a NSPopUpButton
+		NSPopUpButton *uniquifier = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0,0,0,0) pullsDown:YES];
+		[uniquifier addItemsWithTitles:[historyContainer objectForKey:[fileURL absoluteString]]];
+		[uniquifier insertItemWithTitle:history atIndex:0];
+
+		while ( [uniquifier numberOfItems] > maxHistoryItems )
+			[uniquifier removeItemAtIndex:[uniquifier numberOfItems]-1];
+
+		[self replaceHistoryByArray:[uniquifier itemTitles] forFileURL:fileURL];
+		[uniquifier release];
+
+	}
+
+	// Save history items coming from each Untitled document in the global Preferences successively
+	// regardingless of the source document.
+	if(![[fileURL absoluteString] hasPrefix:@"/"]) {
+
+		// Remove all duplicates by using a NSPopUpButton
+		NSPopUpButton *uniquifier = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0,0,0,0) pullsDown:YES];
+		[uniquifier addItemsWithTitles:[prefs objectForKey:@"queryHistory"]];
+		[uniquifier insertItemWithTitle:history atIndex:0];
+
+		while ( [uniquifier numberOfItems] > maxHistoryItems )
+			[uniquifier removeItemAtIndex:[uniquifier numberOfItems]-1];
+
+		[prefs setObject:[uniquifier itemTitles] forKey:@"queryHistory"];
+		[uniquifier release];
+
+	}
+
+}
+
+- (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL
+{
+	if([favoritesContainer objectForKey:[fileURL absoluteString]])
+		return [favoritesContainer objectForKey:[fileURL absoluteString]];
+
+	return [NSMutableArray array];
+
+}
+
+- (NSMutableArray *)historyForFileURL:(NSURL *)fileURL
+{
+	if([historyContainer objectForKey:[fileURL absoluteString]])
+		return [historyContainer objectForKey:[fileURL absoluteString]];
+
+	return [NSMutableArray array];
+
 }
 
 @end

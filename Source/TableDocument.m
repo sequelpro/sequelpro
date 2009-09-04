@@ -507,7 +507,12 @@
 
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
-	
+
+	// Set the fileURL and init the preferences (query favs and history) if available for that URL 
+	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]]];
+
+	[spfPreferences release];
+
 	// Set the connection encoding
 	NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
 	if ( [encodingName isEqualToString:@"Autodetect"] ) {
@@ -596,11 +601,6 @@
 		[tableWindow makeFirstResponder:listFilterField];
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
-
-	NSURL *anURL = [[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]];
-	[self setFileURL:anURL];
-
-	[spfPreferences release];
 
 	if(spfSession != nil)
 		[self restoreSession];
@@ -2163,8 +2163,8 @@
 		}
 
 		// Update the keys
-		[spf setObject:[customQueryInstance localFavorites] forKey:@"queryFavorites"];
-		[spf setObject:[customQueryInstance localHistoryItems] forKey:@"queryHistory"];
+		[spf setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
+		[spf setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
 
 		// Save it again
 		NSString *err = nil;
@@ -2212,9 +2212,9 @@
 	[spfdata setObject:@"mysql" forKey:@"rdbms_type"];
 	[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
 
-	// Store the preferences
-	[spfdata setObject:[customQueryInstance localFavorites] forKey:@"queryFavorites"];
-	[spfdata setObject:[customQueryInstance localHistoryItems] forKey:@"queryHistory"];
+	// Store the preferences - take them from the current document URL to catch renaming
+	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
+	[spfdata setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
 
 	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 
@@ -2360,17 +2360,22 @@
 		return NO;
 	}
 
-	// TODO take favs and history frm untitle or old file name with me
-	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:nil];
+	// Register and update query favorites and history for the (new) file URL
+	NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
+	[preferences setObject:[spfdata objectForKey:@"queryHistory"] forKey:@"queryHistory"];
+	[preferences setObject:[spfdata objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
+	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:preferences];
 
 	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 
 	[tableWindow setTitle:[self displayName]];
-	
+
 	// Store doc data permanently
 	[spfDocData removeAllObjects];
 	[spfDocData addEntriesFromDictionary:spfDocData_temp];
-	
+
+	[preferences release];
+
 	return YES;
 
 }
