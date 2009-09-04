@@ -493,11 +493,6 @@ static SPQueryController *sharedQueryController = nil;
 
 }
 
-- (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
-{
-	
-}
-
 - (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL
 {
 	if([favoritesContainer objectForKey:[fileURL absoluteString]])
@@ -508,6 +503,12 @@ static SPQueryController *sharedQueryController = nil;
 {
 	if([historyContainer objectForKey:[fileURL absoluteString]])
 		[historyContainer setObject:historyArray forKey:[fileURL absoluteString]];
+}
+
+- (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
+{
+	if([favoritesContainer objectForKey:[fileURL absoluteString]])
+		[[favoritesContainer objectForKey:[fileURL absoluteString]] addObject:favorite];
 }
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL

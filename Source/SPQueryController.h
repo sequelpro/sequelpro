@@ -81,10 +81,13 @@
 // DocumentsController
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;
 - (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL;
+
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL;
 - (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL;
+
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
 - (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL;
+
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
 

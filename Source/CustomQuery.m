@@ -1103,6 +1103,10 @@
 		[queryHistoryButton addItemsWithTitles:[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]]];
 	}
 	
+	// Populate query favorites
+	[self queryFavoritesHaveBeenUpdated:nil];
+
+	
 	// Disable runSelectionMenuItem in the gear menu
 	[runSelectionMenuItem setEnabled:NO];
 }
@@ -2403,36 +2407,60 @@
 - (void)queryFavoritesHaveBeenUpdated:(id)manager
 {
 
-	NSMutableArray *favorites = [[NSMutableArray alloc] init];
+	NSMutableArray *globalFavorites = [[NSMutableArray alloc] init];
 
 	// Invoked after adding a favorite from inside CustomQuery
 	if(manager == nil) {
-		[favorites addObjectsFromArray:[prefs objectForKey:@"queryFavorites"]];
+		[globalFavorites addObjectsFromArray:[prefs objectForKey:@"queryFavorites"]];
 	}
 	// Invoked by the query favorite manager
 	else if(manager == favoritesManager){
-		// Update global query favorites
-		[favorites addObjectsFromArray:[favoritesManager globalQueryFavorites]];
-		[prefs setObject:favorites forKey:@"queryFavorites"];
-		[prefs synchronize];
+	 	// Update global query favorites
+	 	[globalFavorites addObjectsFromArray:[favoritesManager globalQueryFavorites]];
+	 	[prefs setObject:globalFavorites forKey:@"queryFavorites"];
 	}
 
 	// Remove all favorites beginning from the end
 	while([queryFavoritesButton numberOfItems] > 6)
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
-	// Re-add favorites and allow menu items with the same name
+	// Insert new favorites and allow menu items with the same name
 	NSMenu *menu = [queryFavoritesButton menu];
 	int i = 6;
-	for (NSDictionary *favorite in favorites) {
+
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"Global" action:NULL keyEquivalent:@""];
+	[item setTag:200000];
+	[item setToolTip:@"All global favorites"];
+	[item setIndentationLevel:0];
+	[menu addItem:item];
+	[item release];
+
+	for (NSDictionary *favorite in globalFavorites) {
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
 		[item setTag:i++];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		[item setIndentationLevel:1];
 		[menu addItem:item];
 		[item release];
 	}
 
-	[favorites release];
+	item = [[NSMenuItem alloc] initWithTitle:@"Document" action:NULL keyEquivalent:@""];
+	[item setTag:200000];
+	[item setToolTip:@"All document-based favorites"];
+	[item setIndentationLevel:0];
+	[menu addItem:item];
+	[item release];
+
+	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:[tableDocumentInstance fileURL]]) {
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
+		[item setTag:i++];
+		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		[item setIndentationLevel:1];
+		[menu addItem:item];
+		[item release];
+	}
+
+	[globalFavorites release];
 
 	[prefs synchronize];
 	
@@ -2497,7 +2525,9 @@
 			
 				[prefs setObject:favorites forKey:@"queryFavorites"];
 			} else {
-				[SPTooltip showWithObject:@"Not yet implemented"];
+				[[SPQueryController sharedQueryController] addFavorite:[NSDictionary dictionaryWithObjects:
+					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] 
+						forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]] forFileURL:[tableDocumentInstance fileURL]];
 			}
 
 			[saveQueryFavoriteGlobal setState:NSOffState];
@@ -2516,7 +2546,7 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	// Control "Save ... to Favorites" = tag is set to 1000
-	if ( [menuItem tag] == 1000 ) {
+	if ( [menuItem tag] == 100000 ) {
 		if ([[textView string] length] < 1) return NO;
 		if([textView selectedRange].length)
 			[menuItem setTitle:NSLocalizedString(@"Save Selection to Favorites",@"Save Selection to Favorites")];
@@ -2526,8 +2556,11 @@
 			[menuItem setTitle:NSLocalizedString(@"Save All to Favorites",@"Save All to Favorites")];
 	}
 	// Control "Save All to Favorites" = tag is set to 1001
-	if ( [menuItem tag] == 1001 ) {
+	if ( [menuItem tag] == 100001 ) {
 		if ([[textView string] length] < 1) return NO;
+	}
+	if ( [menuItem tag] == 200000 ) {
+		return NO;
 	}
 	return YES;
 }
@@ -2594,19 +2627,6 @@
 {
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
-	// Populate the query favorites popup button
-	NSMenu *menu = [queryFavoritesButton menu];
-	int i = 6;
-	for (NSDictionary *favorite in [prefs objectForKey:@"queryFavorites"])
-	{
-		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:@"name"] action:NULL keyEquivalent:@""];
-		[item setTag:i++];
-		[item setToolTip:[favorite objectForKey:@"query"]];
-		[menu addItem:item];
-		[item release];
-	}
-
 }
 
 - (void)dealloc
