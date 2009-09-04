@@ -129,6 +129,7 @@
 											NULL,						// default keychain
 											strlen([name UTF8String]),		// length of service name (bytes)
 											[name UTF8String],				// service name
+						
 											strlen([account UTF8String]),	// length of account name (bytes)
 											[account UTF8String],			// account name
 											&passwordLength,			// length of password
@@ -137,9 +138,13 @@
 											);
 	
 	if (status == noErr) {
-		password = [NSString stringWithCString:passwordData length:passwordLength];
-		// password = [NSString stringWithCString:passwordData encoding:NSUTF8StringEncoding];
-		
+		// Create a \0 terminated cString out of passwordData
+		char passwordBuf[passwordLength + 1];
+		strncpy(passwordBuf, passwordData, (size_t)passwordLength);
+		passwordBuf[passwordLength] = '\0';
+
+		password = [NSString stringWithCString:passwordBuf encoding:NSUTF8StringEncoding];
+
 		// Free the data allocated by SecKeychainFindGenericPassword:
 		SecKeychainItemFreeContent(
 									NULL,           // No attribute data to release
