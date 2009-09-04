@@ -137,7 +137,8 @@
 											);
 	
 	if (status == noErr) {
-		password = [NSString stringWithCString:passwordData encoding:NSUTF8StringEncoding];
+		password = [NSString stringWithCString:passwordData length:passwordLength];
+		// password = [NSString stringWithCString:passwordData encoding:NSUTF8StringEncoding];
 		
 		// Free the data allocated by SecKeychainFindGenericPassword:
 		SecKeychainItemFreeContent(
