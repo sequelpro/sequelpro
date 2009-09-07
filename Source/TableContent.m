@@ -366,6 +366,11 @@
 
 	// Restore the view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+
+		// Let the table know the size of the newly available data
+		[tableContentView reloadData];
+
+		// Scroll the viewport to the saved location
 		selectionViewportToRestore.size = [tableContentView visibleRect].size;
 		[tableContentView scrollRectToVisible:selectionViewportToRestore];
 	}
