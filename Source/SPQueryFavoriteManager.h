@@ -33,13 +33,8 @@
 
 @interface SPQueryFavoriteManager : NSWindowController 
 {
-	id delegate;
-	
 	NSUserDefaults *prefs;
 	
-	BOOL delegateRespondsToFavoriteUpdates;
-	
-	NSDocument *tableDocumentInstance;
 	NSURL *delegatesFileURL;
 	IBOutlet NSPopUpButton *encodingPopUp;
 	IBOutlet NSTableView *favoritesTableView;

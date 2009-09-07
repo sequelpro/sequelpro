@@ -48,15 +48,17 @@
 - (id)initWithDelegate:(id)managerDelegate
 {
 	if ((self = [super initWithWindowNibName:@"QueryFavoriteManager"])) {
-		delegate = managerDelegate;
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		favorites = [[NSMutableArray alloc] init];
 		
-		delegateRespondsToFavoriteUpdates = [delegate respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)];
-		tableDocumentInstance = [delegate valueForKeyPath:@"tableDocumentInstance"];
-		delegatesFileURL = [[delegate valueForKeyPath:@"tableDocumentInstance"] fileURL];
+		if(managerDelegate == nil) {
+			NSBeep();
+			NSLog(@"Query Favorite Manger was called without a delegate.");
+			return nil;
+		}
+		delegatesFileURL = [[managerDelegate valueForKeyPath:@"tableDocumentInstance"] fileURL];
 	}
 	
 	return self;
@@ -358,14 +360,18 @@
 			[[self window] makeFirstResponder:favoritesTableView];
 		}
 
-		// Update current document's and global query favorites
+		// Update current document's query favorites in the SPQueryController
 		[[SPQueryController sharedQueryController] replaceFavoritesByArray:
 			[self queryFavoritesForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
+
+		// Update global preferences' list
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:@"queryFavorites"];
 
-		// Inform delegate to update
-		if(delegateRespondsToFavoriteUpdates)
-			[delegate queryFavoritesHaveBeenUpdated:self];
+		// Inform all opened documents to update the query favorites list
+		for(id doc in [[NSDocumentController sharedDocumentController] documents])
+			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
+				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
+
 
 	}
 
@@ -693,7 +699,17 @@
 			}
 
 			if([spf objectForKey:@"queryFavorites"] && [[spf objectForKey:@"queryFavorites"] count]) {
-				[favorites addObjectsFromArray:[spf objectForKey:@"queryFavorites"]];
+				if([favoritesTableView numberOfSelectedRows] > 0) {
+					// Insert imported queries after the last selected favorite
+					NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
+					NSUInteger i;
+					for(i=0; i<[[spf objectForKey:@"queryFavorites"] count]; i++) {
+						[favorites insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
+					}
+				} else {
+					// If no selection add them
+					[favorites addObjectsFromArray:[spf objectForKey:@"queryFavorites"]];
+				}
 				[favoritesArrayController rearrangeObjects];
 				[favoritesTableView reloadData];
 			} else {
