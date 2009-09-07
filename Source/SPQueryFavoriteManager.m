@@ -482,6 +482,15 @@
 }
 
 /*
+ * Sorting by clicking at a column header inside groups
+ */
+- (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
+{
+	// TODO: Not yet implemented
+	return;
+}
+
+/*
  * favoriteProperties holds the data if a table row is a group header or not
  */
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
@@ -556,7 +565,7 @@
 {
 
 	// Up to now only one row can be dragged
-	if ([rows count] == 1) {
+	// if ([rows count] == 1) {
 
 		NSArray *pboardTypes = [NSArray arrayWithObject:QUERY_FAVORITES_PB_DRAG_TYPE];
 		NSInteger originalRow = [[rows objectAtIndex:0] intValue];
@@ -567,13 +576,18 @@
 		if([[favorites objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
 
 		[pboard declareTypes:pboardTypes owner:nil];
-		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:QUERY_FAVORITES_PB_DRAG_TYPE];
+
+		NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
+		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
+		[archiver encodeObject:rows forKey:@"indexdata"];
+		[archiver finishEncoding];
+		[pboard setData:indexdata forType:QUERY_FAVORITES_PB_DRAG_TYPE];
 
 		return YES;
 
-	} 
+	// } 
 
-	return NO;
+	// return NO;
 }
 
 /**
@@ -585,9 +599,7 @@
 	
 	if (([pboardTypes count] > 1) && (row != -1)) {
 		if (([pboardTypes containsObject:QUERY_FAVORITES_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
-			NSInteger originalRow = [[[info draggingPasteboard] stringForType:QUERY_FAVORITES_PB_DRAG_TYPE] intValue];
-			
-			if ((row != originalRow) && (row != (originalRow + 1)) && (row > 0)) {
+			if (row > 0) {
 				return NSDragOperationMove;
 			}
 		}
@@ -601,28 +613,45 @@
  */
 
 - (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
-{	
-	NSInteger originalRow = [[[info draggingPasteboard] stringForType:QUERY_FAVORITES_PB_DRAG_TYPE] intValue];
+{
+
+	if(row < 1) return NO;
+
+	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:QUERY_FAVORITES_PB_DRAG_TYPE]] autorelease];
+	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
+	[unarchiver finishDecoding];
+
 	NSInteger destinationRow = row;
+	NSInteger offset = 0;
 
-	if(destinationRow == originalRow || row < 1) return NO;
-	if(destinationRow > originalRow) destinationRow--;
+	NSUInteger i;
 
-	NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[favorites objectAtIndex:originalRow]];
+	for(i=0; i<[draggedRows count]; i++) {
 
-	[favorites removeObjectAtIndex:originalRow];
-	[favorites insertObject:draggedRow atIndex:destinationRow];
+		NSInteger originalRow = [[draggedRows objectAtIndex:i] intValue];
+
+		if(originalRow < destinationRow) destinationRow--;
+
+		originalRow += offset;
+
+		// For safety reasons
+		if(originalRow > [favorites count]-1) originalRow = [favorites count] - 1;
+
+		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[favorites objectAtIndex:originalRow]];
+		[favorites removeObjectAtIndex:originalRow];
+		[favoritesTableView reloadData];
+
+		if(destinationRow+i >= [favorites count])
+			[favorites addObject:draggedRow];
+		else
+			[favorites insertObject:draggedRow atIndex:destinationRow+i];
+
+		if(originalRow < row) offset--;
+
+	}
 
 	[favoritesTableView reloadData];
 	[favoritesArrayController rearrangeObjects];
-
-	if([[favorites objectAtIndex:destinationRow] objectForKey:@"headerOfFileURL"])
-		[self _initWithNoSelection];
-	else if([favoritesTableView numberOfSelectedRows] == 1
-	 && [favoritesTableView selectedRow] == originalRow) {
-		[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
-		[favoritesArrayController setSelectionIndexes:[NSIndexSet indexSetWithIndex:destinationRow]];
-	}
 
 	return YES;
 }
