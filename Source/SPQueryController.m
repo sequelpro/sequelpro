@@ -569,6 +569,17 @@ static SPQueryController *sharedQueryController = nil;
 
 }
 
+- (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
+{
+	[[favoritesContainer objectForKey:[fileURL absoluteString]] removeObjectAtIndex:index];
+}
+
+- (void)insertFavorite:(NSDictionary *)favorite atIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
+{
+	[[favoritesContainer objectForKey:[fileURL absoluteString]] insertObject:favorite atIndex:index];
+}
+
+
 @end
 
 @implementation SPQueryController (PrivateAPI)

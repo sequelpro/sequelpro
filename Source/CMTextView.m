@@ -2296,7 +2296,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	// Validate Select Active Query
 	if ([menuItem action] == @selector(selectCurrentQuery)) {
-		return ([self isEditable]);
+		return ([self isEditable] && [[self delegate] isKindOfClass:[CustomQuery class]]);
 	}
 	// Disable "Copy with Column Names" and "Copy as SQL INSERT"
 	// in the main menu

@@ -48,7 +48,7 @@
 				return nil;
 		}
 		if([[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {
-			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"favoriteProperties"], row) intValue] == SP_FAVORITETYPE_HEADER)
+			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"favorites"], row)  objectForKey:@"headerOfFileURL"])
 				return nil;
 		}
 		

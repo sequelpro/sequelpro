@@ -25,14 +25,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-enum sp_favorite_types
-{
-	SP_FAVORITETYPE_HEADER     = 0,
-	SP_FAVORITETYPE_GLOBAL     = 1,
-	SP_FAVORITETYPE_CONNECTION = 2,
-};
-
-
 @interface NSObject (SPQueryFavoriteManagerDelegate)
 
 - (void)queryFavoritesHaveBeenUpdated:(id)manager;
@@ -47,33 +39,32 @@ enum sp_favorite_types
 	
 	BOOL delegateRespondsToFavoriteUpdates;
 	
+	NSDocument *tableDocumentInstance;
+	NSURL *delegatesFileURL;
 	IBOutlet NSPopUpButton *encodingPopUp;
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSTextField *favoriteNameTextField;
 	IBOutlet NSTextView  *favoriteQueryTextView;
 	IBOutlet id removeButton;
 
+	IBOutlet NSArrayController *favoritesArrayController;
+
 	NSMutableArray *favorites;
-	NSMutableArray *favoriteProperties;
-	
-	NSMutableString *pendingQueryString;
-	
-	NSUInteger selectedRowBeforeChangingSelection;
+
 	BOOL isTableCellEditing;
 }
 
 - (id)initWithDelegate:(id)managerDelegate;
 
 // Accessors
-- (NSMutableArray *)globalQueryFavorites;
-- (NSMutableArray *)connectionQueryFavorites;
+- (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL;
 - (id)customQueryInstance;
 
 // IBAction methods
 - (IBAction)addQueryFavorite:(id)sender;
 - (IBAction)removeQueryFavorite:(id)sender;
 - (IBAction)removeAllQueryFavorites:(id)sender;
-- (IBAction)copyQueryFavorite:(id)sender;
+- (IBAction)duplicateQueryFavorite:(id)sender;
 - (IBAction)saveFavoriteToFile:(id)sender;
 - (IBAction)exportFavorites:(id)sender;
 - (IBAction)importFavoritesByAdding:(id)sender;

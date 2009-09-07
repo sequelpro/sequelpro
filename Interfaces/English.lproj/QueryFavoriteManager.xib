@@ -8,7 +8,6 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="23"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -46,7 +45,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{500, 371}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -239,7 +238,6 @@
 																</object>
 																<object class="NSMenuItem" id="748257931">
 																	<reference key="NSMenu" ref="299613786"/>
-																	<bool key="NSIsHidden">YES</bool>
 																	<string type="base64-UTF8" key="NSTitle">SW1wb3J0IEZhdm9yaXRlc+KApg</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSMnemonicLoc">2147483647</int>
@@ -323,13 +321,13 @@
 														<object class="NSTableView" id="522643855">
 															<reference key="NSNextResponder" ref="106335880"/>
 															<int key="NSvFlags">4352</int>
-															<string key="NSFrameSize">{250, 322}</string>
+															<string key="NSFrameSize">{249, 322}</string>
 															<reference key="NSSuperview" ref="106335880"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSTableHeaderView" key="NSHeaderView" id="724842455">
 																<reference key="NSNextResponder" ref="642947098"/>
 																<int key="NSvFlags">4352</int>
-																<string key="NSFrameSize">{250, 17}</string>
+																<string key="NSFrameSize">{249, 17}</string>
 																<reference key="NSSuperview" ref="642947098"/>
 																<reference key="NSTableView" ref="522643855"/>
 															</object>
@@ -343,7 +341,7 @@
 																<bool key="EncodedWithXMLCoder">YES</bool>
 																<object class="NSTableColumn" id="901293108">
 																	<string key="NSIdentifier">name</string>
-																	<double key="NSWidth">1.870000e+02</double>
+																	<double key="NSWidth">1.860000e+02</double>
 																	<double key="NSMinWidth">4.000000e+01</double>
 																	<double key="NSMaxWidth">1.000000e+03</double>
 																	<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -481,7 +479,6 @@
 													<int key="NSvFlags">-2147483392</int>
 													<string key="NSFrame">{{-100, -100}, {311, 15}}</string>
 													<reference key="NSSuperview" ref="205303038"/>
-													<bool key="NSEnabled">YES</bool>
 													<int key="NSsFlags">1</int>
 													<reference key="NSTarget" ref="205303038"/>
 													<string key="NSAction">_doScroller:</string>
@@ -506,7 +503,7 @@
 											<string key="NSFrame">{{0, 22}, {249, 339}}</string>
 											<reference key="NSSuperview" ref="1030932325"/>
 											<reference key="NSNextKeyView" ref="106335880"/>
-											<int key="NSsFlags">656</int>
+											<int key="NSsFlags">528</int>
 											<reference key="NSVScroller" ref="322405876"/>
 											<reference key="NSHScroller" ref="336819166"/>
 											<reference key="NSContentView" ref="106335880"/>
@@ -604,7 +601,7 @@
 																	<string>WebURLsWithTitlesPboardType</string>
 																</object>
 															</object>
-															<string key="NSFrameSize">{208, 10}</string>
+															<string key="NSFrameSize">{208, 14}</string>
 															<reference key="NSSuperview" ref="221447089"/>
 															<object class="NSTextContainer" key="NSTextContainer" id="74289808">
 																<object class="NSLayoutManager" key="NSLayoutManager">
@@ -776,7 +773,7 @@
 							<int key="NSDividerStyle">2</int>
 							<string key="NSAutosaveName">SPQueryFavoriteSplitView</string>
 							<object class="NSColor" key="BWSVColor">
-								<int key="NSColorSpace">2</int>
+								<int key="NSColorSpace">1</int>
 								<bytes key="NSRGB">MC42NjY2NjY2OSAwLjY2NjY2NjY5IDAuNjY2NjY2NjkAA</bytes>
 							</object>
 							<bool key="BWSVColorIsEnabled">YES</bool>
@@ -833,7 +830,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{500, 371}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{500, 393}</string>
@@ -882,6 +878,19 @@
 						<reference key="NSMixedImage" ref="770393621"/>
 					</object>
 				</object>
+			</object>
+			<object class="NSArrayController" id="863945469">
+				<object class="NSMutableArray" key="NSDeclaredKeys">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<string>name</string>
+					<string>query</string>
+					<string>tabtrigger</string>
+				</object>
+				<bool key="NSEditable">YES</bool>
+				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
+				<bool key="NSPreservesSelection">YES</bool>
+				<bool key="NSFilterRestrictsInsertion">YES</bool>
+				<bool key="NSClearsFilterPredicateOnInsertion">YES</bool>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -1037,14 +1046,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">copyQueryFavorite:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="247392372"/>
-					</object>
-					<int key="connectionID">213</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">saveFavoriteToFile:</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="1015707754"/>
@@ -1066,14 +1067,6 @@
 						<reference key="destination" ref="846349687"/>
 					</object>
 					<int key="connectionID">251</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">copyQueryFavorite:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="161398571"/>
-					</object>
-					<int key="connectionID">253</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -1130,6 +1123,98 @@
 						<reference key="destination" ref="556251150"/>
 					</object>
 					<int key="connectionID">277</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">duplicateQueryFavorite:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="161398571"/>
+					</object>
+					<int key="connectionID">282</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">duplicateQueryFavorite:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="247392372"/>
+					</object>
+					<int key="connectionID">283</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: arrangedObjects.name</string>
+						<reference key="source" ref="901293108"/>
+						<reference key="destination" ref="863945469"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="901293108"/>
+							<reference key="NSDestination" ref="863945469"/>
+							<string key="NSLabel">value: arrangedObjects.name</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">arrangedObjects.name</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">285</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.name</string>
+						<reference key="source" ref="247897226"/>
+						<reference key="destination" ref="863945469"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="247897226"/>
+							<reference key="NSDestination" ref="863945469"/>
+							<string key="NSLabel">value: selection.name</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.name</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">287</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.query</string>
+						<reference key="source" ref="556251150"/>
+						<reference key="destination" ref="863945469"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="556251150"/>
+							<reference key="NSDestination" ref="863945469"/>
+							<string key="NSLabel">value: selection.query</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.query</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">291</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: arrangedObjects.tabtrigger</string>
+						<reference key="source" ref="183746003"/>
+						<reference key="destination" ref="863945469"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="183746003"/>
+							<reference key="NSDestination" ref="863945469"/>
+							<string key="NSLabel">value: arrangedObjects.tabtrigger</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">arrangedObjects.tabtrigger</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSConditionallySetsEditable</string>
+								<boolean value="YES" key="NS.object.0" id="5"/>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">295</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">favoritesArrayController</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="863945469"/>
+					</object>
+					<int key="connectionID">297</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1529,6 +1614,12 @@
 						<reference key="object" ref="615814080"/>
 						<reference key="parent" ref="602197876"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">284</int>
+						<reference key="object" ref="863945469"/>
+						<reference key="parent" ref="1002"/>
+						<string key="objectName">Favorites Controller</string>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1614,18 +1705,19 @@
 					<string>279.IBPluginDependency</string>
 					<string>280.IBPluginDependency</string>
 					<string>281.IBPluginDependency</string>
+					<string>284.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{288, 332}, {500, 371}}</string>
-					<string>{{288, 332}, {500, 371}}</string>
+					<string>{{209, 69}, {500, 371}}</string>
+					<string>{{209, 69}, {500, 371}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
-					<boolean value="YES"/>
+					<reference ref="5"/>
 					<string>{500, 371}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1682,7 +1774,7 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{312, -3}, {241, 152}}</string>
+					<string>{{234, 203}, {241, 152}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<object class="NSMutableDictionary">
@@ -1723,8 +1815,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="748257931"/>
-							<string type="base64-UTF8" key="toolTip">SW1wb3J0IHF1ZXJ5IGZhdm9yaXRlcyBmcm9tIFNQRiBmaWxlIGFuZCBhcHBlbmQgdGhlbSAoZm9yIHJl
-cGxhY2luZyBhbGwgY3VycmVudCBmYXZvcml0ZXMgcHJlc3Mg4oyYKQ</string>
+							<string key="toolTip">Import query favorites from SPF file and append them to the favorite list</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1753,6 +1844,7 @@ cGxhY2luZyBhbGwgY3VycmVudCBmYXZvcml0ZXMgcHJlc3Mg4oyYKQ</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -1775,7 +1867,7 @@ cGxhY2luZyBhbGwgY3VycmVudCBmYXZvcml0ZXMgcHJlc3Mg4oyYKQ</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">281</int>
+			<int key="maxID">297</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1965,7 +2057,7 @@ cGxhY2luZyBhbGwgY3VycmVudCBmYXZvcml0ZXMgcHJlc3Mg4oyYKQ</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addQueryFavorite:</string>
 							<string>closeQueryManagerSheet:</string>
-							<string>copyQueryFavorite:</string>
+							<string>duplicateQueryFavorite:</string>
 							<string>exportFavorites:</string>
 							<string>importFavoritesByAdding:</string>
 							<string>importFavoritesByReplacing:</string>
@@ -1994,6 +2086,7 @@ cGxhY2luZyBhbGwgY3VycmVudCBmYXZvcml0ZXMgcHJlc3Mg4oyYKQ</string>
 							<string>encodingPopUp</string>
 							<string>favoriteNameTextField</string>
 							<string>favoriteQueryTextView</string>
+							<string>favoritesArrayController</string>
 							<string>favoritesTableView</string>
 							<string>removeButton</string>
 						</object>
@@ -2003,6 +2096,7 @@ cGxhY2luZyBhbGwgY3VycmVudCBmYXZvcml0ZXMgcHJlc3Mg4oyYKQ</string>
 							<string>NSPopUpButton</string>
 							<string>NSTextField</string>
 							<string>NSTextView</string>
+							<string>NSArrayController</string>
 							<string>NSTableView</string>
 							<string>id</string>
 						</object>

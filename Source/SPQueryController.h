@@ -84,6 +84,8 @@
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL;
 - (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL;
+- (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL;
+- (void)insertFavorite:(NSDictionary *)favorite atIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL;
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
 - (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL;
