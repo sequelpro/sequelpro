@@ -98,7 +98,7 @@
 	// change will be stored in the prefs at once)
 	if([prefs objectForKey:@"queryFavorites"]) {
 		for(id fav in [prefs objectForKey:@"queryFavorites"])
-			[favorites addObject:[fav mutableCopy]];
+			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
 
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -109,7 +109,7 @@
 
 	if([[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL]) {
 		for(id fav in [[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL])
-			[favorites addObject:[fav mutableCopy]];
+			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
 
 

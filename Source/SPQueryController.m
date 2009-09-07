@@ -569,6 +569,27 @@ static SPQueryController *sharedQueryController = nil;
 
 }
 
+- (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals
+{
+
+	if(![tabTrigger length]) return [NSArray array];
+
+	NSMutableArray *result = [[NSMutableArray alloc] init];
+	for(id fav in [self favoritesForFileURL:fileURL]) {
+		if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger])
+			[result addObject:fav];
+	}
+	
+	if(includeGlobals && [prefs objectForKey:@"queryFavorites"]) {
+		for(id fav in [prefs objectForKey:@"queryFavorites"]) {
+			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger])
+				[result addObject:fav];
+		}
+	}
+	
+	return [result autorelease];
+}
+
 - (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
 {
 	[[favoritesContainer objectForKey:[fileURL absoluteString]] removeObjectAtIndex:index];

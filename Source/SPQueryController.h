@@ -93,4 +93,7 @@
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
 
+- (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals;
+
+
 @end
