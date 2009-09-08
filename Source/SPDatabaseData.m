@@ -34,160 +34,160 @@
 
 const CHAR_SETS charsets[] =
 {
-	{  1, "big5","big5_chinese_ci"},
-	{  3, "dec8", "dec8_swedisch_ci"},
-	{  4, "cp850", "cp850_general_ci"},
-	{  6, "hp8", "hp8_english_ci"},
-	{  7, "koi8r", "koi8r_general_ci"},
-	{  8, "latin1", "latin1_swedish_ci"},
-	{  9, "latin2", "latin2_general_ci"},
-	{ 10, "swe7", "swe7_swedish_ci"},
-	{ 11, "ascii", "ascii_general_ci"},
-	{ 12, "ujis", "ujis_japanese_ci"},
-	{ 13, "sjis", "sjis_japanese_ci"},
-	{ 16, "hebrew", "hebrew_general_ci"},
-	{ 18, "tis620", "tis620_thai_ci"},
-	{ 19, "euckr", "euckr_korean_ci"},
-	{ 22, "koi8u", "koi8u_general_ci"},
-	{ 24, "gb2312", "gb2312_chinese_ci"},
-	{ 25, "greek", "greek_general_ci"},
-	{ 26, "cp1250", "cp1250_general_ci"},
-	{ 28, "gbk", "gbk_chinese_ci"},
-	{ 30, "latin5", "latin5_turkish_ci"},
-	{ 32, "armscii8", "armscii8_general_ci"},
-	{ 33, "utf8", "utf8_general_ci"},
-	{ 35, "ucs2", "ucs2_general_ci"},
-	{ 36, "cp866", "cp866_general_ci"},
-	{ 37, "keybcs2", "keybcs2_general_ci"},
-	{ 38, "macce", "macce_general_ci"},
-	{ 39, "macroman", "macroman_general_ci"},
-	{ 40, "cp852", "cp852_general_ci"},
-	{ 41, "latin7", "latin7_general_ci"},
-	{ 51, "cp1251", "cp1251_general_ci"},
-	{ 57, "cp1256", "cp1256_general_ci"},
-	{ 59, "cp1257", "cp1257_general_ci"},
-	{ 63, "binary", "binary"},
-	{ 92, "geostd8", "geostd8_general_ci"},
-	{ 95, "cp932", "cp932_japanese_ci"},
-	{ 97, "eucjpms", "eucjpms_japanese_ci"},
-	{  2, "latin2", "latin2_czech_cs"},
-	{  5, "latin1", "latin1_german_ci"},
-	{ 14, "cp1251", "cp1251_bulgarian_ci"},
-	{ 15, "latin1", "latin1_danish_ci"},
-	{ 17, "filename", "filename"},
-	{ 20, "latin7", "latin7_estonian_cs"},
-	{ 21, "latin2", "latin2_hungarian_ci"},
-	{ 23, "cp1251", "cp1251_ukrainian_ci"},
-	{ 27, "latin2", "latin2_croatian_ci"},
-	{ 29, "cp1257", "cp1257_lithunian_ci"},
-	{ 31, "latin1", "latin1_german2_ci"},
-	{ 34, "cp1250", "cp1250_czech_cs"},
-	{ 42, "latin7", "latin7_general_cs"},
-	{ 43, "macce", "macce_bin"},
-	{ 44, "cp1250", "cp1250_croatian_ci"},
-	{ 45, "utf8", "utf8_general_ci"},
-	{ 46, "utf8", "utf8_bin"},
-	{ 47, "latin1", "latin1_bin"},
-	{ 48, "latin1", "latin1_general_ci"},
-	{ 49, "latin1", "latin1_general_cs"},
-	{ 50, "cp1251", "cp1251_bin"},
-	{ 52, "cp1251", "cp1251_general_cs"},
-	{ 53, "macroman", "macroman_bin"},
-	{ 58, "cp1257", "cp1257_bin"},
-	{ 60, "armascii8", "armascii8_bin"},
-	{ 65, "ascii", "ascii_bin"},
-	{ 66, "cp1250", "cp1250_bin"},
-	{ 67, "cp1256", "cp1256_bin"},
-	{ 68, "cp866", "cp866_bin"},
-	{ 69, "dec8", "dec8_bin"},
-	{ 70, "greek", "greek_bin"},
-	{ 71, "hebew", "hebrew_bin"},
-	{ 72, "hp8", "hp8_bin"},
-	{ 73, "keybcs2", "keybcs2_bin"},
-	{ 74, "koi8r", "koi8r_bin"},
-	{ 75, "koi8u", "koi8u_bin"},
-	{ 77, "latin2", "latin2_bin"},
-	{ 78, "latin5", "latin5_bin"},
-	{ 79, "latin7", "latin7_bin"},
-	{ 80, "cp850", "cp850_bin"},
-	{ 81, "cp852", "cp852_bin"},
-	{ 82, "swe7", "swe7_bin"},
-	{ 93, "geostd8", "geostd8_bin"},
-	{ 83, "utf8", "utf8_bin"},
-	{ 84, "big5", "big5_bin"},
-	{ 85, "euckr", "euckr_bin"},
-	{ 86, "gb2312", "gb2312_bin"},
-	{ 87, "gbk", "gbk_bin"},
-	{ 88, "sjis", "sjis_bin"},
-	{ 89, "tis620", "tis620_bin"},
-	{ 90, "ucs2", "ucs2_bin"},
-	{ 91, "ujis", "ujis_bin"},
-	{ 94, "latin1", "latin1_spanish_ci"},
-	{ 96, "cp932", "cp932_bin"},
-	{ 99, "cp1250", "cp1250_polish_ci"},
-	{ 98, "eucjpms", "eucjpms_bin"},
-	{128, "ucs2", "ucs2_unicode_ci"},
-	{129, "ucs2", "ucs2_icelandic_ci"},
-	{130, "ucs2", "ucs2_latvian_ci"},
-	{131, "ucs2", "ucs2_romanian_ci"},
-	{132, "ucs2", "ucs2_slovenian_ci"},
-	{133, "ucs2", "ucs2_polish_ci"},
-	{134, "ucs2", "ucs2_estonian_ci"},
-	{135, "ucs2", "ucs2_spanish_ci"},
-	{136, "ucs2", "ucs2_swedish_ci"},
-	{137, "ucs2", "ucs2_turkish_ci"},
-	{138, "ucs2", "ucs2_czech_ci"},
-	{139, "ucs2", "ucs2_danish_ci"},
-	{140, "ucs2", "ucs2_lithunian_ci"},
-	{141, "ucs2", "ucs2_slovak_ci"},
-	{142, "ucs2", "ucs2_spanish2_ci"},
-	{143, "ucs2", "ucs2_roman_ci"},
-	{144, "ucs2", "ucs2_persian_ci"},
-	{145, "ucs2", "ucs2_esperanto_ci"},
-	{146, "ucs2", "ucs2_hungarian_ci"},
-	{147, "ucs2", "ucs2_sinhala_ci"},
-	{192, "utf8mb3", "utf8mb3_general_ci"},
-	{193, "utf8mb3", "utf8mb3_icelandic_ci"},
-	{194, "utf8mb3", "utf8mb3_latvian_ci"},
-	{195, "utf8mb3", "utf8mb3_romanian_ci"},
-	{196, "utf8mb3", "utf8mb3_slovenian_ci"},
-	{197, "utf8mb3", "utf8mb3_polish_ci"},
-	{198, "utf8mb3", "utf8mb3_estonian_ci"},
-	{119, "utf8mb3", "utf8mb3_spanish_ci"},
-	{200, "utf8mb3", "utf8mb3_swedish_ci"},
-	{201, "utf8mb3", "utf8mb3_turkish_ci"},
-	{202, "utf8mb3", "utf8mb3_czech_ci"},
-	{203, "utf8mb3", "utf8mb3_danish_ci"},
-	{204, "utf8mb3", "utf8mb3_lithunian_ci"},
-	{205, "utf8mb3", "utf8mb3_slovak_ci"},
-	{206, "utf8mb3", "utf8mb3_spanish2_ci"},
-	{207, "utf8mb3", "utf8mb3_roman_ci"},
-	{208, "utf8mb3", "utf8mb3_persian_ci"},
-	{209, "utf8mb3", "utf8mb3_esperanto_ci"},
-	{210, "utf8mb3", "utf8mb3_hungarian_ci"},
-	{211, "utf8mb3", "utf8mb3_sinhala_ci"},
-	{224, "utf8", "utf8_unicode_ci"},
-	{225, "utf8", "utf8_icelandic_ci"},
-	{226, "utf8", "utf8_latvian_ci"},
-	{227, "utf8", "utf8_romanian_ci"},
-	{228, "utf8", "utf8_slovenian_ci"},
-	{229, "utf8", "utf8_polish_ci"},
-	{230, "utf8", "utf8_estonian_ci"},
-	{231, "utf8", "utf8_spanish_ci"},
-	{232, "utf8", "utf8_swedish_ci"},
-	{233, "utf8", "utf8_turkish_ci"},
-	{234, "utf8", "utf8_czech_ci"},
-	{235, "utf8", "utf8_danish_ci"},
-	{236, "utf8", "utf8_lithuanian_ci"},
-	{237, "utf8", "utf8_slovak_ci"},
-	{238, "utf8", "utf8_spanish2_ci"},
-	{239, "utf8", "utf8_roman_ci"},
-	{240, "utf8", "utf8_persian_ci"},
-	{241, "utf8", "utf8_esperanto_ci"},
-	{242, "utf8", "utf8_hungarian_ci"},
-	{243, "utf8", "utf8_sinhala_ci"},
-	{254, "utf8mb3", "utf8mb3_general_cs"},
-	{  0, NULL, NULL}
+	{  1, "big5","big5_chinese_ci", "Big5 Traditional Chinese"},
+	{  3, "dec8", "dec8_swedisch_ci", "DEC West European"},
+	{  4, "cp850", "cp850_general_ci", "DOS West European"},
+	{  6, "hp8", "hp8_english_ci", "HP West European"},
+	{  7, "koi8r", "koi8r_general_ci", "KOI8-R Relcom Russian"},
+	{  8, "latin1", "latin1_swedish_ci", "cp1252 West European"},
+	{  9, "latin2", "latin2_general_ci", "ISO 8859-2 Central European"},
+	{ 10, "swe7", "swe7_swedish_ci", "7bit Swedish"},
+	{ 11, "ascii", "ascii_general_ci", "US ASCII"},
+	{ 12, "ujis", "ujis_japanese_ci", "EUC-JP Japanese"},
+	{ 13, "sjis", "sjis_japanese_ci", "Shift-JIS Japanese"},
+	{ 16, "hebrew", "hebrew_general_ci", "ISO 8859-8 Hebrew"},
+	{ 18, "tis620", "tis620_thai_ci", "TIS620 Thai"},
+	{ 19, "euckr", "euckr_korean_ci", "EUC-KR Korean"},
+	{ 22, "koi8u", "koi8u_general_ci", "KOI8-U Ukrainian"},
+	{ 24, "gb2312", "gb2312_chinese_ci", "GB2312 Simplified Chinese"},
+	{ 25, "greek", "greek_general_ci", "ISO 8859-7 Greek"},
+	{ 26, "cp1250", "cp1250_general_ci", "Windows Central European"},
+	{ 28, "gbk", "gbk_chinese_ci", "GBK Simplified Chinese"},
+	{ 30, "latin5", "latin5_turkish_ci", "ISO 8859-9 Turkish"},
+	{ 32, "armscii8", "armscii8_general_ci", "ARMSCII-8 Armenian"},
+	{ 33, "utf8", "utf8_general_ci", "UTF-8 Unicode"},
+	{ 35, "ucs2", "ucs2_general_ci", "UCS-2 Unicode"},
+	{ 36, "cp866", "cp866_general_ci", "DOS Russian"},
+	{ 37, "keybcs2", "keybcs2_general_ci", "DOS Kamenicky Czech-Slovak"},
+	{ 38, "macce", "macce_general_ci", "Mac Central European"},
+	{ 39, "macroman", "macroman_general_ci", "Mac West European"},
+	{ 40, "cp852", "cp852_general_ci", "DOS Central European"},
+	{ 41, "latin7", "latin7_general_ci", "ISO 8859-13 Baltic"},
+	{ 51, "cp1251", "cp1251_general_ci", "Windows Cyrillic"},
+	{ 57, "cp1256", "cp1256_general_ci", "Windows Arabic"},
+	{ 59, "cp1257", "cp1257_general_ci", "Windows Baltic"},
+	{ 63, "binary", "binary", "Binary pseudo charset"},
+	{ 92, "geostd8", "geostd8_general_ci", "GEOSTD8 Georgian"},
+	{ 95, "cp932", "cp932_japanese_ci", "SJIS for Windows Japanese"},
+	{ 97, "eucjpms", "eucjpms_japanese_ci", "UJIS for Windows Japanese"},
+	{  2, "latin2", "latin2_czech_cs", "ISO 8859-2 Central European"},
+	{  5, "latin1", "latin1_german_ci", "cp1252 West European"},
+	{ 14, "cp1251", "cp1251_bulgarian_ci", "Windows Cyrillic"},
+	{ 15, "latin1", "latin1_danish_ci", "cp1252 West European"},
+	{ 17, "filename", "filename", "File Name"},
+	{ 20, "latin7", "latin7_estonian_cs", "ISO 8859-13 Baltic"},
+	{ 21, "latin2", "latin2_hungarian_ci", "ISO 8859-2 Central European"},
+	{ 23, "cp1251", "cp1251_ukrainian_ci", "Windows Cyrillic"},
+	{ 27, "latin2", "latin2_croatian_ci", "ISO 8859-2 Central European"},
+	{ 29, "cp1257", "cp1257_lithunian_ci", "Windows Baltic"},
+	{ 31, "latin1", "latin1_german2_ci", "cp1252 West European"},
+	{ 34, "cp1250", "cp1250_czech_cs", "Windows Central European"},
+	{ 42, "latin7", "latin7_general_cs", "ISO 8859-13 Baltic"},
+	{ 43, "macce", "macce_bin", "Mac Central European"},
+	{ 44, "cp1250", "cp1250_croatian_ci", "Windows Central European"},
+	{ 45, "utf8", "utf8_general_ci", "UTF-8 Unicode"},
+	{ 46, "utf8", "utf8_bin", "UTF-8 Unicode"},
+	{ 47, "latin1", "latin1_bin", "cp1252 West European"},
+	{ 48, "latin1", "latin1_general_ci", "cp1252 West European"},
+	{ 49, "latin1", "latin1_general_cs", "cp1252 West European"},
+	{ 50, "cp1251", "cp1251_bin", "Windows Cyrillic"},
+	{ 52, "cp1251", "cp1251_general_cs", "Windows Cyrillic"},
+	{ 53, "macroman", "macroman_bin", "Mac West European"},
+	{ 58, "cp1257", "cp1257_bin", "Windows Baltic"},
+	{ 60, "armascii8", "armascii8_bin", "armascii8"},
+	{ 65, "ascii", "ascii_bin", "US ASCII"},
+	{ 66, "cp1250", "cp1250_bin", "Windows Central European"},
+	{ 67, "cp1256", "cp1256_bin", "Windows Arabic"},
+	{ 68, "cp866", "cp866_bin", "DOS Russian"},
+	{ 69, "dec8", "dec8_bin", "DEC West European"},
+	{ 70, "greek", "greek_bin", "ISO 8859-7 Greek"},
+	{ 71, "hebew", "hebrew_bin", "ISO 8859-8 Hebrew"},
+	{ 72, "hp8", "hp8_bin", "HP West European"},
+	{ 73, "keybcs2", "keybcs2_bin", "DOS Kamenicky Czech-Slovak"},
+	{ 74, "koi8r", "koi8r_bin", "KOI8-R Relcom Russian"},
+	{ 75, "koi8u", "koi8u_bin", "KOI8-U Ukrainian"},
+	{ 77, "latin2", "latin2_bin", "ISO 8859-2 Central European"},
+	{ 78, "latin5", "latin5_bin", "ISO 8859-9 Turkish"},
+	{ 79, "latin7", "latin7_bin", "ISO 8859-13 Baltic"},
+	{ 80, "cp850", "cp850_bin", "DOS West European"},
+	{ 81, "cp852", "cp852_bin", "DOS Central European"},
+	{ 82, "swe7", "swe7_bin", "7bit Swedish"},
+	{ 93, "geostd8", "geostd8_bin", "GEOSTD8 Georgian"},
+	{ 83, "utf8", "utf8_bin", "UTF-8 Unicode"},
+	{ 84, "big5", "big5_bin", "Big5 Traditional Chinese"},
+	{ 85, "euckr", "euckr_bin", "EUC-KR Korean"},
+	{ 86, "gb2312", "gb2312_bin", "GB2312 Simplified Chinese"},
+	{ 87, "gbk", "gbk_bin", "GBK Simplified Chinese"},
+	{ 88, "sjis", "sjis_bin", "Shift-JIS Japanese"},
+	{ 89, "tis620", "tis620_bin", "TIS620 Thai"},
+	{ 90, "ucs2", "ucs2_bin", "UCS-2 Unicode"},
+	{ 91, "ujis", "ujis_bin", "EUC-JP Japanese"},
+	{ 94, "latin1", "latin1_spanish_ci", "cp1252 West European"},
+	{ 96, "cp932", "cp932_bin", "SJIS for Windows Japanese"},
+	{ 99, "cp1250", "cp1250_polish_ci", "Windows Central European"},
+	{ 98, "eucjpms", "eucjpms_bin", "UJIS for Windows Japanese"},
+	{128, "ucs2", "ucs2_unicode_ci", "UCS-2 Unicode"},
+	{129, "ucs2", "ucs2_icelandic_ci", "UCS-2 Unicode"},
+	{130, "ucs2", "ucs2_latvian_ci", "UCS-2 Unicode"},
+	{131, "ucs2", "ucs2_romanian_ci", "UCS-2 Unicode"},
+	{132, "ucs2", "ucs2_slovenian_ci", "UCS-2 Unicode"},
+	{133, "ucs2", "ucs2_polish_ci", "UCS-2 Unicode"},
+	{134, "ucs2", "ucs2_estonian_ci", "UCS-2 Unicode"},
+	{135, "ucs2", "ucs2_spanish_ci", "UCS-2 Unicode"},
+	{136, "ucs2", "ucs2_swedish_ci", "UCS-2 Unicode"},
+	{137, "ucs2", "ucs2_turkish_ci", "UCS-2 Unicode"},
+	{138, "ucs2", "ucs2_czech_ci", "UCS-2 Unicode"},
+	{139, "ucs2", "ucs2_danish_ci", "UCS-2 Unicode"},
+	{140, "ucs2", "ucs2_lithunian_ci", "UCS-2 Unicode"},
+	{141, "ucs2", "ucs2_slovak_ci", "UCS-2 Unicode"},
+	{142, "ucs2", "ucs2_spanish2_ci", "UCS-2 Unicode"},
+	{143, "ucs2", "ucs2_roman_ci", "UCS-2 Unicode"},
+	{144, "ucs2", "ucs2_persian_ci", "UCS-2 Unicode"},
+	{145, "ucs2", "ucs2_esperanto_ci", "UCS-2 Unicode"},
+	{146, "ucs2", "ucs2_hungarian_ci", "UCS-2 Unicode"},
+	{147, "ucs2", "ucs2_sinhala_ci", "UCS-2 Unicode"},
+	{192, "utf8mb3", "utf8mb3_general_ci", "UTF-8mb3 Unicode"},
+	{193, "utf8mb3", "utf8mb3_icelandic_ci", "UTF-8mb3 Unicode"},
+	{194, "utf8mb3", "utf8mb3_latvian_ci", "UTF-8mb3 Unicode"},
+	{195, "utf8mb3", "utf8mb3_romanian_ci", "UTF-8mb3 Unicode"},
+	{196, "utf8mb3", "utf8mb3_slovenian_ci", "UTF-8mb3 Unicode"},
+	{197, "utf8mb3", "utf8mb3_polish_ci", "UTF-8mb3 Unicode"},
+	{198, "utf8mb3", "utf8mb3_estonian_ci", "UTF-8mb3 Unicode"},
+	{119, "utf8mb3", "utf8mb3_spanish_ci", "UTF-8mb3 Unicode"},
+	{200, "utf8mb3", "utf8mb3_swedish_ci", "UTF-8mb3 Unicode"},
+	{201, "utf8mb3", "utf8mb3_turkish_ci", "UTF-8mb3 Unicode"},
+	{202, "utf8mb3", "utf8mb3_czech_ci", "UTF-8mb3 Unicode"},
+	{203, "utf8mb3", "utf8mb3_danish_ci", "UTF-8mb3 Unicode"},
+	{204, "utf8mb3", "utf8mb3_lithunian_ci", "UTF-8mb3 Unicode"},
+	{205, "utf8mb3", "utf8mb3_slovak_ci", "UTF-8mb3 Unicode"},
+	{206, "utf8mb3", "utf8mb3_spanish2_ci", "UTF-8mb3 Unicode"},
+	{207, "utf8mb3", "utf8mb3_roman_ci", "UTF-8mb3 Unicode"},
+	{208, "utf8mb3", "utf8mb3_persian_ci", "UTF-8mb3 Unicode"},
+	{209, "utf8mb3", "utf8mb3_esperanto_ci", "UTF-8mb3 Unicode"},
+	{210, "utf8mb3", "utf8mb3_hungarian_ci", "UTF-8mb3 Unicode"},
+	{211, "utf8mb3", "utf8mb3_sinhala_ci", "UTF-8mb3 Unicode"},
+	{224, "utf8", "utf8_unicode_ci", "UTF-8 Unicode"},
+	{225, "utf8", "utf8_icelandic_ci", "UTF-8 Unicode"},
+	{226, "utf8", "utf8_latvian_ci", "UTF-8 Unicode"},
+	{227, "utf8", "utf8_romanian_ci", "UTF-8 Unicode"},
+	{228, "utf8", "utf8_slovenian_ci", "UTF-8 Unicode"},
+	{229, "utf8", "utf8_polish_ci", "UTF-8 Unicode"},
+	{230, "utf8", "utf8_estonian_ci", "UTF-8 Unicode"},
+	{231, "utf8", "utf8_spanish_ci", "UTF-8 Unicode"},
+	{232, "utf8", "utf8_swedish_ci", "UTF-8 Unicode"},
+	{233, "utf8", "utf8_turkish_ci", "UTF-8 Unicode"},
+	{234, "utf8", "utf8_czech_ci", "UTF-8 Unicode"},
+	{235, "utf8", "utf8_danish_ci", "UTF-8 Unicode"},
+	{236, "utf8", "utf8_lithuanian_ci", "UTF-8 Unicode"},
+	{237, "utf8", "utf8_slovak_ci", "UTF-8 Unicode"},
+	{238, "utf8", "utf8_spanish2_ci", "UTF-8 Unicode"},
+	{239, "utf8", "utf8_roman_ci", "UTF-8 Unicode"},
+	{240, "utf8", "utf8_persian_ci", "UTF-8 Unicode"},
+	{241, "utf8", "utf8_esperanto_ci", "UTF-8 Unicode"},
+	{242, "utf8", "utf8_hungarian_ci", "UTF-8 Unicode"},
+	{243, "utf8", "utf8_sinhala_ci", "UTF-8 Unicode"},
+	{254, "utf8mb3", "utf8mb3_general_cs", "UTF-8mb3 Unicode"},
+	{  0, NULL, NULL, NULL}
 };
 
 @implementation SPDatabaseData
@@ -234,11 +234,11 @@ const CHAR_SETS charsets[] =
 	if ([collations count] == 0) {
 		
 		// Check the information_schema.collations table is accessible
-		MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'collations'"];
+		MCPResult *result = [connection queryString:@"SELECT * FROM `information_schema`.`collations` LIMIT 1"];
 		
 		if ([result numOfRows] == 1) {
 			// Table is accessible so get available collations
-			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM information_schema.collations ORDER BY collation_name ASC"]];	
+			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema.collations` ORDER BY `collation_name` ASC"]];	
 		}
 		else {
 			// Get the list of collations from our hard coded list
@@ -270,11 +270,11 @@ const CHAR_SETS charsets[] =
 		characterSetEncoding = [[NSString alloc] initWithString:encoding];
 		
 		// Check the information_schema.collations table is accessible
-		MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'collations'"];
+		MCPResult *result = [connection queryString:@"SELECT * FROM `information_schema`.`collations` LIMIT 1"];
 		
 		if ([result numOfRows] == 1) {
 			// Table is accessible so get available collations for the supplied encoding
-			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM information_schema.collations WHERE character_set_name = '%@' ORDER BY collation_name ASC", characterSetEncoding]]];	
+			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];	
 		}
 		else {
 			// Get the list of collations matching the supplied encoding from our hard coded list
@@ -386,19 +386,22 @@ const CHAR_SETS charsets[] =
 	if ([characterSetEncodings count] == 0) {
 		
 		// Check the information_schema.collations table is accessible
-		MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'character_sets'"];
+		MCPResult *result = [connection queryString:@"SELECT * FROM `information_schema`.`character_sets` LIMIT 1"];
 		
 		if ([result numOfRows] == 1) {
 			// Table is accessible so get available encodings for the supplied encoding
-			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM information_schema.character_sets ORDER BY character_set_name ASC"]];	
+			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];	
 		}
 		else {
 			// Get the list of collations matching the supplied encoding from our hard coded list
 			const CHAR_SETS *c = charsets;
-			
-			do {				
-				[characterSetEncodings addObject:[NSDictionary dictionaryWithObject:[NSString stringWithCString:c->name encoding:NSUTF8StringEncoding] forKey:@"CHARACTER_SET_NAME"]];
-				
+
+			do {
+				[characterSetEncodings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+					[NSString stringWithCString:c->name encoding:NSUTF8StringEncoding], @"CHARACTER_SET_NAME",
+					[NSString stringWithCString:c->description encoding:NSUTF8StringEncoding], @"DESCRIPTION",
+				nil]];
+
 				++c;
 			} 
 			while (c[0].nr != 0);
@@ -436,19 +439,19 @@ const CHAR_SETS charsets[] =
 - (NSMutableArray *)_getDatabaseDataForQuery:(NSString *)query
 {
 	NSMutableArray *array = [NSMutableArray array];
-	
+
 	MCPResult *result = [connection queryString:query];
-	
+
 	// Log any errors
 	if ([[connection getLastErrorMessage] isEqualToString:@""]) {
 		[result dataSeek:0];
-		
+
 		for (int i = 0; i < [result numOfRows]; i++)
-		{		
-			[array addObject:[result fetchRowAsDictionary]];		
+		{
+			[array addObject:[result fetchRowAsDictionary]];
 		}
 	}
-	
+
 	return array;
 }
 

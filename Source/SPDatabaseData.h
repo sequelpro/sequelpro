@@ -29,8 +29,9 @@
 typedef struct _CHAR_SETS
 {
 	unsigned int nr;
-	const char	 *name;
-	const char	 *collation;
+	const char	*name;
+	const char	*collation;
+	const char	*description;
 } CHAR_SETS;
 
 @interface SPDatabaseData : NSObject 
