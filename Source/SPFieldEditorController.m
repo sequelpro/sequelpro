@@ -182,7 +182,7 @@
 	}
 	if (stringValue) {
 		[editTextView setString:stringValue];
-		
+
 		if(image == nil) {
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
@@ -191,11 +191,15 @@
 			[editTextScrollView setHidden:NO];
 			[editSheetSegmentControl setSelectedSegment:0];
 		}
-		
+
 		// Locate the caret in editTextView
 		// (to select all takes a bit time for large data)
 		[editTextView setSelectedRange:NSMakeRange(0,0)];
-		
+
+		// If the string content is NULL select NULL for convenience
+		if([stringValue isEqualToString:[prefs objectForKey:@"NullValue"]])
+			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+
 		// Set focus
 		if(image == nil)
 			[editSheet makeFirstResponder:editTextView];

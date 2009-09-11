@@ -1985,7 +1985,9 @@
 	}
 	
 	// Walk through the array, contructing the XML string.
-	for ( i = 1 ; i < totalRows ; i++ ) {
+	// Note: the XML array starts at index 1 thus we have to iterate
+	// to i < totalRows + 1 in order to output the very last row.
+	for ( i = 1 ; i < totalRows + 1 ; i++ ) {
 		
 		// Update the progress bar
 		if (totalRows) [singleProgressBar setDoubleValue:((i+1)*100/totalRows)];
