@@ -505,7 +505,7 @@
 	{
 		// Go backward
 		case 0:
-			[spHistoryControllerInstance goBackwardInHistory];
+			[spHistoryControllerInstance goBackInHistory];
 			break;
 		// Go forward
 		case 1:

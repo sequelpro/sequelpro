@@ -52,7 +52,7 @@ enum sphistory_view_types
 
 // Interface interaction
 - (void) updateToolbarItem;
-- (void)goBackwardInHistory;
+- (void)goBackInHistory;
 - (void)goForwardInHistory;
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
 - (unsigned int) currentlySelectedView;

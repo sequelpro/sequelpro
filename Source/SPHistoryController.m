@@ -106,7 +106,7 @@
 /**
  * Go backward in the history.
  */
-- (void)goBackwardInHistory
+- (void)goBackInHistory
 {
 	if (historyPosition == NSNotFound || !historyPosition) return;
 	
@@ -133,7 +133,7 @@
 	{
 		// Back button clicked:
 		case 0:
-			[self goBackwardInHistory];
+			[self goBackInHistory];
 			break;
 
 		// Forward button clicked:
