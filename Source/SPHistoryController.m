@@ -30,6 +30,8 @@
 
 @implementation SPHistoryController
 
+@synthesize history;
+@synthesize historyPosition;
 @synthesize modifyingHistoryState;
 
 #pragma mark Setup and teardown
@@ -102,23 +104,41 @@
 }
 
 /**
+ * Go backward in the history.
+ */
+- (void)goBackwardInHistory
+{
+	if (historyPosition == NSNotFound || !historyPosition) return;
+	
+	[self loadEntryAtPosition:historyPosition - 1];
+}
+
+/**
+ * Go forward in the history.
+ */
+- (void)goForwardInHistory
+{
+	if (historyPosition == NSNotFound || historyPosition + 1 >= [history count]) return;
+	
+	[self loadEntryAtPosition:historyPosition + 1];
+}
+
+/**
  * Trigger a navigation action in response to a click
  */
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl
 {
 
-	switch ([theControl selectedSegment]) {
-
+	switch ([theControl selectedSegment]) 
+	{
 		// Back button clicked:
 		case 0:
-			if (historyPosition == NSNotFound || !historyPosition) return;
-			[self loadEntryAtPosition:historyPosition - 1];
+			[self goBackwardInHistory];
 			break;
 
 		// Forward button clicked:
 		case 1:
-			if (historyPosition == NSNotFound || historyPosition + 1 >= [history count]) return;
-			[self loadEntryAtPosition:historyPosition + 1];
+			[self goForwardInHistory];
 			break;
 	}
 }

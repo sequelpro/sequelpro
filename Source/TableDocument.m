@@ -496,6 +496,24 @@
 	[NSApp abortModal];
 }
 
+/**
+ * Go backward or forward in the history depending on the menu item selected.
+ */
+- (IBAction)backForwardInHistory:(id)sender
+{
+	switch ([sender tag])
+	{
+		// Go backward
+		case 0:
+			[spHistoryControllerInstance goBackwardInHistory];
+			break;
+		// Go forward
+		case 1:
+			[spHistoryControllerInstance goForwardInHistory];
+			break;
+	}
+}
+
 
 #pragma mark -
 #pragma mark Connection callback and methods
@@ -2467,13 +2485,13 @@
 	// and disable it if no query in the editor
 	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
 		if([customQueryInstance numberOfQueries] < 1) {
-			[menuItem setTitle:NSLocalizedString(@"Save Query…",@"Save Query…")];
+			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
 			return NO;
 		}
 		else if([customQueryInstance numberOfQueries] == 1)
-			[menuItem setTitle:NSLocalizedString(@"Save Query…",@"Save Query…")];
+			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
 		else
-			[menuItem setTitle:NSLocalizedString(@"Save Queries…",@"Save Queries…")];
+			[menuItem setTitle:NSLocalizedString(@"Save Queries…", @"Save Queries…")];
 		
 		return YES;
 	}
@@ -2502,7 +2520,17 @@
 	}
 	
 	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
-		return ([connectionController selectedFavorite]?NO:YES);
+		return ([connectionController selectedFavorite] ? NO : YES);
+	}
+	
+	// Backward in history menu item
+	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 0)) {
+		return (([[spHistoryControllerInstance history] count]) && ([spHistoryControllerInstance historyPosition] > 0));
+	}
+	
+	// Forward in history menu item
+	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
+		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
 	}
 	
 	return [super validateMenuItem:menuItem];

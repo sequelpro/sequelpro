@@ -35,20 +35,25 @@ enum sphistory_view_types
 	SP_VIEW_RELATIONS = 4
 };
 
-@interface SPHistoryController : NSObject {
+@interface SPHistoryController : NSObject 
+{
 	IBOutlet TableDocument *theDocument;
 	IBOutlet NSSegmentedControl *historyControl;
 
 	TableContent *tableContentInstance;
 	NSMutableArray *history;
-	unsigned int historyPosition;
+	NSUInteger historyPosition;
 	BOOL modifyingHistoryState;
 }
 
+@property (readonly) NSUInteger historyPosition;
+@property (readonly) NSMutableArray *history;
 @property (readwrite, assign) BOOL modifyingHistoryState;
 
 // Interface interaction
 - (void) updateToolbarItem;
+- (void)goBackwardInHistory;
+- (void)goForwardInHistory;
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
 - (unsigned int) currentlySelectedView;
 

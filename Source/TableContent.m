@@ -2164,7 +2164,7 @@
  * Confirm whether to allow editing of a row. Returns YES by default, unless the multipleLineEditingButton is in
  * the ON state, or for blob or text fields - in those cases opens a sheet for editing instead and returns NO.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {		
 	NSUInteger i;
 	

@@ -29,7 +29,6 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-
 @class SPConnectionController, SPUserManager;
 
 enum sp_current_query_mode
@@ -206,6 +205,7 @@ enum sp_current_query_mode
 - (IBAction)validateSaveConnectionAccessory:(id)sender;
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences;
 - (IBAction)closePasswordSheet:(id)sender;
+- (IBAction)backForwardInHistory:(id)sender;
 
 // Getter methods
 - (NSString *)name;
