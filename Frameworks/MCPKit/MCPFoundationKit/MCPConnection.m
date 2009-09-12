@@ -38,7 +38,7 @@
 #include <mach/mach_time.h>
 
 static jmp_buf pingTimeoutJumpLocation;
-static void forcePingTimeout(NSInteger signalNumber);
+static void forcePingTimeout(int signalNumber);
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
 const char         *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
@@ -611,7 +611,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  * This function is paired with pingConnection, and provides a method of enforcing the connection
  * timeout when mysql_ping does not respect the specified limits.
  */
-static void forcePingTimeout(NSInteger signalNumber)
+static void forcePingTimeout(int signalNumber)
 {
 	longjmp(pingTimeoutJumpLocation, 1);
 }
