@@ -76,6 +76,9 @@
     IBOutlet id addTableContentSwitch;
     IBOutlet id addErrorsSwitch;
     IBOutlet id sqlFullStreamingSwitch;
+    IBOutlet id csvFullStreamingSwitch;
+    IBOutlet id multiCSVFullStreamingSwitch;
+    IBOutlet id multiXMLFullStreamingSwitch;
     IBOutlet id errorsSheet;
     IBOutlet id errorsView;
     IBOutlet id singleProgressSheet;
@@ -131,14 +134,14 @@
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
 - (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle;
-- (BOOL)writeCsvForArray:(NSArray *)array orQueryResult:(MCPResult *)queryResult
+- (BOOL)writeCsvForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult
 	toFileHandle:(NSFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
-	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus silently:(BOOL)silently;
-- (BOOL)writeXmlForArray:(NSArray *)array orQueryResult:(MCPResult *)queryResult
+	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus totalRows:(NSInteger)totalRows silently:(BOOL)silently;
+- (BOOL)writeXmlForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult
 	toFileHandle:(NSFileHandle *)fileHandle
-	tableName:(NSString *)table withHeader:(BOOL)header silently:(BOOL)silently;
+	tableName:(NSString *)table withHeader:(BOOL)header totalRows:(NSInteger)totalRows silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
 - (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName;
 
