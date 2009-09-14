@@ -385,7 +385,7 @@ static float slow_in_out (float t)
 	NSWindow* keyWindow = [[NSApp keyWindow] retain];
 	BOOL didAcceptMouseMovedEvents = [keyWindow acceptsMouseMovedEvents];
 	[keyWindow setAcceptsMouseMovedEvents:YES];
-	NSEvent* event;
+	NSEvent* event = nil;
 	int eventType;
 	while(event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES])
 	{
@@ -409,6 +409,9 @@ static float slow_in_out (float t)
 	[keyWindow release];
 
 	[self orderOut:self];
+
+	// If we still have an event, pass it on to the app to ensure all actions are performed
+	if (event) [NSApp sendEvent:event];
 }
 
 // =============
