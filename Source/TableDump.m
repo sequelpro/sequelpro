@@ -2453,8 +2453,12 @@
 
 		// Provide the field default if appropriate
 		if ([column objectForKey:@"default"]) {
+
+			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those.
 			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
-				[fieldString appendString:@" DEFAULT NULL"];
+				if ([[column objectForKey:@"null"] intValue])
+					[fieldString appendString:@" DEFAULT NULL"];
+
 			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
 						&& [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
