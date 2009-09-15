@@ -1107,13 +1107,18 @@
  */
 - (void)doPerformQueryService:(NSString *)query
 {
+	[textView shouldChangeTextInRange:NSMakeRange(0, [[textView string] length]) replacementString:query];
 	[textView setString:query];
+	[textView didChangeText];
+	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
 	[self runAllQueries:self];
 }
 - (void)doPerformLoadQueryService:(NSString *)query
 {
+	[textView shouldChangeTextInRange:NSMakeRange(0, [[textView string] length]) replacementString:query];
 	[textView setString:query];
-	// [textView insertText:@""];
+	[textView didChangeText];
+	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
 }
 
 - (NSString *)usedQuery
