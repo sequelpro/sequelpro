@@ -52,14 +52,24 @@
 
 @end
 
-@interface SPExporter : NSObject 
+@interface SPExporter : NSOperation
 {
 	id delegate;
+		
+	double exportProgressValue;
 	
-	double progressValue;
+	BOOL exportProcessIsRunning;
+	BOOL exportProcessShouldExit;
+	
+	NSStringEncoding exportOutputEncoding;
 }
 
 @property (readwrite, assign) id delegate;
-@property (readwrite, assign) double progressValue;
+@property (readwrite, assign) double exportProgressValue;
+
+@property (readwrite, assign) BOOL exportProcessIsRunning;
+@property (readwrite, assign) BOOL exportProcessShouldExit;
+
+@property (readwrite, assign) NSStringEncoding exportOutputEncoding;
 
 @end

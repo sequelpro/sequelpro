@@ -27,9 +27,8 @@
 
 #import "MCPKit.h"
 #import "SPExporter.h"
-#import "SPExporterAccess.h"
 
-@interface SPCSVExporter : SPExporter <SPExporterAccess>
+@interface SPCSVExporter : SPExporter
 {
 	// CSV file
 	NSFileHandle *csvFileHandle;
@@ -46,13 +45,6 @@
 	NSString *csvLineEndingString;
 	NSString *csvNULLString;
 	NSArray  *csvTableColumnNumericStatus;
-	
-	// CSV encoding
-	NSStringEncoding csvOutputEncoding;
-	
-	// Operational
-	BOOL csvExportIsRunning;
-	BOOL csvThreadShouldExit;
 }
 
 @property (readwrite, retain) NSFileHandle *csvFileHandle;
@@ -67,13 +59,5 @@
 @property (readwrite, retain) NSString *csvLineEndingString;
 @property (readwrite, retain) NSString *csvNULLString;
 @property (readwrite, retain) NSArray  *csvTableColumnNumericStatus;
-
-@property (readwrite, assign) NSStringEncoding csvOutputEncoding;
-
-@property (readwrite, assign) BOOL csvExportIsRunning;
-@property (readwrite, assign) BOOL csvThreadShouldExit;
-
-- (BOOL)startExportProcess;
-- (BOOL)stopExportProcess;
 
 @end

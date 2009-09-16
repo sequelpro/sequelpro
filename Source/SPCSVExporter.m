@@ -28,7 +28,7 @@
 
 @interface SPCSVExporter (PrivateAPI)
 
-- (void)startCSVExportInBackgroundThread;
+- (void)_startCSVExportInBackgroundThread;
 
 @end
 
@@ -47,24 +47,6 @@
 @synthesize csvNULLString;
 @synthesize csvTableColumnNumericStatus;
 
-@synthesize csvOutputEncoding;
-
-@synthesize csvExportIsRunning;
-@synthesize csvThreadShouldExit;
-
-/**
- * Initialize an instance of the exporter setting some default values
- */
-- (id)init
-{
-	if ((self == [super init])) {
-		[self setCsvExportIsRunning:NO];
-		[self setCsvThreadShouldExit:NO];
-	}
-	
-	return self;
-}
-
 /**
  * Start the CSV export process.
  */
@@ -76,8 +58,7 @@
 		(![self csvFieldSeparatorString]) ||
 		(![self csvEscapeString]) ||
 		(![self csvLineEndingString]) ||
-		(![self csvTableColumnNumericStatus]) ||
-		(![self csvOutputEncoding]))
+		(![self csvTableColumnNumericStatus]))
 	{
 		return NO;
 	}
@@ -99,12 +80,12 @@
 		[delegate exportProcessDidStart:self];
 	}
 	
-	[self setCsvExportIsRunning:YES];
+	[self setExportProcessIsRunning:YES];
 		
 	// Start the export in a new thread
-	[NSThread detachNewThreadSelector:@selector(startCSVExportInBackgroundThread) toTarget:self withObject:nil];
+	[NSThread detachNewThreadSelector:@selector(_startCSVExportInBackgroundThread) toTarget:self withObject:nil];
 	
-	[self setCsvExportIsRunning:NO];
+	[self setExportProcessIsRunning:NO];
 	
 	// Tell the delegate that the export process has ended
 	if (delegate && [delegate respondsToSelector:@selector(exportProcessDidEnd:)]) {
@@ -119,7 +100,7 @@
  */
 - (BOOL)stopExportProcess
 {
-	if (![self csvExportIsRunning]) return NO;
+	if (![self exportProcessIsRunning]) return NO;
 	
 	// Kill the running thread here
 	
@@ -151,7 +132,7 @@
 /**
  * Starts the export process in a background thread.
  */
-- (void)startCSVExportInBackgroundThread
+- (void)_startCSVExportInBackgroundThread
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
@@ -171,42 +152,38 @@
 	
 	// Detect and restore special characters being used as terminating or line end strings
 	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:[self csvFieldSeparatorString]];
-	
-	NSUInteger tempSeparatorStringLength = [tempSeparatorString length];
-	
+		
 	// Escape tabs, line endings and carriage returns
 	[tempSeparatorString replaceOccurrencesOfString:@"\\t" withString:@"\t"
 											options:NSLiteralSearch
-											  range:NSMakeRange(0, tempSeparatorStringLength)];
+											  range:NSMakeRange(0, [tempSeparatorString length])];
 	
 	[tempSeparatorString replaceOccurrencesOfString:@"\\n" withString:@"\n"
 											options:NSLiteralSearch
-											  range:NSMakeRange(0, tempSeparatorStringLength)];
+											  range:NSMakeRange(0, [tempSeparatorString length])];
 	
 	[tempSeparatorString replaceOccurrencesOfString:@"\\r" withString:@"\r"
 											options:NSLiteralSearch
-											  range:NSMakeRange(0, tempSeparatorStringLength)];
+											  range:NSMakeRange(0, [tempSeparatorString length])];
 	
 	// Set the new field separator string
 	[self setCsvFieldSeparatorString:[NSString stringWithString:tempSeparatorString]];
 	
 	NSMutableString *tempLineEndString = [NSMutableString stringWithString:[self csvLineEndingString]];
-	
-	NSUInteger tempLineEndStringLength = [tempLineEndString length];
-	
+		
 	// Escape tabs, line endings and carriage returns
 	[tempLineEndString replaceOccurrencesOfString:@"\\t" withString:@"\t"
 										  options:NSLiteralSearch
-											range:NSMakeRange(0, tempLineEndStringLength)];
+											range:NSMakeRange(0, [tempLineEndString length])];
 	
 	
 	[tempLineEndString replaceOccurrencesOfString:@"\\n" withString:@"\n"
 										  options:NSLiteralSearch
-											range:NSMakeRange(0, tempLineEndStringLength)];
+											range:NSMakeRange(0, [tempLineEndString length])];
 	
 	[tempLineEndString replaceOccurrencesOfString:@"\\r" withString:@"\r"
 										  options:NSLiteralSearch
-											range:NSMakeRange(0, tempLineEndStringLength)];
+											range:NSMakeRange(0, [tempLineEndString length])];
 	
 	// Set the new line ending string
 	[self setCsvLineEndingString:[NSString stringWithString:tempLineEndString]];
@@ -231,14 +208,14 @@
 	for (i = startingRow; i < totalRows; i++) 
 	{
 		// Check if we should stop and exit the export operation
-		if ([self csvThreadShouldExit]) {
+		if ([self exportProcessShouldExit]) {
 			[pool release];
 			
 			return;
 		}
 		
 		// Update the progress value
-		if (totalRows) [self setProgressValue:(((i + 1) * 100) / totalRows)];
+		if (totalRows) [self setExportProgressValue:(((i + 1) * 100) / totalRows)];
 		
 		// Retrieve the row from the supplied data
 		if ([self csvDataArray] == nil) {
@@ -264,7 +241,7 @@
 			
 			// Retrieve the contents of this cell
 			if ([NSArrayObjectAtIndex(csvRow, j) isKindOfClass:[NSData class]]) {
-				dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:csvOutputEncoding];
+				dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:[self exportOutputEncoding]];
 				
 				if (dataConversionString == nil) {
 					dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(csvRow, j) encoding:NSASCIIStringEncoding];
@@ -353,7 +330,7 @@
 		[csvString appendString:[self csvLineEndingString]];
 		
 		// Write it to the fileHandle
-		[csvFileHandle writeData:[csvString dataUsingEncoding:[self csvOutputEncoding]]];
+		[csvFileHandle writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
 	}
 	
 	[pool release];

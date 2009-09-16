@@ -25,16 +25,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "MCPKit.h"
 #import "SPExporter.h"
-#import "SPExporterAccess.h"
 
-@interface SPSQLExporter : SPExporter <SPExporterAccess> 
+@interface SPSQLExporter : SPExporter
 {
-
+	
 }
-
-- (BOOL)startExportProcess;
-- (BOOL)stopExportProcess;
 
 @end

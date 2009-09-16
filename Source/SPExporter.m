@@ -28,6 +28,34 @@
 @implementation SPExporter
 
 @synthesize delegate;
-@synthesize progressValue;
+@synthesize exportProgressValue;
+@synthesize exportProcessIsRunning;
+@synthesize exportProcessShouldExit;
+@synthesize exportOutputEncoding;
+
+/**
+ * Initialize an instance of the exporter setting some default values
+ */
+- (id)init
+{
+	if ((self == [super init])) {
+		[self setExportProgressValue:0];
+		[self setExportProcessIsRunning:NO];
+		[self setExportProcessShouldExit:NO];
+		
+		// Default the output encoding to UTF-8
+		[self setExportOutputEncoding:NSUTF8StringEncoding];
+	}
+	
+	return self;
+}
+
+/**
+ *
+ */
+- (void)main
+{
+	@throw [NSException exceptionWithName:@"NSOperation main() call" reason:@"Can't call NSOperation's main() method in SPExpoter, must be overriden in subclass." userInfo:nil];
+}
 
 @end

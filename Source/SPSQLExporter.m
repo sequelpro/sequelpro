@@ -27,20 +27,4 @@
 
 @implementation SPSQLExporter
 
-/**
- * Start the SQL export process.
- */
-- (BOOL)startExportProcess
-{
-	return YES;
-}
-
-/**
- * Stop the SQL export process by killing the export thread and cleaning up if its running.
- */
-- (BOOL)stopExportProcess
-{
-	return YES;
-}
-
 @end

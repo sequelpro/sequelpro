@@ -53,6 +53,9 @@ typedef NSUInteger SPExportSource;
 	// Tables list
 	IBOutlet id tablesListInstance;
 	
+	// Table data
+	IBOutlet id tableDataInstance;
+	
 	// Export window
 	IBOutlet id exportWindow;
 	IBOutlet id exportToolbar;
@@ -101,20 +104,20 @@ typedef NSUInteger SPExportSource;
 	IBOutlet id exampleNameLabel;
 	
 	// Local variables
-	MCPConnection *mySQLConnection;
+	BOOL exportCancelled;
 	NSMutableArray *tables;
+	MCPConnection *connection;
 }
 
-// Export Methods
+@property (readwrite, assign) BOOL exportCancelled;
+@property (readwrite, assign) MCPConnection *connection;
+
+// IB action methods
 - (void)export;
 - (IBAction)closeSheet:(id)sender;
-- (IBAction)cancelExport:(id)sender;
-- (IBAction)changeExportOutputPath:(id)sender;
-
-// Utility Methods
-- (void)setConnection:(MCPConnection *)theConnection;
-- (void)loadTables;
 - (IBAction)switchTab:(id)sender;
 - (IBAction)switchInput:(id)sender;
+- (IBAction)cancelExport:(id)sender;
+- (IBAction)changeExportOutputPath:(id)sender;
 
 @end
