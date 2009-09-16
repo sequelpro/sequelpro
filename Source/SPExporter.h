@@ -39,10 +39,10 @@
  * (defined in SPExporter as is common to all exporters) of the export should be set by the exporter and made 
  * available to SPExportController via delegate methods in order to update the user interface.
  *
- * Note that all core export processes should be designed and implemented to run in a separate thread to avoid
- * blocking the main thread and also to provide improved efficiency over the current design (for example, all memory
- * used within a separate thread can be reclaimed immediately after the thread completes its cycle and it's 
- * autorelease pool is released).
+ * Note that all exporters are designed to be run concurrently and as such this base class is a subclass of 
+ * NSOperation. All the data format specific subclasses have to do is override NSOperation's main() method
+ * and implement all processes which are to be run concurrently within it. This method is automatically called
+ * once the exporter instance is placed on the operation queue once its ready to be run.
  */
 
 @interface NSObject (SPExporterDelegate)
