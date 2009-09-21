@@ -27,19 +27,19 @@
 
 @implementation NSArray (SPArrayAdditions)
 
-- (NSString *)componentsJoinedAndBacktickQuoted;
 /*
  * This method quotes all elements with backticks and then joins them with
  * commas. Use it for field lists as in "SELECT (...) FROM somewhere"
  */
+- (NSString *)componentsJoinedAndBacktickQuoted;
 {
-    NSString *result = [NSString string];
-    for (NSString *component in self)
-    {
-        if ([result length]) result = [result stringByAppendingString: @","];
-        result = [result stringByAppendingString: [component backtickQuotedString] ];
-    }
-    return result;
+	NSString *result = [NSString string];
+	for (NSString *component in self)
+	{
+		if ([result length]) result = [result stringByAppendingString: @","];
+		result = [result stringByAppendingString: [component backtickQuotedString] ];
+	}
+	return result;
 }
 
 - (NSString *)componentsJoinedByCommas
@@ -51,7 +51,7 @@
 		{
 			result = [result stringByAppendingString:@","];
 		}
-		
+
 		result = [result stringByAppendingString:component];
 	}
 	return result;
