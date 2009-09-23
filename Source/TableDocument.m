@@ -214,6 +214,11 @@
 
 	// Deselect all favorites
 	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
+	// Suppress the possibility to choose an other connection from the favorites
+	// if a connection should initialized by SPF file. Otherwise it could happen
+	// that the SPF file runs out of sync.
+	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
+	
 
 	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
 

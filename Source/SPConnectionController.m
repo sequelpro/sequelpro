@@ -843,6 +843,10 @@
 	} else {
 		[(ImageAndTextCell *)aCell setIndentationLevel:1];
 	}
+	if([favoritesTable isEnabled])
+		[(ImageAndTextCell *)aCell setTextColor:[NSColor blackColor]];
+	else
+		[(ImageAndTextCell *)aCell setTextColor:[NSColor grayColor]];
 }
 
 #pragma mark -
