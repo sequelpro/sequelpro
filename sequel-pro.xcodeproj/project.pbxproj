@@ -703,7 +703,7 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
-		1703EF2A0F0B0742005BBE7E /* english_help */ = {
+		1703EF2A0F0B0742005BBE7E /* Help */ = {
 			isa = PBXGroup;
 			children = (
 				1703EF2B0F0B0742005BBE7E /* bar.gif */,
@@ -713,8 +713,8 @@
 				1703EF2F0F0B0742005BBE7E /* sequel-pro_logo.jpg */,
 				1703EF300F0B0742005BBE7E /* topics */,
 			);
-			name = english_help;
-			path = Interfaces/English.lproj/english_help;
+			name = Help;
+			path = Interfaces/English.lproj/Help;
 			sourceTree = SOURCE_ROOT;
 		};
 		1703EF300F0B0742005BBE7E /* topics */ = {
@@ -903,7 +903,7 @@
 			children = (
 				1740F8370FC306C900CF3699 /* Plists */,
 				17E6418B0EF01FF7001BC333 /* Images */,
-				1703EF2A0F0B0742005BBE7E /* english_help */,
+				1703EF2A0F0B0742005BBE7E /* Help */,
 				1740F8360FC306AE00CF3699 /* Scripting */,
 				1740F8350FC3069700CF3699 /* Templates */,
 				384582BC0FB95C9100DDACB6 /* Localizable.strings */,
