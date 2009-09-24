@@ -267,23 +267,22 @@ static char base64encodingTable[64] = {
  returns the hex representation of the given data
  */
 {
-	unsigned i;
-	unsigned totalLength = [self length];
-	int bytesPerLine = 16;
+	NSUInteger i, j;
+	NSUInteger totalLength = [self length];
+	NSUInteger bytesPerLine = 16;
 	NSMutableString *retVal = [NSMutableString string];
-	char *nodisplay = "\t\n\r\f";
-	
+
 	// get the length of the longest location
-	int longest = [(NSString *)[NSString stringWithFormat:@"%X", totalLength - ( totalLength % bytesPerLine )] length];
-	
+	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%X", totalLength - ( totalLength % bytesPerLine )] length];
+
 	for ( i = 0; i < totalLength; i += bytesPerLine ) {
-		int j;
+
 		NSMutableString *hex = [[NSMutableString alloc] initWithCapacity:(3 * bytesPerLine - 1)];
 		NSMutableString *location = [[NSMutableString alloc] initWithCapacity:(longest + 2)];
-		NSMutableString *chars = [[NSMutableString alloc] init];
+
 		unsigned char *buffer;
-		int buffLength = bytesPerLine;
-		
+		NSUInteger buffLength = bytesPerLine;
+
 		// add hex value of location
 		[location appendString:[NSString stringWithFormat:@"%X", i]];
 		
@@ -296,56 +295,38 @@ static char base64encodingTable[64] = {
 		if ( i + buffLength >= totalLength ) {
 			buffLength = totalLength - i;
 		}
-		buffer = (unsigned char*) malloc( sizeof( unsigned char ) * buffLength );
-		NSRange range = { i, buffLength };
-		[self getBytes:buffer range:range];
+
+		buffer = (unsigned char*) malloc( sizeof( unsigned char ) * buffLength + 1);
+
+		[self getBytes:buffer range:NSMakeRange(i, buffLength)];
 		
 		// build the hex string
 		for ( j = 0; j < buffLength; j++ ) {
-			unsigned char byte = *(buffer + j);
-			if ( byte < 16 ) {
-				[hex appendString:@"0"];
-			}
-			[hex appendString:[NSString stringWithFormat:@"%X", byte]];
-			[hex appendString:@" "];
-			
-			// if the char is undisplayable, replace it with "."
-			unsigned char current;
-			int count = 0;
-			while ( ( current = *(nodisplay + count++) ) > 0 ) {
-				if ( current == byte ) {
-					*(buffer + j) = '.';
-					break;
-				}
-			}
+
+			[hex appendString:[NSString stringWithFormat:@"%02X ", *(buffer + j)]];
+
+			// Replace non-displayed bytes by '.'
+			// non-displayed bytes are all bytes whose hex code is less than 0x20
+			if(*(buffer + j) < ' ') *(buffer + j) = '.';
+
 		}
-		
+		// Create a NULL-terminated buffer for [NSString stringWithFormat:@"%s"]
+		*(buffer + j) = '\0';
+
 		// add padding to missing hex values.
 		for ( j = 0; j < bytesPerLine - buffLength; j++ ) {
 			[hex appendString:@"   "];
 		}
-		
-		// remove extra ghost characters
-		[chars appendString:[NSString stringWithCString:(char *)buffer]];
-		if ( [chars length] > bytesPerLine ) {
-			[chars deleteCharactersInRange:NSMakeRange( bytesPerLine, [chars length] - bytesPerLine )];
-		}
-		
+
 		// build line
-		[retVal appendString:location];
-		[retVal appendString:@"  "];
-		[retVal appendString:hex];
-		[retVal appendString:@" "];
-		[retVal appendString:chars];
-		[retVal appendString:@"\n"];
+		[retVal appendFormat:@"%@  %@ %@\n", location, hex, [NSString stringWithFormat:@"%s", buffer]];
 		
 		// clean up
 		[hex release];
-		[chars release];
 		[location release];
 		free( buffer );
 	}
-	
+
 	return retVal;
 }
 
