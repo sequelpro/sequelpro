@@ -43,6 +43,7 @@
 - (void)addTable;
 - (void)copyTable;
 - (void)renameTable;
+- (BOOL)isTableNameValid:(NSString *)tableName;
 
 @end
 
@@ -492,17 +493,22 @@
 /**
  * Method for alert sheets.
  */
-- (void)sheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
+
+	// Order out current sheet to suppress overlapping of sheets
+	if([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+
 	if ([contextInfo isEqualToString:@"addRow"]) {
 		alertSheetOpened = NO;
 	} 
-	else if ([contextInfo isEqualToString:@"removeRow"]) {		
+	else if ([contextInfo isEqualToString:@"removeRow"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self performSelector:@selector(removeTable) withObject:nil afterDelay:0.0];
 		}
 	}
-	else if ([contextInfo isEqualToString:@"truncateTable"]) {		
+	else if ([contextInfo isEqualToString:@"truncateTable"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self truncateTable];
 		}
@@ -550,19 +556,21 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
+
 	id object = [notification object];
-	
+
 	if (object == tableNameField) {
-		[addTableButton setEnabled:([[tableNameField stringValue] length] > 0)]; 
+		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue]]];
 	}
-	
-	if (object == copyTableNameField) {
-		([copyTableButton setEnabled:([[copyTableNameField stringValue] length] > 0) && (![[self tableName] isEqualToString:[copyTableNameField stringValue]])]);
+
+	else if (object == copyTableNameField) {
+		[copyTableButton setEnabled:[self isTableNameValid:[copyTableNameField stringValue]]];
 	}
-	
-	if (object == tableRenameField) {
-		([renameTableButton setEnabled:([[tableRenameField stringValue] length] > 0) && (![[self tableName] isEqualToString:[tableRenameField stringValue]])]);
+
+	else if (object == tableRenameField) {
+		[renameTableButton setEnabled:[self isTableNameValid:[tableRenameField stringValue]]];
 	}
+
 }
 
 /*
@@ -2076,6 +2084,34 @@
 	
 	// Set window title
 	[tableWindow setTitle:[tableDocumentInstance displayName]];
+}
+
+/*
+ * Check tableName for length and if the tableName doesn't match
+ * against current database table/view names (case-insensitive).
+ */
+- (BOOL)isTableNameValid:(NSString *)tableName
+{
+	BOOL isValid = YES;
+
+	// Check case-insensitive and delete trailing whitespaces
+	// since 'foo  ' or '   ' are not valid table names
+	NSString *fieldStr = [[tableName stringByMatching:@"(.*?)\\s*$" capture:1] lowercaseString];
+
+	// If table name has trailing whitespaces return 'no valid'
+	if([fieldStr length] != [tableName length]) return NO;
+
+	if([fieldStr length] > 0) {
+		for(id table in [self allTableAndViewNames]) {
+			if([fieldStr isEqualToString:[table lowercaseString]]) {
+				isValid = NO;
+				break;
+			}
+		}
+	} else {
+		isValid = NO; 
+	}
+	return isValid;
 }
 
 @end
