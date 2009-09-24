@@ -1115,7 +1115,7 @@
 									<reference key="NSMenu" ref="466354362"/>
 									<string key="NSTitle">Back In History</string>
 									<string key="NSKeyEquiv"></string>
-									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSKeyEquivModMask">786432</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -1124,7 +1124,7 @@
 									<reference key="NSMenu" ref="466354362"/>
 									<string key="NSTitle">Forward In History</string>
 									<string key="NSKeyEquiv"></string>
-									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSKeyEquivModMask">786432</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
