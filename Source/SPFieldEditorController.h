@@ -25,7 +25,8 @@
 #import <Cocoa/Cocoa.h>
 
 @interface SPFieldEditorController : NSWindowController 
-{	
+{
+
 	IBOutlet id editSheetProgressBar;
 	IBOutlet id editSheetSegmentControl;
 	IBOutlet id editSheetQuickLookButton;
@@ -40,7 +41,7 @@
 	IBOutlet id editSheetOkButton;
 	IBOutlet id editSheetOpenButton;
 	IBOutlet id editSheetFieldName;
-	
+
 	id sheetEditData;
 	BOOL editSheetWillBeInitialized;
 	BOOL isBlob;
@@ -48,19 +49,21 @@
 	NSStringEncoding encoding;
 	NSString *stringValue;
 	NSString *tmpFileName;
-	
+	NSString *tmpDirPath;
+
 	int counter;
 	unsigned long long maxTextLength;
 	BOOL editTextViewWasChanged;
 	BOOL allowUndo;
 	BOOL wasCutPaste;
 	BOOL selectionChanged;
-	
+
 	NSUserDefaults *prefs;
-	
+
 	int editSheetReturnCode;
-	
+
 	NSUndoManager *esUndoManager;
+
 }
 
 - (IBAction)closeEditSheet:(id)sender;
@@ -81,7 +84,6 @@
 - (void)processUpdatedImageData:(NSData *)data;
 
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText;
-- (void)removeQuickLooksTempFile:(NSString*)aPath;
 
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector;
 - (void)textViewDidChangeSelection:(NSNotification *)notification;

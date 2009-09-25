@@ -53,6 +53,28 @@
 		
 		allowUndo = NO;
 		selectionChanged = NO;
+		
+		tmpDirPath = NSTemporaryDirectory();
+		tmpFileName = nil;
+		
+		NSMenu *menu = [editSheetQuickLookButton menu];
+		[menu setAutoenablesItems:NO];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Interpret data as:", @"Interpret data as:") action:NULL keyEquivalent:@""];
+		[item setTag:1];
+		[item setEnabled:NO];
+		[menu addItem:item];
+		[item release];
+		NSUInteger tag = 2;
+		if([prefs objectForKey:@"QuickLookTypes"]) {
+			for(id type in [prefs objectForKey:@"QuickLookTypes"]) {
+				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
+				[item setTag:tag];
+				[item setAction:@selector(quickLookFormatButton:)];
+				[menu addItem:item];
+				[item release];
+				tag++;
+			}
+		}
 
 	}
 	return self;
@@ -61,6 +83,12 @@
 
 - (void)dealloc
 {
+
+	// On Mac OSX 10.6 QuickLook runs non-modal thus order out the panel
+	// if still visible
+	if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
+
 	if ( esUndoManager ) [esUndoManager release];
 	if ( sheetEditData ) [sheetEditData release];
 	[super dealloc];
@@ -253,7 +281,6 @@
 			}
 			while([esUndoManager groupingLevel] < cycleCounter)
 				[esUndoManager beginUndoGrouping];
-			
 
 			cycleCounter = 0;
 		}
@@ -262,10 +289,6 @@
 	[NSApp endModalSession:session];
 	[editSheet orderOut:nil];
 	[NSApp endSheet:editSheet];
-
-	// Ensure all text changes in sheetEditData are returned
-	if([editImage image] == nil)
-		sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
@@ -307,6 +330,19 @@
 		[NSApp stopModal];
 		editSheetReturnCode = 1;
 	}
+	
+	// Delete all QuickLook temp files if it was invoked
+	if(tmpFileName != nil) {
+		NSArray *dirContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:tmpDirPath error:nil];
+		for (NSString *file in dirContents) {
+			if ([file hasPrefix:@"SequelProQuickLook"]) {
+				if(![[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@/%@", tmpDirPath, file] error:NULL]) {
+					NSLog(@"QL: Couldn't delete temporary file '%@/%@'.", tmpDirPath, file);
+				}
+			}
+		}
+	}
+ 
 	[NSApp abortModal];
 
 }
@@ -474,16 +510,53 @@
 
 - (IBAction)quickLookFormatButton:(id)sender
 {
-	switch([sender tag]) {
-		case 0: [self invokeQuickLookOfType:@"pict" treatAsText:NO];  break;
-		case 1: [self invokeQuickLookOfType:@"m4a"  treatAsText:NO];  break;
-		case 2: [self invokeQuickLookOfType:@"mp3"  treatAsText:NO];  break;
-		case 3: [self invokeQuickLookOfType:@"wav"  treatAsText:NO];  break;
-		case 4: [self invokeQuickLookOfType:@"mov"  treatAsText:NO];  break;
-		case 5: [self invokeQuickLookOfType:@"pdf"  treatAsText:NO];  break;
-		case 6: [self invokeQuickLookOfType:@"html" treatAsText:YES]; break;
-		case 7: [self invokeQuickLookOfType:@"doc"  treatAsText:NO];  break;
-		case 8: [self invokeQuickLookOfType:@"rtf"  treatAsText:YES]; break;
+
+	id types = [prefs objectForKey:@"QuickLookTypes"];
+
+	if(types != nil && [types isKindOfClass:[NSArray class]] && [types count] > [sender tag] - 2) {
+		NSDictionary *type = [types objectAtIndex:[sender tag] - 2];
+		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] intValue])];
+	}
+}
+
+- (void)createTemporaryQuickLookFileOfType:(NSString *)type treatAsText:(BOOL)isText
+{
+	// Create a temporary file name to store the data as file
+	// since QuickLook only works on files.
+	// Alternate the file name to suppress caching by using counter%2.
+	tmpFileName = [NSString stringWithFormat:@"%@SequelProQuickLook%d.%@", tmpDirPath, counter%2, type];
+
+	// if data are binary
+	if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
+		[sheetEditData writeToFile:tmpFileName atomically:YES];
+		
+	// write other field types' representations to the file via the current encoding
+	} else {
+		
+		// if "html" type try to set the HTML charset - not yet completed
+		if([type isEqualToString:@"html"]) {
+
+			NSString *enc;
+			switch(encoding) {
+				case NSASCIIStringEncoding:
+				enc = @"US-ASCII";break;
+				case NSUTF8StringEncoding:
+				enc = @"UTF-8";break;
+				case NSISOLatin1StringEncoding:
+				enc = @"ISO-8859-1";break;
+				default:
+				enc = @"US-ASCII";
+			}
+			[[NSString stringWithFormat:@"<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=%@'>%@", enc, [editTextView string]] writeToFile:tmpFileName
+										atomically:YES
+										encoding:encoding
+										error:NULL];
+		} else {
+			[[sheetEditData description] writeToFile:tmpFileName
+										atomically:YES
+										encoding:encoding
+										error:NULL];
+		}
 	}
 }
 
@@ -492,63 +565,25 @@
  */
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
-	
-	// Load private framework
+
+	// Load QL via private framework (SDK 10.5)
 	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
-		
+
 		[editSheetProgressBar startAnimation:self];
-		
-		// Create a temporary file name to store the data as file
-		// since QuickLook only works on files.
-		// Alternate the file name to suppress caching by using counter%2.
-		tmpFileName = [NSString stringWithFormat:@"%@SequelProQuickLook%d.%@", NSTemporaryDirectory(), counter%2, type];
 
-		// if data are binary
-		if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
-			[sheetEditData writeToFile:tmpFileName atomically:YES];
-			
-		// write other field types' representations to the file via the current encoding
-		} else {
-			
-			// if "html" type try to set the HTML charset - not yet completed
-			if([type isEqualToString:@"html"]) {
+		[self createTemporaryQuickLookFileOfType:type treatAsText:isText];
 
-				NSString *enc;
-				switch(encoding) {
-					case NSASCIIStringEncoding:
-					enc = @"US-ASCII";break;
-					case NSUTF8StringEncoding:
-					enc = @"UTF-8";break;
-					case NSISOLatin1StringEncoding:
-					enc = @"ISO-8859-1";break;
-					default:
-					enc = @"US-ASCII";
-				}
-				[[NSString stringWithFormat:@"<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=%@'>%@", enc, [editTextView string]] writeToFile:tmpFileName
-											atomically:YES
-											encoding:encoding
-											error:NULL];
-			} else {
-				[[sheetEditData description] writeToFile:tmpFileName
-											atomically:YES
-											encoding:encoding
-											error:NULL];
-			}
-		}
-		
 		counter++;
-		
+
 		// Init QuickLook
 		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
 		
 		[[ql delegate] setDelegate:self];
-
 		[ql setURLs:[NSArray arrayWithObject:
 					 [NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
 
-
 		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
-		// for superclass of class 'SPAppController' in suite 'Sequel Pro': 'NSCoreSuite.NSAbstractObject' is not a valid class name. 
+		// unknown image format
 		[ql setShowsAddToiPhotoButton:NO];
 		[ql setShowsiChatTheaterButton:NO];
 		// Since we are inside of editSheet we have to avoid full-screen zooming
@@ -562,7 +597,7 @@
 		quickLookCloseMarker = 0;
 		
 		[editSheetProgressBar stopAnimation:self];
-		
+
 		// Run QuickLook in its own modal seesion for event handling
 		NSModalSession session = [NSApp beginModalSessionForWindow:ql];
 		for (;;) {
@@ -573,35 +608,84 @@
 				break;
 			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
 									 beforeDate:[NSDate distantFuture]];
-			
+
 		}
 		[NSApp endModalSession:session];
-		
+
 		// set ql's delegate to nil for dealloc
 		[[ql windowController] setDelegate:nil];
-		
-
-		// Remove temp file after closing the sheet to allow double-click event at the QuickLook preview.
-		// The afterDelay: time is a kind of dummy, because after double-clicking the model session loop
-		// will break (ql not visible) and returns the event handling back to the editSheet which by itself
-		// blocks the execution of removeQuickLooksTempFile: until the editSheet is closed.
-		// [NSObject cancelPreviousPerformRequestsWithTarget:self 
-		// 							selector:@selector(removeQuickLooksTempFile) 
-		// 							object:tmpFileName];
-		
-		[self performSelector:@selector(removeQuickLooksTempFile:) withObject:tmpFileName afterDelay:.1];
 
 	}
-	
+	// Load QL via framework (SDK 10.5 but SP runs on 10.6)
+	// TODO: This is an hack in order to be able to support QuickLook on Mac OS X 10.5 and 10.6
+	// as long as SP will be compiled against SDK 10.5.
+	// If SP will be compiled against SDK 10.6 we can use the standard way by using 
+	// the QuickLookUI which is part of the Quartz.framework. See Developer example "QuickLookDownloader"
+	// file:///Developer/Documentation/DocSets/com.apple.adc.documentation.AppleSnowLeopard.CoreReference.docset/Contents/Resources/Documents/samplecode/QuickLookDownloader/index.html#//apple_ref/doc/uid/DTS40009082
+	else if([[NSBundle bundleWithPath:@"/System/Library/Frameworks/Quartz.framework/Frameworks/QuickLookUI.framework"] load]) {
+
+		[editSheetProgressBar startAnimation:self];
+
+		[self createTemporaryQuickLookFileOfType:type treatAsText:isText];
+
+		counter++;
+
+		// TODO: If QL is  visible reload it - but how?
+		// Up to now QL will close and the user has to redo it.
+		if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible]) {
+			[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
+		}
+
+		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] makeKeyAndOrderFront:nil];
+
+		[editSheetProgressBar stopAnimation:self];
+
+	} else {
+		[SPTooltip showWithObject:[NSString stringWithFormat:@"QuickLook is not available on that platform."]];
+	}
+
 }
 
-- (void)removeQuickLooksTempFile:(NSString*)aPath
+// QuickLook delegates for SDK 10.6
+- (void)beginPreviewPanelControl:(id)panel
 {
-	if(![[NSFileManager defaultManager] removeItemAtPath:aPath error:NULL])
-		NSLog(@"Couldn't delete temp file at path '%@'", aPath);
+
+	// This document is now responsible of the preview panel
+	[panel setDelegate:self];
+	[panel setDataSource:self];
+
+	// Due to the unknown image format disable image sharing
+	[panel setShowsAddToiPhotoButton:NO];
+
+}
+// QuickLook delegates for SDK 10.6
+- (void)endPreviewPanelControl:(id)panel
+{
+	// This document loses its responsisibility on the preview panel
+	// Until the next call to -beginPreviewPanelControl: it must not
+	// change the panel's delegate, data source or refresh it.
+}
+// QuickLook delegates for SDK 10.6
+- (BOOL)acceptsPreviewPanelControl:(id)panel;
+{
+	return YES;
+}
+// QuickLook delegates for SDK 10.6
+// - (BOOL)previewPanel:(QLPreviewPanel *)panel handleEvent:(NSEvent *)event
+// {
+// }
+// QuickLook delegates for SDK 10.6
+- (NSInteger)numberOfPreviewItemsInPreviewPanel:(id)panel
+{
+	return 1;
+}
+// QuickLook delegates for SDK 10.6
+- (id)previewPanel:(id)panel previewItemAtIndex:(NSInteger)index
+{
+	return [NSURL fileURLWithPath:tmpFileName];
 }
 
-// This is the delegate method
+// QuickLook delegates for SDK 10.5
 // It should return the frame for the item represented by the URL
 // If an empty frame is returned then the panel will fade in/out instead
 - (NSRect)previewPanel:(NSPanel*)panel frameForURL:(NSURL*)URL
@@ -619,6 +703,23 @@
 					  5, 5);
 	
 }
+// QuickLook delegates for SDK 10.6
+// It should return the frame for the item represented by the URL
+// If an empty frame is returned then the panel will fade in/out instead
+- (NSRect)previewPanel:(id)panel sourceFrameOnScreenForPreviewItem:(id)item
+{
+	// Return the App's middle point
+	NSRect mwf = [[NSApp mainWindow] frame];
+	return NSMakeRect(
+					  mwf.origin.x+mwf.size.width/2,
+					  mwf.origin.y+mwf.size.height/2,
+					  5, 5);
+}
+// QuickLook delegates for SDK 10.6
+// - (id)previewPanel:(id)panel transitionImageForPreviewItem:(id)item contentRect:(NSRect *)contentRect
+// {
+// 	return [NSImage imageNamed:@"database"];
+// }
 
 -(void)processPasteImageData
 {
@@ -775,7 +876,9 @@
 {
 
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
-	if(!editTextViewWasChanged && (editSheetWillBeInitialized || ([[[notification object] textStorage] changeInLength]==0))) {
+	if(!editTextViewWasChanged && (editSheetWillBeInitialized 
+		|| (([[[notification object] textStorage] editedRange].length == 0)
+		&& ([[[notification object] textStorage] changeInLength] == 0)))) {
 		// Inform the undo-grouping about the caret movement
 		selectionChanged = YES;
 		return;
