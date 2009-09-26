@@ -27,6 +27,7 @@
 #import "SPAppController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
+#import "TableDump.h"
 #import "SPEncodingPopupAccessory.h"
 
 #import <Sparkle/Sparkle.h>
@@ -161,8 +162,10 @@
 }
 - (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
 {
-	if ( returnCode )
+	if ( returnCode ) {
+		[panel orderOut:self];
 		[self application:nil openFiles:[panel filenames]];
+	}
 
 	encodingPopUp = nil;
 }
@@ -178,6 +181,46 @@
 		
 		// Opens a sql file and insert its content into the Custom Query editor
 		if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+
+			// Check size and NSFileType
+			NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES];
+			if(attr)
+			{
+				NSNumber *filesize = [attr objectForKey:NSFileSize];
+				NSString *filetype = [attr objectForKey:NSFileType];
+				if(filetype == NSFileTypeRegular && filesize)
+				{
+					// Ask for confirmation if file content is larger than 1MB
+					if([filesize unsignedLongValue] > 1000000)
+					{
+						NSAlert *alert = [[NSAlert alloc] init];
+						[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+						[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+
+						// Show 'Import' button only if there's a connection available
+						if ([[[NSDocumentController sharedDocumentController] documents] count])
+							[alert addButtonWithTitle:NSLocalizedString(@"Import", @"import button")];
+
+
+						[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to load a SQL file with %.1f MB of data into the Query Editor?", @"message of panel asking for confirmation for loading large text into the query editor"),
+							 [filesize unsignedLongValue]/1048576.0]];
+						[alert setHelpAnchor:filename];
+						[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
+						[alert setAlertStyle:NSWarningAlertStyle];
+
+						NSUInteger returnCode = [alert runModal];
+
+						[alert release];
+
+						if(returnCode == NSAlertSecondButtonReturn) return; // Cancel
+						else if(returnCode == NSAlertThirdButtonReturn) {   // Import
+							// begin import process
+							[[[[NSDocumentController sharedDocumentController] currentDocument] valueForKeyPath:@"tableDumpInstance"] startSQLImportProcessWithFile:filename];
+							return;
+						}
+					}
+				}
+			}
 
 			// if encodingPopUp is defined the filename comes from an openPanel and
 			// the encodingPopUp contains the chosen encoding; otherwise autodetect encoding

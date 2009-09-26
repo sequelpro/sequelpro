@@ -948,6 +948,11 @@
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:[sheet filename]];
 }
 
+- (void)startSQLImportProcessWithFile:(NSString *)filename
+{
+	[importFormatPopup selectItemWithTitle:@"SQL"];
+	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:filename];
+}
 /*
  * Sets up the fieldMapping array to be shown in the tableView
  */
