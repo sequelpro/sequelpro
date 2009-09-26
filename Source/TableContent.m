@@ -1204,10 +1204,17 @@
 	NSArray *tempRow;
 	NSMutableArray *newRow;
 	NSMutableArray *columnBlobStatuses = [[NSMutableArray alloc] init];
-	int i;
-	int lastProgressValue = 0;
+	NSUInteger i;
+	
+	// Update the progress wheel every ~15%
+	NSUInteger loadingIndicatorDelta = 15;
+
+	NSUInteger lastProgressValue = loadingIndicatorDelta;
+	float relativeTargetRowCount = 100.0/targetRowCount;
+
 	long rowsProcessed = 0;
 	long columnsCount = [dataColumns count];
+
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
 	id prefsNullValue = [[prefs objectForKey:@"NullValue"] retain];
@@ -1222,7 +1229,7 @@
 	// Remove all items from the table and reset the progress indicator
 	[tableValues removeAllObjects];
 	if (targetRowCount) [dataLoadingIndicator setIndeterminate:NO];
-	[dataLoadingIndicator setDoubleValue:0];
+	[dataLoadingIndicator setDoubleValue:(int)loadingIndicatorDelta/2];
 	[dataLoadingIndicator display];
 
 	// Set up an autorelease pool for row processing
@@ -1253,14 +1260,14 @@
 
 		// Update the progress bar as necessary, minimising updates
 		rowsProcessed++;
-		if (rowsProcessed == targetRowCount) {
-			[dataLoadingIndicator setIndeterminate:YES];
-		} else if (rowsProcessed < targetRowCount) {
-			[dataLoadingIndicator setDoubleValue:(rowsProcessed*100/targetRowCount)];
+		if (rowsProcessed < targetRowCount) {
+			[dataLoadingIndicator setDoubleValue:(rowsProcessed*relativeTargetRowCount)];
 			if ((int)[dataLoadingIndicator doubleValue] > lastProgressValue) {
 				[dataLoadingIndicator display];
-				lastProgressValue = (int)[dataLoadingIndicator doubleValue];
+				lastProgressValue = (int)[dataLoadingIndicator doubleValue] + loadingIndicatorDelta;
 			}
+		} else if (rowsProcessed == targetRowCount) {
+			[dataLoadingIndicator setIndeterminate:YES];
 		}
 
 		// Drain and reset the autorelease pool every ~1024 rows
