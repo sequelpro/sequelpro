@@ -60,6 +60,8 @@
 
 	NSUserDefaults *prefs;
 
+	NSDictionary *qlTypes;
+
 	int editSheetReturnCode;
 
 	NSUndoManager *esUndoManager;

@@ -2626,6 +2626,8 @@
 	[usedQuery release];
 	[fullResult release];
 	[favoritesManager release];
+	if (helpHTMLTemplate) [helpHTMLTemplate release];
+	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
 	
 	[super dealloc];

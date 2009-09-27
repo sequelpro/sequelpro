@@ -65,6 +65,32 @@
 		[menu addItem:item];
 		[item release];
 		NSUInteger tag = 2;
+
+		// Load default QL types
+		NSMutableArray *qlTypesItems = [[NSMutableArray alloc] init];
+		NSError *readError = nil;
+		NSString *convError = nil;
+		NSPropertyListFormat format;
+
+		NSData *defaultTypeData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"EditorQuickLookTypes.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
+			options:NSMappedRead error:&readError];
+
+		NSDictionary *defaultQLTypes = [NSPropertyListSerialization propertyListFromData:defaultTypeData 
+				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
+		if(defaultQLTypes == nil || readError != nil || convError != nil)
+			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@\n%@", [readError localizedDescription], convError);
+		if(defaultQLTypes != nil && [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
+			for(id type in [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
+				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
+				[item setTag:tag];
+				[item setAction:@selector(quickLookFormatButton:)];
+				[menu addItem:item];
+				[item release];
+				tag++;
+				[qlTypesItems addObject:type];
+			}
+		}
+		// Load user-defined QL types
 		if([prefs objectForKey:@"QuickLookTypes"]) {
 			for(id type in [prefs objectForKey:@"QuickLookTypes"]) {
 				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
@@ -73,9 +99,11 @@
 				[menu addItem:item];
 				[item release];
 				tag++;
+				[qlTypesItems addObject:type];
 			}
 		}
-
+		qlTypes = [NSDictionary dictionaryWithObject:[qlTypesItems retain] forKey:@"QuickLookTypes"];
+		[qlTypesItems release];
 	}
 	return self;
 	
@@ -510,11 +538,8 @@
 
 - (IBAction)quickLookFormatButton:(id)sender
 {
-
-	id types = [prefs objectForKey:@"QuickLookTypes"];
-
-	if(types != nil && [types isKindOfClass:[NSArray class]] && [types count] > [sender tag] - 2) {
-		NSDictionary *type = [types objectAtIndex:[sender tag] - 2];
+	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > [sender tag] - 2) {
+		NSDictionary *type = [[qlTypes objectForKey:@"QuickLookTypes"] objectAtIndex:[sender tag] - 2];
 		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] intValue])];
 	}
 }

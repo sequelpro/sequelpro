@@ -228,7 +228,7 @@ const OUR_CHARSET our_charsets60[] =
 {
 	if (self = [MCPResult class]) {
 		[self setVersion:030001]; // Ma.Mi.Re -> MaMiRe
-		MCPYear0000 = [[NSCalendarDate dateWithTimeIntervalSinceReferenceDate:-63146822400.0] retain];
+		MCPYear0000 = [NSCalendarDate dateWithTimeIntervalSinceReferenceDate:-63146822400.0];
 		[MCPYear0000 setCalendarFormat:@"%Y"];
 	}
 }
