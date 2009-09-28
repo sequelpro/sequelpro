@@ -68,6 +68,7 @@
 	int currentlyEditingRow, maxNumRows;
 
 	NSMutableDictionary *contentFilters;
+	NSMutableDictionary *numberOfDefaultFilters;
 
 	BOOL sortColumnToRestoreIsAsc;
 	NSString *sortColumnToRestore;

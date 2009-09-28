@@ -87,18 +87,26 @@
 		
 		// Init default filters for Content Browser
 		contentFilters = nil;
+		contentFilters = [[NSMutableDictionary alloc] init];
+		numberOfDefaultFilters = [[NSMutableDictionary alloc] init];
+
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
 		NSData *defaultFilterData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
 			options:NSMappedRead error:&readError];
-		contentFilters = [[NSMutableDictionary alloc] init];
+
 		[contentFilters setDictionary:[NSPropertyListSerialization propertyListFromData:defaultFilterData 
 				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
 		if(contentFilters == nil || readError != nil || convError != nil) {
 			NSLog(@"Error while reading 'ContentFilters.plist':\n%@\n%@", [readError localizedDescription], convError);
 			NSBeep();
+		} else {
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInt:[[contentFilters objectForKey:@"number"] count]] forKey:@"number"];
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInt:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInt:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
 		}
+		
 
 	}
 	
@@ -514,6 +522,12 @@
 - (NSString *)tableFilterString
 {
 
+	// If the clause has the placeholder $BINARY that placeholder will be replaced
+	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
+	// replaced by @"".
+	BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] 
+		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
+
 	NSString *filterString;
 
 	if(contentFilters == nil) {
@@ -566,6 +580,9 @@
 	// Retrieve actual WHERE clause
 	NSMutableString *clause = [[NSMutableString alloc] init];
 	[clause setString:[filter objectForKey:@"Clause"]];
+
+	[clause replaceOccurrencesOfRegex:@"\\$BINARY" withString:(caseSensitive) ? @"BINARY" : @""];
+	[clause flushCachedRegexData];
 
 	// Escape % sign
 	[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
@@ -719,6 +736,7 @@
  */
 - (IBAction)filterTable:(id)sender
 {
+
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
 
@@ -1157,6 +1175,15 @@
 	// Add IS NULL and IS NOT NULL as they should always be available
 	// [compareField addItemWithTitle:@"IS NULL"];
 	// [compareField addItemWithTitle:@"IS NOT NULL"];
+
+	// Remove user-defined filters first
+	if([numberOfDefaultFilters objectForKey:compareType]) {
+		NSUInteger cycles = [[contentFilters objectForKey:compareType] count] - [[numberOfDefaultFilters objectForKey:compareType] intValue];
+		while(cycles > 0) {
+			[[contentFilters objectForKey:compareType] removeLastObject];
+			cycles--;
+		}
+	}
 
 	// Load user-defined content filters
 	if([prefs objectForKey:@"ContentFilters"] 
@@ -2412,6 +2439,7 @@
 	[dataColumns release];
 	[oldRow release];
 	if (contentFilters) [contentFilters release];
+	if (numberOfDefaultFilters) [numberOfDefaultFilters release];
 	if (keys) [keys release];
 	if (sortCol) [sortCol release];
 	[usedQuery release];
