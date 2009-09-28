@@ -97,10 +97,11 @@
 	MCPConnection *mySQLConnection;
 
 	NSMutableArray *tables;
-	NSArray *importArray;
+	NSArray *fieldMappingImportArray;
+	BOOL fieldMappingImportArrayIsPreview;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
-	int currentRow;
+	int fieldMappingCurrentRow;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 }
@@ -125,12 +126,10 @@
 - (IBAction)changeFormat:(id)sender;
 - (IBAction)changeTable:(id)sender;
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
+- (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData;
 - (void)setupFieldMappingArray;
 - (void)updateFieldMappingButtonCell;
-- (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)terminated
-	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped lineEnds:(NSString *)lineEnds;
-- (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
-	escaped:(NSString *)escaped terminated:(NSString *)terminated;
+- (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray;
 
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;

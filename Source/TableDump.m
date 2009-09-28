@@ -31,6 +31,7 @@
 #import "CustomQuery.h"
 #import "SPGrowlController.h"
 #import "SPSQLParser.h"
+#import "SPCSVParser.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
@@ -106,6 +107,17 @@
 - (IBAction)closeSheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
+}
+
+/**
+ * Convenience method for closing and restoring the progress sheet to default state.
+ */
+- (void) closeAndStopProgressSheet
+{
+	[NSApp endSheet:singleProgressSheet];
+	[singleProgressSheet orderOut:nil];
+	[singleProgressBar stopAnimation:self];
+	[singleProgressBar setMaxValue:100];
 }
 
 #pragma mark -
@@ -316,9 +328,7 @@
 		}
 
 		// Close the progress sheet
-		[singleProgressBar stopAnimation:self];
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
+		[self closeAndStopProgressSheet];
 		
 	// Export the current custom query result set to a file in CSV or XML format
 	} else if ( [contextInfo isEqualToString:@"exportCustomResultAsCSV"]
@@ -356,9 +366,7 @@
 		}
 
 		// Close the progress sheet
-		[singleProgressBar stopAnimation:self];
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
+		[self closeAndStopProgressSheet];
 
 		// Export multiple tables to a file in CSV format
 	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsCSV"] ) {
@@ -431,12 +439,12 @@
 	[tablesListInstance selectTableOrViewWithName:[fieldMappingPopup titleOfSelectedItem]];
 	
 	//set up tableView
-	currentRow = 0;
+	fieldMappingCurrentRow = 0;
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
-	[rowUpButton setEnabled:([importArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %@%i records", fieldMappingCurrentRow+1, fieldMappingImportArrayIsPreview?@"first ":@"", [fieldMappingImportArray count]]];
 	
 	[self updateFieldMappingButtonCell];
 	[fieldMappingTableView reloadData];
@@ -500,6 +508,7 @@
 	[singleProgressBar setIndeterminate:NO];
 	[singleProgressBar setMaxValue:fileTotalLength];
 	[singleProgressBar setUsesThreadedAnimation:YES];
+	[singleProgressBar startAnimation:self];
 				
 	// Open the progress sheet
 	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -512,12 +521,15 @@
 	sqlDataBuffer = [[NSMutableData alloc] init];
 	importPool = [[NSAutoreleasePool alloc] init];
 	while (1) {
+		if (progressCancelled) break;
+
 		@try {
 			fileChunk = [sqlFileHandle readDataOfLength:fileChunkMaxLength];
 		}
 
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
+			[self closeAndStopProgressSheet];
 			NSBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, tableWindow, self, nil, nil, nil,
@@ -565,6 +577,7 @@
 					sqlString = [[NSString alloc] initWithData:[sqlDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)]
 													  encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
 					if (!sqlString) {
+						[self closeAndStopProgressSheet];
 						NSBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 										  NSLocalizedString(@"OK", @"OK button"),
 										  nil, nil, tableWindow, self, nil, nil, nil,
@@ -630,7 +643,7 @@
 
 	// If any text remains in the SQL parser, it's an unterminated query - execute it.
 	query = [sqlParser stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	if ([query length]) {
+	if ([query length] && !progressCancelled) {
 
 		// Run the query
 		[mySQLConnection queryString:query usingEncoding:sqlEncoding streamingResult:NO];
@@ -651,10 +664,8 @@
 	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 
 	// Close progress sheet
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
-	[singleProgressBar setMaxValue:100];
-	
+	[self closeAndStopProgressSheet];
+
 	// Display any errors
 	if ([errors length]) {
 		[errorsView setString:errors];
@@ -681,256 +692,286 @@
 
 - (void) importCSVFile:(NSString *)filename
 {
-	NSString *dumpFile = nil;
-	NSError *errorStr = nil;
+	NSAutoreleasePool *importPool;
+	NSFileHandle *csvFileHandle;
+	NSMutableData *csvDataBuffer;
+	const unsigned char *csvDataBufferBytes;
+	NSData *fileChunk;
+	NSString *csvString;
+	SPCSVParser *csvParser;
+	NSMutableString *query;
 	NSMutableString *errors = [NSMutableString string];
+	NSMutableString *insertBaseString = [NSMutableString string];
+	NSMutableArray *parsedRows = [[NSMutableArray alloc] init];
+	NSMutableArray *parsePositions = [[NSMutableArray alloc] init];
+	NSArray *csvRowArray;
+	NSInteger fileChunkMaxLength = 256 * 1024;
+	NSInteger csvRowsPerQuery = 50;
+	NSInteger csvRowsThisQuery;
+	NSInteger fileTotalLength = 0;
+	NSInteger rowsImported = 0;
+	NSInteger dataBufferLength = 0;
+	NSInteger dataBufferPosition = 0;
+	NSInteger dataBufferLastQueryEndPosition = 0;
+	int i;
+	BOOL allDataRead = NO;
+	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+
+	// Open a filehandle for the CSV file
+	csvFileHandle = [NSFileHandle fileHandleForReadingAtPath:filename];
+	if (!csvFileHandle) {
+		NSBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
+						  NSLocalizedString(@"OK button label", @"OK button"),
+						  nil, nil, tableWindow, self, nil, nil, nil,
+						  NSLocalizedString(@"CSV file open error", @"The CSV file you selected could not be found or read."));
+		return;
+	}
+
+	// Grab the file length
+	fileTotalLength = [[[[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES] objectForKey:NSFileSize] integerValue];
+	if (!fileTotalLength) fileTotalLength = 1;
 
 	// Reset progress interface
 	[errorsView setString:@""];
-	[errorsView displayIfNeeded];
 	[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
-	[singleProgressTitle displayIfNeeded];
-	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[singleProgressText displayIfNeeded];
+	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading CSV file")];
 	[singleProgressBar setIndeterminate:YES];
 	[singleProgressBar setUsesThreadedAnimation:YES];
 	[singleProgressBar startAnimation:self];
-	
-	int code;
-
-	//open progress sheet
-	[NSApp beginSheet:singleProgressSheet
-	   modalForWindow:tableWindow
-		modalDelegate:self
-	   didEndSelector:nil 
-		  contextInfo:nil];
+				
+	// Open the progress sheet
+	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[singleProgressSheet makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
-	
-	// Read the file with the current connection encoding.
-	dumpFile = [NSString stringWithContentsOfFile:filename
-										 encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]
-											error:&errorStr];
 
-	if (errorStr) {
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  tableWindow, self,
-						  nil, nil, nil,
-						  [errorStr localizedDescription]
-						  );
-		[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
-		return;
-	}
-	
-	
-	//put file in array
-	if (importArray)
-		[importArray release];
-	
-	importArray = [[self arrayForCSV:dumpFile
-						terminatedBy:[importFieldsTerminatedField stringValue]
-						  enclosedBy:[importFieldsEnclosedField stringValue]
-						   escapedBy:[importFieldsEscapedField stringValue]
-							lineEnds:[importLinesTerminatedField stringValue]] retain];
-	
-	long importArrayCount = [importArray count];
-	
-	//close progress sheet
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
-	[singleProgressBar stopAnimation:self];
-	[singleProgressBar setUsesThreadedAnimation:NO];
-	[singleProgressBar setIndeterminate:NO];
-	
-	if(importArrayCount == 0){
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  tableWindow, self,
-						  nil, nil, nil,
-						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
-						  );
-		[importArray release], importArray = nil;
-		[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
-		return;
-	}		
-	
-	if (progressCancelled) {
-		progressCancelled = NO;
-		[importArray release], importArray = nil;
-		[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
-		return;
-	}
-	MCPResult *theResult;
-	int i;
-	theResult = (MCPResult *) [mySQLConnection listTables];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-	[fieldMappingPopup removeAllItems];
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[fieldMappingPopup addItemWithTitle:NSArrayObjectAtIndex([theResult fetchRowAsArray], 0)];
-	}
-	
-	if ([tableDocumentInstance table] != nil && ![(NSString *)[tableDocumentInstance table] isEqualToString:@""]) {
-		[fieldMappingPopup selectItemWithTitle:[(TableDocument *)tableDocumentInstance table]];
-	} else {
-		[fieldMappingPopup selectItemAtIndex:0];
-	}
-	
-	if( ![tablesListInstance selectTableOrViewWithName:[fieldMappingPopup titleOfSelectedItem]] ) {
-		[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR] %@\n", @"error text when trying to import csv data, but we have no tables in the db"), @"Can't import CSV data into a database without any tables!"]];				
-	} else {
-		
-		//set up tableView
-		currentRow = 0;
+	// Read in the file in a loop.  The loop actually needs to perform three tasks: read in
+	// CSV data and parse them into row arrays; present the field mapping interface once it
+	// has some data to show within the interface; and use the field mapping data to construct
+	// and send queries to the server.  The loop is mainly to perform the first of these; the
+	// other two must therefore be performed where possible.
+	csvParser = [[SPCSVParser alloc] init];
+	csvDataBuffer = [[NSMutableData alloc] init];
+	importPool = [[NSAutoreleasePool alloc] init];
+	while (1) {
+		if (progressCancelled) break;
 
-		// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
-		if ([[importArray objectAtIndex:currentRow] count] > 512) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+		@try {
+			fileChunk = [csvFileHandle readDataOfLength:fileChunkMaxLength];
+		}
+
+		// Report file read errors, and bail
+		@catch (NSException *exception) {
+			[self closeAndStopProgressSheet];
+			NSBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil,
-							  tableWindow, self,
-							  nil, nil, nil,
-							  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
-							  );
-			[importArray release], importArray = nil;
+							  nil, nil, tableWindow, self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"CSV read error", @"An error occurred when reading the file.\n\nOnly %i rows were imported.\n\n(%@)"), rowsImported, [exception reason]]);
+			[csvParser release];
+			[csvDataBuffer release];
+			[parsedRows release];
+			[parsePositions release];
+			[importPool drain];
 			[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 			return;
 		}
-		
-		if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-		[self setupFieldMappingArray];
-		[rowDownButton setEnabled:NO];
-		[rowUpButton setEnabled:(importArrayCount > 1)];
-		[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, importArrayCount]];
-		
-		//set up tableView buttons
-		NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
-		[buttonCell setControlSize:NSSmallControlSize];
-		[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
-		[buttonCell setBordered:NO];
-		[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
-		[self updateFieldMappingButtonCell];
-		[fieldMappingTableView reloadData];
-		[buttonCell release];
-		
-		// show fieldMapping sheet
-		[NSApp beginSheet:fieldMappingSheet
-		   modalForWindow:tableWindow
-			modalDelegate:self
-		   didEndSelector:nil
-			  contextInfo:nil];
-		
-		code = [NSApp runModalForWindow:fieldMappingSheet];
-		[NSApp endSheet:fieldMappingSheet];
-		[fieldMappingSheet orderOut:nil];
-		
-		if ( code ) {
-			//import array into db
-			NSMutableString *fNames = [NSMutableString string];
-			//NSMutableArray *fValuesIndexes = [NSMutableArray array];
-			NSMutableString *fValues = [NSMutableString string];
-			NSString *insertFormatString = nil;
-			int i,j;
-			
-			//open progress sheet
-			[NSApp beginSheet:singleProgressSheet
-			   modalForWindow:tableWindow
-				modalDelegate:self
-			   didEndSelector:nil
-				  contextInfo:nil];
-			
-			[singleProgressBar setUsesThreadedAnimation:NO];
-			[singleProgressSheet makeKeyWindow];
-			[singleProgressText setStringValue:NSLocalizedString(@"Creating rows...", @"text showing that app is importing rows from CSV")];
-			[singleProgressText displayIfNeeded];
-			
-			// get fields to be imported
-			for (i = 0; i < [fieldMappingArray count] ; i++ ) {		
-				if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
-					if ( [fNames length] )
-						[fNames appendString:@","];
-					
-					[fNames appendString:[NSArrayObjectAtIndex([tableSourceInstance fieldNames], i) backtickQuotedString]];
+
+		// If no data returned, end of file - set a marker to ensure full processing
+		if (!fileChunk || ![fileChunk length]) {
+			allDataRead = YES;
+
+		// Otherwise add the data to the read/parse buffer
+		} else {
+			[csvDataBuffer appendData:fileChunk];
+		}
+
+		// Step through the data buffer, identifying line endings to parse the data with
+		csvDataBufferBytes = [csvDataBuffer bytes];
+		dataBufferLength = [csvDataBuffer length];
+		for ( ; dataBufferPosition < dataBufferLength || allDataRead; dataBufferPosition++) {
+			if (csvDataBufferBytes[dataBufferPosition] == 0x0A || csvDataBufferBytes[dataBufferPosition] == 0x0D || allDataRead) {
+
+				// Keep reading through any other line endings
+				while (dataBufferPosition + 1 < dataBufferLength
+						&& (csvDataBufferBytes[dataBufferPosition+1] == 0x0A
+							|| csvDataBufferBytes[dataBufferPosition+1] == 0x0D))
+				{
+					dataBufferPosition++;
+				}
+
+				// Try to generate a NSString with the resulting data
+				csvString = [[NSString alloc] initWithData:[csvDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)] encoding:csvEncoding];
+				if (!csvString) {
+					[self closeAndStopProgressSheet];
+					NSBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
+									  NSLocalizedString(@"OK", @"OK button"),
+									  nil, nil, tableWindow, self, nil, nil, nil,
+									  [NSString stringWithFormat:NSLocalizedString(@"CSV encoding read error", @"An error occurred when reading the file, as it could not be read using %@.\n\nOnly %i rows were imported."), [[tableDocumentInstance connectionEncoding] UTF8String], rowsImported]);
+					[csvParser release];
+					[csvDataBuffer release];
+					[parsedRows release];
+					[parsePositions release];
+					[importPool drain];
+					[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+					return;
+				}
+
+				// Add the NSString segment to the CSV parser and release it
+				[csvParser appendString:csvString];
+				[csvString release];
+
+				if (allDataRead) break;
+
+				// Increment the buffer end position marker
+				dataBufferLastQueryEndPosition = dataBufferPosition;
+			}
+		}
+
+		// Trim the data buffer if part of it was used
+		if (dataBufferLastQueryEndPosition) {
+			[csvDataBuffer setData:[csvDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferLength - dataBufferLastQueryEndPosition)]];
+			dataBufferPosition -= dataBufferLastQueryEndPosition;
+			dataBufferLastQueryEndPosition = 0;
+		}
+
+		// Extract and process any full CSV rows found so far.  Also trigger processing if all
+		// rows have been read, in order to ensure short files are still processed.
+		while ((csvRowArray = [csvParser getRowAsArrayAndTrimString:YES stringIsComplete:allDataRead]) || (allDataRead && !fieldMappingArray)) {
+
+			// If valid, add the row array and length to local storage
+			if (csvRowArray) {
+				[parsedRows addObject:csvRowArray];
+				[parsePositions addObject:[NSNumber numberWithLong:[csvParser totalLengthParsed]]];
+			}
+
+			// If we have no field mapping array, and either the first hundred rows or all
+			// the rows, request the field mapping from the user.
+			if (!fieldMappingArray
+				&& ([parsedRows count] >= 100 || (!csvRowArray && allDataRead)))
+			{
+				[self closeAndStopProgressSheet];
+				if (![self buildFieldMappingArrayWithData:parsedRows isPreview:!allDataRead]) {
+					[csvParser release];
+					[csvDataBuffer release];
+					[parsedRows release];
+					[parsePositions release];
+					[importPool drain];
+					[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+					return;
+				}
+
+				// Reset progress interface and open the progress sheet
+				[singleProgressBar setIndeterminate:NO];
+				[singleProgressBar setMaxValue:fileTotalLength];
+				[singleProgressBar startAnimation:self];
+				[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+				[singleProgressSheet makeKeyWindow];
+
+				// Set up the field names import string
+				[insertBaseString appendString:@"INSERT INTO "];
+				[insertBaseString appendString:[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString]];
+				[insertBaseString appendString:@" ("];
+				for (i = 0; i < [fieldMappingArray count]; i++) {
+					if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
+						if (i > 0) [insertBaseString appendString:@","];
+						[insertBaseString appendString:[NSArrayObjectAtIndex([tableSourceInstance fieldNames], i) backtickQuotedString]];
+					}
+				}
+				[insertBaseString appendString:@") VALUES\n"];
+
+				// Remove the header row from the data set if appropriate
+				if ([importFieldNamesSwitch state] == NSOnState) {
+					[parsedRows removeObjectAtIndex:0];
+					[parsePositions removeObjectAtIndex:0];
 				}
 			}
-			
-			// import array
-			long fieldMappingArrayCount = [fieldMappingArray count];
-			insertFormatString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%%@)", 
-										[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString], fNames];
-			int fieldMappingIntValue;
-			Class nullClass = [NSNull class];
+			if (!fieldMappingArray) continue;
 
-			for ( i = 0 ; i < importArrayCount ; i++ ) {
-				//show progress bar
-				[singleProgressBar setDoubleValue:((i+1)*100/importArrayCount)];
+			// If we have more than the csvRowsPerQuery amount, or if we're at the end of the
+			// available data, construct and run a query.
+			while ([parsedRows count] >= csvRowsPerQuery
+					|| (!csvRowArray && allDataRead && [parsedRows count]))
+			{
+				query = [[NSMutableString alloc] initWithString:insertBaseString];
+				csvRowsThisQuery = 0;
+				for (i = 0; i < csvRowsPerQuery && i < [parsedRows count]; i++) {
+					if (i > 0) [query appendString:@",\n"];
+					[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
+					csvRowsThisQuery++;
+					if ([query length] > 250000) break;
+				}
 
-				if ( !([importFieldNamesSwitch state] && (i == 0)) ) {
-					//put values in string
-					[fValues setString:@""];
+				// Perform the query
+				[mySQLConnection queryString:query];
+				[query release];
 
-					for ( j = 0 ; j < fieldMappingArrayCount ; j++ ) {
-						fieldMappingIntValue = [NSArrayObjectAtIndex(fieldMappingArray,j) intValue];
-						if ( fieldMappingIntValue > 0 ) {
-							
-							if ( [fValues length] )
-								[fValues appendString:@","];
-
-							id c = NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, i), (fieldMappingIntValue - 1));
-
-							[fValues appendString: ([c isMemberOfClass:nullClass]) ? 
-								@"NULL" : [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:c]]];
+				// If an error occurred, run the queries individually to get exact line errors
+				if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+					for (i = 0; i < csvRowsThisQuery; i++) {
+						query = [[NSMutableString alloc] initWithString:insertBaseString];
+						[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
+						[mySQLConnection queryString:query];
+						[query release];
+						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+							[errors appendString:[NSString stringWithFormat:
+								NSLocalizedString(@"[ERROR in row %d] %@\n", @"error text when reading of csv file gave errors"),
+								(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
 						}
+						rowsImported++;
+						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
+						[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+							[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]], [NSString stringForByteSize:fileTotalLength]]];
 					}
-					
-					//perform query
-					[mySQLConnection queryString:[NSString stringWithFormat:insertFormatString, fValues]];
-					
-					if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-						[errors appendString:[NSString stringWithFormat:
-								NSLocalizedString(@"[ERROR in line %d] %@\n", @"error text when reading of csv file gave errors"),
-								(i+1),[mySQLConnection getLastErrorMessage]]];
-					}
+				} else {
+					rowsImported += csvRowsThisQuery;
+					[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:csvRowsThisQuery-1] doubleValue]];
+					[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+						[NSString stringForByteSize:[[parsePositions objectAtIndex:csvRowsThisQuery-1] longValue]], [NSString stringForByteSize:fileTotalLength]]];
 				}
+
+				// Update the arrays
+				[parsedRows removeObjectsInRange:NSMakeRange(0, csvRowsThisQuery)];
+				[parsePositions removeObjectsInRange:NSMakeRange(0, csvRowsThisQuery)];
 			}
-			
-			//close progress sheet
-			[NSApp endSheet:singleProgressSheet];
-			[singleProgressSheet orderOut:nil];
 		}
 		
-		[tableContentInstance loadTableValues];
+		// If all the data has been read, break out of the processing loop
+		if (allDataRead) break;
+
+		// Reset the autorelease pool
+		[importPool drain];
+		importPool = [[NSAutoreleasePool alloc] init];
 	}
-	
-	//display errors
-	if ( [errors length] ) {
+
+	// Clean up
+	[csvParser release];
+	[csvDataBuffer release];
+	[parsedRows release];
+	[parsePositions release];
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	[importPool drain];
+	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+
+	// Close progress sheet
+	[self closeAndStopProgressSheet];
+
+	// Display any errors
+	if ([errors length]) {
 		[errorsView setString:errors];
-		[NSApp beginSheet:errorsSheet
-		   modalForWindow:tableWindow
-			modalDelegate:self
-		   didEndSelector:nil
-			  contextInfo:nil];
-		
-		[NSApp runModalForWindow:errorsSheet];			
+		[NSApp beginSheet:errorsSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp runModalForWindow:errorsSheet];
 		[NSApp endSheet:errorsSheet];
 		[errorsSheet orderOut:nil];
 	}
-	
-	//free arrays
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-	[importArray release], importArray = nil;
-
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
                                               notificationName:@"Import Finished"];
+
+	// Update the content view
+	[tableContentInstance reloadTable:self];
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
@@ -954,6 +995,112 @@
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:filename];
 }
 /*
+ * Sets up the field mapping array, and asks the user to provide a field mapping to an
+ * appropriate table; on success, constructs the field mapping array into the global variable,
+ * and returns true.  On failure, displays error messages itself, and returns false.
+ * Takes an array of data to show when selecting the field mapping, and an indicator of whether
+ * that dataset is complete or a preview of the full data set.
+ */
+- (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData
+{
+
+	// Ensure data was provided, or alert than an import error occurred and return false.
+	if (![importData count]) {
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil,
+						  tableWindow, self,
+						  nil, nil, nil,
+						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
+						  );
+		return FALSE;
+	}
+
+	// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
+	if ([[importData objectAtIndex:0] count] > 512) {
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil,
+						  tableWindow, self,
+						  nil, nil, nil,
+						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
+						  );
+		return FALSE;
+	}
+	fieldMappingImportArrayIsPreview = dataIsPreviewData;
+
+	// Get the list of tables to display in the field mapping interface
+	MCPResult *theResult;
+	int i;
+	theResult = (MCPResult *) [mySQLConnection listTables];
+	if ([theResult numOfRows]) [theResult dataSeek:0];
+	[fieldMappingPopup removeAllItems];
+	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+		[fieldMappingPopup addItemWithTitle:NSArrayObjectAtIndex([theResult fetchRowAsArray], 0)];
+	}
+
+	// Select either the currently selected table, or the first item in the list
+	if ([tableDocumentInstance table] != nil && ![[tablesListInstance tableName] isEqualToString:@""]) {
+		[fieldMappingPopup selectItemWithTitle:[tablesListInstance tableName]];
+	} else {
+		[fieldMappingPopup selectItemAtIndex:0];
+	}
+
+	// Error if table selection occurred - usually because there's no tables to select.
+	if( ![tablesListInstance selectTableOrViewWithName:[fieldMappingPopup titleOfSelectedItem]] ) {
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil,
+						  tableWindow, self,
+						  nil, nil, nil,
+						  NSLocalizedString(@"Can't import CSV data into a database without any tables!", @"error text when trying to import csv data, but we have no tables in the db")
+						  );
+		return FALSE;
+	}
+	
+	// Set the import array
+	if (fieldMappingImportArray) [fieldMappingImportArray release];
+	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
+
+	// Set up tableView
+	fieldMappingCurrentRow = 0;
+
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	[self setupFieldMappingArray];
+	[rowDownButton setEnabled:NO];
+	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %@%i records", fieldMappingCurrentRow+1, fieldMappingImportArrayIsPreview?@"first ":@"", [fieldMappingImportArray count]]];
+		
+	// Set up tableView buttons
+	NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
+	[buttonCell setControlSize:NSSmallControlSize];
+	[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
+	[buttonCell setBordered:NO];
+	[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
+	[self updateFieldMappingButtonCell];
+	[fieldMappingTableView reloadData];
+	[buttonCell release];
+
+	// Show fieldMapping sheet
+	[NSApp beginSheet:fieldMappingSheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+
+	int code = [NSApp runModalForWindow:fieldMappingSheet];
+	[NSApp endSheet:fieldMappingSheet];
+	[fieldMappingSheet orderOut:nil];
+
+	// Return success or failure based on confirmation or cancellation
+	if (code) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+/*
  * Sets up the fieldMapping array to be shown in the tableView
  */
 - (void)setupFieldMappingArray
@@ -964,7 +1111,7 @@
         fieldMappingArray = [[NSMutableArray alloc] init];
 		
 		for (i = 0; i < [[tableSourceInstance fieldNames] count]; i++) {
-			if (i < [NSArrayObjectAtIndex(importArray, currentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(importArray, currentRow), i) isKindOfClass:[NSNull class]]) {
+			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isKindOfClass:[NSNull class]]) {
 				value = i + 1;
 			} else {
 				value = 0;
@@ -984,7 +1131,7 @@
 {
 	int i;
 	
-	[fieldMappingButtonOptions setArray:[importArray objectAtIndex:currentRow]];
+	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"NullValue"]]];
@@ -1000,20 +1147,56 @@
  */
 {
 	if ( [sender tag] == 0 ) {
-		currentRow--;
+		fieldMappingCurrentRow--;
 	} else {
-		currentRow++;
+		fieldMappingCurrentRow++;
 	}
 	[self updateFieldMappingButtonCell];
 	
 	//-----------[self setupFieldMappingArray];
 	[fieldMappingTableView reloadData];
 	
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %i records", currentRow+1, [importArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %@%i records", fieldMappingCurrentRow+1, fieldMappingImportArrayIsPreview?@"first ":@"", [fieldMappingImportArray count]]];
 	
 	// enable/disable buttons
-	[rowDownButton setEnabled:(currentRow != 0)];
-	[rowUpButton setEnabled:(currentRow != ([importArray count]-1))];
+	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
+	[rowUpButton setEnabled:(fieldMappingCurrentRow != ([fieldMappingImportArray count]-1))];
+}
+
+/*
+ * Construct the VALUES string for a CSV row, based on the field mapping array - including
+ * surrounding brackets but not including the VALUES keyword.
+ */
+- (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray
+{
+	NSMutableString *valueString = [NSMutableString stringWithString:@"("];
+	int i;
+	int mapColumn;
+	id cellData;
+	int mappingArrayCount = [fieldMappingArray count];
+
+	for (i = 0; i < mappingArrayCount; i++) {
+		mapColumn = [NSArrayObjectAtIndex(fieldMappingArray, i) intValue];
+
+		// Skip unmapped columns
+		if (!mapColumn) continue;
+
+		if ([valueString length] > 1) [valueString appendString:@","];
+
+		// Append the data
+		cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn - 1);
+
+		if (cellData == [NSNull null]) {
+			[valueString appendString:@"NULL"];
+		} else {
+			[valueString appendString:@"'"];
+			[valueString appendString:[mySQLConnection prepareString:cellData]];
+			[valueString appendString:@"'"];
+		}
+	}
+
+	[valueString appendString:@")"];
+	return valueString;
 }
 
 #pragma mark -
@@ -1343,11 +1526,7 @@
 	[previousConnectionEncoding release];
 	
 	// Close the progress sheet
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
-
-	// Restore the default maximum of the progress bar
-	[singleProgressBar setMaxValue:100];
+	[self closeAndStopProgressSheet];
 
 	// Show errors sheet if there have been errors
 	if ( [errors length] ) {
@@ -1505,10 +1684,9 @@
 
 	
 	// Close the progress sheet
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
-	
-	
+	[self closeAndStopProgressSheet];
+
+
 	return TRUE;
 }
 
@@ -1754,244 +1932,15 @@
 	
 	// Close the progress sheet if it's present
 	if ( !silently ) {
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
+		[self closeAndStopProgressSheet];
+	} else {
+
+		// Restore the progress bar to a normal maximum
+		[singleProgressBar setMaxValue:100];
 	}
-	
-	// Restore the progress bar to a normal maximum
-	[singleProgressBar setMaxValue:100];
 
 	return TRUE;
 }
-
-
-- (NSArray *)arrayForCSV:(NSString *)csv terminatedBy:(NSString *)fieldEndString
-			  enclosedBy:(NSString *)fieldQuoteString escapedBy:(NSString *)escapeString lineEnds:(NSString *)lineEndString
-/*
- loads a csv string into an array
- */
-{	
-	NSMutableString *tempInputString = [NSMutableString string];
-	NSMutableArray *tempArray = [NSMutableArray array];
-	NSMutableArray *tempRowArray = [NSMutableArray array];
-	NSMutableString *mutableField = [NSMutableString string];
-	NSScanner *scanner;
-	NSString *scanString, *stringToLineEnd, *stringToFieldEnd;
-	NSString *escapedFieldEndString, *escapedFieldQuoteString, *escapedEscapeString, *escapedLineEndString;
-	NSString *nullString = [prefs objectForKey:@"NullValue"];
-	NSCharacterSet *whitespaceSet = nil;
-	BOOL isEscaped, escapeStringIsFieldQuoteString, processingLine, processingField, fieldWasQuoted;
-	int fieldCount = NSNotFound;
-	int i,j,csvLength,fieldEndLength,fieldQuoteLength,escapeLength,lineEndLength,skipLength;
-
-	// Fix tabs and line endings in the inputs
-	for (i = 0; i < 4; i++) {
-		switch (i) {
-			case 0: [tempInputString setString:fieldEndString]; break;
-			case 1: [tempInputString setString:fieldQuoteString]; break;
-			case 2: [tempInputString setString:escapeString]; break;
-			case 3: [tempInputString setString:lineEndString]; break;
-		}
-		[tempInputString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-											options:NSLiteralSearch
-											  range:NSMakeRange(0, [tempInputString length])];
-		[tempInputString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-											options:NSLiteralSearch
-											  range:NSMakeRange(0, [tempInputString length])];
-		[tempInputString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-											options:NSLiteralSearch
-											  range:NSMakeRange(0, [tempInputString length])];
-		switch (i) {
-			case 0: fieldEndString = [NSString stringWithString:tempInputString]; break;
-			case 1: fieldQuoteString = [NSString stringWithString:tempInputString]; break;
-			case 2: escapeString = [NSString stringWithString:tempInputString]; break;
-			case 3: lineEndString = [NSString stringWithString:tempInputString]; break;
-		}
-	}
-	fieldEndLength = [fieldEndString length];
-	fieldQuoteLength = [fieldQuoteString length];
-	escapeLength = [escapeString length];
-	lineEndLength = [lineEndString length];
-	csvLength = [csv length];
-	escapeStringIsFieldQuoteString = [fieldQuoteString isEqualToString:escapeString];
-	escapedFieldEndString = [NSString stringWithFormat:@"%@%@", escapeString, fieldEndString];
-	escapedFieldQuoteString = [NSString stringWithFormat:@"%@%@", escapeString, fieldQuoteString];
-	escapedEscapeString = [NSString stringWithFormat:@"%@%@", escapeString, escapeString];
-	escapedLineEndString = [NSString stringWithFormat:@"%@%@", escapeString, lineEndString];
-
-	// Set up characters it should be possible to trim
-	[tempInputString setString:@""];
-	if (![fieldEndString isEqualToString:@" "] && ![fieldQuoteString isEqualToString:@" "] && ![escapeString isEqualToString:@" "] && ![lineEndString isEqualToString:@" "])
-		[tempInputString appendString:@" "];
-	if (![fieldEndString isEqualToString:@"\t"] && ![fieldQuoteString isEqualToString:@"\t"] && ![escapeString isEqualToString:@"\t"] && ![lineEndString isEqualToString:@"\t"])
-		[tempInputString appendString:@"\t"];
-	if ([tempInputString length]) whitespaceSet = [NSCharacterSet characterSetWithCharactersInString:tempInputString];
-	
-	// Set up the scanner to process the CSV 
-	scanner = [[NSScanner alloc] initWithString:csv];
-	[scanner setCharactersToBeSkipped:nil];
-	
-	while ( ![scanner isAtEnd] && !progressCancelled) {
-		
-		// Scan the string line by line into an array for each row.
-		processingLine = YES;
-		[tempRowArray removeAllObjects];
-		while (![scanner isAtEnd] && processingLine) {
-			[mutableField setString:@""];
-			processingField = YES;
-			fieldWasQuoted = NO;
-
-			// Skip unescaped, unquoted whitespace where possible
-			if (whitespaceSet) [scanner scanCharactersFromSet:whitespaceSet intoString:nil];
-
-			i = [scanner scanLocation];
-
-			// Look at the next section of the string, and determine whether it's enclosed in the field quote string
-			if (fieldQuoteLength && i + fieldQuoteLength <= csvLength
-				&& [[csv substringWithRange:NSMakeRange(i, fieldQuoteLength)] isEqualToString:fieldQuoteString])
-			{
-				[scanner setScanLocation:i+fieldQuoteLength];
-				fieldWasQuoted = YES;
-
-				while (![scanner isAtEnd] && processingField) {
-
-					// Process the field until the next quote string
-					if (![scanner scanUpToString:fieldQuoteString intoString:&scanString]) scanString = @"";
-					[mutableField appendString:scanString];
-
-					// Check to see if the quote string encountered was escaped... or an escaper
-					if (escapeLength) {
-						j = 1;
-						isEscaped = NO;
-						if (!escapeStringIsFieldQuoteString) {
-							while (j * escapeLength <= [scanString length]
-									&& ([[mutableField substringWithRange:NSMakeRange(([mutableField length] - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
-							{
-								isEscaped = !isEscaped;
-								j++;
-							}
-							skipLength = fieldQuoteLength;
-						} else {
-							if ([scanner scanLocation] + (2 * fieldQuoteLength) <= csvLength
-								&& [[csv substringWithRange:NSMakeRange([scanner scanLocation] + fieldQuoteLength, fieldQuoteLength)] isEqualToString:fieldQuoteString])
-							{
-								isEscaped = YES;
-								skipLength = 2 * fieldQuoteLength;
-							}
-						}
-						
-						// If it was escaped, keep processing the field
-						if (isEscaped) {
-							if (![scanner isAtEnd]) {
-								[mutableField appendString:[csv substringWithRange:NSMakeRange([scanner scanLocation], skipLength)]];
-								[scanner setScanLocation:[scanner scanLocation] + skipLength];
-							}
-							continue;
-						}
-					}
-
-					// We should now be at the end of the field - but let the code below keep going until
-					// the field end character is actually reached.
-					if (![scanner isAtEnd]) {
-						[scanner setScanLocation:[scanner scanLocation] + fieldQuoteLength];
-						if (whitespaceSet) [scanner scanCharactersFromSet:whitespaceSet intoString:nil];
-					}
-					processingField = NO;
-				}
-			}
-
-			// Process until the next field end string *or* line end string, ugh!
-			processingField = YES;
-			while (![scanner isAtEnd] && processingField) {
-				i = [scanner scanLocation];
-				if (![scanner scanUpToString:lineEndString intoString:&stringToLineEnd]) stringToLineEnd = @"";
-				[scanner setScanLocation:i];
-				if (![scanner scanUpToString:fieldEndString intoString:&stringToFieldEnd]) stringToFieldEnd = @"";
-				if ([stringToFieldEnd length] < [stringToLineEnd length]) {
-					scanString = stringToFieldEnd;
-					skipLength = fieldEndLength;
-				} else {
-					[scanner setScanLocation:i + [stringToLineEnd length]];
-					scanString = stringToLineEnd;
-					processingLine = NO;
-					skipLength = lineEndLength;
-				}
-				[mutableField appendString:scanString];
-				
-				// Check to see if the termination character was escaped
-				if (escapeLength) {
-					j = 1;
-					isEscaped = NO;
-					while (j * escapeLength <= [scanString length]
-							&& ([[mutableField substringWithRange:NSMakeRange(([mutableField length] - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
-					{
-						isEscaped = !isEscaped;
-						j++;
-					}
-					
-					// If it was, continue processing the field
-					if (isEscaped) {
-						if (![scanner isAtEnd]) {
-							[mutableField appendString:[csv substringWithRange:NSMakeRange([scanner scanLocation], skipLength)]];
-							[scanner setScanLocation:[scanner scanLocation] + skipLength];
-						}
-						continue;
-					}
-				}
-
-				// We should be at the end of the field.
-				if (![scanner isAtEnd]) [scanner setScanLocation:[scanner scanLocation] + skipLength];
-				processingField = NO;
-			}
-
-			// We now have a field content string.
-			// Insert a NSNull object if the cell contains an unescaped null character or an unescaped string
-			// which matches the NULL string set in preferences.
-			if ([mutableField isEqualToString:@"\\N"]
-				|| (!fieldWasQuoted && [mutableField isEqualToString:nullString]))
-			{
-				[tempRowArray addObject:[NSNull null]];
-			} else {
-				
-				// Clean up escaped characters
-				if (escapeLength) {
-					if (fieldEndLength)
-						[mutableField replaceOccurrencesOfString:escapedFieldEndString withString:fieldEndString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-					if (fieldQuoteLength)
-						[mutableField replaceOccurrencesOfString:escapedFieldQuoteString withString:fieldQuoteString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-					if (lineEndLength)
-						[mutableField replaceOccurrencesOfString:escapedLineEndString withString:lineEndString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-					[mutableField replaceOccurrencesOfString:escapedEscapeString withString:escapeString options:NSLiteralSearch range:NSMakeRange(0, [mutableField length])];
-				}
-				
-				// Add the field to the row array
-				[tempRowArray addObject:[NSString stringWithString:mutableField]];
-			}
-		}
-
-		// Capture the length of the first row and ensure all other rows contain that many items
-		if (fieldCount == NSNotFound) {
-			fieldCount = [tempRowArray count];
-		} else if ([tempRowArray count] < fieldCount) {
-
-			// Skip empty rows
-			if ([tempRowArray count] == 0
-				|| ([tempRowArray count] == 1 && ([[tempRowArray objectAtIndex:0] isNSNull] || ![[tempRowArray objectAtIndex:0] length])))
-			{
-				continue;
-			}
-
-			for (j = [tempRowArray count]; j < fieldCount; j++) [tempRowArray addObject:[NSNull null]];
-		}
-
-		// Add the row to the master output array
-		[tempArray addObject:[NSArray arrayWithArray:tempRowArray]];
-	}
-	[scanner release];
-
-	return [NSArray arrayWithArray:tempArray];
-}
-
 
 /*
  * Takes an array, or streaming result reference, and writes it in XML
@@ -2147,12 +2096,12 @@
 
 	// Close the progress sheet if appropriate
 	if ( !silently ) {
-		[NSApp endSheet:singleProgressSheet];
-		[singleProgressSheet orderOut:nil];
-	}
+		[self closeAndStopProgressSheet];
+	} else {
 
-	// Restore the progress bar to a normal maximum
-	[singleProgressBar setMaxValue:100];
+		// Restore the progress bar to a normal maximum
+		[singleProgressBar setMaxValue:100];
+	}
 
 	return TRUE;
 }
@@ -2368,8 +2317,7 @@
 	}
 	
 	// Close the progress sheet
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
+	[self closeAndStopProgressSheet];
 	
 	// Show the errors sheet if there have been errors
 	if ( [errors length] ) {
@@ -2483,91 +2431,6 @@
 	// Clean up and return.
 	[fieldString release];
 	return [placeholderSyntax autorelease];
-}
- 
-/*
- * Split a string by the terminated-character if this is not escaped
- * if enclosed-character is given, ignores characters inside enclosed-characters
- */
-- (NSArray *)arrayForString:(NSString *)string enclosed:(NSString *)enclosed
-					escaped:(NSString *)escaped terminated:(NSString *)terminated
-{
-	NSMutableArray *tempArray = [NSMutableArray array];
-	BOOL inString = NO;
-	BOOL isEscaped = NO;
-	BOOL br = NO;
-	unsigned i, j, start;
-	unichar enc;
-	unichar esc;
-	unichar ter;
-	
-	//we take only first character by now (too complicated otherwise)
-	if ( [enclosed length] ) {
-		enc = [enclosed characterAtIndex:0];
-	}
-	if ( [escaped length] ) {
-		esc = [escaped characterAtIndex:0];
-	}
-	if ( [terminated length] ) {
-		ter = [terminated characterAtIndex:0];
-	}
-	
-	start = 0;
-	
-	for ( i = 0 ; i < [string length] ; i++ ) {
-		if ( inString ) {
-			//we are in a string
-			br = NO;
-			while ( !br ) {
-				if ( i >= [string length] ) {
-					//end of string -> no second enclose character found
-					br = YES;
-				} else if ( [string characterAtIndex:i] == enc ) {
-					//second enclose-character found
-					//enclose-character escaped?
-					isEscaped = NO;
-					j = 1;
-					while ( (i-j>0) && ([string characterAtIndex:(i-j)] == esc) ) {
-						isEscaped = !isEscaped;
-						j++;
-					}
-					if ( !isEscaped ) {
-						inString = NO;
-						br = YES;
-					}
-				}
-				if ( !br )
-					i++;
-			}
-		} else if ( [string characterAtIndex:i] == ter ) {
-			//terminated-character found
-			if ( [enclosed isEqualToString:@""] ) {
-				//check if terminated character is escaped
-				isEscaped = NO;
-				j = 1;
-				while ( (i-j>0) && ([string characterAtIndex:(i-j)] == esc) ) {
-					isEscaped = !isEscaped;
-					j++;
-				}
-				if ( !isEscaped ) {
-					[tempArray addObject:[string substringWithRange:NSMakeRange(start,(i-start))]];
-					start = i + 1;
-				}
-			} else {
-				//add object to array
-				[tempArray addObject:[string substringWithRange:NSMakeRange(start,(i-start))]];
-				start = i + 1;
-			}
-		} else if ( [string characterAtIndex:i] == enc ) {
-			//enclosed-character found
-			inString = YES;
-		}
-	}
-	
-	//add rest of string to array
-	[tempArray addObject:[string substringWithRange:NSMakeRange(start,([string length]-start))]];
-	
-	return [NSArray arrayWithArray:tempArray];
 }
 
 //additional methods
@@ -2747,7 +2610,8 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	tables = [[NSMutableArray alloc] init];
 	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
 	fieldMappingArray = nil;
-	importArray = nil;
+	fieldMappingImportArray = nil;
+	fieldMappingImportArrayIsPreview = NO;
 	prefs = nil;
 	
 	return self;
@@ -2757,7 +2621,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 {	
 	[tables release];
 	[fieldMappingButtonOptions release];
-	if (importArray) [importArray release];
+	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	if (fieldMappingArray) [fieldMappingArray release];
 	if (prefs) [prefs release];
 	
