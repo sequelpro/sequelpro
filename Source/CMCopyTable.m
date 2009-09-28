@@ -95,29 +95,31 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 {
 	if ( [self numberOfSelectedRows] > 0 )
 	{
+
+		NSIndexSet *selectedRows = [self selectedRowIndexes];
+
 		NSArray *columns = [self tableColumns];
-		int numColumns = [columns count];
+		NSUInteger numColumns = [columns count];
 		id dataSource = [self dataSource];
 		
 		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 		
 		if(withHeaders) {
-			int i;
+			NSUInteger i;
 			for( i = 0; i < numColumns; i++ ){
 				[result appendString:[NSString stringWithFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]]];
 			}
 			[result appendString:[NSString stringWithFormat:@"\n"]];
 		}
-		
-		//this is really deprecated in 10.3, but the new method is really weird
-		NSEnumerator *enumerator = [self selectedRowEnumerator]; 
-		
-		int c;
-		id row = nil;
+
+		NSUInteger c;
+
 		id rowData = nil;
 		NSTableColumn *col = nil;
 		
-		while (row = [enumerator nextObject]) 
+		NSUInteger rowIndex = [selectedRows firstIndex];
+
+		while ( rowIndex != NSNotFound )
 		{ 
 			rowData = nil;
 			for ( c = 0; c < numColumns; c++)
@@ -125,7 +127,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				col = NSArrayObjectAtIndex(columns, c);
 				rowData = [dataSource tableView:self 
 					  objectValueForTableColumn:col 
-											row:[row intValue] ];
+											row:rowIndex ];
 				
 				if ( nil != rowData )
 				{
@@ -142,6 +144,10 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 			}
 			[result appendString: [ NSString stringWithFormat:@"\n"]];
+
+			// next selected row
+			rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
+
 		} //end for each row
 		
 		if ( [result length] )
@@ -165,30 +171,31 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	if ( [self numberOfSelectedRows] < 1 ) return nil;
 
-	NSArray *columns = [self tableColumns];
-	int numColumns   = [columns count];
+	NSArray *columns         = [self tableColumns];
+	NSUInteger numColumns    = [columns count];
 
-	// NSIndexSet *rowIndexes = [self selectedRowIndexes];
-	NSString *spNULL       = [prefs objectForKey:@"NullValue"];
-	NSMutableString *value = [NSMutableString stringWithCapacity:10];
+	NSIndexSet *selectedRows = [self selectedRowIndexes];
+	NSString *spNULL         = [prefs objectForKey:@"NullValue"];
+	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
 	NSArray *dbDataRow;
 	NSMutableArray *columnMappings;
-	id enumObj;
+
 	id rowData = nil;
-	id rowEnumObject = nil;
 	
-	long row;
-	long rowCounter = 0;
-	long penultimateRowIndex = [[self selectedRowIndexes] count];
-	int c;
-	int valueLength = 0;
+	NSUInteger rowCounter = 0;
+	NSUInteger penultimateRowIndex = [selectedRows count];
+	NSUInteger c;
+	NSUInteger valueLength = 0;
 
 	NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 
 	// Create array of types according to the column order
 	NSMutableArray *types = [NSMutableArray arrayWithCapacity:numColumns];
-	enumerate(columns, enumObj)
+	// Create an array of table column names
+	NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
+	for(id enumObj in columns)
 	{
+		[tbHeader addObject:[[enumObj headerCell] stringValue]];
 		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] intValue]] objectForKey:@"typegrouping"];
 		if([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
 			[types addObject:[NSNumber numberWithInt:0]]; // numeric
@@ -200,32 +207,25 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
 	}
 
-	// Create an array of table column names
-	NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
-	enumerate(columns, enumObj)
-		[tbHeader addObject:[[enumObj headerCell] stringValue]];
-
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
-
-	//this is really deprecated in 10.3, but the new method is really weird
-	NSEnumerator *enumerator = [self selectedRowEnumerator]; 
-
+	
 	// Set up an array of table column mappings
 	columnMappings = [[NSMutableArray alloc] initWithCapacity:numColumns];
 	for ( c = 0; c < numColumns; c++ ) {
 		[columnMappings addObject:[[columns objectAtIndex:c] identifier]];
 	}
-	
-	while ( rowEnumObject = [enumerator nextObject] )
+
+	NSUInteger rowIndex = [selectedRows firstIndex];
+
+	while ( rowIndex != NSNotFound )
 	{ 
 		[value appendString:@"\t("];
 		rowData = nil;
-		row = [rowEnumObject intValue];
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			rowData = [[tableData objectAtIndex:row] objectAtIndex:[[columnMappings objectAtIndex:c] intValue]];
+			rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] intValue]];
 
 			// Check for NULL value - TODO this is not safe!!
 			if([[rowData description] isEqualToString:spNULL]){
@@ -246,13 +246,13 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
-							if (![[tableInstance argumentForRow:row] length] || selectedTable == nil)
+							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil)
 								return nil;
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
-									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsArray];
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
 							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
@@ -266,13 +266,13 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
-							if (![[tableInstance argumentForRow:row] length] || selectedTable == nil)
+							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil)
 								return nil;
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
-									[selectedTable backtickQuotedString], [tableInstance argumentForRow:row]]] fetchRowAsArray];
+									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
 							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
@@ -317,7 +317,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		}
 
 		// next selected row
-		// row = [rowIndexes indexGreaterThanIndex: row];
+		rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
 
 	} //end for each row
 	
@@ -340,20 +340,20 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	if ( [rows count] > 0 )
 	{
 		NSArray *columns = [self tableColumns];
-		int numColumns = [columns count];
+		NSUInteger numColumns = [columns count];
+		NSIndexSet *selectedRows = [self selectedRowIndexes];
 		id dataSource = [self dataSource];
 		
 		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 
-		//this is really deprecated in 10.3, but the new method is really weird
-		NSEnumerator *enumerator = [rows objectEnumerator]; 
-		
-		int c;
-		id row = nil;
+		NSUInteger c;
+
 		id rowData = nil;
 		NSTableColumn *col = nil;
 		
-		while (row = [enumerator nextObject]) 
+		NSUInteger rowIndex = [selectedRows firstIndex];
+
+		while ( rowIndex != NSNotFound )
 		{ 
 			rowData = nil;
 			for ( c = 0; c < numColumns; c++)
@@ -361,7 +361,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				col = [columns objectAtIndex:c];
 				rowData = [dataSource tableView:self 
 					  objectValueForTableColumn:col 
-											row:[row intValue] ];
+											row:rowIndex ];
 				
 				if ( nil != rowData )
 				{
@@ -378,6 +378,10 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 			}
 			[result appendString: [ NSString stringWithFormat:@"\n"]];
+
+			// next selected row
+			rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
+
 		} //end for each row
 		
 		if ( [result length] )

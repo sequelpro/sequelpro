@@ -60,9 +60,9 @@
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes
 {
 	NSMutableArray *subArray  = [NSMutableArray arrayWithCapacity:[indexes count]];
-	unsigned count = [self count];
+	NSUInteger count = [self count];
 
-	unsigned index = [indexes firstIndex];
+	NSUInteger index = [indexes firstIndex];
 	while ( index != NSNotFound )
 	{
 		if ( index < count )
