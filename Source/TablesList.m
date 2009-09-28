@@ -1775,41 +1775,13 @@
 			[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:addItemAtIndex];		
 		}
 		
-		// Set the selected table name and type, and then use updateFilter to update the filter list and selection.
+		// Set the selected table name and type, and then use updateFilter and updateSelection to update the filter list and selection.
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:tableName];
 		selectedTableType = SP_TABLETYPE_TABLE;
 		[self updateFilter:self];
+		[self updateSelection];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
-		
-		NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
-		
-		if (selectedIndex == 0) {
-			[tableSourceInstance loadTable:tableName];
-			structureLoaded = YES;
-			contentLoaded = NO;
-			statusLoaded = NO;
-		} 
-		else if (selectedIndex == 1) {
-			[tableContentInstance loadTable:tableName];
-			structureLoaded = NO;
-			contentLoaded = YES;
-			statusLoaded = NO;
-		} 
-		else if (selectedIndex == 3) {
-			[extendedTableInfoInstance loadTable:tableName];
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = YES;
-		} 
-		else {
-			statusLoaded = NO;
-			structureLoaded = NO;
-			contentLoaded = NO;
-		}
-		
-		// Set window title
-		[tableWindow setTitle:[tableDocumentInstance displayName]];
 	} 
 	else {
 		// Error while creating new table
