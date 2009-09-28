@@ -101,7 +101,7 @@
 		<array>
 			<dict>
 				<key>MenuLabel</key>
-				<string>IS</string>
+				<string>is</string>
 				<key>NumberOfArguments</key>
 				<integer>1</integer>
 				<key>Clause</key>
@@ -109,7 +109,7 @@
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
-				<string>IS NOT</string>
+				<string>is not</string>
 				<key>NumberOfArguments</key>
 				<integer>1</integer>
 				<key>Clause</key>
@@ -130,6 +130,22 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>NOT LIKE '%${}%'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>LIKE</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>LIKE '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>NOT LIKE</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>NOT LIKE '${}'</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -190,7 +206,7 @@
 		<array>
 			<dict>
 				<key>MenuLabel</key>
-				<string>IS</string>
+				<string>is</string>
 				<key>NumberOfArguments</key>
 				<integer>1</integer>
 				<key>Clause</key>
@@ -198,7 +214,7 @@
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
-				<string>IS NOT</string>
+				<string>is not</string>
 				<key>NumberOfArguments</key>
 				<integer>1</integer>
 				<key>Clause</key>

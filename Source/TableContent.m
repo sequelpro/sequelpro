@@ -568,7 +568,7 @@
 	[clause setString:[filter objectForKey:@"Clause"]];
 
 	// Escape % sign
-	[clause replaceOccurrencesOfRegex:@"%"withString:@"%%"];
+	[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
 	[clause flushCachedRegexData];
 
 	// Replace placeholder ${} by %@
@@ -597,11 +597,13 @@
 	if (numberOfArguments == 2) {
 		filterString = [NSString stringWithFormat:@"%@ %@", 
 			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[NSString stringWithFormat:clause, firstBetweenArgument, secondBetweenArgument]];
+			[NSString stringWithFormat:clause, 
+				[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+				[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
 	} else if (numberOfArguments == 1) {
 		filterString = [NSString stringWithFormat:@"%@ %@", 
 			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[NSString stringWithFormat:clause, argument]];
+			[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
 	} else {
 		filterString = [NSString stringWithFormat:@"%@ %@", 
 			[[fieldField titleOfSelectedItem] backtickQuotedString], 
@@ -619,6 +621,32 @@
 
 	// Return the filter string
 	return filterString;
+}
+
+- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause
+{
+
+	NSMutableString *arg = [[NSMutableString alloc] init];
+	[arg setString:argument];
+
+	[arg replaceOccurrencesOfRegex:@"(\\\\)(?![nrt])" withString:@"\\\\\\\\\\\\\\\\"];
+	[arg flushCachedRegexData];
+	[arg replaceOccurrencesOfRegex:@"(\\\\)(?=[nrt])" withString:@"\\\\\\"];
+	[arg flushCachedRegexData];
+	
+	// Get quote sign for escaping - this should work for 99% of all cases
+	NSString *quoteSign = [clause stringByMatching:@"([\"'])[^\\1]*?%@[^\\1]*?\\1" capture:1L];
+	// Esape argument
+	if(quoteSign != nil && [quoteSign length] == 1) {
+		[arg replaceOccurrencesOfRegex:[NSString stringWithFormat:@"(%@)", quoteSign] withString:@"\\\\$1"];
+		[arg flushCachedRegexData];
+	}
+	if([clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"]) {
+		NSLog(@"asdas", _cmd);
+		[arg replaceOccurrencesOfRegex:@"([_%])" withString:@"\\\\$1"];
+		[arg flushCachedRegexData];
+	}
+	return [arg autorelease];
 }
 
 /*

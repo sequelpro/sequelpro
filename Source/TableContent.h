@@ -129,4 +129,6 @@
 - (void) storeCurrentDetailsForRestoration;
 - (void) clearDetailsToRestore;
 
+- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
+
 @end
