@@ -44,6 +44,8 @@
 #import "QLPreviewPanel.h"
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
+#import "RegexKitLite.h"
+
 
 @implementation TableContent
 
@@ -82,6 +84,22 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		
 		usedQuery = [[NSString alloc] initWithString:@""];
+		
+		// Init default filters for Content Browser
+		contentFilters = nil;
+		NSError *readError = nil;
+		NSString *convError = nil;
+		NSPropertyListFormat format;
+		NSData *defaultFilterData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
+			options:NSMappedRead error:&readError];
+		contentFilters = [[NSMutableDictionary alloc] init];
+		[contentFilters setDictionary:[NSPropertyListSerialization propertyListFromData:defaultFilterData 
+				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
+		if(contentFilters == nil || readError != nil || convError != nil) {
+			NSLog(@"Error while reading 'ContentFilters.plist':\n%@\n%@", [readError localizedDescription], convError);
+			NSBeep();
+		}
+
 	}
 	
 	return self;
@@ -495,185 +513,109 @@
  */
 - (NSString *)tableFilterString
 {
-	BOOL doQuote = YES;
-	BOOL ignoreArgument = NO;
-	NSString *filterString;
-	NSString *compareOperator = @"";
-	int tag = [[compareField selectedItem] tag];
-	
-	// Filter arguments
-	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
-	NSString *firstBetweenArgument = [firstBetweenField stringValue];
-	NSString *secondBetweenArgument = [secondBetweenField stringValue];
 
-	// If the filter field is empty and the selected filter is not looking
-	// for NULLs or NOT NULLs, then no filtering is required - return nil.
-	if (([argument length] == 0) && (![[[compareField selectedItem] title] hasSuffix:@"NULL"]) && (![[[compareField selectedItem] title] isEqualToString:@"BETWEEN"])) {
+	NSString *filterString;
+
+	if(contentFilters == nil) {
+		NSLog(@"Fatal error while retrieving content filters. No filters found.");
+		NSBeep();
+		return nil;
+	}
+
+	// Current selected filter type
+	if(![contentFilters objectForKey:compareType]) {
+		NSLog(@"Error while retrieving filters. Filter type “%@” unknown.", compareType);
+		NSBeep();
+		return nil;
+	}
+	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
+
+	if(![filter objectForKey:@"Clause"] || ![filter objectForKey:@"NumberOfArguments"]) {
+		NSLog(@"Error while retrieving filter clause. No “Clause” or/and “NumberOfArguments” key found.");
+		NSBeep();
+		return nil;
+	}
+
+	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] intValue];
+
+	// argument if Filter requires only one argument
+	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
+
+	// If the filter field is empty and the selected filter does not require
+	// only one argument, then no filtering is required - return nil.
+	if (![argument length] && numberOfArguments == 1) {
 		[argument release];
 		return nil;
 	}
-	
-	// If we are using the BETWEEN operator and either of the argument fields are empty return nil.
-	if ([[[compareField selectedItem] title] isEqualToString:@"BETWEEN"]) {
+
+	// arguments if Filter requires two arguments
+	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:[firstBetweenField stringValue]];
+	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:[secondBetweenField stringValue]];
+
+	// If filter requires two arguments and either of the argument fields are empty 
+	// return nil.
+	if (numberOfArguments == 2) {
 		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
+			[argument release];
+			[firstBetweenArgument release];
+			[secondBetweenArgument release];
 			return nil;
 		}
 	}
 
-	// Construct the filter string
-	if (![compareType isEqualToString:@""]) {
-		if ([compareType isEqualToString:@"string"]) {
-			// String comparision
-			switch (tag) {
-				case 0:
-					compareOperator = @"LIKE";
-					break;
-				case 1:
-					compareOperator = @"NOT LIKE";
-					break;
-				case 2:
-					compareOperator = @"LIKE";
-					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-					break;
-				case 3:
-					compareOperator = @"NOT LIKE";
-					[argument setString:[[@"%" stringByAppendingString:argument] stringByAppendingString:@"%"]];
-					break;
-				case 4:
-					compareOperator = @"IN";
-					doQuote = NO;
-					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-					break;
-				case 5:
-					compareOperator = @"BETWEEN";
-					doQuote = NO;
-					[argument setString:[NSString stringWithFormat:@"'%@' AND '%@'", [firstBetweenField stringValue], [secondBetweenField stringValue]]];
-					break;
-				case 6:
-					compareOperator = @"IS NULL";
-					doQuote = NO;
-					ignoreArgument = YES;
-					break;
-				case 7:
-					compareOperator = @"IS NOT NULL";
-					doQuote = NO;
-					ignoreArgument = YES;
-					break;
-			}
-		} 
-		else if ([compareType isEqualToString:@"number"]) {
-			// Numeric comparision
-			switch (tag) {
-				case 0:
-					compareOperator = @"=";
-					break;
-				case 1:
-					compareOperator = @"!=";
-					break;
-				case 2:
-					compareOperator = @">";
-					break;
-				case 3:
-					compareOperator = @"<";
-					break;
-				case 4:
-					compareOperator = @">=";
-					break;
-				case 5:
-					compareOperator = @"<=";
-					break;
-				case 6:
-					compareOperator = @"IN";
-					doQuote = NO;
-					[argument setString:[[@"(" stringByAppendingString:argument] stringByAppendingString:@")"]];
-					break;
-				case 7:
-					compareOperator = @"LIKE";
-					doQuote = YES;
-					ignoreArgument = YES;
-					break;
-				case 8:
-					compareOperator = @"BETWEEN";
-					doQuote = NO;
-					[argument setString:[NSString stringWithFormat:@"'%@' AND '%@'", [firstBetweenField stringValue], [secondBetweenField stringValue]]];
-					break;
-				case 9:
-					compareOperator = @"IS NULL";
-					doQuote = NO;
-					ignoreArgument = YES;
-					break;
-				case 10:
-					compareOperator = @"IS NOT NULL";
-					doQuote = NO;
-					ignoreArgument = YES;
-					break;
-			}
-		} 
-		else if ([compareType isEqualToString:@"date"]) {
-			// Date comparision
-			switch (tag) {
-				case 0:
-					compareOperator = @"=";
-					break;
-				case 1:
-					compareOperator = @"!=";
-					break;
-				case 2:
-					compareOperator = @">";
-					break;
-				case 3:
-					compareOperator = @"<";
-					break;
-				case 4:
-					compareOperator = @">=";
-					break;
-				case 5:
-					compareOperator = @"<=";
-					break;
-				case 6:
-					compareOperator = @"BETWEEN";
-					doQuote = NO;
-					[argument setString:[NSString stringWithFormat:@"'%@' AND '%@'", [firstBetweenField stringValue], [secondBetweenField stringValue]]];
-					break;
-				case 7:
-					compareOperator = @"IS NULL";
-					doQuote = NO;
-					ignoreArgument = YES;
-					break;
-				case 8:
-					compareOperator = @"IS NOT NULL";
-					doQuote = NO;
-					ignoreArgument = YES;
-					break;
-			}
-		} 
-		else {
-			doQuote = NO;
-			ignoreArgument = YES;
-			NSLog(@"ERROR: unknown comparison type %@", compareType);
-		}
-		
-		if (doQuote) {
-			int i;
-			
-			// Escape special characters
-			for (i = 0 ; i < [argument length]; i++) {
-				if ([argument characterAtIndex:i] == '\\') {
-					[argument insertString:@"\\" atIndex:i];
-					i++;
-				}
-			}
-			
-			[argument setString:[mySQLConnection prepareString:argument]];
-			
-			filterString = [NSString stringWithFormat:@"%@ %@ \"%@\"", [[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, argument];			
-		} 
-		else {
-			filterString = [NSString stringWithFormat:@"%@ %@ %@", [[fieldField titleOfSelectedItem] backtickQuotedString], compareOperator, (ignoreArgument) ? @"" : argument];
+	// Retrieve actual WHERE clause
+	NSMutableString *clause = [[NSMutableString alloc] init];
+	[clause setString:[filter objectForKey:@"Clause"]];
+
+	// Escape % sign
+	[clause replaceOccurrencesOfRegex:@"%"withString:@"%%"];
+	[clause flushCachedRegexData];
+
+	// Replace placeholder ${} by %@
+	NSRange matchedRange;
+	NSString *re = @"(?<!\\\\)\\$\\{.*?\\}";
+	if([clause isMatchedByRegex:re]) {
+		while([clause isMatchedByRegex:re]) {
+			matchedRange = [clause rangeOfRegex:re];
+			[clause replaceCharactersInRange:matchedRange withString:@"%@"];
+			[clause flushCachedRegexData];
 		}
 	}
-	
+
+	// Check number of placeholders and given 'NumberOfArguments'
+	if([clause replaceOccurrencesOfString:@"%@" withString:@"%@" options:NSLiteralSearch range:NSMakeRange(0, [clause length])] != numberOfArguments) {
+		NSLog(@"Error while setting filter string. “NumberOfArguments” differs from the number of arguments specified in “Clause”.");
+		NSBeep();
+		[argument release];
+		[firstBetweenArgument release];
+		[secondBetweenArgument release];
+		[clause release];
+		return nil;
+	}
+
+	// Construct the filter string according the required number of arguments
+	if (numberOfArguments == 2) {
+		filterString = [NSString stringWithFormat:@"%@ %@", 
+			[[fieldField titleOfSelectedItem] backtickQuotedString], 
+			[NSString stringWithFormat:clause, firstBetweenArgument, secondBetweenArgument]];
+	} else if (numberOfArguments == 1) {
+		filterString = [NSString stringWithFormat:@"%@ %@", 
+			[[fieldField titleOfSelectedItem] backtickQuotedString], 
+			[NSString stringWithFormat:clause, argument]];
+	} else {
+		filterString = [NSString stringWithFormat:@"%@ %@", 
+			[[fieldField titleOfSelectedItem] backtickQuotedString], 
+			[filter objectForKey:@"Clause"]];
+			if(numberOfArguments > 2) {
+				NSLog(@"Filter with more than 2 arguments is not yet supported.");
+				NSBeep();
+			}
+	}
+
 	[argument release];
+	[firstBetweenArgument release];
+	[secondBetweenArgument release];
+	[clause release];
 
 	// Return the filter string
 	return filterString;
@@ -779,27 +721,41 @@
  */
 - (IBAction)toggleFilterField:(id)sender
 {
-	NSString *filter = [[compareField selectedItem] title];
-	
-	if ([filter isEqualToString:@"BETWEEN"]) {
+
+	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
+	if ([[filter objectForKey:@"NumberOfArguments"] intValue] == 2) {
 		[argumentField setHidden:YES];
+
+		if([filter objectForKey:@"ConjunctionLabels"] && [[filter objectForKey:@"ConjunctionLabels"] count] == 1)
+			[betweenTextField setStringValue:[[filter objectForKey:@"ConjunctionLabels"] objectAtIndex:0]];
 		[betweenTextField setHidden:NO];
 		[firstBetweenField setHidden:NO];
 		[secondBetweenField setHidden:NO];
+
 		[firstBetweenField setEnabled:YES];
 		[secondBetweenField setEnabled:YES];
 		[firstBetweenField selectText:self];
 	}
-	else {
+	else if ([[filter objectForKey:@"NumberOfArguments"] intValue] == 1){
 		[argumentField setHidden:NO];
+		[argumentField setEnabled:YES];
+		[argumentField selectText:self];
+
 		[betweenTextField setHidden:YES];
 		[firstBetweenField setHidden:YES];
 		[secondBetweenField setHidden:YES];
-		[argumentField selectText:self];
 	}
+	else {
+		[argumentField setHidden:NO];
+		[argumentField setEnabled:NO];
 
-	// If the user is filtering for NULLs then disable the filter field, otherwise enable it.
-	[argumentField setEnabled:(![[[compareField selectedItem] title] hasSuffix:@"NULL"])];
+		[betweenTextField setHidden:YES];
+		[firstBetweenField setHidden:YES];
+		[secondBetweenField setHidden:YES];
+
+		// Start search if no argument is required
+		[self filterTable:self];
+	}
 
 }
 
@@ -1114,18 +1070,23 @@
  */
 - (IBAction)setCompareTypes:(id)sender
 {
-	NSArray *stringTypes = [NSArray arrayWithObjects:NSLocalizedString(@"IS", @"popup menuitem for field IS value"), NSLocalizedString(@"IS NOT", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"contains", @"popup menuitem for field CONTAINS value"), NSLocalizedString(@"contains not", @"popup menuitem for field CONTAINS NOT value"), @"IN", @"BETWEEN", nil];
-	NSArray *numberTypes = [NSArray arrayWithObjects:@"=", @"≠", @">", @"<", @"≥", @"≤", @"IN", @"LIKE", @"BETWEEN", nil];
-	NSArray *dateTypes   = [NSArray arrayWithObjects:NSLocalizedString(@"IS", @"popup menuitem for field IS value"), NSLocalizedString(@"IS NOT", @"popup menuitem for field IS NOT value"), NSLocalizedString(@"is after", @"popup menuitem for field AFTER DATE value"), NSLocalizedString(@"is before", @"popup menuitem for field BEFORE DATE value"), NSLocalizedString(@"is after or equal to", @"popup menuitem for field AFTER OR EQUAL TO value"), NSLocalizedString(@"is before or equal to", @"popup menuitem for field BEFORE OR EQUAL TO value"), @"BETWEEN", nil];
+
+	if(contentFilters == nil 
+		|| ![contentFilters objectForKey:@"number"]
+		|| ![contentFilters objectForKey:@"string"]
+		|| ![contentFilters objectForKey:@"date"]) {
+		NSLog(@"Error while setting filter types.");
+		NSBeep();
+		return;
+	}
+
 	NSString *fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
-	
-	int i;
-	
+
 	[compareField removeAllItems];
 	
 	if ( [fieldTypeGrouping isEqualToString:@"date"] ) {
-		[compareField addItemsWithTitles:dateTypes];
 		compareType = @"date";
+
 		/*
 		 if ([fieldType isEqualToString:@"timestamp"]) {
 		 [argumentField setFormatter:[[NSDateFormatter alloc]
@@ -1147,34 +1108,56 @@
 
 	// TODO: A bug in the framework previously meant enum fields had to be treated as string fields for the purposes
 	// of comparison - this can now be split out to support additional comparison fucntionality if desired.
-	} else if ([fieldTypeGrouping isEqualToString:@"string"] || [fieldTypeGrouping isEqualToString:@"binary"]
+	} else if ([fieldTypeGrouping isEqualToString:@"string"]   || [fieldTypeGrouping isEqualToString:@"binary"]
 			|| [fieldTypeGrouping isEqualToString:@"textdata"] || [fieldTypeGrouping isEqualToString:@"blobdata"]
 			|| [fieldTypeGrouping isEqualToString:@"enum"]) {
-		[compareField addItemsWithTitles:stringTypes];
+
 		compareType = @"string";
-		//		[argumentField setFormatter:nil];
+		// [argumentField setFormatter:nil];
+
 	} else if ([fieldTypeGrouping isEqualToString:@"bit"] || [fieldTypeGrouping isEqualToString:@"integer"]
 				|| [fieldTypeGrouping isEqualToString:@"float"]) {
-		[compareField addItemsWithTitles:numberTypes];
 		compareType = @"number";
-		//		[argumentField setFormatter:numberFormatter];
+		// [argumentField setFormatter:numberFormatter];
+
 	} else  {
+		compareType = @"";
+		NSBeep();
 		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"type"], fieldTypeGrouping);
 	}
 	
 	// Add IS NULL and IS NOT NULL as they should always be available
-	[compareField addItemWithTitle:@"IS NULL"];
-	[compareField addItemWithTitle:@"IS NOT NULL"];
-	
-	for ( i = 0 ; i < [compareField numberOfItems] ; i++ ) {
-		[[compareField itemAtIndex:i] setTag:i];
+	// [compareField addItemWithTitle:@"IS NULL"];
+	// [compareField addItemWithTitle:@"IS NOT NULL"];
+
+	// Load user-defined content filters
+	if([prefs objectForKey:@"ContentFilters"] 
+		&& [contentFilters objectForKey:compareType]
+		&& [[prefs objectForKey:@"ContentFilters"] objectForKey:compareType])
+	{
+		[[contentFilters objectForKey:compareType] addObjectsFromArray:[[prefs objectForKey:@"ContentFilters"] objectForKey:compareType]];
 	}
+
+	// Rebuild operator popup menu
+	NSUInteger i = 0;
+	NSMenu *menu = [compareField menu];
+	if([contentFilters objectForKey:compareType])
+		for(id filter in [contentFilters objectForKey:compareType]) {
+			NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:([filter objectForKey:@"MenuLabel"])?[filter objectForKey:@"MenuLabel"]:@"not specified" action:NULL keyEquivalent:@""];
+			if([filter objectForKey:@"Tooltip"])
+				[item setToolTip:[filter objectForKey:@"Tooltip"]];
+			[item setTag:i];
+			[menu addItem:item];
+			[item release];
+			i++;
+		}
 
 	// Update the argumentField enabled state
 	[self toggleFilterField:self];
 
 	// set focus on argumentField
 	[argumentField selectText:self];
+
 }
 
 - (IBAction)stepLimitRows:(id)sender
@@ -2400,7 +2383,7 @@
 	[tableValues release];
 	[dataColumns release];
 	[oldRow release];
-	// if (editData) [editData release];
+	if (contentFilters) [contentFilters release];
 	if (keys) [keys release];
 	if (sortCol) [sortCol release];
 	[usedQuery release];

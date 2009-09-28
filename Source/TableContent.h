@@ -67,6 +67,8 @@
 	NSUserDefaults *prefs;
 	int currentlyEditingRow, maxNumRows;
 
+	NSMutableDictionary *contentFilters;
+
 	BOOL sortColumnToRestoreIsAsc;
 	NSString *sortColumnToRestore;
 	unsigned int limitStartPositionToRestore;

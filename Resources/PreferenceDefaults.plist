@@ -109,6 +109,13 @@
 	<key>QuickLookTypes</key>
 	<array/>
 	<key>ContentFilters</key>
-	<array/>
+	<dict>
+		<key>number</key>
+		<array/>
+		<key>string</key>
+		<array/>
+		<key>date</key>
+		<array/>
+	</dict>
 </dict>
 </plist>

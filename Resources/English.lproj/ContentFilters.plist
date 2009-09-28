@@ -1,7 +1,269 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE plist PUBLIC '-//Apple//DTD PLIST 1.0//EN' 'http://www.apple.com/DTDs/PropertyList-1.0.dtd'>
+<plist version='1.0'>
 	<dict>
-
+		<key>number</key>
+		<array>
+			<dict>
+				<key>MenuLabel</key>
+				<string>=</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>≠</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>!= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>&gt;</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&gt; '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>&lt;</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&lt; '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>≥</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&gt;= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>≤</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&lt;= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IN</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>IN (${})</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>LIKE</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>LIKE '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>BETWEEN</string>
+				<key>NumberOfArguments</key>
+				<integer>2</integer>
+				<key>ConjunctionLabels</key>
+				<array>
+					<string>AND</string>
+				</array>
+				<key>Clause</key>
+				<string>BETWEEN '${}' AND '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NULL</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NOT NULL</string>
+			</dict>
+		</array>
+		<key>string</key>
+		<array>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>LIKE '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>NOT LIKE '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>contains</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>LIKE '%${}%'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>contains not</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>NOT LIKE '%${}%'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IN</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>IN (${})</string>
+				<key>Tooltip</key>
+				<string>Do quote strings manually.</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>BETWEEN</string>
+				<key>NumberOfArguments</key>
+				<integer>2</integer>
+				<key>ConjunctionLabels</key>
+				<array>
+					<string>AND</string>
+				</array>
+				<key>Clause</key>
+				<string>BETWEEN '${}' AND '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NULL</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NOT NULL</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS EMPTY</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>LIKE ''</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT EMPTY</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>NOT LIKE ''</string>
+			</dict>
+		</array>
+		<key>date</key>
+		<array>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>!= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>is after</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&gt; '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>is before</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&lt; '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>is after or equal to</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&gt;= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>is before or equal to</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>Clause</key>
+				<string>&lt;= '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>BETWEEN</string>
+				<key>NumberOfArguments</key>
+				<integer>2</integer>
+				<key>ConjunctionLabels</key>
+				<array>
+					<string>AND</string>
+				</array>
+				<key>Clause</key>
+				<string>BETWEEN '${}' AND '${}'</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NULL</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NOT NULL</string>
+			</dict>
+		</array>
 	</dict>
 </plist>
