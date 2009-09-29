@@ -168,6 +168,10 @@
 		isLimited = NO;
 		[countText setStringValue:@""];
 
+		// Reset sort column
+		if (sortCol) [sortCol release], sortCol = nil;
+		isDesc = NO;
+
 		// Empty and disable filter options
 		[fieldField setEnabled:NO];
 		[fieldField removeAllItems];
