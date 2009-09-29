@@ -1331,7 +1331,6 @@
  */
 - (BOOL)addRowToDB
 {
-	NSArray *columnNames;
 	NSMutableString *queryString;
 	id rowObject;
 	NSMutableString *rowValue = [NSMutableString string];
@@ -1352,16 +1351,21 @@
 		return YES;
 	}
 
-	// Retrieve the field names and types for this table from the data cache.  This is used when requesting all data as part
-	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
-	columnNames = [tableDataInstance columnNames];
-	
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
 	// Get the field values
-	for ( i = 0 ; i < [columnNames count] ; i++ ) {
+	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		rowObject = [NSArrayObjectAtIndex(tableValues, currentlyEditingRow) objectAtIndex:i];
+
+		// Catch CURRENT_TIMESTAMP automatic updates - if the row is new and the cell value matches
+		// the default value, or if the cell hasn't changed, update the current timestamp.
+		if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] intValue]
+			&& (   (isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
+				|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
+		{
+			[rowValue setString:@"CURRENT_TIMESTAMP"];
+
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
-		if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
+		} else if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
 
 			//NULL when user entered the nullValue string defined in the prefs or when a number field isn't set
@@ -1378,7 +1382,7 @@
 			} else if ( [rowObject isKindOfClass:[NSData class]] ) {
 				[rowValue setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:rowObject]]];
 			} else {
-				if ( [[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
+				if ([[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
 				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
@@ -1396,17 +1400,17 @@
 	// Use INSERT syntax when creating new rows
 	if ( isEditingNewRow ) {
 		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
-					   [selectedTable backtickQuotedString], [columnNames componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
+					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
 
 	// Use UPDATE syntax otherwise
 	} else {
 		queryString = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [selectedTable backtickQuotedString]];
-		for ( i = 0 ; i < [columnNames count] ; i++ ) {
+		for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 			if ( i > 0 ) {
 				[queryString appendString:@", "];
 			}
 			[queryString appendString:[NSString stringWithFormat:@"%@=%@",
-									   [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString], [fieldValues objectAtIndex:i]]];
+									   [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] backtickQuotedString], [fieldValues objectAtIndex:i]]];
 		}
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
 	}
