@@ -253,6 +253,7 @@
 	[taskArguments addObject:@"-N"]; // Tunnel only
 	[taskArguments addObject:@"-v"]; // Verbose mode for messages
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
+	[taskArguments addObject:@"-M"]; // Places the ssh client into 'master' mode for connection sharing
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%i", connectionTimeout]];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
