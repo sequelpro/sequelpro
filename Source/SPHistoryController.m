@@ -401,6 +401,16 @@
 	{
 		[theName appendFormat:@" (%@ %@ %@)", NSLocalizedString(@"Filtered by", @"History item filtered by label"),
 			[filterSettings objectForKey:@"filterField"], [filterSettings objectForKey:@"filterComparison"]];
+	} else if ([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]
+				&& [filterSettings objectForKey:@"firstBetweenField"]
+				&& [[filterSettings objectForKey:@"secondBetweenField"] length] 
+				&& [filterSettings objectForKey:@"firstBetweenField"]
+				&& [[filterSettings objectForKey:@"secondBetweenField"] length]) 
+	{
+		[theName appendFormat:NSLocalizedString(@" (Filtered by %@ between %@ and %@)", @"History item filtered between values label"),
+			[filterSettings objectForKey:@"filterField"],
+			[filterSettings objectForKey:@"firstBetweenField"],
+			[filterSettings objectForKey:@"secondBetweenField"]];
 	} else if ([filterSettings objectForKey:@"filterValue"] && [[filterSettings objectForKey:@"filterValue"] length]) {
 		[theName appendFormat:@" (%@ %@ %@ %@)", NSLocalizedString(@"Filtered by", @"History item filtered by label"),
 			[filterSettings objectForKey:@"filterField"], [filterSettings objectForKey:@"filterComparison"],
