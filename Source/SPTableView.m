@@ -51,6 +51,10 @@
 			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"favorites"], row)  objectForKey:@"headerOfFileURL"])
 				return nil;
 		}
+		if([[[[self delegate] class] description] isEqualToString:@"SPContentFilterManager"]) {
+			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"contentFilters"], row)  objectForKey:@"headerOfFileURL"])
+				return nil;
+		}
 		
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 		[[self window] makeFirstResponder:self];

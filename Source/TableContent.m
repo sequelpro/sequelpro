@@ -45,6 +45,7 @@
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
 #import "RegexKitLite.h"
+#import "SPContentFilterManager.h"
 
 
 @implementation TableContent
@@ -169,7 +170,7 @@
 		[countText setStringValue:@""];
 
 		// Reset sort column
-		if (sortCol) [sortCol release], sortCol = nil;
+		if (sortCol) [sortCol release]; sortCol = nil;
 		isDesc = NO;
 
 		// Empty and disable filter options
@@ -585,7 +586,9 @@
 	NSMutableString *clause = [[NSMutableString alloc] init];
 	[clause setString:[filter objectForKey:@"Clause"]];
 
-	[clause replaceOccurrencesOfRegex:@"\\$BINARY" withString:(caseSensitive) ? @"BINARY" : @""];
+	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:(caseSensitive) ? @"BINARY" : @""];
+	[clause flushCachedRegexData];
+	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
 	[clause flushCachedRegexData];
 
 	// Escape % sign
@@ -663,7 +666,6 @@
 		[arg flushCachedRegexData];
 	}
 	if([clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"]) {
-		NSLog(@"asdas", _cmd);
 		[arg replaceOccurrencesOfRegex:@"([_%])" withString:@"\\\\$1"];
 		[arg flushCachedRegexData];
 	}
@@ -772,7 +774,16 @@
 - (IBAction)toggleFilterField:(id)sender
 {
 
-	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
+	// Check if user called "Edit filter…"
+	if([[compareField selectedItem] tag] == [[contentFilters objectForKey:compareType] count]) {
+		[self openContentFilterManager];
+		return;
+	}
+
+	// Remember last selection for "Edit filter…"
+	lastSelectedContentFilterIndex = [[compareField selectedItem] tag];
+
+	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:lastSelectedContentFilterIndex];
 	if ([[filter objectForKey:@"NumberOfArguments"] intValue] == 2) {
 		[argumentField setHidden:YES];
 
@@ -1203,13 +1214,34 @@
 	if([contentFilters objectForKey:compareType])
 		for(id filter in [contentFilters objectForKey:compareType]) {
 			NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:([filter objectForKey:@"MenuLabel"])?[filter objectForKey:@"MenuLabel"]:@"not specified" action:NULL keyEquivalent:@""];
+			// Create the tooltip
 			if([filter objectForKey:@"Tooltip"])
 				[item setToolTip:[filter objectForKey:@"Tooltip"]];
+			else {
+				NSMutableString *tip = [[NSMutableString alloc] init];
+				[tip setString:[[filter objectForKey:@"Clause"] stringByReplacingOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"]];
+				if([tip isMatchedByRegex:@"(?<!\\\\)\\$BINARY"]) {
+					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@""];
+					[tip appendString:NSLocalizedString(@"\n\nPress ⇧ for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
+				}
+				[tip flushCachedRegexData];
+				[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
+				[tip flushCachedRegexData];
+				[item setToolTip:tip];
+				[tip release];
+			}
 			[item setTag:i];
 			[menu addItem:item];
 			[item release];
 			i++;
 		}
+
+	[menu addItem:[NSMenuItem separatorItem]];
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filter…", @"edit filter") action:NULL keyEquivalent:@""];
+	[item setToolTip:NSLocalizedString(@"Edit user-defined Filter…", @"edit user-defined filter")];
+	[item setTag:i];
+	[menu addItem:item];
+	[item release];
 
 	// Update the argumentField enabled state
 	[self toggleFilterField:self];
@@ -1217,6 +1249,26 @@
 	// set focus on argumentField
 	[argumentField selectText:self];
 
+}
+
+- (void)openContentFilterManager
+{
+	[compareField selectItemWithTag:lastSelectedContentFilterIndex];
+	
+	[SPTooltip showWithObject:@"<h1><font color='#0000FB'>&nbsp;&nbsp;Please be patient. Under constructions. <span style='font-size:50pt'>☺</span>&nbsp;&nbsp;</font></h1>" atLocation:[NSEvent mouseLocation] ofType:@"html"];
+	return;
+	
+	// init query favorites controller
+	[prefs synchronize];
+	if(contentFilterManager) [contentFilterManager release];
+	contentFilterManager = [[SPContentFilterManager alloc] initWithDelegate:self forFilterType:compareType];
+
+	// Open query favorite manager
+	[NSApp beginSheet:[contentFilterManager window] 
+	   modalForWindow:tableWindow 
+		modalDelegate:contentFilterManager
+	   didEndSelector:nil 
+		  contextInfo:nil];
 }
 
 - (IBAction)stepLimitRows:(id)sender

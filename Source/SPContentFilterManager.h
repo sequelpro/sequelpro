@@ -4,8 +4,8 @@
 //  SPContentFilterManager.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Aug 23, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Hans-Jörg Bibiko on Sep 29, 2009
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 
 @interface NSObject (SPContentFilterManagerDelegate)
 
-- (void)queryFavoritesHaveBeenUpdated:(id)manager;
+- (void)contentFiltersHaveBeenUpdated:(id)manager;
 
 @end
 
@@ -36,34 +36,41 @@
 	NSUserDefaults *prefs;
 	
 	NSURL *delegatesFileURL;
-	IBOutlet NSPopUpButton *encodingPopUp;
-	IBOutlet NSTableView *favoritesTableView;
-	IBOutlet NSTextField *favoriteNameTextField;
-	IBOutlet NSTextView  *favoriteQueryTextView;
+	IBOutlet id encodingPopUp;
+	IBOutlet id contentFilterTableView;
+	IBOutlet id contentFilterNameTextField;
+	IBOutlet id contentFilterConjunctionTextField;
+	IBOutlet id contentFilterConjunctionLabel;
+	IBOutlet id contentFilterTextView;
 	IBOutlet id removeButton;
+	IBOutlet id numberOfArgsLabel;
+	IBOutlet id resultingClauseLabel;
+	IBOutlet id resultingClauseContentLabel;
+	IBOutlet id insertPlaceholderButton;
 
-	IBOutlet NSArrayController *favoritesArrayController;
+	IBOutlet id contentFilterArrayController;
 
-	NSMutableArray *favorites;
+	NSMutableArray *contentFilters;
 
 	BOOL isTableCellEditing;
+	
+	NSString *filterType;
 }
 
-- (id)initWithDelegate:(id)managerDelegate;
+- (id)initWithDelegate:(id)managerDelegate forFilterType:(NSString *)compareType;
 
 // Accessors
-- (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL;
+- (NSMutableArray *)contentFilterForFileURL:(NSURL *)fileURL;
 - (id)customQueryInstance;
 
 // IBAction methods
-- (IBAction)addQueryFavorite:(id)sender;
-- (IBAction)removeQueryFavorite:(id)sender;
-- (IBAction)removeAllQueryFavorites:(id)sender;
-- (IBAction)duplicateQueryFavorite:(id)sender;
-- (IBAction)saveFavoriteToFile:(id)sender;
-- (IBAction)exportFavorites:(id)sender;
-- (IBAction)importFavoritesByAdding:(id)sender;
-- (IBAction)importFavoritesByReplacing:(id)sender;
-- (IBAction)closeQueryManagerSheet:(id)sender;
+- (IBAction)addContentFilter:(id)sender;
+- (IBAction)removeContentFilter:(id)sender;
+- (IBAction)insertPlaceholder:(id)sender;
+- (IBAction)duplicateContentFilter:(id)sender;
+- (IBAction)exportContentFilter:(id)sender;
+- (IBAction)importContentFilterByAdding:(id)sender;
+// - (IBAction)importContentFilterByReplacing:(id)sender;
+- (IBAction)closeContentFilterManagerSheet:(id)sender;
 
 @end

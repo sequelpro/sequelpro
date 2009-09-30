@@ -69,6 +69,8 @@
 
 	NSMutableDictionary *contentFilters;
 	NSMutableDictionary *numberOfDefaultFilters;
+	NSUInteger lastSelectedContentFilterIndex;
+	id contentFilterManager;
 
 	BOOL sortColumnToRestoreIsAsc;
 	NSString *sortColumnToRestore;
@@ -131,5 +133,6 @@
 - (void) clearDetailsToRestore;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
+- (void)openContentFilterManager;
 
 @end

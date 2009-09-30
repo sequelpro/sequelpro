@@ -4,8 +4,8 @@
 //  SPContentFilterManager.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Aug 23, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Hans-Jörg Bibiko on Sep 29, 2009
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -25,16 +25,15 @@
 
 #import "SPContentFilterManager.h"
 #import "ImageAndTextCell.h"
-#import "SPEncodingPopupAccessory.h"
+#import "RegexKitLite.h"
 #import "SPQueryController.h"
 
-#define DEFAULT_QUERY_FAVORITE_FILE_EXTENSION @"sql"
 #define DEFAULT_SEQUELPRO_FILE_EXTENSION @"spf"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
 
-#define QUERY_FAVORITES_PB_DRAG_TYPE @"SequelProQueryFavoritesPasteboard"
+#define CONTENT_FILTER_PB_DRAG_TYPE @"SequelProContentFilterPasteboard"
 
 @interface SPContentFilterManager (Private)
 - (void)_initWithNoSelection;
@@ -45,20 +44,22 @@
 /**
  * Initialize the manager with the supplied delegate
  */
-- (id)initWithDelegate:(id)managerDelegate
+- (id)initWithDelegate:(id)managerDelegate forFilterType:(NSString *)compareType
 {
-	if ((self = [super initWithWindowNibName:@"QueryFavoriteManager"])) {
+	if ((self = [super initWithWindowNibName:@"ContentFilterManager"])) {
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
-		favorites = [[NSMutableArray alloc] init];
+		contentFilters = [[NSMutableArray alloc] init];
 		
 		if(managerDelegate == nil) {
 			NSBeep();
-			NSLog(@"Query Favorite Manger was called without a delegate.");
+			NSLog(@"ContentFilterManager was called without a delegate.");
 			return nil;
 		}
 		delegatesFileURL = [[managerDelegate valueForKeyPath:@"tableDocumentInstance"] fileURL];
+		filterType = [NSString stringWithString:compareType];
+
 	}
 	
 	return self;
@@ -66,7 +67,7 @@
 
 - (void)dealloc
 {
-	[favorites release];
+	[contentFilters release];
 	[super dealloc];
 }
 
@@ -76,60 +77,68 @@
 - (void)awakeFromNib
 {
 
-	[favoriteQueryTextView setAllowsDocumentBackgroundColorChange:YES];
+	[contentFilterTextView setAllowsDocumentBackgroundColorChange:YES];
 	
 	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
 	
 	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
 	
-	[favoriteQueryTextView bind:@"backgroundColor"
+	[contentFilterTextView bind:@"backgroundColor"
 					   toObject:[NSUserDefaultsController sharedUserDefaultsController]
 					withKeyPath:@"values.CustomQueryEditorBackgroundColor"
 						options:bindingOptions];
 
 
-	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			@"Global", @"name", 
+	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+			@"Global", @"MenuLabel", 
 			@"", @"headerOfFileURL",
-			@"", @"query",
+			@"", @"Clause",
+			@"", @"ConjunctionLabel",
 			nil]];
 
 	// Build data source for global queryFavorites (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
-	if([prefs objectForKey:@"queryFavorites"]) {
-		for(id fav in [prefs objectForKey:@"queryFavorites"])
-			[favorites addObject:[[fav mutableCopy] autorelease]];
+	if([[prefs objectForKey:@"ContentFilters"] objectForKey:filterType]) {
+		for(id fav in [[prefs objectForKey:@"ContentFilters"] objectForKey:filterType]) {
+			id f = [[fav mutableCopy] autorelease];
+			if([f objectForKey:@"ConjunctionLabels"])
+				[f setObject:[[f objectForKey:@"ConjunctionLabels"] objectAtIndex:0] forKey:@"ConjunctionLabel"];
+			[contentFilters addObject:f];
+		}
 	}
 
-	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"name", 
+	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"MenuLabel", 
 		[delegatesFileURL absoluteString], @"headerOfFileURL", 
-		@"", @"query",
+		@"", @"Clause",
 		nil]];
 
-	if([[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL]) {
-		for(id fav in [[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL])
-			[favorites addObject:[[fav mutableCopy] autorelease]];
-	}
+	// if([[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL]) {
+	// 	for(id fav in [[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL])
+	// 		[contentFilters addObject:[[fav mutableCopy] autorelease]];
+	// }
 
 
 	// Select the first query if any
 	NSUInteger i = 0;
-	for(i=0; i < [favorites count]; i++ )
-		if(![[favorites objectAtIndex:i] objectForKey:@"headerOfFileURL"])
+	for(i=0; i < [contentFilters count]; i++ )
+		if(![[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"])
 			break;
 
-	[[self window] makeFirstResponder:favoritesTableView];
+	[[self window] makeFirstResponder:contentFilterTableView];
 	[self _initWithNoSelection];
 
 	// Register drag types
-	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:QUERY_FAVORITES_PB_DRAG_TYPE]];
+	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:CONTENT_FILTER_PB_DRAG_TYPE]];
 	
-	[favoritesArrayController setContent:favorites];
-	[favoritesTableView reloadData];
+	[contentFilterArrayController setContent:contentFilters];
+	[contentFilterTableView reloadData];
 
 	// Set Remove button state
-	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
+	[removeButton setEnabled:([contentFilterTableView numberOfSelectedRows] > 0)];
+
+	// Set column header
+	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"content filter for field type ‘%@’"), filterType]];
 
 }
 
@@ -137,12 +146,12 @@
 #pragma mark Accessor methods
 
 /**
- * Returns the query favorites array for fileURL.
- * fileURL == nil → global favorites
+ * Returns the content filters array for fileURL.
+ * fileURL == nil → global content filters
  */
-- (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL
+- (NSMutableArray *)contentFilterForFileURL:(NSURL *)fileURL
 {
-	NSMutableArray *favs = [NSMutableArray array];
+	NSMutableArray *filters = [NSMutableArray array];
 	NSString *fileURLstring;
 
 	if(fileURL == nil)
@@ -153,26 +162,43 @@
 	NSUInteger i = 0;
 
 	// Look for the header specified by fileURL
-	while(i<[favorites count]) {
-		if ([[favorites objectAtIndex:i] objectForKey:@"headerOfFileURL"] 
-				&& [[[favorites objectAtIndex:i] objectForKey:@"headerOfFileURL"] isEqualToString:fileURLstring]) {
+	while(i<[contentFilters count]) {
+		if ([[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"] 
+				&& [[[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"] isEqualToString:fileURLstring]) {
 			i++;
 			break;
 		}
 		i++;
 	}
 
-	// Take all favorites until the next header or end of favorites
-	for(i; i<[favorites count]; i++) {
+	// Take all content filters until the next header or end of all content filters
+	NSUInteger numOfArgs;
+	for(i; i<[contentFilters count]; i++) {
 
-		if(![[favorites objectAtIndex:i] objectForKey:@"headerOfFileURL"])
-			[favs addObject:[favorites objectAtIndex:i]];
-		else
+		if(![[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"]) {
+			NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
+			[d setDictionary:[contentFilters objectAtIndex:i]];
+			NSMutableArray *conjLabel = [[NSMutableArray alloc] init];
+			numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
+			if(numOfArgs > 1) {
+				if([d objectForKey:@"ConjunctionLabel"]) {
+					[conjLabel addObject:[d objectForKey:@"ConjunctionLabel"]];
+					[d setObject:conjLabel forKey:@"ConjunctionLabels"];
+				}
+			} else {
+				[d removeObjectForKey:@"ConjunctionLabels"];
+			}
+			[d removeObjectForKey:@"ConjunctionLabel"];
+			[conjLabel release];
+			[d setObject:[NSNumber numberWithInteger:numOfArgs] forKey:@"NumberOfArguments"];
+			[filters addObject:d];
+			[d release];
+		} else
 			break;
 
 	}
 
-	return favs;
+	return filters;
 }
 
 /**
@@ -183,66 +209,70 @@
 	return [[[NSApp mainWindow] delegate] valueForKey:@"customQueryInstance"];
 }
 
+
 #pragma mark -
 #pragma mark IBAction methods
 
 /**
- * Adds/Inserts a query favorite
+ * Adds/Inserts a content filter
  */
-- (IBAction)addQueryFavorite:(id)sender
+- (IBAction)addContentFilter:(id)sender
 {
 
-	NSMutableDictionary *favorite;
+	NSMutableDictionary *filter;
 	NSUInteger insertIndex;
 
-	// Duplicate a selected favorite if sender == self
+	// Store pending changes in Clause
+	[[self window] makeFirstResponder:contentFilterNameTextField];
+
+	// Duplicate a selected filter if sender == self
 	if(sender == self)
-		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[favoriteNameTextField stringValue] stringByAppendingFormat:@" Copy"], [favoriteQueryTextView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
-	// Add a new favorite
+		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[contentFilterNameTextField stringValue] stringByAppendingFormat:@" Copy"], [contentFilterTextView string], nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", nil]];
+	// Add a new filter
 	else
-		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
-	
-	if([favoritesTableView numberOfSelectedRows] > 0) {
-		insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex]+1;
-		[favorites insertObject:favorite atIndex:insertIndex];
+		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Filter", @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
+
+	if([contentFilterTableView numberOfSelectedRows] > 0) {
+		insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex]+1;
+		[contentFilters insertObject:filter atIndex:insertIndex];
 	} else {
-		[favorites addObject:favorite];
-		insertIndex = [favorites count] - 1;
+		[contentFilters addObject:filter];
+		insertIndex = [contentFilters count] - 1;
 	}
 
-	[favoritesArrayController rearrangeObjects];
-	[favoritesTableView reloadData];
+	[contentFilterArrayController rearrangeObjects];
+	[contentFilterTableView reloadData];
 
-	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
+	[contentFilterTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
 	
-	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
+	[contentFilterTableView scrollRowToVisible:[contentFilterTableView selectedRow]];
 
-	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
-	[[self window] makeFirstResponder:favoriteNameTextField];
+	[removeButton setEnabled:([contentFilterTableView numberOfSelectedRows] > 0)];
+	[[self window] makeFirstResponder:contentFilterNameTextField];
 
 }
 
 /**
- * Duplicates a query favorite
+ * Duplicates a filter
  */
-- (IBAction)duplicateQueryFavorite:(id)sender
+- (IBAction)duplicateContentFilter:(id)sender
 {
-	if ([favoritesTableView numberOfSelectedRows] == 1)
-		[self addQueryFavorite:self];
+	if ([contentFilterTableView numberOfSelectedRows] == 1)
+		[self addContentFilter:self];
 	else
 		NSBeep();
 }
 
 /**
- * Removes a query favorite
+ * Removes a filter
  */
-- (IBAction)removeQueryFavorite:(id)sender
+- (IBAction)removeContentFilter:(id)sender
 {
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected query favorites?", @"remove selected query favorites message") 
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected content filters?", @"remove selected content filters message") 
 									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")
 								   alternateButton:NSLocalizedString(@"Remove", @"remove button")
 									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected query favorites? This action cannot be undone.", @"remove all selected query favorites informative message")];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected content filters? This action cannot be undone.", @"remove all selected content filters informative message")];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -252,53 +282,18 @@
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@""];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFavorites"];
+	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFilters"];
 }
 
 /**
- * Removes all query favorites
+ * Insert placeholder - the placeholder string is stored as tooltip
  */
-- (IBAction)removeAllQueryFavorites:(id)sender
+- (IBAction)insertPlaceholder:(id)sender
 {
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove all query favorites?", @"remove all query favorites message") 
-									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")
-								   alternateButton:NSLocalizedString(@"Remove All", @"remove all button")
-									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all of your saved query favorites? This action cannot be undone.", @"remove all query favorites informative message")];
-
-	[alert setAlertStyle:NSCriticalAlertStyle];
-	
-	NSArray *buttons = [alert buttons];
-	
-	// Change the alert's cancel button to have the key equivalent of return
-	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
-	[[buttons objectAtIndex:1] setKeyEquivalent:@""];
-	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeAllFavorites"];
+	[contentFilterTextView insertText:[[[sender selectedItem] toolTip] substringToIndex:[[[sender selectedItem] toolTip] rangeOfString:@" – "].location]];
 }
 
-/**
- * Saves the currently selected query favorite to a user specified file.
- */
-- (IBAction)saveFavoriteToFile:(id)sender
-{
-	NSSavePanel *panel = [NSSavePanel savePanel];
-	
-	[panel setRequiredFileType:DEFAULT_QUERY_FAVORITE_FILE_EXTENSION];
-	
-	[panel setExtensionHidden:NO];
-	[panel setAllowsOtherFileTypes:YES];
-	[panel setCanSelectHiddenExtension:YES];
-	[panel setCanCreateDirectories:YES];
-
-	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
-	
-	[encodingPopUp setEnabled:YES];
-	
-	[panel beginSheetForDirectory:nil file:[favoriteNameTextField stringValue] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveQuery"];
-}
-
-- (IBAction)exportFavorites:(id)sender
+- (IBAction)exportContentFilter:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
@@ -309,10 +304,10 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFavorites"];
+	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFilter"];
 }
 
-- (IBAction)importFavoritesByAdding:(id)sender
+- (IBAction)importContentFilterByAdding:(id)sender
 {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
@@ -323,7 +318,7 @@
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
-						  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
+						  types:[NSArray arrayWithObjects:@"spf", nil] 
 				 modalForWindow:[self window]
 				  modalDelegate:self 
 				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
@@ -336,14 +331,14 @@
 }
 
 /**
- * Closes the query favorite manager
+ * Closes the content filter manager
  */
-- (IBAction)closeQueryManagerSheet:(id)sender
+- (IBAction)closeContentFilterManagerSheet:(id)sender
 {
 
 	// First check for ESC if pressed while inline editing
 	if(![sender tag] && isTableCellEditing) {
-		[favoritesTableView abortEditing];
+		[contentFilterTableView abortEditing];
 		isTableCellEditing = NO;
 		return;
 	}
@@ -355,22 +350,24 @@
 	if([sender tag]) {
 
 		// Ensure that last changes will be written back
-		// if only one favorite is selected; otherwise unstable state
-		if ([favoritesTableView numberOfSelectedRows] == 1) {
-			[[self window] makeFirstResponder:favoritesTableView];
+		// if only one filter is selected; otherwise unstable state
+		if ([contentFilterTableView numberOfSelectedRows] == 1) {
+			[[self window] makeFirstResponder:contentFilterTableView];
 		}
-
-		// Update current document's query favorites in the SPQueryController
-		[[SPQueryController sharedQueryController] replaceFavoritesByArray:
-			[self queryFavoritesForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
-
+		
+		// Update current document's content filters in the SPQueryController
+		// [[SPQueryController sharedQueryController] replaceFavoritesByArray:
+		// 	[self contentFilterForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
+		// 
 		// Update global preferences' list
-		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:@"queryFavorites"];
+		id cf = [[prefs objectForKey:@"ContentFilters"] mutableCopy];
+		[cf setObject:[self contentFilterForFileURL:nil] forKey:filterType];
+		[prefs setObject:cf forKey:@"ContentFilters"];
 
-		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSDocumentController sharedDocumentController] documents])
-			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
-				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
+		// // Inform all opened documents to update the query favorites list
+		// for(id doc in [[NSDocumentController sharedDocumentController] documents])
+		// 	if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
+		// 		[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
 
 
 	}
@@ -400,11 +397,11 @@
 #pragma mark TableView datasource methods
 
 /**
- * Returns the number of query favorites.
+ * Returns the number of all content filters.
  */
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [favorites count];
+	return [contentFilters count];
 }
 
 /**
@@ -412,49 +409,55 @@
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(![[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
+	if(![[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
 
-	return [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	return [[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
 
 /*
- * Save favorite names if inline edited (suppress empty names)
+ * Save content filter name (MenuLabel) if inline edited (suppress empty names)
  */
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
-	if([[aTableColumn identifier] isEqualToString:@"name"] && [anObject length]) {
-		[[favorites objectAtIndex:rowIndex] setObject:[anObject description] forKey:@"name"];
-		// [[favorites objectAtIndex:rowIndex] setObject:[favoriteQueryTextView string] forKey:@"query"];
-		[favoriteNameTextField setStringValue:[anObject description]];
+	if([[aTableColumn identifier] isEqualToString:@"MenuLabel"] && [anObject length]) {
+		[[contentFilters objectAtIndex:rowIndex] setObject:[anObject description] forKey:@"MenuLabel"];
+		[contentFilterNameTextField setStringValue:[anObject description]];
 	}
 
-	[favoritesTableView reloadData];
+	[contentFilterTableView reloadData];
 }
 
 /*
- * Before selecting an other favorite save pending query string changes
+ * Before selecting an other filter save pending query string changes
  * and make sure that no group table item can be selected
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return ([[favorites objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? NO : YES;
+	BOOL enable = ([contentFilterTableView numberOfSelectedRows] > 0);
+	[removeButton setEnabled:enable];
+	[numberOfArgsLabel setHidden:!enable];
+	[resultingClauseLabel setHidden:!enable];
+	[resultingClauseContentLabel setHidden:!enable];
+	[insertPlaceholderButton setEnabled:enable];
+
+	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? NO : YES;
 }
 
 /*
- * Set indention levels for headers and favorites
+ * Set indention levels for headers and filters
  * (maybe in the future use an image for headers for expanding and collapsing)
  */
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if([[favorites objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"] && [[aTableColumn identifier] isEqualToString:@"name"]) {
+	if([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"] && [[aTableColumn identifier] isEqualToString:@"MenuLabel"]) {
 		// if([[[favoriteProperties objectAtIndex:rowIndex] objectForKey:@"isGroup"] isEqualToString:@"1"])
 		// 	[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"NSRightFacingTriangleTemplate"]];
 		// else
 		// 	[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"NSLeftFacingTriangleTemplate"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];
 	}
-	else if(![[favorites objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"] && [[aTableColumn identifier] isEqualToString:@"name"]) {
+	else if(![[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"] && [[aTableColumn identifier] isEqualToString:@"MenuLabel"]) {
 		// [(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"dummy-small"]];
 		[(ImageAndTextCell*)aCell setIndentationLevel:1];
 	}
@@ -465,15 +468,15 @@
  */
 - (CGFloat)tableView:(NSTableView *)aTableView heightOfRow:(NSInteger)rowIndex
 {
-	return ([[favorites objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? 20 : 18;
+	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? 20 : 18;
 }
 
 /*
- * Only favorite name can be edited inline
+ * Only filter name can be edited inline
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if([[favorites objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) {
+	if([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) {
 		return NO;
 	} else {
 		isTableCellEditing = YES;
@@ -491,11 +494,11 @@
 }
 
 /*
- * favoriteProperties holds the data if a table row is a group header or not
+ * contentFilters holds the data if a table row is a group header or not
  */
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
 {
-	return ([[favorites objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? YES : NO;
+	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? YES : NO;
 }
 /*
  * Detect if inline editing was done - then ESC to close the sheet will be activate
@@ -512,18 +515,59 @@
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 
-	// Do nothing if no favorite is selected
-	if([favoritesTableView numberOfSelectedRows] < 1) return;
+	// Do nothing if no filter is selected
+	if([contentFilterTableView numberOfSelectedRows] < 1) return;
 
 	id object = [notification object];
 
-	if(object == favoriteNameTextField) {
-		[[favorites objectAtIndex:[favoritesTableView selectedRow]] setObject:[favoriteNameTextField stringValue] forKey:@"name"];
-		[favoritesTableView reloadData];
+	if(object == contentFilterNameTextField) {
+		[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] setObject:[contentFilterNameTextField stringValue] forKey:@"MenuLabel"];
+		[contentFilterTableView reloadData];
 	}
 
 }
 
+/*
+ * Parse clause and update labels accordingly
+ */
+- (void)textViewDidChangeSelection:(NSNotification *)notification
+{
+	// Do nothing if no filter is selected
+	if([contentFilterTableView numberOfSelectedRows] < 1) return;
+
+	id object = [notification object];
+
+	if(object == contentFilterTextView) {
+		[insertPlaceholderButton setEnabled:([[contentFilterTextView string] length])];
+		[resultingClauseLabel setHidden:(![[contentFilterTextView string] length])];
+		[resultingClauseContentLabel setHidden:(![[contentFilterTextView string] length])];
+		[numberOfArgsLabel setHidden:(![[contentFilterTextView string] length])];
+
+		NSUInteger numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
+		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %d", @"Number of arguments: %d"), numOfArgs]];
+
+		[contentFilterConjunctionTextField setHidden:(numOfArgs < 2)];
+		[contentFilterConjunctionLabel setHidden:(numOfArgs < 2)];
+
+		if(numOfArgs > 2) {
+			[resultingClauseLabel setStringValue:NSLocalizedString(@"Error", @"Error")];
+			[resultingClauseContentLabel setStringValue:NSLocalizedString(@"Maximum number of arguments is 2!", @"Maximum number of arguments is 2!")];
+		} else {
+			[resultingClauseLabel setStringValue:@"SELECT * FROM <table> WHERE"];
+			NSMutableString *c = [[NSMutableString alloc] init];
+			[c setString:[contentFilterTextView string]];
+			[c replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@"[BINARY]"];
+			[c flushCachedRegexData];
+			[c replaceOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"];
+			[c flushCachedRegexData];
+			[c replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:@"<field>"];
+			[c flushCachedRegexData];
+			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"<field> %@", c]];
+			[c release];
+		}
+
+	}
+}
 #pragma mark -
 #pragma mark Menu validation
 
@@ -534,22 +578,18 @@
 {
 
 	// Disable all if only GLOBAL is in the table
-	if([favorites count] < 2) return NO;
+	if([contentFilters count] < 2) return NO;
 
 	SEL action = [menuItem action];
 	
-	if ( (action == @selector(duplicateQueryFavorite:))	|| 
-		(action == @selector(saveFavoriteToFile:))) 
+	if ( (action == @selector(duplicateContentFilter:))) 
 	{
-		return ([favoritesTableView numberOfSelectedRows] == 1);
+		return ([contentFilterTableView numberOfSelectedRows] == 1);
 	}
-	else if ( (action == @selector(removeQueryFavorite:))	||
+	else if ( (action == @selector(removeContentFilter:))	||
 		( action == @selector(exportFavorites:)))
 	{
-		return ([favoritesTableView numberOfSelectedRows] > 0);
-	}
-	else if (action == @selector(removeAllQueryFavorites:)) {
-		return ([favorites count] > 0);
+		return ([contentFilterTableView numberOfSelectedRows] > 0);
 	}
 	
 	return YES;
@@ -564,30 +604,24 @@
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
 {
 
-	// Up to now only one row can be dragged
-	// if ([rows count] == 1) {
+	NSArray *pboardTypes = [NSArray arrayWithObject:CONTENT_FILTER_PB_DRAG_TYPE];
+	NSInteger originalRow = [[rows objectAtIndex:0] intValue];
 
-		NSArray *pboardTypes = [NSArray arrayWithObject:QUERY_FAVORITES_PB_DRAG_TYPE];
-		NSInteger originalRow = [[rows objectAtIndex:0] intValue];
+	if(originalRow < 1) return NO;
 
-		if(originalRow < 1) return NO;
+	// Do not drag headers
+	if([[contentFilters objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
 
-		// Do not drag headers
-		if([[favorites objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
+	[pboard declareTypes:pboardTypes owner:nil];
 
-		[pboard declareTypes:pboardTypes owner:nil];
+	NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
+	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
+	[archiver encodeObject:rows forKey:@"indexdata"];
+	[archiver finishEncoding];
+	[pboard setData:indexdata forType:CONTENT_FILTER_PB_DRAG_TYPE];
 
-		NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
-		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
-		[archiver encodeObject:rows forKey:@"indexdata"];
-		[archiver finishEncoding];
-		[pboard setData:indexdata forType:QUERY_FAVORITES_PB_DRAG_TYPE];
+	return YES;
 
-		return YES;
-
-	// } 
-
-	// return NO;
 }
 
 /**
@@ -598,7 +632,7 @@
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
 	if (([pboardTypes count] > 1) && (row != -1)) {
-		if (([pboardTypes containsObject:QUERY_FAVORITES_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
+		if (([pboardTypes containsObject:CONTENT_FILTER_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
 			if (row > 0) {
 				return NSDragOperationMove;
 			}
@@ -617,7 +651,7 @@
 
 	if(row < 1) return NO;
 
-	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:QUERY_FAVORITES_PB_DRAG_TYPE]] autorelease];
+	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:CONTENT_FILTER_PB_DRAG_TYPE]] autorelease];
 	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
 
@@ -635,23 +669,23 @@
 		originalRow += offset;
 
 		// For safety reasons
-		if(originalRow > [favorites count]-1) originalRow = [favorites count] - 1;
+		if(originalRow > [contentFilters count]-1) originalRow = [contentFilters count] - 1;
 
-		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[favorites objectAtIndex:originalRow]];
-		[favorites removeObjectAtIndex:originalRow];
-		[favoritesTableView reloadData];
+		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[contentFilters objectAtIndex:originalRow]];
+		[contentFilters removeObjectAtIndex:originalRow];
+		[contentFilterTableView reloadData];
 
-		if(destinationRow+i >= [favorites count])
-			[favorites addObject:draggedRow];
+		if(destinationRow+i >= [contentFilters count])
+			[contentFilters addObject:draggedRow];
 		else
-			[favorites insertObject:draggedRow atIndex:destinationRow+i];
+			[contentFilters insertObject:draggedRow atIndex:destinationRow+i];
 
 		if(originalRow < row) offset--;
 
 	}
 
-	[favoritesTableView reloadData];
-	[favoritesArrayController rearrangeObjects];
+	[contentFilterTableView reloadData];
+	[contentFilterArrayController rearrangeObjects];
 
 	return YES;
 }
@@ -670,26 +704,26 @@
 	// 		[favorites removeObjects:[queryFavoritesController arrangedObjects]];
 	// 	}
 	// }
-	if([contextInfo isEqualToString:@"removeSelectedFavorites"]) {
+	if([contextInfo isEqualToString:@"removeSelectedFilters"]) {
 		if (returnCode == NSAlertAlternateReturn) {
-			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
+			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
 			// get last index
 			NSUInteger currentIndex = [indexes lastIndex];
 
 			while (currentIndex != NSNotFound) {
-				[favorites removeObjectAtIndex:currentIndex];
+				[contentFilters removeObjectAtIndex:currentIndex];
 				// get next index (beginning from the end)
 				currentIndex = [indexes indexLessThanIndex:currentIndex];
 			}
 
-			[favoritesArrayController rearrangeObjects];
-			[favoritesTableView reloadData];
+			[contentFilterArrayController rearrangeObjects];
+			[contentFilterTableView reloadData];
 
-			// Set focus to favorite list to avoid an unstable state
-			[[self window] makeFirstResponder:favoritesTableView];
+			// Set focus to filter list to avoid an unstable state
+			[[self window] makeFirstResponder:contentFilterTableView];
 
-			[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
+			[removeButton setEnabled:([contentFilterTableView numberOfSelectedRows] > 0)];
 		}
 	}
 }
@@ -727,26 +761,26 @@
 				return;
 			}
 
-			if([spf objectForKey:@"queryFavorites"] && [[spf objectForKey:@"queryFavorites"] count]) {
-				if([favoritesTableView numberOfSelectedRows] > 0) {
-					// Insert imported queries after the last selected favorite
-					NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
+			if([[spf objectForKey:@"ContentFilters"] objectForKey:filterType] && [[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]) {
+				if([contentFilterTableView numberOfSelectedRows] > 0) {
+					// Insert imported filters after the last selected filter
+					NSUInteger insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex] + 1;
 					NSUInteger i;
-					for(i=0; i<[[spf objectForKey:@"queryFavorites"] count]; i++) {
-						[favorites insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
+					for(i=0; i<[[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]; i++) {
+						[contentFilters insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
 					}
 				} else {
 					// If no selection add them
-					[favorites addObjectsFromArray:[spf objectForKey:@"queryFavorites"]];
+					[contentFilters addObjectsFromArray:[[spf objectForKey:@"ContentFilters"] objectForKey:filterType]];
 				}
-				[favoritesArrayController rearrangeObjects];
-				[favoritesTableView reloadData];
+				[contentFilterArrayController rearrangeObjects];
+				[contentFilterTableView reloadData];
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:NSLocalizedString(@"No query favorites found.", @"error that no query favorites found")];
+									informativeTextWithFormat:NSLocalizedString(@"No content filters found.", @"error that no content filters found")];
 
 				[alert setAlertStyle:NSInformationalAlertStyle];
 				[alert runModal];
@@ -770,7 +804,7 @@
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
 			[prefs synchronize];
 		
-			[[favoriteQueryTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
+			[[contentFilterTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
 		
 			if (error) [[NSAlert alertWithError:error] runModal];
 		}
@@ -778,24 +812,24 @@
 	else if([contextInfo isEqualToString:@"exportFavorites"]) {
 		if (returnCode == NSOKButton) {
 
-			// Build a SPF with format = "query favorites"
+			// Build a SPF with format = "content filters"
 			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
-			NSMutableArray *favoriteData = [NSMutableArray array];
+			NSMutableArray *filterData = [NSMutableArray array];
 
 	
 			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
-			[spfdata setObject:@"query favorites" forKey:@"format"];
+			[spfdata setObject:@"content filters" forKey:@"format"];
 			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
 
-			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
+			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
 			// Get selected items and preserve the order
 			NSUInteger i;
-			for (i=1; i<[favorites count]; i++)
+			for (i=1; i<[contentFilters count]; i++)
 				if([indexes containsIndex:i])
-					[favoriteData addObject:[favorites objectAtIndex:i]];
+					[filterData addObject:[contentFilters objectAtIndex:i]];
 
-			[spfdata setObject:favoriteData forKey:@"queryFavorites"];
+			[spfdata setObject:filterData forKey:@"ContentFilter"];
 			
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
@@ -803,7 +837,7 @@
 											errorDescription:&err];
 
 			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting query favorite data", @"error while converting query favorite data")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting content filter data", @"error while converting content filter data")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
@@ -824,9 +858,9 @@
 
 - (void)_initWithNoSelection
 {
-	[favoritesTableView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-	[[favoriteNameTextField cell] setPlaceholderString:SP_NO_SELECTION_PLACEHOLDER_STRING];
-	[favoriteNameTextField setStringValue:@""];
-	[favoriteQueryTextView setString:@""];
+	[contentFilterTableView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+	[[contentFilterNameTextField cell] setPlaceholderString:SP_NO_SELECTION_PLACEHOLDER_STRING];
+	[contentFilterNameTextField setStringValue:@""];
+	[contentFilterTextView setString:@""];
 }
 @end

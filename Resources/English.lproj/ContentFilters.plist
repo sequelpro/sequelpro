@@ -106,8 +106,6 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>LIKE $BINARY '${}'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -116,8 +114,6 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>NOT LIKE $BINARY '${}'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -126,8 +122,6 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>LIKE $BINARY '%${}%'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -136,8 +130,6 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>NOT LIKE $BINARY '%${}%'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -146,8 +138,6 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>LIKE $BINARY '${}'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -156,8 +146,6 @@
 				<integer>1</integer>
 				<key>Clause</key>
 				<string>NOT LIKE $BINARY '${}'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -167,7 +155,9 @@
 				<key>Clause</key>
 				<string>IN (${})</string>
 				<key>Tooltip</key>
-				<string>Do quote strings manually.</string>
+				<string>IN ([arg])
+
+Do quote strings manually.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>
@@ -180,8 +170,6 @@
 				</array>
 				<key>Clause</key>
 				<string>BETWEEN $BINARY '${}' AND '${}'</string>
-				<key>Tooltip</key>
-				<string>Press ⇧ for case-sensitive search.</string>
 			</dict>
 			<dict>
 				<key>MenuLabel</key>

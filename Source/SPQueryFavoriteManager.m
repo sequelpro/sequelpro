@@ -195,6 +195,9 @@
 	NSMutableDictionary *favorite;
 	NSUInteger insertIndex;
 
+	// Store pending changes in Query
+	[[self window] makeFirstResponder:favoriteNameTextField];
+
 	// Duplicate a selected favorite if sender == self
 	if(sender == self)
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[favoriteNameTextField stringValue] stringByAppendingFormat:@" Copy"], [favoriteQueryTextView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
