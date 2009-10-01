@@ -774,7 +774,7 @@
 - (IBAction)toggleFilterField:(id)sender
 {
 
-	// Check if user called "Edit filter…"
+	// Check if user called "Edit Filter…"
 	if([[compareField selectedItem] tag] == [[contentFilters objectForKey:compareType] count]) {
 		[self openContentFilterManager];
 		return;
@@ -784,10 +784,11 @@
 	lastSelectedContentFilterIndex = [[compareField selectedItem] tag];
 
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:lastSelectedContentFilterIndex];
+	NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] intValue];
 	if ([[filter objectForKey:@"NumberOfArguments"] intValue] == 2) {
 		[argumentField setHidden:YES];
 
-		if([filter objectForKey:@"ConjunctionLabels"] && [[filter objectForKey:@"ConjunctionLabels"] count] == 1)
+		if(numOfArgs == 1)
 			[betweenTextField setStringValue:[[filter objectForKey:@"ConjunctionLabels"] objectAtIndex:0]];
 		[betweenTextField setHidden:NO];
 		[firstBetweenField setHidden:NO];
@@ -797,7 +798,7 @@
 		[secondBetweenField setEnabled:YES];
 		[firstBetweenField selectText:self];
 	}
-	else if ([[filter objectForKey:@"NumberOfArguments"] intValue] == 1){
+	else if (numOfArgs == 1){
 		[argumentField setHidden:NO];
 		[argumentField setEnabled:YES];
 		[argumentField selectText:self];
@@ -815,7 +816,8 @@
 		[secondBetweenField setHidden:YES];
 
 		// Start search if no argument is required
-		[self filterTable:self];
+		if(numOfArgs == 0)
+			[self filterTable:self];
 	}
 
 }
@@ -1200,12 +1202,19 @@
 		}
 	}
 
-	// Load user-defined content filters
+	// Load global user-defined content filters
 	if([prefs objectForKey:@"ContentFilters"] 
 		&& [contentFilters objectForKey:compareType]
 		&& [[prefs objectForKey:@"ContentFilters"] objectForKey:compareType])
 	{
 		[[contentFilters objectForKey:compareType] addObjectsFromArray:[[prefs objectForKey:@"ContentFilters"] objectForKey:compareType]];
+	}
+
+	// Load doc-based user-defined content filters
+	if([[SPQueryController sharedQueryController] contentFilterForFileURL:[tableDocumentInstance fileURL]]) {
+		id filters = [[SPQueryController sharedQueryController] contentFilterForFileURL:[tableDocumentInstance fileURL]];
+		if([filters objectForKey:compareType])
+			[[contentFilters objectForKey:compareType] addObjectsFromArray:[filters objectForKey:compareType]];
 	}
 
 	// Rebuild operator popup menu
@@ -1254,9 +1263,6 @@
 - (void)openContentFilterManager
 {
 	[compareField selectItemWithTag:lastSelectedContentFilterIndex];
-	
-	[SPTooltip showWithObject:@"<h1><font color='#0000FB'>&nbsp;&nbsp;Please be patient. Under constructions. <span style='font-size:50pt'>☺</span>&nbsp;&nbsp;</font></h1>" atLocation:[NSEvent mouseLocation] ofType:@"html"];
-	return;
 	
 	// init query favorites controller
 	[prefs synchronize];
@@ -1858,6 +1864,7 @@
 	if (![fieldField isEnabled]) return nil;
 
 	theDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+						[self tableFilterString], @"menuLabel",
 						[[fieldField selectedItem] title], @"filterField",
 						[[compareField selectedItem] title], @"filterComparison",
 						[NSNumber numberWithInt:[[compareField selectedItem] tag]], @"filterComparisonTag",

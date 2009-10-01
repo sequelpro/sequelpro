@@ -215,6 +215,7 @@ enum sp_current_query_mode
 - (NSString *)table;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
+- (NSString *)displaySPName;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;

@@ -731,17 +731,17 @@
 			}
 
 			if([spf objectForKey:@"queryFavorites"] && [[spf objectForKey:@"queryFavorites"] count]) {
-				if([favoritesTableView numberOfSelectedRows] > 0) {
-					// Insert imported queries after the last selected favorite
-					NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
-					NSUInteger i;
-					for(i=0; i<[[spf objectForKey:@"queryFavorites"] count]; i++) {
-						[favorites insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
-					}
-				} else {
-					// If no selection add them
-					[favorites addObjectsFromArray:[spf objectForKey:@"queryFavorites"]];
-				}
+				// if([favoritesTableView numberOfSelectedRows] > 0) {
+				// 	// Insert imported queries after the last selected favorite
+				// 	NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
+				// 	NSUInteger i;
+				// 	for(i=0; i<[[spf objectForKey:@"queryFavorites"] count]; i++) {
+				// 		[favorites insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
+				// 	}
+				// } else {
+				// 	// If no selection add them
+				[favorites addObjectsFromArray:[spf objectForKey:@"queryFavorites"]];
+				// }
 				[favoritesArrayController rearrangeObjects];
 				[favoritesTableView reloadData];
 			} else {

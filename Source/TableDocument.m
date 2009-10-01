@@ -89,7 +89,7 @@
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
-
+		
 	}
 
 	return self;
@@ -174,7 +174,7 @@
 											av.size.width,
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
-	[windowFrame addSubview:titleAccessoryView];	
+	[windowFrame addSubview:titleAccessoryView];
 	
 	// Bind the background color of the create syntax text view to the users preference
 	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
@@ -191,7 +191,7 @@
 	// Load additional nibs
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
-	}	
+	}
 }
 
 - (void)initWithConnectionFile:(NSString *)path
@@ -209,7 +209,7 @@
 	int connectionType;
 
 	// Inform about the data source in the window title bar
-	[tableWindow setTitle:[self displayName]];
+	[tableWindow setTitle:[self displaySPName]];
 
 	// Clean fields
 	[connectionController setName:@""];
@@ -417,14 +417,6 @@
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"include_session"];
 	}
 
-	[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"save_password"];
-	if(![connection objectForKey:@"password"]) {
-		// TODO How to set the focus to standardPasswordField in the connection nib?
-		// [[connectionController valueForKeyPath:@"standardPasswordField"] selectText:connectionController];
-		[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_password"];
-		return;
-	}
-	
 	[self setFileURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 
@@ -432,6 +424,16 @@
 		[spfPreferences setObject:[spf objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
 	if([spf objectForKey:@"queryHistory"])
 		[spfPreferences setObject:[spf objectForKey:@"queryHistory"] forKey:@"queryHistory"];
+	if([spf objectForKey:@"ContentFilters"])
+		[spfPreferences setObject:[spf objectForKey:@"ContentFilters"] forKey:@"ContentFilters"];
+
+	[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"save_password"];
+	if(![connection objectForKey:@"password"]) {
+		// TODO How to set the focus to standardPasswordField in the connection nib?
+		// [[connectionController valueForKeyPath:@"standardPasswordField"] selectText:connectionController];
+		[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_password"];
+		return;
+	}
 
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
@@ -492,7 +494,7 @@
 
 	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
 
-	[tableWindow setTitle:[self displayName]];
+	[tableWindow setTitle:[self displaySPName]];
 
 	// dealloc spfSession data
 	[spfSession release];
@@ -600,7 +602,7 @@
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
-	[tableWindow setTitle:[self displayName]];
+	[tableWindow setTitle:[self displaySPName]];
 	[self viewStructure:self];
 
 	// Connected Growl notification		
@@ -867,7 +869,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 
-	[tableWindow setTitle:[self displayName]];
+	[tableWindow setTitle:[self displaySPName]];
 
 	// Add a history entry
 	if (!historyStateChanging) {
@@ -950,7 +952,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 
-	[tableWindow setTitle:[self displayName]];
+	[tableWindow setTitle:[self displaySPName]];
 }
 
 /**
@@ -1026,7 +1028,7 @@
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
 
-		[tableWindow setTitle:[self displayName]];
+		[tableWindow setTitle:[self displaySPName]];
 	}
 }
 
@@ -1066,12 +1068,12 @@
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-				[tableWindow setTitle:[self displayName]];
+				[tableWindow setTitle:[self displaySPName]];
 			}
 		} else {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
-			[tableWindow setTitle:[self displayName]];
+			[tableWindow setTitle:[self displaySPName]];
 		}
 	}
 	
@@ -1724,7 +1726,7 @@
 		  beginSheetModalForWindow:tableWindow 
 					 modalDelegate:self 
 					didEndSelector:NULL 
-					   contextInfo:NULL];		
+					   contextInfo:NULL];
 }
 
 /**
@@ -1749,17 +1751,17 @@
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender
 {
 	NSString *createSyntax = [createTableSyntaxTextView string];
-	
+
 	if ([createSyntax length] > 0) {
 		// Copy to the clipboard
 		NSPasteboard *pb = [NSPasteboard generalPasteboard];
-		
+
 		[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
 		[pb setString:createSyntax forType:NSStringPboardType];
-		
+
 		// Table syntax copied Growl notification
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
-													   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]] 
+													   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]]
 												  notificationName:@"Syntax Copied"];
 	}
 }
@@ -2022,6 +2024,7 @@
 
 /**
  * Saves SP session or if Custom Query tab is active the editor's content as SQL file
+ * If sender == nil then the call came from [self writeSafelyToURL:ofType:forSaveOperation:error]
  */
 - (IBAction)saveConnectionSheet:(id)sender
 {
@@ -2034,7 +2037,7 @@
 	[panel setCanSelectHiddenExtension:YES];
 	
 	// Save Query…
-	if( [sender tag] == 1006 ) {
+	if( sender != nil && [sender tag] == 1006 ) {
 
 		// Save the editor's content as SQL file
 		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] 
@@ -2058,11 +2061,11 @@
 		[encodingPopUp setEnabled:YES];
 
 	// Save As… or Save
-	} else if([sender tag] == 1005 || [sender tag] == 1004) {
+	} else if(sender == nil || [sender tag] == 1005 || [sender tag] == 1004) {
 
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if([sender tag] == 1004 && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO];
 			return;
 		}
@@ -2104,7 +2107,10 @@
 		else
 			filename = [NSString stringWithFormat:@"%@", [self name]];
 
-		contextInfo = @"saveSPFfile";
+		if(sender == nil)
+			contextInfo = @"saveSPFfileAndClose";
+		else
+			contextInfo = @"saveSPFfile";
 
 	} else {
 		return;
@@ -2171,12 +2177,14 @@
 		}
 		
 		// Save connection and session as SPF file
-		else if(contextInfo == @"saveSPFfile") {
+		else if(contextInfo == @"saveSPFfile" || contextInfo == @"saveSPFfileAndClose") {
 			// Save changes of saveConnectionEncryptString
 			[[saveConnectionEncryptString window] makeFirstResponder:[[saveConnectionEncryptString window] initialFirstResponder]];
 			
 			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO];
 
+			if(contextInfo == @"saveSPFfileAndClose")
+				[self close];
 		}
 	}
 }
@@ -2251,6 +2259,7 @@
 		// Update the keys
 		[spf setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
 		[spf setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
+		[spf setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:@"ContentFilters"];
 
 		// Save it again
 		NSString *err = nil;
@@ -2301,7 +2310,8 @@
 	// Store the preferences - take them from the current document URL to catch renaming
 	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
 	[spfdata setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
-
+	[spfdata setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:@"ContentFilters"];
+	
 	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 
 	if([[spfDocData_temp objectForKey:@"save_password"] boolValue])
@@ -2446,15 +2456,16 @@
 		return NO;
 	}
 
-	// Register and update query favorites and history for the (new) file URL
+	// Register and update query favorites, content filter, and history for the (new) file URL
 	NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
 	[preferences setObject:[spfdata objectForKey:@"queryHistory"] forKey:@"queryHistory"];
 	[preferences setObject:[spfdata objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
+	[preferences setObject:[spfdata objectForKey:@"ContentFilters"] forKey:@"ContentFilters"];
 	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:preferences];
 
 	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 
-	[tableWindow setTitle:[self displayName]];
+	[tableWindow setTitle:[self displaySPName]];
 
 	// Store doc data permanently
 	[spfDocData removeAllObjects];
@@ -3093,40 +3104,42 @@
 			if(isSaved)
 				[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
 			return isSaved;
-
-		// Before removing an Untitled doc check if it contains any defined query favorites.
-		// If so save them globally. TODO: How to do it better ? 
-		} else if([self fileURL] && [[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"]) {
-			if([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]) {
-
-				NSMutableArray *favs = [[[NSMutableArray alloc] init] autorelease];
-				[favs addObjectsFromArray:[prefs objectForKey:@"queryFavorites"]];
-				[favs addObjectsFromArray:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]]];
-				[prefs setObject:favs forKey:@"queryFavorites"];
-
-				if(![prefs synchronize])
-					NSLog(@"Sorry, couldn't backup query favorites from Untitled document.");
-			}
-			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
-			return YES;
 		}
 	}
 	return YES;
 }
 
+/*
+ * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
+ * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
+ */
+- (BOOL)writeSafelyToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation error:(NSError **)outError
+{
+	if(saveOperation == NSSaveOperation) {
+		// Dummy error to avoid crashes after Canceling the Save Panel
+		*outError = [NSError errorWithDomain:@"SP_DOMAIN" code:1000 userInfo:nil];
+		[self saveConnectionSheet:nil];
+		return NO;
+	}
+	return YES;
+}
+
 /**
- * Don't show the document "changed" dot in the close button, or show a
- * "save?" dialog when closing the document.
+ * Shows "save?" dialog when closing the document if the an Untitled doc has doc-based query favorites or content filters.
  */
 - (BOOL)isDocumentEdited
 {
-	return NO;
+	return ([self fileURL] && [[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"] && ([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]
+		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"number"] count]
+		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"date"] count]
+		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"string"] count])
+		);
 }
 
 /**
  * The window title for this document.
  */
-- (NSString *)displayName
+- (NSString *)displaySPName
 {
 	if (!_isConnected) return [NSString stringWithFormat:@"%@%@", 
 		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"",
@@ -3138,6 +3151,14 @@
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
 		([[self table] length]?[NSString stringWithFormat:@"/%@",[self table]]:@"")];
+}
+/**
+ * The window title for this document.
+ */
+- (NSString *)displayName
+{
+	if(!_isConnected) return [self displaySPName];
+	return [[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 }
 
 

@@ -27,6 +27,7 @@
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
+#import "TableContent.h"
 
 #define DEFAULT_SEQUELPRO_FILE_EXTENSION @"spf"
 
@@ -58,6 +59,7 @@
 			return nil;
 		}
 		delegatesFileURL = [[managerDelegate valueForKeyPath:@"tableDocumentInstance"] fileURL];
+
 		filterType = [NSString stringWithString:compareType];
 
 	}
@@ -96,7 +98,7 @@
 			@"", @"ConjunctionLabel",
 			nil]];
 
-	// Build data source for global queryFavorites (as mutable copy! otherwise each
+	// Build data source for global content filter (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
 	if([[prefs objectForKey:@"ContentFilters"] objectForKey:filterType]) {
 		for(id fav in [[prefs objectForKey:@"ContentFilters"] objectForKey:filterType]) {
@@ -107,16 +109,18 @@
 		}
 	}
 
+	// Build doc-based filters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"MenuLabel", 
 		[delegatesFileURL absoluteString], @"headerOfFileURL", 
 		@"", @"Clause",
 		nil]];
-
-	// if([[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL]) {
-	// 	for(id fav in [[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL])
-	// 		[contentFilters addObject:[[fav mutableCopy] autorelease]];
-	// }
+	if([[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL]) {
+		id filters = [[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL];
+		if([filters objectForKey:filterType])
+			for(id fav in [filters objectForKey:filterType])
+				[contentFilters addObject:[[fav mutableCopy] autorelease]];
+	}
 
 
 	// Select the first query if any
@@ -351,23 +355,23 @@
 
 		// Ensure that last changes will be written back
 		// if only one filter is selected; otherwise unstable state
-		if ([contentFilterTableView numberOfSelectedRows] == 1) {
+		if ([contentFilterTableView numberOfSelectedRows] == 1)
 			[[self window] makeFirstResponder:contentFilterTableView];
-		}
-		
+
 		// Update current document's content filters in the SPQueryController
-		// [[SPQueryController sharedQueryController] replaceFavoritesByArray:
-		// 	[self contentFilterForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
-		// 
+		[[SPQueryController sharedQueryController] replaceContentFilterByArray:
+			[self contentFilterForFileURL:delegatesFileURL] ofType:filterType forFileURL:delegatesFileURL];
+
 		// Update global preferences' list
 		id cf = [[prefs objectForKey:@"ContentFilters"] mutableCopy];
 		[cf setObject:[self contentFilterForFileURL:nil] forKey:filterType];
 		[prefs setObject:cf forKey:@"ContentFilters"];
-
-		// // Inform all opened documents to update the query favorites list
-		// for(id doc in [[NSDocumentController sharedDocumentController] documents])
-		// 	if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
-		// 		[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
+		[cf release];
+		
+		// Inform all opened documents to update the query favorites list
+		for(id doc in [[NSDocumentController sharedDocumentController] documents])
+			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
+				[[doc valueForKeyPath:@"tableContentInstance"] setCompareTypes:nil];
 
 
 	}
@@ -762,17 +766,17 @@
 			}
 
 			if([[spf objectForKey:@"ContentFilters"] objectForKey:filterType] && [[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]) {
-				if([contentFilterTableView numberOfSelectedRows] > 0) {
-					// Insert imported filters after the last selected filter
-					NSUInteger insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex] + 1;
-					NSUInteger i;
-					for(i=0; i<[[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]; i++) {
-						[contentFilters insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
-					}
-				} else {
-					// If no selection add them
-					[contentFilters addObjectsFromArray:[[spf objectForKey:@"ContentFilters"] objectForKey:filterType]];
-				}
+				// if([contentFilterTableView numberOfSelectedRows] > 0) {
+				// 	// Insert imported filters after the last selected filter
+				// 	NSUInteger insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex] + 1;
+				// 	NSUInteger i;
+				// 	for(i=0; i<[[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]; i++) {
+				// 		[contentFilters insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
+				// 	}
+				// } else {
+				// 	// If no selection add them
+				[contentFilters addObjectsFromArray:[[spf objectForKey:@"ContentFilters"] objectForKey:filterType]];
+				// }
 				[contentFilterArrayController rearrangeObjects];
 				[contentFilterTableView reloadData];
 			} else {
@@ -797,23 +801,12 @@
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
 
-	if([contextInfo isEqualToString:@"saveQuery"]) {
-		if (returnCode == NSOKButton) {
-			NSError *error = nil;
-		
-			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
-			[prefs synchronize];
-		
-			[[contentFilterTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
-		
-			if (error) [[NSAlert alertWithError:error] runModal];
-		}
-	}
-	else if([contextInfo isEqualToString:@"exportFavorites"]) {
+	if([contextInfo isEqualToString:@"exportFilter"]) {
 		if (returnCode == NSOKButton) {
 
 			// Build a SPF with format = "content filters"
 			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
+			NSMutableDictionary *cfdata = [NSMutableDictionary dictionary];
 			NSMutableArray *filterData = [NSMutableArray array];
 
 	
@@ -829,7 +822,8 @@
 				if([indexes containsIndex:i])
 					[filterData addObject:[contentFilters objectAtIndex:i]];
 
-			[spfdata setObject:filterData forKey:@"ContentFilter"];
+			[cfdata setObject:filterData forKey:filterType];
+			[spfdata setObject:cfdata forKey:@"ContentFilters"];
 			
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata

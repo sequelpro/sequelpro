@@ -101,6 +101,7 @@ static SPQueryController *sharedQueryController = nil;
 		
 		favoritesContainer = [[NSMutableDictionary alloc] init];
 		historyContainer = [[NSMutableDictionary alloc] init];
+		contentFilterContainer = [[NSMutableDictionary alloc] init];
 
 	}
 	
@@ -151,6 +152,7 @@ static SPQueryController *sharedQueryController = nil;
 	
 	[favoritesContainer release];
 	[historyContainer release];
+	[contentFilterContainer release];
 
 	[super dealloc];
 }
@@ -437,6 +439,11 @@ static SPQueryController *sharedQueryController = nil;
 			}
 		}
 
+		// Set the doc-based content filters
+		if(![contentFilterContainer objectForKey:[new absoluteString]]) {
+			[contentFilterContainer setObject:[NSMutableDictionary dictionary] forKey:[new absoluteString]];
+		}
+
 		return new;
 
 	}
@@ -467,6 +474,15 @@ static SPQueryController *sharedQueryController = nil;
 			[arr release];
 		}
 	}
+	if(![contentFilterContainer objectForKey:[fileURL absoluteString]]) {
+		if(contextInfo != nil && [contextInfo objectForKey:@"ContentFilters"]) {
+			[contentFilterContainer setObject:[contextInfo objectForKey:@"ContentFilters"] forKey:[fileURL absoluteString]];
+		} else {
+			NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+			[contentFilterContainer setObject:dict forKey:[fileURL absoluteString]];
+			[dict release];
+		}
+	}
 	
 	return fileURL;
 	
@@ -490,6 +506,21 @@ static SPQueryController *sharedQueryController = nil;
 		[favoritesContainer removeObjectForKey:[fileURL absoluteString]];
 	if([historyContainer objectForKey:[fileURL absoluteString]])
 		[historyContainer removeObjectForKey:[fileURL absoluteString]];
+	if([contentFilterContainer objectForKey:[fileURL absoluteString]])
+		[contentFilterContainer removeObjectForKey:[fileURL absoluteString]];
+
+}
+
+- (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL
+{
+
+	if([contentFilterContainer objectForKey:[fileURL absoluteString]]) {
+		NSMutableDictionary *c = [[NSMutableDictionary alloc] init];
+		[c setDictionary:[contentFilterContainer objectForKey:[fileURL absoluteString]]];
+		[c setObject:contentFilterArray forKey:filterType];
+		[contentFilterContainer setObject:c forKey:[fileURL absoluteString]];
+		[c release];
+	}
 
 }
 
@@ -566,6 +597,15 @@ static SPQueryController *sharedQueryController = nil;
 		return [historyContainer objectForKey:[fileURL absoluteString]];
 
 	return [NSMutableArray array];
+
+}
+
+- (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL
+{
+	if([contentFilterContainer objectForKey:[fileURL absoluteString]])
+		return [contentFilterContainer objectForKey:[fileURL absoluteString]];
+
+	return [NSMutableDictionary dictionary];
 
 }
 

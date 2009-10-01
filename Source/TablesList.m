@@ -795,7 +795,7 @@
 		}
 
 		// set window title
-		[tableWindow setTitle:[tableDocumentInstance displayName]];
+		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
 		// Update the "Show Create Syntax" window if it's already opened
 		// according to the selected table/view/proc/func
@@ -884,7 +884,7 @@
 		[separatorTableContextMenuItem setHidden:YES];
 
 		// set window title
-		[tableWindow setTitle:[tableDocumentInstance displayName]];
+		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
 	}
 
@@ -1217,7 +1217,7 @@
 			}
 			
 			// Set window title
-			[tableWindow setTitle:[tableDocumentInstance displayName]];
+			[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
 		} 
 		else {
@@ -1696,7 +1696,7 @@
 	[tablesListView reloadData];
 	
 	// set window title
-	[tableWindow setTitle:[tableDocumentInstance displayName]];
+	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
 	[tablesListView deselectAll:self];
 }
@@ -2055,7 +2055,7 @@
 	}
 	
 	// Set window title
-	[tableWindow setTitle:[tableDocumentInstance displayName]];
+	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 }
 
 /*

@@ -49,6 +49,7 @@
 	NSUInteger untitledDocumentCounter;
 	NSMutableDictionary *favoritesContainer;
 	NSMutableDictionary *historyContainer;
+	NSMutableDictionary *contentFilterContainer;
 	NSUInteger numberOfMaxAllowedHistory;
 
 	NSUserDefaults *prefs;
@@ -90,8 +91,11 @@
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
 - (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL;
 
+- (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL;
+
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
+- (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL;
 
 - (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals;
 

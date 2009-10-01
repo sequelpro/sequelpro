@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="280"/>
+			<integer value="342"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -577,7 +577,6 @@
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<int key="NSState">1</int>
-															<reference key="NSOnImage" ref="451328194"/>
 															<reference key="NSMixedImage" ref="770393621"/>
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="964598175"/>
@@ -587,7 +586,6 @@
 															<string key="NSTitle">Quoted Argument</string>
 															<string key="NSKeyEquiv"/>
 															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="451328194"/>
 															<reference key="NSMixedImage" ref="770393621"/>
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="964598175"/>
@@ -598,7 +596,6 @@
 															<string key="NSKeyEquiv"/>
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="451328194"/>
 															<reference key="NSMixedImage" ref="770393621"/>
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="964598175"/>
@@ -609,7 +606,6 @@
 															<string key="NSKeyEquiv"/>
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="451328194"/>
 															<reference key="NSMixedImage" ref="770393621"/>
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="964598175"/>
@@ -617,7 +613,7 @@
 													</object>
 													<reference key="NSMenuFont" ref="1071840538"/>
 												</object>
-												<int key="NSSelectedIndex">4</int>
+												<int key="NSSelectedIndex">3</int>
 												<bool key="NSPullDown">YES</bool>
 												<int key="NSPreferredEdge">1</int>
 												<bool key="NSUsesItemFromMenu">YES</bool>

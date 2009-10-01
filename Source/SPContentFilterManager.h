@@ -49,7 +49,7 @@
 	IBOutlet id insertPlaceholderButton;
 
 	IBOutlet id contentFilterArrayController;
-
+	
 	NSMutableArray *contentFilters;
 
 	BOOL isTableCellEditing;

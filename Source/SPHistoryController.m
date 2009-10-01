@@ -396,26 +396,9 @@
 	NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
 	if (![filterSettings objectForKey:@"filterField"]) return theName;
 
-	if ([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"IS NULL"]
-		|| [[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"IS NOT NULL"])
-	{
-		[theName appendFormat:@" (%@ %@ %@)", NSLocalizedString(@"Filtered by", @"History item filtered by label"),
-			[filterSettings objectForKey:@"filterField"], [filterSettings objectForKey:@"filterComparison"]];
-	} else if ([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]
-				&& [filterSettings objectForKey:@"firstBetweenField"]
-				&& [[filterSettings objectForKey:@"secondBetweenField"] length] 
-				&& [filterSettings objectForKey:@"firstBetweenField"]
-				&& [[filterSettings objectForKey:@"secondBetweenField"] length]) 
-	{
-		[theName appendFormat:NSLocalizedString(@" (Filtered by %@ between %@ and %@)", @"History item filtered between values label"),
-			[filterSettings objectForKey:@"filterField"],
-			[filterSettings objectForKey:@"firstBetweenField"],
-			[filterSettings objectForKey:@"secondBetweenField"]];
-	} else if ([filterSettings objectForKey:@"filterValue"] && [[filterSettings objectForKey:@"filterValue"] length]) {
-		[theName appendFormat:@" (%@ %@ %@ %@)", NSLocalizedString(@"Filtered by", @"History item filtered by label"),
-			[filterSettings objectForKey:@"filterField"], [filterSettings objectForKey:@"filterComparison"],
-			[filterSettings objectForKey:@"filterValue"]];
-	}
+	if([filterSettings objectForKey:@"menuLabel"])
+		return [NSString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"), 
+				theName, [filterSettings objectForKey:@"menuLabel"]];
 
 	return theName;
 }
