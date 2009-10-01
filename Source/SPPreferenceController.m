@@ -946,12 +946,10 @@
 - (void)setGrowlEnabled:(BOOL)value
 {
 	if (value) {
-		NSRunInformationalAlertPanel(
-			NSLocalizedString(@"growl_prefs_title", "Title for Growl Notifications Alert Dialog"),
-			NSLocalizedString(@"growl_prefs_msg", @"Message for Growl Notifications Alert Dialog"),
-			nil,
-			nil,
-			nil
+		NSBeginInformationalAlertSheet(
+			NSLocalizedString(@"Growl notification preferences", "Growl notification preferences alert title"),
+			nil, nil, nil, [self window], self, nil, nil, nil,
+			NSLocalizedString(@"All Growl notifications are enabled by default. To change which notifications are displayed, go to the Growl Preference Pane in the System Preferences and choose what notifications Growl should display from Sequel Pro.", @"Growl notification preferences alert message")
 		);
 	}
 	

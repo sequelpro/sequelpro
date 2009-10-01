@@ -550,7 +550,7 @@
 		[contentFilterConjunctionLabel setHidden:(numOfArgs < 2)];
 
 		if(numOfArgs > 2) {
-			[resultingClauseLabel setStringValue:NSLocalizedString(@"Error", @"Error")];
+			[resultingClauseLabel setStringValue:NSLocalizedString(@"Error", @"error")];
 			[resultingClauseContentLabel setStringValue:NSLocalizedString(@"Maximum number of arguments is 2!", @"Maximum number of arguments is 2!")];
 		} else {
 			[resultingClauseLabel setStringValue:@"SELECT * FROM <table> WHERE"];

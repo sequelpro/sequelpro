@@ -188,6 +188,7 @@ enum sp_current_query_mode
 - (IBAction)flushTable:(id)sender;
 - (IBAction)checksumTable:(id)sender;
 - (IBAction)saveCreateSyntax:(id)sender;
+- (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
 
 // Other methods
 - (void) setQueryMode:(int)theQueryMode;

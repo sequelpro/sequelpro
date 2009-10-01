@@ -1743,6 +1743,27 @@
 	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"CreateSyntax"];
 }
 
+/**
+ * Copy the create syntax in the create syntax text view to the pasteboard.
+ */
+- (IBAction)copyCreateTableSyntaxFromSheet:(id)sender
+{
+	NSString *createSyntax = [createTableSyntaxTextView string];
+	
+	if ([createSyntax length] > 0) {
+		// Copy to the clipboard
+		NSPasteboard *pb = [NSPasteboard generalPasteboard];
+		
+		[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+		[pb setString:createSyntax forType:NSStringPboardType];
+		
+		// Table syntax copied Growl notification
+		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
+													   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]] 
+												  notificationName:@"Syntax Copied"];
+	}
+}
+
 #pragma mark -
 #pragma mark Other Methods
 

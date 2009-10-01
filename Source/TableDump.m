@@ -735,7 +735,7 @@
 	// Reset progress interface
 	[errorsView setString:@""];
 	[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
-	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading CSV file")];
+	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
 	[singleProgressBar setIndeterminate:YES];
 	[singleProgressBar setUsesThreadedAnimation:YES];
 	[singleProgressBar startAnimation:self];
@@ -1006,7 +1006,7 @@
 
 	// Ensure data was provided, or alert than an import error occurred and return false.
 	if (![importData count]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"Error"),
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
