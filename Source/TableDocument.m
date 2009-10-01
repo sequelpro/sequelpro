@@ -175,11 +175,23 @@
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
 	[windowFrame addSubview:titleAccessoryView];	
+	
+	// Bind the background color of the create syntax text view to the users preference
+	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
+	
+	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
+	
+	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
+	
+	[createTableSyntaxTextView bind:@"backgroundColor"
+						   toObject:[NSUserDefaultsController sharedUserDefaultsController]
+						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
+							options:bindingOptions];
 
 	// Load additional nibs
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
-	}
+	}	
 }
 
 - (void)initWithConnectionFile:(NSString *)path
@@ -1327,31 +1339,30 @@
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
-	NSString *query = nil;
-	NSString *createWindowTitle;
 	int colOffs = 1;
+	NSString *query = nil;
+	NSString *typeString = @"";
 	
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
-		createWindowTitle = @"Create Table Syntax";
+		typeString = @"table";
 	}
 	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
-		createWindowTitle = @"Create View Syntax";
+		typeString = @"view";
 	}
 	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
-		createWindowTitle = @"Create Procedure Syntax";
+		typeString = @"procedure";
 		colOffs = 2;
 	}
 	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
-		createWindowTitle = @"Create Function Syntax";
+		typeString = @"function";
 		colOffs = 2;
 	}
 
-	if( query == nil )
-		return;
+	if (query == nil) return;
 	
 	MCPResult *theResult = [mySQLConnection queryString:query];
 	
@@ -1360,6 +1371,7 @@
 		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
+		
 		return;
 	}
 	
@@ -1367,18 +1379,20 @@
 	
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-
-	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
-		[syntaxViewContent setString:[tableSyntax createViewSyntaxPrettifier]];
-	else
-		[syntaxViewContent setString:tableSyntax];
-
-	[syntaxViewContent setEditable:NO];
 	
-	[createTableSyntaxWindow setTitle:createWindowTitle];
-
-	if(![createTableSyntaxWindow isVisible])
-		[createTableSyntaxWindow makeKeyAndOrderFront:self];
+	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
+	
+	[createTableSyntaxTextView setEditable:YES];
+	[createTableSyntaxTextView setString:@""];
+	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SP_TABLETYPE_VIEW) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
+	[createTableSyntaxTextView setEditable:NO];
+	
+	// Show variables sheet
+	[NSApp beginSheet:createTableSyntaxWindow
+	   modalForWindow:tableWindow 
+		modalDelegate:self
+	   didEndSelector:nil 
+		  contextInfo:nil];	
 }
 
 /**
@@ -1713,6 +1727,22 @@
 					   contextInfo:NULL];		
 }
 
+/**
+ * Saves the current tables create syntax to the selected file.
+ */
+- (IBAction)saveCreateSyntax:(id)sender
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:@"sql"];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:YES];
+	[panel setCanSelectHiddenExtension:YES];
+	
+	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"CreateSyntax"];
+}
+
 #pragma mark -
 #pragma mark Other Methods
 
@@ -1731,7 +1761,7 @@
  * dialogs such as the variableSheet or the createTableSyntaxSheet
  */
 - (IBAction)closeSheet:(id)sender
-{
+{	
 	[NSApp stopModalWithCode:0];
 }
 
@@ -1741,6 +1771,25 @@
 - (IBAction)closeErrorConnectionSheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
+}
+
+/**
+ *
+ */
+- (IBAction)closePanelSheet:(id)sender
+{
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
+	
+	// If it was the server variables sheet that was closed release the relevant arrays if necessary
+	if ([sender window] == variablesSheet) {
+		// If the filtered array is allocated and its not a reference to the variables array get rid of it
+		if ((variablesFiltered) && (variablesFiltered != variables)) {
+			[variablesFiltered release], variablesFiltered = nil;
+		}
+		
+		if (variables) [variables release], variables = nil;
+	}
 }
 
 /**
@@ -1812,20 +1861,10 @@
 	
 	// Show variables sheet
 	[NSApp beginSheet:variablesSheet
-	   modalForWindow:tableWindow modalDelegate:self
-	   didEndSelector:nil contextInfo:nil];
-	
-	[NSApp runModalForWindow:variablesSheet];
-	[NSApp endSheet:variablesSheet];
-	
-	[variablesSheet orderOut:nil];
-	
-	// If the filtered array is allocated and its not a reference to the variables array get rid of it
-	if ((variablesFiltered) && (variablesFiltered != variables)) {
-		[variablesFiltered release], variablesFiltered = nil;
-	}
-	
-	if (variables) [variables release], variables = nil;
+	   modalForWindow:tableWindow 
+		modalDelegate:self
+	   didEndSelector:nil 
+		  contextInfo:nil];
 }
 
 - (void)closeConnection
@@ -2461,7 +2500,7 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"ServerVariables"];
 }
 
 /**
@@ -2655,18 +2694,31 @@
 /**
  * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if ([variablesFiltered count] > 0) {
-			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
-			
-			for (NSDictionary *variable in variablesFiltered) 
-			{
-				[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
+		if ([contextInfo isEqualToString:@"ServerVariables"]) {
+			if ([variablesFiltered count] > 0) {
+				NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
+				
+				for (NSDictionary *variable in variablesFiltered) 
+				{
+					[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
+				}
+				
+				[variablesString writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 			}
+		}
+		else if ([contextInfo isEqualToString:@"CreateSyntax"]) {
 			
-			[variablesString writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+			
+			NSString *createSyntax = [createTableSyntaxTextView string];
+			
+			if ([createSyntax length] > 0) {
+				NSString *output = [NSString stringWithFormat:@"-- Create syntax for '%@'\n\n%@\n", [self table], createSyntax]; 
+				
+				[output writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+			}
 		}
 	}
 }
@@ -2976,14 +3028,13 @@
 	//set up interface
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		[syntaxViewContent setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 	} else {
 		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[syntaxViewContent setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
@@ -3248,6 +3299,8 @@
 	
 	return theValue;
 }
+
+#pragma mark -
 
 - (void)dealloc
 {

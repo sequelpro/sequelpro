@@ -93,8 +93,8 @@ enum sp_current_query_mode
 	
 	IBOutlet NSTableView *dbTablesTableView;
 
-	IBOutlet id syntaxView;
-	IBOutlet id syntaxViewContent;
+	IBOutlet NSTextField *createTableSyntaxTextField;
+	IBOutlet NSTextView *createTableSyntaxTextView;
 	IBOutlet NSWindow *createTableSyntaxWindow;
 	IBOutlet NSWindow *connectionErrorDialog;
 
@@ -144,7 +144,6 @@ enum sp_current_query_mode
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
-	
 }
 
 - (NSString *)getHTMLforPrint;
@@ -188,12 +187,14 @@ enum sp_current_query_mode
 - (IBAction)repairTable:(id)sender;
 - (IBAction)flushTable:(id)sender;
 - (IBAction)checksumTable:(id)sender;
+- (IBAction)saveCreateSyntax:(id)sender;
 
 // Other methods
 - (void) setQueryMode:(int)theQueryMode;
 - (NSString *)host;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closeErrorConnectionSheet:(id)sender;
+- (IBAction)closePanelSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;
 - (void)flushPrivileges:(id)sender;
