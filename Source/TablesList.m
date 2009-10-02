@@ -1858,6 +1858,11 @@
 			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			
+			// If there are any InnoDB referencial constraints we need to strip out the names as they must be unique. 
+			// MySQL will generate the new names based on the new table name.
+			scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"CONSTRAINT `[^`]+` "] withString:@""];
+			
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		}
 		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
@@ -1887,7 +1892,9 @@
 			
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
+			
 			[tableSyntax release];
+			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
