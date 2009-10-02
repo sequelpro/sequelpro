@@ -1811,6 +1811,8 @@
 		return;
 	}
 	
+	BOOL copyTableContent = ([copyTableContentSwitch state] == NSOnState);
+	
 	int tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
 	
 	switch (tblType){
@@ -1863,6 +1865,11 @@
 			// MySQL will generate the new names based on the new table name.
 			scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"CONSTRAINT `[^`]+` "] withString:@""];
 			
+			// If we're not copying the tables content as well then we need to strip out any AUTO_INCREMENT presets.
+			if (!copyTableContent) {
+				scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"AUTO_INCREMENT=[0-9]+ "] withString:@""];
+			}
+			
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		}
 		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
@@ -1909,7 +1916,7 @@
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
-            if ( [copyTableContentSwitch state] == NSOnState ) {
+            if (copyTableContent) {
 				//copy table content
                 [mySQLConnection queryString:[NSString stringWithFormat:
 											  @"INSERT INTO %@ SELECT * FROM %@",
