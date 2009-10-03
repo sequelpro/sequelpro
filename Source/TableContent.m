@@ -1397,6 +1397,7 @@
 	id rowObject;
 	NSMutableString *rowValue = [NSMutableString string];
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
 	int i;
 	
 	if ( !isEditingRow || currentlyEditingRow == -1) {
@@ -1418,11 +1419,18 @@
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		rowObject = [NSArrayObjectAtIndex(tableValues, currentlyEditingRow) objectAtIndex:i];
 
+		// Add (not loaded) placeholders directly for easy comparsion when added
+		if (prefsLoadBlobsAsNeeded && !isEditingNewRow
+			&& [rowObject isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
+		{
+			[fieldValues addObject:[NSString stringWithString:rowObject]];
+			continue;
+
 		// Catch CURRENT_TIMESTAMP automatic updates - if the row is new and the cell value matches
 		// the default value, or if the cell hasn't changed, update the current timestamp.
-		if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] intValue]
-			&& (   (isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
-				|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
+		} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] intValue]
+					&& (   (isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
+						|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
 		{
 			[rowValue setString:@"CURRENT_TIMESTAMP"];
 
@@ -1459,18 +1467,23 @@
 		[fieldValues addObject:[NSString stringWithString:rowValue]];
 	}
 	
-	// Use INSERT syntax when creating new rows
+	// Use INSERT syntax when creating new rows - no need to do (not loaded) checking, as all values have been entered
 	if ( isEditingNewRow ) {
 		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
 					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
 
 	// Use UPDATE syntax otherwise
 	} else {
+		BOOL firstCellOutput = NO;
 		queryString = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [selectedTable backtickQuotedString]];
 		for ( i = 0 ; i < [dataColumns count] ; i++ ) {
-			if ( i > 0 ) {
-				[queryString appendString:@", "];
-			}
+
+			// If data column loading is deferred and the value is the not loaded string, skip this cell
+			if (prefsLoadBlobsAsNeeded && [[fieldValues objectAtIndex:i] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]) continue;
+			
+			if (firstCellOutput) [queryString appendString:@", "];
+			else firstCellOutput = YES;
+
 			[queryString appendString:[NSString stringWithFormat:@"%@=%@",
 									   [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] backtickQuotedString], [fieldValues objectAtIndex:i]]];
 		}
