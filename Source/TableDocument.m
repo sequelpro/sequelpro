@@ -418,7 +418,7 @@
 	}
 
 	[self setFileURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
 
 	if([spf objectForKey:@"queryFavorites"])
 		[spfPreferences setObject:[spf objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
