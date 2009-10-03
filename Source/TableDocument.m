@@ -608,6 +608,7 @@
 	// Connected Growl notification		
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
+														window:tableWindow
 											  notificationName:@"Connected"];
 											
 
@@ -1450,6 +1451,7 @@
 	// Table syntax copied Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
+														window:tableWindow
                                               notificationName:@"Syntax Copied"];
 }
 
@@ -1762,6 +1764,7 @@
 		// Table syntax copied Growl notification
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
 													   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]]
+															window:tableWindow
 												  notificationName:@"Syntax Copied"];
 	}
 }
@@ -1895,9 +1898,10 @@
 	[mySQLConnection disconnect];
 
     // Disconnected Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
-                                              notificationName:@"Disconnected"];
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
+														window:tableWindow
+											  notificationName:@"Disconnected"];
 }
 
 /**

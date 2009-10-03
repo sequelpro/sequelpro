@@ -350,6 +350,9 @@
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
+	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
+	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
+
 	// Reset the current table view as necessary to avoid redraw and reload issues.
 	// Restore the view position to the top left to be within the results for all datasets.
 	[customQueryView scrollRowToVisible:0];
@@ -585,6 +588,7 @@
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( ![fullResult count] ) {
 		[customQueryView reloadData];
+		[streamingResult release];
 
 		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
@@ -592,9 +596,8 @@
 		// Perform the Growl notification for query completion
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
+															window:tableWindow
                                                   notificationName:@"Query Finished"];
-
-		[streamingResult release];
 		return;
 	}
 
@@ -673,6 +676,7 @@
 	// Query finished Growl notification    
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
+														window:tableWindow
                                               notificationName:@"Query Finished"];
 }
 
