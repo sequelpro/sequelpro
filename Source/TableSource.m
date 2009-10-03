@@ -754,6 +754,22 @@ fetches the result as an array with a dictionary for each row in it
 		[queryString appendString:[theRow objectForKey:@"Extra"]];
 	}
 	
+	if (!isEditingNewRow) {
+
+		// Add details not provided via the SHOW COLUMNS query from the table data cache so column details aren't lost
+		NSDictionary *originalColumnDetails = [[tableDataInstance columns] objectAtIndex:currentlyEditingRow];
+
+		// Any column comments
+		if ([originalColumnDetails objectForKey:@"comment"] && [[originalColumnDetails objectForKey:@"comment"] length]) {
+			[queryString appendString:[NSString stringWithFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]]];
+		}
+
+		// Unparsed details - column formats, storage, reference definitions
+		if ([originalColumnDetails objectForKey:@"unparsed"]) {
+			[queryString appendString:[originalColumnDetails objectForKey:@"unparsed"]];
+		}
+	}
+	
 	// Asks the user to add an index to query if auto_increment is set and field isn't indexed
 	if ([[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"] && 
 		([[theRow objectForKey:@"Key"] isEqualToString:@""] || 
@@ -1182,6 +1198,19 @@ would result in a position change.
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 	} else {
 		[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"Default"]]]];
+	}
+
+	// Add details not provided via the SHOW COLUMNS query from the table data cache so column details aren't lost
+	NSDictionary *originalColumnDetails = [[tableDataInstance columns] objectAtIndex:originalRowIndex];
+
+	// Any column comments
+	if ([originalColumnDetails objectForKey:@"comment"] && [[originalColumnDetails objectForKey:@"comment"] length]) {
+		[queryString appendString:[NSString stringWithFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]]];
+	}
+
+	// Unparsed details - column formats, storage, reference definitions
+	if ([originalColumnDetails objectForKey:@"unparsed"]) {
+		[queryString appendString:[originalColumnDetails objectForKey:@"unparsed"]];
 	}
 
 	// Add the new location

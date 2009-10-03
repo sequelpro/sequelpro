@@ -410,7 +410,7 @@
 			// Store the column.
 			[tableColumns addObject:[NSDictionary dictionaryWithDictionary:tableColumn]];
 
-		// TODO: Otherwise it's a key definition, constraint, check, or other 'metadata'.  Would be useful to parse/display these!
+		// TODO: Otherwise it's a key definition, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
 			NSArray *parts = [fieldsParser splitStringByCharacter:' ' skippingBrackets:YES ignoringQuotedStrings:YES];
 
@@ -866,6 +866,8 @@
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"zerofill"];
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"autoincrement"];
 	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"onupdatetimestamp"];
+	[fieldDetails setValue:@"" forKey:@"comment"];
+	[fieldDetails setValue:[NSMutableString string] forKey:@"unparsed"];
 
 	// Walk through the remaining column definition parts storing recognised details
 	partsArrayLength = [definitionParts count];
@@ -931,9 +933,20 @@
 					&& [[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
+		
+		// Column comments
+		} else if ([detailString isEqualToString:@"COMMENT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
+			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
+			[fieldDetails setValue:[detailParser unquotedString] forKey:@"comment"];
+			[detailParser release];
+			definitionPartsIndex++;
+			
+		// Preserve unhandled details to avoid losing information when rearranging columns etc
+		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COLUMN_FORMAT bar | STORAGE q | REFERENCES...
+		} else {
+			[[fieldDetails objectForKey:@"unparsed"] appendString:@" "];
+			[[fieldDetails objectForKey:@"unparsed"] appendString:[definitionParts objectAtIndex:definitionPartsIndex]];
 		}
-
-		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COMMENT 'foo' | COLUMN_FORMAT bar | STORAGE q | REFERENCES...
 
 		[detailString release];
 	}
