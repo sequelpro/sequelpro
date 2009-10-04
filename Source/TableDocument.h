@@ -148,7 +148,6 @@ enum sp_current_query_mode
 
 - (NSString *)getHTMLforPrint;
 
-- (IBAction)showUserManager:(id)sender;
 - (void)initQueryEditorWithString:(NSString *)query;
 - (void)initWithConnectionFile:(NSString *)path;
 // Connection callback and methods
@@ -208,6 +207,10 @@ enum sp_current_query_mode
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences;
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
+- (IBAction)copy:(id)sender;
+- (IBAction)copyServerVariableName:(id)sender;
+- (IBAction)copyServerVariableValue:(id)sender;
+- (IBAction)showUserManager:(id)sender;
 
 // Getter methods
 - (NSString *)name;

@@ -59,6 +59,7 @@
 @interface TableDocument (PrivateAPI)
 
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
+- (void)_copyServerVariablesToPasteboardIncludingName:(BOOL)name andValue:(BOOL)value;
 
 @end
 
@@ -1800,7 +1801,7 @@
 }
 
 /**
- *
+ * Closes either the server variables or create syntax sheets.
  */
 - (IBAction)closePanelSheet:(id)sender
 {
@@ -1809,6 +1810,7 @@
 	
 	// If it was the server variables sheet that was closed release the relevant arrays if necessary
 	if ([sender window] == variablesSheet) {
+		
 		// If the filtered array is allocated and its not a reference to the variables array get rid of it
 		if ((variablesFiltered) && (variablesFiltered != variables)) {
 			[variablesFiltered release], variablesFiltered = nil;
@@ -1816,6 +1818,38 @@
 		
 		if (variables) [variables release], variables = nil;
 	}
+}
+
+/**
+ * Copy implementation for server variables table view.
+ */
+- (IBAction)copy:(id)sender
+{
+	[self _copyServerVariablesToPasteboardIncludingName:YES andValue:YES];
+}
+
+/**
+ * Copies the name(s) of the selected server variables.
+ */
+- (IBAction)copyServerVariableName:(id)sender
+{
+	[self _copyServerVariablesToPasteboardIncludingName:YES andValue:NO];
+}
+
+/**
+ * Copies the value(s) of the selected server variables.
+ */
+- (IBAction)copyServerVariableValue:(id)sender
+{
+	[self _copyServerVariablesToPasteboardIncludingName:NO andValue:YES];
+}
+
+/**
+ * Displays the user account manager.
+ */
+- (IBAction)showUserManager:(id)sender
+{
+	[userManagerInstance show];
 }
 
 /**
@@ -2540,19 +2574,14 @@
 }
 
 /**
- * Menu validation
+ * Menu item validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if (!_isConnected) {
-		if ([menuItem action] == @selector(newDocument:) ||
-			[menuItem action] == @selector(terminate:))
-		{
-			return YES;
-		} else {
-			return NO;
-		}
+		return ([menuItem action] == @selector(newDocument:) || [menuItem action] == @selector(terminate:));
 	}
+	
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
@@ -2576,9 +2605,7 @@
 		return YES;
 	}
 	
-	
-	if ([menuItem action] == @selector(exportTable:))
-	{
+	if ([menuItem action] == @selector(exportTable:)) {
 		return ([self database] != nil && [self table] != nil);
 	}
 	
@@ -2611,6 +2638,25 @@
 	// Forward in history menu item
 	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
 		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
+	}
+	
+	// Copy selected server variable(s)
+	if ([menuItem action] == @selector(copy:)) {
+		return ([variablesTableView numberOfSelectedRows] > 0);
+	}
+	
+	// Copy selected server variable name(s)
+	if ([menuItem action] == @selector(copyServerVariableName:)) {
+		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Names", @"copy server variable names menu item") : NSLocalizedString(@"Copy Variable Name", @"copy server variable name menu item")];
+		
+		return ([variablesTableView numberOfSelectedRows] > 0);
+	}
+	
+	// Copy selected server variable value(s)
+	if ([menuItem action] == @selector(copyServerVariableValue:)) {
+		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Values", @"copy server variable values menu item") : NSLocalizedString(@"Copy Variable Value", @"copy server variable value menu item")];
+		
+		return ([variablesTableView numberOfSelectedRows] > 0);
 	}
 	
 	return [super validateMenuItem:menuItem];
@@ -3365,11 +3411,6 @@
 	if(spfDocData) [spfDocData release];
 	[super dealloc];
 }
-		
-- (void)showUserManager:(id)sender
-{
-	[userManagerInstance show];
-}
 
 @end
 
@@ -3422,6 +3463,51 @@
 	
 	[saveVariablesButton setEnabled:YES];
 	[saveVariablesButton setTitle:@"Save View As..."];
+}
+
+/**
+ * Copies either the name or value or both (as name = value pairs) of the currently selected server variables.
+ */
+- (void)_copyServerVariablesToPasteboardIncludingName:(BOOL)name andValue:(BOOL)value
+{
+	// At least one of either name or value must be true
+	if ((!name) && (!value)) return;
+	
+	NSResponder *firstResponder = [variablesSheet firstResponder];
+		
+	if ((firstResponder == variablesTableView) && ([variablesTableView numberOfSelectedRows] > 0)) {
+				
+		NSString *string = @"";
+		NSIndexSet *rows = [variablesTableView selectedRowIndexes];
+		
+		NSUInteger i = [rows firstIndex];
+		
+		while (i != NSNotFound) 
+		{
+			if (i < [variablesFiltered count]) {
+				NSDictionary *variable = NSArrayObjectAtIndex(variablesFiltered, i);
+				
+				NSString *variableName  = [variable objectForKey:@"Variable_name"];
+				NSString *variableValue = [variable objectForKey:@"Value"];
+				
+				// Decide what to include in the string
+				if (name && value) {
+					string = [string stringByAppendingFormat:@"%@ = %@\n", variableName, variableValue];
+				}
+				else {
+					string = [string stringByAppendingFormat:@"%@\n", (name) ? variableName : variableValue];
+				}
+			}
+			
+			i = [rows indexGreaterThanIndex:i];
+		}
+		
+		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+		
+		// Copy the string to the pasteboard
+		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pasteBoard setString:string forType:NSStringPboardType];
+	}
 }
 
 @end
