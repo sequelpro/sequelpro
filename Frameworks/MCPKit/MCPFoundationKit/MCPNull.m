@@ -35,7 +35,9 @@
  */
 - (BOOL) isNSNull
 {
-    return [self isMemberOfClass:[NSNull class]];
+	static id NSNullForComparison;
+	if (!NSNullForComparison) NSNullForComparison = [NSNull null];;
+    return (self == NSNullForComparison);
 }
 
 @end
