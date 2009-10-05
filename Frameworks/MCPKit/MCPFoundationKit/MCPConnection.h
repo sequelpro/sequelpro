@@ -31,6 +31,7 @@
 #import "MCPConstants.h"
 
 #import "mysql.h"
+#include <pthread.h>
 
 enum
 {
@@ -105,7 +106,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSString *serverVersionString;
 	
 	NSTimer *keepAliveTimer;
-	NSDate *lastKeepAliveSuccess;
+	pthread_t keepAliveThread;
 	uint64_t connectionStartTime;
 	
 	BOOL retryAllowed;
@@ -116,14 +117,14 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	IMP cStringPtr;
 	IMP willQueryStringPtr;
 	IMP stopKeepAliveTimerPtr;
-	IMP startKeepAliveTimerResettingStatePtr;
+	IMP startKeepAliveTimerPtr;
 	IMP timeConnectedPtr;
 	
 	// Selectors
 	SEL cStringSEL;
 	SEL willQueryStringSEL;
 	SEL stopKeepAliveTimerSEL;
-	SEL startKeepAliveTimerResettingStateSEL;
+	SEL startKeepAliveTimerSEL;
 	SEL timeConnectedSEL;
 }
 
@@ -155,10 +156,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (BOOL)isConnected;
 - (BOOL)checkConnection;
 - (BOOL)pingConnection;
-- (void)startKeepAliveTimerResettingState:(BOOL)resetState;
+- (void)startKeepAliveTimer;
 - (void)stopKeepAliveTimer;
 - (void)keepAlive:(NSTimer *)theTimer;
 - (void)threadedKeepAlive;
+void performThreadedKeepAlive(void *ptr);
 - (void)restoreConnectionDetails;
 - (void)setAllowQueryRetries:(BOOL)allow;
 - (double)timeConnected;
