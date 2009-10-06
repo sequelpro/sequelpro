@@ -87,6 +87,11 @@
 				return NO;
 		}
 	}
+	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
+	{
+		[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
+		return NO;
+	}
 	return YES;
 }
 

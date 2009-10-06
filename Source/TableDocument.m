@@ -1951,6 +1951,20 @@
 		  contextInfo:nil];
 }
 
+- (IBAction)openCurrentConnectionInNewWindow:(id)sender
+{
+	TableDocument *newTableDocument;
+
+	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
+	if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+		[newTableDocument setShouldAutomaticallyConnect:NO];
+		[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
+		[newTableDocument makeWindowControllers];
+		[newTableDocument showWindows];
+		[newTableDocument initWithConnectionFile:[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+	}
+}
+
 - (void)closeConnection
 {
 	[mySQLConnection disconnect];
@@ -2611,6 +2625,17 @@
 {
 	if (!_isConnected) {
 		return ([menuItem action] == @selector(newDocument:) || [menuItem action] == @selector(terminate:));
+	}
+	
+	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
+	{
+		if([[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Open “%@” in New Window", @"menu item open “%@” in new window"), [[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+			return YES;
+		} else {
+			[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
+			return NO;
+		}
 	}
 	
 	if ([menuItem action] == @selector(import:) ||

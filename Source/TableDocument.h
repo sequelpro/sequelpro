@@ -166,6 +166,7 @@ enum sp_current_query_mode
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)saveServerVariables:(id)sender;
+- (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
 
 // Encoding methods
