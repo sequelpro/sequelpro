@@ -195,6 +195,34 @@
 }
 
 #pragma mark -
+#pragma mark Exporter delegate methods
+
+/**
+ * Called when CSV data conversion process is complete and the data is available.
+ */
+- (void)csvDataAvailable:(NSString *)data
+{
+	
+}
+
+/**
+ *  Called when SQL data conversion process is complete and the data is available.
+ */
+- (void)sqlDataAvailable:(NSString *)data
+{
+	
+}
+
+/**
+ *  Called when XML data conversion process is complete and the data is available.
+ */
+- (void)xmlDataAvailable:(NSString *)data
+{
+	
+}
+
+
+#pragma mark -
 #pragma mark Other 
 
 /**
@@ -234,14 +262,6 @@
 @end
 
 @implementation SPExportController (PrivateAPI)
-
-/**
- * This method is called by SPCSVExporter objects once they have completed converting their data to CSV data.
- */
-- (void)_csvDataAvialble:(NSString *)data
-{
-	
-}
 
 /**
  * Loads all the available database tables in table view.
@@ -345,7 +365,7 @@
 			
 			break;
 		case SP_CSV_EXPORT:
-			csvExporter = [[SPCSVExporter alloc] init];
+			csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
 						
 			[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
 			[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
@@ -371,10 +391,6 @@
 			
 			break;
 	}
-	
-	// Set the exporter's delegate and didEndSelector
-	[exporter setDelegate:self];
-	[exporter setDidEndSelector:@selector(_csvDataAvialble:)];
 	
 	switch (exportSource) 
 	{

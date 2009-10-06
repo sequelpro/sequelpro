@@ -83,11 +83,6 @@
 		// Check that we have at least some data to export
 		if ((![self csvDataArray]) && (![self csvDataResult])) return;
 		
-		// Tell the delegate that we are starting the export process
-		if (delegate && [delegate respondsToSelector:@selector(exportProcessDidStart:)]) {
-			[delegate exportProcessDidStart:self];
-		}
-		
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
 		
@@ -276,11 +271,6 @@
 		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];
-		
-		// Tell the delegate that the export process has ended
-		if (delegate && [delegate respondsToSelector:@selector(exportProcessDidEnd:)]) {
-			[delegate exportProcessDidEnd:self];
-		}
 		
 		// Pass the resulting CSV data back to the delegate by calling the specified didEndSelector
 		[[self delegate] performSelectorOnMainThread:[self didEndSelector] withObject:csvData waitUntilDone:YES];

@@ -34,16 +34,20 @@
 @synthesize exportOutputEncoding;
 
 /**
- * Initialize an instance of the exporter setting some default values
+ * Initialise an instance of SPCSVExporter using the supplied delegate and set some default values.
  */
-- (id)init
+- (id)initWithDelegate:(id)exportDelegate
 {
-	if ((self == [super init])) {
+	if ((self = [super init])) {
+		[self setDelegate:exportDelegate];
+		
 		[self setExportProgressValue:0];
 		[self setExportProcessIsRunning:NO];
 		
 		// Default the output encoding to UTF-8
 		[self setExportOutputEncoding:NSUTF8StringEncoding];
+		
+		[self setDidEndSelector:@selector(csvDataAvailable:)];
 	}
 	
 	return self;

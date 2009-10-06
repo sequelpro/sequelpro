@@ -28,6 +28,16 @@
 #import "MCPKit.h"
 #import "SPExporter.h"
 
+/**
+ * 
+ */
+@interface SPCSVExporterDelegate
+
+- (void)csvDataAvailable:(NSString *)data;
+
+@end
+
+
 @interface SPCSVExporter : SPExporter
 {	
 	// CSV data

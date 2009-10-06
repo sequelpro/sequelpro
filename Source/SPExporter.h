@@ -25,6 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "SPExporterDataAccess.h"
+
 /**
  * This class is designed to be the base class of all data exporters and provide basic functionality
  * common to each of them. Each data exporter (i.e. CSV, SQL, XML, etc.) should be implemented as a subclass
@@ -45,16 +47,9 @@
  * once the exporter instance is placed on the operation queue once its ready to be run.
  */
 
-@interface NSObject (SPExporterDelegate)
-
-- (void)exportProcessDidStart:(id)exporter;
-- (void)exportProcessDidEnd:(id)exporter;
-
-@end
-
 @interface SPExporter : NSOperation
 {
-	id delegate;
+	id <SPExporterDataAccess> delegate;
 	SEL didEndSelector;
 		
 	double exportProgressValue;
@@ -71,5 +66,7 @@
 @property (readwrite, assign) BOOL exportProcessIsRunning;
 
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
+
+- (id)initWithDelegate:(id)exportDelegate;
 
 @end

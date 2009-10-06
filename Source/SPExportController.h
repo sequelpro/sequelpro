@@ -25,6 +25,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
+#import "SPExporterDataAccess.h"
+
 // Export type constants
 enum {
 	SP_SQL_EXPORT = 1,
@@ -44,7 +46,7 @@ enum {
 };
 typedef NSUInteger SPExportSource;
 
-@interface SPExportController : NSObject 
+@interface SPExportController : NSObject <SPExporterDataAccess>
 {	
 	// Table document
 	IBOutlet id tableDocumentInstance;
