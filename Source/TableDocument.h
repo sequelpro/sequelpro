@@ -144,6 +144,8 @@ enum sp_current_query_mode
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
+	
+	NSString *keyChainID;
 }
 
 - (NSString *)getHTMLforPrint;
@@ -151,9 +153,10 @@ enum sp_current_query_mode
 - (void)initQueryEditorWithString:(NSString *)query;
 - (void)initWithConnectionFile:(NSString *)path;
 // Connection callback and methods
-- (void) setConnection:(MCPConnection *)theConnection;
+- (void)setConnection:(MCPConnection *)theConnection;
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (BOOL)shouldAutomaticallyConnect;
+- (void)setKeychainID:(NSString *)theID;
 
 // Database methods
 - (IBAction)setDatabases:(id)sender;
@@ -219,6 +222,7 @@ enum sp_current_query_mode
 - (NSString *)mySQLVersion;
 - (NSString *)user;
 - (NSString *)displaySPName;
+- (NSString *)keyChainID;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;

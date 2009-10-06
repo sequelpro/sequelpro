@@ -450,9 +450,16 @@
 	NSArray *toolbarItems = [[documentWindow toolbar] items];
 	for (int i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 
+	// Set keychain id for saving SPF files
+	if([self valueForKeyPath:@"selectedFavorite.id"])
+		[tableDocument setKeychainID:[[self valueForKeyPath:@"selectedFavorite.id"] stringValue]];
+	else
+		[tableDocument setKeychainID:@""];
+
 	// Pass the connection to the table document, allowing it to set
 	// up the other classes and the rest of the interface.
 	[tableDocument setConnection:mySQLConnection];
+
 }
 
 #pragma mark -

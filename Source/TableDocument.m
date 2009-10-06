@@ -91,6 +91,8 @@
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
 		
+		keyChainID = nil;
+		
 	}
 
 	return self;
@@ -394,8 +396,18 @@
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if([connection objectForKey:@"port"])
 		[connectionController setPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"port"]]];
+	if([connection objectForKey:@"kcid"] && [[connection objectForKey:@"kcid"] length])
+		[self setKeychainID:[connection objectForKey:@"kcid"]];
+
+	// Set password - if not in SPF file try to get it via the KeyChain
 	if([connection objectForKey:@"password"])
 		[connectionController setPassword:[connection objectForKey:@"password"]];
+	else {
+		NSString *pw = [self keychainPasswordForConnection:nil];
+		if([pw length])
+			[connectionController setPassword:pw];
+	}
+
 	if(connectionType == SP_CONNECTION_SOCKET && [connection objectForKey:@"socket"])
 		[connectionController setSocket:[connection objectForKey:@"socket"]];
 		
@@ -406,8 +418,22 @@
 			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
 		if([connection objectForKey:@"ssh_port"])
 			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"ssh_port"]]];
+
+		// Set ssh password - if not in SPF file try to get it via the KeyChain
 		if([connection objectForKey:@"ssh_password"])
 			[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
+		else {
+			SPKeychain *keychain = [[SPKeychain alloc] init];
+			NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
+			NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
+			NSString *pw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
+			if ([pw length])
+				[connectionController setSshPassword:pw];
+			if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
+			if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+			[keychain release];
+		}
+
 	}
 	
 	if([connection objectForKey:@"database"])
@@ -428,15 +454,10 @@
 	if([spf objectForKey:@"ContentFilters"])
 		[spfPreferences setObject:[spf objectForKey:@"ContentFilters"] forKey:@"ContentFilters"];
 
-	[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"save_password"];
-	if(![connection objectForKey:@"password"]) {
-		// TODO How to set the focus to standardPasswordField in the connection nib?
-		// [[connectionController valueForKeyPath:@"standardPasswordField"] selectText:connectionController];
-		[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_password"];
-		return;
-	}
+	[spfDocData setObject:[NSNumber numberWithBool:([connection objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
 
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
+
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
 		[connectionController initiateConnection:self];
@@ -660,6 +681,11 @@
 - (BOOL)shouldAutomaticallyConnect
 {
 	return _shouldOpenConnectionAutomatically;
+}
+
+- (void)setKeychainID:(NSString *)theID
+{
+	keyChainID = [[NSString stringWithString:theID] retain];
 }
 
 #pragma mark -
@@ -2008,6 +2034,11 @@
 	return theUser;
 }
 
+- (NSString *)keyChainID
+{
+	return keyChainID;
+}
+
 #pragma mark -
 #pragma mark Notification center methods
 
@@ -2165,7 +2196,7 @@
 - (IBAction)validateSaveConnectionAccessory:(id)sender
 {
 
-	[saveConnectionAutoConnect setEnabled:([saveConnectionSavePassword state] == NSOnState)];
+	// [saveConnectionAutoConnect setEnabled:([saveConnectionSavePassword state] == NSOnState)];
 	[saveConnectionSavePasswordAlert setHidden:([saveConnectionSavePassword state] == NSOffState)];
 
 	// If user checks the Encrypt check box set focus to password field
@@ -2207,7 +2238,7 @@
 				[errorAlert runModal];
 			}
 			
-			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL URLWithString:fileName]];
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 			
 			return;
 		}
@@ -2323,7 +2354,7 @@
 			return NO;
 		}
 
-		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
+		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
 		return YES;
 
@@ -2350,9 +2381,11 @@
 	
 	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 
-	if([[spfDocData_temp objectForKey:@"save_password"] boolValue])
-		[spfdata setObject:[spfDocData_temp objectForKey:@"auto_connect"] forKey:@"auto_connect"];
+	// if([[spfDocData_temp objectForKey:@"save_password"] boolValue])
+	[spfdata setObject:[spfDocData_temp objectForKey:@"auto_connect"] forKey:@"auto_connect"];
 
+	if([[self keyChainID] length])
+		[connection setObject:[self keyChainID] forKey:@"kcid"];
 	[connection setObject:[self name] forKey:@"name"];
 	[connection setObject:[self host] forKey:@"host"];
 	[connection setObject:[self user] forKey:@"user"];
@@ -2500,6 +2533,7 @@
 	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:preferences];
 
 	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
 	[tableWindow setTitle:[self displaySPName]];
 
@@ -3406,6 +3440,7 @@
 	if(spfSession) [spfSession release];
 	if(userManagerInstance) [userManagerInstance release];
 	if(spfDocData) [spfDocData release];
+	if(keyChainID) [keyChainID release];
 	[super dealloc];
 }
 
