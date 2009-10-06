@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
@@ -334,6 +335,8 @@
 		1703EF3F0F0B0742005BBE7E /* syntax.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = syntax.html; sourceTree = "<group>"; };
 		1703EF400F0B0742005BBE7E /* tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = tables.html; sourceTree = "<group>"; };
 		17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QLPreviewPanel.h; sourceTree = "<group>"; };
+		17292441107AC41000B21980 /* SPXMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporter.h; sourceTree = "<group>"; };
+		17292442107AC41000B21980 /* SPXMLExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporter.m; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		173C4361104455CA001F3A30 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/QueryFavoriteManager.xib; sourceTree = "<group>"; };
@@ -468,7 +471,6 @@
 		17F5B1501048C4E400FC794F /* SPCSVExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCSVExporter.m; sourceTree = "<group>"; };
 		17F5B1521048C50D00FC794F /* SPExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExporter.h; sourceTree = "<group>"; };
 		17F5B1531048C50D00FC794F /* SPExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExporter.m; sourceTree = "<group>"; };
-		17F5B3921049B57500FC794F /* SPExporterAccess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExporterAccess.h; sourceTree = "<group>"; };
 		17F5B39A1049B96A00FC794F /* SPSQLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLExporter.h; sourceTree = "<group>"; };
 		17F5B39B1049B96A00FC794F /* SPSQLExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLExporter.m; sourceTree = "<group>"; };
 		296DC89E0F8FD336002A3258 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
@@ -931,8 +933,6 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */,
-				BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */,
 				17F5B1491048C4C000FC794F /* Data Export */,
 				17E641480EF01EF6001BC333 /* CustomQuery.h */,
 				17E641490EF01EF6001BC333 /* CustomQuery.m */,
@@ -940,6 +940,8 @@
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
+				BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */,
+				BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */,
 				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
 				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
 				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
@@ -1175,11 +1177,12 @@
 			children = (
 				17F5B1521048C50D00FC794F /* SPExporter.h */,
 				17F5B1531048C50D00FC794F /* SPExporter.m */,
-				17F5B39A1049B96A00FC794F /* SPSQLExporter.h */,
-				17F5B39B1049B96A00FC794F /* SPSQLExporter.m */,
 				17F5B14F1048C4E400FC794F /* SPCSVExporter.h */,
 				17F5B1501048C4E400FC794F /* SPCSVExporter.m */,
-				17F5B3921049B57500FC794F /* SPExporterAccess.h */,
+				17F5B39A1049B96A00FC794F /* SPSQLExporter.h */,
+				17F5B39B1049B96A00FC794F /* SPSQLExporter.m */,
+				17292441107AC41000B21980 /* SPXMLExporter.h */,
+				17292442107AC41000B21980 /* SPXMLExporter.m */,
 				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
 				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
 			);
@@ -1725,6 +1728,7 @@
 				BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */,
 				5822D3091061833C00CE2157 /* SPCSVParser.m in Sources */,
 				BC675A141072039C00C5ACD4 /* SPContentFilterManager.m in Sources */,
+				17292443107AC41000B21980 /* SPXMLExporter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2117,7 +2121,6 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IBC_NOTICES = NO;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 			};
@@ -2267,7 +2270,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_FLATTEN_NIBS = NO;
-				IBC_NOTICES = NO;
 				LEXFLAGS = "";
 				LEX_INSERT_LINE_DIRECTIVES = YES;
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
@@ -2286,7 +2288,6 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IBC_NOTICES = NO;
 				OTHER_LDFLAGS = "-lcrypto";
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;

@@ -29,10 +29,7 @@
 #import "SPExporter.h"
 
 @interface SPCSVExporter : SPExporter
-{
-	// CSV file
-	NSFileHandle *csvFileHandle;
-	
+{	
 	// CSV data
 	NSArray   *csvDataArray;
 	MCPResult *csvDataResult;
@@ -46,8 +43,6 @@
 	NSString *csvNULLString;
 	NSArray  *csvTableColumnNumericStatus;
 }
-
-@property (readwrite, retain) NSFileHandle *csvFileHandle;
 
 @property (readwrite, retain) NSArray *csvDataArray;
 @property (readwrite, retain) MCPResult *csvDataResult;

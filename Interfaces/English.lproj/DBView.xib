@@ -23,8 +23,6 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="6609"/>
-			<integer value="849"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7390,7 +7388,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{350, 200}</string>
 				<object class="NSView" key="NSWindowView" id="226131408">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7498,7 +7496,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									</object>
 									<string key="NSFrame">{{1, 17}, {399, 251}}</string>
 									<reference key="NSSuperview" ref="294857516"/>
-									<reference key="NSNextKeyView" ref="460727716"/>
 									<reference key="NSDocView" ref="460727716"/>
 									<reference key="NSBGColor" ref="1024678221"/>
 									<int key="NScvFlags">4</int>
@@ -7532,7 +7529,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									</object>
 									<string key="NSFrame">{{1, 0}, {399, 17}}</string>
 									<reference key="NSSuperview" ref="294857516"/>
-									<reference key="NSNextKeyView" ref="74674217"/>
 									<reference key="NSDocView" ref="74674217"/>
 									<reference key="NSBGColor" ref="1024678221"/>
 									<int key="NScvFlags">4</int>
@@ -7541,7 +7537,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							</object>
 							<string key="NSFrame">{{-1, 39}, {412, 269}}</string>
 							<reference key="NSSuperview" ref="226131408"/>
-							<reference key="NSNextKeyView" ref="841219743"/>
 							<int key="NSsFlags">18</int>
 							<reference key="NSVScroller" ref="297298990"/>
 							<reference key="NSHScroller" ref="857738313"/>
@@ -7688,7 +7683,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 					</object>
 					<string key="NSFrameSize">{411, 341}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{350, 222}</string>
@@ -13652,22 +13646,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">tableWindow</string>
-						<reference key="source" ref="4626"/>
-						<reference key="destination" ref="207157706"/>
-					</object>
-					<int key="connectionID">5378</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">spExportControllerInstance</string>
-						<reference key="source" ref="427689665"/>
-						<reference key="destination" ref="4626"/>
-					</object>
-					<int key="connectionID">5379</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">scrollView</string>
 						<reference key="source" ref="1055190999"/>
 						<reference key="destination" ref="71560786"/>
@@ -15750,6 +15728,46 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="306561007"/>
 					</object>
 					<int key="connectionID">6618</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">exportControllerInstance</string>
+						<reference key="source" ref="427689665"/>
+						<reference key="destination" ref="4626"/>
+					</object>
+					<int key="connectionID">6619</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tablesListInstance</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="438574515"/>
+					</object>
+					<int key="connectionID">6620</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableDocumentInstance</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">6621</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableDataInstance</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="1006422530"/>
+					</object>
+					<int key="connectionID">6622</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableWindow</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="207157706"/>
+					</object>
+					<int key="connectionID">6623</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -25659,7 +25677,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">6618</int>
+			<int key="maxID">6623</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -26558,6 +26576,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>databaseSheet</string>
 							<string>dbTablesTableView</string>
 							<string>encodingPopUp</string>
+							<string>exportControllerInstance</string>
 							<string>extendedTableInfoInstance</string>
 							<string>favoritesButton</string>
 							<string>historyControl</string>
@@ -26577,7 +26596,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>saveConnectionSavePasswordAlert</string>
 							<string>saveVariablesButton</string>
 							<string>sidebarGrabber</string>
-							<string>spExportControllerInstance</string>
 							<string>spHistoryControllerInstance</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
@@ -26622,6 +26640,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 							<string>NSSearchField</string>
 							<string>id</string>
 							<string>id</string>
@@ -26633,7 +26652,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSButton</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

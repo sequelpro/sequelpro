@@ -45,7 +45,7 @@ enum {
 typedef NSUInteger SPExportSource;
 
 @interface SPExportController : NSObject 
-{
+{	
 	// Table document
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableWindow;
@@ -107,6 +107,7 @@ typedef NSUInteger SPExportSource;
 	BOOL exportCancelled;
 	NSMutableArray *tables;
 	MCPConnection *connection;
+	NSOperationQueue *operationQueue;
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

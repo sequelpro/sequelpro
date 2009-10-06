@@ -587,18 +587,16 @@
 	[tableRelationsInstance setConnection:mySQLConnection];
 	[customQueryInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
-	[spExportControllerInstance setConnection:mySQLConnection];
+	[exportControllerInstance setConnection:mySQLConnection];
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
-	if (userManagerInstance == nil)
-	{
+	
+	if (!userManagerInstance) {
 		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
 	} 
-	else 
-	{
-		[userManagerInstance setConnection:mySQLConnection];
-	}
+
+	[userManagerInstance setConnection:mySQLConnection];
 
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
@@ -2528,11 +2526,10 @@
  */
 - (IBAction)export:(id)sender
 {
-	if ([sender tag] == -1) {
-		//[tableDumpInstance export];
-		
-		[spExportControllerInstance export];
-	} else {
+	if ([sender tag] == -1) {		
+		[exportControllerInstance export];
+	} 
+	else {
 		[tableDumpInstance exportFile:[sender tag]];
 	}
 }

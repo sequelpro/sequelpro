@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPExporterAccess.h
+//  SPXMLExporter.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on August 29, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,18 +23,26 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
+#import "SPXMLExporter.h"
 
-@protocol SPExporterAccess <NSObject>
-
-/**
- * Starts the export process.
- */
-- (BOOL)startExportProcess;
+@implementation SPXMLExporter
 
 /**
- * Stops the export process and passes control back to SPExportController.
+ * Start the SQL data conversion process. This method is automatically called when an instance of this object
+ * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
  */
-- (BOOL)stopExportProcess;
+- (void)main
+{
+	@try {
+		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		
+		
+		
+		[pool release];
+	}
+	@catch (NSException *e) {
+		
+	}
+}
 
 @end

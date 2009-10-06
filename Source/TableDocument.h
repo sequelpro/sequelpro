@@ -54,7 +54,7 @@ enum sp_current_query_mode
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
-	IBOutlet id spExportControllerInstance;	
+	IBOutlet id exportControllerInstance;	
 
 	IBOutlet NSSearchField *listFilterField;
 

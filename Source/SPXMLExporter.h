@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPSQLExporter.h
+//  SPSXMLExporter.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on August 29, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,6 @@
 
 #import "SPExporter.h"
 
-@interface SPSQLExporter : SPExporter
+@interface SPXMLExporter : SPExporter 
 
 @end

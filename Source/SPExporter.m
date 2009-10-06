@@ -28,9 +28,9 @@
 @implementation SPExporter
 
 @synthesize delegate;
+@synthesize didEndSelector;
 @synthesize exportProgressValue;
 @synthesize exportProcessIsRunning;
-@synthesize exportProcessShouldExit;
 @synthesize exportOutputEncoding;
 
 /**
@@ -41,7 +41,6 @@
 	if ((self == [super init])) {
 		[self setExportProgressValue:0];
 		[self setExportProcessIsRunning:NO];
-		[self setExportProcessShouldExit:NO];
 		
 		// Default the output encoding to UTF-8
 		[self setExportOutputEncoding:NSUTF8StringEncoding];

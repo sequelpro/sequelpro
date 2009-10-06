@@ -35,7 +35,7 @@
 - (void)_loadTables;
 - (NSString *)_htmlEscapeString:(NSString *)string;
 - (void)_initializeExportUsingSelectedOptions;
-- (BOOL)_exportTablesAsCSV:(NSArray *)exportTables toFileHandle:(NSFileHandle *)fileHandle usingDataExporter:(SPExporter *)exporter;
+- (BOOL)_exportTablesAsCSV:(NSArray *)exportTables usingDataExporter:(SPExporter *)exporter;
 
 @end
 
@@ -51,7 +51,9 @@
 {
 	if ((self = [super init])) {
 		[self setExportCancelled:NO];
+		
 		tables = [[NSMutableArray alloc] init];
+		operationQueue = [[NSOperationQueue alloc] init];
 	}
 	
 	return self;
@@ -224,6 +226,7 @@
 - (void)dealloc
 {	
     [tables release], tables = nil;
+	[operationQueue release], operationQueue = nil;
 	
 	[super dealloc];
 }
@@ -231,6 +234,14 @@
 @end
 
 @implementation SPExportController (PrivateAPI)
+
+/**
+ * This method is called by SPCSVExporter objects once they have completed converting their data to CSV data.
+ */
+- (void)_csvDataAvialble:(NSString *)data
+{
+	
+}
 
 /**
  * Loads all the available database tables in table view.
@@ -335,9 +346,7 @@
 			break;
 		case SP_CSV_EXPORT:
 			csvExporter = [[SPCSVExporter alloc] init];
-			
-			[csvExporter setCsvFileHandle:[NSFileHandle fileHandleForWritingAtPath:@"/Users/stuart/Desktop/output.csv"]];
-			
+						
 			[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
 			[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
 			[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
@@ -363,8 +372,9 @@
 			break;
 	}
 	
-	// Set the exporter's delegate
+	// Set the exporter's delegate and didEndSelector
 	[exporter setDelegate:self];
+	[exporter setDidEndSelector:@selector(_csvDataAvialble:)];
 	
 	switch (exportSource) 
 	{
@@ -375,7 +385,7 @@
 			
 			break;
 		case SP_TABLE_EXPORT:
-			[self _exportTablesAsCSV:exportTables toFileHandle:[NSFileHandle fileHandleForWritingAtPath:@"/Users/stuart/Desktop/output.csv"] usingDataExporter:exporter];
+			[self _exportTablesAsCSV:exportTables usingDataExporter:exporter];
 			break;
 	}
 }
@@ -384,7 +394,7 @@
  * Exports the contents' of the supplied array of tables using the supplied exporter and export type. Note that
  * this method currently only supports exporting in CSV and XML formats.
  */
-- (BOOL)_exportTablesAsCSV:(NSArray *)exportTables toFileHandle:(NSFileHandle *)fileHandle usingDataExporter:(SPExporter *)exporter
+- (BOOL)_exportTablesAsCSV:(NSArray *)exportTables usingDataExporter:(SPCSVExporter *)exporter
 {
 	NSUInteger tableCount, i, j;
 	
@@ -428,9 +438,7 @@
 		[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
 							  [tableDocumentInstance host], [tableDocumentInstance database], [NSDate date], csvLineEnd, csvLineEnd]];
 	}
-	
-	[fileHandle writeData:[infoString dataUsingEncoding:encoding]];
-	
+		
 	tableCount = [exportTables count];
 	
 	// Loop through the tables
@@ -447,9 +455,9 @@
 		[exportProgressIndicator startAnimation:self];
 		
 		// For CSV exports of more than one table, output the name of the table
-		if (tableCount > 1) {
+		/*if (tableCount > 1) {
 			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
-		}
+		}*/
 		
 		// Determine whether this table is a table or a view via the create table command, and get the table details
 		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
@@ -478,13 +486,18 @@
 			}
 		}
 		
+		[exporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
+		
 		// Retrieve all the content within this table
 		queryResult = [connection queryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]]];
-		
+				
 		// Note any errors during retrieval
 		if (![[connection getLastErrorMessage] isEqualToString:@""]) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
 		}
+		
+		// Assign the data to the exporter
+		[exporter setCsvDataResult:queryResult];
 		
 		// Update the progress text and set the progress bar back to determinate
 		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %d of %d (%@): Writing...", @"text showing that app is writing data for table export"), (i + 1), tableCount, tableName]];
@@ -496,11 +509,14 @@
 		[exportProgressIndicator setDoubleValue:0];
 		[exportProgressIndicator displayIfNeeded];
 		
-		// Start the actual export process in a separate thread using the supplied exporter instance
-		//[exporter startExportProcess];
+		// Start the actual data conversion process by placing the exporter on the operation queue.
+		// Note that although it is highly likely there is no guarantee that the operation will executed 
+		// as soon as it's placed on the queue. There may be a delay if the queue is already executing it's
+		// maximum number of concurrent operations. See the docs for more details.
+		[operationQueue addOperation:exporter];
 		
 		// Add a spacer to the file
-		[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
+		//[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
 	}
 	
 	// Close the progress sheet
