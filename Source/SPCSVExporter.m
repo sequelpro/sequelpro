@@ -269,11 +269,14 @@
 			[csvData appendString:csvString];
 		}
 		
+		// Assign the resulting CSV data to the expoter's export data
+		[self setExportData:csvData];
+		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];
 		
-		// Pass the resulting CSV data back to the delegate by calling the specified didEndSelector
-		[[self delegate] performSelectorOnMainThread:[self didEndSelector] withObject:csvData waitUntilDone:YES];
+		// Call the delegate's didEndSelector while passing this exporter to it
+		[[self delegate] performSelectorOnMainThread:[self didEndSelector] withObject:self waitUntilDone:YES];
 		
 		[pool release];
 	}

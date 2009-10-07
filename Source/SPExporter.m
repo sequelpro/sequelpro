@@ -31,6 +31,7 @@
 @synthesize didEndSelector;
 @synthesize exportProgressValue;
 @synthesize exportProcessIsRunning;
+@synthesize exportData;
 @synthesize exportOutputEncoding;
 
 /**
@@ -44,10 +45,13 @@
 		[self setExportProgressValue:0];
 		[self setExportProcessIsRunning:NO];
 		
+		// Default the resulting data to an empty string
+		[self setExportData:@""];
+		
 		// Default the output encoding to UTF-8
 		[self setExportOutputEncoding:NSUTF8StringEncoding];
 		
-		[self setDidEndSelector:@selector(csvDataAvailable:)];
+		[self setDidEndSelector:@selector(exporterDataConversionProcessComplete:)];
 	}
 	
 	return self;
@@ -59,6 +63,16 @@
 - (void)main
 {
 	@throw [NSException exceptionWithName:@"NSOperation main() call" reason:@"Can't call NSOperation's main() method in SPExpoter, must be overriden in subclass." userInfo:nil];
+}
+
+/**
+ * Get rid of the export data.
+ */
+- (void)dealloc
+{
+	[exportData release], exportData = nil;
+	
+	[super dealloc];
 }
 
 @end

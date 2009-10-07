@@ -39,11 +39,13 @@
 
 @implementation SPAppController
 
-
-- (id) init
+/**
+ * Inialise the application's main controller, setting itself as the app delegate.
+ */
+- (id)init
 {
 	if ((self = [super init])) {
-		[NSApp setDelegate: self];
+		[NSApp setDelegate:self];
 	}
 
 	return self;

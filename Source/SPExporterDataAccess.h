@@ -25,21 +25,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class SPExporter;
+
 @protocol SPExporterDataAccess
 
 /**
- * Called when CSV data conversion process is complete and the data is available.
+ * This method called when an expoter complete it's data conversion process and the operation is effectively 
+ * complete. The resulting data can be accessed via SPExporter's exportData method.
  */
-- (void)csvDataAvailable:(NSString *)data;
-
-/**
- *  Called when SQL data conversion process is complete and the data is available.
- */
-- (void)sqlDataAvailable:(NSString *)data;
-
-/**
- *  Called when XML data conversion process is complete and the data is available.
- */
-- (void)xmlDataAvailable:(NSString *)data;
+- (void)exporterDataConversionProcessComplete:(SPExporter *)exporter;
 
 @end

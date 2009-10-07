@@ -32,7 +32,6 @@
 
 @interface SPExportController (PrivateAPI)
 
-- (void)_loadTables;
 - (NSString *)_htmlEscapeString:(NSString *)string;
 - (void)_initializeExportUsingSelectedOptions;
 - (BOOL)_exportTablesAsCSV:(NSArray *)exportTables usingDataExporter:(SPExporter *)exporter;
@@ -78,7 +77,23 @@
 {
 	if (!exportWindow) [NSBundle loadNibNamed:@"ExportDialog" owner:self];
 	
-	[self _loadTables];
+	NSUInteger i;
+	
+	[tables removeAllObjects];
+	
+	MCPResult *queryResult = (MCPResult *)[[self connection] listTables];
+	
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	
+	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) 
+	{
+		[tables addObject:[NSMutableArray arrayWithObjects:
+						   [NSNumber numberWithBool:YES],
+						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
+						   nil]];
+	}
+	
+	[exportTableList reloadData];
 
 	[exportPathField setStringValue:NSHomeDirectory()];
 	
@@ -99,7 +114,7 @@
 }
 
 /**
- *
+ * Change the selected toolbar item.
  */
 - (IBAction)switchTab:(id)sender
 {
@@ -122,11 +137,19 @@
 }
 
 /**
- *
+ * Cancel's the export operation by stopping the current table export loop and marking any current SPExporter
+ * NSOperation subclasses as cancelled.
  */
 - (IBAction)cancelExport:(id)sender
 {
-	// Cancel the export operation here
+	[self setExportCancelled:YES];
+	
+	// Cancel all of the currently running operations
+	[operationQueue cancelAllOperations];
+	
+	// Close the progress sheet
+	[NSApp endSheet:exportProgressWindow returnCode:0];
+	[exportProgressWindow orderOut:self];
 }
 
 /**
@@ -195,32 +218,21 @@
 }
 
 #pragma mark -
-#pragma mark Exporter delegate methods
+#pragma mark SPExporterDataAccess protocol methods
 
 /**
- * Called when CSV data conversion process is complete and the data is available.
+ * This method is part of the SPExporterDataAccess protocol. It is called when an expoter complete it's data
+ * conversion process and the operation is effectively complete. The resulting data can be accessed via
+ * SPExporter's exportData method.
  */
-- (void)csvDataAvailable:(NSString *)data
-{
-	
+- (void)exporterDataConversionProcessComplete:(SPExporter *)exporter
+{	
+	// If there are no more operations in the queue, close the progress sheet
+	if ([[operationQueue operations] count] == 0) {
+		[NSApp endSheet:exportProgressWindow returnCode:0];
+		[exportProgressWindow orderOut:self];
+	}
 }
-
-/**
- *  Called when SQL data conversion process is complete and the data is available.
- */
-- (void)sqlDataAvailable:(NSString *)data
-{
-	
-}
-
-/**
- *  Called when XML data conversion process is complete and the data is available.
- */
-- (void)xmlDataAvailable:(NSString *)data
-{
-	
-}
-
 
 #pragma mark -
 #pragma mark Other 
@@ -248,6 +260,8 @@
 	}
 }
 
+#pragma mark -
+
 /**
  * Dealloc
  */
@@ -262,30 +276,6 @@
 @end
 
 @implementation SPExportController (PrivateAPI)
-
-/**
- * Loads all the available database tables in table view.
- */
-- (void)_loadTables
-{
-	NSUInteger i;
-	
-	[tables removeAllObjects];
-	
-	MCPResult *queryResult = (MCPResult *)[[self connection] listTables];
-	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) 
-	{
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES],
-						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
-						   nil]];
-	}
-	
-	[exportTableList reloadData];
-}
 
 /**
  * Escapes the supplied HTML string
@@ -412,7 +402,7 @@
  */
 - (BOOL)_exportTablesAsCSV:(NSArray *)exportTables usingDataExporter:(SPCSVExporter *)exporter
 {
-	NSUInteger tableCount, i, j;
+	NSUInteger tableCount, i;
 	
 	NSMutableString *errors = [NSMutableString string];
 	NSMutableString *infoString = [NSMutableString string];
@@ -462,8 +452,8 @@
 	{
 		// Update the progress text and reset the progress bar to indeterminate status
 		NSString *tableName = [exportTables objectAtIndex:i];
-		
-		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): fetching data...", @"text showing that app is fetching data for table dump"), (i + 1), tableCount, tableName]];
+				
+		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %d of %d (%@): fetching data...", @"text showing that app is fetching data for table dump"), (i + 1), tableCount, tableName]];
 		[exportProgressText displayIfNeeded];
 		
 		[exportProgressIndicator setIndeterminate:YES];
@@ -487,21 +477,15 @@
 		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
 		tableColumnNumericStatus = [NSMutableArray array];
 		
-		for (j = 0; j < [[tableDetails objectForKey:@"columns"] count]; j++) 
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
 		{
-			NSString *tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
+			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
 			
-			if ([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-				[tableColumnTypeGrouping isEqualToString:@"integer"] || 
-				[tableColumnTypeGrouping isEqualToString:@"float"]) 
-			{
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
-			} 
-			else {
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:NO]];
-			}
+			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
+																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
+																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
 		}
-		
+				
 		[exporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
 		
 		// Retrieve all the content within this table
@@ -524,7 +508,7 @@
 		[exportProgressIndicator setIndeterminate:NO];
 		[exportProgressIndicator setDoubleValue:0];
 		[exportProgressIndicator displayIfNeeded];
-		
+				
 		// Start the actual data conversion process by placing the exporter on the operation queue.
 		// Note that although it is highly likely there is no guarantee that the operation will executed 
 		// as soon as it's placed on the queue. There may be a delay if the queue is already executing it's
@@ -534,10 +518,6 @@
 		// Add a spacer to the file
 		//[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
 	}
-	
-	// Close the progress sheet
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
 	
 	return YES;
 }

@@ -56,6 +56,7 @@
 	
 	BOOL exportProcessIsRunning;
 	
+	NSString *exportData;
 	NSStringEncoding exportOutputEncoding;
 }
 
@@ -65,6 +66,7 @@
 
 @property (readwrite, assign) BOOL exportProcessIsRunning;
 
+@property (readwrite, retain) NSString *exportData;
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
 
 - (id)initWithDelegate:(id)exportDelegate;

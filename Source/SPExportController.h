@@ -105,10 +105,16 @@ typedef NSUInteger SPExportSource;
 	IBOutlet id tokenNameTokensField;
 	IBOutlet id exampleNameLabel;
 	
-	// Local variables
+	// Cancellation flag
 	BOOL exportCancelled;
+	
+	// Current database's tables
 	NSMutableArray *tables;
+	
+	// Database connection
 	MCPConnection *connection;
+	
+	// Concurrent operation queue
 	NSOperationQueue *operationQueue;
 }
 
