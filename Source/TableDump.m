@@ -763,6 +763,14 @@
 	// and send queries to the server.  The loop is mainly to perform the first of these; the
 	// other two must therefore be performed where possible.
 	csvParser = [[SPCSVParser alloc] init];
+
+	// Take CSV import setting from accessory view
+	[csvParser setFieldTerminatorString:[importFieldsTerminatedField stringValue] convertDisplayStrings:YES];
+	[csvParser setLineTerminatorString:[importLinesTerminatedField stringValue] convertDisplayStrings:YES];
+	[csvParser setFieldQuoteString:[importFieldsEnclosedField stringValue] convertDisplayStrings:YES];
+	[csvParser setEscapeString:[importFieldsEscapedField stringValue] convertDisplayStrings:YES];
+	[csvParser setNullReplacementString:[prefs objectForKey:@"NullValue"]];
+
 	csvDataBuffer = [[NSMutableData alloc] init];
 	importPool = [[NSAutoreleasePool alloc] init];
 	while (1) {
