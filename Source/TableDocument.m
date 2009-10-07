@@ -90,9 +90,9 @@
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
-		
+
 		keyChainID = nil;
-		
+
 	}
 
 	return self;
@@ -142,7 +142,7 @@
 					[tableWindow setFrame:previousFrame display:YES];
 			}
 		}
-		
+
 	}
 
 	// Set up the toolbar
@@ -158,13 +158,13 @@
 
 	// Register observers for when the logging preference changes
 	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
-	
+
 	// Register a second observer for when the logging preference changes so we can tell the current connection about it
 	[prefs addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
-	
+
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
 
@@ -178,14 +178,14 @@
 											av.size.height);
 	[titleAccessoryView setFrame:initialAccessoryViewFrame];
 	[windowFrame addSubview:titleAccessoryView];
-	
+
 	// Bind the background color of the create syntax text view to the users preference
 	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
-	
+
 	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-	
+
 	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
-	
+
 	[createTableSyntaxTextView bind:@"backgroundColor"
 						   toObject:[NSUserDefaultsController sharedUserDefaultsController]
 						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
@@ -233,7 +233,7 @@
 	// if a connection should initialized by SPF file. Otherwise it could happen
 	// that the SPF file runs out of sync.
 	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
-	
+
 
 	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
 
@@ -280,15 +280,15 @@
 		[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Enter password for ‘%@’:",@"Please enter the password"), [path lastPathComponent]]];
 		[inputTextWindowSecureTextField setStringValue:@""];
 		[inputTextWindowSecureTextField selectText:nil];
-		
+
 		[NSApp beginSheet:inputTextWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		
+
 		// wait for encryption password
 		NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
 		for (;;) {
 
 			// Execute code on DefaultRunLoop
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
 									 beforeDate:[NSDate distantFuture]];
 
 			// Break the run loop if editSheet was closed
@@ -297,14 +297,14 @@
 				break;
 
 			// Execute code on DefaultRunLoop
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
 									 beforeDate:[NSDate distantFuture]];
 
 		}
 		[NSApp endModalSession:session];
 		[inputTextWindow orderOut:nil];
 		[NSApp endSheet:inputTextWindow];
-		
+
 		if(passwordSheetReturnCode)
 			encryptpw = [inputTextWindowSecureTextField stringValue];
 		else {
@@ -410,7 +410,7 @@
 
 	if(connectionType == SP_CONNECTION_SOCKET && [connection objectForKey:@"socket"])
 		[connectionController setSocket:[connection objectForKey:@"socket"]];
-		
+
 	if(connectionType == SP_CONNECTION_SSHTUNNEL) {
 		if([connection objectForKey:@"ssh_host"])
 			[connectionController setSshHost:[connection objectForKey:@"ssh_host"]];
@@ -435,7 +435,7 @@
 		}
 
 	}
-	
+
 	if([connection objectForKey:@"database"])
 		[connectionController setDatabase:[connection objectForKey:@"database"]];
 
@@ -473,7 +473,7 @@
 
 	// Check and set the table
 	NSArray *tables = [tablesListInstance tables];
-	
+
 	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) return;
 
 	// TODO up to now it doesn't work
@@ -501,7 +501,7 @@
 	// Select table
 	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
 	// [tablesListInstance setContentRequiresReload:YES];
-	
+
 	// Select view
 	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
 		[self viewStructure:self];
@@ -567,7 +567,7 @@
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
 
-	// Set the fileURL and init the preferences (query favs and history) if available for that URL 
+	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]]];
 
 	[spfPreferences release];
@@ -612,7 +612,7 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
-	
+
 	if (!userManagerInstance) {
 		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
 	} 
@@ -625,12 +625,12 @@
 	[tableWindow setTitle:[self displaySPName]];
 	[self viewStructure:self];
 
-	// Connected Growl notification		
+	// Connected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
 														window:tableWindow
 											  notificationName:@"Connected"];
-											
+
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
@@ -692,7 +692,7 @@
 #pragma mark Printing
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame 
-{	
+{
 	//because I need the webFrame loaded (for preview), I've moved the actuall printing here.
 	NSPrintInfo *printInfo = [self printInfo];
 	[printInfo setHorizontalPagination:NSFitPagination];
@@ -702,26 +702,26 @@
 	[printInfo setBottomMargin:30];
 	[printInfo setLeftMargin:10];
 	[printInfo setRightMargin:10];
-	
+
 	NSPrintOperation *op = [NSPrintOperation
 							printOperationWithView:[[[printWebView mainFrame] frameView] documentView]
 							printInfo:printInfo];
-	
+
 	//add ability to select orientation to print panel
 	NSPrintPanel *printPanel = [op printPanel];
 	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
-	
+
 	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
 	[printAccessory initWithNibName:@"PrintAccessory" bundle:nil];
 	[printAccessory setPrintView:printWebView];
 	[printPanel addAccessoryController:printAccessory];
-	
+
 	NSPageLayout *pageLayout = [NSPageLayout pageLayout];
 	[pageLayout addAccessoryController:printAccessory];
     [printAccessory release];
-	
+
 	[op setPrintPanel:printPanel];
-	
+
     [op runOperationModalForWindow:tableWindow
 						  delegate:self
 					didRunSelector:
@@ -748,13 +748,13 @@
 	// Set up template engine with your chosen matcher.
 	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
-	
+
 	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (build %@)",
 		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"],
 		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
 		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
 	];
-	
+
 	NSMutableDictionary *connection = [[NSMutableDictionary alloc] init];
 	if([[self user] length])
 		[connection setValue:[self user] forKey:@"username"];
@@ -763,7 +763,7 @@
 		[connection setValue:[connectionController port] forKey:@"port"];
 	[connection setValue:selectedDatabase forKey:@"database"];
 	[connection setValue:versionForPrint forKey:@"version"];
-	
+
 	NSArray *columns, *rows;
 	columns = rows = nil;
 	columns = [self columnNames];
@@ -794,7 +794,7 @@
 					];
 		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
 	}
-	
+
 	[engine setObject:connection forKey:@"c"];
 	// Get path to template.
 	NSString *templatePath = [[NSBundle mainBundle] pathForResource:@"sequel-pro-print-template" ofType:@"html"];
@@ -823,27 +823,27 @@
 {
 	if (!chooseDatabaseButton)
 		return;
-	
+
 	[chooseDatabaseButton removeAllItems];
-	
+
 	[chooseDatabaseButton addItemWithTitle:NSLocalizedString(@"Choose Database...", @"menu item for choose db")];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Refresh Databases", @"menu item to refresh databases") action:@selector(setDatabases:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
-	
+
 	MCPResult *queryResult = [mySQLConnection listDBs];
-	
+
 	if ([queryResult numOfRows]) {
 		[queryResult dataSeek:0];
 	}
-	
+
 	// if([allDatabases count])
 	// 	[allDatabases removeAllObjects];
 
 	if(allDatabases)
 		[allDatabases release];
-		
+
 	allDatabases = [[NSMutableArray alloc] initWithCapacity:[queryResult numOfRows]];
 
 	for (int i = 0 ; i < [queryResult numOfRows] ; i++)
@@ -851,7 +851,7 @@
 
 	for (id db in allDatabases)
 		[chooseDatabaseButton addItemWithTitle:db];
-	
+
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
 
@@ -865,7 +865,7 @@
 		[chooseDatabaseButton selectItemWithTitle:[self database]];
 		return;
 	}
-	
+
 	if ( [chooseDatabaseButton indexOfSelectedItem] == 0 ) {
 		if ([self database]) {
 			[chooseDatabaseButton selectItemWithTitle:[self database]];
@@ -888,7 +888,7 @@
 		}
 		return;
 	}
-	
+
 	//setConnection of TablesList and TablesDump to reload tables in db
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 	selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
@@ -918,59 +918,59 @@
 - (IBAction)addDatabase:(id)sender
 {
 	int code = 0;
-	
+
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) {
 		return;
 	}
-	
+
 	[databaseNameField setStringValue:@""];
-	
+
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:nil
 		  contextInfo:nil];
-	
+
 	code = [NSApp runModalForWindow:databaseSheet];
-	
+
 	[NSApp endSheet:databaseSheet];
 	[databaseSheet orderOut:nil];
-	
+
 	if (!code) {
 		(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 		return;
 	}
-	
+
 	// This check is not necessary anymore as the add database button is now only enabled if the name field
 	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
-	
+
 	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
-	
+
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
 	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
 		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]] backtickQuotedString]];
 	}
-	
+
 	// Create the database
 	[mySQLConnection queryString:createStatement];
-	
+
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		//error while creating db
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
 		return;
 	}
-	
+
 	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) { //error while selecting new db (is this possible?!)
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"),
 																																					  [databaseNameField stringValue]]);
 		[self setDatabases:self];
 		return;
 	}
-	
+
 	//select new db
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 	selectedDatabase = [[NSString alloc] initWithString:[databaseNameField stringValue]];
@@ -996,24 +996,24 @@
 {
 	if ([chooseDatabaseButton indexOfSelectedItem] == 0)
 		return;
-	
+
 	if (![tablesListInstance selectionShouldChangeInTableView:nil])
 		return;
-	
+
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete database '%@'?", @"delete database message"), [self database]]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									  otherButton:nil 
 						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
-	
+
 	NSArray *buttons = [alert buttons];
-	
+
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
+
 	[alert setAlertStyle:NSCriticalAlertStyle];
-	
+
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
 }
 
@@ -1031,11 +1031,11 @@
  * if contextInfo == removedatabase -> tries to remove the selected database
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-{		
+{
 	if ([contextInfo isEqualToString:@"removedatabase"]) {
 		if (returnCode != NSAlertDefaultReturn)
 			return;
-		
+
 		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			// error while deleting db
@@ -1047,7 +1047,7 @@
 				afterDelay:0.3];
 			return;
 		}
-		
+
 		// db deleted with success
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 		[self setDatabases:self];
@@ -1080,7 +1080,7 @@
 
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
-	
+
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		int i;
@@ -1102,10 +1102,10 @@
 			[tableWindow setTitle:[self displaySPName]];
 		}
 	}
-	
+
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-	
+
 }
 
 #pragma mark -
@@ -1126,11 +1126,11 @@
 
 	// Show or hide the console
 	[[[SPQueryController sharedQueryController] window] setIsVisible:(!isConsoleVisible)];
-	
+
 	// Get the menu item for showing and hiding the console. This is isn't the best way to get it as any 
 	// changes to the menu structure will result in the wrong item being selected.
 	NSMenuItem *menuItem = [[[[NSApp mainMenu] itemWithTitle:@"View"] submenu] itemAtIndex:5];
-	
+
 	// Only update the menu item title if its the menu item and not the toolbar
 	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"show console")];
 }
@@ -1180,10 +1180,10 @@
 		_encodingViaLatin1 = YES;
 		mysqlEncoding = @"utf8";
 	}
-	
+
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
-	
+
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
@@ -1198,7 +1198,7 @@
 			return;
 		}
 	}
-		
+
 	// update the selected menu item
 	if (_encodingViaLatin1) {
 		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
@@ -1244,10 +1244,10 @@
 	int correctStateForMenuItem;
 	while (menuItem = [dbEncodingMenuEn nextObject]) {
 		correctStateForMenuItem = [[menuItem title] isEqualToString:encoding] ? NSOnState : NSOffState;
-		
+
 		if ([menuItem state] == correctStateForMenuItem) // don't re-apply state incase it causes performance issues
 			continue;
-		
+
 		[menuItem setState:correctStateForMenuItem];
 	}
 }
@@ -1278,10 +1278,10 @@
 									@"EUC-KR Korean (euckr)", @"euckr",
 									nil];
 	NSString *encodingName = [translationMap valueForKey:mysqlEncoding];
-	
+
 	if (!encodingName)
 		return [NSString stringWithFormat:@"Unknown Encoding (%@)", mysqlEncoding, nil];
-	
+
 	return encodingName;
 }
 
@@ -1311,10 +1311,10 @@
 									@"euckr", @"EUC-KR Korean (euckr)",
 									nil];
 	NSString *mysqlEncoding = [translationMap valueForKey:encodingName];
-	
+
 	if (!mysqlEncoding)
 		return @"utf8";
-	
+
 	return mysqlEncoding;
 }
 
@@ -1327,7 +1327,7 @@
 	// MySQL > 4.0
 	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	_supportsEncoding = (mysqlEncoding != nil);
-	
+
 	if ( [mysqlEncoding isKindOfClass:[NSData class]] ) { // MySQL 4.1.14 returns the mysql variables as nsdata
 		mysqlEncoding = [mySQLConnection stringWithText:mysqlEncoding];
 	}
@@ -1338,7 +1338,7 @@
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
-	
+
 	return mysqlEncoding;
 }
 
@@ -1370,7 +1370,7 @@
 	int colOffs = 1;
 	NSString *query = nil;
 	NSString *typeString = @"";
-	
+
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 		typeString = @"table";
@@ -1391,36 +1391,36 @@
 	}
 
 	if (query == nil) return;
-	
+
 	MCPResult *theResult = [mySQLConnection queryString:query];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
-		
+
 		return;
 	}
-	
+
 	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-	
+
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-	
+
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
-	
+
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
 	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SP_TABLETYPE_VIEW) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
 	[createTableSyntaxTextView setEditable:NO];
-	
+
 	// Show variables sheet
 	[NSApp beginSheet:createTableSyntaxWindow
 	   modalForWindow:tableWindow 
 		modalDelegate:self
 	   didEndSelector:nil 
-		  contextInfo:nil];	
+		  contextInfo:nil];
 }
 
 /**
@@ -1428,10 +1428,10 @@
  */
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
-	// Create the query and get results	
+	// Create the query and get results
 	NSString *query = nil;
 	int colOffs = 1;
-	
+
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	}
@@ -1446,12 +1446,12 @@
 		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
 		colOffs = 2;
 	}
-	
+
 	if( query == nil )
-		return;	
-	
+		return;
+
 	MCPResult *theResult = [mySQLConnection queryString:query];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
@@ -1459,12 +1459,12 @@
 		}
 		return;
 	}
-	
+
 	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-	
+
 	if ([tableSyntax isKindOfClass:[NSData class]])
 		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
-	
+
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
@@ -1475,9 +1475,9 @@
 
 	// Table syntax copied Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
 														window:tableWindow
-                                              notificationName:@"Syntax Copied"];
+											  notificationName:@"Syntax Copied"];
 }
 
 - (NSArray *)columnNames
@@ -1495,7 +1495,7 @@
 		&& [[customQueryInstance currentResult] count] > 0 ){
 		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
 	}
-	
+
 	if(columns) {
 		[columns autorelease];
 	}
@@ -1506,13 +1506,13 @@
  * Performs a MySQL check table on the selected table and presents the result to the user via an alert sheet.
  */
 - (IBAction)checkTable:(id)sender
-{	
+{
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			
+
 			[[NSAlert alertWithMessageText:@"Unable to check table" 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
@@ -1521,21 +1521,21 @@
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-							   contextInfo:NULL];			
+							   contextInfo:NULL];
 		}
-		
+
 		return;
 	}
-	
+
 	// Process result
 	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	
+
 	NSString *message = @"";
-	
+
 	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Check table successfully passed." : @"Check table failed.";
-	
+
 	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
-	
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Check table '%@'", [self table]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
@@ -1544,7 +1544,7 @@
 		  beginSheetModalForWindow:tableWindow 
 					 modalDelegate:self 
 					didEndSelector:NULL 
-					   contextInfo:NULL];	
+					   contextInfo:NULL];
 }
 
 /**
@@ -1553,11 +1553,11 @@
 - (IBAction)analyzeTable:(id)sender
 {
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			
+
 			[[NSAlert alertWithMessageText:@"Unable to analyze table" 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
@@ -1566,21 +1566,21 @@
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-							   contextInfo:NULL];			
+							   contextInfo:NULL];
 		}
-		
+
 		return;
 	}
-	
+
 	// Process result
 	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	
+
 	NSString *message = @"";
-	
+
 	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully analyzed table" : @"Analyze table failed.";
-	
+
 	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
-	
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Analyze table '%@'", [self table]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
@@ -1598,11 +1598,11 @@
 - (IBAction)optimizeTable:(id)sender
 {
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			
+
 			[[NSAlert alertWithMessageText:@"Unable to optimize table" 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
@@ -1611,21 +1611,21 @@
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-							   contextInfo:NULL];			
+							   contextInfo:NULL];
 		}
-		
+
 		return;
 	}
-	
+
 	// Process result
 	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	
+
 	NSString *message = @"";
-	
+
 	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully optimized table" : @"Optimize table failed.";
-	
+
 	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
-	
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Optimize table '%@'", [self table]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
@@ -1643,11 +1643,11 @@
 - (IBAction)repairTable:(id)sender
 {
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			
+
 			[[NSAlert alertWithMessageText:@"Unable to repair table" 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
@@ -1656,21 +1656,21 @@
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-							   contextInfo:NULL];			
+							   contextInfo:NULL];
 		}
-		
+
 		return;
 	}
-	
+
 	// Process result
 	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
-	
+
 	NSString *message = @"";
-	
+
 	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully repaired table" : @"Repair table failed.";
-	
+
 	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
-	
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Repair table '%@'", [self table]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
@@ -1688,11 +1688,11 @@
 - (IBAction)flushTable:(id)sender
 {
 	[mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [[self table] backtickQuotedString]]];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			
+
 			[[NSAlert alertWithMessageText:@"Unable to flush table" 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
@@ -1701,12 +1701,12 @@
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-						       contextInfo:NULL];			
+						       contextInfo:NULL];
 		}
-		
+
 		return;
 	}
-		
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Flush table '%@'", [self table]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
@@ -1722,13 +1722,13 @@
  * Runs a MySQL checksum on the selected table and present the result to the user via an alert sheet.
  */
 - (IBAction)checksumTable:(id)sender
-{	
+{
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
-	
+
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			
+
 			[[NSAlert alertWithMessageText:@"Unable to perform checksum" 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
@@ -1737,14 +1737,14 @@
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-							   contextInfo:NULL];			
+							   contextInfo:NULL];
 		}
 		return;
 	}
-	
+
 	// Process result
 	NSString *result = [[[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject] objectForKey:@"Checksum"];
-	
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Checksum table '%@'", [self table]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
@@ -1762,13 +1762,13 @@
 - (IBAction)saveCreateSyntax:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
+
 	[panel setRequiredFileType:@"sql"];
-	
+
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
-	
+
 	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"CreateSyntax"];
 }
 
@@ -1812,7 +1812,7 @@
  * dialogs such as the variableSheet or the createTableSyntaxSheet
  */
 - (IBAction)closeSheet:(id)sender
-{	
+{
 	[NSApp stopModalWithCode:0];
 }
 
@@ -1831,15 +1831,15 @@
 {
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
-	
+
 	// If it was the server variables sheet that was closed release the relevant arrays if necessary
 	if ([sender window] == variablesSheet) {
-		
+
 		// If the filtered array is allocated and its not a reference to the variables array get rid of it
 		if ((variablesFiltered) && (variablesFiltered != variables)) {
 			[variablesFiltered release], variablesFiltered = nil;
 		}
-		
+
 		if (variables) [variables release], variables = nil;
 	}
 }
@@ -1900,7 +1900,7 @@
 - (void)flushPrivileges:(id)sender
 {
 	[mySQLConnection queryString:@"FLUSH PRIVILEGES"];
-	
+
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		//flushed privileges without errors
 		NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
@@ -1917,32 +1917,32 @@
 - (void)showVariables:(id)sender
 {
 	int i;
-	
+
 	[variablesCountTextField setStringValue:@""];
-	
+
 	if (variables) [variables release], variables = nil;
-	
+
 	// Get variables
 	MCPResult *theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
-	
+
 	if ([theResult numOfRows]) [theResult dataSeek:0];
-	
+
 	variables = [[NSMutableArray alloc] init];
-	
+
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		[variables addObject:[theResult fetchRowAsDictionary]];
 	}
-		
+
 	// Weak reference
 	variablesFiltered = variables;
-	
+
 	[variablesTableView reloadData];
-	
+
 	// If the search field already has value from when the panel was previously open, apply the filter.
 	if ([[variablesSearchField stringValue] length] > 0) {
 		[self _updateServerVariablesFilterForFilterString:[variablesSearchField stringValue]];
 	}
-	
+
 	// Show variables sheet
 	[NSApp beginSheet:variablesSheet
 	   modalForWindow:tableWindow 
@@ -1969,7 +1969,7 @@
 {
 	[mySQLConnection disconnect];
 
-    // Disconnected Growl notification
+	// Disconnected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
 														window:tableWindow
@@ -1980,10 +1980,19 @@
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
+{
 	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
 	}
+}
+
+/*
+ * Is current document Untitled?
+ */
+- (BOOL)isUntitled
+{
+	// Check whether fileURL path begins with a '/'
+	return ([[[self fileURL] absoluteString] hasPrefix:@"/"]) ? NO : YES;
 }
 
 #pragma mark -
@@ -2090,7 +2099,7 @@
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
 	// Auto-save preferences to spf file based connection
-	if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"])
+	if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled])
 		if(_isConnected && ![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES]) {
 			NSLog(@"Preference data for file ‘%@’ could not be saved.", [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
 			NSBeep();
@@ -2109,14 +2118,14 @@
  */
 - (IBAction)saveConnectionSheet:(id)sender
 {
-	
+
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSString *filename;
 	NSString *contextInfo;
 
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
-	
+
 	// Save Query…
 	if( sender != nil && [sender tag] == 1006 ) {
 
@@ -2129,7 +2138,7 @@
 			[prefs setObject:@"" forKey:@"lastSqlFileName"];
 			[prefs synchronize];
 		}
-		
+
 		filename = [prefs stringForKey:@"lastSqlFileName"];
 		contextInfo = @"saveSQLfile";
 
@@ -2146,13 +2155,13 @@
 
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO];
 			return;
 		}
 
 		// Load accessory nib each time
-		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self])  {
+		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
 			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
 			return;
 		}
@@ -2176,7 +2185,7 @@
 
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];
-		
+
 		// TODO note: it seems that one has problems with a NSSecureTextField
 		// inside an accessory view - ask HansJB
 		[[saveConnectionEncryptString cell] setControlView:saveConnectionAccessory];
@@ -2184,7 +2193,7 @@
 
 		// Set file name
 		if([[[self fileURL] absoluteString] length])
-			filename = [[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
+			filename = [self displayName];
 		else
 			filename = [NSString stringWithFormat:@"%@", [self name]];
 
@@ -2196,7 +2205,7 @@
 	} else {
 		return;
 	}
-	
+
 	[panel beginSheetForDirectory:nil 
 						   file:filename 
 				 modalForWindow:tableWindow 
@@ -2233,7 +2242,7 @@
 
 		NSString *fileName = [panel filename];
 		NSError *error = nil;
-		
+
 		// Save file as SQL file by using the chosen encoding
 		if(contextInfo == @"saveSQLfile") {
 
@@ -2251,17 +2260,17 @@
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
 			}
-			
+
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
-			
+
 			return;
 		}
-		
+
 		// Save connection and session as SPF file
 		else if(contextInfo == @"saveSPFfile" || contextInfo == @"saveSPFfileAndClose") {
 			// Save changes of saveConnectionEncryptString
 			[[saveConnectionEncryptString window] makeFirstResponder:[[saveConnectionEncryptString window] initialFirstResponder]];
-			
+
 			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO];
 
 			if(contextInfo == @"saveSPFfileAndClose")
@@ -2277,7 +2286,7 @@
 		return NO;
 
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
-	
+
 	if(fileName == nil)
 		fileName = [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
@@ -2292,26 +2301,26 @@
 		[spfDocData_temp setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
 		if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
 			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
-		
+
 	} else {
 		[spfDocData_temp addEntriesFromDictionary:spfDocData];
 	}
 
 	// Update only query favourites, history, etc. by reading the file again
 	if(saveOnlyPreferences) {
-		
+
 		// Check URL for safety reasons
-		if(![[[self fileURL] absoluteString] length] || ![[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+		if(![[[self fileURL] absoluteString] length] || [self isUntitled]) {
 			NSLog(@"Couldn't save data. No file URL found!");
 			NSBeep();
 			return NO;
 		}
-		
+
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
 		NSMutableDictionary *spf = [[NSMutableDictionary alloc] init];
-		
+
 		NSData *pData = [NSData dataWithContentsOfFile:fileName options:NSUncachedRead error:&readError];
 
 		[spf addEntriesFromDictionary:[NSPropertyListSerialization propertyListFromData:pData 
@@ -2392,7 +2401,7 @@
 	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
 	[spfdata setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
 	[spfdata setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:@"ContentFilters"];
-	
+
 	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 
 	// if([[spfDocData_temp objectForKey:@"save_password"] boolValue])
@@ -2441,9 +2450,9 @@
 
 	// Include session data like selected table, view etc. ?
 	if([[spfDocData_temp objectForKey:@"include_session"] boolValue]) {
-		
+
 		session = [NSMutableDictionary dictionary];
-		
+
 		if([[self table] length])
 			[session setObject:[self table] forKey:@"table"];
 		if([tableContentInstance sortColumnName])
@@ -2469,7 +2478,7 @@
 			aString = @"SP_VIEW_STRUCTURE";
 		}
 		[session setObject:aString forKey:@"view"];
-		
+
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
 		[session setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
 		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
@@ -2491,9 +2500,9 @@
 	if([[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]) {
 		if(session == nil)
 			session = [NSMutableDictionary dictionary];
-		
+
 		if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length] > 50000)
-			[session setObject:[[[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]  dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
+			[session setObject:[[[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
 		else
 			[session setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
 	}
@@ -2501,7 +2510,7 @@
 	[data setObject:connection forKey:@"connection"];
 	if(session != nil)
 		[data setObject:session forKey:@"session"];
-		
+
 	if(![[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
 		[spfdata setObject:data forKey:@"data"];
 	} else {
@@ -2574,7 +2583,7 @@
  */
 - (IBAction)export:(id)sender
 {
-	if ([sender tag] == -1) {		
+	if ([sender tag] == -1) {
 		[exportControllerInstance export];
 	} 
 	else {
@@ -2608,13 +2617,13 @@
 - (IBAction)saveServerVariables:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
+
 	[panel setRequiredFileType:@"cnf"];
-	
+
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
-	
+
 	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"ServerVariables"];
 }
 
@@ -2626,18 +2635,18 @@
 	if (!_isConnected) {
 		return ([menuItem action] == @selector(newDocument:) || [menuItem action] == @selector(terminate:));
 	}
-	
+
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
-		if([[[self fileURL] absoluteString] hasPrefix:@"/"]) {
-			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Open “%@” in New Window", @"menu item open “%@” in new window"), [[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-			return YES;
-		} else {
+		if([self isUntitled]) {
 			[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
 			return NO;
+		} else {
+			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Open “%@” in New Window", @"menu item open “%@” in new window"), [self displayName]]];
+			return YES;
 		}
 	}
-	
+
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
@@ -2657,18 +2666,18 @@
 			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
 		else
 			[menuItem setTitle:NSLocalizedString(@"Save Queries…", @"Save Queries…")];
-		
+
 		return YES;
 	}
-	
+
 	if ([menuItem action] == @selector(exportTable:)) {
 		return ([self database] != nil && [self table] != nil);
 	}
-	
+
 	if ([menuItem action] == @selector(chooseEncoding:)) {
 		return [self supportsEncoding];
 	}
-	
+
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:) ||
@@ -2681,40 +2690,40 @@
 	{
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
 	}
-	
+
 	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
 		return ([connectionController selectedFavorite] ? NO : YES);
 	}
-	
+
 	// Backward in history menu item
 	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 0)) {
 		return (([[spHistoryControllerInstance history] count]) && ([spHistoryControllerInstance historyPosition] > 0));
 	}
-	
+
 	// Forward in history menu item
 	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
 		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
 	}
-	
+
 	// Copy selected server variable(s)
 	if ([menuItem action] == @selector(copy:)) {
 		return ([variablesTableView numberOfSelectedRows] > 0);
 	}
-	
+
 	// Copy selected server variable name(s)
 	if ([menuItem action] == @selector(copyServerVariableName:)) {
 		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Names", @"copy server variable names menu item") : NSLocalizedString(@"Copy Variable Name", @"copy server variable name menu item")];
-		
+
 		return ([variablesTableView numberOfSelectedRows] > 0);
 	}
-	
+
 	// Copy selected server variable value(s)
 	if ([menuItem action] == @selector(copyServerVariableValue:)) {
 		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Values", @"copy server variable values menu item") : NSLocalizedString(@"Copy Variable Value", @"copy server variable value menu item")];
-		
+
 		return ([variablesTableView numberOfSelectedRows] > 0);
 	}
-	
+
 	return [super validateMenuItem:menuItem];
 }
 
@@ -2799,14 +2808,14 @@
 		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableStructureToolbarItemIdentifier"];
 		return;
 	}
-	
+
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {
 		[mainToolbar setSelectedItemIdentifier:@"SwitchToTableContentToolbarItemIdentifier"];
 		return;
 	}
-	
+
 	[tableTabView selectTabViewItemAtIndex:4];
 	[mainToolbar setSelectedItemIdentifier:@"SwitchToTableRelationsToolbarItemIdentifier"];
 	[spHistoryControllerInstance updateHistoryEntries];
@@ -2824,7 +2833,7 @@
 	if ([connectionController selectedFavorite]) {
 		return;
 	}
-	
+
 	// Request the connection controller to add its details to favorites
 	[connectionController addFavorite:self];
 }
@@ -2838,23 +2847,23 @@
 		if ([contextInfo isEqualToString:@"ServerVariables"]) {
 			if ([variablesFiltered count] > 0) {
 				NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
-				
+
 				for (NSDictionary *variable in variablesFiltered) 
 				{
 					[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
 				}
-				
+
 				[variablesString writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 			}
 		}
 		else if ([contextInfo isEqualToString:@"CreateSyntax"]) {
-			
-			
+
+
 			NSString *createSyntax = [createTableSyntaxTextView string];
-			
+
 			if ([createSyntax length] > 0) {
 				NSString *output = [NSString stringWithFormat:@"-- Create syntax for '%@'\n\n%@\n", [self table], createSyntax]; 
-				
+
 				[output writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 			}
 		}
@@ -2912,15 +2921,15 @@
 {
 	// create a new toolbar instance, and attach it to our document window 
 	mainToolbar = [[[NSToolbar alloc] initWithIdentifier:@"TableWindowToolbar"] autorelease];
-	
+
 	// set up toolbar properties
 	[mainToolbar setAllowsUserCustomization:YES];
 	[mainToolbar setAutosavesConfiguration:YES];
 	[mainToolbar setDisplayMode:NSToolbarDisplayModeIconAndLabel];
-	
+
 	// set ourself as the delegate
 	[mainToolbar setDelegate:self];
-	
+
 	// attach the toolbar to the document window
 	[tableWindow setToolbar:mainToolbar];
 
@@ -2934,7 +2943,7 @@
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)willBeInsertedIntoToolbar
 {
 	NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
-	
+
 	if ([itemIdentifier isEqualToString:@"DatabaseSelectToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Select Database", @"toolbar item for selecting a db")];
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
@@ -2943,7 +2952,7 @@
 		[toolbarItem setMaxSize:NSMakeSize(200,32)];
 		[chooseDatabaseButton setTarget:self];
 		[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
-		
+
 		if (willBeInsertedIntoToolbar) {
 			chooseDatabaseToolbarItem = toolbarItem;
 			[self updateChooseDatabaseToolbarItemWidth];
@@ -2957,14 +2966,14 @@
 	} else if ([itemIdentifier isEqualToString:@"ShowConsoleIdentifier"]) {
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"show console")];
 		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
-		
+
 		[toolbarItem setLabel:NSLocalizedString(@"Console", @"Console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
-		
+
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(showConsole:)];
-		
+
 	} else if ([itemIdentifier isEqualToString:@"ClearConsoleIdentifier"]) {
 		//set the text label to be displayed in the toolbar and customization palette 
 		[toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
@@ -2975,7 +2984,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(clearConsole:)];
-		
+
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Structure", @"toolbar item label for switching to the Table Structure tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Edit Table Structure", @"toolbar item label for switching to the Table Structure tab")];
@@ -2985,7 +2994,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewStructure:)];
-		
+
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Content", @"toolbar item label for switching to the Table Content tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Browse & Edit Table Content", @"toolbar item label for switching to the Table Content tab")];
@@ -2995,7 +3004,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewContent:)];
-		
+
 	} else if ([itemIdentifier isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Query", @"toolbar item label for switching to the Run Query tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Run Custom Query", @"toolbar item label for switching to the Run Query tab")];
@@ -3005,7 +3014,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewQuery:)];
-		
+
 	} else if ([itemIdentifier isEqualToString:@"SwitchToTableInfoToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Table Info", @"toolbar item label for switching to the Table Info tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Info", @"toolbar item label for switching to the Table Info tab")];
@@ -3025,7 +3034,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewRelations:)];
-		
+
 	} else if ([itemIdentifier isEqualToString:@"SwitchToUserManagerToolbarItemIdentifier"]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
@@ -3039,7 +3048,7 @@
 		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
 		toolbarItem = nil;
 	}
-	
+
 	return toolbarItem;
 }
 
@@ -3081,7 +3090,7 @@
 			@"SwitchToRunQueryToolbarItemIdentifier",
 			NSToolbarFlexibleSpaceItemIdentifier,
 			@"HistoryNavigationToolbarItemIdentifier",
-			@"SwitchToUserManagerToolbarItemIdentifier",			
+			@"SwitchToUserManagerToolbarItemIdentifier",
 			@"ShowConsoleIdentifier",
 			nil];
 }
@@ -3098,7 +3107,7 @@
 			@"SwitchToTableInfoToolbarItemIdentifier",
 			@"SwitchToTableRelationsToolbarItemIdentifier",
 			nil];
-	
+
 }
 
 /**
@@ -3109,7 +3118,7 @@
 	if (!_isConnected) return NO;
 
 	NSString *identifier = [toolbarItem itemIdentifier];
-	
+
 	// Show console item
 	if ([identifier isEqualToString:@"ShowConsoleIdentifier"]) {
 		if ([[[SPQueryController sharedQueryController] window] isVisible]) {
@@ -3123,12 +3132,12 @@
 			return YES;
 		}
 	}
-	
+
 	// Clear console item
 	if ([identifier isEqualToString:@"ClearConsoleIdentifier"]) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
-	
+
 	return YES;
 }
 
@@ -3151,10 +3160,10 @@
 {
 	[aController setShouldCascadeWindows:YES];
 	[super windowControllerDidLoadNib:aController];
-	
+
 	NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
 	NSTableColumn *theCol;
-	
+
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
 												 name:@"SMySQLQueryWillBePerformed" object:nil];
@@ -3162,17 +3171,17 @@
 												 name:@"SMySQLQueryHasBeenPerformed" object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
-	
+
 	//set up interface
 	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
 		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		
+
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 	} else {
 		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		
+
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
@@ -3201,11 +3210,11 @@
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
 		return NO;
 	} else {
-		
+
 		if(!_isConnected) return YES;
-		
+
 		// Auto-save spf file based connection
-		if([self fileURL] && [[[self fileURL] absoluteString] length] && [[[self fileURL] absoluteString] hasPrefix:@"/"]) {
+		if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
 			BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
 			if(isSaved)
 				[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
@@ -3235,7 +3244,7 @@
  */
 - (BOOL)isDocumentEdited
 {
-	return ([self fileURL] && [[[self fileURL] absoluteString] length] && ![[[self fileURL] absoluteString] hasPrefix:@"/"] && ([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]
+	return ([self fileURL] && [[[self fileURL] absoluteString] length] && [self isUntitled] && ([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"number"] count]
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"date"] count]
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"string"] count])
@@ -3250,9 +3259,9 @@
 	if (!_isConnected) return [NSString stringWithFormat:@"%@%@", 
 		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"",
 		NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
-	
+
 	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
-		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"",
+		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
 		mySQLVersion,
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
@@ -3290,7 +3299,7 @@
  * Invoked when the query just executed by the framework resulted in an error. 
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
-{	
+{
 	if ([prefs boolForKey:@"ConsoleEnableLogging"] && [prefs boolForKey:@"ConsoleEnableErrorLogging"]) {
 		[[SPQueryController sharedQueryController] showErrorInConsole:error];
 	}
@@ -3319,7 +3328,7 @@
  */
 - (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
 {
-	
+
 	// If no keychain item is available, return an empty password
 	if (![connectionController connectionKeychainItemName]) return @"";
 
@@ -3327,7 +3336,7 @@
 	SPKeychain *keychain = [[SPKeychain alloc] init];
 	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
 	[keychain release];
-		
+
 	return password;
 }
 
@@ -3361,11 +3370,11 @@
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	id object = [notification object];
-	
+
 	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
 	}
-	
+
 	else if (object == variablesSearchField) {
 		[self _updateServerVariablesFilterForFilterString:[object stringValue]];
 	}
@@ -3406,19 +3415,19 @@
 	// make sure the toolbar item is actually in the toolbar
 	if (!chooseDatabaseToolbarItem)
 		return;
-	
+
 	// grab the width of the left pane
 	float leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
-	
+
 	// subtract some pixels to allow for misc stuff
 	leftPaneWidth -= 12;
-	
+
 	// make sure it's not too small or to big
 	if (leftPaneWidth < 130)
 		leftPaneWidth = 130;
 	if (leftPaneWidth > 360)
 		leftPaneWidth = 360;
-	
+
 	// apply the size
 	[chooseDatabaseToolbarItem setMinSize:NSMakeSize(leftPaneWidth, 26)];
 	[chooseDatabaseToolbarItem setMaxSize:NSMakeSize(leftPaneWidth, 32)];
@@ -3433,18 +3442,18 @@
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{	
+{
 	id theValue = [[variablesFiltered objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-	
+
 	if ([theValue isKindOfClass:[NSData class]]) {
 		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 		if (theValue == nil) {
 			[[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		}
-		
+
 		if (theValue) [theValue autorelease];
 	}
-	
+
 	return theValue;
 }
 
@@ -3480,44 +3489,44 @@
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString
 {
 	[saveVariablesButton setEnabled:NO];
-	
+
 	filterString = [[filterString lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
+
 	// If the filtered array is allocated and its not a reference to the variables array
 	// relase it to prevent memory leaks upon the next allocation.
 	if ((variablesFiltered) && (variablesFiltered != variables)) {
 		[variablesFiltered release], variablesFiltered = nil;
 	}
-	
+
 	variablesFiltered = [[NSMutableArray alloc] init];
-	
+
 	if ([filterString length] == 0) {
 		[variablesFiltered release];
 		variablesFiltered = variables;
-		
+
 		[saveVariablesButton setEnabled:YES];
 		[saveVariablesButton setTitle:@"Save As..."];
 		[variablesCountTextField setStringValue:@""];
-		
+
 		[variablesTableView reloadData];
-		
+
 		return;
 	}
-	
+
 	for (NSDictionary *variable in variables) 
-	{		
+	{
 		if (([[variable objectForKey:@"Variable_name"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			([[variable objectForKey:@"Value"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))
 		{
 			[variablesFiltered addObject:variable];
 		}
 	}
-	
+
 	[variablesTableView reloadData];
 	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered server variables count"), [variablesFiltered count], [variables count]]];
-	
+
 	if ([variablesFiltered count] == 0) return;
-	
+
 	[saveVariablesButton setEnabled:YES];
 	[saveVariablesButton setTitle:@"Save View As..."];
 }
@@ -3529,24 +3538,24 @@
 {
 	// At least one of either name or value must be true
 	if ((!name) && (!value)) return;
-	
+
 	NSResponder *firstResponder = [variablesSheet firstResponder];
-		
+
 	if ((firstResponder == variablesTableView) && ([variablesTableView numberOfSelectedRows] > 0)) {
-				
+
 		NSString *string = @"";
 		NSIndexSet *rows = [variablesTableView selectedRowIndexes];
-		
+
 		NSUInteger i = [rows firstIndex];
-		
+
 		while (i != NSNotFound) 
 		{
 			if (i < [variablesFiltered count]) {
 				NSDictionary *variable = NSArrayObjectAtIndex(variablesFiltered, i);
-				
+
 				NSString *variableName  = [variable objectForKey:@"Variable_name"];
 				NSString *variableValue = [variable objectForKey:@"Value"];
-				
+
 				// Decide what to include in the string
 				if (name && value) {
 					string = [string stringByAppendingFormat:@"%@ = %@\n", variableName, variableValue];
@@ -3555,12 +3564,12 @@
 					string = [string stringByAppendingFormat:@"%@\n", (name) ? variableName : variableValue];
 				}
 			}
-			
+
 			i = [rows indexGreaterThanIndex:i];
 		}
-		
+
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-		
+
 		// Copy the string to the pasteboard
 		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];

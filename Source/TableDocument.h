@@ -150,6 +150,8 @@ enum sp_current_query_mode
 
 - (NSString *)getHTMLforPrint;
 
+- (BOOL)isUntitled;
+
 - (void)initQueryEditorWithString:(NSString *)query;
 - (void)initWithConnectionFile:(NSString *)path;
 // Connection callback and methods
@@ -183,7 +185,6 @@ enum sp_current_query_mode
 // Table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntax:(id)sender;
-- (NSArray *)columnNames;
 - (IBAction)checkTable:(id)sender;
 - (IBAction)analyzeTable:(id)sender;
 - (IBAction)optimizeTable:(id)sender;
@@ -195,7 +196,6 @@ enum sp_current_query_mode
 
 // Other methods
 - (void) setQueryMode:(int)theQueryMode;
-- (NSString *)host;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closeErrorConnectionSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
@@ -217,6 +217,7 @@ enum sp_current_query_mode
 - (IBAction)showUserManager:(id)sender;
 
 // Getter methods
+- (NSString *)host;
 - (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
@@ -224,6 +225,7 @@ enum sp_current_query_mode
 - (NSString *)user;
 - (NSString *)displaySPName;
 - (NSString *)keyChainID;
+- (NSArray *)columnNames;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
