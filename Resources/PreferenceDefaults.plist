@@ -117,5 +117,15 @@
 		<key>date</key>
 		<array/>
 	</dict>
+	<key>CSVImportFieldTerminator</key>
+	<string>,</string>
+	<key>CSVImportLineTerminator</key>
+	<string>\n</string>
+	<key>CSVImportFieldEnclosedBy</key>
+	<string>"</string>
+	<key>CSVImportFieldEscapeCharacter</key>
+	<string>\</string>
+	<key>CSVImportFirstLineIsHeader</key>
+	<true/>
 </dict>
 </plist>

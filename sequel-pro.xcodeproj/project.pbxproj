@@ -227,6 +227,7 @@
 		BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC29C37E10501EFD00DD6C6E /* SPQueryController.m */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */; };
 		BC675A141072039C00C5ACD4 /* SPContentFilterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */; };
 		BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC675A15107203BA00C5ACD4 /* ContentFilterManager.xib */; };
 		BC688D811012462600D35128 /* borderlessbackground.png in Resources */ = {isa = PBXBuildFile; fileRef = BC688D801012462600D35128 /* borderlessbackground.png */; };
@@ -623,6 +624,7 @@
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC65C3B1107CE3EE003F7B02 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ImportAccessory.xib; sourceTree = "<group>"; };
 		BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPContentFilterManager.h; sourceTree = "<group>"; };
 		BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPContentFilterManager.m; sourceTree = "<group>"; };
 		BC675A16107203BA00C5ACD4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ContentFilterManager.xib; sourceTree = "<group>"; };
@@ -1153,6 +1155,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */,
 				BC675A15107203BA00C5ACD4 /* ContentFilterManager.xib */,
 				BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */,
 				BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */,
@@ -1580,6 +1583,7 @@
 				BCB56197106F893F00167321 /* ContentFilters.plist in Resources */,
 				BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */,
 				BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */,
+				BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1874,6 +1878,14 @@
 				B5E92F180F75B2D100012500 /* English */,
 			);
 			name = ExportDialog.xib;
+			sourceTree = "<group>";
+		};
+		BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BC65C3B1107CE3EE003F7B02 /* English */,
+			);
+			name = ImportAccessory.xib;
 			sourceTree = "<group>";
 		};
 		BC675A15107203BA00C5ACD4 /* ContentFilterManager.xib */ = {

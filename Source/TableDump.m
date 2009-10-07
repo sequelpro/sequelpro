@@ -417,6 +417,21 @@
 {
 	// prepare open panel and accessory view
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+
+	// Load accessory nib each time
+	if(![NSBundle loadNibNamed:@"ImportAccessory" owner:self]) {
+		NSBeep();
+		NSLog(@"ImportAccessory accessory dialog could not be loaded.");
+		return;
+	}
+
+	// Preset the accessory view with prefs defaults
+	[importFieldsTerminatedField setStringValue:[prefs objectForKey:@"CSVImportFieldTerminator"]];
+	[importLinesTerminatedField setStringValue:[prefs objectForKey:@"CSVImportLineTerminator"]];
+	[importFieldsEscapedField setStringValue:[prefs objectForKey:@"CSVImportFieldEscapeCharacter"]];
+	[importFieldsEnclosedField setStringValue:[prefs objectForKey:@"CSVImportFieldEnclosedBy"]];
+	[importFieldNamesSwitch setState:[[prefs objectForKey:@"CSVImportFirstLineIsHeader"] boolValue]];
+
 	[openPanel setAccessoryView:importCSVView];
 	[openPanel setDelegate:self];
 	if ([prefs valueForKey:@"importFormatPopupValue"]) {
@@ -763,6 +778,13 @@
 	// and send queries to the server.  The loop is mainly to perform the first of these; the
 	// other two must therefore be performed where possible.
 	csvParser = [[SPCSVParser alloc] init];
+
+	// Store settings in prefs
+	[prefs setObject:[importFieldsEnclosedField stringValue] forKey:@"CSVImportFieldEnclosedBy"];
+	[prefs setObject:[importFieldsEscapedField stringValue] forKey:@"CSVImportFieldEscapeCharacter"];
+	[prefs setObject:[importLinesTerminatedField stringValue] forKey:@"CSVImportLineTerminator"];
+	[prefs setObject:[importFieldsTerminatedField stringValue] forKey:@"CSVImportFieldTerminator"];
+	[prefs setBool:[importFieldNamesSwitch state] forKey:@"CSVImportFirstLineIsHeader"];
 
 	// Take CSV import setting from accessory view
 	[csvParser setFieldTerminatorString:[importFieldsTerminatedField stringValue] convertDisplayStrings:YES];
