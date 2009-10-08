@@ -1012,8 +1012,10 @@
 														window:tableWindow
                                               notificationName:@"Import Finished"];
 
-	// Update the content view
-	[tableContentInstance reloadTable:self];
+	// Update the content view - do this on the main thread to avoid crashes
+	// if Content Browser shows the table in which the imported data are loaded
+	[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
+
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
