@@ -380,11 +380,24 @@
 			quoteCharacter = [fieldsParser characterAtIndex:0];
 
 			// Capture the area between the two backticks as the name
+			// Set the parser to ignoreCommentStrings since a field name can contain # or /*
+			[fieldsParser setIgnoringCommentStrings:YES];
 			NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
 																	 toCharacter: quoteCharacter
 															 trimmingInclusively: YES
 															returningInclusively: NO
 														   ignoringQuotedStrings: NO];
+			if(fieldName == nil || [fieldName length] == 0) {
+				NSBeep();
+				NSAlert *alert = [[NSAlert alloc] init];
+				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+				[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser]];
+				[alert setMessageText:NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax")];
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				[alert release];
+				continue;
+			}
 			//if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
 			while ([fieldsParser characterAtIndex:0] == quoteCharacter) {
 				fieldName = [fieldName stringByAppendingFormat: @"`%@",
@@ -395,6 +408,7 @@
 																						 ignoringQuotedStrings: NO]
 																];
 			}
+			[fieldsParser setIgnoringCommentStrings:NO];
 			
 			[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];

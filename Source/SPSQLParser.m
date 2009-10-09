@@ -42,6 +42,10 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 @implementation SPSQLParser : NSMutableString
 
+- (void)setIgnoringCommentStrings:(BOOL)ignoringCommentStrings
+{
+	ignoreCommentStrings = ignoringCommentStrings;
+}
 
 /*
  * Removes comments within the current string, trimming "#", "--[/s]", and "/* * /" style strings.
@@ -554,11 +558,13 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				break;
 
 			case '#':
+				if(ignoreCommentStrings) break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPHashComment startingAtIndex:currentStringIndex];
 				break;
 
 			// For comments starting "/*", ensure the start syntax is valid before proceeding.
 			case '/':
+				if(ignoreCommentStrings) break;
 				if (stringLength < currentStringIndex + 1) break;
 				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '*') break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
@@ -642,11 +648,13 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				break;
 
 			case '#':
+				if(ignoreCommentStrings) break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPHashComment startingAtIndex:currentStringIndex];
 				break;
 
 			// For comments starting "/*", ensure the start syntax is valid before proceeding.
 			case '/':
+				if(ignoreCommentStrings) break;
 				if (stringLength < currentStringIndex + 1) break;
 				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '*') break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
@@ -849,12 +857,15 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -
 - (id) init {
+
 	if (self = [super init]) {
 		string = [[NSMutableString string] retain];
 	}
 	parsedToChar = '\0';
 	parsedToPosition = -1;
 	charCacheEnd = -1;
+	ignoreCommentStrings = NO;
+
 	return self;
 }
 - (id) initWithBytes:(const void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding {

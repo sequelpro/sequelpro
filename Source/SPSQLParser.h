@@ -68,6 +68,7 @@
 	int delimiterLength;
 	BOOL charIsDelimiter;
 	BOOL isDelimiterCommand;
+	BOOL ignoreCommentStrings;
 }
 
 
@@ -77,7 +78,7 @@ typedef enum _SPCommentTypes {
 	SPCStyleComment = 2
 } SPCommentType;
 
-
+- (void) setIgnoringCommentStrings:(BOOL)ignoringCommentStrings;
 
 /*
  * Removes comments within the current string, trimming "#", "--[/s]", and "/* * /" style strings.
