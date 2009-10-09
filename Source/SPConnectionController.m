@@ -1,5 +1,5 @@
 //
-//  $Id: SPConnectionController.m 802 2009-06-03 20:46:57Z stuart02 $
+//  $Id$
 //
 //  SPConnectionController.m
 //  sequel-pro

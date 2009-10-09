@@ -1,7 +1,7 @@
 //
-//  $Id: SPFieldEditorController.h 802 2009-06-03 20:46:57Z bibiko $
+//  $Id$
 //
-//  SPHistoryController.h
+//  SPHistoryController.m
 //  sequel-pro
 //
 //  Created by Rowan Beentje on July 23, 2009

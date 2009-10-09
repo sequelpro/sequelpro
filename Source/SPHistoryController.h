@@ -1,5 +1,5 @@
 //
-//  $Id: SPFieldEditorController.h 802 2009-06-03 20:46:57Z bibiko $
+//  $Id$
 //
 //  SPHistoryController.h
 //  sequel-pro
