@@ -27,6 +27,8 @@
 
 #import "SPExporterDataAccess.h"
 
+#import "SPLogger.h"
+
 // Export type constants
 enum {
 	SP_SQL_EXPORT = 1,
@@ -67,6 +69,7 @@ typedef NSUInteger SPExportSource;
 	IBOutlet id exportInputMatrix;
 	IBOutlet id exportFilePerTableCheck;
 	IBOutlet id exportFilePerTableNote;
+	IBOutlet id exportProcessLowMemory;
 	
 	// Export progress sheet
 	IBOutlet id exportProgressWindow;
@@ -116,6 +119,8 @@ typedef NSUInteger SPExportSource;
 	
 	// Concurrent operation queue
 	NSOperationQueue *operationQueue;
+	
+	SPLogger *log;
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

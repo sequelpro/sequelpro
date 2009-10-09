@@ -28,21 +28,11 @@
 #import "MCPKit.h"
 #import "SPExporter.h"
 
-/**
- * 
- */
-@interface SPCSVExporterDelegate
-
-- (void)csvDataAvailable:(NSString *)data;
-
-@end
-
-
 @interface SPCSVExporter : SPExporter
 {	
 	// CSV data
 	NSArray   *csvDataArray;
-	MCPResult *csvDataResult;
+	MCPStreamingResult *csvDataResult;
 	
 	// CSV options
 	BOOL csvOutputFieldNames;
@@ -55,7 +45,7 @@
 }
 
 @property (readwrite, retain) NSArray *csvDataArray;
-@property (readwrite, retain) MCPResult *csvDataResult;
+@property (readwrite, retain) MCPStreamingResult *csvDataResult;
 
 @property (readwrite, assign) BOOL csvOutputFieldNames;
 @property (readwrite, retain) NSString *csvFieldSeparatorString;
