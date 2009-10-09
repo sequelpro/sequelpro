@@ -764,6 +764,82 @@
 			name = QuickLook;
 			sourceTree = "<group>";
 		};
+		173E70A1107FF495008733C9 /* Core Data */ = {
+			isa = PBXGroup;
+			children = (
+				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
+			);
+			name = "Core Data";
+			sourceTree = "<group>";
+		};
+		173E70A6107FF61D008733C9 /* Main View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				17E641480EF01EF6001BC333 /* CustomQuery.h */,
+				17E641490EF01EF6001BC333 /* CustomQuery.m */,
+				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
+				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
+				177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */,
+				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
+				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
+				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
+				17E6414E0EF01EF6001BC333 /* TableContent.h */,
+				17E6414F0EF01EF6001BC333 /* TableContent.m */,
+				17E641500EF01EF6001BC333 /* TableDocument.h */,
+				17E641510EF01EF6001BC333 /* TableDocument.m */,
+				17E641520EF01EF6001BC333 /* TableDump.h */,
+				17E641530EF01EF6001BC333 /* TableDump.m */,
+				17E641540EF01EF6001BC333 /* TableSource.h */,
+				17E641550EF01EF6001BC333 /* TableSource.m */,
+			);
+			name = "Main View Controllers";
+			sourceTree = "<group>";
+		};
+		173E70D2107FF687008733C9 /* Subview Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */,
+				BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */,
+				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
+				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
+				173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */,
+				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
+				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
+				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
+				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
+				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
+				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
+				17E641600EF01F15001BC333 /* TablesList.h */,
+				17E641610EF01F15001BC333 /* TablesList.m */,
+			);
+			name = "Subview Controllers";
+			sourceTree = "<group>";
+		};
+		173E70D4107FF6E7008733C9 /* Data Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
+				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
+				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
+				58FEF57D0F3B4E9700518E8E /* SPTableData.m */,
+			);
+			name = "Data Controllers";
+			sourceTree = "<group>";
+		};
+		173E70D5107FF7AF008733C9 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
+				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
+				589235311020C1230011DE00 /* SPHistoryController.h */,
+				589235301020C1230011DE00 /* SPHistoryController.m */,
+				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
+				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
 		1740F8350FC3069700CF3699 /* Templates */ = {
 			isa = PBXGroup;
 			children = (
@@ -935,47 +1011,13 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				17F5B1491048C4C000FC794F /* Data Export */,
-				17E641480EF01EF6001BC333 /* CustomQuery.h */,
-				17E641490EF01EF6001BC333 /* CustomQuery.m */,
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
-				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
-				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
-				BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */,
-				BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */,
-				1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */,
-				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
-				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
-				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
-				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
-				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
-				589235311020C1230011DE00 /* SPHistoryController.h */,
-				589235301020C1230011DE00 /* SPHistoryController.m */,
-				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
-				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
-				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
-				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
-				173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */,
-				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
-				58FEF57C0F3B4E9700518E8E /* SPTableData.h */,
-				58FEF57D0F3B4E9700518E8E /* SPTableData.m */,
-				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
-				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
-				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
-				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
-				17E6414E0EF01EF6001BC333 /* TableContent.h */,
-				17E6414F0EF01EF6001BC333 /* TableContent.m */,
-				17E641500EF01EF6001BC333 /* TableDocument.h */,
-				17E641510EF01EF6001BC333 /* TableDocument.m */,
-				17E641520EF01EF6001BC333 /* TableDump.h */,
-				17E641530EF01EF6001BC333 /* TableDump.m */,
-				17E641540EF01EF6001BC333 /* TableSource.h */,
-				17E641550EF01EF6001BC333 /* TableSource.m */,
-				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
-				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
-				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
-				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				173E70A6107FF61D008733C9 /* Main View Controllers */,
+				173E70D2107FF687008733C9 /* Subview Controllers */,
+				173E70D4107FF6E7008733C9 /* Data Controllers */,
+				17F5B1491048C4C000FC794F /* Data Export */,
+				173E70D5107FF7AF008733C9 /* Other */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -983,19 +1025,13 @@
 		17E6415D0EF01EF9001BC333 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
+				173E70A1107FF495008733C9 /* Core Data */,
 				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
 				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
-				177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */,
-				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
-				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
-				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
-				17E641600EF01F15001BC333 /* TablesList.h */,
-				17E641610EF01F15001BC333 /* TablesList.m */,
 				BCA6271A1031B9D40047E5D5 /* SPTooltip.h */,
 				BCA6271B1031B9D40047E5D5 /* SPTooltip.m */,
 			);
@@ -1007,10 +1043,14 @@
 			children = (
 				17E641680EF01F37001BC333 /* ImageAndTextCell.h */,
 				17E641690EF01F37001BC333 /* ImageAndTextCell.m */,
+				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
+				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
 				B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */,
 				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
 				173C44D61044A6AF001F3A30 /* SPOutlineView.h */,
 				173C44D71044A6B0001F3A30 /* SPOutlineView.m */,
+				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
+				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
 				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
 				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
 				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,

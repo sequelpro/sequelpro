@@ -60,8 +60,6 @@
 
 + (SPQueryController *)sharedQueryController;
 
-#pragma mark ----------------------
-
 // QueryConsoleController
 - (IBAction)copy:(id)sender;
 - (IBAction)clearConsole:(id)sender;
@@ -76,8 +74,6 @@
 - (void)showErrorInConsole:(NSString *)error;
 
 - (NSUInteger)consoleMessageCount;
-
-#pragma mark ----------------------
 
 // DocumentsController
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;
