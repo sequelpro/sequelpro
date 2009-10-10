@@ -1109,19 +1109,34 @@
 	// Save existing scroll position and details
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Store the filter details to use when next loading the table
 	NSString *targetFilterValue = [[tableValues objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
-	NSDictionary *filterSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-										[refDictionary objectForKey:@"column"], @"filterField",
-										targetFilterValue, @"filterValue",
-										([targetFilterValue isNSNull]?@"IS NULL":nil), @"filterComparison",
-										nil];
-	[self setFiltersToRestore:filterSettings];
 
-	// Attempt to switch to the new table
-	if (![tablesListInstance selectTableOrViewWithName:[refDictionary objectForKey:@"table"]]) {
-		NSBeep();
-		[self setFiltersToRestore:nil];
+	// If the link is within the current table, apply filter settings manually
+	if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
+		[fieldField selectItemWithTitle:[refDictionary objectForKey:@"column"]];
+		[self setCompareTypes:self];
+		if ([targetFilterValue isNSNull]) {
+			[compareField selectItemWithTitle:@"IS NULL"];
+		} else {
+			[argumentField setStringValue:targetFilterValue];
+		}
+		[self filterTable:self];
+
+	} else {
+
+		// Store the filter details to use when loading the target table
+		NSDictionary *filterSettings = [NSDictionary dictionaryWithObjectsAndKeys:
+											[refDictionary objectForKey:@"column"], @"filterField",
+											targetFilterValue, @"filterValue",
+											([targetFilterValue isNSNull]?@"IS NULL":nil), @"filterComparison",
+											nil];
+		[self setFiltersToRestore:filterSettings];
+
+		// Attempt to switch to the target table
+		if (![tablesListInstance selectTableOrViewWithName:[refDictionary objectForKey:@"table"]]) {
+			NSBeep();
+			[self setFiltersToRestore:nil];
+		}
 	}
 }
 
