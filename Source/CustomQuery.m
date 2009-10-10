@@ -686,13 +686,8 @@
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
 {
 	NSArray *tempRow;
-	NSMutableArray *newRow;
-	int i;
 	long rowsProcessed = 0;
-	long columnsCount = 0;
 	NSAutoreleasePool *dataLoadingPool;
-	id prefsNullValue = [[prefs objectForKey:@"NullValue"] retain];
-	Class nullClass = [NSNull class];
 
 	// Remove all items from the table
 	[fullResult removeAllObjects];
@@ -702,16 +697,8 @@
 
 	// Loop through the result rows as they become available
 	while (tempRow = [theResult fetchNextRowAsArray]) {
-		if (columnsCount == 0) columnsCount = [tempRow count];
 
 		NSMutableArrayAddObject(fullResult, [NSMutableArray arrayWithArray:tempRow]);
-		newRow = NSArrayObjectAtIndex(fullResult, rowsProcessed);
-
-		// Process the retrieved row
-		for ( i = 0; i < columnsCount; i++ ) {
-			if ( [NSArrayObjectAtIndex(tempRow, i) isMemberOfClass:nullClass] )
-				[newRow replaceObjectAtIndex:i withObject:prefsNullValue];
-		}
 
 		// Update the count of rows processed
 		rowsProcessed++;
@@ -725,7 +712,6 @@
 	
 	// Clean up the autorelease pool
 	[dataLoadingPool drain];
-	[prefsNullValue release];
 }
 
 /*
@@ -1182,7 +1168,7 @@
 	// If there is no primary key, all found fields belonging to the same table are used in the argument
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
-		if ([aValue isKindOfClass:[NSNull class]] || [[aValue description] isEqualToString:[prefs stringForKey:@"NullValue"]]) {
+		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
 			[fieldIDQueryStr appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
 			[fieldIDQueryStr appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
@@ -1233,11 +1219,8 @@
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
 		
-			// Note that this approach of changing the color of NULL placeholders is dependent on the cell's value matching that
-			// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
-			// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
-			// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
-			[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
+			id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, row), [[aTableColumn identifier] intValue]);
+			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
 		}
 	}
 
@@ -1255,7 +1238,7 @@
 		if ( [theValue isKindOfClass:[NSData class]] )
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
-		if ( [theValue isMemberOfClass:[NSNull class]] )
+		if ( [theValue isNSNull] )
 			return [prefs objectForKey:@"NullValue"];
 
 	    return theValue;
@@ -1659,7 +1642,10 @@
 		 && [columnDefinition valueForKey:@"char_length"])
 			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] intValue]];
 
-		id editData = [[fieldEditor editWithObject:[[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
+		id originalData = [[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
+		if ([originalData isNSNull]) originalData = [prefs objectForKey:@"nullValue"];
+
+		id editData = [[fieldEditor editWithObject:originalData
 								fieldName:[columnDefinition objectForKey:@"name"]
 								usingEncoding:[mySQLConnection encoding] 
 								isObjectBlob:isBlob 

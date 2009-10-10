@@ -46,6 +46,7 @@
 #import "SPTooltip.h"
 #import "RegexKitLite.h"
 #import "SPContentFilterManager.h"
+#import "SPNotLoaded.h"
 
 
 @implementation TableContent
@@ -160,7 +161,7 @@
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
 	// [tableDataInstance tableEncoding] == nil indicates that an error occured while retrieving table data
-	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isKindOfClass:[NSNull class]] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
+	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
 	{
 		// Empty the stored data arrays
 		[tableValues removeAllObjects];
@@ -851,7 +852,7 @@
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		column = NSArrayObjectAtIndex(dataColumns, i);
 		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
-			[newRow addObject:[prefs stringForKey:@"NullValue"]];
+			[newRow addObject:[NSNull null]];
 		} else {
 			[newRow addObject:[column objectForKey:@"default"]];
 		}
@@ -909,15 +910,9 @@
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
-			[tempRow replaceObjectAtIndex:i withObject:[prefs stringForKey:@"NullValue"]];
+			[tempRow replaceObjectAtIndex:i withObject:[NSNull null]];
 		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"LoadBlobsAsNeeded"] && dbDataRow) {
-			NSString *valueString = nil;
-			//if what we read from DB is NULL (NSNull), we replace it with the string NULL
-			if([[dbDataRow objectAtIndex:i] isKindOfClass:[NSNull class]])
-				valueString = [prefs objectForKey:@"NullValue"];
-			else
-				valueString = [dbDataRow objectAtIndex:i];
-			[tempRow replaceObjectAtIndex:i withObject:valueString];
+			[tempRow replaceObjectAtIndex:i withObject:[dbDataRow objectAtIndex:i]];
 		}
 	}
 	
@@ -1005,8 +1000,10 @@
 		enumerator = [tableColumns objectEnumerator];
 		while ( (tableColumn = [enumerator nextObject]) ) {
 			id o = [NSArrayObjectAtIndex(tableValues, i) objectAtIndex:[[tableColumn identifier] intValue]];
-			if([o isKindOfClass:[NSNull class]])
+			if([o isNSNull])
 				[tempRow addObject:@"NULL"];
+			else if ([o isSPNotLoaded])
+				[tempRow addObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 			else if([o isKindOfClass:[NSString class]])
 				[tempRow addObject:[o description]];
 			else {
@@ -1117,7 +1114,7 @@
 	NSDictionary *filterSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 										[refDictionary objectForKey:@"column"], @"filterField",
 										targetFilterValue, @"filterValue",
-										([targetFilterValue isEqualToString:[prefs objectForKey:@"NullValue"]]?@"IS NULL":nil), @"filterComparison",
+										([targetFilterValue isNSNull]?@"IS NULL":nil), @"filterComparison",
 										nil];
 	[self setFiltersToRestore:filterSettings];
 
@@ -1317,9 +1314,7 @@
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
-	id prefsNullValue = [[prefs objectForKey:@"NullValue"] retain];
 	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
-	Class nullClass = [NSNull class];
 
 	// Build up an array of which columns are blobs for faster iteration
 	for ( i = 0; i < columnsCount ; i++ ) {
@@ -1337,25 +1332,22 @@
 
 	// Loop through the result rows as they become available
 	while (tempRow = [theResult fetchNextRowAsArray]) {
-		NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithCapacity:columnsCount]);
-		newRow = NSArrayObjectAtIndex(tableValues, rowsProcessed);
-
-		// Process the retrieved row
-		for ( i = 0; i < columnsCount; i++ ) {
-			if ( [NSArrayObjectAtIndex(tempRow, i) isMemberOfClass:nullClass] ) {
-				NSMutableArrayAddObject(newRow, prefsNullValue);
-			} else {
-				NSMutableArrayAddObject(newRow, NSArrayObjectAtIndex(tempRow, i));
-			}
-		}
 
 		// Add values for hidden blob and text fields if appropriate
 		if ( prefsLoadBlobsAsNeeded ) {
+			NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithCapacity:columnsCount]);
+			newRow = NSArrayObjectAtIndex(tableValues, rowsProcessed);
 			for ( i = 0 ; i < columnsCount ; i++ ) {
 				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
-					[newRow replaceObjectAtIndex:i withObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
+					[newRow addObject:[SPNotLoaded notLoaded]];
+				} else {
+					NSMutableArrayAddObject(newRow, NSArrayObjectAtIndex(tempRow, i));
 				}
 			}
+
+		// Otherwise just add the new row
+		} else {
+			NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithArray:tempRow]);
 		}
 
 		// Update the progress bar as necessary, minimising updates
@@ -1382,7 +1374,6 @@
 	[dataLoadingIndicator setIndeterminate:YES];
 	
 	[columnBlobStatuses release];
-	[prefsNullValue release];
 }
 
 
@@ -1419,11 +1410,10 @@
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		rowObject = [NSArrayObjectAtIndex(tableValues, currentlyEditingRow) objectAtIndex:i];
 
-		// Add (not loaded) placeholders directly for easy comparsion when added
-		if (prefsLoadBlobsAsNeeded && !isEditingNewRow
-			&& [rowObject isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
+		// Add not loaded placeholders directly for easy comparison when added
+		if (prefsLoadBlobsAsNeeded && !isEditingNewRow && [rowObject isSPNotLoaded])
 		{
-			[fieldValues addObject:[NSString stringWithString:rowObject]];
+			[fieldValues addObject:[SPNotLoaded notLoaded]];
 			continue;
 
 		// Catch CURRENT_TIMESTAMP automatic updates - if the row is new and the cell value matches
@@ -1435,7 +1425,7 @@
 			[rowValue setString:@"CURRENT_TIMESTAMP"];
 
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
-		} else if ( [[rowObject description] isEqualToString:[prefs stringForKey:@"NullValue"]]
+		} else if ( [rowObject isNSNull]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
 
 			//NULL when user entered the nullValue string defined in the prefs or when a number field isn't set
@@ -1467,7 +1457,7 @@
 		[fieldValues addObject:[NSString stringWithString:rowValue]];
 	}
 	
-	// Use INSERT syntax when creating new rows - no need to do (not loaded) checking, as all values have been entered
+	// Use INSERT syntax when creating new rows - no need to do not loaded checking, as all values have been entered
 	if ( isEditingNewRow ) {
 		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
 					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
@@ -1479,7 +1469,7 @@
 		for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 
 			// If data column loading is deferred and the value is the not loaded string, skip this cell
-			if (prefsLoadBlobsAsNeeded && [[fieldValues objectAtIndex:i] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]) continue;
+			if (prefsLoadBlobsAsNeeded && [[fieldValues objectAtIndex:i] isSPNotLoaded]) continue;
 			
 			if (firstCellOutput) [queryString appendString:@", "];
 			else firstCellOutput = YES;
@@ -1653,7 +1643,7 @@
 			[value setString:[tempValue description]];
 		}
 
-		if ( [value isEqualToString:[prefs stringForKey:@"NullValue"]] ) {
+		if ( [value isNSNull] ) {
 			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
 		} else {
 
@@ -2100,14 +2090,23 @@
 	if ([theValue isKindOfClass:[NSData class]])
 		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
+	if ([theValue isNSNull])
+		return [prefs objectForKey:@"NullValue"];
+
+	if ([theValue isSPNotLoaded])
+		return NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
+
 	return theValue;
 }
 
 /**
- * This function changes the text color of text/blob fields which are not yet loaded to gray
+ * This function changes the text color of text/blob fields which are null or not yet loaded to gray
  */
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
 {
+
+	if (![cell respondsToSelector:@selector(setTextColor:)]) return;
+
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
 	if ( [aTableView editedColumn] == [[aTableColumn identifier] intValue] && [aTableView editedRow] == row) {
@@ -2115,46 +2114,15 @@
 		return;
 	}
 
-	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]);
+	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, row), [[aTableColumn identifier] intValue]);
 
-	// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
-	if ([cell respondsToSelector:@selector(setTextColor:)]) {
-		
-		// Note that this approach of changing the color of NULL placeholders is dependent on the cell's value matching that
-		// of the user's NULL value preference which was set in the result array when it was retrieved (see fetchResultAsArray).
-		// Also, as an added measure check that the table column actually allows NULLs to make sure we don't change a cell that
-		// happens to have a value matching the NULL placeholder, but the column doesn't allow NULLs.
-		[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
-	}
+	// For null cells and not loaded cells, display the contents in gray.
+	if ([theValue isNSNull] || [theValue isSPNotLoaded]) {
+		[cell setTextColor:[NSColor lightGrayColor]];
 
-	// Check if loading of text/blob fields is disabled
-	// If not, all text fields are loaded and we don't have to make them gray
-	if ([prefs boolForKey:@"LoadBlobsAsNeeded"])
-	{
-		// Make sure that the cell actually responds to setTextColor:
-		// In the future, we might use different cells for the table view
-		// that don't support this selector
-		if ([cell respondsToSelector:@selector(setTextColor:)])
-		{
-			// Test if the current column is a text or a blob field
-			NSString *columnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			if ([columnTypeGrouping isEqualToString:@"textdata"] || [columnTypeGrouping isEqualToString:@"blobdata"]) {
-
-				// now check if the field has been loaded already or not
-				if ([[cell stringValue] isEqualToString:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")])
-				{
-					// change the text color of the cell to gray
-					[cell setTextColor:[NSColor lightGrayColor]];
-				}
-				else {
-					// Change the text color back to black
-					// This is necessary because NSTableView reuses
-					// the NSCell to draw further rows in the column
-					[cell setTextColor:([[cell stringValue] isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue]) ? [NSColor lightGrayColor] : [NSColor blackColor]];
-				}
-			}
-		}
+	// Otherwise, set the color to black - required as NSTableView reuses NSCells.
+	} else {
+		[cell setTextColor:[NSColor blackColor]];
 	}
 }
 
@@ -2167,12 +2135,19 @@
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
-	
-	if (anObject)
-		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
-	else
-		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
 
+	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]);
+	
+	if (anObject) {
+
+		// Restore NULLs if necessary
+		if ([anObject isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue])
+			anObject = [NSNull null];
+
+		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
+	} else {
+		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
+	}
 }
 
 #pragma mark -
@@ -2291,39 +2266,26 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {		
-	NSUInteger i;
 	
-	// If the preference value for not showing blobs is set, check whether the row contains any blobs.
-	if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+	// If the selected cell hasn't been loaded, load it.
+	if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] intValue]) isSPNotLoaded]) {
 
-		// If the table does contain blob or text fields, load the values ready for editing.
-		if ([self tableContainsBlobOrTextColumns]) {
-			NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
-			
-			if ([wherePart length] == 0) return NO;
-						
-			// Only get the data for the selected column, not all of them
-			NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
-			
-			MCPResult *tempResult = [mySQLConnection queryString:query];
-			
-			if (![tempResult numOfRows]) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
-				return NO;
-			}
-			
-			NSArray *tempRow = [tempResult fetchRowAsArray];
-			NSMutableArray *modifiedRow = [NSMutableArray array];
-			
-			for (i = 0; i < [tempRow count]; i++) 
-			{
-				[modifiedRow addObject:([[tempRow objectAtIndex:i] isMemberOfClass:[NSNull class]]) ? [prefs stringForKey:@"NullValue"] : [tempRow objectAtIndex:i]];
-			}
-												
-			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[modifiedRow objectAtIndex:0]];
-			[tableContentView reloadData];
+		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];			
+		if ([wherePart length] == 0) return NO;
+
+		// Only get the data for the selected column, not all of them
+		NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
+
+		MCPResult *tempResult = [mySQLConnection queryString:query];
+		if (![tempResult numOfRows]) {
+			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
+			return NO;
 		}
+
+		NSArray *tempRow = [tempResult fetchRowAsArray];												
+		[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
+		[tableContentView reloadData];
 	}
 	
 	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
@@ -2335,7 +2297,10 @@
 		
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
 		
-		id editData = [[fieldEditor editWithObject:[[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]] 
+		id cellValue = [[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
+		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:@"nullValue"]];
+
+		id editData = [[fieldEditor editWithObject:cellValue
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
 								 usingEncoding:[mySQLConnection encoding] 
 								  isObjectBlob:isBlob 
@@ -2348,8 +2313,14 @@
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
-			
-			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[editData copy]];
+
+			if ([editData isEqualToString:[prefs objectForKey:@"NullValue"]]
+				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]) objectForKey:@"null"] boolValue])
+			{
+				[editData release];
+				editData = [[NSNull null] retain];
+			}
+			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[[editData copy] autorelease]];
 		}
 
 		[fieldEditor release];

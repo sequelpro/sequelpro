@@ -1,13 +1,11 @@
 //
 //  $Id$
 //
-//  MCPNull.m
-//  MCPKit
+//  SPNotLoaded.h
+//  sequel-pro
 //
-//  Created by Serge Cohen (serge.cohen@m4x.org) on 02/06/2002.
-//  Copyright (c) 2001 Serge Cohen. All rights reserved.
-//
-//  Forked by the Sequel Pro team (sequelpro.com), April 2009
+//  Created by Rowan Beentje on 07/10/2009.
+//  Copyright 2009 Rowan Beentje. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,21 +21,21 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://mysql-cocoa.sourceforge.net/>
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "MCPNull.h"
+#import <Cocoa/Cocoa.h>
 
-@implementation NSObject (MCPNSNullTest)
+@interface SPNotLoaded : NSObject {
 
-/**
- * This Category is meant to make any kind of object the possible target to the test (isNSNull).
- */
-- (BOOL) isNSNull
-{
-	static id NSNullForComparison;
-	if (!NSNullForComparison) NSNullForComparison = [NSNull null];
-    return (self == NSNullForComparison);
 }
+
++ (SPNotLoaded *) notLoaded;
+
+@end
+
+// Also provide a method for testing objects
+@interface NSObject (SPNotLoadedTest)
+
+- (BOOL) isSPNotLoaded;
 
 @end

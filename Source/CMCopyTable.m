@@ -29,6 +29,7 @@
 #import "SPStringAdditions.h"
 #import "TableContent.h"
 #import "CustomQuery.h"
+#import "SPNotLoaded.h"
 
 int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 int MENU_EDIT_COPY_AS_SQL      = 2002;
@@ -131,7 +132,12 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				
 				if ( nil != rowData )
 				{
-					[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
+					if ([rowData isNSNull])
+						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"nullValue"]]];
+					else if ([rowData isSPNotLoaded])
+						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
+					else
+						[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
 				}
 				else
 				{
@@ -175,7 +181,6 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	NSUInteger numColumns    = [columns count];
 
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
-	NSString *spNULL         = [prefs objectForKey:@"NullValue"];
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
 	NSArray *dbDataRow;
 	NSMutableArray *columnMappings;
@@ -227,8 +232,8 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		{
 			rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] intValue]];
 
-			// Check for NULL value - TODO this is not safe!!
-			if([[rowData description] isEqualToString:spNULL]){
+			// Check for NULL value
+			if([rowData isNSNull]) {
 				[value appendString:@"NULL, "];
 				continue;
 			}
@@ -243,7 +248,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							[mySQLConnection prepareString:[rowData description]]]];
 						break;
 					case 2: // blob
-						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [rowData isSPNotLoaded]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
 							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil)
@@ -253,7 +258,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
 									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isNSNull])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"X'%@', ", 
@@ -365,7 +370,12 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				
 				if ( nil != rowData )
 				{
-					[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
+					if ([rowData isNSNull])
+						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"nullValue"]]];
+					else if ([rowData isSPNotLoaded])
+						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
+					else
+						[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
 				}
 				else
 				{

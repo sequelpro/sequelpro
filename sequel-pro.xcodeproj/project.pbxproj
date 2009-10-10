@@ -141,6 +141,7 @@
 		5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */; };
 		5822CAE110011C8000DCC3D6 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5822CADF10011C8000DCC3D6 /* ConnectionView.xib */; };
 		5822D3091061833C00CE2157 /* SPCSVParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 5822D3081061833C00CE2157 /* SPCSVParser.m */; };
+		582A01E9107C0C170027D42B /* SPNotLoaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 582A01E8107C0C170027D42B /* SPNotLoaded.m */; };
 		583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 583B779810386B0200B21F7E /* MCPStreamingResult.m */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */ = {isa = PBXBuildFile; fileRef = 584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */; };
@@ -523,6 +524,8 @@
 		5822CAE010011C8000DCC3D6 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ConnectionView.xib; sourceTree = "<group>"; };
 		5822D3071061833C00CE2157 /* SPCSVParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCSVParser.h; sourceTree = "<group>"; };
 		5822D3081061833C00CE2157 /* SPCSVParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCSVParser.m; sourceTree = "<group>"; };
+		582A01E7107C0C170027D42B /* SPNotLoaded.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNotLoaded.h; sourceTree = "<group>"; };
+		582A01E8107C0C170027D42B /* SPNotLoaded.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNotLoaded.m; sourceTree = "<group>"; };
 		583B779710386B0200B21F7E /* MCPStreamingResult.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = MCPStreamingResult.h; sourceTree = "<group>"; };
 		583B779810386B0200B21F7E /* MCPStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPStreamingResult.m; sourceTree = "<group>"; };
 		5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberView.h; sourceTree = "<group>"; };
@@ -1349,6 +1352,8 @@
 				B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */,
 				BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */,
 				BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */,
+				582A01E7107C0C170027D42B /* SPNotLoaded.h */,
+				582A01E8107C0C170027D42B /* SPNotLoaded.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -1773,6 +1778,7 @@
 				5822D3091061833C00CE2157 /* SPCSVParser.m in Sources */,
 				BC675A141072039C00C5ACD4 /* SPContentFilterManager.m in Sources */,
 				17292443107AC41000B21980 /* SPXMLExporter.m in Sources */,
+				582A01E9107C0C170027D42B /* SPNotLoaded.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
