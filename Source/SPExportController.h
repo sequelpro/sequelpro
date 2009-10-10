@@ -119,8 +119,6 @@ typedef NSUInteger SPExportSource;
 	
 	// Concurrent operation queue
 	NSOperationQueue *operationQueue;
-	
-	SPLogger *log;
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

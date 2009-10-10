@@ -52,8 +52,6 @@
 		
 		tables = [[NSMutableArray alloc] init];
 		operationQueue = [[NSOperationQueue alloc] init];
-		
-		log = [SPLogger logger];
 	}
 	
 	return self;
