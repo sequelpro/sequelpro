@@ -28,6 +28,7 @@
 #import "SPFavoriteTextFieldCell.h"
 #import "SPKeychain.h"
 #import "TableDocument.h"
+#import "SPConnectionController.h"
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
@@ -334,10 +335,11 @@
 		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
 		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
 		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
+		int type		   = [[favoritesController valueForKeyPath:@"selection.type"] intValue];
 
 		// Remove passwords from the Keychain
 		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
-								account:[keychain accountForUser:user host:host database:database]];
+								account:[keychain accountForUser:user host:((type == SP_CONNECTION_SOCKET)?@"localhost":host) database:database]];
 		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
 								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
 		
@@ -367,10 +369,11 @@
 		NSString *keychainName, *keychainAccount, *password, *keychainSSHName, *keychainSSHAccount, *sshPassword;
 		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
 		NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+		int duplicatedFavoriteType = [[favorite objectForKey:@"type"] intValue];
 
 		// Select the keychain passwords for duplication
 		keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
-		keychainAccount = [keychain accountForUser:[favorite objectForKey:@"user"] host:[favorite objectForKey:@"host"] database:[favorite objectForKey:@"database"]];
+		keychainAccount = [keychain accountForUser:[favorite objectForKey:@"user"] host:((duplicatedFavoriteType == SP_CONNECTION_SOCKET)?@"localhost":[favorite objectForKey:@"host"]) database:[favorite objectForKey:@"database"]];
 		password = [keychain getPasswordForName:keychainName account:keychainAccount];
 		keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
 		keychainSSHAccount = [keychain accountForSSHUser:[favorite objectForKey:@"sshUser"] sshHost:[favorite objectForKey:@"sshHost"]];
@@ -621,7 +624,11 @@
 {
 	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
 		[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
-		[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
+		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] intValue] == SP_CONNECTION_SOCKET) {
+			[cell setFavoriteHost:@"localhost"];
+		} else {
+			[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
+		}
 	}
 }
 
@@ -649,7 +656,7 @@
 
 	// Retrieve and set the password.
 	NSString *keychainName = [keychain nameForFavoriteName:[currentFavorite objectForKey:@"name"] id:[currentFavorite objectForKey:@"id"]];
-	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:[currentFavorite objectForKey:@"host"] database:[currentFavorite objectForKey:@"database"]];
+	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:(([[currentFavorite objectForKey:@"type"] intValue] == SP_CONNECTION_SOCKET)?@"localhost":[currentFavorite objectForKey:@"host"]) database:[currentFavorite objectForKey:@"database"]];
 	NSString *passwordValue = [keychain getPasswordForName:keychainName account:keychainAccount];
 	[standardPasswordField setStringValue:passwordValue];
 	[socketPasswordField setStringValue:passwordValue];
@@ -786,7 +793,7 @@
 		break;
 		case 1:
 		if(nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == favoriteUserTextFieldSocket)) {
-			[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@%@", [favoriteUserTextFieldSocket stringValue], [favoritesController valueForKeyPath:@"selection.host"]]];
+			[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@localhost", [favoriteUserTextFieldSocket stringValue]]];
 			[favoritesController setValue:[favoriteNameTextField stringValue] forKeyPath:@"selection.name"];
 			[prefs synchronize];
 			// if name field is empty enable user@host update
@@ -818,9 +825,11 @@
 // -------------------------------------------------------------------------------
 - (IBAction)favoriteTypeDidChange:(id)sender
 {
-	if ([sender indexOfSelectedItem] == 1) {	// Socket
-		[favoritesController setValue:@"localhost" forKeyPath:@"selection.host"];
-	} else if ([[favoritesController valueForKeyPath:@"selection.host"] isEqualToString:@"localhost"]) {
+
+	// If not socket and host is localhost, clear.
+	if ([sender indexOfSelectedItem] != 1
+		&& [[favoritesController valueForKeyPath:@"selection.host"] isEqualToString:@"localhost"])
+	{
 		[favoritesController setValue:@"" forKeyPath:@"selection.host"];
 	}
 
@@ -830,7 +839,9 @@
 	if(!favoriteNameFieldWasTouched) {
 		[favoriteNameTextField setStringValue:[NSString stringWithFormat:@"%@@%@", 
 			([favoritesController valueForKeyPath:@"selection.user"]) ? [favoritesController valueForKeyPath:@"selection.user"] : @"", 
-			([favoritesController valueForKeyPath:@"selection.host"]) ? [favoritesController valueForKeyPath:@"selection.host"] : @""]];
+			( ([sender indexOfSelectedItem] == 1) ? @"localhost" :
+				(([favoritesController valueForKeyPath:@"selection.host"]) ? [favoritesController valueForKeyPath:@"selection.host"] : @""))
+		]];
 		[favoritesController setValue:[favoriteNameTextField stringValue] forKeyPath:@"selection.name"];
 	}
 	
@@ -853,11 +864,13 @@
 	NSString *passwordValue;
 	NSString *oldKeychainName, *newKeychainName;
 	NSString *oldKeychainAccount, *newKeychainAccount;
+	NSString *oldHostnameForPassword = ([[currentFavorite objectForKey:@"type"] intValue] == SP_CONNECTION_SOCKET) ? @"localhost" : [currentFavorite objectForKey:@"host"];
+	NSString *newHostnameForPassword = ([[favoritesController valueForKeyPath:@"selection.type"] intValue] == SP_CONNECTION_SOCKET) ? @"localhost" : [favoritesController valueForKeyPath:@"selection.host"];
 
 	// SQL passwords are indexed by name, host, user and database.  If any of these
 	// have changed, or a standard password field has, alter the keychain item to match.
 	if (![[currentFavorite objectForKey:@"name"] isEqualToString:[favoritesController valueForKeyPath:@"selection.name"]]
-		|| ![[currentFavorite objectForKey:@"host"] isEqualToString:[favoritesController valueForKeyPath:@"selection.host"]]
+		|| ![oldHostnameForPassword isEqualToString:newHostnameForPassword]
 		|| ![[currentFavorite objectForKey:@"user"] isEqualToString:[favoritesController valueForKeyPath:@"selection.user"]]
 		|| ![[currentFavorite objectForKey:@"database"] isEqualToString:[favoritesController valueForKeyPath:@"selection.database"]]
 		|| passwordControl == standardPasswordField || passwordControl == socketPasswordField || passwordControl == sshSQLPasswordField)
@@ -874,14 +887,14 @@
 
 		// Get the old keychain name and account strings
 		oldKeychainName = [keychain nameForFavoriteName:[currentFavorite objectForKey:@"name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
-		oldKeychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:[currentFavorite objectForKey:@"host"] database:[currentFavorite objectForKey:@"database"]];
+		oldKeychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:oldHostnameForPassword database:[currentFavorite objectForKey:@"database"]];
 
 		// Delete the old keychain item
 		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
 
 		// Set up the new keychain name and account strings
 		newKeychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
-		newKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:[favoritesController valueForKeyPath:@"selection.host"] database:[favoritesController valueForKeyPath:@"selection.database"]];
+		newKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:newHostnameForPassword database:[favoritesController valueForKeyPath:@"selection.database"]];
 
 		// Add the new keychain item if the password field has a value
 		if ([passwordValue length])

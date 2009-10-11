@@ -330,6 +330,9 @@
 			} else if ([self type] == SP_CONNECTION_SOCKET && (![self socket] || ![[self socket] length]) && ![mySQLConnection findSocketPath]) {
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The socket file could not be found in any common location. Please supply the correct socket location.\n\nMySQL said: %@", @"message of panel when connection to socket failed because optional socket could not be found"), [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Socket not found!", @"socket not found title") errorMessage:errorMessage detail:nil];
+			} else if ([self type] == SP_CONNECTION_SOCKET) {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
+				[self failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
 			} else {
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
@@ -509,9 +512,7 @@
 	[self resizeTabViewToConnectionType:selectedTabView animating:YES];
 	
 	// Update the host as appropriate
-	if (selectedTabView == SP_CONNECTION_SOCKET) {
-		[self setHost:@"localhost"];
-	} else if ([[self host] isEqualToString:@"localhost"]) {
+	if ((selectedTabView != SP_CONNECTION_SOCKET) && [[self host] isEqualToString:@"localhost"]) {
 		[self setHost:@""];
 	}
 
@@ -659,7 +660,7 @@
 	// Check whether the password exists in the keychain, and if so add it; also record the
 	// keychain details so we can pass around only those details if the password doesn't change
 	connectionKeychainItemName = [[keychain nameForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]] retain];
-	connectionKeychainItemAccount = [[keychain accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:[self valueForKeyPath:@"selectedFavorite.host"] database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
+	connectionKeychainItemAccount = [[keychain accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:(([self type] == SP_CONNECTION_SOCKET)?@"localhost":[self valueForKeyPath:@"selectedFavorite.host"]) database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
 	[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 	if (![[self password] length]) {
 		[connectionKeychainItemName release], connectionKeychainItemName = nil;
@@ -697,7 +698,7 @@
 {
 	NSString *thePassword, *theSSHPassword;
 	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", [self host]];
+	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", (([self type] == SP_CONNECTION_SOCKET)?@"localhost":[self host])];
 	if (![[self name] length] && [self database] && ![[self database] isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", [self database], favoriteName];
 	
@@ -720,9 +721,9 @@
 	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 										[NSNumber numberWithInt:[self type]], @"type",
 										favoriteName, @"name",
-										[self host], @"host",
 										favoriteid, @"id",
 										nil];
+	if ([self host]) [newFavorite setObject:[self host] forKey:@"host"];
 	if ([self socket]) [newFavorite setObject:[self socket] forKey:@"socket"];
 	if ([self user]) [newFavorite setObject:[self user] forKey:@"user"];
 	if ([self port]) [newFavorite setObject:[self port] forKey:@"port"];
@@ -750,7 +751,7 @@
 	if (thePassword && ![thePassword isEqualToString:@""]) {
 		[keychain addPassword:thePassword
 					  forName:[keychain nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
-					  account:[keychain accountForUser:[self user] host:[self host] database:[self database]]];
+					  account:[keychain accountForUser:[self user] host:(([self type] == SP_CONNECTION_SOCKET)?@"localhost":[self host]) database:[self database]]];
 	}
 
 	// Add the SSH password to keychain as appropriate
