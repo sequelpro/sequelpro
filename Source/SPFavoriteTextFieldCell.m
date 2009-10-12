@@ -142,7 +142,10 @@
 	float maxWidth = cellFrame.size.width;
 	float mainStringWidth = [mainString size].width;
 	float subStringWidth = [subString size].width;
-	
+
+	// Set a right-padding
+	maxWidth -= 10;
+
 	if (maxWidth < mainStringWidth) {
 		for (i = 0; i <= [mainString length]; i++) {
 			if ([[mainString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth) {	
@@ -161,6 +164,12 @@
 	
 	[mainString drawInRect:cellFrame];
 	[subString drawInRect:subFrame];
+}
+
+// Suppress built-in tooltips
+- (NSRect)expansionFrameWithFrame:(NSRect)cellFrame inView:(NSView *)view
+{
+	return NSMakeRect(0,0,0,0);
 }
 
 // -------------------------------------------------------------------------------

@@ -29,6 +29,7 @@
 #import "SPKeychain.h"
 #import "TableDocument.h"
 #import "SPConnectionController.h"
+#import "SPTooltip.h"
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
@@ -80,8 +81,6 @@
 	[self _setupToolbar];
 	
 	keychain = [[SPKeychain alloc] init];
-	
-	SPFavoriteTextFieldCell *tableCell = [[[SPFavoriteTextFieldCell alloc] init] autorelease];
 	
 	[tableCell setImage:[NSImage imageNamed:@"database"]];
 	
@@ -670,6 +669,18 @@
 	favoriteNameFieldWasTouched = YES;
 }
 
+- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(SPFavoriteTextFieldCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
+{
+	NSRect r = *rect;
+	// No tooltip if cellSize < controlSize
+	if([aCell cellSize].width < r.size.width-20) return nil;
+
+	NSPoint pos = [NSEvent mouseLocation];
+	pos.y -= 20;
+	[SPTooltip showWithObject:[NSString stringWithFormat:@"<span style='font-size:larger;'>%@</span><br><font color='darkgrey'>%@</font>", [aCell favoriteName], [aCell favoriteHost]] atLocation:pos ofType:@"html"];
+	return nil;
+}
+
 #pragma mark -
 #pragma mark Toolbar delegate methods
 
@@ -746,7 +757,7 @@
 // -------------------------------------------------------------------------------
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
 {
-	return (proposedMin + 100);
+	return (proposedMin + 94);
 }
 
 #pragma mark -

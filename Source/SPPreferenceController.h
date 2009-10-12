@@ -56,6 +56,8 @@
 	IBOutlet NSTextField *favoriteUserTextFieldSSH;
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
 
+	IBOutlet id tableCell;
+
 	SPKeychain *keychain;
 	NSDictionary *currentFavorite;
 
