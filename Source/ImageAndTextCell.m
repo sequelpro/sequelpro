@@ -81,6 +81,44 @@
 	[super selectWithFrame:aRect inView: controlView editor:textObj delegate:anObject start:selStart length:selLength];
 }
 
+- (void)drawWithExpansionFrame:(NSRect)cellFrame inView:(NSView *)view
+{
+	if (_indentationLevel != 0)
+	{
+		NSRect indentationFrame;
+		NSDivideRect(cellFrame, &indentationFrame, &cellFrame, (INDENT_AMOUNT * _indentationLevel), NSMinXEdge);
+	}
+		
+	if (image != nil)
+	{
+		NSSize	imageSize;
+		NSRect	imageFrame;
+
+		imageSize = [image size];
+		NSDivideRect(cellFrame, &imageFrame, &cellFrame, 3 + imageSize.width, NSMinXEdge);
+		if ([self drawsBackground])
+		{
+			[[self backgroundColor] set];
+			NSRectFill(imageFrame);
+		}
+		imageFrame.origin.x += 3;
+
+		imageFrame.size = imageSize;
+
+		if ([view isFlipped])
+			imageFrame.origin.y += ceil((cellFrame.size.height + imageFrame.size.height) / 2);
+		else
+			imageFrame.origin.y += ceil((cellFrame.size.height - imageFrame.size.height) / 2);
+
+		[image compositeToPoint:imageFrame.origin operation:NSCompositeSourceOver];
+	} else
+		if (_indentationLevel == 0)
+			cellFrame.size.height = [view frame].size.height+2;
+
+	[super drawWithExpansionFrame:cellFrame inView:view];
+
+}
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
 	if (_indentationLevel != 0)
@@ -111,13 +149,19 @@
 
 		[image compositeToPoint:imageFrame.origin operation:NSCompositeSourceOver];
 	}
+
 	[super drawWithFrame:cellFrame inView:controlView];
 }
 
 - (NSSize)cellSize
 {
 	NSSize cellSize = [super cellSize];
-	cellSize.width += (image ? [image size].width : 0) + ((1 - MIN(1,INDENT_AMOUNT)) * 3) + (INDENT_AMOUNT * _indentationLevel);
+	cellSize.width += (image ? [image size].width : 0) + ((1 - MIN(1,INDENT_AMOUNT)) * 3) + (INDENT_AMOUNT * _indentationLevel) + 2;
+	// TODO : this has to be generalized yet
+	if (image != nil)
+		cellSize.height += 2;
+	else
+		cellSize.height += 8;
 	return cellSize;
 }
 

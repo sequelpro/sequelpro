@@ -29,7 +29,6 @@
 #import "SPKeychain.h"
 #import "TableDocument.h"
 #import "SPConnectionController.h"
-#import "SPTooltip.h"
 
 #define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
 
@@ -667,18 +666,6 @@
 	[sshPasswordField setStringValue:[keychain getPasswordForName:keychainSSHName account:keychainSSHAccount]];
 	
 	favoriteNameFieldWasTouched = YES;
-}
-
-- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(SPFavoriteTextFieldCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
-{
-	NSRect r = *rect;
-	// No tooltip if cellSize < controlSize
-	if([aCell cellSize].width < r.size.width-20) return nil;
-
-	NSPoint pos = [NSEvent mouseLocation];
-	pos.y -= 20;
-	[SPTooltip showWithObject:[NSString stringWithFormat:@"<span style='font-size:larger;'>%@</span><br><font color='darkgrey'>%@</font>", [aCell favoriteName], [aCell favoriteHost]] atLocation:pos ofType:@"html"];
-	return nil;
 }
 
 #pragma mark -

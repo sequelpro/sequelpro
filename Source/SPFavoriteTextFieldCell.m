@@ -129,14 +129,14 @@
 	// Total height of both strings with a 2 pixel separation space
 	float totalHeight = [mainString size].height + [subString size].height + 1.0;
 	
-    cellFrame.origin.y += (cellFrame.size.height - totalHeight) / 2.0;
+	cellFrame.origin.y += (cellFrame.size.height - totalHeight) / 2.0;
 	cellFrame.origin.x += 10.0; // Indent main string from image
 	
 	// Position the sub text's frame rect
 	subFrame.origin.y = [mainString size].height + cellFrame.origin.y + 1.0;
 	subFrame.origin.x = cellFrame.origin.x;
 	
-    cellFrame.size.height = totalHeight;
+	cellFrame.size.height = totalHeight;
 	
 	int i;
 	float maxWidth = cellFrame.size.width;
@@ -166,10 +166,20 @@
 	[subString drawInRect:subFrame];
 }
 
-// Suppress built-in tooltips
-- (NSRect)expansionFrameWithFrame:(NSRect)cellFrame inView:(NSView *)view
+- (NSSize)cellSize
 {
-	return NSMakeRect(0,0,0,0);
+	NSSize cellSize = [super cellSize];
+	NSAttributedString *mainString = [[self attributedStringForFavoriteName] autorelease];
+	NSAttributedString *subString = [[self constructSubStringAttributedString] autorelease];
+
+	// 15 := indention 10 from image to string plus 5 px padding
+	float theWidth = MAX([mainString size].width, [subString size].width) + (([self image] != nil) ? [[self image] size].width : 0) + 15;
+
+	float totalHeight = [mainString size].height + [subString size].height + 1.0;
+
+	cellSize.width = theWidth;
+	cellSize.height = totalHeight + 13.0;
+	return cellSize;
 }
 
 // -------------------------------------------------------------------------------
