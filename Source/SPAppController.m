@@ -390,7 +390,7 @@
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
 {
 	TableDocument *firstTableDocument;
-	
+
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"]) {
@@ -478,17 +478,6 @@
 	
 	return @"";
 }
-
-
-/**
- * AppleScript handler to quit Sequel Pro 
- */
-- (id)handleQuitScriptCommand:(NSScriptCommand *)command
-{
-	[NSApp terminate:self];
-	return nil;
-}
-
 /**
  * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
  * sure that no sheets are currently open, which will prevent the app from being quit. 

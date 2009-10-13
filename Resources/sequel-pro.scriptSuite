@@ -3,12 +3,11 @@
 	"AppleEventCode" = "cmec";
 	
 	"Classes" = {
-		"NSApplication" = {
-			"Superclass" = "NSCoreSuite.NSApplication";
+		"SPAppController" = {
+			"Superclass" = "NSCoreSuite.AbstractObject";
 			"AppleEventCode" = "capp";
 			"SupportedCommands" = {
 				"authenticate" = "authenticate:";
-				"NSCoreSuite.Quit" = "handleQuitScriptCommand:";
 			};
 		};
 	};

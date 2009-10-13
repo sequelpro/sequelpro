@@ -52,9 +52,6 @@
 // Getters
 - (SPPreferenceController *)preferenceController;
 
-// AppleScript handler
-- (id)handleQuitScriptCommand:(NSScriptCommand *)command;
-
 // Others
 - (NSString *)contentOfFile:(NSString *)aPath;
 
