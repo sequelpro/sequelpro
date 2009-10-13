@@ -1,8 +1,8 @@
 {
 	"Name" = "Sequel Pro suite";
-	"Description" = "Suite for handling tunnel management";
+	"Description" = "Sequel Pro specific classes.";
 	"Classes" = {
-		"MainController" = {
+		"NSApplication" = {
 			"Name" = "application";
 			"PluralName" = "applications";
 			"Description" = "Sequel Pro application";

@@ -481,13 +481,11 @@
 
 
 /**
- * What exactly is this for? 
+ * AppleScript handler to quit Sequel Pro 
  */
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command
 {
 	[NSApp terminate:self];
-	
-	// Suppress warning
 	return nil;
 }
 
