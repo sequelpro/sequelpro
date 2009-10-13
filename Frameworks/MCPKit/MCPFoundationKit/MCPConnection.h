@@ -203,6 +203,7 @@ void performThreadedKeepAlive(void *ptr);
 - (my_ulonglong)insertId;
 
 // Locking
+- (void)lockConnection;
 - (void)unlockConnection;
 
 // Database structure

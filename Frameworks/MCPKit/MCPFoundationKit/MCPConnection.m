@@ -1352,7 +1352,14 @@ void performThreadedKeepAlive(void *ptr)
 			}
 		}
 		
-		[queryLock lock];
+		// Lock on this thread for normal result sets...
+		if (streamResultType == MCP_NO_STREAMING) {
+			[queryLock lock];
+
+		// ...but streaming result unlock on the main thread after processing, so ensure a lock on the main thread.
+		} else {
+			[self lockConnection];
+		}
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
@@ -1480,11 +1487,21 @@ void performThreadedKeepAlive(void *ptr)
 #pragma mark Connection locking
 
 /**
- * Unlock the connection
+ * Lock the connection from any thread
+ */
+- (void)lockConnection
+{
+	if ([NSThread isMainThread]) [queryLock lock];
+	else [queryLock performSelectorOnMainThread:@selector(lock) withObject:nil waitUntilDone:YES];
+}
+
+/**
+ * Unlock the connection from any thread
  */
 - (void)unlockConnection
 {
-	[queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
+	if ([NSThread isMainThread]) [queryLock unlock];
+	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
 }
 
 #pragma mark -
