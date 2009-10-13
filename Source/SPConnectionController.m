@@ -415,6 +415,8 @@
 	}
 	
 	if (returnCode == NSAlertAlternateReturn) {
+		[errorDetailText setFont:[NSFont userFontOfSize:12]];
+		[errorDetailText setAlignment:NSLeftTextAlignment];
 		[errorDetailWindow makeKeyAndOrderFront:self];
 	}
 	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
