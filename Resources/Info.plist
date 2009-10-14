@@ -64,7 +64,7 @@
 	<key>CFBundleVersion</key>
 	<string></string>
 	<key>NSAppleScriptEnabled</key>
-	<string>YES</string>
+	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>0.9.6 (r1130)</string>
 	<key>LSMinimumSystemVersion</key>

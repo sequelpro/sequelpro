@@ -1,36 +1,28 @@
 {
 	"Name" = "Sequel Pro";
 	"AppleEventCode" = "cmec";
-	
+
 	"Classes" = {
 		"SPAppController" = {
-			"Superclass" = "NSCoreSuite.AbstractObject";
 			"AppleEventCode" = "capp";
+			"Superclass" = "NSCoreSuite.NSApplication";
 			"SupportedCommands" = {
-				"authenticate" = "authenticate:";
+				"NSCoreSuite.Quit" = "handleQuitScriptCommand:";
+			};
+			"ToManyRelationships" = {
+				"orderedDocuments" = {
+					"Type" = "TableDocument";
+					"AppleEventCode" = "docu";
+				};
+				"orderedWindows" = {
+					"Type" = "NSWindow";
+					"AppleEventCode" = "cwin";
+				};
 			};
 		};
-	};
-	"Commands" = {
-		"authenticate" = {
-			"CommandClass" = "NSScriptCommand";
-			"AppleEventCode" = "auth";
-			"Class" = "NSString";
-			"ResultAppleEventCode" = "****";
-			"Arguments" = {
-				"query" = {
-					"Type" = "NSString";
-					"AppleEventCode" = "qery";
-				};
-				"fifo" = {
-					"Type" = "NSString";
-					"AppleEventCode" = "fifo";
-				};
-				"tunnelName" = {
-					"Type" = "NSString";
-					"AppleEventCode" = "tunn";
-				};
-			};
+		"TableDocument" = {
+			"Superclass" = "NSCoreSuite.NSDocument";
+			"AppleEventCode" = "docu";
 		};
 	};
 }

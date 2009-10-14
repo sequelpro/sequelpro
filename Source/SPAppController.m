@@ -508,4 +508,60 @@
 	[super dealloc];
 }
 
+#pragma mark -
+#pragma mark AppleScript support
+
+//////////////// Examples to catch AS core events - maybe for further stuff
+// - (void)handleQuitEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+// {
+// 	[NSApp terminate:self];
+// }
+// - (void)handleOpenEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+// {
+// 	NSLog(@"OPEN %@", [event description]);
+// }
+// 
+// - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
+// {
+// 	NSAppleEventManager *aeManager = [NSAppleEventManager sharedAppleEventManager];
+// 	[aeManager setEventHandler:self andSelector:@selector(handleQuitEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
+// 	[aeManager setEventHandler:self andSelector:@selector(handleOpenEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenApplication];
+// }
+// 
+
+/*
+ * Is needed to interact with AppleScript for set/get internal SP variables
+ */
+- (BOOL)application:(NSApplication *)sender delegateHandlesKey:(NSString *)key
+{
+	NSLog(@"Not yet implemented.");
+	return NO;
+}
+
+/*
+ * AppleScript calls that method to get the available documents
+ */
+- (NSArray *)orderedDocuments
+{
+	return [[NSDocumentController sharedDocumentController] documents];
+}
+
+/*
+ * AppleScript calls that method to get the available windows
+ */
+- (NSArray *)orderedWindows
+{
+	return [NSApp orderedWindows];
+}
+/*
+ * AppleScript handler to quit Sequel Pro
+ * This handler is needed to allow to quit SP via the Dock or AppleScript after
+ * activating it by using AppleScript
+ */
+- (id)handleQuitScriptCommand:(NSScriptCommand *)command
+{
+	[NSApp terminate:self];
+	return nil;
+}
+
 @end
