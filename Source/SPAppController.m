@@ -546,6 +546,16 @@
 	return [[NSDocumentController sharedDocumentController] documents];
 }
 
+/* Support for "make new document"
+*/
+- (void)insertInOrderedDocuments:(TableDocument *)doc {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"])
+		[doc setShouldAutomaticallyConnect:YES];
+	[[NSDocumentController sharedDocumentController] addDocument:doc];
+	[doc makeWindowControllers];
+	[doc showWindows];
+}
+
 /*
  * AppleScript calls that method to get the available windows
  */

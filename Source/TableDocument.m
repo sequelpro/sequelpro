@@ -2674,6 +2674,10 @@
 		return ([self database] != nil && [self table] != nil);
 	}
 
+	if ([menuItem action] == @selector(printDocument:)) {
+		return ([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1);
+	}
+
 	if ([menuItem action] == @selector(chooseEncoding:)) {
 		return [self supportsEncoding];
 	}
