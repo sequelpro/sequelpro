@@ -878,7 +878,7 @@
 
 		// Extract and process any full CSV rows found so far.  Also trigger processing if all
 		// rows have been read, in order to ensure short files are still processed.
-		while ((csvRowArray = [csvParser getRowAsArrayAndTrimString:YES stringIsComplete:allDataRead]) || (allDataRead && !fieldMappingArray)) {
+		while ((csvRowArray = [csvParser getRowAsArrayAndTrimString:YES stringIsComplete:allDataRead]) || (allDataRead && [parsedRows count])) {
 
 			// If valid, add the row array and length to local storage
 			if (csvRowArray) {
