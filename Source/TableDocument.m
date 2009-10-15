@@ -476,6 +476,10 @@
 
 	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) return;
 
+	// Restore toolbar setting
+	if([spfSession objectForKey:@"isToolbarVisible"])
+		[[tableWindow toolbar] setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
+
 	// TODO up to now it doesn't work
 	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
 		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
@@ -500,7 +504,10 @@
 
 	// Select table
 	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
-	// [tablesListInstance setContentRequiresReload:YES];
+
+	// Reset database view encoding if differs from default
+	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
+		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
 
 	// Select view
 	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
@@ -2478,6 +2485,9 @@
 			aString = @"SP_VIEW_STRUCTURE";
 		}
 		[session setObject:aString forKey:@"view"];
+
+		[session setObject:[NSNumber numberWithBool:[[tableWindow toolbar] isVisible]] forKey:@"isToolbarVisible"];
+		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
 		[session setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
