@@ -1652,19 +1652,16 @@
 			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
 		}
 
-		if ( [tempValue isKindOfClass:[NSData class]] ) {
-			[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
-		} else {
-			[value setString:[tempValue description]];
-		}
-
-		if ( [value isNSNull] ) {
+		if ( [tempValue isNSNull] ) {
 			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
+		} else if ( [tempValue isSPNotLoaded] ) {
+			// TODO
 		} else {
 
-			if (! [tempValue isKindOfClass:[NSData class]] ) {
+			if ( [tempValue isKindOfClass:[NSData class]] )
+				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
+			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:value]]];
-			}
 
 			[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 		}
@@ -1719,7 +1716,7 @@
 	}
 }
 
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 /*
  if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
  if contextInfo == removerow: removes row if user hits OK
@@ -1732,7 +1729,12 @@
 	NSInteger i, errors;
 	BOOL consoleUpdateStatus;
 	BOOL reloadAfterRemovingRow = [prefs boolForKey:@"ReloadAfterRemovingRow"];
-	
+
+	if([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:self];
+	else if([sheet window] && [[sheet window] respondsToSelector:@selector(orderOut:)])
+		[[sheet window] orderOut:self];
+
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
 		[sheet orderOut:self];
 		
@@ -2301,7 +2303,7 @@
 	// If the selected cell hasn't been loaded, load it.
 	if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] intValue]) isSPNotLoaded]) {
 
-		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];			
+		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
 		if ([wherePart length] == 0) return NO;
 
 		// Only get the data for the selected column, not all of them
@@ -2314,7 +2316,7 @@
 			return NO;
 		}
 
-		NSArray *tempRow = [tempResult fetchRowAsArray];												
+		NSArray *tempRow = [tempResult fetchRowAsArray];
 		[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
 		[tableContentView reloadData];
 	}
