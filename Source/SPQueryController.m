@@ -54,32 +54,33 @@ static SPQueryController *sharedQueryController = nil;
 @implementation SPQueryController
 
 @synthesize consoleFont;
+@synthesize allowConsoleUpdate;
 
 /*
  * Returns the shared query console.
  */
 + (SPQueryController *)sharedQueryController
 {
-    @synchronized(self) {
-        if (sharedQueryController == nil) {
-            [[self alloc] init];
-        }
-    }
-    
-    return sharedQueryController;
+	@synchronized(self) {
+		if (sharedQueryController == nil) {
+			[[self alloc] init];
+		}
+	}
+
+	return sharedQueryController;
 }
 
 + (id)allocWithZone:(NSZone *)zone
 {    
-    @synchronized(self) {
-        if (sharedQueryController == nil) {
-            sharedQueryController = [super allocWithZone:zone];
-            
-            return sharedQueryController;
-        }
-    }
-    
-    return nil; // On subsequent allocation attempts return nil
+	@synchronized(self) {
+		if (sharedQueryController == nil) {
+			sharedQueryController = [super allocWithZone:zone];
+
+			return sharedQueryController;
+		}
+	}
+
+	return nil; // On subsequent allocation attempts return nil
 }
 
 - (id)init
@@ -98,6 +99,7 @@ static SPQueryController *sharedQueryController = nil;
 		
 		untitledDocumentCounter = 1;
 		numberOfMaxAllowedHistory = 100;
+		allowConsoleUpdate = YES;
 		
 		favoritesContainer = [[NSMutableDictionary alloc] init];
 		historyContainer = [[NSMutableDictionary alloc] init];
@@ -757,7 +759,7 @@ static SPQueryController *sharedQueryController = nil;
 	}
 	
 	// Reload the table and scroll to the new message if it's visible (for speed)
-	if ( [[self window] isVisible] ) {
+	if ( allowConsoleUpdate && [[self window] isVisible] ) {
 		[consoleTableView reloadData];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 	}

@@ -42,6 +42,7 @@
 	BOOL showSelectStatementsAreDisabled;
 	BOOL showHelpStatementsAreDisabled;
 	BOOL filterIsActive;
+	BOOL allowConsoleUpdate;
 	
 	NSMutableString *activeFilterString;
 	
@@ -57,6 +58,7 @@
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
+@property (readwrite) BOOL allowConsoleUpdate;
 
 + (SPQueryController *)sharedQueryController;
 

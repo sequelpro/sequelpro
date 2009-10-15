@@ -1725,12 +1725,13 @@
  if contextInfo == removerow: removes row if user hits OK
  */
 {
-	NSEnumerator *enumerator = [tableContentView selectedRowEnumerator];
-	NSNumber *index;
-	NSMutableArray *tempArray = [NSMutableArray array];
+
 	NSMutableArray *tempResult = [NSMutableArray array];
+	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
 	NSString *wherePart;
-	int i, errors;
+	NSInteger i, errors;
+	BOOL consoleUpdateStatus;
+	BOOL reloadAfterRemovingRow = [prefs boolForKey:@"ReloadAfterRemovingRow"];
 	
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
 		[sheet orderOut:self];
@@ -1767,29 +1768,44 @@
 		}
 	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
+
 			errors = 0;
-			
-			while ( (index = [enumerator nextObject]) ) {
-				wherePart = [NSString stringWithString:[self argumentForRow:[index intValue]]];
+
+			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
+
+			// Disable updating of the Console Log window for large number of queries
+			// to speed the deletion
+			consoleUpdateStatus = [[SPQueryController sharedQueryController] allowConsoleUpdate];
+			if([selectedRows count] > 10)
+				[[SPQueryController sharedQueryController] setAllowConsoleUpdate:NO];
+
+			NSUInteger index = [selectedRows firstIndex];
+
+			while (index != NSNotFound) {
+
+				wherePart = [NSString stringWithString:[self argumentForRow:index]];
+
 				//argumentForRow might return empty query, in which case we shouldn't execute the partial query
-				if([wherePart length] > 0) {
+				if([wherePart length]) {
 					[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
-					if ( ![mySQLConnection affectedRows] ) {
-						//no rows deleted
-						errors++;
-					} else if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-						//rows deleted with success
-						[tempArray addObject:index];
-					} else {
-						//error in mysql-query
+
+					// Check for errors
+					if ( ![mySQLConnection affectedRows] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+						// If error delete that index from selectedRows for reloading table if 
+						// "ReloadAfterRemovingRow" is disbaled
+						if(!reloadAfterRemovingRow)
+							[selectedRows removeIndex:index];
 						errors++;
 					}
 				} else {
 					errors++;
 				}
-
+				index = [selectedRows indexGreaterThanIndex:index];
 			}
-			
+
+			// Restore Console Log window's updating bahaviour
+			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
+
 			if ( errors ) {
 				[self performSelector:@selector(showErrorSheetWith:)
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
@@ -1798,13 +1814,13 @@
 					afterDelay:0.3];
 			}
 
-			//do deleting (after enumerating)
-			if ( [prefs boolForKey:@"ReloadAfterRemovingRow"] ) {
+			// Refresh table content
+			if ( reloadAfterRemovingRow ) {
 				[self loadTableValues];
 				[tableContentView reloadData];
 			} else {
 				for ( i = 0 ; i < [tableValues count] ; i++ ) {
-					if ( ![tempArray containsObject:[NSNumber numberWithInt:i]] )
+					if ( ![selectedRows containsIndex:i] )
 						[tempResult addObject:NSArrayObjectAtIndex(tableValues, i)];
 				}
 				[tableValues setArray:tempResult];
