@@ -172,10 +172,14 @@ static SPQueryController *sharedQueryController = nil;
 	
 	if ((firstResponder == consoleTableView) && ([consoleTableView numberOfSelectedRows] > 0)) {
 		
-		NSString *string = @"";
+		NSMutableString *string = [NSMutableString string];
 		NSIndexSet *rows = [consoleTableView selectedRowIndexes];
 		
 		NSUInteger i = [rows firstIndex];
+		
+		BOOL dateColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] isHidden];
+		
+		[string setString:@""];
 		
 		while (i != NSNotFound) 
 		{
@@ -185,14 +189,14 @@ static SPQueryController *sharedQueryController = nil;
 				NSString *consoleMessage = [message message];
 				
 				// If the timestamp column is not hidden we need to include them in the copy
-				if (![[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] isHidden]) {
+				if (!dateColumnIsHidden) {
 					
 					NSString *dateString = [[message messageDate] descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
 					
 					consoleMessage = [NSString stringWithFormat:@"/* MySQL %@ */ %@", dateString, consoleMessage];
 				}
 				
-				string = [string stringByAppendingFormat:@"%@\n", consoleMessage];
+				[string appendFormat:@"%@\n", consoleMessage];
 			}
 			
 			i = [rows indexGreaterThanIndex:i];
