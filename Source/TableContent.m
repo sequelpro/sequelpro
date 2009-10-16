@@ -1788,7 +1788,7 @@
 			NSArray *primaryKeyFieldNames = [tableDataInstance primaryKeyColumnNames];
 
 			// TODO tentative → || [primaryKeyFields count] != 1
-			if(primaryKeyFieldNames == nil || [primaryKeyFieldNames count] != 1) {
+			if(primaryKeyFieldNames == nil) {
 				// delete row by row
 				while (index != NSNotFound) {
 
@@ -1813,7 +1813,7 @@
 					}
 					index = [selectedRows indexGreaterThanIndex:index];
 				}
-			} else {
+ 			} else if ([primaryKeyFieldNames count] == 1) {
 				// if table has only one PRIMARY KEY
 				// delete the fast way by using the PRIMARY KEY in an IN clause
 				NSMutableString *deleteQuery = [NSMutableString string];
@@ -1855,16 +1855,80 @@
 					affectedRows += [mySQLConnection affectedRows];
 				}
 				errors = [selectedRows count] - affectedRows;
+			} else {
+				// if table has more than one PRIMARY KEY
+				// delete the row by using all PRIMARY KEYs in an OR clause
+				NSMutableString *deleteQuery = [NSMutableString string];
+				NSInteger affectedRows = 0;
+
+				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
+
+				while (index != NSNotFound) {
+
+					// Build the AND clause of PRIMARY KEYS
+					[deleteQuery appendString:@"("];
+					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
+
+						[deleteQuery appendFormat:@"%@=", [primaryKeyFieldName backtickQuotedString]];
+
+						id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] intValue]];
+
+						if([keyValue isKindOfClass:[NSData class]])
+							[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
+						else
+							[deleteQuery appendString:[NSString stringWithFormat:@"'%@'", [keyValue description]]];
+						
+						[deleteQuery appendString:@" AND "];
+					}
+					[deleteQuery setString:[NSString stringWithFormat:@"%@)", [deleteQuery substringToIndex:([deleteQuery length]-5)]]];
+
+					// Split deletion query into 256k chunks
+					if([deleteQuery length] > 256000) {
+						[mySQLConnection queryString:deleteQuery];
+						// Remember affected rows for error checking
+						affectedRows += [mySQLConnection affectedRows];
+						// Reinit a new deletion query
+						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
+					} else {
+						[deleteQuery appendString:@" OR "];
+					}
+
+					index = [selectedRows indexGreaterThanIndex:index];
+				}
+
+				// Check if deleteQuery's maximal length was reached for the last index
+				// if yes omit the empty query
+				if(![deleteQuery hasSuffix:@"WHERE "]) {
+					// Remove final ' OR ' and delete the remaining rows
+					[deleteQuery setString:[deleteQuery substringToIndex:([deleteQuery length]-4)]];
+					[mySQLConnection queryString:deleteQuery];
+					// Remember affected rows for error checking
+					affectedRows += [mySQLConnection affectedRows];
+				}
+				errors = [selectedRows count] - affectedRows;
 			}
 			
 			// Restore Console Log window's updating bahaviour
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
 
 			if ( errors ) {
+				NSArray *message;
+				if(errors < 0) {
+					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+						[NSString stringWithFormat:NSLocalizedString(@"%d row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), errors*-1, ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+						nil];
+				} else {
+					if(primaryKeyFieldNames == nil)
+						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+							[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+							nil];
+					else
+						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+							[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+							nil];
+				}
 				[self performSelector:@selector(showErrorSheetWith:)
-					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-						[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
-						nil]
+					withObject:message
 					afterDelay:0.3];
 			}
 
