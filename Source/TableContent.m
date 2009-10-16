@@ -1662,12 +1662,13 @@
 				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
-
+			
 			[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 		}
 	}
-	if ( setLimit )
-		[argument appendString:@" LIMIT 1"];
+		
+	if (setLimit) [argument appendString:@" LIMIT 1"];
+	
 	return argument;
 }
 
@@ -2329,14 +2330,14 @@
 				
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
 	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
-		
+				
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 		
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
 		
 		id cellValue = [[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
-		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:@"nullValue"]];
-
+		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:@"NullValue"]];
+		
 		id editData = [[fieldEditor editWithObject:cellValue
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
 								 usingEncoding:[mySQLConnection encoding] 
