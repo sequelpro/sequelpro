@@ -33,11 +33,15 @@
  */
 - (NSString *)componentsJoinedAndBacktickQuoted;
 {
-	NSString *result = [NSString string];
+	NSMutableString *result = [NSMutableString string];
+	[result setString:@""];
+	
 	for (NSString *component in self)
 	{
-		if ([result length]) result = [result stringByAppendingString: @","];
-		result = [result stringByAppendingString: [component backtickQuotedString] ];
+		if ([result length])
+			[result appendString: @","];
+
+		[result appendString:[component backtickQuotedString]];
 	}
 	return result;
 }

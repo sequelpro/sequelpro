@@ -1787,7 +1787,31 @@
 
 			NSArray *primaryKeyFieldNames = [tableDataInstance primaryKeyColumnNames];
 
-			// TODO tentative → || [primaryKeyFields count] != 1
+			// If no PRIMARY KEY is found and numberOfSelectedRows > 3 then
+			// check for uniqueness of rows via combining all column values;
+			// if unique then use the all columns as 'primary keys'
+			if([selectedRows count] >3 && primaryKeyFieldNames == nil) {
+				primaryKeyFieldNames = [tableDataInstance columnNames];
+
+				NSInteger numberOfRows = 0;
+				// Get the number of rows in the table
+				MCPResult *r;
+				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [selectedTable backtickQuotedString]]];
+				if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+					NSArray *a = [r fetchRowAsArray];
+					if([a count])
+						numberOfRows = [[a objectAtIndex:0] integerValue];
+				}
+				// Check for uniqueness via LIMIT numberOfRows-1,numberOfRows for speed
+				if(numberOfRows > 0) {
+					[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ GROUP BY %@ LIMIT %d,%d", [selectedTable backtickQuotedString], [primaryKeyFieldNames componentsJoinedAndBacktickQuoted], numberOfRows-1, numberOfRows]];
+					if([mySQLConnection affectedRows] == 0)
+						primaryKeyFieldNames = nil;
+				} else {
+					primaryKeyFieldNames = nil;
+				}
+			}
+
 			if(primaryKeyFieldNames == nil) {
 				// delete row by row
 				while (index != NSNotFound) {
