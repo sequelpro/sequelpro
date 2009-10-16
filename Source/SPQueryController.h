@@ -58,7 +58,6 @@
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
-@property (readwrite) BOOL allowConsoleUpdate;
 
 + (SPQueryController *)sharedQueryController;
 
@@ -71,6 +70,9 @@
 - (IBAction)toggleShowHelpStatements:(id)sender;
 
 - (void)updateEntries;
+
+- (BOOL) allowConsoleUpdate;
+- (void) setAllowConsoleUpdate:(BOOL)allowUpdate;
 
 - (void)showMessageInConsole:(NSString *)message;
 - (void)showErrorInConsole:(NSString *)error;

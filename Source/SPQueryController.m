@@ -54,7 +54,6 @@ static SPQueryController *sharedQueryController = nil;
 @implementation SPQueryController
 
 @synthesize consoleFont;
-@synthesize allowConsoleUpdate;
 
 /*
  * Returns the shared query console.
@@ -401,6 +400,14 @@ static SPQueryController *sharedQueryController = nil;
 	}
 	
 	return [[self window] validateMenuItem:menuItem];
+}
+
+- (BOOL) allowConsoleUpdate {
+	return allowConsoleUpdate;
+}
+- (void) setAllowConsoleUpdate:(BOOL)allowUpdate {
+	allowConsoleUpdate = allowUpdate;
+	if (allowUpdate && [[self window] isVisible]) [self updateEntries];
 }
 
 - (void)updateEntries

@@ -1869,21 +1869,26 @@
 					[deleteQuery appendString:@"("];
 					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
 
-						[deleteQuery appendFormat:@"%@=", [primaryKeyFieldName backtickQuotedString]];
 
 						id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] intValue]];
 
-						if([keyValue isKindOfClass:[NSData class]])
-							[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
-						else
-							[deleteQuery appendString:[NSString stringWithFormat:@"'%@'", [keyValue description]]];
-						
-						[deleteQuery appendString:@" AND "];
+						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
+						if ([keyValue isKindOfClass:[NSData class]]) {
+							[deleteQuery appendString:@"=X'"];
+							[deleteQuery appendString:[mySQLConnection prepareBinaryData:keyValue]];
+						} else {
+							[deleteQuery appendString:@"='"];
+							[deleteQuery appendString:[mySQLConnection prepareString:[keyValue description]]];
+						}
+						[deleteQuery appendString:@"' AND "];
 					}
-					[deleteQuery setString:[NSString stringWithFormat:@"%@)", [deleteQuery substringToIndex:([deleteQuery length]-5)]]];
+					
+					// Remove the trailing AND and add the closing bracket
+					[deleteQuery deleteCharactersInRange:NSMakeRange([deleteQuery length]-5, 5)];
+					[deleteQuery appendString:@")"];
 
-					// Split deletion query into 256k chunks
-					if([deleteQuery length] > 256000) {
+					// Split deletion query into 64k chunks
+					if([deleteQuery length] > 64000) {
 						[mySQLConnection queryString:deleteQuery];
 						// Remember affected rows for error checking
 						affectedRows += [mySQLConnection affectedRows];
