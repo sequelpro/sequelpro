@@ -31,7 +31,7 @@
 	NSPersistentStoreCoordinator *persistentStoreCoordinator;
     NSManagedObjectModel *managedObjectModel;
     NSManagedObjectContext *managedObjectContext;
-	NSDictionary *privColumnsMODict;
+	NSDictionary *privColumnToGrantMap;
 	
 	BOOL isInitializing;
 	
@@ -40,6 +40,7 @@
 	IBOutlet NSOutlineView* outlineView;
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
+	IBOutlet NSMutableDictionary *privsSupportedByServer;
 }
 
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
@@ -56,11 +57,14 @@
 - (IBAction)addUser:(id)sender;
 - (IBAction)removeUser:(id)sender;
 - (IBAction)addHost:(id)sender;
+- (void)editNewHost;
 - (IBAction)removeHost:(id)sender;
 
 // General
 - (IBAction)doCancel:(id)sender;
 - (IBAction)doApply:(id)sender;
+- (IBAction)checkAllPrivileges:(id)sender;
+- (IBAction)uncheckAllPrivileges:(id)sender;
 
 // Core Data Notifications
 - (void)contextDidSave:(NSNotification *)notification;

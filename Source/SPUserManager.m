@@ -58,14 +58,22 @@
 	}
 	
 	[self setConnection:connection];
-	
-	privColumnsMODict = [[[NSDictionary alloc] initWithObjectsAndKeys:
-						  @"grant_option_priv",@"Grant_priv",
-						  @"show_databases_priv",@"Show_db_priv",
-						  @"create_temporary_tables_priv",@"Create_tmp_tables_priv",
-						  @"Replication_slave_priv",@"Repl_slave_priv", 
-						  @"Replication_client_priv",@"Repl_client_priv",nil] retain];
-	
+
+	// When reading privileges from the database, they are converted automatically to a
+	// lowercase key used in the user privileges stores, from which a GRANT syntax
+	// is derived automatically.  While most keys can be automatically converted without
+	// any difficulty, some keys differ slightly in mysql column storage to GRANT syntax;
+	// this dictionary provides mappings for those values to ensure consistency.
+	privColumnToGrantMap = [[NSDictionary alloc] initWithObjectsAndKeys:
+								@"Grant_option_priv", @"Grant_priv",
+								@"Show_databases_priv", @"Show_db_priv",
+								@"Create_temporary_tables_priv", @"Create_tmp_table_priv",
+								@"Replication_slave_priv", @"Repl_slave_priv", 
+								@"Replication_client_priv", @"Repl_client_priv",
+							  nil];
+
+	privsSupportedByServer = [[NSMutableDictionary alloc] init];
+
 	return self;
 }
 
@@ -76,7 +84,8 @@
 	[managedObjectContext release], managedObjectContext = nil;
     [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
     [managedObjectModel release], managedObjectModel = nil;
-	[privColumnsMODict release], privColumnsMODict = nil;
+	[privColumnToGrantMap release], privColumnToGrantMap = nil;
+	[privsSupportedByServer release], privsSupportedByServer = nil;
 	
 	[mySqlConnection release];
 	[super dealloc];
@@ -108,7 +117,8 @@
 - (void)_initializeUsers
 {
 	isInitializing = TRUE;
-	
+	NSMutableString *privKey;
+	NSArray *privRow;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	NSMutableArray *resultAsArray = [NSMutableArray array];
@@ -126,12 +136,36 @@
 	{
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
-	
 	[usersResultArray addObjectsFromArray:resultAsArray];
 	
 	[self _initializeTree:usersResultArray];
 	
 	[result release];
+
+	// Set up the array of privs supported by this server.
+	[privsSupportedByServer removeAllObjects];
+
+	// Attempt to use SHOW PRIVILEGES syntax - supported since 4.1.0
+	result = [[self connection] queryString:@"SHOW PRIVILEGES"];
+	if ([result numOfRows]) {
+		while (privRow = [result fetchRowAsArray]) {
+			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
+			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
+			[privKey appendString:@"_priv"];
+			[privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:privKey];
+		}
+	
+	// If that fails, base privilege support on the mysql.users columns
+	} else {
+		result = [[self connection] queryString:@"SHOW COLUMNS FROM `mysql`.`user`"];
+		while (privRow = [result fetchRowAsArray]) {
+			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
+			if (![privKey hasSuffix:@"_priv"]) continue;
+			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
+			[privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
+		}
+	}
+
 	[pool release];
 	isInitializing = FALSE;
 }
@@ -186,13 +220,14 @@
 		NS_DURING		
 		if ([key hasSuffix:@"_priv"])
 		{
+			BOOL value = [[item objectForKey:key] boolValue];
+
 			// Special case keys
-			if ([privColumnsMODict objectForKey:key] != nil)
+			if ([privColumnToGrantMap objectForKey:key])
 			{
-				key = [privColumnsMODict objectForKey:key];
+				key = [privColumnToGrantMap objectForKey:key];
 			}
 			
-			BOOL value = [[item objectForKey:key] boolValue];
 			[child setValue:[NSNumber numberWithBool:value] forKey:key];
 		} 
 		else if ([key hasPrefix:@"max"])
@@ -206,7 +241,7 @@
 			[child setValue:value forKey:key];
 		}
 		NS_HANDLER
-		NSLog(@"%@ not implemented yet.", key);
+		DLog(@"%@ not implemented yet.", key);
 		NS_ENDHANDLER
 	}
 	
@@ -372,6 +407,41 @@
 //	[self _clearData];
 }
 
+- (IBAction)checkAllPrivileges:(id)sender
+{
+	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
+
+	// Iterate through the supported privs, setting the value of each to true
+	for (NSString *key in privsSupportedByServer) {
+		if (![key hasSuffix:@"_priv"]) continue;
+
+		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
+		@try {
+			[selectedUser setValue:[NSNumber numberWithBool:TRUE] forKey:key];
+		}
+		@catch (NSException * e) {
+		}
+	}
+}
+
+- (IBAction)uncheckAllPrivileges:(id)sender
+{
+	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
+
+	// Iterate through the supported privs, setting the value of each to false
+	for (NSString *key in privsSupportedByServer) {
+		if (![key hasSuffix:@"_priv"]) continue;
+
+		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
+		@try {
+			[selectedUser setValue:[NSNumber numberWithBool:FALSE] forKey:key];
+		}
+		@catch (NSException * e) {
+		}
+	}
+
+}
+
 - (IBAction)addUser:(id)sender
 {
 	if ([[treeController selectedObjects] count] > 0)
@@ -405,11 +475,15 @@
 		}
 	}
 	[treeController addChild:sender];
-	// Need to figure out how to do this right.  I want to be able to have the newly
-	// added item be in edit mode to change the host name.
-	NSLog(@"selectedRow: %d", [outlineView selectedRow]);
-	NSIndexPath *indexPath = [treeController selectionIndexPath];
-	NSLog(@"selectedChild: %d", [indexPath indexAtPosition:[outlineView selectedRow]]);
+
+	// The newly added item will be selected as it is added, but only after the next iteration of the
+	// run loop - edit it after a tiny delay.
+	[self performSelector:@selector(editNewHost) withObject:nil afterDelay:0.1];
+}
+
+// Perform a deferred edit of the currently selected row.
+- (void)editNewHost
+{
 	[outlineView editColumn:0 row:[outlineView selectedRow]	withEvent:nil select:TRUE];		
 }
 
@@ -488,7 +562,7 @@
 
 - (void)contextDidChange:(NSNotification *)notification
 {
-	NSLog(@"contextDidChange:");
+	DLog(@"contextDidChange:");
 	
 	if (!isInitializing)
 	{
@@ -551,24 +625,25 @@
 {
 	if ([user valueForKey:@"parent"] != nil)
 	{
-		NSDictionary *attributesDict = [[user entity] attributesByName];
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
-		for(NSString *key in [attributesDict allKeys])
+		for(NSString *key in privsSupportedByServer)
 		{
-			if ([key hasSuffix:@"_priv"])
-			{
-				NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
-				
-				if ([[user valueForKey:key] boolValue] == TRUE)
-				{
+			if (![key hasSuffix:@"_priv"]) continue;
+			NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
+			
+			
+			// Check the value of the priv and assign to grant or revoke query as appropriate; do this
+			// in a try/catch check to avoid exceptions for unhandled privs
+			@try {
+				if ([[user valueForKey:key] boolValue] == TRUE) {
 					[grantPrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
-				}
-				else
-				{
+				} else {
 					[revokePrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
 				}
+			}
+			@catch (NSException * e) {
 			}
 		}
 		// Grant privileges
@@ -578,7 +653,7 @@
 										[grantPrivileges componentsJoinedByCommas],
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
-			NSLog(@"%@", grantStatement);
+			DLog(@"%@", grantStatement);
 			[[self connection] queryString:[NSString stringWithFormat:grantStatement]];
 			[self checkAndDisplayMySqlError];
 		}
@@ -590,7 +665,7 @@
 										 [revokePrivileges componentsJoinedByCommas],
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
-			NSLog(@"%@", revokeStatement);
+			DLog(@"%@", revokeStatement);
 			[[self connection] queryString:[NSString stringWithFormat:revokeStatement]];
 			[self checkAndDisplayMySqlError];
 		}		
@@ -630,16 +705,9 @@
 {
 	if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
 	{
-		NSBeginAlertSheet(@"MySQL Error", 
-						  nil, 
-						  nil, 
-						  nil, 
-						  [self window], 
-						  self, 
-						  NULL, 
-						  NULL, 
-						  nil, 
-						  [[self connection] getLastErrorMessage]);
+		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:[[self connection] getLastErrorMessage]];
+		[alert runModal];
+		
 		return FALSE;
 	} else {
 		return TRUE;
