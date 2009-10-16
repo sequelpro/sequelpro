@@ -36,6 +36,7 @@
 #define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
 #define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
 #define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
+#define SEQUEL_PRO_CONTACT_URL   @"http://www.sequelpro.com/docs/Contact_the_developers"
 
 @implementation SPAppController
 
@@ -378,6 +379,14 @@
 - (IBAction)visitFAQWebsite:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_FAQ_URL]];
+}
+
+/**
+ * Opens the 'Contact the developers' page in the default browser
+ */
+- (IBAction)provideFeedback:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_CONTACT_URL]];
 }
 
 #pragma mark -

@@ -48,6 +48,7 @@
 - (IBAction)visitWebsite:(id)sender;
 - (IBAction)visitHelpWebsite:(id)sender;
 - (IBAction)visitFAQWebsite:(id)sender;
+- (IBAction)provideFeedback:(id)sender;
 
 // Getters
 - (SPPreferenceController *)preferenceController;
