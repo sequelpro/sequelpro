@@ -1625,7 +1625,7 @@
 	// If there is no primary key, all the fields are used in the argument.
 	if ( ![keys count] ) {
 		[keys setArray:columnNames];
-		setLimit = YES;		
+		setLimit = YES;
 		
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
@@ -1661,7 +1661,7 @@
 			if ( [tempValue isKindOfClass:[NSData class]] )
 				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 			else
-				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:value]]];
+				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
 
 			[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
 		}
@@ -1800,6 +1800,8 @@
 						errors++;
 					}
 				} else {
+					if(!reloadAfterRemovingRow)
+						[selectedRows removeIndex:index];
 					errors++;
 				}
 				index = [selectedRows indexGreaterThanIndex:index];
@@ -1817,7 +1819,7 @@
 			}
 
 			// Refresh table content
-			if ( reloadAfterRemovingRow ) {
+			if ( errors || reloadAfterRemovingRow ) {
 				[self loadTableValues];
 				[tableContentView reloadData];
 			} else {
@@ -2298,13 +2300,15 @@
  * the ON state, or for blob or text fields - in those cases opens a sheet for editing instead and returns NO.
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{		
-	
+{
+
+	// Ensure that row is editable since it could contain "(not loaded)" columns together with
+	// issue that the table has no primary key
+	NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
+	if ([wherePart length] == 0) return NO;
+
 	// If the selected cell hasn't been loaded, load it.
 	if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] intValue]) isSPNotLoaded]) {
-
-		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
-		if ([wherePart length] == 0) return NO;
 
 		// Only get the data for the selected column, not all of them
 		NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
