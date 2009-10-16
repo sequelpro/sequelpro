@@ -968,6 +968,44 @@
 	return [fieldDetails autorelease];
 }
 
+/*
+ * Return the column names which are set to PRIMIARY KEY; returns nil if no PRIMARY KEY is set.
+ */
+- (NSArray *)primaryKeyColumnNames
+{
+
+	NSString *selectedTable = [tableListInstance tableName];
+	if(![selectedTable length]) return nil;
+
+	MCPResult *r;
+	NSArray *resultRow;
+	NSInteger i;
+	NSMutableArray *keyColumns = [NSMutableArray array];
+
+	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ WHERE `key` = 'PRI'", [selectedTable backtickQuotedString]]];
+
+	if([r numOfRows] < 1) return nil;
+
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected])
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving the PRIAMRY KEY data:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+		return nil;
+	}
+
+	
+	for( i = 0; i < [r numOfRows]; i++ ) {
+		resultRow = [r fetchRowAsArray];
+		[keyColumns addObject:[NSArrayObjectAtIndex(resultRow, 0) description]];
+	}
+
+	if([keyColumns count])
+		return keyColumns;
+
+	return nil;
+}
+
+#pragma mark -
+
 - (void) dealloc
 {
 	[columns release];

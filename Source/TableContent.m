@@ -1655,7 +1655,8 @@
 		if ( [tempValue isNSNull] ) {
 			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
 		} else if ( [tempValue isSPNotLoaded] ) {
-			// TODO
+			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
+			return @"";
 		} else {
 
 			if ( [tempValue isKindOfClass:[NSData class]] )
@@ -1784,30 +1785,78 @@
 
 			NSUInteger index = [selectedRows firstIndex];
 
-			while (index != NSNotFound) {
+			NSArray *primaryKeyFieldNames = [tableDataInstance primaryKeyColumnNames];
 
-				wherePart = [NSString stringWithString:[self argumentForRow:index]];
+			// TODO tentative → || [primaryKeyFields count] != 1
+			if(primaryKeyFieldNames == nil || [primaryKeyFieldNames count] != 1) {
+				// delete row by row
+				while (index != NSNotFound) {
 
-				//argumentForRow might return empty query, in which case we shouldn't execute the partial query
-				if([wherePart length]) {
-					[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
+					wherePart = [NSString stringWithString:[self argumentForRow:index]];
 
-					// Check for errors
-					if ( ![mySQLConnection affectedRows] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-						// If error delete that index from selectedRows for reloading table if 
-						// "ReloadAfterRemovingRow" is disbaled
+					//argumentForRow might return empty query, in which case we shouldn't execute the partial query
+					if([wherePart length]) {
+						[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
+
+						// Check for errors
+						if ( ![mySQLConnection affectedRows] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+							// If error delete that index from selectedRows for reloading table if 
+							// "ReloadAfterRemovingRow" is disbaled
+							if(!reloadAfterRemovingRow)
+								[selectedRows removeIndex:index];
+							errors++;
+						}
+					} else {
 						if(!reloadAfterRemovingRow)
 							[selectedRows removeIndex:index];
 						errors++;
 					}
-				} else {
-					if(!reloadAfterRemovingRow)
-						[selectedRows removeIndex:index];
-					errors++;
+					index = [selectedRows indexGreaterThanIndex:index];
 				}
-				index = [selectedRows indexGreaterThanIndex:index];
-			}
+			} else {
+				// if table has only one PRIMARY KEY
+				// delete the fast way by using the PRIMARY KEY in an IN clause
+				NSMutableString *deleteQuery = [NSMutableString string];
+				NSInteger affectedRows = 0;
 
+				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
+
+				while (index != NSNotFound) {
+
+					id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] intValue]];
+
+					if([keyValue isKindOfClass:[NSData class]])
+						[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
+					else
+						[deleteQuery appendString:[NSString stringWithFormat:@"'%@'", [keyValue description]]];
+
+					// Split deletion query into 256k chunks
+					if([deleteQuery length] > 256000) {
+						[deleteQuery appendString:@")"];
+						[mySQLConnection queryString:deleteQuery];
+						// Remember affected rows for error checking
+						affectedRows += [mySQLConnection affectedRows];
+						// Reinit a new deletion query
+						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
+					} else {
+						[deleteQuery appendString:@","];
+					}
+
+					index = [selectedRows indexGreaterThanIndex:index];
+				}
+
+				// Check if deleteQuery's maximal length was reached for the last index
+				// if yes omit the empty query
+				if(![deleteQuery hasSuffix:@"("]) {
+					// Replace final , by ) and delete the remaining rows
+					[deleteQuery setString:[NSString stringWithFormat:@"%@)", [deleteQuery substringToIndex:([deleteQuery length]-1)]]];
+					[mySQLConnection queryString:deleteQuery];
+					// Remember affected rows for error checking
+					affectedRows += [mySQLConnection affectedRows];
+				}
+				errors = [selectedRows count] - affectedRows;
+			}
+			
 			// Restore Console Log window's updating bahaviour
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
 
@@ -2327,7 +2376,7 @@
 	}
 	
 	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
-				
+
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
 	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 				

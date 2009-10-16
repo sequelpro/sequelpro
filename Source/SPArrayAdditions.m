@@ -44,15 +44,15 @@
 
 - (NSString *)componentsJoinedByCommas
 {
-	NSString *result = [NSString string];
+	NSMutableString *result = [NSMutableString string];
+	[result setString:@""];
+	
 	for (NSString *component in self)
 	{
 		if ([result length])
-		{
-			result = [result stringByAppendingString:@","];
-		}
+			[result appendString:@","];
 
-		result = [result stringByAppendingString:component];
+		[result appendString:component];
 	}
 	return result;
 }
