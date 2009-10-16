@@ -346,10 +346,10 @@
 	editSheetReturnCode = 0;
 
 	// Validate the sheet data before saving them.
-	// - for max text length select the part which won't be saved
+	// - for max text length (except for NULL value string) select the part which won't be saved
 	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
-		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength) {
+		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
 			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %d.", @"Text is too long. Maximum text length is set to %d."), maxTextLength]];
@@ -833,11 +833,13 @@
 #pragma mark Delegates
 
 /*
- Validate editTextView for max text length
+ Validate editTextView for max text length except for NULL value string
  */
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
 {
-	if(textView == editTextView && maxTextLength > 0) {
+
+	if(textView == editTextView && maxTextLength > 0 
+		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
 
 		int newLength;
 

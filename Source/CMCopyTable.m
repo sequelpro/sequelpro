@@ -133,7 +133,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				if ( nil != rowData )
 				{
 					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"nullValue"]]];
+						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"NullValue"]]];
 					else if ([rowData isSPNotLoaded])
 						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
 					else
@@ -371,7 +371,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				if ( nil != rowData )
 				{
 					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"nullValue"]]];
+						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"NullValue"]]];
 					else if ([rowData isSPNotLoaded])
 						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
 					else

@@ -76,8 +76,8 @@
 
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error
 {
-	// No limit set
-	if (textLimit == 0)
+	// No limit set or partialString is NULL value string allow editing
+	if (textLimit == 0 || [partialString isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:@"NullValue"]])
 		return YES;
 	
 	// A single character over the length of the string - likely typed.  Prevent the change.

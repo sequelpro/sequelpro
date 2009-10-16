@@ -1643,7 +1643,7 @@
 			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] intValue]];
 
 		id originalData = [[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
-		if ([originalData isNSNull]) originalData = [prefs objectForKey:@"nullValue"];
+		if ([originalData isNSNull]) originalData = [prefs objectForKey:@"NullValue"];
 
 		id editData = [[fieldEditor editWithObject:originalData
 								fieldName:[columnDefinition objectForKey:@"name"]
