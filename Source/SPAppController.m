@@ -397,7 +397,7 @@
 
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
 	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
-		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"]) {
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
 			[firstTableDocument setShouldAutomaticallyConnect:YES];
 		}
 		[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
@@ -553,7 +553,7 @@
 /* Support for "make new document"
 */
 - (void)insertInOrderedDocuments:(TableDocument *)doc {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"AutoConnectToDefault"])
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault])
 		[doc setShouldAutomaticallyConnect:YES];
 	[[NSDocumentController sharedDocumentController] addDocument:doc];
 	[doc makeWindowControllers];

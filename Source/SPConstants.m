@@ -44,6 +44,7 @@ NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
 NSString *SPUseKeepAlive                         = @"UseKeepAlive";
 NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
+NSString *SPAutoConnectToDefault                 = @"AutoConnectToDefault";
 NSString *SPQueryFavoriteReplacesContent         = @"QueryFavoriteReplacesContent";
 NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
 NSString *SPCustomQueryEditorFont                = @"CustomQueryEditorFont";

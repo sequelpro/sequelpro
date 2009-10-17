@@ -61,6 +61,7 @@ extern NSString *SPConnectionTimeoutValue;
 extern NSString *SPUseKeepAlive;
 extern NSString *SPKeepAliveInterval;
 extern NSString *SPEditInSheetEnabled;
+extern NSString *SPAutoConnectToDefault;
 extern NSString *SPQueryFavoriteReplacesContent;
 extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPCustomQueryEditorFont;
