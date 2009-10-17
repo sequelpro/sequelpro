@@ -2172,6 +2172,7 @@
  */
 - (void)updateNumberOfRows
 {
+	BOOL checkStatusCount = NO;
 
 	// For unfiltered and non-limited tables, use the result count - and update the status count
 	if (!isLimited && !isFiltered) {
@@ -2186,6 +2187,7 @@
 	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
 		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
 		maxNumRowsIsEstimate = NO;
+		checkStatusCount = YES;
 
 	// Choose whether to display an estimate, or to fetch the correct row count, based on prefs
 	} else if ([prefs boolForKey:SPFetchCorrectRowCount]) {
@@ -2200,6 +2202,30 @@
 	} else {
 		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
 		maxNumRowsIsEstimate = YES;
+		checkStatusCount = YES;
+	}
+
+	// Check whether the estimated count requires updating, ie if the retrieved count exceeds it
+	if (checkStatusCount) {
+		NSInteger foundMaxRows; 
+		if ([prefs boolForKey:SPLimitResults]) {
+			foundMaxRows = [limitRowsField intValue] - 1 + [tableValues count];
+			if (foundMaxRows > maxNumRows) {
+				if (foundMaxRows == [limitRowsField intValue] - 1 + [prefs integerForKey:SPLimitResultsValue]) {
+					maxNumRows = foundMaxRows + 1;
+					maxNumRowsIsEstimate = YES;
+				} else {
+					maxNumRows = foundMaxRows;
+					maxNumRowsIsEstimate = NO;
+				}
+			}
+		} else if ([tableValues count] > maxNumRows) {
+			maxNumRows = [tableValues count];
+			maxNumRowsIsEstimate = YES;
+		}
+		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
+		[tableDataInstance setStatusValue:maxNumRowsIsEstimate?@"n":@"y" forKey:@"RowsCountAccurate"];
+		[tableInfoInstance tableChanged:nil];
 	}
 }
 
