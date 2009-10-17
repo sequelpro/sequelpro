@@ -25,6 +25,7 @@
 
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
+#import "SPConstants.h"
 
 @implementation SPDataCellFormatter
 
@@ -77,7 +78,7 @@
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error
 {
 	// No limit set or partialString is NULL value string allow editing
-	if (textLimit == 0 || [partialString isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:@"NullValue"]])
+	if (textLimit == 0 || [partialString isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]])
 		return YES;
 	
 	// A single character over the length of the string - likely typed.  Prevent the change.

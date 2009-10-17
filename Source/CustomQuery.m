@@ -39,6 +39,7 @@
 #import "SPTooltip.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPQueryController.h"
+#import "SPConstants.h"
 
 @implementation CustomQuery
 
@@ -179,14 +180,14 @@
 	} 
 	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite
-		BOOL replaceContent = [prefs boolForKey:@"QueryFavoriteReplacesContent"];
+		BOOL replaceContent = [prefs boolForKey:SPQueryFavoriteReplacesContent];
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
-		// [textView insertText:[[[prefs objectForKey:@"queryFavorites"] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
+		// [textView insertText:[[[prefs objectForKey:SPQueryFavorites] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
 		// The actual query strings have been already stored as tooltip
 		[textView insertText:[[queryFavoritesButton selectedItem] toolTip]];
 	}
@@ -203,7 +204,7 @@
 	// Choose history item
 	if ([queryHistoryButton indexOfSelectedItem] > 1) {
 
-		BOOL replaceContent = [prefs boolForKey:@"QueryHistoryReplacesContent"];
+		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
@@ -280,7 +281,7 @@
 	// "Indent new lines" toggle
 	if (sender == autoindentMenuItem) {
 		BOOL enableAutoindent = !([autoindentMenuItem state] == NSOffState);
-		[prefs setBool:enableAutoindent forKey:@"CustomQueryAutoIndent"];
+		[prefs setBool:enableAutoindent forKey:SPCustomQueryAutoIndent];
 		[prefs synchronize];
 		[autoindentMenuItem setState:enableAutoindent?NSOnState:NSOffState];
 		[textView setAutoindent:enableAutoindent];
@@ -289,7 +290,7 @@
 	// "Auto-pair characters" toggle
 	if (sender == autopairMenuItem) {
 		BOOL enableAutopair = !([autopairMenuItem state] == NSOffState);
-		[prefs setBool:enableAutopair forKey:@"CustomQueryAutoPairCharacters"];
+		[prefs setBool:enableAutopair forKey:SPCustomQueryAutoPairCharacters];
 		[prefs synchronize];
 		[autopairMenuItem setState:enableAutopair?NSOnState:NSOffState];
 		[textView setAutopair:enableAutopair];
@@ -298,7 +299,7 @@
 	// "Auto-help" toggle
 	if (sender == autohelpMenuItem) {
 		BOOL enableAutohelp = !([autohelpMenuItem state] == NSOffState);
-		[prefs setBool:enableAutohelp forKey:@"CustomQueryUpdateAutoHelp"];
+		[prefs setBool:enableAutohelp forKey:SPCustomQueryUpdateAutoHelp];
 		[prefs synchronize];
 		[autohelpMenuItem setState:enableAutohelp?NSOnState:NSOffState];
 		[textView setAutohelp:enableAutohelp];
@@ -307,7 +308,7 @@
 	// "Auto-uppercase keywords" toggle
 	if (sender == autouppercaseKeywordsMenuItem) {
 		BOOL enableAutouppercaseKeywords = !([autouppercaseKeywordsMenuItem state] == NSOffState);
-		[prefs setBool:enableAutouppercaseKeywords forKey:@"CustomQueryAutoUppercaseKeywords"];
+		[prefs setBool:enableAutouppercaseKeywords forKey:SPCustomQueryAutoUppercaseKeywords];
 		[prefs synchronize];
 		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
 		[textView setAutouppercaseKeywords:enableAutouppercaseKeywords];
@@ -494,7 +495,7 @@
 		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:2];
 
 		// Check for max history
-		NSUInteger maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
+		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
 		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 2 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
@@ -630,7 +631,7 @@
 			SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 			[dataCell setEditable:YES];
 			[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-			if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+			if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 				[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 			} else {
 				[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -641,7 +642,7 @@
 
 			// Set the width of this column to saved value if exists and maps to a real column
 			if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
-				NSNumber *colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
+				NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
 				if ( colWidth ) {
 					[theCol setWidth:[colWidth floatValue]];
 				}
@@ -1063,21 +1064,21 @@
 		toObject: [NSUserDefaultsController sharedUserDefaultsController]
 		withKeyPath:@"values.CustomQueryEditorBackgroundColor"
 		options:bindingOptions];
-	[textView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBackgroundColor"]]];
-	[textView setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]]];
-	[textView setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCaretColor"]]];
+	[textView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+	[textView setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+	[textView setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
 	
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
 	[textView setContinuousSpellCheckingEnabled:NO];
-	[autoindentMenuItem setState:([prefs boolForKey:@"CustomQueryAutoIndent"]?NSOnState:NSOffState)];
-	[textView setAutoindent:[prefs boolForKey:@"CustomQueryAutoIndent"]];
+	[autoindentMenuItem setState:([prefs boolForKey:SPCustomQueryAutoIndent]?NSOnState:NSOffState)];
+	[textView setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
 	[textView setAutoindentIgnoresEnter:YES];
-	[autopairMenuItem setState:([prefs boolForKey:@"CustomQueryAutoPairCharacters"]?NSOnState:NSOffState)];
-	[textView setAutopair:[prefs boolForKey:@"CustomQueryAutoPairCharacters"]];
-	[autohelpMenuItem setState:([prefs boolForKey:@"CustomQueryUpdateAutoHelp"]?NSOnState:NSOffState)];
-	[textView setAutohelp:[prefs boolForKey:@"CustomQueryUpdateAutoHelp"]];
-	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]?NSOnState:NSOffState)];
-	[textView setAutouppercaseKeywords:[prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"]];
+	[autopairMenuItem setState:([prefs boolForKey:SPCustomQueryAutoPairCharacters]?NSOnState:NSOffState)];
+	[textView setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
+	[autohelpMenuItem setState:([prefs boolForKey:SPCustomQueryUpdateAutoHelp]?NSOnState:NSOffState)];
+	[textView setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
+	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
+	[textView setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
 	{
@@ -1239,7 +1240,7 @@
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
 		if ( [theValue isNSNull] )
-			return [prefs objectForKey:@"NullValue"];
+			return [prefs objectForKey:SPNullValue];
 
 	    return theValue;
 
@@ -1297,7 +1298,7 @@
 			} else {
 				if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					newObject = @"CURRENT_TIMESTAMP";
-				} else if([anObject isEqualToString:[prefs stringForKey:@"NullValue"]]) {
+				} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 					newObject = @"NULL";
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					newObject = ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"])?@"0":@"1");
@@ -1327,7 +1328,7 @@
 
 			// This shouldn't happen – for safety reasons
 			if ( ![mySQLConnection affectedRows] ) {
-				if ( [prefs boolForKey:@"ShowNoAffectedRowsError"] ) {
+				if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 					NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 									  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 				} else {
@@ -1643,7 +1644,7 @@
 			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] intValue]];
 
 		id originalData = [[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
-		if ([originalData isNSNull]) originalData = [prefs objectForKey:@"NullValue"];
+		if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
 
 		id editData = [[fieldEditor editWithObject:originalData
 								fieldName:[columnDefinition objectForKey:@"name"]
@@ -1691,8 +1692,8 @@
 	NSString *col = [columnDefinition objectForKey:@"org_name"];
 	
 	// Retrieve or instantiate the tableColumnWidths object
-	if ([prefs objectForKey:@"tableColumnWidths"] != nil) {
-		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"tableColumnWidths"]];
+	if ([prefs objectForKey:SPTableColumnWidths] != nil) {
+		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
 	} else {
 		tableColumnWidths = [NSMutableDictionary dictionary];
 	}
@@ -1713,7 +1714,7 @@
 
 	// Save the column size
 	[[[tableColumnWidths objectForKey:host_db] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:col];
-	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
+	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 }
 
 
@@ -1762,7 +1763,7 @@
 	if ( [aNotification object] != textView ) return;
 
 	// Remove all background color attributes used by highlighting the current query
-	if([prefs boolForKey:@"CustomQueryHighlightCurrentQuery"]) {
+	if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
 		// Remove only the background attribute for the current range if still valid
 		NSRange textRange = NSMakeRange(0,[[textView string] length]);
 		NSRange r = NSIntersectionRange(currentQueryRange, textRange);
@@ -1786,9 +1787,9 @@
 	// Highlight by setting a background color the current query
 	// if nothing is selected
 	if(qRange.length && !currentSelection.length) {
-		if([prefs boolForKey:@"CustomQueryHighlightCurrentQuery"]) {
+		if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
 			[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
-					  value: [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorHighlightQueryColor"]]
+					  value: [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]
 					  range: qRange ];
 			hasBackgroundAttribute = YES;
 		}
@@ -1846,7 +1847,7 @@
 	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
 	// And check for [textView font] != nil which occurs while awaking from nib.
 	if (prefs && [textView font] != nil)
-		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:@"CustomQueryEditorFont"];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:SPCustomQueryEditorFont];
 
 }
 
@@ -2425,7 +2426,7 @@
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
-	for (NSDictionary *favorite in [prefs objectForKey:@"queryFavorites"]) {
+	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
 		[item setIndentationLevel:1];
@@ -2453,7 +2454,7 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [customQueryView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }
@@ -2468,7 +2469,7 @@
 			
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
-			NSMutableArray *favorites = [NSMutableArray arrayWithArray:[prefs objectForKey:@"queryFavorites"]];
+			NSMutableArray *favorites = [NSMutableArray arrayWithArray:[prefs objectForKey:SPQueryFavorites]];
 
 			// What should be saved
 			NSString *queryToBeAddded;
@@ -2492,7 +2493,7 @@
 					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] 
 							forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 			
-				[prefs setObject:favorites forKey:@"queryFavorites"];
+				[prefs setObject:favorites forKey:SPQueryFavorites];
 			} else {
 				[[SPQueryController sharedQueryController] addFavorite:[NSMutableDictionary dictionaryWithObjects:
 					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [queryToBeAddded mutableCopy], nil] 
@@ -2608,7 +2609,7 @@
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
 	
 	// Set the structure and index view's vertical gridlines if required
-	[customQueryView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 - (void)dealloc

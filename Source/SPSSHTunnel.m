@@ -26,6 +26,8 @@
 #import "SPSSHTunnel.h"
 #import "RegexKitLite.h"
 #import "SPKeychain.h"
+#import "SPConstants.h"
+
 #import <netinet/in.h>
 
 @implementation SPSSHTunnel
@@ -193,10 +195,10 @@
 		return;
 	}
 
-	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue];
+	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] intValue];
 	if (!connectionTimeout) connectionTimeout = 10;
-	BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:@"UseKeepAlive"] doubleValue];
-	double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:@"KeepAliveInterval"] doubleValue];
+	BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:SPUseKeepAlive] doubleValue];
+	double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:SPKeepAliveInterval] doubleValue];
 	if (!keepAliveInterval) keepAliveInterval = 0;
 
 	// If no local port has yet been chosen, choose one
@@ -415,7 +417,7 @@
 				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
-				lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).", @"SSH tunnel failed or timed out message"), sshHost, [[[NSUserDefaults standardUserDefaults] objectForKey:@"ConnectionTimeoutValue"] intValue]];
+				lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).", @"SSH tunnel failed or timed out message"), sshHost, [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] intValue]];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 		}

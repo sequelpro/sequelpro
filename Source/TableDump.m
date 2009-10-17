@@ -36,6 +36,7 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
+#import "SPConstants.h"
 
 @implementation TableDump
 
@@ -426,11 +427,11 @@
 	}
 
 	// Preset the accessory view with prefs defaults
-	[importFieldsTerminatedField setStringValue:[prefs objectForKey:@"CSVImportFieldTerminator"]];
-	[importLinesTerminatedField setStringValue:[prefs objectForKey:@"CSVImportLineTerminator"]];
-	[importFieldsEscapedField setStringValue:[prefs objectForKey:@"CSVImportFieldEscapeCharacter"]];
-	[importFieldsEnclosedField setStringValue:[prefs objectForKey:@"CSVImportFieldEnclosedBy"]];
-	[importFieldNamesSwitch setState:[[prefs objectForKey:@"CSVImportFirstLineIsHeader"] boolValue]];
+	[importFieldsTerminatedField setStringValue:[prefs objectForKey:SPCSVImportFieldTerminator]];
+	[importLinesTerminatedField setStringValue:[prefs objectForKey:SPCSVImportLineTerminator]];
+	[importFieldsEscapedField setStringValue:[prefs objectForKey:SPCSVImportFieldEscapeCharacter]];
+	[importFieldsEnclosedField setStringValue:[prefs objectForKey:SPCSVImportFieldEnclosedBy]];
+	[importFieldNamesSwitch setState:[[prefs objectForKey:SPCSVImportFirstLineIsHeader] boolValue]];
 
 	[openPanel setAccessoryView:importCSVView];
 	[openPanel setDelegate:self];
@@ -780,18 +781,18 @@
 	csvParser = [[SPCSVParser alloc] init];
 
 	// Store settings in prefs
-	[prefs setObject:[importFieldsEnclosedField stringValue] forKey:@"CSVImportFieldEnclosedBy"];
-	[prefs setObject:[importFieldsEscapedField stringValue] forKey:@"CSVImportFieldEscapeCharacter"];
-	[prefs setObject:[importLinesTerminatedField stringValue] forKey:@"CSVImportLineTerminator"];
-	[prefs setObject:[importFieldsTerminatedField stringValue] forKey:@"CSVImportFieldTerminator"];
-	[prefs setBool:[importFieldNamesSwitch state] forKey:@"CSVImportFirstLineIsHeader"];
+	[prefs setObject:[importFieldsEnclosedField stringValue] forKey:SPCSVImportFieldEnclosedBy];
+	[prefs setObject:[importFieldsEscapedField stringValue] forKey:SPCSVImportFieldEscapeCharacter];
+	[prefs setObject:[importLinesTerminatedField stringValue] forKey:SPCSVImportLineTerminator];
+	[prefs setObject:[importFieldsTerminatedField stringValue] forKey:SPCSVImportFieldTerminator];
+	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
 
 	// Take CSV import setting from accessory view
 	[csvParser setFieldTerminatorString:[importFieldsTerminatedField stringValue] convertDisplayStrings:YES];
 	[csvParser setLineTerminatorString:[importLinesTerminatedField stringValue] convertDisplayStrings:YES];
 	[csvParser setFieldQuoteString:[importFieldsEnclosedField stringValue] convertDisplayStrings:YES];
 	[csvParser setEscapeString:[importFieldsEscapedField stringValue] convertDisplayStrings:YES];
-	[csvParser setNullReplacementString:[prefs objectForKey:@"NullValue"]];
+	[csvParser setNullReplacementString:[prefs objectForKey:SPNullValue]];
 
 	csvDataBuffer = [[NSMutableData alloc] init];
 	importPool = [[NSAutoreleasePool alloc] init];
@@ -1178,7 +1179,7 @@
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:@"NullValue"]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:SPNullValue]]];
 		} else {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 		}
@@ -1762,7 +1763,7 @@
 	NSArray *csvRow;
 	id csvCell;
 	NSMutableString *csvString = [NSMutableString string];
-	NSString *nullString = [NSString stringWithString:[prefs objectForKey:@"NullValue"]];
+	NSString *nullString = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString;
 	NSString *dataConversionString;
 	NSInteger currentRowIndex;
@@ -2496,7 +2497,7 @@
 	[[exportMultipleCSVTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[[exportMultipleXMLTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
 	[switchButton release];
-	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
@@ -2537,7 +2538,7 @@
    forTableColumn:(NSTableColumn *)aTableColumn 
 			  row:(int)rowIndex
 {
-	if ( [[NSUserDefaults standardUserDefaults] boolForKey:@"UseMonospacedFonts"] ) {
+	if ( [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts] ) {
 		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	}
 	else

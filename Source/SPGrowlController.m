@@ -24,6 +24,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPGrowlController.h"
+#import "SPConstants.h"
+
 #include <mach/mach_time.h>
 
 static SPGrowlController *sharedGrowlController = nil;
@@ -141,7 +143,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	}
 
     // Post notification only if preference is set and visibility has been confirmed
-	if (postNotification && [[NSUserDefaults standardUserDefaults] boolForKey:@"GrowlEnabled"]) {
+	if (postNotification && [[NSUserDefaults standardUserDefaults] boolForKey:SPGrowlEnabled]) {
 		[GrowlApplicationBridge notifyWithTitle:title
 									description:description
 							   notificationName:name

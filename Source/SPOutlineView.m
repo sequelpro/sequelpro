@@ -22,9 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import "SPOutlineView.h"
-
 
 @implementation SPOutlineView
 
@@ -33,9 +31,9 @@
 	return YES;
 }
 
--(void)keyDown:(NSEvent *)theEvent
+- (void)keyDown:(NSEvent *)theEvent
 {
-	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
+	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
 	{
 		[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 	}
@@ -43,4 +41,5 @@
 		[super keyDown:theEvent];
 	}
 }
+
 @end

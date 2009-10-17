@@ -32,6 +32,7 @@
 #import "RegexKitLite.h"
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
+#import "SPConstants.h"
 
 @implementation SPFieldEditorController
 
@@ -91,8 +92,8 @@
 			}
 		}
 		// Load user-defined QL types
-		if([prefs objectForKey:@"QuickLookTypes"]) {
-			for(id type in [prefs objectForKey:@"QuickLookTypes"]) {
+		if([prefs objectForKey:SPQuickLookTypes]) {
+			for(id type in [prefs objectForKey:SPQuickLookTypes]) {
 				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
 				[item setTag:tag];
 				[item setAction:@selector(quickLookFormatButton:)];
@@ -102,7 +103,7 @@
 				[qlTypesItems addObject:type];
 			}
 		}
-		qlTypes = [NSDictionary dictionaryWithObject:[qlTypesItems retain] forKey:@"QuickLookTypes"];
+		qlTypes = [NSDictionary dictionaryWithObject:[qlTypesItems retain] forKey:SPQuickLookTypes];
 		[qlTypesItems release];
 	}
 	return self;
@@ -131,8 +132,8 @@
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
 
-	if ( ![prefs objectForKey:@"FieldEditorSheetFont"] )
-		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+	if ( ![prefs objectForKey:SPFieldEditorSheetFont] )
+		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 			[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		} else {
 			[editTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -253,7 +254,7 @@
 		[editTextView setSelectedRange:NSMakeRange(0,0)];
 
 		// If the string content is NULL select NULL for convenience
-		if([stringValue isEqualToString:[prefs objectForKey:@"NullValue"]])
+		if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
 			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
 
 		// Set focus
@@ -349,7 +350,7 @@
 	// - for max text length (except for NULL value string) select the part which won't be saved
 	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
-		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
+		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %d.", @"Text is too long. Maximum text length is set to %d."), maxTextLength]];
@@ -839,7 +840,7 @@
 {
 
 	if(textView == editTextView && maxTextLength > 0 
-		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
+		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 
 		int newLength;
 

@@ -50,6 +50,7 @@
 #import "QLPreviewPanel.h"
 #import "SPUserManager.h"
 #import "SPEncodingPopupAccessory.h"
+#import "SPConstants.h"
 
 // Used for printing
 #import "MGTemplateEngine.h"
@@ -152,15 +153,15 @@
 	connectionController = [[SPConnectionController alloc] initWithDocument:self];
 
 	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
-	[prefs addObserver:tableSourceInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:customQueryInstance forKeyPath:@"DisplayTableViewVerticalGridlines" options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Register observers for when the logging preference changes
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Register a second observer for when the logging preference changes so we can tell the current connection about it
-	[prefs addObserver:self forKeyPath:@"ConsoleEnableLogging" options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
@@ -447,12 +448,12 @@
 	[self setFileURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
 
-	if([spf objectForKey:@"queryFavorites"])
-		[spfPreferences setObject:[spf objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
-	if([spf objectForKey:@"queryHistory"])
-		[spfPreferences setObject:[spf objectForKey:@"queryHistory"] forKey:@"queryHistory"];
-	if([spf objectForKey:@"ContentFilters"])
-		[spfPreferences setObject:[spf objectForKey:@"ContentFilters"] forKey:@"ContentFilters"];
+	if([spf objectForKey:SPQueryFavorites])
+		[spfPreferences setObject:[spf objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+	if([spf objectForKey:SPQueryHistory])
+		[spfPreferences setObject:[spf objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+	if([spf objectForKey:SPContentFilters])
+		[spfPreferences setObject:[spf objectForKey:SPContentFilters] forKey:SPContentFilters];
 
 	[spfDocData setObject:[NSNumber numberWithBool:([connection objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
 
@@ -580,7 +581,7 @@
 	[spfPreferences release];
 
 	// Set the connection encoding
-	NSString *encodingName = [prefs objectForKey:@"DefaultEncoding"];
+	NSString *encodingName = [prefs objectForKey:SPDefaultEncoding];
 	if ( [encodingName isEqualToString:@"Autodetect"] ) {
 		[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
 	} else {
@@ -1988,7 +1989,7 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
+	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
 	}
 }
@@ -2137,7 +2138,7 @@
 	if( sender != nil && [sender tag] == 1006 ) {
 
 		// Save the editor's content as SQL file
-		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] 
+		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] 
 				includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 		// [panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
@@ -2150,8 +2151,8 @@
 		contextInfo = @"saveSQLfile";
 
 		// If no lastSqlFileEncoding in prefs set it to UTF-8
-		if(![prefs integerForKey:@"lastSqlFileEncoding"]) {
-			[prefs setInteger:4 forKey:@"lastSqlFileEncoding"];
+		if(![prefs integerForKey:SPLastSQLFileEncoding]) {
+			[prefs setInteger:4 forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
 		}
 
@@ -2253,7 +2254,7 @@
 		// Save file as SQL file by using the chosen encoding
 		if(contextInfo == @"saveSQLfile") {
 
-			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			[prefs setObject:[fileName lastPathComponent] forKey:@"lastSqlFileName"];
 			[prefs synchronize];
 
@@ -2354,9 +2355,9 @@
 		}
 
 		// Update the keys
-		[spf setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
-		[spf setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
-		[spf setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:@"ContentFilters"];
+		[spf setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:SPQueryFavorites];
+		[spf setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:SPQueryHistory];
+		[spf setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:SPContentFilters];
 
 		// Save it again
 		NSString *err = nil;
@@ -2405,9 +2406,9 @@
 	[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
 
 	// Store the preferences - take them from the current document URL to catch renaming
-	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:@"queryFavorites"];
-	[spfdata setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:@"queryHistory"];
-	[spfdata setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:@"ContentFilters"];
+	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:SPQueryFavorites];
+	[spfdata setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:SPQueryHistory];
+	[spfdata setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:SPContentFilters];
 
 	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 
@@ -2560,9 +2561,9 @@
 
 	// Register and update query favorites, content filter, and history for the (new) file URL
 	NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-	[preferences setObject:[spfdata objectForKey:@"queryHistory"] forKey:@"queryHistory"];
-	[preferences setObject:[spfdata objectForKey:@"queryFavorites"] forKey:@"queryFavorites"];
-	[preferences setObject:[spfdata objectForKey:@"ContentFilters"] forKey:@"ContentFilters"];
+	[preferences setObject:[spfdata objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+	[preferences setObject:[spfdata objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+	[preferences setObject:[spfdata objectForKey:SPContentFilters] forKey:SPContentFilters];
 	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:preferences];
 
 	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
@@ -3187,7 +3188,7 @@
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
 
 	//set up interface
-	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 
 		while ( (theCol = [theCols nextObject]) ) {
@@ -3299,10 +3300,10 @@
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {
-	if ([prefs boolForKey:@"ConsoleEnableLogging"]) {
-		if ((_queryMode == SP_QUERYMODE_INTERFACE && [prefs boolForKey:@"ConsoleEnableInterfaceLogging"])
-			|| (_queryMode == SP_QUERYMODE_CUSTOMQUERY && [prefs boolForKey:@"ConsoleEnableCustomQueryLogging"])
-			|| (_queryMode == SP_QUERYMODE_IMPORTEXPORT && [prefs boolForKey:@"ConsoleEnableImportExportLogging"]))
+	if ([prefs boolForKey:SPConsoleEnableLogging]) {
+		if ((_queryMode == SP_QUERYMODE_INTERFACE && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
+			|| (_queryMode == SP_QUERYMODE_CUSTOMQUERY && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
+			|| (_queryMode == SP_QUERYMODE_IMPORTEXPORT && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
 		{
 			[[SPQueryController sharedQueryController] showMessageInConsole:query];
 		}
@@ -3314,7 +3315,7 @@
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {
-	if ([prefs boolForKey:@"ConsoleEnableLogging"] && [prefs boolForKey:@"ConsoleEnableErrorLogging"]) {
+	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPEnableErrorLogging]) {
 		[[SPQueryController sharedQueryController] showErrorInConsole:error];
 	}
 }

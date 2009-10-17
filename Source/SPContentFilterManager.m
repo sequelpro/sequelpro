@@ -28,13 +28,10 @@
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
 #import "TableContent.h"
-
-#define DEFAULT_SEQUELPRO_FILE_EXTENSION @"spf"
+#import "SPConstants.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
-
-#define CONTENT_FILTER_PB_DRAG_TYPE @"SequelProContentFilterPasteboard"
 
 @interface SPContentFilterManager (Private)
 - (void)_initWithNoSelection;
@@ -100,8 +97,8 @@
 
 	// Build data source for global content filter (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
-	if([[prefs objectForKey:@"ContentFilters"] objectForKey:filterType]) {
-		for(id fav in [[prefs objectForKey:@"ContentFilters"] objectForKey:filterType]) {
+	if([[prefs objectForKey:SPContentFilters] objectForKey:filterType]) {
+		for(id fav in [[prefs objectForKey:SPContentFilters] objectForKey:filterType]) {
 			id f = [[fav mutableCopy] autorelease];
 			if([f objectForKey:@"ConjunctionLabels"])
 				[f setObject:[[f objectForKey:@"ConjunctionLabels"] objectAtIndex:0] forKey:@"ConjunctionLabel"];
@@ -301,7 +298,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_SEQUELPRO_FILE_EXTENSION];
+	[panel setRequiredFileType:DEFAULT_SEQUEL_PRO_FILE_EXTENSION];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -363,9 +360,9 @@
 			[self contentFilterForFileURL:delegatesFileURL] ofType:filterType forFileURL:delegatesFileURL];
 
 		// Update global preferences' list
-		id cf = [[prefs objectForKey:@"ContentFilters"] mutableCopy];
+		id cf = [[prefs objectForKey:SPContentFilters] mutableCopy];
 		[cf setObject:[self contentFilterForFileURL:nil] forKey:filterType];
-		[prefs setObject:cf forKey:@"ContentFilters"];
+		[prefs setObject:cf forKey:SPContentFilters];
 		[cf release];
 		
 		// Inform all opened documents to update the query favorites list
@@ -765,17 +762,17 @@
 				return;
 			}
 
-			if([[spf objectForKey:@"ContentFilters"] objectForKey:filterType] && [[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]) {
+			if([[spf objectForKey:SPContentFilters] objectForKey:filterType] && [[[spf objectForKey:SPContentFilters] objectForKey:filterType] count]) {
 				// if([contentFilterTableView numberOfSelectedRows] > 0) {
 				// 	// Insert imported filters after the last selected filter
 				// 	NSUInteger insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex] + 1;
 				// 	NSUInteger i;
-				// 	for(i=0; i<[[[spf objectForKey:@"ContentFilters"] objectForKey:filterType] count]; i++) {
-				// 		[contentFilters insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
+				// 	for(i=0; i<[[[spf objectForKey:SPContentFilters] objectForKey:filterType] count]; i++) {
+				// 		[contentFilters insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertIndex+i];
 				// 	}
 				// } else {
 				// 	// If no selection add them
-				[contentFilters addObjectsFromArray:[[spf objectForKey:@"ContentFilters"] objectForKey:filterType]];
+				[contentFilters addObjectsFromArray:[[spf objectForKey:SPContentFilters] objectForKey:filterType]];
 				// }
 				[contentFilterArrayController rearrangeObjects];
 				[contentFilterTableView reloadData];
@@ -823,7 +820,7 @@
 					[filterData addObject:[contentFilters objectAtIndex:i]];
 
 			[cfdata setObject:filterData forKey:filterType];
-			[spfdata setObject:cfdata forKey:@"ContentFilters"];
+			[spfdata setObject:cfdata forKey:SPContentFilters];
 			
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata

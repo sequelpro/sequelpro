@@ -29,6 +29,7 @@
 #import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
+#import "SPConstants.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -436,7 +437,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	
 	// Cancel autoHelp timer
-	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"])
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
@@ -444,8 +445,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[super mouseDown:theEvent];
 
 	// Start autoHelp timer
-	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"])
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] floatValue]];
 	
 }
 
@@ -455,12 +456,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) keyDown:(NSEvent *)theEvent
 {
 
-	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"]) {// restart autoHelp timer
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp]) {// restart autoHelp timer
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
 		[self performSelector:@selector(autoHelp) withObject:nil 
-			afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
+			afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] floatValue]];
 	}
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
@@ -528,7 +529,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
-	if ([prefs boolForKey:@"CustomQueryAutoPairCharacters"] && characters && [characters length] == 1) {
+	if ([prefs boolForKey:SPCustomQueryAutoPairCharacters] && characters && [characters length] == 1) {
 
 		delBackwardsWasPressed = NO;
 
@@ -689,7 +690,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
     if (aSelector == @selector(insertNewline:)
-		&& [prefs boolForKey:@"CustomQueryAutoIndent"]
+		&& [prefs boolForKey:SPCustomQueryAutoIndent]
 		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
 	{
 		NSString *textViewString = [[self textStorage] string];
@@ -1999,7 +2000,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)autoHelp
 {
 
-	if(![prefs boolForKey:@"CustomQueryUpdateAutoHelp"]) return;
+	if(![prefs boolForKey:SPCustomQueryUpdateAutoHelp]) return;
 
 	// If selection show Help for it
 	if([self selectedRange].length)
@@ -2087,15 +2088,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	NSColor *tokenColor;
 	
-	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCommentColor"]] retain];
-	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorQuoteColor"]] retain];
-	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorSQLKeywordColor"]] retain];
-	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorBacktickColor"]] retain];
-	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorNumericColor"]] retain];
-	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorVariableColor"]] retain];
-	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorTextColor"]] retain];
+	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]] retain];
+	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]] retain];
+	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]] retain];
+	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]] retain];
+	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]] retain];
+	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]] retain];
+	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]] retain];
 		
-	BOOL autouppercaseKeywords = [prefs boolForKey:@"CustomQueryAutoUppercaseKeywords"];
+	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
 
 	unsigned long tokenEnd, token;
 	NSRange tokenRange;
@@ -2317,7 +2318,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (void)changeColor:(id)sender
 {
-	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorCaretColor"]]];
+	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
 	// Remember the old selected range
 	NSRange oldRange = [self selectedRange];
 	// Invoke syntax highlighting
@@ -2358,8 +2359,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if (textStore!=[self textStorage]) return;
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
-	if([prefs boolForKey:@"CustomQueryUpdateAutoHelp"] && [textStore editedMask] != 1)
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:@"CustomQueryAutoHelpDelay"] retain] floatValue]];
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && [textStore editedMask] != 1)
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] floatValue]];
 
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 

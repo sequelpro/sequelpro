@@ -25,9 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPNotLoaded : NSObject {
-
-}
+@interface SPNotLoaded : NSObject
 
 + (SPNotLoaded *) notLoaded;
 

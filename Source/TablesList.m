@@ -35,6 +35,7 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "NSMutableArray-MultipleSort.h"
+#import "SPConstants.h"
 
 @interface TablesList (PrivateAPI)
 
@@ -483,7 +484,7 @@
 - (IBAction)togglePaneCollapse:(id)sender
 {
 	[tableListSplitView toggleCollapse:sender];
-	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:@"TableInformationPanelCollapsed"];
+	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:SPTableInformationPanelCollapsed];
 	[tableInfoCollapseButton setToolTip:([tableInfoCollapseButton state] == NSOffState) ? NSLocalizedString(@"Show Table Information", @"Show Table Information") : NSLocalizedString(@"Hide Table Information", @"Hide Table Information")];
 }
 
@@ -632,7 +633,7 @@
 
 			// If encoding is set to Autodetect, update the connection character set encoding
 			// based on the newly selected table's encoding - but only if it differs from the current encoding.
-			if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultEncoding"] isEqualToString:@"Autodetect"]) {
+			if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] isEqualToString:@"Autodetect"]) {
 				if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
 					[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
 					[tableDataInstance resetAllData];
@@ -1575,7 +1576,7 @@
 {
 
 	// Collapse the table information pane if preference to do so is set
-	if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"TableInformationPanelCollapsed"] boolValue]
+	if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPTableInformationPanelCollapsed] boolValue]
 		&& [tableListSplitView collapsibleSubview]) {
 		[tableInfoCollapseButton setNextState];
 		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];

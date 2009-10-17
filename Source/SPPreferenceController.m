@@ -29,8 +29,7 @@
 #import "SPKeychain.h"
 #import "TableDocument.h"
 #import "SPConnectionController.h"
-
-#define FAVORITES_PB_DRAG_TYPE @"SequelProPreferencesPasteboard"
+#import "SPConstants.h"
 
 #define PREFERENCE_TOOLBAR_GENERAL			@"Preference Toolbar General"
 #define PREFERENCE_TOOLBAR_TABLES			@"Preference Toolbar Tables"
@@ -118,35 +117,35 @@
 
 	// Get the current revision
 	if ([prefs objectForKey:@"lastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"lastUsedVersion"] intValue];
-	if ([prefs objectForKey:@"LastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"LastUsedVersion"] intValue];
+	if ([prefs objectForKey:SPLastUsedVersion]) recordedVersionNumber = [[prefs objectForKey:SPLastUsedVersion] intValue];
 
 	// Skip processing if the current version matches or is less than recorded version
 	if (currentVersionNumber <= recordedVersionNumber) return;
 
 	// If no recorded version, update to current revision and skip processing
 	if (!recordedVersionNumber) {
-		[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];
+		[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:SPLastUsedVersion];
 		return;
 	}
 
 	// For versions prior to r336 (0.9.4), where column widths have been saved, walk through them and remove
 	// any table widths set to 15 or less (fix for mangled columns caused by Issue #140)
-	if (recordedVersionNumber < 336 && [prefs objectForKey:@"tableColumnWidths"] != nil) {
+	if (recordedVersionNumber < 336 && [prefs objectForKey:SPTableColumnWidths] != nil) {
 		NSEnumerator *databaseEnumerator, *tableEnumerator, *columnEnumerator;
 		NSString *databaseKey, *tableKey, *columnKey;
 		NSMutableDictionary *newDatabase, *newTable;
 		float columnWidth;
 		NSMutableDictionary *newTableColumnWidths = [[NSMutableDictionary alloc] init];
 
-		databaseEnumerator = [[prefs objectForKey:@"tableColumnWidths"] keyEnumerator];
+		databaseEnumerator = [[prefs objectForKey:SPTableColumnWidths] keyEnumerator];
 		while (databaseKey = [databaseEnumerator nextObject]) {
 			newDatabase = [[NSMutableDictionary alloc] init];
-			tableEnumerator = [[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] keyEnumerator];
+			tableEnumerator = [[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] keyEnumerator];
 			while (tableKey = [tableEnumerator nextObject]) {
 				newTable = [[NSMutableDictionary alloc] init];
-				columnEnumerator = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] objectForKey:tableKey] keyEnumerator];
+				columnEnumerator = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] keyEnumerator];
 				while (columnKey = [columnEnumerator nextObject]) {
-					columnWidth = [[[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] floatValue];
+					columnWidth = [[[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] floatValue];
 					if (columnWidth >= 15) {
 						[newTable setObject:[NSNumber numberWithFloat:columnWidth] forKey:[NSString stringWithString:columnKey]];
 					}
@@ -161,7 +160,7 @@
 			}
 			[newDatabase release];
 		}
-		[prefs setObject:[NSDictionary dictionaryWithDictionary:newTableColumnWidths] forKey:@"tableColumnWidths"];
+		[prefs setObject:[NSDictionary dictionaryWithDictionary:newTableColumnWidths] forKey:SPTableColumnWidths];
 		[newTableColumnWidths release];
 	}
 
@@ -170,20 +169,20 @@
 		NSEnumerator *keyEnumerator;
 		NSString *oldKey, *newKey;
 		NSDictionary *keysToUpgrade = [NSDictionary dictionaryWithObjectsAndKeys:
-			@"encoding", @"DefaultEncoding",
-			@"useMonospacedFonts", @"UseMonospacedFonts",
-			@"reloadAfterAdding", @"ReloadAfterAddingRow",
-			@"reloadAfterEditing", @"ReloadAfterEditingRow",
-			@"reloadAfterRemoving", @"ReloadAfterRemovingRow",
-			@"dontShowBlob", @"LoadBlobsAsNeeded",
-			@"fetchRowCount", @"FetchCorrectRowCount",
-			@"limitRows", @"LimitResults",
-			@"limitRowsValue", @"LimitResultsValue",
-			@"nullValue", @"NullValue",
-			@"showError", @"ShowNoAffectedRowsError",
-			@"connectionTimeout", @"ConnectionTimeoutValue",
-			@"keepAliveInterval", @"KeepAliveInterval",
-			@"lastFavoriteIndex", @"LastFavoriteIndex",
+			@"encoding", SPDefaultEncoding,
+			@"useMonospacedFonts", SPUseMonospacedFonts,
+			@"reloadAfterAdding", SPReloadAfterAddingRow,
+			@"reloadAfterEditing", SPReloadAfterEditingRow,
+			@"reloadAfterRemoving", SPReloadAfterRemovingRow,
+			@"dontShowBlob", SPLoadBlobsAsNeeded,
+			@"fetchRowCount", SPFetchCorrectRowCount,
+			@"limitRows", SPLimitResults,
+			@"limitRowsValue", SPLimitResultsValue,
+			@"nullValue", SPNullValue,
+			@"showError", SPShowNoAffectedRowsError,
+			@"connectionTimeout", SPConnectionTimeoutValue,
+			@"keepAliveInterval", SPKeepAliveInterval,
+			@"lastFavoriteIndex", SPLastFavoriteIndex,
 			nil];
 
 		keyEnumerator = [keysToUpgrade keyEnumerator];
@@ -201,8 +200,8 @@
 	}
 
 	// For versions prior to r567 (0.9.5), add a timestamp-based identifier to favorites and keychain entries
-	if (recordedVersionNumber < 567 && [prefs objectForKey:@"favorites"]) {
-		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
+	if (recordedVersionNumber < 567 && [prefs objectForKey:SPFavorites]) {
+		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPFavorites]];
 		NSMutableDictionary *favorite;
 		NSString *password, *keychainName, *keychainAccount;
 		SPKeychain *upgradeKeychain = [[SPKeychain alloc] init];
@@ -223,14 +222,14 @@
 			}
 			[favoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithDictionary:favorite]];
 		}
-		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:@"favorites"];
+		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:SPFavorites];
 		[upgradeKeychain release];
 		password = nil;
 	}
 
 	// For versions prior to r981 (~0.9.6), upgrade the favourites to include a connection type for each
-	if (recordedVersionNumber < 981 && [prefs objectForKey:@"favorites"]) {
-		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"favorites"]];
+	if (recordedVersionNumber < 981 && [prefs objectForKey:SPFavorites]) {
+		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPFavorites]];
 		NSMutableDictionary *favorite;
 
 		// Cycle through the favorites
@@ -258,7 +257,7 @@
 
 			[favoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithDictionary:favorite]];
 		}
-		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:@"favorites"];
+		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:SPFavorites];
 	}
 
 	// For versions prior to r1128 (~0.9.6), reset the main window toolbar items to add new items
@@ -269,8 +268,8 @@
 	}
 	
 	// For versions prior to r1263 (~0.9.7), convert the query favorites array to an array of dictionaries
-	if (recordedVersionNumber < 1263 && [prefs objectForKey:@"queryFavorites"]) {
-		NSMutableArray *queryFavoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:@"queryFavorites"]];
+	if (recordedVersionNumber < 1263 && [prefs objectForKey:SPQueryFavorites]) {
+		NSMutableArray *queryFavoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPQueryFavorites]];
 		
 		for (i = 0; i < [queryFavoritesArray count]; i++)
 		{
@@ -285,11 +284,11 @@
 			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, favorite, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 		}
 		
-		[prefs setObject:queryFavoritesArray forKey:@"queryFavorites"];
+		[prefs setObject:queryFavoritesArray forKey:SPQueryFavorites];
 	}
 
 	// Update the prefs revision
-	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:@"LastUsedVersion"];	
+	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:SPLastUsedVersion];	
 }
 
 #pragma mark -
@@ -342,13 +341,13 @@
 								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
 		
 		// Reset last used favorite
-		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"LastFavoriteIndex"]) {
-			[prefs setInteger:0	forKey:@"LastFavoriteIndex"];
+		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
+			[prefs setInteger:0	forKey:SPLastFavoriteIndex];
 		}
 		
 		// Reset default favorite
 		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"DefaultFavorite"]) {
-			[prefs setInteger:[prefs integerForKey:@"LastFavoriteIndex"] forKey:@"DefaultFavorite"];
+			[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:@"DefaultFavorite"];
 		}
 
 		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
@@ -419,9 +418,9 @@
 - (IBAction)updateDefaultFavorite:(id)sender
 {
 	if ([defaultFavoritePopup indexOfSelectedItem] == 0) {
-		[prefs setBool:YES forKey:@"SelectLastFavoriteUsed"];
+		[prefs setBool:YES forKey:SPSelectLastFavoriteUsed];
 	} else {
-		[prefs setBool:NO forKey:@"SelectLastFavoriteUsed"];
+		[prefs setBool:NO forKey:SPSelectLastFavoriteUsed];
 
 		// Minus 2 from index to account for the "Last Used" and separator items
 		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:@"DefaultFavorite"];
@@ -455,7 +454,7 @@
 - (IBAction)displayEditorPreferences:(id)sender
 {
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
-	NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]];
+	NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]];
 	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 	[self _resizeWindowForContentView:editorView];
 }
@@ -470,7 +469,7 @@
 	
 	// Set the default favorite popup back to preference
 	if (sender == [defaultFavoritePopup lastItem]) {
-		if (![prefs boolForKey:@"SelectLastFavoriteUsed"]) {
+		if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
 			[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"]+2];
 		} else {
 			[defaultFavoritePopup selectItemAtIndex:0];
@@ -590,7 +589,7 @@
 	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:originalRow]];
 	//Before deleting this favorite, we need to save the current index.
 	//because removeObjectAtArrangedObjectIndex will set prefs LastFavoriteIndex to 0
-	lastFavoriteIndexCached = [prefs integerForKey:@"LastFavoriteIndex"];
+	lastFavoriteIndexCached = [prefs integerForKey:SPLastFavoriteIndex];
 	
 	[favoritesController removeObjectAtArrangedObjectIndex:originalRow];
 	[favoritesController insertObject:draggedRow atArrangedObjectIndex:destinationRow];
@@ -600,7 +599,7 @@
 	
 	// Update default favorite to take on new value
 	if (lastFavoriteIndexCached == originalRow) {
-		[prefs setInteger:destinationRow forKey:@"LastFavoriteIndex"];
+		[prefs setInteger:destinationRow forKey:SPLastFavoriteIndex];
 	}
 	
 	// Update default favorite to take on new value
@@ -964,12 +963,12 @@
 		);
 	}
 	
-	[prefs setBool:value forKey:@"GrowlEnabled"];
+	[prefs setBool:value forKey:SPGrowlEnabled];
 }
 
 - (BOOL)growlEnabled
 {
-	return [prefs boolForKey:@"GrowlEnabled"];
+	return [prefs boolForKey:SPGrowlEnabled];
 }
 
 
@@ -1002,7 +1001,7 @@
 	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
 	
 	// Select the default favorite from prefs
-	if (![prefs boolForKey:@"SelectLastFavoriteUsed"]) {
+	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
 		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"] + 2];
 	} else {
 		[defaultFavoritePopup selectItemAtIndex:0];
@@ -1038,23 +1037,23 @@
 // show the font panel
 - (IBAction)showCustomQueryFontPanel:(id)sender
 {
-	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]] isMultiple:NO];
+	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
 }
 // reset syntax highlighting colors
 - (IBAction)setDefaultColors:(id)sender
 {
 
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:@"CustomQueryEditorCommentColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:@"CustomQueryEditorQuoteColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:@"CustomQueryEditorSQLKeywordColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.000 blue:0.658 alpha:1.000]] forKey:@"CustomQueryEditorBacktickColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.000 alpha:1.000]] forKey:@"CustomQueryEditorNumericColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.500 green:0.500 blue:0.500 alpha:1.000]] forKey:@"CustomQueryEditorVariableColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.950 green:0.950 blue:0.950 alpha:1.000]] forKey:@"CustomQueryEditorHighlightQueryColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorTextColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:@"CustomQueryEditorCaretColor"];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:@"CustomQueryEditorBackgroundColor"];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:SPCustomQueryEditorCommentColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:SPCustomQueryEditorQuoteColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:SPCustomQueryEditorSQLKeywordColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.000 blue:0.658 alpha:1.000]] forKey:SPCustomQueryEditorBacktickColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.506 green:0.263 blue:0.000 alpha:1.000]] forKey:SPCustomQueryEditorNumericColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.500 green:0.500 blue:0.500 alpha:1.000]] forKey:SPCustomQueryEditorVariableColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.950 green:0.950 blue:0.950 alpha:1.000]] forKey:SPCustomQueryEditorHighlightQueryColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorTextColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
 
 }
 // set font panel's valid modes
@@ -1065,8 +1064,8 @@
 // Action receiver for a font change in the font panel
 - (void)changeFont:(id)sender
 {
-	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"CustomQueryEditorFont"]]];	
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:@"CustomQueryEditorFont"];
+	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];	
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
 	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 }
 

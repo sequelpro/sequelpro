@@ -28,6 +28,7 @@
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
+#import "SPConstants.h"
 
 @implementation SPConnectionController
 
@@ -87,7 +88,7 @@
 		[self updateFavorites];
 
 		// Register an observer for changes within the favorites
-		[prefs addObserver:self forKeyPath:@"favorites" options:NSKeyValueObservingOptionNew context:NULL];
+		[prefs addObserver:self forKeyPath:SPFavorites options:NSKeyValueObservingOptionNew context:NULL];
 
 		// Register double click for the favorites view (double click favorite to connect)
 		[favoritesTable setTarget:self];
@@ -96,8 +97,8 @@
 		// Set the focus to the favorites table and select the appropriate row
 		[documentWindow setInitialFirstResponder:favoritesTable];
 		int tableRow;
-		if ([prefs boolForKey:@"SelectLastFavoriteUsed"] == YES) {
-			tableRow = [prefs integerForKey:@"LastFavoriteIndex"] + 1;
+		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
+			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
 		} else {
 			tableRow = [prefs integerForKey:@"DefaultFavorite"] + 1;
 		}
@@ -291,12 +292,12 @@
 	[mySQLConnection setDelegate:tableDocument];
 	
 	// Set whether or not we should enable delegate logging according to the prefs
-	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:@"ConsoleEnableLogging"]];
+	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:SPConsoleEnableLogging]];
 
 	// Set options from preferences
-	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:@"ConnectionTimeoutValue"] intValue]];
-	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:@"UseKeepAlive"] boolValue]];
-	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:@"KeepAliveInterval"] floatValue]];
+	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] intValue]];
+	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:SPUseKeepAlive] boolValue]];
+	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] floatValue]];
 
 	// Connect
 	[mySQLConnection connect];
@@ -334,7 +335,7 @@
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
 			} else {
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], [[prefs objectForKey:@"ConnectionTimeoutValue"] intValue], [mySQLConnection getLastErrorMessage]];
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], [[prefs objectForKey:SPConnectionTimeoutValue] intValue], [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
 			}
 			
@@ -621,8 +622,8 @@
 {
 	[favoritesTable deselectAll:self];
 	if (favorites) [favorites release];
-	if ([prefs objectForKey:@"favorites"]) {
-		favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"favorites"]];
+	if ([prefs objectForKey:SPFavorites]) {
+		favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]];
 	} else {
 		favorites = [[NSMutableArray alloc] init];
 	}
@@ -678,7 +679,7 @@
 		[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	}
 	
-	[prefs setInteger:([favoritesTable selectedRow] - 1) forKey:@"LastFavoriteIndex"];
+	[prefs setInteger:([favoritesTable selectedRow] - 1) forKey:SPLastFavoriteIndex];
 }
 
 /**
@@ -736,13 +737,13 @@
 
 	// Add the new favorite to the user defaults array
 	NSMutableArray *currentFavorites;
-	if ([prefs objectForKey:@"favorites"]) {
-		currentFavorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:@"favorites"]];
+	if ([prefs objectForKey:SPFavorites]) {
+		currentFavorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]];
 	} else {
 		currentFavorites = [[NSMutableArray alloc] init];
 	}
 	[currentFavorites addObject:newFavorite];
-	[prefs setObject:[NSArray arrayWithArray:currentFavorites] forKey:@"favorites"];
+	[prefs setObject:[NSArray arrayWithArray:currentFavorites] forKey:SPFavorites];
 	[currentFavorites release];
 
 	// Add the password to keychain as appropriate
@@ -781,7 +782,7 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([keyPath isEqualToString:@"favorites"]) {
+	if ([keyPath isEqualToString:SPFavorites]) {
 		[self updateFavorites];
 	}
 }

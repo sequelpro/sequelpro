@@ -29,6 +29,7 @@
 #import "SPSQLParser.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPConstants.h"
 
 @implementation TableSource
 
@@ -212,7 +213,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	NSEnumerator *fieldColumnsEnumerator = [[tableSourceView tableColumns] objectEnumerator];
 	id indexColumn;
 	id fieldColumn;
-	BOOL useMonospacedFont = [prefs boolForKey:@"UseMonospacedFonts"];
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
 
 	while ( (indexColumn = [indexColumnsEnumerator nextObject]) )
 		if ( useMonospacedFont )
@@ -270,7 +271,7 @@ reloads the table (performing a new mysql-query)
 	int insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 	
 	[tableFields insertObject:[NSMutableDictionary 
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:@"NewFieldsAllowNulls"]) ? @"1" : @"0", @"", [prefs stringForKey:@"NullValue"], @"None", nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", nil]
 							   forKeys:[NSArray arrayWithObjects:@"Field", @"Type", @"Length", @"unsigned", @"zerofill", @"binary", @"Null", @"Key", @"Default", @"Extra", nil]]
 					  atIndex:insertIndex];
 
@@ -548,7 +549,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 
 	while ( (indexColumn = [indexColumnsEnumerator nextObject]) ) {
-		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 			[[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		}
 		else 
@@ -557,7 +558,7 @@ sets the connection (received from TableDocument) and makes things that have to 
 		}
 	}
 	while ( (fieldColumn = [fieldColumnsEnumerator nextObject]) ) {
-		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 			[[fieldColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 		}
 		else
@@ -579,7 +580,7 @@ fetches the result as an array with a dictionary for each row in it
 	id key;
 	int i;
 	Class nullClass = [NSNull class];
-	id prefsNullValue = [prefs objectForKey:@"NullValue"];
+	id prefsNullValue = [prefs objectForKey:SPNullValue];
 
 	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < numOfRows ; i++ ) {
@@ -726,7 +727,7 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else {
 		// If a null value has been specified, and null is allowed, specify DEFAULT NULL
-		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
+		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			if ([[theRow objectForKey:@"Null"] intValue] == 1) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
@@ -950,7 +951,7 @@ fetches the result as an array with a dictionary for each row in it
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 		[indexView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
@@ -988,9 +989,9 @@ get the default value for a specified field
 - (NSString *)defaultValueForField:(NSString *)field
 {
 	if ( ![defaultValues objectForKey:field] ) {
-		return [prefs objectForKey:@"NullValue"];	
+		return [prefs objectForKey:SPNullValue];	
 	} else if ( [[defaultValues objectForKey:field] isMemberOfClass:[NSNull class]] ) {
-		return [prefs objectForKey:@"NullValue"];
+		return [prefs objectForKey:SPNullValue];
 	} else {
 		return [defaultValues objectForKey:field];
 	}
@@ -1190,7 +1191,7 @@ would result in a position change.
 	}
 
 	// Add the default value
-	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:@"NullValue"]]) {
+	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 		if ([[originalRow objectForKey:@"Null"] intValue] == 1) {
 			[queryString appendString:@" DEFAULT NULL"];
 		}
@@ -1402,8 +1403,8 @@ would result in a position change.
 - (void)awakeFromNib
 {
 	// Set the structure and index view's vertical gridlines if required
-	[tableSourceView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	[indexView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[indexView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 - (void)dealloc

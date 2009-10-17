@@ -31,6 +31,7 @@
 #import "TablesList.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
+#import "SPConstants.h"
 
 @implementation SPTableData
 
@@ -689,7 +690,7 @@
 		// Select the column default if available
 		if ([resultRow objectForKey:@"Default"]) {
 			if ([[resultRow objectForKey:@"Default"] isNSNull]) {
-				[tableColumn setValue:[NSString stringWithString:[[NSUserDefaults standardUserDefaults] objectForKey:@"NullValue"]] forKey:@"default"];			
+				[tableColumn setValue:[NSString stringWithString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]] forKey:@"default"];			
 			} else {
 				[tableColumn setValue:[NSString stringWithString:[resultRow objectForKey:@"Default"]] forKey:@"default"];
 			}

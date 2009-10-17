@@ -29,14 +29,9 @@
 #import "SPPreferenceController.h"
 #import "TableDump.h"
 #import "SPEncodingPopupAccessory.h"
+#import "SPConstants.h"
 
 #import <Sparkle/Sparkle.h>
-
-#define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
-#define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
-#define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
-#define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
-#define SEQUEL_PRO_CONTACT_URL   @"http://www.sequelpro.com/docs/Contact_the_developers"
 
 @implementation SPAppController
 
@@ -137,12 +132,12 @@
 	[panel setResolvesAliases:YES];
 
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
-	if(![[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"]) {
-		[[NSUserDefaults standardUserDefaults] setInteger:4 forKey:@"lastSqlFileEncoding"];
+	if(![[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding]) {
+		[[NSUserDefaults standardUserDefaults] setInteger:4 forKey:SPLastSQLFileEncoding];
 		[[NSUserDefaults standardUserDefaults] synchronize];
 	}
 
-	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[[NSUserDefaults standardUserDefaults] integerForKey:@"lastSqlFileEncoding"] 
+	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding] 
 			includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 
 	// it will enabled if user selects a *.sql file
@@ -233,7 +228,7 @@
 			// if encodingPopUp is defined the filename comes from an openPanel and
 			// the encodingPopUp contains the chosen encoding; otherwise autodetect encoding
 			if(encodingPopUp)
-				[[NSUserDefaults standardUserDefaults] setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+				[[NSUserDefaults standardUserDefaults] setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 
 			// Check if at least one document exists
 			if (![[[NSDocumentController sharedDocumentController] documents] count]) {

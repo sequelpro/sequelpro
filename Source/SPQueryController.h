@@ -27,7 +27,6 @@
 
 @interface SPQueryController : NSWindowController 
 {
-
 	// QueryConsoleController
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;

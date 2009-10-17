@@ -31,6 +31,7 @@
 #import "SPNarrowDownCompletion.h"
 #import "SPArrayAdditions.h"
 #import "ImageAndTextCell.h"
+#import "SPConstants.h"
 
 @interface NSTableView (MovingSelectedRow)
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent;
@@ -98,7 +99,7 @@
 		caseSensitive = YES;
 		filtered = nil;
 		
-		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"CustomQueryEditorFont"]];
+		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
 	}
 	return self;

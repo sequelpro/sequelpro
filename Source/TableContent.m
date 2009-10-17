@@ -47,7 +47,7 @@
 #import "RegexKitLite.h"
 #import "SPContentFilterManager.h"
 #import "SPNotLoaded.h"
-
+#import "SPConstants.h"
 
 @implementation TableContent
 
@@ -118,7 +118,7 @@
 - (void)awakeFromNib
 {
 	// Set the table content view's vertical gridlines if required
-	[tableContentView setGridStyleMask:([prefs boolForKey:@"DisplayTableViewVerticalGridlines"]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 }
 
 #pragma mark -
@@ -237,7 +237,7 @@
 		}
 	}
 	
-	NSString *nullValue = [prefs objectForKey:@"NullValue"];
+	NSString *nullValue = [prefs objectForKey:SPNullValue];
 	
 	// Add the new columns to the table
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
@@ -283,7 +283,7 @@
 		}
 		
 		// Set the data cell font according to the preferences
-		if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		} else {
 			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -293,7 +293,7 @@
 		[theCol setDataCell:dataCell];
 		
 		// Set the width of this column to saved value if exists
-		colWidth = [[[[prefs objectForKey:@"tableColumnWidths"] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]];
+		colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]];
 		if ( colWidth ) {
 			[theCol setWidth:[colWidth floatValue]];
 		}
@@ -371,7 +371,7 @@
 	[tableWindow makeFirstResponder:currentFirstResponder];
 
 	// Enable or disable the limit fields according to preference setting
-	if ( [prefs boolForKey:@"LimitResults"] ) {
+	if ( [prefs boolForKey:SPLimitResults] ) {
 
 		// Preserve the limit field - if this is beyond the current number of rows,
 		// reloadData will reset as necessary.
@@ -464,7 +464,7 @@
 	}
 
 	// Check to see if a limit needs to be applied
-	if ([prefs boolForKey:@"LimitResults"]) {
+	if ([prefs boolForKey:SPLimitResults]) {
 
 		// Ensure the limit isn't negative
 		if ([limitRowsField intValue] <= 0) {
@@ -478,11 +478,11 @@
 		}
 
 		// Append the limit settings
-		[queryString appendFormat:@" LIMIT %d,%d", [limitRowsField intValue]-1, [prefs integerForKey:@"LimitResultsValue"]];
+		[queryString appendFormat:@" LIMIT %d,%d", [limitRowsField intValue]-1, [prefs integerForKey:SPLimitResultsValue]];
 
 		// Update the approximate count of the rows to load
 		rowsToLoad = rowsToLoad - ([limitRowsField intValue]-1);
-		if (rowsToLoad > [prefs integerForKey:@"LimitResultsValue"]) rowsToLoad = [prefs integerForKey:@"LimitResultsValue"];
+		if (rowsToLoad > [prefs integerForKey:SPLimitResultsValue]) rowsToLoad = [prefs integerForKey:SPLimitResultsValue];
 	}
 	
 	// Perform and process the query
@@ -492,18 +492,18 @@
 	[streamingResult release];
 
 	// If the result is empty, and a limit is active, reset the limit
-	if ([prefs boolForKey:@"LimitResults"] && queryStringBeforeLimit && ![tableValues count]) {
+	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && ![tableValues count]) {
 		[limitRowsField setStringValue:@"1"];
-		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:@"LimitResultsValue"]];
+		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
 		streamingResult = [mySQLConnection streamingQueryString:queryString];
-		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:@"LimitResultsValue"]];
+		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 		[streamingResult release];
 	}
 
-	if ([prefs boolForKey:@"LimitResults"]
+	if ([prefs boolForKey:SPLimitResults]
 		&& ([limitRowsField intValue] > 1
-			|| [tableValues count] == [prefs integerForKey:@"LimitResultsValue"]))
+			|| [tableValues count] == [prefs integerForKey:SPLimitResultsValue]))
 	{
 		isLimited = YES;
 	} else {
@@ -756,8 +756,8 @@
 	}
 
 	// If limitRowsField > number of total table rows show the last limitRowsValue rows
-	if ([prefs boolForKey:@"LimitResults"] && [limitRowsField intValue] >= maxNumRows) {
-		int newLimit = maxNumRows - [prefs integerForKey:@"LimitResultsValue"];
+	if ([prefs boolForKey:SPLimitResults] && [limitRowsField intValue] >= maxNumRows) {
+		int newLimit = maxNumRows - [prefs integerForKey:SPLimitResultsValue];
 		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
 	}
 
@@ -894,7 +894,7 @@
 	[tableValues insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
 	
 	//if we don't show blobs, read data for this duplicate column from db
-	if ([prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
 		// Abort if there are no indices on this table - argumentForRow will display an error.
 		if (![[self argumentForRow:[tableContentView selectedRow]] length]){
 			return;
@@ -911,7 +911,7 @@
 		row = [queryResult fetchRowAsDictionary];
 		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
 			[tempRow replaceObjectAtIndex:i withObject:[NSNull null]];
-		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:@"LoadBlobsAsNeeded"] && dbDataRow) {
+		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && [prefs boolForKey:SPLoadBlobsAsNeeded] && dbDataRow) {
 			[tempRow replaceObjectAtIndex:i withObject:[dbDataRow objectAtIndex:i]];
 		}
 	}
@@ -1076,7 +1076,7 @@
 	
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
 	
-	if ( [prefs boolForKey:@"UseMonospacedFonts"] ) {
+	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 		[argumentField setFont:[NSFont fontWithName:@"Monaco" size:10]];
 		[limitRowsField setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 	} else {
@@ -1084,7 +1084,7 @@
 		[argumentField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	[limitRowsStepper setEnabled:NO];
-	if ( ![prefs boolForKey:@"LimitResults"] ) {
+	if ( ![prefs boolForKey:SPLimitResults] ) {
 		[limitRowsField setStringValue:@""];
 	}
 }
@@ -1215,11 +1215,11 @@
 	}
 
 	// Load global user-defined content filters
-	if([prefs objectForKey:@"ContentFilters"] 
+	if([prefs objectForKey:SPContentFilters] 
 		&& [contentFilters objectForKey:compareType]
-		&& [[prefs objectForKey:@"ContentFilters"] objectForKey:compareType])
+		&& [[prefs objectForKey:SPContentFilters] objectForKey:compareType])
 	{
-		[[contentFilters objectForKey:compareType] addObjectsFromArray:[[prefs objectForKey:@"ContentFilters"] objectForKey:compareType]];
+		[[contentFilters objectForKey:compareType] addObjectsFromArray:[[prefs objectForKey:SPContentFilters] objectForKey:compareType]];
 	}
 
 	// Load doc-based user-defined content filters
@@ -1295,14 +1295,14 @@
  */
 {
 	if ( [limitRowsStepper intValue] > 0 ) {
-		int newStep = [limitRowsField intValue]+[prefs integerForKey:@"LimitResultsValue"];
+		int newStep = [limitRowsField intValue]+[prefs integerForKey:SPLimitResultsValue];
 		// if newStep > the total number of rows in the current table retain the old value
 		[limitRowsField setIntValue:(newStep>maxNumRows)?[limitRowsField intValue]:newStep];
 	} else {
-		if ( ([limitRowsField intValue]-[prefs integerForKey:@"LimitResultsValue"]) < 1 ) {
+		if ( ([limitRowsField intValue]-[prefs integerForKey:SPLimitResultsValue]) < 1 ) {
 			[limitRowsField setIntValue:1];
 		} else {
-			[limitRowsField setIntValue:[limitRowsField intValue]-[prefs integerForKey:@"LimitResultsValue"]];
+			[limitRowsField setIntValue:[limitRowsField intValue]-[prefs integerForKey:SPLimitResultsValue]];
 		}
 	}
 	[limitRowsStepper setIntValue:0];
@@ -1329,7 +1329,7 @@
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
-	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:SPLoadBlobsAsNeeded];
 
 	// Build up an array of which columns are blobs for faster iteration
 	for ( i = 0; i < columnsCount ; i++ ) {
@@ -1403,7 +1403,7 @@
 	id rowObject;
 	NSMutableString *rowValue = [NSMutableString string];
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
-	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:@"LoadBlobsAsNeeded"];
+	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:SPLoadBlobsAsNeeded];
 	int i;
 	
 	if ( !isEditingRow || currentlyEditingRow == -1) {
@@ -1500,7 +1500,7 @@
 	
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection getLastErrorMessage] && ![[mySQLConnection getLastErrorMessage] length]) {
-		if ( [prefs boolForKey:@"ShowNoAffectedRowsError"] ) {
+		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 		} else {
@@ -1519,7 +1519,7 @@
 
 		// New row created successfully
 		if ( isEditingNewRow ) {
-			if ( [prefs boolForKey:@"ReloadAfterAddingRow"] ) {
+			if ( [prefs boolForKey:SPReloadAfterAddingRow] ) {
 				[self loadTableValues];
 				[tableWindow endEditingFor:nil];
 				[tableContentView reloadData];
@@ -1538,7 +1538,7 @@
 		} else {
 
 			// Reload table if set to - otherwise no action required.
-			if ( [prefs boolForKey:@"ReloadAfterEditingRow"] ) {
+			if ( [prefs boolForKey:SPReloadAfterEditingRow] ) {
 				[self loadTableValues];
 				[tableWindow endEditingFor:nil];
 				[tableContentView reloadData];
@@ -1629,7 +1629,7 @@
 		
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
-		if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] && [self tableContainsBlobOrTextColumns] ) {
+		if ( [prefs boolForKey:SPLoadBlobsAsNeeded] && [self tableContainsBlobOrTextColumns] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"You can't hide blob and text fields when working with tables without index.", @"message of panel when trying to edit tables without index and with hidden blob/text fields"));
 			[keys removeAllObjects];
@@ -1701,7 +1701,7 @@
 	NSMutableArray *fields = [NSMutableArray array];
 	NSArray *columnNames = [tableDataInstance columnNames];
 	
-	if ( [prefs boolForKey:@"LoadBlobsAsNeeded"] ) {
+	if ( [prefs boolForKey:SPLoadBlobsAsNeeded] ) {
 		for ( i = 0 ; i < [columnNames count] ; i++ ) {
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
 				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
@@ -1730,7 +1730,7 @@
 	NSString *wherePart;
 	NSInteger i, errors;
 	BOOL consoleUpdateStatus;
-	BOOL reloadAfterRemovingRow = [prefs boolForKey:@"ReloadAfterRemovingRow"];
+	BOOL reloadAfterRemovingRow = [prefs boolForKey:SPReloadAfterRemovingRow];
 
 	if([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:self];
@@ -1837,7 +1837,7 @@
 					}
 					index = [selectedRows indexGreaterThanIndex:index];
 				}
- 			} else if ([primaryKeyFieldNames count] == 1) {
+			} else if ([primaryKeyFieldNames count] == 1) {
 				// if table has only one PRIMARY KEY
 				// delete the fast way by using the PRIMARY KEY in an IN clause
 				NSMutableString *deleteQuery = [NSMutableString string];
@@ -1884,18 +1884,18 @@
 				// delete the row by using all PRIMARY KEYs in an OR clause
 				NSMutableString *deleteQuery = [NSMutableString string];
 				NSInteger affectedRows = 0;
-
+				
 				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
-
+				
 				while (index != NSNotFound) {
-
+					
 					// Build the AND clause of PRIMARY KEYS
 					[deleteQuery appendString:@"("];
 					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
-
-
+						
+						
 						id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] intValue]];
-
+						
 						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
 						if ([keyValue isKindOfClass:[NSData class]]) {
 							[deleteQuery appendString:@"=X'"];
@@ -1910,7 +1910,7 @@
 					// Remove the trailing AND and add the closing bracket
 					[deleteQuery deleteCharactersInRange:NSMakeRange([deleteQuery length]-5, 5)];
 					[deleteQuery appendString:@")"];
-
+					
 					// Split deletion query into 64k chunks
 					if([deleteQuery length] > 64000) {
 						[mySQLConnection queryString:deleteQuery];
@@ -1921,10 +1921,10 @@
 					} else {
 						[deleteQuery appendString:@" OR "];
 					}
-
+					
 					index = [selectedRows indexGreaterThanIndex:index];
 				}
-
+				
 				// Check if deleteQuery's maximal length was reached for the last index
 				// if yes omit the empty query
 				if(![deleteQuery hasSuffix:@"WHERE "]) {
@@ -1944,21 +1944,21 @@
 				NSArray *message;
 				if(errors < 0) {
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-						[NSString stringWithFormat:NSLocalizedString(@"%d row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), errors*-1, ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
-						nil];
+							   [NSString stringWithFormat:NSLocalizedString(@"%d row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), errors*-1, ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+							   nil];
 				} else {
 					if(primaryKeyFieldNames == nil)
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
-							nil];
+								   [NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+								   nil];
 					else
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							[NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
-							nil];
+								   [NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+								   nil];
 				}
 				[self performSelector:@selector(showErrorSheetWith:)
-					withObject:message
-					afterDelay:0.3];
+						   withObject:message
+						   afterDelay:0.3];
 			}
 
 			// Refresh table content
@@ -2188,7 +2188,7 @@
 		maxNumRowsIsEstimate = NO;
 
 	// Choose whether to display an estimate, or to fetch the correct row count, based on prefs
-	} else if ([prefs boolForKey:@"FetchCorrectRowCount"]) {
+	} else if ([prefs boolForKey:SPFetchCorrectRowCount]) {
 		maxNumRows = [self fetchNumberOfRows];
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
@@ -2269,7 +2269,7 @@
 		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
 	if ([theValue isNSNull])
-		return [prefs objectForKey:@"NullValue"];
+		return [prefs objectForKey:SPNullValue];
 
 	if ([theValue isSPNotLoaded])
 		return NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
@@ -2319,7 +2319,7 @@
 	if (anObject) {
 
 		// Restore NULLs if necessary
-		if ([anObject isEqualToString:[prefs objectForKey:@"NullValue"]] && [[column objectForKey:@"null"] boolValue])
+		if ([anObject isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue])
 			anObject = [NSNull null];
 
 		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
@@ -2414,8 +2414,8 @@
 	NSString *table = [tablesListInstance tableName];
 	
 	// get tableColumnWidths object
-	if ( [prefs objectForKey:@"tableColumnWidths"] != nil ) {
-		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:@"tableColumnWidths"]];
+	if ( [prefs objectForKey:SPTableColumnWidths] != nil ) {
+		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
 	} else {
 		tableColumnWidths = [NSMutableDictionary dictionary];
 	}
@@ -2435,7 +2435,7 @@
 	}
 	// save column size
 	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[[aNotification userInfo] objectForKey:@"NSTableColumn"] headerCell] stringValue]];
-	[prefs setObject:tableColumnWidths forKey:@"tableColumnWidths"];
+	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 }
 
 /**
@@ -2478,7 +2478,7 @@
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
 		
 		id cellValue = [[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
-		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:@"NullValue"]];
+		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 		
 		id editData = [[fieldEditor editWithObject:cellValue
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
@@ -2494,7 +2494,7 @@
 				currentlyEditingRow = rowIndex;
 			}
 
-			if ([editData isEqualToString:[prefs objectForKey:@"NullValue"]]
+			if ([editData isEqualToString:[prefs objectForKey:SPNullValue]]
 				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]) objectForKey:@"null"] boolValue])
 			{
 				[editData release];
@@ -2638,7 +2638,7 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([keyPath isEqualToString:@"DisplayTableViewVerticalGridlines"]) {
+	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }

@@ -29,6 +29,7 @@
 #import "TableDocument.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
+#import "SPConstants.h"
 
 @interface SPExportController (PrivateAPI)
 
@@ -461,7 +462,7 @@
 				[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
 				
 				[csvExporter setExportOutputEncoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
-				[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:@"NullValue"]];
+				[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]];
 				
 				[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
 				

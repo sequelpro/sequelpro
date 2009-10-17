@@ -30,6 +30,7 @@
 #import "TableContent.h"
 #import "CustomQuery.h"
 #import "SPNotLoaded.h"
+#import "SPConstants.h"
 
 int MENU_EDIT_COPY_WITH_COLUMN = 2001;
 int MENU_EDIT_COPY_AS_SQL      = 2002;
@@ -133,7 +134,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				if ( nil != rowData )
 				{
 					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"NullValue"]]];
+						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
 					else if ([rowData isSPNotLoaded])
 						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
 					else
@@ -268,7 +269,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						}
 						break;
 					case 3: // long text data
-						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:@"LoadBlobsAsNeeded"]) {
+						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:SPLoadBlobsAsNeeded]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
 							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil)
@@ -371,7 +372,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 				if ( nil != rowData )
 				{
 					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:@"NullValue"]]];
+						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
 					else if ([rowData isSPNotLoaded])
 						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
 					else

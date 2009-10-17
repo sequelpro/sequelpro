@@ -25,9 +25,6 @@
 
 #import <Foundation/Foundation.h>
 
-
-@interface SPOutlineView : NSOutlineView {
-
-}
+@interface SPOutlineView : NSOutlineView
 
 @end

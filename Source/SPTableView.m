@@ -25,6 +25,7 @@
 #import "SPTableView.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPArrayAdditions.h"
+#import "SPConstants.h"
 
 @implementation SPTableView
 
@@ -48,7 +49,7 @@
 				return nil;
 		}
 		if([[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {
-			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"favorites"], row)  objectForKey:@"headerOfFileURL"])
+			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:SPFavorites], row)  objectForKey:@"headerOfFileURL"])
 				return nil;
 		}
 		if([[[[self delegate] class] description] isEqualToString:@"SPContentFilterManager"]) {

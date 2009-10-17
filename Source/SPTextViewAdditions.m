@@ -24,6 +24,7 @@
 
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
+#import "SPConstants.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -392,8 +393,8 @@
 {
 	id prefs = [NSUserDefaults standardUserDefaults];
 	if([self respondsToSelector:@selector(insertText:)])
-		if([prefs objectForKey:@"NullValue"] && [[prefs objectForKey:@"NullValue"] length])
-			[self insertText:[prefs objectForKey:@"NullValue"]];
+		if([prefs objectForKey:SPNullValue] && [[prefs objectForKey:SPNullValue] length])
+			[self insertText:[prefs objectForKey:SPNullValue]];
 		else
 			[self insertText:@"NULL"];
 

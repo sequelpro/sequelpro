@@ -27,14 +27,10 @@
 #import "ImageAndTextCell.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
-
-#define DEFAULT_QUERY_FAVORITE_FILE_EXTENSION @"sql"
-#define DEFAULT_SEQUELPRO_FILE_EXTENSION @"spf"
+#import "SPConstants.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
-
-#define QUERY_FAVORITES_PB_DRAG_TYPE @"SequelProQueryFavoritesPasteboard"
 
 @interface SPQueryFavoriteManager (Private)
 - (void)_initWithNoSelection;
@@ -96,8 +92,8 @@
 
 	// Build data source for global queryFavorites (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
-	if([prefs objectForKey:@"queryFavorites"]) {
-		for(id fav in [prefs objectForKey:@"queryFavorites"])
+	if([prefs objectForKey:SPQueryFavorites]) {
+		for(id fav in [prefs objectForKey:SPQueryFavorites])
 			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
 
@@ -294,7 +290,7 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:@"lastSqlFileEncoding"] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
+	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 	
 	[encodingPopUp setEnabled:YES];
 	
@@ -305,7 +301,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_SEQUELPRO_FILE_EXTENSION];
+	[panel setRequiredFileType:DEFAULT_SEQUEL_PRO_FILE_EXTENSION];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -368,7 +364,7 @@
 			[self queryFavoritesForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
 
 		// Update global preferences' list
-		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:@"queryFavorites"];
+		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
 
 		// Inform all opened documents to update the query favorites list
 		for(id doc in [[NSDocumentController sharedDocumentController] documents])
@@ -730,17 +726,17 @@
 				return;
 			}
 
-			if([spf objectForKey:@"queryFavorites"] && [[spf objectForKey:@"queryFavorites"] count]) {
+			if([spf objectForKey:SPQueryFavorites] && [[spf objectForKey:SPQueryFavorites] count]) {
 				// if([favoritesTableView numberOfSelectedRows] > 0) {
 				// 	// Insert imported queries after the last selected favorite
 				// 	NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
 				// 	NSUInteger i;
-				// 	for(i=0; i<[[spf objectForKey:@"queryFavorites"] count]; i++) {
-				// 		[favorites insertObject:[[spf objectForKey:@"queryFavorites"] objectAtIndex:i] atIndex:insertIndex+i];
+				// 	for(i=0; i<[[spf objectForKey:SPQueryFavorites] count]; i++) {
+				// 		[favorites insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertIndex+i];
 				// 	}
 				// } else {
 				// 	// If no selection add them
-				[favorites addObjectsFromArray:[spf objectForKey:@"queryFavorites"]];
+				[favorites addObjectsFromArray:[spf objectForKey:SPQueryFavorites]];
 				// }
 				[favoritesArrayController rearrangeObjects];
 				[favoritesTableView reloadData];
@@ -770,7 +766,7 @@
 		if (returnCode == NSOKButton) {
 			NSError *error = nil;
 		
-			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:@"lastSqlFileEncoding"];
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
 		
 			[[favoriteQueryTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
@@ -798,7 +794,7 @@
 				if([indexes containsIndex:i])
 					[favoriteData addObject:[favorites objectAtIndex:i]];
 
-			[spfdata setObject:favoriteData forKey:@"queryFavorites"];
+			[spfdata setObject:favoriteData forKey:SPQueryFavorites];
 			
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata

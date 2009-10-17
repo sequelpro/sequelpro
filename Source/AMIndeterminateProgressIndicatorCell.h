@@ -27,7 +27,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @interface AMIndeterminateProgressIndicatorCell : NSCell {
 	double doubleValue;
 	NSTimeInterval animationDelay;

@@ -26,12 +26,12 @@
 #import "SPQueryController.h"
 #import "SPConsoleMessage.h"
 #import "SPArrayAdditions.h"
+#import "SPConstants.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
 
 #define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
-#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION @"sql"
 
 #define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
 
@@ -131,13 +131,13 @@ static SPQueryController *sharedQueryController = nil;
 	prefs = [NSUserDefaults standardUserDefaults];
 	
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:@"ConsoleShowTimestamps"]];
-	showSelectStatementsAreDisabled = ![prefs boolForKey:@"ConsoleShowSelectsAndShows"];
-	showHelpStatementsAreDisabled = ![prefs boolForKey:@"ConsoleShowHelps"];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPConsoleShowTimestamps]];
+	showSelectStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowSelectsAndShows];
+	showHelpStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowHelps];
 	
 	[self _updateFilterState];
 	
-	[loggingDisabledTextField setStringValue:([prefs boolForKey:@"ConsoleEnableLogging"]) ? @"" : @"Query logging is currently disabled"];
+	[loggingDisabledTextField setStringValue:([prefs boolForKey:SPConsoleEnableLogging]) ? @"" : @"Query logging is currently disabled"];
 }
 
 /**
@@ -158,7 +158,7 @@ static SPQueryController *sharedQueryController = nil;
 	[super dealloc];
 }
 
-#pragma mark ----------------------
+#pragma mark -
 #pragma mark QueryConsoleController
 
 
@@ -381,7 +381,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
-	if ([keyPath isEqualToString:@"ConsoleEnableLogging"]) {
+	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[loggingDisabledTextField setStringValue:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? @"" : @"Query logging is currently disabled"];
 	}
 }
@@ -421,7 +421,7 @@ static SPQueryController *sharedQueryController = nil;
 	return @"QueryConsole";
 }
 
-#pragma mark ----------------------
+#pragma mark -
 #pragma mark DocumentsController
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
@@ -440,9 +440,9 @@ static SPQueryController *sharedQueryController = nil;
 
 		// Set the global history coming from the Prefs as default if available
 		if(![historyContainer objectForKey:[new absoluteString]]) {
-			if([prefs objectForKey:@"queryHistory"]) {
+			if([prefs objectForKey:SPQueryHistory]) {
 				NSMutableArray *arr = [[NSMutableArray alloc] init];
-				[arr addObjectsFromArray:[prefs objectForKey:@"queryHistory"]];
+				[arr addObjectsFromArray:[prefs objectForKey:SPQueryHistory]];
 				[historyContainer setObject:arr forKey:[new absoluteString]];
 				[arr release];
 			} else {
@@ -464,9 +464,9 @@ static SPQueryController *sharedQueryController = nil;
 	// Register a spf file to manage all query favorites and query history items
 	// file path based (incl. Untitled docs) in a dictionary whereby the key represents the file URL as string.
 	if(![favoritesContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"queryFavorites"] && [[contextInfo objectForKey:@"queryFavorites"] count]) {
+		if(contextInfo != nil && [contextInfo objectForKey:SPQueryFavorites] && [[contextInfo objectForKey:SPQueryFavorites] count]) {
 			NSMutableArray *arr = [[NSMutableArray alloc] init];
-			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryFavorites"]];
+			[arr addObjectsFromArray:[contextInfo objectForKey:SPQueryFavorites]];
 			[favoritesContainer setObject:arr forKey:[fileURL absoluteString]];
 			[arr release];
 		} else {
@@ -476,9 +476,9 @@ static SPQueryController *sharedQueryController = nil;
 		}
 	}
 	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"queryHistory"] && [[contextInfo objectForKey:@"queryHistory"] count]) {
+		if(contextInfo != nil && [contextInfo objectForKey:SPQueryHistory] && [[contextInfo objectForKey:SPQueryHistory] count]) {
 			NSMutableArray *arr = [[NSMutableArray alloc] init];
-			[arr addObjectsFromArray:[contextInfo objectForKey:@"queryHistory"]];
+			[arr addObjectsFromArray:[contextInfo objectForKey:SPQueryHistory]];
 			[historyContainer setObject:arr forKey:[fileURL absoluteString]];
 			[arr release];
 		} else {
@@ -488,8 +488,8 @@ static SPQueryController *sharedQueryController = nil;
 		}
 	}
 	if(![contentFilterContainer objectForKey:[fileURL absoluteString]]) {
-		if(contextInfo != nil && [contextInfo objectForKey:@"ContentFilters"]) {
-			[contentFilterContainer setObject:[contextInfo objectForKey:@"ContentFilters"] forKey:[fileURL absoluteString]];
+		if(contextInfo != nil && [contextInfo objectForKey:SPContentFilters]) {
+			[contentFilterContainer setObject:[contextInfo objectForKey:SPContentFilters] forKey:[fileURL absoluteString]];
 		} else {
 			NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
 			[contentFilterContainer setObject:dict forKey:[fileURL absoluteString]];
@@ -558,7 +558,7 @@ static SPQueryController *sharedQueryController = nil;
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
 
-	NSUInteger maxHistoryItems = [[prefs objectForKey:@"CustomQueryMaxHistoryItems"] intValue];
+	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
 
 	// Save each history item due to its document source
 	if([historyContainer objectForKey:[fileURL absoluteString]]) {
@@ -582,13 +582,13 @@ static SPQueryController *sharedQueryController = nil;
 
 		// Remove all duplicates by using a NSPopUpButton
 		NSPopUpButton *uniquifier = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0,0,0,0) pullsDown:YES];
-		[uniquifier addItemsWithTitles:[prefs objectForKey:@"queryHistory"]];
+		[uniquifier addItemsWithTitles:[prefs objectForKey:SPQueryHistory]];
 		[uniquifier insertItemWithTitle:history atIndex:0];
 
 		while ( [uniquifier numberOfItems] > maxHistoryItems )
 			[uniquifier removeItemAtIndex:[uniquifier numberOfItems]-1];
 
-		[prefs setObject:[uniquifier itemTitles] forKey:@"queryHistory"];
+		[prefs setObject:[uniquifier itemTitles] forKey:SPQueryHistory];
 		[uniquifier release];
 
 	}
@@ -633,8 +633,8 @@ static SPQueryController *sharedQueryController = nil;
 			[result addObject:fav];
 	}
 	
-	if(includeGlobals && [prefs objectForKey:@"queryFavorites"]) {
-		for(id fav in [prefs objectForKey:@"queryFavorites"]) {
+	if(includeGlobals && [prefs objectForKey:SPQueryFavorites]) {
+		for(id fav in [prefs objectForKey:SPQueryFavorites]) {
 			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger])
 				[result addObject:fav];
 		}
