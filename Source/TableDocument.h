@@ -68,6 +68,11 @@ enum sp_current_query_mode
 	IBOutlet id variablesSheet;
 
 	IBOutlet id queryProgressBar;
+	IBOutlet NSBox *taskProgressLayer;
+	IBOutlet id taskProgressIndicator;
+	IBOutlet id taskDescriptionText;
+	IBOutlet NSButton *taskCancelButton;
+
 	IBOutlet id favoritesButton;
 
 	IBOutlet id databaseNameField;
@@ -129,8 +134,15 @@ enum sp_current_query_mode
 	BOOL _encodingViaLatin1;
 	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
+	BOOL _isWorking;
 	BOOL _mainNibLoaded;
 	int _queryMode;
+
+	BOOL taskDisplayIsIndeterminate;
+	float taskProgressValue;
+	float taskDisplayLastValue;
+	float taskProgressValueDisplayInterval;
+	NSTimer *taskDrawTimer;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -170,6 +182,15 @@ enum sp_current_query_mode
 - (IBAction)saveServerVariables:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
+
+// Task progress and notification methods
+- (void) startTaskWithDescription:(NSString *)description;
+- (void) showTaskProgressLayer:(NSTimer *)theTimer;
+- (void) setTaskDescription:(NSString *)description;
+- (void) setTaskPercentage:(NSNumber *)taskPercentage;
+- (void) setTaskProgressToIndeterminate;
+- (void) endTask;
+- (BOOL) isWorking;
 
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;

@@ -143,6 +143,7 @@
 		5822CAE110011C8000DCC3D6 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5822CADF10011C8000DCC3D6 /* ConnectionView.xib */; };
 		5822D3091061833C00CE2157 /* SPCSVParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 5822D3081061833C00CE2157 /* SPCSVParser.m */; };
 		582A01E9107C0C170027D42B /* SPNotLoaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 582A01E8107C0C170027D42B /* SPNotLoaded.m */; };
+		582A05A9108A5CCF0027D42B /* ProgressIndicatorLayer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 582A05A7108A5CCF0027D42B /* ProgressIndicatorLayer.xib */; };
 		583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 583B779810386B0200B21F7E /* MCPStreamingResult.m */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */ = {isa = PBXBuildFile; fileRef = 584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */; };
@@ -223,7 +224,7 @@
 		B5EAC0FD0EC87FF900CC579C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
 		BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */; };
-		BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = BC05F1C4101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m */; };
+		BC05F1C5101241DF008A97F8 /* YRKSpinningProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
 		BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC29C37E10501EFD00DD6C6E /* SPQueryController.m */; };
@@ -529,6 +530,7 @@
 		5822D3081061833C00CE2157 /* SPCSVParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCSVParser.m; sourceTree = "<group>"; };
 		582A01E7107C0C170027D42B /* SPNotLoaded.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNotLoaded.h; sourceTree = "<group>"; };
 		582A01E8107C0C170027D42B /* SPNotLoaded.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNotLoaded.m; sourceTree = "<group>"; };
+		582A05A8108A5CCF0027D42B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ProgressIndicatorLayer.xib; sourceTree = "<group>"; };
 		583B779710386B0200B21F7E /* MCPStreamingResult.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = MCPStreamingResult.h; sourceTree = "<group>"; };
 		583B779810386B0200B21F7E /* MCPStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPStreamingResult.m; sourceTree = "<group>"; };
 		5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberView.h; sourceTree = "<group>"; };
@@ -620,8 +622,8 @@
 		B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "toolbar-switch-to-procedures.tiff"; sourceTree = "<group>"; };
 		BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEncodingPopupAccessory.h; sourceTree = "<group>"; };
 		BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEncodingPopupAccessory.m; sourceTree = "<group>"; };
-		BC05F1C3101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AMIndeterminateProgressIndicatorCell.h; sourceTree = "<group>"; };
-		BC05F1C4101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AMIndeterminateProgressIndicatorCell.m; sourceTree = "<group>"; };
+		BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRKSpinningProgressIndicator.h; sourceTree = "<group>"; };
+		BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRKSpinningProgressIndicator.m; sourceTree = "<group>"; };
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
 		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
 		BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small-square.tiff"; sourceTree = "<group>"; };
@@ -1102,8 +1104,8 @@
 		17E641710EF01F5C001BC333 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
-				BC05F1C3101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.h */,
-				BC05F1C4101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m */,
+				BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */,
+				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
 				17E6417C0EF01FA8001BC333 /* CMCopyTable.h */,
 				17E6417D0EF01FA8001BC333 /* CMCopyTable.m */,
 				17E6417E0EF01FA8001BC333 /* CMImageView.h */,
@@ -1227,6 +1229,7 @@
 				B58DA73B0FF8BBA500FDDACD /* PrintAccessory.xib */,
 				B58DA7390FF8BB9E00FDDACD /* SSHQuestionDialog.xib */,
 				173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */,
+				582A05A7108A5CCF0027D42B /* ProgressIndicatorLayer.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -1642,6 +1645,7 @@
 				BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */,
 				BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */,
 				BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */,
+				582A05A9108A5CCF0027D42B /* ProgressIndicatorLayer.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1773,7 +1777,7 @@
 				BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */,
 				BC9F0881100FCF2C00A80D32 /* SPFieldEditorController.m in Sources */,
 				58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */,
-				BC05F1C5101241DF008A97F8 /* AMIndeterminateProgressIndicatorCell.m in Sources */,
+				BC05F1C5101241DF008A97F8 /* YRKSpinningProgressIndicator.m in Sources */,
 				4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */,
 				4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */,
 				4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */,
@@ -1898,6 +1902,15 @@
 				5822CAE010011C8000DCC3D6 /* English */,
 			);
 			name = ConnectionView.xib;
+			sourceTree = "<group>";
+		};
+		582A05A7108A5CCF0027D42B /* ProgressIndicatorLayer.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				582A05A8108A5CCF0027D42B /* English */,
+			);
+			name = ProgressIndicatorLayer.xib;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		B52460D90F8EF93B00171639 /* Console.xib */ = {

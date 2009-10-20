@@ -1535,6 +1535,31 @@
 }
 
 #pragma mark -
+#pragma mark Task interaction
+
+/**
+ * Disable all table list interactive elements during an ongoing task.
+ */
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+{
+	[tablesListView setEnabled:NO];
+	[toolbarAddButton setEnabled:NO];
+	[toolbarActionsButton setEnabled:NO];
+	[toolbarReloadButton setEnabled:NO];
+}
+
+/**
+ * Enable all table list interactive elements after an ongoing task.
+ */
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+{
+	[tablesListView setEnabled:YES];
+	[toolbarAddButton setEnabled:YES];
+	[toolbarActionsButton setEnabled:YES];
+	[toolbarReloadButton setEnabled:YES];
+}
+
+#pragma mark -
 #pragma mark SplitView Delegate Methods
 
 - (NSRect)splitView:(NSSplitView *)splitView effectiveRect:(NSRect)proposedEffectiveRect forDrawnRect:(NSRect)drawnRect ofDividerAtIndex:(NSInteger)dividerIndex
@@ -1594,6 +1619,15 @@
 		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
 	}
 
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:nil];
 }
 
 /**
@@ -1601,6 +1635,8 @@
  */
 - (void)dealloc
 {	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[tables release];
 	[tableTypes release];
 	if (isTableListFiltered && filteredTables) [filteredTables release];

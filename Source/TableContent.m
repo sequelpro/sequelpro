@@ -59,6 +59,7 @@
 	if ((self == [super init])) {
 		
 		tableValues      = [[NSMutableArray alloc] init];
+		tableValuesCount = 0;
 		dataColumns    = [[NSMutableArray alloc] init];
 		oldRow         = [[NSMutableArray alloc] init];
 		
@@ -119,6 +120,16 @@
 {
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:nil];
 }
 
 #pragma mark -
@@ -164,6 +175,7 @@
 	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
 	{
 		// Empty the stored data arrays
+		tableValuesCount = 0;
 		[tableValues removeAllObjects];
 		[tableContentView reloadData];
 		isFiltered = NO;
@@ -394,8 +406,15 @@
 	[removeButton setEnabled:NO];
 
 	// Trigger a data refresh
-	[self loadTableValues];
+	[self loadTableValuesWithCallback:@selector(finalizeTableLoad)];
+}
 
+/**
+ * Callback to finish setting up a freshly loaded table once 
+ * the values are available.
+ */
+- (void) finalizeTableLoad
+{
 	// Restore the view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
 
@@ -430,17 +449,36 @@
  * using filters and limits as appropriate.
  * Will not refresh the table view itself.
  */
-- (void) loadTableValues
+- (void) loadTableValuesWithCallback:(SEL)tableContentCallbackMethod
+{
+	if (!selectedTable) return;
+
+	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table string"), selectedTable]];
+	
+	NSValue *encodedCallbackMethod = nil;
+	if (tableContentCallbackMethod)
+		encodedCallbackMethod = [NSValue valueWithBytes:&tableContentCallbackMethod objCType:@encode(SEL)];
+	[NSThread detachNewThreadSelector:@selector(loadTableValuesTaskWithCallback:) toTarget:self withObject:encodedCallbackMethod];
+}
+
+- (void) loadTableValuesTaskWithCallback:(id)encodedTableContentCallbackMethod
 {
 	// If no table is selected, return
-	if(!selectedTable) return;
+	if (!selectedTable) return;
 
+	NSAutoreleasePool *tableLoadPool = [[NSAutoreleasePool alloc] init];
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
 	MCPStreamingResult *streamingResult;
+	SEL callbackMethod = NULL;
 	int rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
-	
+
+	// Remove all items from the table
+	tableValuesCount = 0;
+	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+	[tableValues removeAllObjects];
+
 	// Notify any listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 	
@@ -492,7 +530,7 @@
 	[streamingResult release];
 
 	// If the result is empty, and a limit is active, reset the limit
-	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && ![tableValues count]) {
+	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableValuesCount) {
 		[limitRowsField setStringValue:@"1"];
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
@@ -503,7 +541,7 @@
 
 	if ([prefs boolForKey:SPLimitResults]
 		&& ([limitRowsField intValue] > 1
-			|| [tableValues count] == [prefs integerForKey:SPLimitResultsValue]))
+			|| tableValuesCount == [prefs integerForKey:SPLimitResultsValue]))
 	{
 		isLimited = YES;
 	} else {
@@ -518,6 +556,17 @@
 	
 	// Notify listenters that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+
+	// Set up the callback if present
+	if (encodedTableContentCallbackMethod) {
+		[encodedTableContentCallbackMethod getValue:&callbackMethod];
+		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+	} else {
+		[tableContentView reloadData];
+	}
+
+	[tableDocumentInstance endTask];
+	[tableLoadPool release];
 }
 
 /**
@@ -683,25 +732,25 @@
 
 	// If no filter or limit is active, show just the count of rows in the table
 	if (!isFiltered && !isLimited) {
-		if ([tableValues count] == 1)
-			[countString appendFormat:NSLocalizedString(@"%d row in table", @"text showing a single row in the result"), [tableValues count]];
+		if (tableValuesCount == 1)
+			[countString appendFormat:NSLocalizedString(@"%d row in table", @"text showing a single row in the result"), tableValuesCount];
 		else
-			[countString appendFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), [tableValues count]];
+			[countString appendFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), tableValuesCount];
 
 	// If a limit is active, display a string suggesting a limit is active
 	} else if (!isFiltered && isLimited) {
-		[countString appendFormat:NSLocalizedString(@"Rows %d-%d of %@%d from table", @"text showing how many rows are in the limited result"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
+		[countString appendFormat:NSLocalizedString(@"Rows %d-%d of %@%d from table", @"text showing how many rows are in the limited result"), [limitRowsField intValue], [limitRowsField intValue]+tableValuesCount-1, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
 
 	// If just a filter is active, show a count and an indication a filter is active
 	} else if (isFiltered && !isLimited) {
-		if ([tableValues count] == 1)
-			[countString appendFormat:NSLocalizedString(@"%d row of %@%d matches filter", @"text showing how a single rows matched filter"), [tableValues count], maxNumRowsIsEstimate?@"~":@"", maxNumRows];
+		if (tableValuesCount == 1)
+			[countString appendFormat:NSLocalizedString(@"%d row of %@%d matches filter", @"text showing how a single rows matched filter"), tableValuesCount, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
 		else
-			[countString appendFormat:NSLocalizedString(@"%d rows of %@%d match filter", @"text showing how many rows matched filter"), [tableValues count], maxNumRowsIsEstimate?@"~":@"", maxNumRows];
+			[countString appendFormat:NSLocalizedString(@"%d rows of %@%d match filter", @"text showing how many rows matched filter"), tableValuesCount, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
 
 	// If both a filter and limit is active, display full string
 	} else {
-		[countString appendFormat:NSLocalizedString(@"Rows %d-%d from filtered matches", @"text showing how many rows are in the limited filter match"), [limitRowsField intValue], [limitRowsField intValue]+[tableValues count]-1];
+		[countString appendFormat:NSLocalizedString(@"Rows %d-%d from filtered matches", @"text showing how many rows are in the limited filter match"), [limitRowsField intValue], [limitRowsField intValue]+tableValuesCount-1];
 	}
 
 	// If rows are selected, append selection count
@@ -743,6 +792,7 @@
  */
 - (IBAction)filterTable:(id)sender
 {
+	if ([tableDocumentInstance isWorking]) return;
 
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
@@ -762,11 +812,8 @@
 	}
 
 	// Reload data using the new filter settings
-	[self loadTableValues];
-	
-	// Reset the table view
 	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
-	[tableContentView reloadData];
+	[self loadTableValuesWithCallback:NULL];
 }
 
 /**
@@ -858,6 +905,7 @@
 		}
 	}
 	[tableValues addObject:newRow];
+	tableValuesCount++;
 
 	[tableContentView reloadData];
 	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView numberOfRows]-1] byExtendingSelection:NO];
@@ -1096,6 +1144,8 @@
  */
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell
 {
+	if ([tableDocumentInstance isWorking]) return;
+
 	if ([theArrowCell getClickedColumn] == NSNotFound || [theArrowCell getClickedRow] == NSNotFound) return;
 	int dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] intValue];
 
@@ -1318,11 +1368,8 @@
 	NSMutableArray *columnBlobStatuses = [[NSMutableArray alloc] init];
 	NSUInteger i;
 	
-	// Update the progress wheel every ~15%
-	NSUInteger loadingIndicatorDelta = 15;
-
-	NSUInteger lastProgressValue = loadingIndicatorDelta;
 	float relativeTargetRowCount = 100.0/targetRowCount;
+	NSUInteger nextTableDisplayBoundary = 50;
 
 	long rowsProcessed = 0;
 	long columnsCount = [dataColumns count];
@@ -1336,12 +1383,6 @@
 		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
 	}
 
-	// Remove all items from the table and reset the progress indicator
-	[tableValues removeAllObjects];
-	if (targetRowCount) [dataLoadingIndicator setIndeterminate:NO];
-	[dataLoadingIndicator setDoubleValue:(int)loadingIndicatorDelta/2];
-	[dataLoadingIndicator display];
-
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
 
@@ -1351,6 +1392,7 @@
 		// Add values for hidden blob and text fields if appropriate
 		if ( prefsLoadBlobsAsNeeded ) {
 			NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithCapacity:columnsCount]);
+			tableValuesCount++;
 			newRow = NSArrayObjectAtIndex(tableValues, rowsProcessed);
 			for ( i = 0 ; i < columnsCount ; i++ ) {
 				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
@@ -1363,18 +1405,22 @@
 		// Otherwise just add the new row
 		} else {
 			NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithArray:tempRow]);
+			tableValuesCount++;
 		}
 
-		// Update the progress bar as necessary, minimising updates
+		// Update the task interface as necessary
 		rowsProcessed++;
-		if (rowsProcessed < targetRowCount) {
-			[dataLoadingIndicator setDoubleValue:(rowsProcessed*relativeTargetRowCount)];
-			if ((int)[dataLoadingIndicator doubleValue] > lastProgressValue) {
-				[dataLoadingIndicator display];
-				lastProgressValue = (int)[dataLoadingIndicator doubleValue] + loadingIndicatorDelta;
+		if (!isFiltered) {
+			if (rowsProcessed < targetRowCount) {
+				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskPercentage:) withObject:[NSNumber numberWithFloat:(rowsProcessed*relativeTargetRowCount)] waitUntilDone:NO];
+			} else if (rowsProcessed == targetRowCount) {
+				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminate) withObject:nil waitUntilDone:NO];
 			}
-		} else if (rowsProcessed == targetRowCount) {
-			[dataLoadingIndicator setIndeterminate:YES];
+			
+			if (rowsProcessed > nextTableDisplayBoundary) {
+				[tableContentView reloadData];
+				nextTableDisplayBoundary *= 3;
+			}
 		}
 
 		// Drain and reset the autorelease pool every ~1024 rows
@@ -1520,9 +1566,8 @@
 		// New row created successfully
 		if ( isEditingNewRow ) {
 			if ( [prefs boolForKey:SPReloadAfterAddingRow] ) {
-				[self loadTableValues];
 				[tableWindow endEditingFor:nil];
-				[tableContentView reloadData];
+				[self loadTableValuesWithCallback:NULL];
 			} else {
 
 				// Set the insertId for fields with auto_increment
@@ -1539,9 +1584,8 @@
 
 			// Reload table if set to - otherwise no action required.
 			if ( [prefs boolForKey:SPReloadAfterEditingRow] ) {
-				[self loadTableValues];
 				[tableWindow endEditingFor:nil];
-				[tableContentView reloadData];
+				[self loadTableValuesWithCallback:NULL];
 			}
 		}
 		currentlyEditingRow = -1;
@@ -1749,6 +1793,7 @@
 										  withObject:[NSMutableArray arrayWithArray:oldRow]];
 				isEditingRow = NO;
 			} else {
+				tableValuesCount--;
 				[tableValues removeObjectAtIndex:[tableContentView selectedRow]];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
@@ -1963,19 +2008,24 @@
 
 			// Refresh table content
 			if ( errors || reloadAfterRemovingRow ) {
-				[self loadTableValues];
-				[tableContentView reloadData];
+				[self loadTableValuesWithCallback:@selector(finalizeRowDeletion)];
 			} else {
-				for ( i = 0 ; i < [tableValues count] ; i++ ) {
+				for ( i = 0 ; i < tableValuesCount ; i++ ) {
 					if ( ![selectedRows containsIndex:i] )
 						[tempResult addObject:NSArrayObjectAtIndex(tableValues, i)];
 				}
+				tableValuesCount = [tempResult count];
 				[tableValues setArray:tempResult];
+				[tableContentView deselectAll:self];
 				[tableContentView reloadData];
 			}
-			[tableContentView deselectAll:self];
 		}
 	}
+}
+- (void) finalizeRowDeletion
+{
+	[tableContentView deselectAll:self];
+	[tableContentView reloadData];
 }
 
 /**
@@ -2176,7 +2226,7 @@
 
 	// For unfiltered and non-limited tables, use the result count - and update the status count
 	if (!isLimited && !isFiltered) {
-		maxNumRows = [tableValues count];
+		maxNumRows = tableValuesCount;
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
@@ -2209,7 +2259,7 @@
 	if (checkStatusCount) {
 		NSInteger foundMaxRows; 
 		if ([prefs boolForKey:SPLimitResults]) {
-			foundMaxRows = [limitRowsField intValue] - 1 + [tableValues count];
+			foundMaxRows = [limitRowsField intValue] - 1 + tableValuesCount;
 			if (foundMaxRows > maxNumRows) {
 				if (foundMaxRows == [limitRowsField intValue] - 1 + [prefs integerForKey:SPLimitResultsValue]) {
 					maxNumRows = foundMaxRows + 1;
@@ -2219,8 +2269,8 @@
 					maxNumRowsIsEstimate = NO;
 				}
 			}
-		} else if ([tableValues count] > maxNumRows) {
-			maxNumRows = [tableValues count];
+		} else if (tableValuesCount > maxNumRows) {
+			maxNumRows = tableValuesCount;
 			maxNumRowsIsEstimate = YES;
 		}
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
@@ -2284,11 +2334,13 @@
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [tableValues count];
+	return tableValuesCount;
 }
 
 - (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
+	if (rowIndex >= tableValuesCount) return nil;
+
 	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] intValue]);
 
 	if ([theValue isKindOfClass:[NSData class]])
@@ -2309,6 +2361,7 @@
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
 {
 
+	if (row >= tableValuesCount) return;
 	if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
@@ -2384,9 +2437,6 @@
 	if (sortCol) [sortCol release];
 	sortCol = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
 
-	// Update data using the new sort order
-	[self loadTableValues];
-	
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
@@ -2401,7 +2451,8 @@
 		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
 	}
 
-	[tableContentView reloadData];
+	// Update data using the new sort order
+	[self loadTableValuesWithCallback:NULL];
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
@@ -2588,6 +2639,46 @@
 }
 
 #pragma mark -
+#pragma mark Task interaction
+
+/**
+ * Disable all content interactive elements during an ongoing task.
+ */
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only disable elements if the current tab is the content view
+	if (![[aNotification object] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) return;
+
+	[tableContentView setEnabled:NO];
+	[addButton setEnabled:NO];
+	[removeButton setEnabled:NO];
+	[copyButton setEnabled:NO];
+	[reloadButton setEnabled:NO];
+	[filterButton setEnabled:NO];
+}
+
+/**
+ * Enable all content interactive elements after an ongoing task.
+ */
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only enable elements if the current tab is the content view
+	if (![[aNotification object] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) return;
+
+	[tableContentView setEnabled:YES];
+	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) [addButton setEnabled:YES];
+	if ([tableContentView numberOfSelectedRows] > 0) {
+		[removeButton setEnabled:YES];
+		[copyButton setEnabled:YES];
+	}
+	[reloadButton setEnabled:YES];
+	[filterButton setEnabled:[fieldField isEnabled]];
+	[tableContentView setNeedsDisplay:YES];
+}
+
+#pragma mark -
 #pragma mark Other methods
 
 /*
@@ -2692,6 +2783,8 @@
 // Last but not least
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[tableValues release];
 	[dataColumns release];
 	[oldRow release];

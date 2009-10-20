@@ -51,6 +51,7 @@
 #import "SPUserManager.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
+#import "YRKSpinningProgressIndicator.h"
 
 // Used for printing
 #import "MGTemplateEngine.h"
@@ -73,6 +74,7 @@
 		_mainNibLoaded = NO;
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
+		_isWorking = NO;
 		_queryMode = SP_QUERYMODE_INTERFACE;
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
@@ -91,6 +93,12 @@
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
+
+		taskDisplayIsIndeterminate = YES;
+		taskDisplayLastValue = 0;
+		taskProgressValue = 0;
+		taskProgressValueDisplayInterval = 5;
+		taskDrawTimer = nil;
 
 		keyChainID = nil;
 
@@ -196,6 +204,15 @@
 	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	}
+	if (![NSBundle loadNibNamed:@"ProgressIndicatorLayer" owner:self]) {
+		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
+	}
+
+	// Set up the progress indicator layer - add to main window, change indicator color and size
+	[taskProgressLayer setHidden:YES];
+	[taskProgressLayer setFrame:[contentViewSplitter frame]];
+	[[tableWindow contentView] addSubview:taskProgressLayer];
+	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 }
 
 - (void)initWithConnectionFile:(NSString *)path
@@ -1171,6 +1188,111 @@
 - (void) setQueryMode:(int)theQueryMode
 {
 	_queryMode = theQueryMode;
+}
+
+#pragma mark -
+#pragma mark Task progress and notification methods
+
+/**
+ * Start a document-wide task, providing a short task description for
+ * display to the user.  This sets the document into working mode,
+ * preventing many actions, and shows an indeterminate progress interface
+ * to the user.
+ */
+- (void) startTaskWithDescription:(NSString *)description
+{
+
+	// Set flags and prevent further UI interaction in this window
+	_isWorking = YES;
+	[dbTablesTableView setEnabled:NO];
+	[historyControl setEnabled:NO];
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:[mainToolbar selectedItemIdentifier]];
+
+	// Reset the progress indicator
+	taskDisplayIsIndeterminate = YES;
+	[taskProgressIndicator setIndeterminate:YES];
+	[taskProgressIndicator animate:self];
+	[taskProgressIndicator startAnimation:self];
+	taskDisplayLastValue = 0;
+
+	// Set the descriptive label and schedule appearance in the near future
+	[taskDescriptionText setStringValue:description];
+	taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(showTaskProgressLayer:) userInfo:nil repeats:NO] retain];
+}
+
+/**
+ * Show the task progress layer - after a small delay to minimise flicker.
+ */
+- (void) showTaskProgressLayer:(NSTimer *)theTimer
+{
+	[taskProgressLayer setHidden:NO];
+	[taskProgressLayer display];
+	[taskDrawTimer release], taskDrawTimer = nil;
+}
+
+/**
+ * Updates the task description shown to the user.
+ */
+- (void) setTaskDescription:(NSString *)description
+{
+	[taskDescriptionText setStringValue:description];
+}
+
+/**
+ * Sets the task percentage progress - the first call to this automatically
+ * switches the progress display to determinate.
+ */
+- (void) setTaskPercentage:(NSNumber *)taskPercentage
+{
+	taskProgressValue = [taskPercentage floatValue];
+	if (taskProgressValue > taskDisplayLastValue + taskProgressValueDisplayInterval
+		|| taskProgressValue < taskDisplayLastValue - taskProgressValueDisplayInterval)
+	{
+		[taskProgressIndicator setDoubleValue:taskProgressValue];
+		taskDisplayLastValue = taskProgressValue;
+	}
+}
+
+/**
+ * Sets the task progress indicator back to indeterminate (also performed
+ * automatically whenever a new task is started)
+ */
+- (void) setTaskProgressToIndeterminate
+{
+	if (taskDisplayIsIndeterminate) return;
+	taskDisplayIsIndeterminate = YES;
+	[taskProgressIndicator setIndeterminate:YES];
+	[taskProgressIndicator startAnimation:self];
+	taskDisplayLastValue = 0;
+}
+
+/**
+ * Hide the task progress and restore the document to allow actions again.
+ */
+- (void) endTask
+{
+
+	// Cancel the draw timer if it exists
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+
+	// Hide the task interface
+	if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
+	[taskProgressLayer setHidden:YES];
+
+	// Re-enable window interface
+	_isWorking = NO;
+	[dbTablesTableView setEnabled:YES];
+	[historyControl setEnabled:YES];
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:[mainToolbar selectedItemIdentifier]];
+}
+
+/**
+ * Returns whether the document is busy performing a task - allows UI or actions
+ * to be restricted as appropriate.
+ */
+- (BOOL) isWorking
+{
+	return _isWorking;
 }
 
 #pragma mark -
@@ -2643,7 +2765,7 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if (!_isConnected) {
+	if (!_isConnected || _isWorking) {
 		return ([menuItem action] == @selector(newDocument:) || [menuItem action] == @selector(terminate:));
 	}
 
@@ -3130,7 +3252,7 @@
  */
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
-	if (!_isConnected) return NO;
+	if (!_isConnected || _isWorking) return NO;
 
 	NSString *identifier = [toolbarItem itemIdentifier];
 
@@ -3222,7 +3344,9 @@
  */
 - (BOOL)windowShouldClose:(id)sender
 {
-	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
+	if (_isWorking) {
+		return NO;
+	} else if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
 		return NO;
 	} else {
 
@@ -3485,6 +3609,7 @@
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
+	if (taskDrawTimer) [taskDrawTimer release];
 	if(queryEditorInitString) [queryEditorInitString release];
 	if(spfSession) [spfSession release];
 	if(userManagerInstance) [userManagerInstance release];

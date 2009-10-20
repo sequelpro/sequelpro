@@ -109,3 +109,5 @@ extern NSString *SPQueryFavorites;
 extern NSString *SPFavorites;
 extern NSString *SPTableColumnWidths;
 extern NSString *SPQueryHistory;
+extern NSString *SPDocumentTaskStartNotification;
+extern NSString *SPDocumentTaskEndNotification;

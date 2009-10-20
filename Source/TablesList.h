@@ -69,6 +69,9 @@ enum sp_table_types
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
 	IBOutlet id tableTypeButton;
+	IBOutlet id toolbarAddButton;
+	IBOutlet id toolbarActionsButton;
+	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
 	IBOutlet id tableRenameSheet;
 	IBOutlet id tableRenameField;
@@ -147,5 +150,9 @@ enum sp_table_types
 - (void) hideFilter;
 - (void) clearFilter;
 - (IBAction) updateFilter:(id)sender;
+
+// Task interaction
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 @end

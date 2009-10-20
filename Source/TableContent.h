@@ -47,6 +47,7 @@
 	IBOutlet id addButton;
 	IBOutlet id copyButton;
 	IBOutlet id removeButton;
+	IBOutlet id reloadButton;
 	IBOutlet id multipleLineEditingButton;
 	IBOutlet id countText;
 	IBOutlet id limitRowsField;
@@ -60,6 +61,7 @@
 	
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *tableValues, *dataColumns, *keys, *oldRow;
+	NSUInteger tableValuesCount;
 	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
@@ -82,7 +84,8 @@
 
 // Table loading methods and information
 - (void) loadTable:(NSString *)aTable;
-- (void) loadTableValues;
+- (void) loadTableValuesWithCallback:(SEL)tableContentCallbackMethod;
+- (void) loadTableValuesTaskWithCallback:(id)encodedTableContentCallbackMethod;
 - (NSString *) tableFilterString;
 - (void) updateCountText;
 
@@ -102,6 +105,10 @@
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResult;
 
+// Task interaction
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
@@ -113,6 +120,7 @@
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
+- (void)finalizeRowDeletion;
 - (void)updateNumberOfRows;
 - (int)fetchNumberOfRows;
 - (BOOL)saveRowOnDeselect;
