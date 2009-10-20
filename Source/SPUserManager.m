@@ -29,6 +29,7 @@
 #import "ImageAndTextCell.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
+#import "SPGrowlController.h"
 
 #define COLUMNIDNAME @"NameColumn"
 
@@ -44,6 +45,8 @@
 
 @implementation SPUserManager
 
+@synthesize mySqlConnection;
+
 - (id)init 
 {
 	[self dealloc];
@@ -57,7 +60,7 @@
 		return nil;
 	}
 	
-	[self setConnection:connection];
+	self.mySqlConnection = connection;
 
 	// When reading privileges from the database, they are converted automatically to a
 	// lowercase key used in the user privileges stores, from which a GRANT syntax
@@ -97,10 +100,6 @@
 											 selector:@selector(contextDidSave:) 
 												 name:NSManagedObjectContextDidSaveNotification 
 											   object:nil];
-	//[[NSNotificationCenter defaultCenter] addObserver:self
-//											 selector:@selector(contextDidChange:)
-//												 name:NSManagedObjectContextObjectsDidChangeNotification 
-//											   object:nil];
 	[tabView selectTabViewItemAtIndex:0];
 	
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
@@ -110,7 +109,6 @@
 	[tableColumn setDataCell:imageAndTextCell];
 
 	[self _initializeUsers];
-//	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
 	[[self window] makeKeyAndOrderFront:nil];
 }
 
@@ -124,7 +122,7 @@
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
-	MCPResult *result = [[[self connection] queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"] retain];
+	MCPResult *result = [[self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"] retain];
 	int rows = [result numOfRows];
 	if (rows > 0)
 	{
@@ -146,7 +144,7 @@
 	[privsSupportedByServer removeAllObjects];
 
 	// Attempt to use SHOW PRIVILEGES syntax - supported since 4.1.0
-	result = [[self connection] queryString:@"SHOW PRIVILEGES"];
+	result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
 	if ([result numOfRows]) {
 		while (privRow = [result fetchRowAsArray]) {
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
@@ -157,7 +155,7 @@
 	
 	// If that fails, base privilege support on the mysql.users columns
 	} else {
-		result = [[self connection] queryString:@"SHOW COLUMNS FROM `mysql`.`user`"];
+		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM `mysql`.`user`"];
 		while (privRow = [result fetchRowAsArray]) {
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
 			if (![privKey hasSuffix:@"_priv"]) continue;
@@ -592,7 +590,7 @@
 		
 	}
 	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
-	[[self connection] queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+	[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
 	
 	return TRUE;
 }
@@ -607,7 +605,7 @@
 										 [[user valueForKey:@"host"] tickQuotedString],
 										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
 			// Create user in database
-			[[self connection] queryString:[NSString stringWithFormat:createStatement]];
+			[self.mySqlConnection queryString:[NSString stringWithFormat:createStatement]];
 			
 			if ([self checkAndDisplayMySqlError])
 			{
@@ -615,7 +613,6 @@
 			}			
 		}
 	}
-	
 	return TRUE;
 	
 }
@@ -654,7 +651,7 @@
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", grantStatement);
-			[[self connection] queryString:[NSString stringWithFormat:grantStatement]];
+			[self.mySqlConnection queryString:[NSString stringWithFormat:grantStatement]];
 			[self checkAndDisplayMySqlError];
 		}
 		
@@ -666,7 +663,7 @@
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", revokeStatement);
-			[[self connection] queryString:[NSString stringWithFormat:revokeStatement]];
+			[self.mySqlConnection queryString:[NSString stringWithFormat:revokeStatement]];
 			[self checkAndDisplayMySqlError];
 		}		
 	}
@@ -703,9 +700,9 @@
 
 - (BOOL)checkAndDisplayMySqlError
 {
-	if (![[[self connection] getLastErrorMessage] isEqualToString:@""])
+	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""])
 	{
-		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:[[self connection] getLastErrorMessage]];
+		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:[self.mySqlConnection getLastErrorMessage]];
 		[alert runModal];
 		
 		return FALSE;

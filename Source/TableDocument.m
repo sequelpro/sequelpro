@@ -625,7 +625,7 @@
 		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
 	} 
 
-	[userManagerInstance setConnection:mySQLConnection];
+	userManagerInstance.mySqlConnection = mySQLConnection;
 
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];

@@ -42,14 +42,13 @@
 	IBOutlet NSTreeController *treeController;
 	IBOutlet NSMutableDictionary *privsSupportedByServer;
 }
+@property (nonatomic, retain) MCPConnection *mySqlConnection;
 
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
 - (NSManagedObjectModel *)managedObjectModel;
 - (NSManagedObjectContext *)managedObjectContext;
 
 - (id)initWithConnection:(MCPConnection *)connection;
-- (void)setConnection:(MCPConnection *)connection;
-- (MCPConnection *)connection;
 - (void)show;
 - (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
 
