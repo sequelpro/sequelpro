@@ -3274,6 +3274,11 @@
 	if ([identifier isEqualToString:@"ClearConsoleIdentifier"]) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
+	
+	if (![identifier isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) {
+		return (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) || 
+				([tablesListInstance tableType] == SP_TABLETYPE_VIEW));
+	}
 
 	return YES;
 }
