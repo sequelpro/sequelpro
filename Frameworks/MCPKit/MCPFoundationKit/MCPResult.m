@@ -451,9 +451,12 @@ const OUR_CHARSET our_charsets60[] =
 				case FIELD_TYPE_MEDIUM_BLOB:
 				case FIELD_TYPE_LONG_BLOB:
 					theCurrentObj = [NSData dataWithBytes:theData length:theLengths[i]];
-					if (!(theField[i].flags & BINARY_FLAG)) { // It is TEXT and NOT BLOB...
+					
+					// It is TEXT and NOT BLOB
+					if (!(theField[i].flags & BINARY_FLAG)) { 
 						theCurrentObj = [self stringWithText:theCurrentObj];
-					} // #warning Should check for TEXT (using theField[i].flag BINARY_FLAG)
+					}
+					
 					break;
 					
 				case FIELD_TYPE_NULL:

@@ -229,36 +229,50 @@
 				case FIELD_TYPE_SET:
 				case FIELD_TYPE_ENUM:
 				case FIELD_TYPE_NEWDATE: // Don't know what the format for this type is...
-				cellData = [NSString stringWithCString:theData encoding:mEncoding];
-				break;
+					
+					// For fields of type BINARY/VARBINARY, return the data. Also add an extra check to make 
+					// sure it's binary data (seems that it's returned as type STRING) to get around a MySQL 
+					// bug (#28214) returning DATE fields with the binary flag set.
+					if ((fieldDefinitions[i].flags & BINARY_FLAG) && 
+						(fieldDefinitions[i].type == FIELD_TYPE_STRING)) 
+					{						
+						cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
+					}
+					// For string data, convert to text
+					else {
+						cellData = [NSString stringWithCString:theData encoding:mEncoding];
+					}
+					
+					break;
 
 				case FIELD_TYPE_BIT:
-				cellData = [NSString stringWithFormat:@"%u", theData[0]];
-				break;
+					cellData = [NSString stringWithFormat:@"%u", theData[0]];
+					break;
 
 				case FIELD_TYPE_TINY_BLOB:
 				case FIELD_TYPE_BLOB:
 				case FIELD_TYPE_MEDIUM_BLOB:
 				case FIELD_TYPE_LONG_BLOB:
-
+					
 					// For binary data, return the data
-				if (fieldDefinitions[i].flags & BINARY_FLAG) {
-					cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
+					if (fieldDefinitions[i].flags & BINARY_FLAG) {
+						cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
+					}
+					else {
+						cellData = [[NSString alloc] initWithBytes:theData length:fieldLengths[i] encoding:mEncoding];
+					
+						if (cellData) [cellData autorelease];
+					}		
 
-					// For string data, convert to text
-				} else {
-					cellData = [[NSString alloc] initWithBytes:theData length:fieldLengths[i] encoding:mEncoding];
-					if (cellData) [cellData autorelease];
-				}
-				break;
+					break;
 
 				case FIELD_TYPE_NULL:
-				cellData = [NSNull null];
-				break;
+					cellData = [NSNull null];
+					break;
 
 				default:
-				NSLog(@"in fetchNextRowAsArray : Unknown type : %ld for column %ld, sending back a NSData object", (NSInteger)fieldDefinitions[i].type, (NSInteger)i);
-				cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
+					NSLog(@"in fetchNextRowAsArray : Unknown type : %ld for column %ld, sending back a NSData object", (NSInteger)fieldDefinitions[i].type, (NSInteger)i);
+					cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 				break;
 			}
 
