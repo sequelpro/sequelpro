@@ -2002,8 +2002,12 @@
  * Displays the user account manager.
  */
 - (IBAction)showUserManager:(id)sender
-{
-	[userManagerInstance show];
+{	
+	[NSApp beginSheet:[userManagerInstance window]
+	   modalForWindow:tableWindow 
+		modalDelegate:userManagerInstance 
+	   didEndSelector:nil
+		  contextInfo:nil];
 }
 
 /**

@@ -47,35 +47,27 @@
 
 @synthesize mySqlConnection;
 
-- (id)init 
-{
-	[self dealloc];
-	@throw [NSException exceptionWithName:@"BadInitCall" reason:@"Can't call init here" userInfo:nil];
-	return nil;
-}
-
 - (id)initWithConnection:(MCPConnection*) connection
 {
-	if (![super init]) {
-		return nil;
-	}
+	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
 	
-	self.mySqlConnection = connection;
+		self.mySqlConnection = connection;
 
-	// When reading privileges from the database, they are converted automatically to a
-	// lowercase key used in the user privileges stores, from which a GRANT syntax
-	// is derived automatically.  While most keys can be automatically converted without
-	// any difficulty, some keys differ slightly in mysql column storage to GRANT syntax;
-	// this dictionary provides mappings for those values to ensure consistency.
-	privColumnToGrantMap = [[NSDictionary alloc] initWithObjectsAndKeys:
-								@"Grant_option_priv", @"Grant_priv",
-								@"Show_databases_priv", @"Show_db_priv",
-								@"Create_temporary_tables_priv", @"Create_tmp_table_priv",
-								@"Replication_slave_priv", @"Repl_slave_priv", 
-								@"Replication_client_priv", @"Repl_client_priv",
-							  nil];
+		// When reading privileges from the database, they are converted automatically to a
+		// lowercase key used in the user privileges stores, from which a GRANT syntax
+		// is derived automatically.  While most keys can be automatically converted without
+		// any difficulty, some keys differ slightly in mysql column storage to GRANT syntax;
+		// this dictionary provides mappings for those values to ensure consistency.
+		privColumnToGrantMap = [[NSDictionary alloc] initWithObjectsAndKeys:
+									@"Grant_option_priv", @"Grant_priv",
+									@"Show_databases_priv", @"Show_db_priv",
+									@"Create_temporary_tables_priv", @"Create_tmp_table_priv",
+									@"Replication_slave_priv", @"Repl_slave_priv", 
+									@"Replication_client_priv", @"Repl_client_priv",
+								  nil];
 
-	privsSupportedByServer = [[NSMutableDictionary alloc] init];
+		privsSupportedByServer = [[NSMutableDictionary alloc] init];
+	}
 
 	return self;
 }
@@ -109,7 +101,6 @@
 	[tableColumn setDataCell:imageAndTextCell];
 
 	[self _initializeUsers];
-	[[self window] makeKeyAndOrderFront:nil];
 }
 
 - (void)_initializeUsers
@@ -316,14 +307,14 @@
 	return mySqlConnection;
 }
 
-- (void)show
+/*- (void)show
 {
 //	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
 	if (!outlineView) {
 		[NSBundle loadNibNamed:@"UserManagerView" owner:self];
 	}
 	[[self window] makeKeyAndOrderFront:nil];
-}
+}*/
 
 #pragma mark -
 #pragma mark OutlineView Delegate Methods
@@ -383,26 +374,37 @@
 	}
 }
 
-// General Action Methods 
+#pragma mark -
+#pragma mark General IBAction methods
+
+/**
+ * Closes the user manager and reverts any changes made.
+ */
 - (IBAction)doCancel:(id)sender
 {
 	[[self managedObjectContext] rollback];
-	[[self window] close];
+	
+	// Close sheet
+	[NSApp endSheet:[self window] returnCode:0];
+	[[self window] orderOut:self];
 }
 
+/**
+ * Closes the user manager and applies any changes made.
+ */
 - (IBAction)doApply:(id)sender
 {
 	NSError *error = nil;
 	[[self managedObjectContext] save:&error];
-	if (error != nil)
-	{
+	
+	if (error != nil) {
 		[[NSApplication sharedApplication] presentError:error];
 	}
-	else
-	{
-		[[self window] close];
+	else {
+		// Close sheet
+		[NSApp endSheet:[self window] returnCode:0];
+		[[self window] orderOut:self];
 	}
-//	[self _clearData];
 }
 
 - (IBAction)checkAllPrivileges:(id)sender
@@ -713,6 +715,7 @@
 
 #pragma mark -
 #pragma mark Tab View Delegate methods
+
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ([[treeController selectedObjects] count] == 0)
@@ -727,4 +730,24 @@
 	
 	return TRUE;
 }
+
+#pragma mark -
+#pragma mark SplitView delegate methods
+
+/**
+ * Return the maximum possible size of the splitview.
+ */
+- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+{
+	return (proposedMax - 220);
+}
+
+/**
+ * Return the minimum possible size of the splitview.
+ */
+- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+{
+	return (proposedMin + 120);
+}
+
 @end
