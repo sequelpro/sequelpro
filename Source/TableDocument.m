@@ -97,7 +97,7 @@
 		taskDisplayIsIndeterminate = YES;
 		taskDisplayLastValue = 0;
 		taskProgressValue = 0;
-		taskProgressValueDisplayInterval = 5;
+		taskProgressValueDisplayInterval = 1;
 		taskDrawTimer = nil;
 
 		keyChainID = nil;

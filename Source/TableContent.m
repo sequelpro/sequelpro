@@ -1418,7 +1418,7 @@
 			}
 			
 			if (rowsProcessed > nextTableDisplayBoundary) {
-				[tableContentView reloadData];
+				[tableContentView noteNumberOfRowsChanged];
 				nextTableDisplayBoundary *= 3;
 			}
 		}
