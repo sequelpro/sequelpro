@@ -211,7 +211,7 @@
 	// Set up the progress indicator layer - add to main window, change indicator color and size
 	[taskProgressLayer setHidden:YES];
 	[taskProgressLayer setFrame:[contentViewSplitter frame]];
-	[[tableWindow contentView] addSubview:taskProgressLayer];
+	[[tableWindow contentView] addSubview:taskProgressLayer positioned:NSWindowAbove relativeTo:contentViewSplitter];
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 }
 
@@ -1242,9 +1242,9 @@
  * Sets the task percentage progress - the first call to this automatically
  * switches the progress display to determinate.
  */
-- (void) setTaskPercentage:(NSNumber *)taskPercentage
+- (void) setTaskPercentage:(float)taskPercentage
 {
-	taskProgressValue = [taskPercentage floatValue];
+	taskProgressValue = taskPercentage;
 	if (taskProgressValue > taskDisplayLastValue + taskProgressValueDisplayInterval
 		|| taskProgressValue < taskDisplayLastValue - taskProgressValueDisplayInterval)
 	{

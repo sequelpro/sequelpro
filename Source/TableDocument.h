@@ -187,7 +187,7 @@ enum sp_current_query_mode
 - (void) startTaskWithDescription:(NSString *)description;
 - (void) showTaskProgressLayer:(NSTimer *)theTimer;
 - (void) setTaskDescription:(NSString *)description;
-- (void) setTaskPercentage:(NSNumber *)taskPercentage;
+- (void) setTaskPercentage:(float)taskPercentage;
 - (void) setTaskProgressToIndeterminate;
 - (void) endTask;
 - (BOOL) isWorking;

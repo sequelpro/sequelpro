@@ -287,7 +287,10 @@
 {
 	if (_isIndeterminate) _isIndeterminate = NO;
 	_currentValue = doubleValue;
-	[self displayIfNeeded];
+	if ([NSThread isMainThread])
+		[self displayIfNeeded];
+	else
+		[self performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
 }
 
 - (double)maxValue

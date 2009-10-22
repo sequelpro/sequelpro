@@ -474,6 +474,8 @@
 	SEL callbackMethod = NULL;
 	int rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
 
+	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
+
 	// Remove all items from the table
 	tableValuesCount = 0;
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
@@ -561,8 +563,6 @@
 	if (encodedTableContentCallbackMethod) {
 		[encodedTableContentCallbackMethod getValue:&callbackMethod];
 		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
-	} else {
-		[tableContentView reloadData];
 	}
 
 	[tableDocumentInstance endTask];
@@ -940,6 +940,7 @@
 	//copy row
 	tempRow = [NSMutableArray arrayWithArray:[tableValues objectAtIndex:[tableContentView selectedRow]]];
 	[tableValues insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
+	tableValuesCount++;
 	
 	//if we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
@@ -1370,6 +1371,7 @@
 	
 	float relativeTargetRowCount = 100.0/targetRowCount;
 	NSUInteger nextTableDisplayBoundary = 50;
+	BOOL tableViewRedrawn = NO;
 
 	long rowsProcessed = 0;
 	long columnsCount = [dataColumns count];
@@ -1412,14 +1414,18 @@
 		rowsProcessed++;
 		if (!isFiltered) {
 			if (rowsProcessed < targetRowCount) {
-				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskPercentage:) withObject:[NSNumber numberWithFloat:(rowsProcessed*relativeTargetRowCount)] waitUntilDone:NO];
+				[tableDocumentInstance setTaskPercentage:(rowsProcessed*relativeTargetRowCount)];
 			} else if (rowsProcessed == targetRowCount) {
 				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminate) withObject:nil waitUntilDone:NO];
 			}
 			
 			if (rowsProcessed > nextTableDisplayBoundary) {
-				[tableContentView noteNumberOfRowsChanged];
-				nextTableDisplayBoundary *= 3;
+				[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+				if (!tableViewRedrawn) {
+					[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+					tableViewRedrawn = YES;
+				}
+				nextTableDisplayBoundary *= 2;
 			}
 		}
 
@@ -1429,6 +1435,9 @@
 			dataLoadingPool = [[NSAutoreleasePool alloc] init];
 		}
 	}
+
+	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+	[tableContentView setNeedsDisplay:YES];
 	
 	// Clean up the autorelease pool and reset the progress indicator
 	[dataLoadingPool drain];
@@ -2667,7 +2676,6 @@
 	// Only enable elements if the current tab is the content view
 	if (![[aNotification object] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) return;
 
-	[tableContentView setEnabled:YES];
 	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) [addButton setEnabled:YES];
 	if ([tableContentView numberOfSelectedRows] > 0) {
 		[removeButton setEnabled:YES];
@@ -2675,7 +2683,8 @@
 	}
 	[reloadButton setEnabled:YES];
 	[filterButton setEnabled:[fieldField isEnabled]];
-	[tableContentView setNeedsDisplay:YES];
+	[tableContentView setEnabled:YES];
+	[tableContentView displayIfNeeded];
 }
 
 #pragma mark -
@@ -2738,6 +2747,7 @@
 		} else if ( isEditingNewRow ) {
 			isEditingRow = NO;
 			isEditingNewRow = NO;
+			tableValuesCount--;
 			[tableValues removeObjectAtIndex:row];
 			[tableContentView reloadData];
 		}
