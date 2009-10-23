@@ -26,8 +26,8 @@
 
 @class MCPConnection;
 
-@interface SPUserManager : NSWindowController {
-	
+@interface SPUserManager : NSWindowController 
+{	
 	NSPersistentStoreCoordinator *persistentStoreCoordinator;
     NSManagedObjectModel *managedObjectModel;
     NSManagedObjectContext *managedObjectContext;
@@ -42,6 +42,7 @@
 	IBOutlet NSTreeController *treeController;
 	IBOutlet NSMutableDictionary *privsSupportedByServer;
 }
+
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
 
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
@@ -70,4 +71,5 @@
 - (BOOL)deleteUsers:(NSArray *)deletedUsers;
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
+
 @end

@@ -34,6 +34,7 @@
 #define COLUMNIDNAME @"NameColumn"
 
 @interface SPUserManager (PrivateMethods)
+
 - (void)_initializeTree:(NSArray *)items;
 - (void)_initializeUsers;
 - (void)_selectParentFromSelection;
@@ -41,12 +42,16 @@
 - (NSManagedObject *)_createNewSPUser;
 - (BOOL)checkAndDisplayMySqlError;
 - (void)_clearData;
+
 @end
 
 @implementation SPUserManager
 
 @synthesize mySqlConnection;
 
+/**
+ * Initialise the user manager with the supplied connection.
+ */
 - (id)initWithConnection:(MCPConnection*) connection
 {
 	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
@@ -72,6 +77,9 @@
 	return self;
 }
 
+/**
+ * Dealloc. Get rid of everything.
+ */
 - (void)dealloc
 {	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -82,10 +90,14 @@
 	[privColumnToGrantMap release], privColumnToGrantMap = nil;
 	[privsSupportedByServer release], privsSupportedByServer = nil;
 	
-	[mySqlConnection release];
+	[mySqlConnection release], mySqlConnection = nil;
+	
 	[super dealloc];
 }
 
+/**
+ * Initialise various interface controls.
+ */
 - (void)awakeFromNib
 {	
 	[[NSNotificationCenter defaultCenter] addObserver:self 
@@ -237,38 +249,33 @@
 }
 
 /**
- Creates, retains, and returns the managed object model for the application 
- by merging all of the models found in the application bundle.
+ * Creates, retains, and returns the managed object model for the application 
+ * by merging all of the models found in the application bundle.
  */
-
-- (NSManagedObjectModel *)managedObjectModel {
-	
-    if (managedObjectModel != nil) {
-        return managedObjectModel;
-    }
+- (NSManagedObjectModel *)managedObjectModel 
+{	
+    if (managedObjectModel != nil) return managedObjectModel;
 	
     managedObjectModel = [[NSManagedObjectModel mergedModelFromBundles:nil] retain];    
+	
     return managedObjectModel;
 }
 
 /**
- Returns the persistent store coordinator for the application.  This 
- implementation will create and return a coordinator, having added the 
- store for the application to it.  (The folder for the store is created, 
- if necessary.)
+ * Returns the persistent store coordinator for the application.  This 
+ * implementation will create and return a coordinator, having added the 
+ * store for the application to it.  (The folder for the store is created, 
+ * if necessary.)
  */
-
-- (NSPersistentStoreCoordinator *) persistentStoreCoordinator {
-	
-    if (persistentStoreCoordinator != nil) {
-        return persistentStoreCoordinator;
-    }
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator 
+{	
+    if (persistentStoreCoordinator != nil) return persistentStoreCoordinator;
 	
     NSError *error;
     
     persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
-    if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error])
-	{
+	
+    if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error]) {
         [[NSApplication sharedApplication] presentError:error];
     }    
 	
@@ -276,15 +283,12 @@
 }
 
 /**
- Returns the managed object context for the application (which is already
- bound to the persistent store coordinator for the application.) 
+ * Returns the managed object context for the application (which is already
+ * bound to the persistent store coordinator for the application.) 
  */
-
-- (NSManagedObjectContext *) managedObjectContext {
-	
-    if (managedObjectContext != nil) {
-        return managedObjectContext;
-    }
+- (NSManagedObjectContext *)managedObjectContext 
+{	
+    if (managedObjectContext != nil) return managedObjectContext;
 	
     NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
     if (coordinator != nil) {
@@ -294,27 +298,6 @@
     
     return managedObjectContext;
 }
-
-- (void)setConnection:(MCPConnection *)connection
-{
-	[connection retain];
-	[mySqlConnection release];
-	mySqlConnection = connection;
-}
-
-- (MCPConnection* )connection
-{
-	return mySqlConnection;
-}
-
-/*- (void)show
-{
-//	[NSThread detachNewThreadSelector:@selector(_initializeUsers) toTarget:self withObject:nil];
-	if (!outlineView) {
-		[NSBundle loadNibNamed:@"UserManagerView" owner:self];
-	}
-	[[self window] makeKeyAndOrderFront:nil];
-}*/
 
 #pragma mark -
 #pragma mark OutlineView Delegate Methods
@@ -407,6 +390,9 @@
 	}
 }
 
+/**
+ * Enables all privileges.
+ */
 - (IBAction)checkAllPrivileges:(id)sender
 {
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
@@ -535,28 +521,26 @@
 
 #pragma mark -
 #pragma mark Notifications
+
 - (void)contextDidSave:(NSNotification *)notification
-{
+{	
 	if (!isInitializing)
-	{
+	{		
 		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
 		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
 		NSArray *deleted = [[notification userInfo] valueForKey:NSDeletedObjectsKey];
 		
-		if ([inserted count] > 0)
-		{
-			[self insertUsers:inserted];			
+		if ([inserted count] > 0) {
+			[self insertUsers:inserted];
 		}
 		
-		if ([updated count] > 0)
-		{
+		if ([updated count] > 0) {
 			[self updateUsers:updated];
 		}
 		
-		if ([deleted count] > 0)
-		{
+		if ([deleted count] > 0) {
 			[self deleteUsers:deleted];
-		}		
+		}	
 	}
 }
 
@@ -564,10 +548,7 @@
 {
 	DLog(@"contextDidChange:");
 	
-	if (!isInitializing)
-	{
-		[outlineView reloadData];
-	}
+	if (!isInitializing) [outlineView reloadData];
 }
 
 - (BOOL)updateUsers:(NSArray *)updatedUsers
@@ -597,29 +578,35 @@
 	return TRUE;
 }
 
+/**
+ * Inserts (creates) the supplied users in the database.
+ */
 - (BOOL)insertUsers:(NSArray *)insertedUsers
-{
-	for(NSManagedObject *user in insertedUsers)
+{	
+	for (NSManagedObject *user in insertedUsers)
 	{
 		if ([user parent] != nil) {
+			
 			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
 										 [[[user parent] valueForKey:@"user"] tickQuotedString], 
 										 [[user valueForKey:@"host"] tickQuotedString],
 										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
+						
 			// Create user in database
 			[self.mySqlConnection queryString:[NSString stringWithFormat:createStatement]];
 			
-			if ([self checkAndDisplayMySqlError])
-			{
+			if ([self checkAndDisplayMySqlError]) {
 				[self grantPrivilegesToUser:user];
 			}			
 		}
 	}
-	return TRUE;
 	
+	return YES;
 }
 
-// Grant or Revoke privileges to the given user
+/**
+ * Grant or revoke privileges to the given user
+ */
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user
 {
 	if ([user valueForKey:@"parent"] != nil)
@@ -702,15 +689,14 @@
 
 - (BOOL)checkAndDisplayMySqlError
 {
-	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""])
-	{
+	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:[self.mySqlConnection getLastErrorMessage]];
 		[alert runModal];
 		
-		return FALSE;
-	} else {
-		return TRUE;
+		return NO;
 	}
+	
+	return YES;
 }
 
 #pragma mark -
