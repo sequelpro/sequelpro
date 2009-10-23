@@ -1418,15 +1418,16 @@
 			} else if (rowsProcessed == targetRowCount) {
 				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminate) withObject:nil waitUntilDone:NO];
 			}
-			
-			if (rowsProcessed > nextTableDisplayBoundary) {
-				[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
-				if (!tableViewRedrawn) {
-					[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
-					tableViewRedrawn = YES;
-				}
-				nextTableDisplayBoundary *= 2;
+		}
+
+		// Update the table view with new results every now and then
+		if (rowsProcessed > nextTableDisplayBoundary) {
+			[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+			if (!tableViewRedrawn) {
+				[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+				tableViewRedrawn = YES;
 			}
+			nextTableDisplayBoundary *= 2;
 		}
 
 		// Drain and reset the autorelease pool every ~1024 rows

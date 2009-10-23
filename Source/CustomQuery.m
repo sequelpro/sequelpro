@@ -64,23 +64,27 @@
 	queries = [queryParser splitSqlStringByCharacter:';'];
 	[queryParser release];
 
-	NSRange curRange = [textView selectedRange];
+	oldThreadedQueryRange = [textView selectedRange];
 	// Unselect a selection if given to avoid interferring with error highlighting
-	[textView setSelectedRange:NSMakeRange(curRange.location, 0)];
+	[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location, 0)];
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
 	tableReloadAfterEditing = NO;
 
-	[self performQueries:queries];
+	[self performQueries:queries withCallback:@selector(runAllQueriesCallback)];
+}
+
+- (void) runAllQueriesCallback
+{
 
 	// If no error was selected reconstruct a given selection
 	if([textView selectedRange].length == 0)
-		[textView setSelectedRange:curRange];
+		[textView setSelectedRange:oldThreadedQueryRange];
 
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
 	NSRange oldRange = [textView selectedRange];
-	[textView setSelectedRange:NSMakeRange(oldRange.location,0)];
+	[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location,0)];
 	[textView insertText:@""];
 	[textView setSelectedRange:oldRange];
 }
@@ -123,7 +127,7 @@
 
 	tableReloadAfterEditing = NO;
 
-	[self performQueries:queries];
+	[self performQueries:queries withCallback:NULL];
 }
 
 /**
@@ -330,12 +334,34 @@
  * Performs the mysql-query given by the user
  * sets the tableView columns corresponding to the mysql-result
  */
-- (void)performQueries:(NSArray *)queries;
-{	
+- (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
+{
+	NSString *taskString;
+	if ([queries count] > 1) {
+		taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %i...", @"Running multiple queries string"), 1, [queries count]];
+	} else {
+		taskString = NSLocalizedString(@"Running query...", @"Running single query string");
+	}
+	[tableDocumentInstance startTaskWithDescription:taskString];
+	[errorText setStringValue:taskString];
+	[affectedRowsText setStringValue:@""];
+
+	NSValue *encodedCallbackMethod = nil;
+	if (customQueryCallbackMethod)
+		encodedCallbackMethod = [NSValue valueWithBytes:&customQueryCallbackMethod objCType:@encode(SEL)];
+	NSDictionary *taskArguments = [NSDictionary dictionaryWithObjectsAndKeys:queries, @"queries", encodedCallbackMethod, @"callback", nil];
+	[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
+}
+
+- (void)performQueriesTask:(NSDictionary *)taskArguments
+{
+	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
+	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
 	NSArray				*theColumns;
 	NSTableColumn		*theCol;
 	MCPStreamingResult	*streamingResult  = nil;
 	NSMutableString		*errors     = [NSMutableString string];
+	SEL					callbackMethod = NULL;
 	
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
@@ -376,6 +402,12 @@
 	// Perform the supplied queries in series
 	for ( i = 0 ; i < queryCount ; i++ ) {
 
+		if (i > 0) {
+			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %i...", @"Running multiple queries string"), i+1, queryCount];
+			[tableDocumentInstance setTaskDescription:taskString];
+			[errorText setStringValue:taskString];
+		}
+
 		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
 
 		// Don't run blank queries, or queries which only contain whitespace.
@@ -392,10 +424,59 @@
 
 		// If this is the last query, retrieve and store the result; otherwise,
 		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount)
+		if (totalQueriesRun == queryCount) {
+
+			// get column definitions for the result array
+			if (cqColumnDefinition) [cqColumnDefinition release];
+			cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
+
+			// Add columns corresponding to the query result
+			theColumns = [streamingResult fetchFieldNames];
+
+			if(!tableReloadAfterEditing) {
+				for ( i = 0 ; i < [streamingResult numOfFields] ; i++) {
+					NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,i);
+					theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
+					[theCol setResizingMask:NSTableColumnUserResizingMask];
+					[theCol setEditable:YES];
+					SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
+					[dataCell setEditable:YES];
+					[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+					if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
+						[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
+					} else {
+						[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+					}
+					[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+					[theCol setDataCell:dataCell];
+					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
+
+					// Set the width of this column to saved value if exists and maps to a real column
+					if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
+						NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
+						if ( colWidth ) {
+							[theCol setWidth:[colWidth floatValue]];
+						}
+					}
+
+					[customQueryView addTableColumn:theCol];
+					[theCol release];
+				}
+
+				[customQueryView sizeLastColumnToFit];
+
+				//tries to fix problem with last row (otherwise to small)
+				//sets last column to width of the first if smaller than 30
+				//problem not fixed for resizing window
+				if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
+					[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
+							setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
+			}
+
 			[self processResultIntoDataStorage:streamingResult];
-		else
+		} else {
 			[streamingResult cancelResultLoad];
+		}
 
 		// Record any affected rows
 		if ( [mySQLConnection affectedRows] != -1 )
@@ -587,7 +668,7 @@
 	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
 	
 	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( ![fullResult count] ) {
+	if ( !fullResultCount ) {
 		[customQueryView reloadData];
 		[streamingResult release];
 
@@ -599,11 +680,18 @@
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
 															window:tableWindow
                                                   notificationName:@"Query Finished"];
+
+		// Set up the callback if present
+		if ([taskArguments objectForKey:@"callback"]) {
+			[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
+			[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+		}
+
+		[tableDocumentInstance endTask];
+		[queryRunningPool release];
+
 		return;
 	}
-
-	// get column definitions for the result array
-	cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
 
 	// Find result table name for copying as SQL INSERT.
 	// If more than one table name is found set resultTableName to nil.
@@ -619,48 +707,7 @@
 		}
 	}
 
-	// Add columns corresponding to the query result
-	theColumns = [streamingResult fetchFieldNames];
-
-	if(!tableReloadAfterEditing) {
-		for ( i = 0 ; i < [streamingResult numOfFields] ; i++) {
-			NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,i);
-			theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
-			[theCol setResizingMask:NSTableColumnUserResizingMask];
-			[theCol setEditable:YES];
-			SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
-			[dataCell setEditable:YES];
-			[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-			if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-				[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-			} else {
-				[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-			}
-			[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-			[theCol setDataCell:dataCell];
-			[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
-
-			// Set the width of this column to saved value if exists and maps to a real column
-			if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
-				NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
-				if ( colWidth ) {
-					[theCol setWidth:[colWidth floatValue]];
-				}
-			}
-
-			[customQueryView addTableColumn:theCol];
-			[theCol release];
-		}
-
-		[customQueryView sizeLastColumnToFit];
-		//tries to fix problem with last row (otherwise to small)
-		//sets last column to width of the first if smaller than 30
-		//problem not fixed for resizing window
-		if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
-			[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
-					setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
-	
-	} else {
+	if(tableReloadAfterEditing) {
 		// scroll to last edited row after refreshing data
 		// TODO: should be improved
 		[customQueryView scrollRowToVisible:[customQueryView selectedRow]];
@@ -679,6 +726,15 @@
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
 														window:tableWindow
                                               notificationName:@"Query Finished"];
+
+	// Set up the callback if present
+	if ([taskArguments objectForKey:@"callback"]) {
+		[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
+		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+	}
+
+	[tableDocumentInstance endTask];
+	[queryRunningPool release];
 }
 
 /*
@@ -688,9 +744,13 @@
 {
 	NSArray *tempRow;
 	long rowsProcessed = 0;
+	NSUInteger nextTableDisplayBoundary = 50;
 	NSAutoreleasePool *dataLoadingPool;
+	BOOL tableViewRedrawn = NO;
 
 	// Remove all items from the table
+	fullResultCount = 0;
+	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	[fullResult removeAllObjects];
 
 	// Set up an autorelease pool for row processing
@@ -700,9 +760,20 @@
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 
 		NSMutableArrayAddObject(fullResult, [NSMutableArray arrayWithArray:tempRow]);
+		fullResultCount++;
 
 		// Update the count of rows processed
 		rowsProcessed++;
+
+		// Update the table view with new results every now and then
+		if (rowsProcessed > nextTableDisplayBoundary) {
+			[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+			if (!tableViewRedrawn) {
+				[customQueryView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+				tableViewRedrawn = YES;
+			}
+			nextTableDisplayBoundary *= 2;
+		}
 
 		// Drain and reset the autorelease pool every ~1024 rows
 		if (!(rowsProcessed % 1024)) {
@@ -710,6 +781,9 @@
 			dataLoadingPool = [[NSAutoreleasePool alloc] init];
 		}
 	}
+
+	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+	[customQueryView setNeedsDisplay:YES];
 	
 	// Clean up the autorelease pool
 	[dataLoadingPool drain];
@@ -1202,7 +1276,7 @@
 		if ( nil == fullResult ) {
 			return 0;
 		} else {
-			return [fullResult count];
+			return fullResultCount;
 		}
 	} else {
 		return 0;
@@ -1214,8 +1288,8 @@
  */
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
 {	
-
 	if ( aTableView == customQueryView ) {
+		if (row > fullResultCount) return;
 
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
@@ -1233,6 +1307,7 @@
 {
 
 	if ( aTableView == customQueryView ) {
+		if (rowIndex > fullResultCount) return nil;
 
 		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
 
@@ -1339,7 +1414,7 @@
 
 			// On success reload table data by executing the last query
 			tableReloadAfterEditing = YES;
-			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery]];
+			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
 			
 		} else {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -1439,17 +1514,25 @@
 
 	tableReloadAfterEditing = YES;
 	queryIsTableSorter = YES;
-	[self performQueries:[NSArray arrayWithObject:queryString]];
+	sortColumn = tableColumn;
+	[self performQueries:[NSArray arrayWithObject:queryString] withCallback:@selector(tableSortCallback)];
+}
+
+- (void) tableSortCallback
+{
 	queryIsTableSorter = NO;
 
-	if(![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) return;
+	if(![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		sortColumn = nil;
+		return;
+	}
 
 	//sets highlight and indicatorImage
-	[customQueryView setHighlightedTableColumn:tableColumn];
+	[customQueryView setHighlightedTableColumn:sortColumn];
 	if ( isDesc )
-		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:sortColumn];
 	else
-		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:sortColumn];
 
 }
 
@@ -1804,6 +1887,7 @@
 
 	// If no text is selected, disable the button and action menu.
 	if ( caretPosition == NSNotFound ) {
+		selectionButtonCanBeEnabled = NO;
 		[runSelectionButton setEnabled:NO];
 		[runSelectionMenuItem setEnabled:NO];
 		return;
@@ -1821,9 +1905,13 @@
 				[runSelectionButton setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
 				[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
 			}
-			[runSelectionButton setEnabled:YES];
-			[runSelectionMenuItem setEnabled:YES];
+			selectionButtonCanBeEnabled = YES;
+			if (![tableDocumentInstance isWorking]) {
+				[runSelectionButton setEnabled:YES];
+				[runSelectionMenuItem setEnabled:YES];
+			}
 		} else {
+			selectionButtonCanBeEnabled = NO;
 			[runSelectionButton setEnabled:NO];
 			[runSelectionMenuItem setEnabled:NO];
 		}
@@ -1831,11 +1919,14 @@
 
 	// For selection ranges, enable the button.
 	} else {
+		selectionButtonCanBeEnabled = YES;
 		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
-		[runSelectionButton setEnabled:YES];
 		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
-		[runSelectionMenuItem setEnabled:YES];
 		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
+		if (![tableDocumentInstance isWorking]) {
+			[runSelectionButton setEnabled:YES];
+			[runSelectionMenuItem setEnabled:YES];
+		}
 	}
 }
 
@@ -2439,6 +2530,44 @@
 }
 
 #pragma mark -
+#pragma mark Task interaction
+
+/**
+ * Disable all content interactive elements during an ongoing task.
+ */
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only disable elements if the current tab is the content view
+	if (![[aNotification object] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) return;
+
+	[customQueryView setEnabled:NO];
+	[runSelectionButton setEnabled:NO];
+	[runSelectionMenuItem setEnabled:NO];
+	[runAllButton setEnabled:NO];
+	[runAllMenuItem setEnabled:NO];
+}
+
+/**
+ * Enable all content interactive elements after an ongoing task.
+ */
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only enable elements if the current tab is the content view
+	if (![[aNotification object] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) return;
+
+	if (selectionButtonCanBeEnabled) {
+		[runSelectionButton setEnabled:YES];
+		[runSelectionMenuItem setEnabled:YES];
+	}
+	[runAllButton setEnabled:YES];
+	[runAllMenuItem setEnabled:YES];
+	[customQueryView setEnabled:YES];
+	[customQueryView displayIfNeeded];
+}
+
+#pragma mark -
 #pragma mark Other
 
 /**
@@ -2552,6 +2681,9 @@
 
 		sortField = nil;
 		isDesc = NO;
+		sortColumn = nil;
+		selectionButtonCanBeEnabled = NO;
+		cqColumnDefinition = nil;
 
 		// init helpHTMLTemplate
 		NSError *error;
@@ -2572,6 +2704,7 @@
 		[[helpWebView backForwardList] setCapacity:20];
 		
 		// init tableView's data source
+		fullResultCount = 0;
 		fullResult = [[NSMutableArray alloc] init];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
@@ -2610,16 +2743,29 @@
 	
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:nil];
 }
 
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[usedQuery release];
 	[fullResult release];
 	[favoritesManager release];
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
+	if (cqColumnDefinition) [cqColumnDefinition release];
 	
 	[super dealloc];
 }

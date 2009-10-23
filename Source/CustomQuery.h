@@ -82,6 +82,7 @@
 	IBOutlet id multipleLineEditingButton;
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
+	IBOutlet NSMenuItem *runAllMenuItem;
 	IBOutlet NSMenuItem *clearHistoryMenuItem;
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
 	IBOutlet NSMenuItem *shiftRightMenuItem;
@@ -109,8 +110,11 @@
 	NSString *usedQuery;
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
+	NSRange oldThreadedQueryRange;
 	BOOL hasBackgroundAttribute;
+	BOOL selectionButtonCanBeEnabled;
 	NSString *mySQLversion;
+	NSTableColumn *sortColumn;
 
 	int queryStartPosition;
 
@@ -119,6 +123,7 @@
 	NSString *helpHTMLTemplate;
 
 	NSMutableArray *fullResult;
+	NSInteger fullResultCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 
@@ -135,6 +140,7 @@
 
 // IBAction methods
 - (IBAction)runAllQueries:(id)sender;
+- (void) runAllQueriesCallback;
 - (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
@@ -153,7 +159,8 @@
 - (IBAction)filterQueryHistory:(id)sender;
 
 // Query actions
-- (void)performQueries:(NSArray *)queries;
+- (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
+- (void)performQueriesTask:(NSDictionary *)taskArguments;
 - (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
@@ -169,6 +176,10 @@
 - (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
 - (NSWindow *)helpWebViewWindow;
 - (void)setMySQLversion:(NSString *)theVersion;
+
+// Task interaction
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Other
 - (void)setConnection:(MCPConnection *)theConnection;
