@@ -116,9 +116,9 @@
 	NSString *mySQLversion;
 	NSTableColumn *sortColumn;
 
-	int queryStartPosition;
+	NSUInteger queryStartPosition;
 
-	int helpTarget;
+	NSUInteger helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
 
@@ -134,7 +134,8 @@
 
 	NSString *fieldIDQueryString;
 
-	unsigned int numberOfQueries;
+	NSUInteger numberOfQueries;
+	NSUInteger queryTextViewStartPosition;
 	
 }
 

@@ -72,6 +72,9 @@
 
 	tableReloadAfterEditing = NO;
 
+	// Remember query start position for error highlighting
+	queryTextViewStartPosition = 0;
+
 	[self performQueries:queries withCallback:@selector(runAllQueriesCallback)];
 }
 
@@ -112,13 +115,19 @@
 		}
 		queries = [NSArray arrayWithObject:query];
 
+		// Remember query start position for error highlighting
+		queryTextViewStartPosition = currentQueryRange.location;
+
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
 		queries = [queryParser splitSqlStringByCharacter:';'];
 		[queryParser release];
+
+		// Remember query start position for error highlighting
+		queryTextViewStartPosition = selectedRange.location;
 	}
-	
+
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
 	// and preserve the selection
 	[textView setSelectedRange:NSMakeRange(selectedRange.location, 0)];
@@ -591,11 +600,12 @@
 		if(errorLineNumberRange.length) // if a line number was found
 		{
 			// Get the line number
-			unsigned int errorAtLine = [[errors substringWithRange:errorLineNumberRange] intValue];
-			[textView selectLineNumber:errorAtLine ignoreLeadingNewLines:YES];
+			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] intValue];
+			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:queryTextViewStartPosition] - 1;
+			[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 
 			// Check for near message
-			NSRange errorNearMessageRange = [errors rangeOfRegex:@" '(.*?)' " options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
+			NSRange errorNearMessageRange = [errors rangeOfRegex:@" '(+*?)' " options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
 			if(errorNearMessageRange.length) // if a "near message" was found
 			{
 				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
