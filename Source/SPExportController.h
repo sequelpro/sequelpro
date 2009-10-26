@@ -119,6 +119,10 @@ typedef NSUInteger SPExportSource;
 	
 	// Concurrent operation queue
 	NSOperationQueue *operationQueue;
+	
+	// Table/export operation mapping 
+	NSMutableDictionary *tableExportMapping;
+	
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

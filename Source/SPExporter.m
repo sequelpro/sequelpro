@@ -58,7 +58,7 @@
 }
 
 /**
- *
+ * Override NSOperation's main() method. This method should never be called as all subclasses should override it.
  */
 - (void)main
 {

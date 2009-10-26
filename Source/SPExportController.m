@@ -34,7 +34,7 @@
 @interface SPExportController (PrivateAPI)
 
 - (void)_initializeExportUsingSelectedOptions;
-- (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type;
+- (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type toMultipleFiles:(BOOL)multipleFiles;
 
 @end
 
@@ -53,6 +53,7 @@
 		
 		tables = [[NSMutableArray alloc] init];
 		operationQueue = [[NSOperationQueue alloc] init];
+		tableExportMapping = [NSMutableDictionary dictionary];
 	}
 	
 	return self;
@@ -336,7 +337,7 @@
 			
 			break;
 		case SP_TABLE_EXPORT:
-			[self _exportTables:exportTables asType:exportType];
+			[self _exportTables:exportTables asType:exportType toMultipleFiles:[exportFilePerTableCheck state]];
 			break;
 	}
 }
@@ -345,15 +346,14 @@
  * Exports the contents' of the supplied array of tables. Note that this method currently only supports 
  * exporting in CSV and XML formats.
  */
-- (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type
+- (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type toMultipleFiles:(BOOL)multipleFiles
 {
 	NSUInteger i;
 	
 	NSMutableString *errors = [NSMutableString string];
-	NSMutableString *infoString = [NSMutableString string];
 	
 	NSDictionary *tableDetails;
-	NSStringEncoding encoding = [[self connection] encoding];
+	//NSStringEncoding encoding = [[self connection] encoding];
 	
 	// Reset the interface
 	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), @"CSV"]];
@@ -384,12 +384,17 @@
 								   options:NSLiteralSearch
 									 range:NSMakeRange(0, [csvLineEnd length])];
 	
+	NSUInteger tableCount = [exportTables count];
+	
+	// If 
+	if ((type == SP_CSV_EXPORT) && (!multipleFiles) && (tableCount > 1)) {
+		
+	}
+	
 	/*if ([exportTables count] > 1) {
 		[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
 							  [tableDocumentInstance host], [tableDocumentInstance database], [NSDate date], csvLineEnd, csvLineEnd]];
 	}*/
-		
-	NSUInteger tableCount = [exportTables count];
 	
 	// Loop through the tables
 	for (i = 0 ; i < tableCount; i++) 

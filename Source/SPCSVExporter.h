@@ -31,7 +31,7 @@
 @interface SPCSVExporter : SPExporter
 {	
 	// CSV data
-	NSArray   *csvDataArray;
+	NSArray *csvDataArray;
 	MCPStreamingResult *csvDataResult;
 	
 	// CSV options
