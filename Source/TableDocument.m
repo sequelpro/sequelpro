@@ -60,6 +60,8 @@
 
 @interface TableDocument (PrivateAPI)
 
+- (void)_addDatabase;
+- (void)_removeDatabase;
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
 - (void)_copyServerVariablesToPasteboardIncludingName:(BOOL)name andValue:(BOOL)value;
 
@@ -833,7 +835,6 @@
 
 	// Process the template and display the results.
 	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
-	//NSLog(@"result %@", result);
 
 	return result;
 }
@@ -942,76 +943,15 @@
  */
 - (IBAction)addDatabase:(id)sender
 {
-	int code = 0;
-
-	if (![tablesListInstance selectionShouldChangeInTableView:nil]) {
-		return;
-	}
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 
 	[databaseNameField setStringValue:@""];
 
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
-	   didEndSelector:nil
-		  contextInfo:nil];
-
-	code = [NSApp runModalForWindow:databaseSheet];
-
-	[NSApp endSheet:databaseSheet];
-	[databaseSheet orderOut:nil];
-
-	if (!code) {
-		(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
-		return;
-	}
-
-	// This check is not necessary anymore as the add database button is now only enabled if the name field
-	// has a length greater than zero. We'll leave it in just in case.
-	if ([[databaseNameField stringValue] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
-		return;
-	}
-
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
-
-	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
-	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]] backtickQuotedString]];
-	}
-
-	// Create the database
-	[mySQLConnection queryString:createStatement];
-
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		//error while creating db
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
-		return;
-	}
-
-	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) { //error while selecting new db (is this possible?!)
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"),
-																																					  [databaseNameField stringValue]]);
-		[self setDatabases:self];
-		return;
-	}
-
-	//select new db
-	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-	selectedDatabase = [[NSString alloc] initWithString:[databaseNameField stringValue]];
-	[self setDatabases:self];
-	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
-
-	[tableWindow setTitle:[self displaySPName]];
-}
-
-/**
- * closes the add-db sheet and stops modal session
- */
-- (IBAction)closeDatabaseSheet:(id)sender
-{
-	[NSApp stopModalWithCode:[sender tag]];
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"addDatabase"];
 }
 
 /**
@@ -1019,11 +959,10 @@
  */
 - (IBAction)removeDatabase:(id)sender
 {
-	if ([chooseDatabaseButton indexOfSelectedItem] == 0)
-		return;
+	// No database selected, bail
+	if ([chooseDatabaseButton indexOfSelectedItem] == 0) return;
 
-	if (![tablesListInstance selectionShouldChangeInTableView:nil])
-		return;
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete database '%@'?", @"delete database message"), [self database]]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
@@ -1039,10 +978,10 @@
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removedatabase"];
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
 }
 
-/*
+/**
  * Returns an array of all available database names
  */
 - (NSArray *)allDatabaseNames
@@ -1051,39 +990,28 @@
 }
 
 /**
- * alert sheets method
- * invoked when alertSheet get closed
- * if contextInfo == removedatabase -> tries to remove the selected database
+ * Alert sheet method. Invoked when an alert sheet is dismissed.
+ *
+ * if contextInfo == removeDatabase -> Remove the selected database
+ * if contextInfo == addDatabase    -> Add a new database
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
-	if ([contextInfo isEqualToString:@"removedatabase"]) {
-		if (returnCode != NSAlertDefaultReturn)
-			return;
-
-		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			// error while deleting db
-			[self performSelector:@selector(showErrorSheetWith:) 
-				withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-								[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), 
-									[mySQLConnection getLastErrorMessage]],
-							nil] 
-				afterDelay:0.3];
-			return;
+	// Remove the current database
+	if ([contextInfo isEqualToString:@"removeDatabase"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+			[self _removeDatabase];
 		}
-
-		// db deleted with success
-		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-		[self setDatabases:self];
-		[tablesListInstance setConnection:mySQLConnection];
-		[tableDumpInstance setConnection:mySQLConnection];
-
-		[tableWindow setTitle:[self displaySPName]];
+	}
+	// Add a new database
+	else if ([contextInfo isEqualToString:@"addDatabase"]) {
+		if (returnCode == NSOKButton) {
+			[self _addDatabase];
+		}
 	}
 }
 
-/*
+/**
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
@@ -1095,11 +1023,10 @@
 			[error objectAtIndex:1]);
 }
 
-
-/*
+/**
  * Reset the current selected database name
  */
-- (void) refreshCurrentDatabase
+- (void)refreshCurrentDatabase
 {
 	NSString *dbName;
 
@@ -1130,7 +1057,6 @@
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-
 }
 
 #pragma mark -
@@ -2476,7 +2402,6 @@
 		// For dispatching later
 		if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
 			NSLog(@"SPF file format is not 'connection'.");
-			// [self close];
 			return NO;
 		}
 
@@ -2657,8 +2582,6 @@
 		[archiver finishEncoding];
 		[spfdata setObject:[encryptdata dataEncryptedWithPassword:[spfDocData_temp objectForKey:@"e_string"]] forKey:@"data"];
 	}
-
-	// NSLog(@"%@", spfdata);
 
 	NSString *err = nil;
 	NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
@@ -3630,6 +3553,88 @@
 @end
 
 @implementation TableDocument (PrivateAPI)
+
+/**
+ * Adds a new database.
+ */
+- (void)_addDatabase
+{
+	// This check is not necessary anymore as the add database button is now only enabled if the name field
+	// has a length greater than zero. We'll leave it in just in case.
+	if ([[databaseNameField stringValue] isEqualToString:@""]) {
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		return;
+	}
+	
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
+	
+	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
+	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]] backtickQuotedString]];
+	}
+	
+	// Create the database
+	[mySQLConnection queryString:createStatement];
+	
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		// An error occurred
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
+		
+		return;
+	}
+	
+	// Error while selecting the new database (is this even possible?)
+	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) {
+		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
+		
+		[self setDatabases:self];
+		
+		return;
+	}
+	
+	// Select the new database
+	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+	
+	
+	selectedDatabase = [[NSString alloc] initWithString:[databaseNameField stringValue]];
+	[self setDatabases:self];
+	
+	[tablesListInstance setConnection:mySQLConnection];
+	[tableDumpInstance setConnection:mySQLConnection];
+	
+	[tableWindow setTitle:[self displaySPName]];
+}
+
+/**
+ * Removes the current database.
+ */
+- (void)_removeDatabase
+{
+	// Drop the database from the server
+	[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
+	
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		// An error occurred
+		[self performSelector:@selector(showErrorSheetWith:) 
+				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), 
+								[mySQLConnection getLastErrorMessage]],
+							   nil] 
+				   afterDelay:0.3];
+		
+		return;
+	}
+	
+	// Delete was successful
+	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+	
+	[self setDatabases:self];
+	
+	[tablesListInstance setConnection:mySQLConnection];
+	[tableDumpInstance setConnection:mySQLConnection];
+	
+	[tableWindow setTitle:[self displaySPName]];
+}
 
 /**
  * Filter the displayed server variables by matching the variable name and value against the

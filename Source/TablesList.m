@@ -496,7 +496,6 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	// Order out current sheet to suppress overlapping of sheets
 	if([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];

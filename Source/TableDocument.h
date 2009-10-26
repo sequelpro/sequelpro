@@ -176,7 +176,6 @@ enum sp_current_query_mode
 - (IBAction)setDatabases:(id)sender;
 - (IBAction)chooseDatabase:(id)sender;
 - (IBAction)addDatabase:(id)sender;
-- (IBAction)closeDatabaseSheet:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)saveServerVariables:(id)sender;
