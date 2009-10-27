@@ -754,6 +754,7 @@ fetches the result as an array with a dictionary for each row in it
 		) && 
 		[theRow objectForKey:@"Extra"] ) 
 	{
+		[queryString appendString:@" "];
 		[queryString appendString:[theRow objectForKey:@"Extra"]];
 	}
 	
