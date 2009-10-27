@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "TableSource.h"
+#import "TableDocument.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "SPSQLParser.h"
@@ -46,6 +47,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	id extra;
 	int i;
 	SPSQLParser *fieldParser;
+	BOOL enableInteraction = ![tableDocumentInstance isWorking];
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -81,7 +83,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	}
 	
 	// Enable edit table button
-	[editTableButton setEnabled:YES];
+	[editTableButton setEnabled:enableInteraction];
 
 	//query started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -185,7 +187,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	}
 	
 	// If a view is selected, disable the buttons; otherwise enable.
-	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
+	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && enableInteraction;
 	[addFieldButton setEnabled:editingEnabled];
 	[addIndexButton setEnabled:editingEnabled];
     
@@ -238,7 +240,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	// if no field is selected 'Duplicate field' will copy the last field
 	// Enable 'Duplicate field' only for tables!
 	if([tablesListInstance tableType] == SP_TABLETYPE_TABLE)
-			[copyFieldButton setEnabled:([tableSourceView numberOfRows] > 0)];
+			[copyFieldButton setEnabled:enableInteraction && ([tableSourceView numberOfRows] > 0)];
 	else
 		[copyFieldButton setEnabled:NO];
 
@@ -1046,6 +1048,64 @@ returns a dictionary containing enum/set field names as key and possible values 
 }
 
 #pragma mark -
+#pragma mark Task interaction
+
+/**
+ * Disable all content interactive elements during an ongoing task.
+ */
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only proceed if the current document is the notifying document, and only if 
+	// this view is selected.
+	if ([aNotification object] != tableDocumentInstance
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"])
+		return;
+
+	[tableSourceView setEnabled:NO];
+	[addFieldButton setEnabled:NO];
+	[removeFieldButton setEnabled:NO];
+	[copyFieldButton setEnabled:NO];
+	[reloadFieldsButton setEnabled:NO];
+	[editTableButton setEnabled:NO];
+
+	[indexView setEnabled:NO];
+	[addIndexButton setEnabled:NO];
+	[removeIndexButton setEnabled:NO];
+	[reloadIndexesButton setEnabled:NO];
+}
+
+/**
+ * Enable all content interactive elements after an ongoing task.
+ */
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only re-enable elements if the current tab is the structure view
+	if ([aNotification object] != tableDocumentInstance
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"])
+		return;
+
+	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
+	[tableSourceView setEnabled:YES];
+	[tableSourceView displayIfNeeded];
+	[addFieldButton setEnabled:editingEnabled];
+	if (editingEnabled && [tableSourceView numberOfSelectedRows] > 0) {
+		[removeFieldButton setEnabled:YES];
+		[copyFieldButton setEnabled:YES];
+	}
+	[reloadFieldsButton setEnabled:YES];
+	[editTableButton setEnabled:YES];
+
+	[indexView setEnabled:YES];
+	[indexView displayIfNeeded];
+	[addIndexButton setEnabled:editingEnabled];
+	if (editingEnabled && [indexView numberOfSelectedRows] > 0)
+		[removeIndexButton setEnabled:YES];
+	[reloadIndexesButton setEnabled:YES];
+}
+
+#pragma mark -
 #pragma mark TableView datasource methods
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView
@@ -1405,10 +1465,22 @@ would result in a position change.
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	[indexView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:nil];
 }
 
 - (void)dealloc
 {	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[tableFields release];
 	[indexes release];
 	[oldRow release];

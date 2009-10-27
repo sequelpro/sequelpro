@@ -2548,8 +2548,11 @@
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only disable elements if the current tab is the content view
-	if (![[aNotification object] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) return;
+	// Only proceed if the current document is the notifying document, and only if 
+	// this view is selected.
+	if ([aNotification object] != tableDocumentInstance
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"])
+		return;
 
 	[customQueryView setEnabled:NO];
 	[runSelectionButton setEnabled:NO];
@@ -2564,8 +2567,11 @@
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only enable elements if the current tab is the content view
-	if (![[aNotification object] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"]) return;
+	// Only proceed if the current document is the notifying document, and only if 
+	// this view is selected.
+	if ([aNotification object] != tableDocumentInstance
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"])
+		return;
 
 	if (selectionButtonCanBeEnabled) {
 		[runSelectionButton setEnabled:YES];

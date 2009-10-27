@@ -273,6 +273,7 @@ enum sp_current_query_mode
 
 // Toolbar methods
 - (void)setupToolbar;
+- (NSString *)selectedToolbarItemIdentifier;
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar;
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar;

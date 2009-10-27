@@ -1132,7 +1132,7 @@
 	_isWorking = YES;
 	[dbTablesTableView setEnabled:NO];
 	[historyControl setEnabled:NO];
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:[mainToolbar selectedItemIdentifier]];
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 
 	// Reset the progress indicator
 	taskDisplayIsIndeterminate = YES;
@@ -1209,7 +1209,7 @@
 	_isWorking = NO;
 	[dbTablesTableView setEnabled:YES];
 	[historyControl setEnabled:YES];
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:[mainToolbar selectedItemIdentifier]];
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
 }
 
 /**
@@ -2999,6 +2999,14 @@
 
 	// update the toolbar item size
 	[self updateChooseDatabaseToolbarItemWidth];
+}
+
+/**
+ * Return the identifier for the currently selected toolbar item, or nil if none is selected.
+ */
+- (NSString *)selectedToolbarItemIdentifier;
+{
+	return [mainToolbar selectedItemIdentifier];
 }
 
 /**

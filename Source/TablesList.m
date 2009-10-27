@@ -1541,6 +1541,10 @@
  */
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
+
+	// Only proceed if the notification was received from the current document.
+	if ([aNotification object] != tableDocumentInstance) return;
+
 	[tablesListView setEnabled:NO];
 	[toolbarAddButton setEnabled:NO];
 	[toolbarActionsButton setEnabled:NO];
@@ -1552,6 +1556,8 @@
  */
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
+	if ([aNotification object] != tableDocumentInstance) return;
+
 	[tablesListView setEnabled:YES];
 	[toolbarAddButton setEnabled:YES];
 	[toolbarActionsButton setEnabled:YES];

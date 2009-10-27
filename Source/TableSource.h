@@ -30,6 +30,7 @@
 {
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
+	IBOutlet id tableDocumentInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
@@ -39,8 +40,10 @@
 	IBOutlet id addFieldButton;
 	IBOutlet id copyFieldButton;
 	IBOutlet id removeFieldButton;
+	IBOutlet id reloadFieldsButton;
 	IBOutlet id addIndexButton;
 	IBOutlet id removeIndexButton;
+	IBOutlet id reloadIndexesButton;
 	IBOutlet id indexTypeField;
 	IBOutlet id indexNameField;
 	IBOutlet id indexedColumnsField;
@@ -92,5 +95,9 @@
 - (NSArray *)fieldNames;
 - (NSDictionary *)enumFields;
 - (NSArray *)tableStructureForPrint;
+
+// Task interaction
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 @end

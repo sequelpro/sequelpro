@@ -2657,8 +2657,11 @@
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only disable elements if the current tab is the content view
-	if (![[aNotification object] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) return;
+	// Only proceed if the current document is the notifying document, and only if 
+	// this view is selected.
+	if ([aNotification object] != tableDocumentInstance
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"])
+		return;
 
 	[tableContentView setEnabled:NO];
 	[addButton setEnabled:NO];
@@ -2674,8 +2677,11 @@
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only enable elements if the current tab is the content view
-	if (![[aNotification object] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"]) return;
+	// Only proceed if the current document is the notifying document, and only if 
+	// this view is selected.
+	if ([aNotification object] != tableDocumentInstance
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"])
+		return;
 
 	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) [addButton setEnabled:YES];
 	if ([tableContentView numberOfSelectedRows] > 0) {
