@@ -90,7 +90,7 @@ extern NSString *SPConsoleEnableLogging;
 extern NSString *SPConsoleEnableInterfaceLogging;
 extern NSString *SPConsoleEnableCustomQueryLogging;
 extern NSString *SPConsoleEnableImportExportLogging;
-extern NSString *SPEnableErrorLogging;
+extern NSString *SPConsoleEnableErrorLogging;
 extern NSString *SPConsoleShowTimestamps;
 extern NSString *SPConsoleShowSelectsAndShows;
 extern NSString *SPConsoleShowHelps;

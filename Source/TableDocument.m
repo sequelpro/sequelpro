@@ -3377,7 +3377,7 @@
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {
-	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPEnableErrorLogging]) {
+	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPConsoleEnableErrorLogging]) {
 		[[SPQueryController sharedQueryController] showErrorInConsole:error];
 	}
 }
