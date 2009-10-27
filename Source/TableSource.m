@@ -393,8 +393,8 @@ reloads the table (performing a new mysql-query)
 	}
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete field?", @"delete field message")
-									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")  
-								   alternateButton:NSLocalizedString(@"Delete", @"delete button")
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
 						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"),
 																			  [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
@@ -885,7 +885,7 @@ fetches the result as an array with a dictionary for each row in it
 		}
 		[tableSourceView reloadData];
 	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
-		if ( returnCode == NSAlertAlternateReturn ) {
+		if ( returnCode == NSAlertDefaultReturn ) {
 			//remove row
 			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
 					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
