@@ -1442,6 +1442,9 @@
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
 
+	// Prevent sorting while a query is running
+	if ([tableDocumentInstance isWorking]) return;
+
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
 	//sets order descending if a header is clicked twice
@@ -1671,6 +1674,9 @@
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 
+	// Only allow editing if a task is not active
+	if ([tableDocumentInstance isWorking]) return NO;
+
 	// Check if the field can identified bijectively
 	if ( aTableView == customQueryView ) {
 
@@ -1758,6 +1764,14 @@
 	} else {
 		return YES;
 	}
+}
+
+/**
+ * Prevent the selection of rows while the table is still loading
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	return ![tableDocumentInstance isWorking];
 }
 
 #pragma mark -
@@ -2554,7 +2568,6 @@
 		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"])
 		return;
 
-	[customQueryView setEnabled:NO];
 	[runSelectionButton setEnabled:NO];
 	[runSelectionMenuItem setEnabled:NO];
 	[runAllButton setEnabled:NO];
@@ -2579,8 +2592,6 @@
 	}
 	[runAllButton setEnabled:YES];
 	[runAllMenuItem setEnabled:YES];
-	[customQueryView setEnabled:YES];
-	[customQueryView displayIfNeeded];
 }
 
 #pragma mark -

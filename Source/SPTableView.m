@@ -76,6 +76,12 @@
 	{
 		if (![[[[self delegate] class] description] isEqualToString:@"CustomQuery"] &&
 			![[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]){
+			
+			// Ensure that editing is permitted
+			if (![[self delegate] tableView:self shouldEditTableColumn:[[self tableColumns] objectAtIndex:0] row:[self selectedRow]])
+				return;
+
+			// Trigger a cell edit
 			[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 			return;
 		}

@@ -1130,7 +1130,6 @@
 
 	// Set flags and prevent further UI interaction in this window
 	_isWorking = YES;
-	[dbTablesTableView setEnabled:NO];
 	[historyControl setEnabled:NO];
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 
@@ -1207,7 +1206,6 @@
 
 	// Re-enable window interface
 	_isWorking = NO;
-	[dbTablesTableView setEnabled:YES];
 	[historyControl setEnabled:YES];
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
 }

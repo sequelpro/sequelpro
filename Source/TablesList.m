@@ -1114,6 +1114,14 @@
 }
 
 /**
+ * Prevent table renames while tasks are active
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	return ![tableDocumentInstance isWorking];
+}
+
+/**
  * Renames a table (in tables-array and mysql-db).
  */
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
@@ -1261,6 +1269,10 @@
  */
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {
+
+	// Don't allow selection changes while performing a task
+	if ([tableDocumentInstance isWorking]) return NO;
+
 	// End editing (otherwise problems when user hits reload button)
 	[tableWindow endEditingFor:nil];
 	
@@ -1302,6 +1314,10 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
 {
+
+	// Disallow selection while the document is working on a task
+	if ([tableDocumentInstance isWorking]) return NO;
+
 	//return (rowIndex != 0);
 	if( [filteredTableTypes count] == 0 )
 		return (rowIndex != 0 );
@@ -1545,7 +1561,6 @@
 	// Only proceed if the notification was received from the current document.
 	if ([aNotification object] != tableDocumentInstance) return;
 
-	[tablesListView setEnabled:NO];
 	[toolbarAddButton setEnabled:NO];
 	[toolbarActionsButton setEnabled:NO];
 	[toolbarReloadButton setEnabled:NO];
@@ -1558,7 +1573,6 @@
 {
 	if ([aNotification object] != tableDocumentInstance) return;
 
-	[tablesListView setEnabled:YES];
 	[toolbarAddButton setEnabled:YES];
 	[toolbarActionsButton setEnabled:YES];
 	[toolbarReloadButton setEnabled:YES];

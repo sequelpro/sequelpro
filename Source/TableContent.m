@@ -2426,12 +2426,15 @@
  if clicked twice, order is descending
  */
 {
-	
+
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
 		return;
 	
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
+
+	// Prevent sorting while the table is still loading
+	if ([tableDocumentInstance isWorking]) return;
 		
 	//sets order descending if a header is clicked twice
 	if ( [[tableColumn identifier] isEqualTo:sortCol] ) {
@@ -2531,6 +2534,7 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
+	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Ensure that row is editable since it could contain "(not loaded)" columns together with
 	// issue that the table has no primary key
@@ -2630,6 +2634,14 @@
 	return NO;
 }
 
+/**
+ * Disable row selection while the document is working.
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	return ![tableDocumentInstance isWorking];
+}
+
 #pragma mark -
 #pragma mark SplitView delegate methods
 
@@ -2663,7 +2675,6 @@
 		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"])
 		return;
 
-	[tableContentView setEnabled:NO];
 	[addButton setEnabled:NO];
 	[removeButton setEnabled:NO];
 	[copyButton setEnabled:NO];
@@ -2690,8 +2701,6 @@
 	}
 	[reloadButton setEnabled:YES];
 	[filterButton setEnabled:[fieldField isEnabled]];
-	[tableContentView setEnabled:YES];
-	[tableContentView displayIfNeeded];
 }
 
 #pragma mark -
