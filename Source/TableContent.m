@@ -2672,7 +2672,7 @@
 	// Only proceed if the current document is the notifying document, and only if 
 	// this view is selected.
 	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"])
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
 		return;
 
 	[addButton setEnabled:NO];
@@ -2691,7 +2691,7 @@
 	// Only proceed if the current document is the notifying document, and only if 
 	// this view is selected.
 	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableContentToolbarItemIdentifier"])
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
 		return;
 
 	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) [addButton setEnabled:YES];

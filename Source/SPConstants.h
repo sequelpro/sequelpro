@@ -42,6 +42,19 @@
 #define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
 #define SEQUEL_PRO_CONTACT_URL   @"http://www.sequelpro.com/docs/Contact_the_developers"
 
+// Main toolbar constants
+#define MAIN_TOOLBAR_DATABASE_SELECTION @"DatabaseSelectToolbarItemIdentifier"
+#define MAIN_TOOLBAR_HISTORY_NAVIGATION @"HistoryNavigationToolbarItemIdentifier"
+#define MAIN_TOOLBAR_SHOW_CONSOLE       @"ShowConsoleIdentifier"
+#define MAIN_TOOLBAR_CLEAR_CONSOLE      @"ClearConsoleIdentifier"
+#define MAIN_TOOLBAR_FLUSH_PRIVILEGES   @"FlushPrivilegesIdentifier"
+#define MAIN_TOOLBAR_TABLE_STRUCTURE    @"SwitchToTableStructureToolbarItemIdentifier"
+#define MAIN_TOOLBAR_TABLE_CONTENT      @"SwitchToTableContentToolbarItemIdentifier"
+#define MAIN_TOOLBAR_CUSTOM_QUERY       @"SwitchToRunQueryToolbarItemIdentifier"
+#define MAIN_TOOLBAR_TABLE_INFO         @"SwitchToTableInfoToolbarItemIdentifier"
+#define MAIN_TOOLBAR_TABLE_RELATIONS    @"SwitchToTableRelationsToolbarItemIdentifier"
+#define MAIN_TOOLBAR_USER_MANAGER       @"SwitchToUserManagerToolbarItemIdentifier"
+
 // Preference key constants
 extern NSString *SPDefaultEncoding;
 extern NSString *SPUseMonospacedFonts;

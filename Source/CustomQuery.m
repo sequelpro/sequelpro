@@ -2565,7 +2565,7 @@
 	// Only proceed if the current document is the notifying document, and only if 
 	// this view is selected.
 	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"])
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
 		return;
 
 	[runSelectionButton setEnabled:NO];
@@ -2583,7 +2583,7 @@
 	// Only proceed if the current document is the notifying document, and only if 
 	// this view is selected.
 	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToRunQueryToolbarItemIdentifier"])
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
 		return;
 
 	if (selectionButtonCanBeEnabled) {

@@ -1060,7 +1060,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	// Only proceed if the current document is the notifying document, and only if 
 	// this view is selected.
 	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"])
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
 		return;
 
 	[tableSourceView setEnabled:NO];
@@ -1084,7 +1084,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 
 	// Only re-enable elements if the current tab is the structure view
 	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:@"SwitchToTableStructureToolbarItemIdentifier"])
+		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
 		return;
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
