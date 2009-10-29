@@ -95,3 +95,4 @@ NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
 NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
+NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";

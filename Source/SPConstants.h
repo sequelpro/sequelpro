@@ -125,3 +125,4 @@ extern NSString *SPQueryHistory;
 extern NSString *SPDocumentTaskStartNotification;
 extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDefaultFavorite;
+extern NSString *SPNoBOMforSQLdumpFile;

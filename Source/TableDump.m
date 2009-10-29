@@ -1300,8 +1300,12 @@
 		}
 	}
 	
+
+	// If NoBOMforSQLdumpFile is not set to YES write the UTF-8 Byte Order Marker
+	[metaString setString:([prefs boolForKey:SPNoBOMforSQLdumpFile]) ? @"" : @"\xef\xbb\xbf"];
+
 	// Add the dump header to the dump file.
-	[metaString setString:@"# Sequel Pro dump\n"];
+	[metaString appendString:@"# Sequel Pro dump\n"];
 	[metaString appendString:[NSString stringWithFormat:@"# Version %@\n",
 							 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
 	[metaString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
