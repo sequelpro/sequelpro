@@ -44,13 +44,9 @@
 }
 
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
-
-- (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
-- (NSManagedObjectModel *)managedObjectModel;
-- (NSManagedObjectContext *)managedObjectContext;
-
-- (id)initWithConnection:(MCPConnection *)connection;
-- (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
+@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
 
 // Add/Remove Users
 - (IBAction)addUser:(id)sender;

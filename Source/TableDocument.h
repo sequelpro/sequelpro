@@ -54,7 +54,9 @@ enum sp_current_query_mode
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
-	IBOutlet id exportControllerInstance;	
+	IBOutlet id exportControllerInstance;
+	IBOutlet SPUserManager *userManagerInstance;
+
 
 	IBOutlet NSSearchField *listFilterField;
 
@@ -119,7 +121,6 @@ enum sp_current_query_mode
 	int passwordSheetReturnCode;
 
 	SPConnectionController *connectionController;
-	SPUserManager *userManagerInstance;
 	
 	MCPConnection *mySQLConnection;
 

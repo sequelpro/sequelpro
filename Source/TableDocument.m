@@ -260,7 +260,7 @@
 	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
 
 	spf = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] autorelease];
 
 	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
@@ -484,7 +484,6 @@
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
 		[connectionController initiateConnection:self];
 	}
-
 }
 
 /**
@@ -640,11 +639,6 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
-
-	if (!userManagerInstance) {
-		userManagerInstance = [[SPUserManager alloc] initWithConnection:mySQLConnection];
-	} 
-
 	userManagerInstance.mySqlConnection = mySQLConnection;
 
 	// Set the cutom query editor's MySQL version
@@ -739,8 +733,7 @@
 	NSPrintPanel *printPanel = [op printPanel];
 	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
 
-	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] init];
-	[printAccessory initWithNibName:@"PrintAccessory" bundle:nil];
+	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] initWithNibName:@"PrintAccessory" bundle:nil];
 	[printAccessory setPrintView:printWebView];
 	[printPanel addAccessoryController:printAccessory];
 
@@ -2415,6 +2408,7 @@
 												  format:NSPropertyListXMLFormat_v1_0
 										errorDescription:&err];
 
+		[spf release];
 		if(err != nil) {
 			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -3551,7 +3545,6 @@
 	if (taskDrawTimer) [taskDrawTimer release];
 	if(queryEditorInitString) [queryEditorInitString release];
 	if(spfSession) [spfSession release];
-	if(userManagerInstance) [userManagerInstance release];
 	if(spfDocData) [spfDocData release];
 	if(keyChainID) [keyChainID release];
 	[super dealloc];

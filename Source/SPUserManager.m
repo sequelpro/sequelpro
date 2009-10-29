@@ -42,6 +42,7 @@
 - (NSManagedObject *)_createNewSPUser;
 - (BOOL)checkAndDisplayMySqlError;
 - (void)_clearData;
+- (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
 
 @end
 
@@ -49,31 +50,31 @@
 
 @synthesize mySqlConnection;
 
-/**
- * Initialise the user manager with the supplied connection.
- */
-- (id)initWithConnection:(MCPConnection*) connection
+-(id)init
 {
-	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
-	
-		self.mySqlConnection = connection;
-
+	if ((self = [super initWithWindowNibName:@"UserManagerView"]))
+	{
 		// When reading privileges from the database, they are converted automatically to a
 		// lowercase key used in the user privileges stores, from which a GRANT syntax
 		// is derived automatically.  While most keys can be automatically converted without
 		// any difficulty, some keys differ slightly in mysql column storage to GRANT syntax;
 		// this dictionary provides mappings for those values to ensure consistency.
 		privColumnToGrantMap = [[NSDictionary alloc] initWithObjectsAndKeys:
-									@"Grant_option_priv", @"Grant_priv",
-									@"Show_databases_priv", @"Show_db_priv",
-									@"Create_temporary_tables_priv", @"Create_tmp_table_priv",
-									@"Replication_slave_priv", @"Repl_slave_priv", 
-									@"Replication_client_priv", @"Repl_client_priv",
-								  nil];
-
-		privsSupportedByServer = [[NSMutableDictionary alloc] init];
+								@"Grant_option_priv", @"Grant_priv",
+								@"Show_databases_priv", @"Show_db_priv",
+								@"Create_temporary_tables_priv", @"Create_tmp_table_priv",
+								@"Replication_slave_priv", @"Repl_slave_priv", 
+								@"Replication_client_priv", @"Repl_client_priv",
+								nil];
+		
+		//privsSupportedByServer = [[NSMutableDictionary alloc] init];
+		
+		[[NSNotificationCenter defaultCenter] addObserver:self 
+												 selector:@selector(contextDidSave:) 
+													 name:NSManagedObjectContextDidSaveNotification 
+												   object:nil];
+		
 	}
-
 	return self;
 }
 
@@ -82,28 +83,22 @@
  */
 - (void)dealloc
 {	
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-	[managedObjectContext release], managedObjectContext = nil;
-    [persistentStoreCoordinator release], persistentStoreCoordinator = nil;
-    [managedObjectModel release], managedObjectModel = nil;
-	[privColumnToGrantMap release], privColumnToGrantMap = nil;
-	[privsSupportedByServer release], privsSupportedByServer = nil;
-	
-	[mySqlConnection release], mySqlConnection = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver:self 
+													name:NSManagedObjectContextDidSaveNotification 
+												  object:nil];
+	//[treeController release];
+//	[managedObjectContext release];
+//    [persistentStoreCoordinator release];
+//    [managedObjectModel release];
+	[privColumnToGrantMap release];
+	[mySqlConnection release];
+	//[privsSupportedByServer release];
 	
 	[super dealloc];
 }
 
-/**
- * Initialise various interface controls.
- */
-- (void)awakeFromNib
-{	
-	[[NSNotificationCenter defaultCenter] addObserver:self 
-											 selector:@selector(contextDidSave:) 
-												 name:NSManagedObjectContextDidSaveNotification 
-											   object:nil];
+-(void)windowDidLoad
+{
 	[tabView selectTabViewItemAtIndex:0];
 	
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
@@ -111,12 +106,17 @@
 	
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
-
+	
 	[self _initializeUsers];
+	[super windowDidLoad];
 }
 
 - (void)_initializeUsers
 {
+	/**
+	 * This method reads in the users from the mysql.user table of the current
+	 * connection.  Then uses this information to initialize the NSOutlineView.
+	 */
 	isInitializing = TRUE;
 	NSMutableString *privKey;
 	NSArray *privRow;
@@ -125,6 +125,7 @@
 	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
+	// Select users from the mysql.user table
 	MCPResult *result = [[self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"] retain];
 	int rows = [result numOfRows];
 	if (rows > 0)
@@ -177,13 +178,13 @@
 	for(int i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
-		NSArray *array = [[self _fetchUserWithUserName:username] retain];
+		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
 		
-		if (array != nil && [array count] > 0)
+		if (parentResults != nil && [parentResults count] > 0)
 		{
 			// Add Children
-			NSManagedObject *parent = [array objectAtIndex:0];
+			NSManagedObject *parent = [parentResults objectAtIndex:0];
 			NSManagedObject *child = [self _createNewSPUser];
 			[child setParent:parent];
 			[parent addChildrenObject:child];
@@ -209,7 +210,7 @@
 		{
 			[[NSApplication sharedApplication] presentError:error];
 		}
-		[array release];
+		[parentResults release];
 	}
 	[outlineView reloadData];
 }
@@ -574,7 +575,7 @@
 	}
 	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
 	[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
-	
+	[droppedUsers release];
 	return TRUE;
 }
 
@@ -681,8 +682,8 @@
 
 - (NSManagedObject *)_createNewSPUser
 {
-	NSManagedObject *user = [[NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
-														  inManagedObjectContext:[self managedObjectContext]] autorelease];	
+	NSManagedObject *user = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
+														  inManagedObjectContext:[self managedObjectContext]];	
 	
 	return user;
 }
