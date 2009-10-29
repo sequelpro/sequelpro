@@ -432,9 +432,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		stringIndex = nextIndex;
 	}
 	
-	// Add the end of the string after the previously matched character where appropriate.
-	if (stringIndex + 1 < [string length])
-		[resultsArray addObject:[string substringFromIndex:stringIndex + 1]];
+	// Add the end of the string after the previously matched character where appropriate
+	// if it does not contain only white space characters and if the last query is not a
+	// "delimiter" statement to avoid unnecessary error messages.
+	if (stringIndex + 1 < [string length]) {
+		NSString *lastQuery = [[string substringFromIndex:stringIndex + 1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		if([lastQuery length] && ![lastQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
+			[resultsArray addObject:lastQuery];
+	}
 
 	return resultsArray;
 }
