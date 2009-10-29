@@ -94,3 +94,4 @@ NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
 NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
+NSString *SPDefaultFavorite                      = @"DefaultFavorite";

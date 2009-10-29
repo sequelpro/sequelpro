@@ -100,7 +100,7 @@
 		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
 			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
 		} else {
-			tableRow = [prefs integerForKey:@"DefaultFavorite"] + 1;
+			tableRow = [prefs integerForKey:SPDefaultFavorite] + 1;
 		}
 		if (tableRow < [favorites count]) {
 			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] intValue];

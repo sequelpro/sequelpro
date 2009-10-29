@@ -346,8 +346,8 @@
 		}
 		
 		// Reset default favorite
-		if ([favoritesTableView selectedRow] == [prefs integerForKey:@"DefaultFavorite"]) {
-			[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:@"DefaultFavorite"];
+		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
+			[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
 		}
 
 		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
@@ -423,7 +423,7 @@
 		[prefs setBool:NO forKey:SPSelectLastFavoriteUsed];
 
 		// Minus 2 from index to account for the "Last Used" and separator items
-		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:@"DefaultFavorite"];
+		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:SPDefaultFavorite];
 	}
 }
 
@@ -470,7 +470,7 @@
 	// Set the default favorite popup back to preference
 	if (sender == [defaultFavoritePopup lastItem]) {
 		if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
-			[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"]+2];
+			[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:SPDefaultFavorite]+2];
 		} else {
 			[defaultFavoritePopup selectItemAtIndex:0];
 		}
@@ -603,8 +603,8 @@
 	}
 	
 	// Update default favorite to take on new value
-	if ([prefs integerForKey:@"DefaultFavorite"] == originalRow) {
-		[prefs setInteger:destinationRow forKey:@"DefaultFavorite"];
+	if ([prefs integerForKey:SPDefaultFavorite] == originalRow) {
+		[prefs setInteger:destinationRow forKey:SPDefaultFavorite];
 	}
 	[self updateDefaultFavoritePopup];
 	
@@ -1002,7 +1002,7 @@
 	
 	// Select the default favorite from prefs
 	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
-		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:@"DefaultFavorite"] + 2];
+		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:SPDefaultFavorite] + 2];
 	} else {
 		[defaultFavoritePopup selectItemAtIndex:0];
 	}
