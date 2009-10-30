@@ -406,15 +406,8 @@
 	[removeButton setEnabled:NO];
 
 	// Trigger a data refresh
-	[self loadTableValuesWithCallback:@selector(finalizeTableLoad)];
-}
+	[self loadTableValues];
 
-/**
- * Callback to finish setting up a freshly loaded table once 
- * the values are available.
- */
-- (void) finalizeTableLoad
-{
 	// Restore the view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
 
@@ -449,36 +442,23 @@
  * using filters and limits as appropriate.
  * Will not refresh the table view itself.
  */
-- (void) loadTableValuesWithCallback:(SEL)tableContentCallbackMethod
+- (void) loadTableValues
 {
-	if (!selectedTable) return;
 
-	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table string"), selectedTable]];
-	
-	NSValue *encodedCallbackMethod = nil;
-	if (tableContentCallbackMethod)
-		encodedCallbackMethod = [NSValue valueWithBytes:&tableContentCallbackMethod objCType:@encode(SEL)];
-	[NSThread detachNewThreadSelector:@selector(loadTableValuesTaskWithCallback:) toTarget:self withObject:encodedCallbackMethod];
-}
-
-- (void) loadTableValuesTaskWithCallback:(id)encodedTableContentCallbackMethod
-{
 	// If no table is selected, return
 	if (!selectedTable) return;
 
-	NSAutoreleasePool *tableLoadPool = [[NSAutoreleasePool alloc] init];
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
 	MCPStreamingResult *streamingResult;
-	SEL callbackMethod = NULL;
 	int rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
 
 	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 
 	// Remove all items from the table
 	tableValuesCount = 0;
-	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+	[tableContentView noteNumberOfRowsChanged];
 	[tableValues removeAllObjects];
 
 	// Notify any listeners that a query has started
@@ -558,15 +538,6 @@
 	
 	// Notify listenters that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
-
-	// Set up the callback if present
-	if (encodedTableContentCallbackMethod) {
-		[encodedTableContentCallbackMethod getValue:&callbackMethod];
-		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
-	}
-
-	[tableDocumentInstance endTask];
-	[tableLoadPool release];
 }
 
 /**
@@ -812,8 +783,8 @@
 	}
 
 	// Reload data using the new filter settings
+	[self loadTableValues];
 	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
-	[self loadTableValuesWithCallback:NULL];
 }
 
 /**
@@ -1412,13 +1383,13 @@
 
 		// Update the task interface as necessary
 		rowsProcessed++;
-		if (!isFiltered) {
+		/*if (!isFiltered) {
 			if (rowsProcessed < targetRowCount) {
 				[tableDocumentInstance setTaskPercentage:(rowsProcessed*relativeTargetRowCount)];
 			} else if (rowsProcessed == targetRowCount) {
 				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminate) withObject:nil waitUntilDone:NO];
 			}
-		}
+		}*/
 
 		// Update the table view with new results every now and then
 		if (rowsProcessed > nextTableDisplayBoundary) {
@@ -1577,7 +1548,7 @@
 		if ( isEditingNewRow ) {
 			if ( [prefs boolForKey:SPReloadAfterAddingRow] ) {
 				[tableWindow endEditingFor:nil];
-				[self loadTableValuesWithCallback:NULL];
+				[self loadTableValues];
 			} else {
 
 				// Set the insertId for fields with auto_increment
@@ -1595,7 +1566,7 @@
 			// Reload table if set to - otherwise no action required.
 			if ( [prefs boolForKey:SPReloadAfterEditingRow] ) {
 				[tableWindow endEditingFor:nil];
-				[self loadTableValuesWithCallback:NULL];
+				[self loadTableValues];
 			}
 		}
 		currentlyEditingRow = -1;
@@ -2018,7 +1989,7 @@
 
 			// Refresh table content
 			if ( errors || reloadAfterRemovingRow ) {
-				[self loadTableValuesWithCallback:@selector(finalizeRowDeletion)];
+				[self loadTableValues];
 			} else {
 				for ( i = 0 ; i < tableValuesCount ; i++ ) {
 					if ( ![selectedRows containsIndex:i] )
@@ -2026,16 +1997,11 @@
 				}
 				tableValuesCount = [tempResult count];
 				[tableValues setArray:tempResult];
-				[tableContentView deselectAll:self];
 				[tableContentView reloadData];
 			}
+			[tableContentView deselectAll:self];
 		}
 	}
-}
-- (void) finalizeRowDeletion
-{
-	[tableContentView deselectAll:self];
-	[tableContentView reloadData];
 }
 
 /**
@@ -2450,6 +2416,9 @@
 	if (sortCol) [sortCol release];
 	sortCol = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
 
+	// Update data using the new sort order
+	[self loadTableValues];
+
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
@@ -2463,9 +2432,6 @@
 	} else {
 		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
 	}
-
-	// Update data using the new sort order
-	[self loadTableValuesWithCallback:NULL];
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification

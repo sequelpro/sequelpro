@@ -84,8 +84,7 @@
 
 // Table loading methods and information
 - (void) loadTable:(NSString *)aTable;
-- (void) loadTableValuesWithCallback:(SEL)tableContentCallbackMethod;
-- (void) loadTableValuesTaskWithCallback:(id)encodedTableContentCallbackMethod;
+- (void) loadTableValues;
 - (NSString *) tableFilterString;
 - (void) updateCountText;
 
@@ -120,7 +119,6 @@
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
-- (void)finalizeRowDeletion;
 - (void)updateNumberOfRows;
 - (int)fetchNumberOfRows;
 - (BOOL)saveRowOnDeselect;
