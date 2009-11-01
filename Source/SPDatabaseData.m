@@ -300,7 +300,7 @@ const CHAR_SETS charsets[] =
  * Returns all of the database's available storage engines.
  */
 - (NSArray *)getDatabaseStorageEngines
-{
+{	
 	if ([storageEngines count] == 0) {
 		if ([connection serverMajorVersion] < 5) {
 			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
@@ -348,7 +348,7 @@ const CHAR_SETS charsets[] =
 				([connection serverReleaseVersion] >= 5))
 			{
 				// Check the information_schema.engines table is accessible
-				MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'engines'"];
+				MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'ENGINES'"];
 				
 				if ([result numOfRows] == 1) {
 					// Table is accessible so get available storage engines
