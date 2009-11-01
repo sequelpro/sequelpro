@@ -1352,14 +1352,8 @@ void performThreadedKeepAlive(void *ptr)
 			}
 		}
 		
-		// Lock on this thread for normal result sets...
-		if (streamResultType == MCP_NO_STREAMING) {
-			[queryLock lock];
-
-		// ...but streaming result unlock on the main thread after processing, so ensure a lock on the main thread.
-		} else {
-			[self lockConnection];
-		}
+		// Lock the connection
+		[self lockConnection];
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
@@ -1378,7 +1372,7 @@ void performThreadedKeepAlive(void *ptr)
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCP_NO_STREAMING) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-					[queryLock unlock];
+					[self unlockConnection];
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
 				} else if (streamResultType == MCP_FAST_STREAMING) {
@@ -1394,7 +1388,7 @@ void performThreadedKeepAlive(void *ptr)
 					break;
 				}
 			} else {
-				[queryLock unlock];
+				[self unlockConnection];
 			}
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
@@ -1405,7 +1399,7 @@ void performThreadedKeepAlive(void *ptr)
 			
 		// On failure, set the error messages and IDs
 		} else {
-			[queryLock unlock];
+			[self unlockConnection];
 			
 			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);
@@ -1487,7 +1481,8 @@ void performThreadedKeepAlive(void *ptr)
 #pragma mark Connection locking
 
 /**
- * Lock the connection from any thread
+ * Lock the connection from any thread; ensure the the connection is locked on
+ * the main thread, but as fast as possible.
  */
 - (void)lockConnection
 {
@@ -1496,7 +1491,8 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
- * Unlock the connection from any thread
+ * Unlock the connection from any thread; ensure the connection is unlocked on
+ * the main thread, but as fast as possible.
  */
 - (void)unlockConnection
 {

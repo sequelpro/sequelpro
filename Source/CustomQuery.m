@@ -81,15 +81,20 @@
 - (void) runAllQueriesCallback
 {
 
-	// If no error was selected reconstruct a given selection
-	if([textView selectedRange].length == 0)
-		[textView setSelectedRange:oldThreadedQueryRange];
+	// If no error was selected, reconstruct a given selection.  This
+	// may no longer be valid if the query text has changed in the
+	// meantime, so error-checking is required.
+	if (oldThreadedQueryRange.location + oldThreadedQueryRange.length <= [[textView string] length]) {
 
-	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-	NSRange oldRange = [textView selectedRange];
-	[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location,0)];
-	[textView insertText:@""];
-	[textView setSelectedRange:oldRange];
+		if ([textView selectedRange].length == 0)
+			[textView setSelectedRange:oldThreadedQueryRange];
+
+		// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
+		NSRange oldRange = [textView selectedRange];
+		[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location,0)];
+		[textView insertText:@""];
+		[textView setSelectedRange:oldRange];
+	}
 }
 
 /*
