@@ -360,10 +360,8 @@ const CHAR_SETS charsets[] =
 				NSMutableArray *engines = [self _getDatabaseDataForQuery:@"SHOW STORAGE ENGINES"];
 				
 				// We only want to include engines that are supported
-				for (int i = 0; i < [engines count]; i++) 
-				{
-					NSDictionary *engine = [engines objectAtIndex:i];
-				
+				for (NSDictionary *engine in engines) 
+				{				
 					if (([[engine objectForKey:@"Support"] isEqualToString:@"DEFAULT"]) ||
 						([[engine objectForKey:@"Support"] isEqualToString:@"YES"]))
 					{
