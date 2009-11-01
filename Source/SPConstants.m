@@ -26,7 +26,7 @@
 #import "SPConstants.h"
 
 // Preference key constants
-NSString *SPDefaultEncoding                      = @"SPDefaultEncoding";
+NSString *SPDefaultEncoding                      = @"DefaultEncoding";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
 NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";
