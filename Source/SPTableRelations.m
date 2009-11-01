@@ -28,6 +28,7 @@
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
+#import "SPConstants.h"
 
 @interface SPTableRelations (PrivateAPI)
 
@@ -57,6 +58,9 @@
  */
 - (void)awakeFromNib
 {
+	// Set the table relation view's vertical gridlines if required
+	[relationsTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(tableSelectionChanged:) 
 												 name:NSTableViewSelectionDidChangeNotification 
@@ -308,6 +312,16 @@
 			[self _refreshRelationDataForcingCacheRefresh:YES];
 		}
 	} 
+}
+
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{	
+	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
+        [relationsTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
 }
 
 /**
