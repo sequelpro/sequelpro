@@ -509,6 +509,7 @@ static SPQueryController *sharedQueryController = nil;
 	NSArray *allDocs = [[NSDocumentController sharedDocumentController] documents];
 	NSMutableArray *allURLs = [NSMutableArray array];
 	for(id doc in allDocs) {
+		if (![doc fileURL]) continue;
 		if([allURLs containsObject:[doc fileURL]])
 			return;
 		else

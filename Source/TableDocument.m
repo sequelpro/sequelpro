@@ -261,7 +261,7 @@
 	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
 
 	spf = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] autorelease];
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
@@ -279,6 +279,7 @@
 	// For dispatching later
 	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
 		NSLog(@"SPF file format is not 'connection'.");
+		[spf release];
 		[self close];
 		return;
 	}
@@ -292,6 +293,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
+		[spf release];
 		[self close];
 		return;
 	}
@@ -332,6 +334,7 @@
 			encryptpw = [inputTextWindowSecureTextField stringValue];
 		else {
 			[self close];
+			[spf release];
 			return;
 		}
 
@@ -357,6 +360,7 @@
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
 			[self close];
+			[spf release];
 			return;
 		}
 	}
@@ -371,6 +375,7 @@
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		[self close];
+		[spf release];
 		return;
 	}
 
@@ -385,6 +390,7 @@
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		[self close];
+		[spf release];
 		return;
 	}
 
@@ -485,6 +491,7 @@
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
 		[connectionController initiateConnection:self];
 	}
+	[spf release];
 }
 
 /**
@@ -2395,6 +2402,7 @@
 		// For dispatching later
 		if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
 			NSLog(@"SPF file format is not 'connection'.");
+			[spf release];
 			return NO;
 		}
 
