@@ -84,67 +84,127 @@
 		return;
 	}
 
-	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
-		[info addObject:@"PROCEDURE INFORMATION"];
-		[info addObject:@"no information available"];
+	if ([[tableListInstance tableName] isEqualToString:@""]) {
+		[info addObject:@"INFORMATION"];
+		[info addObject:@"multiple selection"];
 		[infoTable reloadData];
 		return;
-	}
+	} 
 
-	if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
-		[info addObject:@"FUNCTION INFORMATION"];
-		[info addObject:@"no information available"];
-		[infoTable reloadData];
-		return;
-	}
-	
-	[info addObject:@"TABLE INFORMATION"];
-		
-	if ([tableListInstance tableName]) {
-		if ([[tableListInstance tableName] isEqualToString:@""]) {
-			[info addObject:@"multiple tables"];
-		} 
-		else {
-			// Retrieve the table status information via the data cache
-			tableStatus = [tableDataInstance statusValues];
+	// Get TABLE information
+	if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
 
-			// Check for errors
-			if (![tableStatus count]) {
-				[info addObject:@"error occurred"];
-				return;
-			}
+		[info addObject:@"TABLE INFORMATION"];
 
-			// Check for 'Create_time' == NULL
-			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
-
-				// Add the creation date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
-			}
-
-			// Check for 'Update_time' == NULL - InnoDB tables don't have an update time
-			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
-				
-				// Add the update date to the infoTable
-				[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
-			}
-			
-			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
-			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
-				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? @"rows: %@" : @"rows: ~%@",
-					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
+		if ([tableListInstance tableName]) {
+			if ([[tableListInstance tableName] isEqualToString:@""]) {
+				[info addObject:@"multiple tables"];
 			} 
-						
-			[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
-			[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
-			
-			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
-				[info addObject:[NSString stringWithFormat:@"auto_increment: %@",
-					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Auto_increment"] longLongValue]]]]];
+			else {
+				// Retrieve the table status information via the data cache
+				tableStatus = [tableDataInstance statusValues];
+
+				// Check for errors
+				if (![tableStatus count]) {
+					[info addObject:@"error occurred"];
+					return;
+				}
+
+				// Check for 'Create_time' == NULL
+				if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
+
+					// Add the creation date to the infoTable
+					[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
+				}
+
+				// Check for 'Update_time' == NULL - InnoDB tables don't have an update time
+				if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
+
+					// Add the update date to the infoTable
+					[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
+				}
+
+				// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
+				if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? @"rows: %@" : @"rows: ~%@",
+						[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
+				} 
+
+				[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
+				[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
+
+				if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:@"auto_increment: %@",
+						[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Auto_increment"] longLongValue]]]]];
+				}
 			}
 		}
 	}
 	
+	// Get PROC/FUNC information
+	else if ([tableListInstance tableType] == SP_TABLETYPE_PROC || [tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+
+		if ([tableListInstance tableType] == SP_TABLETYPE_PROC)
+			[info addObject:@"PROCEDURE INFORMATION"];
+		else
+			[info addObject:@"FUNCTION INFORMATION"];
+			
+		if ([tableListInstance tableName]) {
+			if ([[tableListInstance tableName] isEqualToString:@""]) {
+				[info addObject:@"multiple tables"];
+			} else {
+				// Retrieve the table status information via the data cache
+				tableStatus = [tableDataInstance statusValues];
+
+				// Check for errors
+				if (![tableStatus count]) {
+					[info addObject:@"error occurred"];
+					return;
+				}
+
+				// Add the creation date to the infoTable
+				// Check for 'CREATED' == NULL
+				if (![[tableStatus objectForKey:@"CREATED"] isNSNull]) {
+
+					// Add the creation date to the infoTable
+					[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"CREATED"]]]];
+				}
+
+				// Check for 'LAST_ALTERED'
+				if (![[tableStatus objectForKey:@"LAST_ALTERED"] isNSNull]) {
+				
+					// Add the update date to the infoTable
+					[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"LAST_ALTERED"]]]];
+				}
+
+				// Check for 'SQL ACCESS' and deterministic
+				if (![[tableStatus objectForKey:@"SQL_DATA_ACCESS"] isNSNull] && ![[tableStatus objectForKey:@"IS_DETERMINISTIC"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:@"data access: %@ (%@)", [tableStatus objectForKey:@"SQL_DATA_ACCESS"], ([[tableStatus objectForKey:@"IS_DETERMINISTIC"] isEqualToString:@"YES"]) ? @"deterministic" : @"non-deterministic"]];
+				}
+
+				if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+					// Check for 'DTD_IDENTIFIER'
+					if (![[tableStatus objectForKey:@"DTD_IDENTIFIER"] isNSNull]) {
+						[info addObject:[NSString stringWithFormat:@"return type: %@", [tableStatus objectForKey:@"DTD_IDENTIFIER"]]];
+					}
+				}
+
+				// Check for 'SECURITY_TYPE'
+				if (![[tableStatus objectForKey:@"SECURITY_TYPE"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:@"execution privilege: %@", [tableStatus objectForKey:@"SECURITY_TYPE"]]];
+				}
+
+				// Check for 'DEFINER'
+				if (![[tableStatus objectForKey:@"DEFINER"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:@"definer: %@", [tableStatus objectForKey:@"DEFINER"]]];
+				}
+
+			}
+		}
+	}
+
 	[infoTable reloadData];
+
 }
 
 #pragma mark -

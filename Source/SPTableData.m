@@ -728,7 +728,6 @@
 	// When views are selected, populate the table with a default dictionary - all values, including comment, return no
 	// meaningful information for views so we may as well skip the query.
 	if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
-		
 		[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"View", @"Engine", @"No status information is available for views.", @"Comment", [tableListInstance tableName], @"Name", nil]];
 		return TRUE;
 	}
@@ -736,14 +735,29 @@
 	// Run the status query and retrieve as a dictionary.
 	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
-	MCPResult *tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
+
+	MCPResult *tableStatusResult;
+
+	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
+		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];
+		[escapedDatabaseName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedDatabaseName length])];
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.ROUTINES AS r WHERE r.SPECIFIC_NAME = '%@' AND r.ROUTINE_SCHEMA = '%@' AND r.ROUTINE_TYPE = 'PROCEDURE'", escapedTableName, escapedDatabaseName]];
+	}
+	else if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];
+		[escapedDatabaseName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedDatabaseName length])];
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.ROUTINES AS r WHERE r.SPECIFIC_NAME = '%@' AND r.ROUTINE_SCHEMA = '%@' AND r.ROUTINE_TYPE = 'FUNCTION'", escapedTableName, escapedDatabaseName]];
+	}
+	else if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
+	}
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving table status.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return FALSE;
@@ -752,25 +766,28 @@
 	// Retrieve the status as a dictionary and set as the cache
 	[status setDictionary:[tableStatusResult fetchRowAsDictionary]];
 
-	// Reassign any "Type" key - for MySQL < 4.1 - to "Engine" for consistency.
-	if ([status objectForKey:@"Type"]) {
-		[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
-	}
+	if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
 
-	// Add a note for whether the row count is accurate or not - only for MyISAM
-	if ([[status objectForKey:@"Engine"] isEqualToString:@"MyISAM"]) {
-		[status setObject:@"y" forKey:@"RowsCountAccurate"];
-	} else {
-		[status setObject:@"n" forKey:@"RowsCountAccurate"];
-	}
+		// Reassign any "Type" key - for MySQL < 4.1 - to "Engine" for consistency.
+		if ([status objectForKey:@"Type"]) {
+			[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
+		}
 
-	// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
-	// this happens e.g. for db "information_schema"
-	if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
-		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
-		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
-			[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
+		// Add a note for whether the row count is accurate or not - only for MyISAM
+		if ([[status objectForKey:@"Engine"] isEqualToString:@"MyISAM"]) {
 			[status setObject:@"y" forKey:@"RowsCountAccurate"];
+		} else {
+			[status setObject:@"n" forKey:@"RowsCountAccurate"];
+		}
+
+		// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
+		// this happens e.g. for db "information_schema"
+		if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
+			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
+			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+				[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
+				[status setObject:@"y" forKey:@"RowsCountAccurate"];
+		}
 	}
 
 	return TRUE;
