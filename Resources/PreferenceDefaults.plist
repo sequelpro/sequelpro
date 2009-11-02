@@ -4,6 +4,10 @@
 <dict>
 	<key>DefaultEncoding</key>
 	<string>Autodetect</string>
+	<key>DefaultViewMode</key>
+	<integer>0</integer>
+	<key>LastViewMode</key>
+	<integer>1</integer>
 	<key>UseMonospacedFonts</key>
 	<false/>
 	<key>CustomQueryMaxHistoryItems</key>
@@ -122,7 +126,7 @@
 	<key>CSVImportLineTerminator</key>
 	<string>\n</string>
 	<key>CSVImportFieldEnclosedBy</key>
-	<string>"</string>
+	<string>&quot;</string>
 	<key>CSVImportFieldEscapeCharacter</key>
 	<string>\</string>
 	<key>CSVImportFirstLineIsHeader</key>

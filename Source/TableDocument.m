@@ -653,8 +653,7 @@
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
 	[tableWindow setTitle:[self displaySPName]];
-	[self viewStructure:self];
-
+	
 	// Connected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
@@ -690,9 +689,28 @@
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
-	if(spfSession != nil)
+	if(spfSession != nil) {
 		[self restoreSession];
-
+	} else {
+		switch ([prefs integerForKey:SPDefaultViewMode] > 0 ? [prefs integerForKey:SPDefaultViewMode] : [prefs integerForKey:SPLastViewMode]) {
+			default:
+			case SPStructureViewMode:
+				[self viewStructure:self];
+				break;
+			case SPContentViewMode:
+				[self viewContent:self];
+				break;
+			case SPRelationsViewMode:
+				[self viewRelations:self];
+				break;
+			case SPTableInfoViewMode:
+				[self viewStatus:self];
+				break;
+			case SPQueryEditorViewMode:
+				[self viewQuery:self];
+				break;
+		}
+	}
 }
 
 /**
