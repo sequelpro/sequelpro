@@ -2805,6 +2805,8 @@
 	[tableTabView selectTabViewItemAtIndex:0];
 	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_STRUCTURE];
 	[spHistoryControllerInstance updateHistoryEntries];
+	
+	[prefs setInteger:SPStructureViewMode forKey:SPLastViewMode];
 }
 
 - (IBAction)viewContent:(id)sender
@@ -2819,6 +2821,8 @@
 	[tableTabView selectTabViewItemAtIndex:1];
 	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_CONTENT];
 	[spHistoryControllerInstance updateHistoryEntries];
+	
+	[prefs setInteger:SPContentViewMode forKey:SPLastViewMode];
 }
 
 - (IBAction)viewQuery:(id)sender
@@ -2843,6 +2847,8 @@
 
 	// Set the focus on the text field if no query has been run
 	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
+	
+	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
 }
 
 - (IBAction)viewStatus:(id)sender
@@ -2864,6 +2870,8 @@
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_INFO];
 	[spHistoryControllerInstance updateHistoryEntries];
+	
+	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];
 }
 
 - (IBAction)viewRelations:(id)sender
@@ -2885,6 +2893,8 @@
 	[tableTabView selectTabViewItemAtIndex:4];
 	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_RELATIONS];
 	[spHistoryControllerInstance updateHistoryEntries];
+	
+	[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
 }
 
 

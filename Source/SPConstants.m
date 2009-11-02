@@ -26,9 +26,19 @@
 #import "SPConstants.h"
 
 // Preference key constants
+// General Prefpane
+NSString *SPDefaultFavorite                      = @"DefaultFavorite";
+NSString *SPSelectLastFavoriteUsed               = @"SelectLastFavoriteUsed";
+NSString *SPLastFavoriteIndex                    = @"LastFavoriteIndex";
+NSString *SPAutoConnectToDefault                 = @"AutoConnectToDefault";
+NSString *SPDefaultViewMode                      = @"DefaultViewMode";
+NSString *SPLastViewMode                         = @"LastViewMode";
 NSString *SPDefaultEncoding                      = @"DefaultEncoding";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
+NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
+
+// Tables Prefpane
 NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";
 NSString *SPReloadAfterEditingRow                = @"ReloadAfterEditingRow";
 NSString *SPReloadAfterRemovingRow               = @"ReloadAfterRemovingRow";
@@ -38,61 +48,72 @@ NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
-NSString *SPShowNoAffectedRowsError              = @"ShowNoAffectedRowsError";
+
+// Favorites Prefpane
+NSString *SPFavorites                            = @"favorites";
+
+// Notifications Prefpane
 NSString *SPGrowlEnabled                         = @"GrowlEnabled";
-NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
-NSString *SPUseKeepAlive                         = @"UseKeepAlive";
-NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";
-NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
-NSString *SPAutoConnectToDefault                 = @"AutoConnectToDefault";
-NSString *SPQueryFavoriteReplacesContent         = @"QueryFavoriteReplacesContent";
-NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
-NSString *SPCustomQueryEditorFont                = @"CustomQueryEditorFont";
-NSString *SPCustomQueryEditorBackgroundColor     = @"CustomQueryEditorBackgroundColor";
-NSString *SPCustomQueryEditorBacktickColor       = @"CustomQueryEditorBacktickColor";
-NSString *SPCustomQueryEditorCommentColor        = @"CustomQueryEditorCommentColor";
-NSString *SPCustomQueryEditorNumericColor        = @"CustomQueryEditorNumericColor";
-NSString *SPCustomQueryEditorQuoteColor          = @"CustomQueryEditorQuoteColor";
-NSString *SPCustomQueryEditorSQLKeywordColor     = @"CustomQueryEditorSQLKeywordColor";
-NSString *SPCustomQueryEditorTextColor           = @"CustomQueryEditorTextColor";
-NSString *SPCustomQueryEditorHighlightQueryColor = @"CustomQueryEditorHighlightQueryColor";
-NSString *SPCustomQueryEditorCaretColor          = @"CustomQueryEditorCaretColor";
-NSString *SPCustomQueryEditorVariableColor       = @"CustomQueryEditorVariableColor";
-NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
-NSString *SPCustomQueryAutoIndent                = @"CustomQueryAutoIndent";
-NSString *SPCustomQueryAutoPairCharacters        = @"CustomQueryAutoPairCharacters";
-NSString *SPCustomQueryAutoUppercaseKeywords     = @"CustomQueryAutoUppercaseKeywords";
-NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
-NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
-NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
-NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
-NSString *SPSelectLastFavoriteUsed               = @"SelectLastFavoriteUsed";
-NSString *SPLastFavoriteIndex                    = @"LastFavoriteIndex";
-NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
+NSString *SPShowNoAffectedRowsError              = @"ShowNoAffectedRowsError";
 NSString *SPConsoleEnableLogging                 = @"ConsoleEnableLogging";
 NSString *SPConsoleEnableInterfaceLogging        = @"ConsoleEnableInterfaceLogging";
 NSString *SPConsoleEnableCustomQueryLogging      = @"ConsoleEnableCustomQueryLogging";
 NSString *SPConsoleEnableImportExportLogging     = @"ConsoleEnableImportExportLogging";
 NSString *SPConsoleEnableErrorLogging            = @"ConsoleEnableErrorLogging";
-NSString *SPConsoleShowTimestamps                = @"ConsoleShowTimestamps";
-NSString *SPConsoleShowSelectsAndShows           = @"ConsoleShowSelectsAndShows";
+
+// Network Prefpane
+NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
+NSString *SPUseKeepAlive                         = @"UseKeepAlive";
+NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";
+
+// Editor Prefpane
+NSString *SPCustomQueryEditorFont                = @"CustomQueryEditorFont";
+NSString *SPCustomQueryEditorTextColor           = @"CustomQueryEditorTextColor";
+NSString *SPCustomQueryEditorBackgroundColor     = @"CustomQueryEditorBackgroundColor";
+NSString *SPCustomQueryEditorCaretColor          = @"CustomQueryEditorCaretColor";
+NSString *SPCustomQueryEditorCommentColor        = @"CustomQueryEditorCommentColor";
+NSString *SPCustomQueryEditorSQLKeywordColor     = @"CustomQueryEditorSQLKeywordColor";
+NSString *SPCustomQueryEditorNumericColor        = @"CustomQueryEditorNumericColor";
+NSString *SPCustomQueryEditorQuoteColor          = @"CustomQueryEditorQuoteColor";
+NSString *SPCustomQueryEditorBacktickColor       = @"CustomQueryEditorBacktickColor";
+NSString *SPCustomQueryEditorVariableColor       = @"CustomQueryEditorVariableColor";
+NSString *SPCustomQueryEditorHighlightQueryColor = @"CustomQueryEditorHighlightQueryColor";
+NSString *SPCustomQueryAutoIndent                = @"CustomQueryAutoIndent";
+NSString *SPCustomQueryAutoPairCharacters        = @"CustomQueryAutoPairCharacters";
+NSString *SPCustomQueryAutoUppercaseKeywords     = @"CustomQueryAutoUppercaseKeywords";
+NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
+NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
+NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
+
+// AutoUpdate Prefpane
+NSString *SPLastUsedVersion                      = @"LastUsedVersion";
+
+// GUI Prefs
 NSString *SPConsoleShowHelps                     = @"ConsoleShowHelps";
-NSString *SPPrintBackground                      = @"PrintBackground";
-NSString *SPPrintImagePreviews                   = @"PrintImagePreviews";
-NSString *SPContentFilters                       = @"ContentFilters";
-NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
-NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
+NSString *SPConsoleShowSelectsAndShows           = @"ConsoleShowSelectsAndShows";
+NSString *SPConsoleShowTimestamps                = @"ConsoleShowTimestamps";
+NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
+NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
+NSString *SPTableColumnWidths                    = @"tableColumnWidths";
+
+// Import
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";
 NSString *SPCSVImportFieldEscapeCharacter        = @"CSVImportFieldEscapeCharacter";
+NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
-NSString *SPLastUsedVersion                      = @"LastUsedVersion";
-NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
-NSString *SPQuickLookTypes                       = @"QuickLookTypes";
-NSString *SPQueryFavorites                       = @"queryFavorites";
-NSString *SPFavorites                            = @"favorites";
-NSString *SPTableColumnWidths                    = @"tableColumnWidths";
-NSString *SPQueryHistory                         = @"queryHistory";
-NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
+NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
+
+// Misc 
+NSString *SPContentFilters                       = @"ContentFilters";
 NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
-NSString *SPDefaultFavorite                      = @"DefaultFavorite";
+NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
+NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
+NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
 NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
+NSString *SPPrintBackground                      = @"PrintBackground";
+NSString *SPPrintImagePreviews                   = @"PrintImagePreviews";
+NSString *SPQueryFavorites                       = @"queryFavorites";
+NSString *SPQueryFavoriteReplacesContent         = @"QueryFavoriteReplacesContent";
+NSString *SPQueryHistory                         = @"queryHistory";
+NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
+NSString *SPQuickLookTypes                       = @"QuickLookTypes";

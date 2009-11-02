@@ -23,6 +23,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+// TODO: change #defines
+// see http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/CodingGuidelines/Articles/NamingIvarsAndTypes.html#//apple_ref/doc/uid/20001284-1003095
+
 #import <Cocoa/Cocoa.h>
 
 // Extensions
@@ -55,10 +58,29 @@
 #define MAIN_TOOLBAR_TABLE_RELATIONS    @"SwitchToTableRelationsToolbarItemIdentifier"
 #define MAIN_TOOLBAR_USER_MANAGER       @"SwitchToUserManagerToolbarItemIdentifier"
 
+// View Modes
+typedef enum {
+	SPStructureViewMode		= 1,
+	SPContentViewMode		= 2,
+	SPRelationsViewMode		= 3,
+	SPTableInfoViewMode		= 4,
+	SPQueryEditorViewMode	= 5
+} SPViewMode;
+
 // Preference key constants
+// General Prefpane
+extern NSString *SPDefaultFavorite;
+extern NSString *SPSelectLastFavoriteUsed;
+extern NSString *SPLastFavoriteIndex;
+extern NSString *SPAutoConnectToDefault;
+extern NSString *SPDefaultViewMode;
+extern NSString *SPLastViewMode;
 extern NSString *SPDefaultEncoding;
 extern NSString *SPUseMonospacedFonts;
 extern NSString *SPDisplayTableViewVerticalGridlines;
+extern NSString *SPCustomQueryMaxHistoryItems;
+
+// Tables Prefpane
 extern NSString *SPReloadAfterAddingRow;
 extern NSString *SPReloadAfterEditingRow;
 extern NSString *SPReloadAfterRemovingRow;
@@ -68,61 +90,72 @@ extern NSString *SPNewFieldsAllowNulls;
 extern NSString *SPLimitResults;
 extern NSString *SPLimitResultsValue;
 extern NSString *SPNullValue;
-extern NSString *SPShowNoAffectedRowsError;
+
+// Favorites Prefpane
+extern NSString *SPFavorites;
+
+// Notifications Prefpane
 extern NSString *SPGrowlEnabled;
-extern NSString *SPConnectionTimeoutValue;
-extern NSString *SPUseKeepAlive;
-extern NSString *SPKeepAliveInterval;
-extern NSString *SPEditInSheetEnabled;
-extern NSString *SPAutoConnectToDefault;
-extern NSString *SPQueryFavoriteReplacesContent;
-extern NSString *SPQueryHistoryReplacesContent;
-extern NSString *SPCustomQueryEditorFont;
-extern NSString *SPCustomQueryEditorBackgroundColor;
-extern NSString *SPCustomQueryEditorBacktickColor;
-extern NSString *SPCustomQueryEditorCommentColor;
-extern NSString *SPCustomQueryEditorNumericColor;
-extern NSString *SPCustomQueryEditorQuoteColor;
-extern NSString *SPCustomQueryEditorSQLKeywordColor;
-extern NSString *SPCustomQueryEditorTextColor;
-extern NSString *SPCustomQueryEditorHighlightQueryColor;
-extern NSString *SPCustomQueryEditorCaretColor;
-extern NSString *SPCustomQueryEditorVariableColor;
-extern NSString *SPCustomQueryHighlightCurrentQuery;
-extern NSString *SPCustomQueryAutoIndent;
-extern NSString *SPCustomQueryAutoPairCharacters;
-extern NSString *SPCustomQueryAutoUppercaseKeywords;
-extern NSString *SPCustomQueryUpdateAutoHelp;
-extern NSString *SPCustomQueryAutoHelpDelay;
-extern NSString *SPCustomQueryMaxHistoryItems;
-extern NSString *SPLastSQLFileEncoding;
-extern NSString *SPSelectLastFavoriteUsed;
-extern NSString *SPLastFavoriteIndex;
-extern NSString *SPTableInformationPanelCollapsed;
+extern NSString *SPShowNoAffectedRowsError;
 extern NSString *SPConsoleEnableLogging;
 extern NSString *SPConsoleEnableInterfaceLogging;
 extern NSString *SPConsoleEnableCustomQueryLogging;
 extern NSString *SPConsoleEnableImportExportLogging;
 extern NSString *SPConsoleEnableErrorLogging;
+
+// Network Prefpane
+extern NSString *SPConnectionTimeoutValue;
+extern NSString *SPUseKeepAlive;
+extern NSString *SPKeepAliveInterval;
+
+// Editor Prefpane
+extern NSString *SPCustomQueryEditorFont;
+extern NSString *SPCustomQueryEditorTextColor;
+extern NSString *SPCustomQueryEditorBackgroundColor;
+extern NSString *SPCustomQueryEditorCaretColor;
+extern NSString *SPCustomQueryEditorCommentColor;
+extern NSString *SPCustomQueryEditorSQLKeywordColor;
+extern NSString *SPCustomQueryEditorNumericColor;
+extern NSString *SPCustomQueryEditorQuoteColor;
+extern NSString *SPCustomQueryEditorBacktickColor;
+extern NSString *SPCustomQueryEditorVariableColor;
+extern NSString *SPCustomQueryEditorHighlightQueryColor;
+extern NSString *SPCustomQueryAutoIndent;
+extern NSString *SPCustomQueryAutoPairCharacters;
+extern NSString *SPCustomQueryAutoUppercaseKeywords;
+extern NSString *SPCustomQueryUpdateAutoHelp;
+extern NSString *SPCustomQueryAutoHelpDelay;
+extern NSString *SPCustomQueryHighlightCurrentQuery;
+
+// AutoUpdate Prefpane
+extern NSString *SPLastUsedVersion;
+
+// GUI Prefs
 extern NSString *SPConsoleShowTimestamps;
 extern NSString *SPConsoleShowSelectsAndShows;
 extern NSString *SPConsoleShowHelps;
-extern NSString *SPPrintBackground;
-extern NSString *SPPrintImagePreviews;
-extern NSString *SPContentFilters;
+extern NSString *SPEditInSheetEnabled;
+extern NSString *SPTableInformationPanelCollapsed;
+extern NSString *SPTableColumnWidths;
+
+// Import
 extern NSString *SPCSVImportFieldTerminator;
 extern NSString *SPCSVImportLineTerminator;
 extern NSString *SPCSVImportFieldEnclosedBy;
 extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
-extern NSString *SPLastUsedVersion;
-extern NSString *SPFieldEditorSheetFont;
-extern NSString *SPQuickLookTypes;
-extern NSString *SPQueryFavorites;
-extern NSString *SPFavorites;
-extern NSString *SPTableColumnWidths;
-extern NSString *SPQueryHistory;
-extern NSString *SPDocumentTaskStartNotification;
+
+// Misc
+extern NSString *SPContentFilters;
 extern NSString *SPDocumentTaskEndNotification;
-extern NSString *SPDefaultFavorite;
+extern NSString *SPDocumentTaskStartNotification;
+extern NSString *SPFieldEditorSheetFont;
+extern NSString *SPLastSQLFileEncoding;
 extern NSString *SPNoBOMforSQLdumpFile;
+extern NSString *SPPrintBackground;
+extern NSString *SPPrintImagePreviews;
+extern NSString *SPQueryFavorites;
+extern NSString *SPQueryFavoriteReplacesContent;
+extern NSString *SPQueryHistory;
+extern NSString *SPQueryHistoryReplacesContent;
+extern NSString *SPQuickLookTypes;
