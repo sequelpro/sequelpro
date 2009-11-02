@@ -110,6 +110,8 @@
 		else
 			imageFrame.origin.y += ceil((cellFrame.size.height - imageFrame.size.height) / 2);
 
+		imageFrame.origin.y -= 1;
+
 		[image compositeToPoint:imageFrame.origin operation:NSCompositeSourceOver];
 	} else
 		if (_indentationLevel == 0)

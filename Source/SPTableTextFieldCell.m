@@ -34,24 +34,36 @@
 {			
 	// Construct and get the sub text attributed string
 	NSAttributedString *string = [self attributedStringValue];
-	
+
 	int i;
 	float maxWidth = cellFrame.size.width;
 	float stringWidth = [string size].width;
-			
+
 	// Set a right padding
 	maxWidth -= 5;
-		
+
 	if (maxWidth < stringWidth) {
 		for (i = 0; i <= [string length]; i++) {
-			if (([[string attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth) && (i >= 3)) {	
+			if (([[string attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth) && (i >= 3)) {
 				string = [[[NSMutableAttributedString alloc] initWithString:[[[string attributedSubstringFromRange:NSMakeRange(0, i - 3)] string] stringByAppendingString:@"..."] attributes:[string attributesAtIndex:0 effectiveRange:NULL]] autorelease];
+				break;
 			}
 		}
 	}
-	
+
 	[self setAttributedStringValue:string];
 	[super drawInteriorWithFrame:cellFrame inView:controlView];
+
+}
+
+- (NSSize)cellSize
+{
+	NSSize cellSize = [super cellSize];
+
+	cellSize.width = [[self attributedStringValue] size].width + (([self image] != nil) ? [[self image] size].width : 0) + 25;
+	cellSize.height = [[self attributedStringValue] size].height + 14.0;
+
+	return cellSize;
 }
 
 @end
