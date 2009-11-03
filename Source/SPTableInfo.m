@@ -44,17 +44,17 @@
 	if ((self = [super init])) {
 		info = [[NSMutableArray alloc] init];
 	}
-	
+
 	return self;
 }
 
 - (void)awakeFromNib
 {
 	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(tableChanged:) 
-												 name:NSTableViewSelectionDidChangeNotification 
-											   object:tableList];
-	
+		selector:@selector(tableChanged:) 
+		name:NSTableViewSelectionDidChangeNotification 
+		object:tableList];
+
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 	[infoTable reloadData];
 }
@@ -62,31 +62,31 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
+
 	[info release];
-	
+
 	[super dealloc];
 }
 
 - (void)tableChanged:(NSNotification *)notification
 {
 	NSDictionary *tableStatus;
-	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];	
+	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 	[info removeAllObjects];
 
 	// For views, no information can be displayed.
 	if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
-		[info addObject:@"VIEW INFORMATION"];
-		[info addObject:@"no information available"];
+		[info addObject:NSLocalizedString(@"VIEW INFORMATION", @"header for view info pane")];
+		[info addObject:NSLocalizedString(@"no information available", @"no information available")];
 		[infoTable reloadData];
 		return;
 	}
 
 	if ([[tableListInstance tableName] isEqualToString:@""]) {
-		[info addObject:@"INFORMATION"];
-		[info addObject:@"multiple selection"];
+		[info addObject:NSLocalizedString(@"INFORMATION", @"header for blank info pane")];
+		[info addObject:NSLocalizedString(@"multiple selection", @"multiple selection")];
 		[infoTable reloadData];
 		return;
 	} 
@@ -94,50 +94,47 @@
 	// Get TABLE information
 	if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
 
-		[info addObject:@"TABLE INFORMATION"];
+		[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 
 		if ([tableListInstance tableName]) {
-			if ([[tableListInstance tableName] isEqualToString:@""]) {
-				[info addObject:@"multiple tables"];
-			} 
-			else {
-				// Retrieve the table status information via the data cache
-				tableStatus = [tableDataInstance statusValues];
 
-				// Check for errors
-				if (![tableStatus count]) {
-					[info addObject:@"error occurred"];
-					return;
-				}
+			// Retrieve the table status information via the data cache
+			tableStatus = [tableDataInstance statusValues];
 
-				// Check for 'Create_time' == NULL
-				if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
-
-					// Add the creation date to the infoTable
-					[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
-				}
-
-				// Check for 'Update_time' == NULL - InnoDB tables don't have an update time
-				if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
-
-					// Add the update date to the infoTable
-					[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
-				}
-
-				// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
-				if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
-					[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? @"rows: %@" : @"rows: ~%@",
-						[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
-				} 
-
-				[info addObject:[NSString stringWithFormat:@"size: %@", [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
-				[info addObject:[NSString stringWithFormat:@"encoding: %@", [tableDataInstance tableEncoding]]];
-
-				if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
-					[info addObject:[NSString stringWithFormat:@"auto_increment: %@",
-						[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Auto_increment"] longLongValue]]]]];
-				}
+			// Check for errors
+			if (![tableStatus count]) {
+				[info addObject:NSLocalizedString(@"error occurred", @"error occurred")];
+				return;
 			}
+
+			// Check for 'Create_time' == NULL
+			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
+
+				// Add the creation date to the infoTable
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"created: %@", @"created: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Create_time"]]]];
+			}
+
+			// Check for 'Update_time' == NULL - InnoDB tables don't have an update time
+			if (![[tableStatus objectForKey:@"Update_time"] isNSNull]) {
+
+				// Add the update date to the infoTable
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"updated: %@", @"updated: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
+			}
+
+			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
+			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? NSLocalizedString(@"rows: %@", @"rows: %@") : NSLocalizedString(@"rows: ~%@", @"rows: ~%@"),
+					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
+			} 
+
+			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"size: %@"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
+			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %@", @"encoding: %@"), [tableDataInstance tableEncoding]]];
+
+			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"auto_increment: %@", @"auto_increment: %@"),
+					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Auto_increment"] longLongValue]]]]];
+			}
+
 		}
 	}
 	
@@ -145,61 +142,57 @@
 	else if ([tableListInstance tableType] == SP_TABLETYPE_PROC || [tableListInstance tableType] == SP_TABLETYPE_FUNC) {
 
 		if ([tableListInstance tableType] == SP_TABLETYPE_PROC)
-			[info addObject:@"PROCEDURE INFORMATION"];
+			[info addObject:NSLocalizedString(@"PROCEDURE INFORMATION", @"header for procedure info pane")];
 		else
-			[info addObject:@"FUNCTION INFORMATION"];
+			[info addObject:NSLocalizedString(@"FUNCTION INFORMATION", @"header for function info pane")];
 			
 		if ([tableListInstance tableName]) {
-			if ([[tableListInstance tableName] isEqualToString:@""]) {
-				[info addObject:@"multiple tables"];
-			} else {
-				// Retrieve the table status information via the data cache
-				tableStatus = [tableDataInstance statusValues];
 
-				// Check for errors
-				if (![tableStatus count]) {
-					[info addObject:@"error occurred"];
-					return;
-				}
+			// Retrieve the table status information via the data cache
+			tableStatus = [tableDataInstance statusValues];
+
+			// Check for errors
+			if (![tableStatus count]) {
+				[info addObject:NSLocalizedString(@"error occurred", @"error occurred")];
+				return;
+			}
+
+			// Check for 'CREATED' == NULL
+			if (![[tableStatus objectForKey:@"CREATED"] isNSNull]) {
 
 				// Add the creation date to the infoTable
-				// Check for 'CREATED' == NULL
-				if (![[tableStatus objectForKey:@"CREATED"] isNSNull]) {
-
-					// Add the creation date to the infoTable
-					[info addObject:[NSString stringWithFormat:@"created: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"CREATED"]]]];
-				}
-
-				// Check for 'LAST_ALTERED'
-				if (![[tableStatus objectForKey:@"LAST_ALTERED"] isNSNull]) {
-				
-					// Add the update date to the infoTable
-					[info addObject:[NSString stringWithFormat:@"updated: %@", [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"LAST_ALTERED"]]]];
-				}
-
-				// Check for 'SQL ACCESS' and deterministic
-				if (![[tableStatus objectForKey:@"SQL_DATA_ACCESS"] isNSNull] && ![[tableStatus objectForKey:@"IS_DETERMINISTIC"] isNSNull]) {
-					[info addObject:[NSString stringWithFormat:@"data access: %@ (%@)", [tableStatus objectForKey:@"SQL_DATA_ACCESS"], ([[tableStatus objectForKey:@"IS_DETERMINISTIC"] isEqualToString:@"YES"]) ? @"deterministic" : @"non-deterministic"]];
-				}
-
-				if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
-					// Check for 'DTD_IDENTIFIER'
-					if (![[tableStatus objectForKey:@"DTD_IDENTIFIER"] isNSNull]) {
-						[info addObject:[NSString stringWithFormat:@"return type: %@", [tableStatus objectForKey:@"DTD_IDENTIFIER"]]];
-					}
-				}
-
-				// Check for 'SECURITY_TYPE'
-				if (![[tableStatus objectForKey:@"SECURITY_TYPE"] isNSNull]) {
-					[info addObject:[NSString stringWithFormat:@"execution privilege: %@", [tableStatus objectForKey:@"SECURITY_TYPE"]]];
-				}
-
-				// Check for 'DEFINER'
-				if (![[tableStatus objectForKey:@"DEFINER"] isNSNull]) {
-					[info addObject:[NSString stringWithFormat:@"definer: %@", [tableStatus objectForKey:@"DEFINER"]]];
-				}
-
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"created: %@", @"created: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"CREATED"]]]];
 			}
+
+			// Check for 'LAST_ALTERED'
+			if (![[tableStatus objectForKey:@"LAST_ALTERED"] isNSNull]) {
+			
+				// Add the update date to the infoTable
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"updated: %@", @"updated: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"LAST_ALTERED"]]]];
+			}
+
+			// Check for 'SQL ACCESS' and deterministic
+			if (![[tableStatus objectForKey:@"SQL_DATA_ACCESS"] isNSNull] && ![[tableStatus objectForKey:@"IS_DETERMINISTIC"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"data access: %@ (%@)", @"data access: %@ (%@)"), [tableStatus objectForKey:@"SQL_DATA_ACCESS"], ([[tableStatus objectForKey:@"IS_DETERMINISTIC"] isEqualToString:@"YES"]) ? @"deterministic" : @"non-deterministic"]];
+			}
+
+			// Check for 'DTD_IDENTIFIER' for FUNCTIONS only
+			if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+				if (![[tableStatus objectForKey:@"DTD_IDENTIFIER"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"return type: %@", @"return type: %@"), [tableStatus objectForKey:@"DTD_IDENTIFIER"]]];
+				}
+			}
+
+			// Check for 'SECURITY_TYPE'
+			if (![[tableStatus objectForKey:@"SECURITY_TYPE"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"execution privilege: %@", @"execution privilege: %@"), [tableStatus objectForKey:@"SECURITY_TYPE"]]];
+			}
+
+			// Check for 'DEFINER'
+			if (![[tableStatus objectForKey:@"DEFINER"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"definer: %@", @"definer: %@"), [tableStatus objectForKey:@"DEFINER"]]];
+			}
+
 		}
 	}
 
@@ -235,7 +228,7 @@
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
 {
 	// This makes the top row (TABLE INFORMATION) have the diff styling
-	return (row == 0);	
+	return (row == 0);
 }
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
@@ -260,15 +253,15 @@
 {
 	// Setup our data formatter
 	NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-	
+
 	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
-	
+
 	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
 	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
-	
+
 	// Convert our string date from the result to an NSDate.
 	NSDate *updateDate = [NSDate dateWithNaturalLanguageString:mysqlDate];
-	
+
 	return [dateFormatter stringFromDate:updateDate];
 }
 
