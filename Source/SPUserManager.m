@@ -66,9 +66,7 @@
 								@"Replication_slave_priv", @"Repl_slave_priv", 
 								@"Replication_client_priv", @"Repl_client_priv",
 								nil];
-		
-		//privsSupportedByServer = [[NSMutableDictionary alloc] init];
-		
+				
 		[[NSNotificationCenter defaultCenter] addObserver:self 
 												 selector:@selector(contextDidSave:) 
 													 name:NSManagedObjectContextDidSaveNotification 
@@ -86,7 +84,6 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self 
 													name:NSManagedObjectContextDidSaveNotification 
 												  object:nil];
-	//[treeController release];
 //	[managedObjectContext release];
 //    [persistentStoreCoordinator release];
 //    [managedObjectModel release];
@@ -97,6 +94,8 @@
 	[super dealloc];
 }
 
+// UI specific items to set up when the window loads.  This is different
+// than awakeFromNib as it's only called once.
 -(void)windowDidLoad
 {
 	[tabView selectTabViewItemAtIndex:0];
@@ -117,7 +116,7 @@
 	 * This method reads in the users from the mysql.user table of the current
 	 * connection.  Then uses this information to initialize the NSOutlineView.
 	 */
-	isInitializing = TRUE;
+	isInitializing = TRUE; // Don't want to do some of the notifications if initializing
 	NSMutableString *privKey;
 	NSArray *privRow;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -126,7 +125,7 @@
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
 	// Select users from the mysql.user table
-	MCPResult *result = [[self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"] retain];
+	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	int rows = [result numOfRows];
 	if (rows > 0)
 	{
@@ -139,10 +138,8 @@
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
 	[usersResultArray addObjectsFromArray:resultAsArray];
-	
+
 	[self _initializeTree:usersResultArray];
-	
-	[result release];
 
 	// Set up the array of privs supported by this server.
 	[privsSupportedByServer removeAllObjects];
@@ -174,13 +171,18 @@
 
 - (void)_initializeTree:(NSArray *)items
 {
+	// The NSOutlineView gets it's data from a NSTreeController which gets
+	// it's data from the SPUser Entity objects in the current managedObjectContext.
 	
+	// Go through each item that contains a dictionary of key-value pairs
+	// for each user currently in the database.
 	for(int i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
 		
+		// Check to make sure if we already have added the parent.
 		if (parentResults != nil && [parentResults count] > 0)
 		{
 			// Add Children
@@ -189,6 +191,7 @@
 			[child setParent:parent];
 			[parent addChildrenObject:child];
 			
+			// Setup the NSManagedObject with values from the dictionary
 			[self initializeChild:child withItem:item];
 			
 		} else {
@@ -196,6 +199,7 @@
 			NSManagedObject *parent = [self _createNewSPUser];
 			NSManagedObject *child = [self _createNewSPUser];
 			
+			// We only care about setting the user and password keys on the parent
 			[parent setValue:username forKey:@"user"];
 			[parent setValue:[item objectForKey:@"Password"] forKey:@"password"];
 			[parent addChildrenObject:child];
@@ -212,13 +216,19 @@
 		}
 		[parentResults release];
 	}
+	// Reload data of the outline view with the changes.
 	[outlineView reloadData];
 }
 
+// Set NSManagedObject with values from the passed in dictionary
 - (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item
 {
 	for (NSString *key in item)
 	{
+		// In order to keep the priviledges a little more dynamic, just
+		// go through the keys that have the _priv suffix.  If a priviledge is
+		// currently not supported in the model, then an exception is thrown.
+		// We catch that exception and print to the console for future enhancement.
 		NS_DURING		
 		if ([key hasSuffix:@"_priv"])
 		{
@@ -232,7 +242,7 @@
 			
 			[child setValue:[NSNumber numberWithBool:value] forKey:key];
 		} 
-		else if ([key hasPrefix:@"max"])
+		else if ([key hasPrefix:@"max"]) // Resource Management restrictions
 		{
 			NSNumber *value = [NSNumber numberWithInt:[[item objectForKey:key] intValue]];
 			[child setValue:value forKey:key];
@@ -307,6 +317,7 @@
 {
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
 	{
+		// Determines which Image to display depending on parent or child object
 		if ([(NSManagedObject *)[item  representedObject] parent] != nil)
 		{
 			NSImage *image1 = [[NSImage imageNamed:NSImageNameNetwork] retain];
@@ -431,6 +442,7 @@
 
 - (IBAction)addUser:(id)sender
 {
+	// Adds a new SPUser objects to the managedObjectContext and sets default values
 	if ([[treeController selectedObjects] count] > 0)
 	{
 		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil)
@@ -489,6 +501,7 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	// Only allow removing hosts of a host node is selected.
 	if ([menuItem action] == @selector(removeHost:))
 	{
 		return (([[treeController selectedObjects] count] > 0) && 
@@ -523,6 +536,9 @@
 #pragma mark -
 #pragma mark Notifications
 
+// This notification is called when the managedObjectContext save happens.
+// This takes the inserted, updated, and deleted arrays and applys them to 
+// the database.
 - (void)contextDidSave:(NSNotification *)notification
 {	
 	if (!isInitializing)
@@ -659,6 +675,9 @@
 	}
 	return TRUE;
 }
+
+// Gets any NSManagedObject (SPUser) from the managedObjectContext that may
+// already exist with the given username.
 - (NSArray *)_fetchUserWithUserName:(NSString *)username
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
@@ -680,6 +699,7 @@
 	return array;
 }
 
+// Creates a new NSManagedObject and inserts it into the managedObjectContext.
 - (NSManagedObject *)_createNewSPUser
 {
 	NSManagedObject *user = [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" 
@@ -688,6 +708,7 @@
 	return user;
 }
 
+// Displays alert panel if there is an error condition currently on the mySqlConnection
 - (BOOL)checkAndDisplayMySqlError
 {
 	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""]) {
