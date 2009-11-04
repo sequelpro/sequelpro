@@ -1404,10 +1404,18 @@
 #pragma mark TabView delegate methods
 
 /**
- * Loads structure or source if tab selected the first time
+ * Loads structure or source if tab selected the first time,
+ * using a threaded load.
  */
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
+	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+	[NSThread detachNewThreadSelector:@selector(loadTabTask:) toTarget:self withObject:tabViewItem];
+}
+- (void)loadTabTask:(NSTabViewItem *)tabViewItem
+{
+	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
+
 	if ( [tablesListView numberOfSelectedRows] == 1  && 
 		([self tableType] == SP_TABLETYPE_TABLE || [self tableType] == SP_TABLETYPE_VIEW) ) {
 		
@@ -1430,6 +1438,9 @@
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 	}
+
+	[tableDocumentInstance endTask];
+	[tabLoadPool drain];
 }
 
 /**
