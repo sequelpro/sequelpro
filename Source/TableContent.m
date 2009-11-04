@@ -62,7 +62,6 @@
 		tableRowsCount = 0;
 		previousTableRowsCount = 0;
 		dataColumns    = [[NSMutableArray alloc] init];
-		tableColumnsCount = 0;
 		oldRow         = [[NSMutableArray alloc] init];
 		
 		selectedTable = nil;
@@ -176,7 +175,6 @@
 	if (keys) [keys release], keys = nil;
 
 	// Reset data column store
-	tableColumnsCount = 0;
 	[dataColumns removeAllObjects];
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
@@ -340,7 +338,6 @@
 		
 		// Add the column to the table
 		[tableContentView addTableColumn:theCol];
-		tableColumnsCount++;
 		[theCol release];
 	}
 
@@ -577,6 +574,7 @@
 	NSMutableArray *newRow;
 	NSMutableArray *columnBlobStatuses = [[NSMutableArray alloc] init];
 	NSUInteger i;
+	NSUInteger dataColumnsCount = [dataColumns count];
 	
 	float relativeTargetRowCount = 100.0/targetRowCount;
 	NSUInteger nextTableDisplayBoundary = 50;
@@ -589,7 +587,7 @@
 	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:SPLoadBlobsAsNeeded];
 
 	// Build up an array of which columns are blobs for faster iteration
-	for ( i = 0; i < tableColumnsCount ; i++ ) {
+	for ( i = 0; i < dataColumnsCount ; i++ ) {
 		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
 	}
 
@@ -608,7 +606,7 @@
 		// Alter the values for hidden blob and text fields if appropriate
 		if ( prefsLoadBlobsAsNeeded ) {
 			newRow = NSArrayObjectAtIndex(tableValues, rowsProcessed);
-			for ( i = 0 ; i < tableColumnsCount ; i++ ) {
+			for ( i = 0 ; i < dataColumnsCount ; i++ ) {
 				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
 					NSMutableArrayReplaceObject(newRow, i, [SPNotLoaded notLoaded]);
 				}
@@ -2376,9 +2374,11 @@
 	// thread, an index higher than the available rows/columns may be requested.  Return "..." to indicate loading in these
 	// cases - when the load completes all table data will be redrawn.
 	int columnIndex = [[aTableColumn identifier] intValue];
-	if (rowIndex >= tableRowsCount || columnIndex >= tableColumnsCount) return @"...";
+	if (rowIndex >= tableRowsCount) return @"...";
+	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
+	if (columnIndex >= [rowData count]) return @"...";
 
-	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), columnIndex);
+	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
 
 	if ([theValue isNSNull])
 		return [prefs objectForKey:SPNullValue];
@@ -2403,16 +2403,17 @@
 	// thread, an index higher than the available rows/columns may be requested.  Return gray to indicate loading in these
 	// cases - when the load completes all table data will be redrawn.
 	int columnIndex = [[aTableColumn identifier] intValue];
-	if (rowIndex >= tableRowsCount || columnIndex >= tableColumnsCount) {
+	if (rowIndex >= tableRowsCount) {
+		[cell setTextColor:[NSColor lightGrayColor]];
+		return;
+	}
+	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
+	if (columnIndex >= [rowData count]) {
 		[cell setTextColor:[NSColor lightGrayColor]];
 		return;
 	}
 
-	id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), columnIndex);
-	if (!theValue) {
-		[cell setTextColor:[NSColor lightGrayColor]];
-		return;
-	}
+	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
