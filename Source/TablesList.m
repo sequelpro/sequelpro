@@ -600,209 +600,11 @@
  * Updates the current table selection.  Triggered most times tableViewSelectionDidChange:
  * fires, and also as a result of certain table actions.
  */
-- (void)updateSelection
+- (void)updateSelectionWithTaskString:(NSString *)taskString
 {
-	if ( [tablesListView numberOfSelectedRows] == 1 && [[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
 
-		// Update the selected table name and type
-		if (selectedTableName) [selectedTableName release];
-		selectedTableName = [[NSString alloc] initWithString:[filteredTables objectAtIndex:[tablesListView selectedRow]]];
-		selectedTableType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
-		
-		// Remove the "current selection" item for filtered lists if appropriate
-		if (isTableListFiltered && [tablesListView selectedRow] < [filteredTables count] - 2 && [filteredTables count] > 2
-			&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] intValue] == SP_TABLETYPE_NONE
-			&& [[filteredTables objectAtIndex:[filteredTables count]-2] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
-		{
-			[filteredTables removeObjectsInRange:NSMakeRange([filteredTables count]-2, 2)];
-			[filteredTableTypes removeObjectsInRange:NSMakeRange([filteredTableTypes count]-2, 2)];
-			[tablesListView reloadData];
-		}
-			
-		// Reset the table information caches
-		[tableDataInstance resetAllData];
-
-		[separatorTableMenuItem setHidden:NO];
-		[separatorTableContextMenuItem setHidden:NO];
-
-		if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
-
-			// tableEncoding == nil indicates that there was an error while retrieving table data
-			NSString *tableEncoding = [tableDataInstance tableEncoding];
-
-			// If encoding is set to Autodetect, update the connection character set encoding
-			// based on the newly selected table's encoding - but only if it differs from the current encoding.
-			if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] isEqualToString:@"Autodetect"]) {
-				if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
-					[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
-					[tableDataInstance resetAllData];
-				}
-			}
-		
-			if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-				[tableSourceInstance loadTable:selectedTableName];
-				structureLoaded = YES;
-				contentLoaded = NO;
-				statusLoaded = NO;
-			} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-				if(tableEncoding == nil) {
-					[tableContentInstance loadTable:nil];
-				} else {
-					[tableContentInstance loadTable:selectedTableName];
-				}
-				structureLoaded = NO;
-				contentLoaded = YES;
-				statusLoaded = NO;
-			} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-				[extendedTableInfoInstance loadTable:selectedTableName];
-				structureLoaded = NO;
-				contentLoaded = NO;
-				statusLoaded = YES;
-			} else {
-				structureLoaded = NO;
-				contentLoaded = NO;
-				statusLoaded = NO;
-			}
-		} else {
-
-			// if we are not looking at a table or view, clear these
-			[tableSourceInstance loadTable:nil];
-			[tableContentInstance loadTable:nil];
-			[extendedTableInfoInstance loadTable:nil];
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = NO;
-		}
-
-		// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
-		// according to the table types
-		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
-		
-		if(selectedTableType == SP_TABLETYPE_VIEW)
-		{
-			// Change mainMenu > Table > ... according to table type
-			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
-			[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
-			[[tableSubMenu itemAtIndex:2] setHidden:NO]; // divider
-			[[tableSubMenu itemAtIndex:3] setHidden:NO];
-			[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
-			[[tableSubMenu itemAtIndex:4] setHidden:YES]; // repair
-			[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:6] setHidden:YES]; // analyse
-			[[tableSubMenu itemAtIndex:7] setHidden:YES]; // optimize
-			[[tableSubMenu itemAtIndex:8] setHidden:NO];
-			[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
-			[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
-
-			[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
-			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
-			[truncateTableButton setHidden:YES];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
-
-			[renameTableContextMenuItem setHidden:NO]; // we don't have to check the mysql version
-			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
-			[duplicateTableContextMenuItem setHidden:NO];
-			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
-			[truncateTableContextButton setHidden:YES];
-			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
-		} 
-		else if(selectedTableType == SP_TABLETYPE_TABLE) {
-			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
-			[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
-			[[tableSubMenu itemAtIndex:2] setHidden:NO]; // divider
-			[[tableSubMenu itemAtIndex:3] setHidden:NO];
-			[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
-			[[tableSubMenu itemAtIndex:4] setHidden:NO];
-			[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
-			[[tableSubMenu itemAtIndex:6] setHidden:NO];
-			[[tableSubMenu itemAtIndex:7] setHidden:NO];
-			[[tableSubMenu itemAtIndex:8] setHidden:NO];
-			[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
-			[[tableSubMenu itemAtIndex:9] setHidden:NO];
-
-			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
-			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
-			[truncateTableButton setHidden:NO];
-			[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
-
-			[renameTableContextMenuItem setHidden:NO];
-			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
-			[duplicateTableContextMenuItem setHidden:NO];
-			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
-			[truncateTableContextButton setHidden:NO];
-			[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
-			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
-
-		} 
-		else if(selectedTableType == SP_TABLETYPE_PROC) {
-			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
-			[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
-			[[tableSubMenu itemAtIndex:2] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:3] setHidden:YES]; // copy columns
-			[[tableSubMenu itemAtIndex:4] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:5] setHidden:YES];
-			[[tableSubMenu itemAtIndex:6] setHidden:YES];
-			[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:8] setHidden:YES];
-			[[tableSubMenu itemAtIndex:9] setHidden:YES];
-			
-			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
-			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
-			[truncateTableButton setHidden:YES];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
-
-			[renameTableContextMenuItem setHidden:NO];
-			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
-			[duplicateTableContextMenuItem setHidden:NO];
-			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
-			[truncateTableContextButton setHidden:YES];
-			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
-
-		}
-		else if(selectedTableType == SP_TABLETYPE_FUNC) {
-			[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
-			[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
-			[[tableSubMenu itemAtIndex:2] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:3] setHidden:YES]; // copy columns
-			[[tableSubMenu itemAtIndex:4] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:5] setHidden:YES];
-			[[tableSubMenu itemAtIndex:6] setHidden:YES];
-			[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
-			[[tableSubMenu itemAtIndex:8] setHidden:YES];
-			[[tableSubMenu itemAtIndex:9] setHidden:YES];	
-			
-			[renameTableMenuItem setHidden:NO];
-			[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
-			[duplicateTableMenuItem setHidden:NO];
-			[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
-			[truncateTableButton setHidden:YES];
-			[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
-
-			[renameTableContextMenuItem setHidden:NO];
-			[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
-			[duplicateTableContextMenuItem setHidden:NO];
-			[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
-			[truncateTableContextButton setHidden:YES];
-			[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
-
-		}
-
-		// set window title
-		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
-
-		// Update the "Show Create Syntax" window if it's already opened
-		// according to the selected table/view/proc/func
-		if([[tableDocumentInstance getCreateTableSyntaxWindow] isVisible])
-			[tableDocumentInstance showCreateTableSyntax:self];
-
-	} else {
+	// If there is a multiple or blank selection, clear all views directly.
+	if ( [tablesListView numberOfSelectedRows] != 1 || ![[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
 		// Update the selected table name and type
@@ -885,10 +687,232 @@
 
 		// set window title
 		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+		
+		// Add a history entry
+		[spHistoryControllerInstance updateHistoryEntries];
+		
+		// Notify listeners of the table change now that the state is fully set up
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPTableChangedNotification object:tableDocumentInstance];
+
+		return;
+	}
+
+	// Otherwise, set up a task and fire up a thread to deal with view changes and data loading
+	[tableDocumentInstance startTaskWithDescription:taskString];
+	[NSThread detachNewThreadSelector:@selector(updateSelectionTask) toTarget:self withObject:nil];
+}
+
+- (void) updateSelectionTask
+{	
+	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
+
+	// Update the selected table name and type
+	if (selectedTableName) [selectedTableName release];
+	selectedTableName = [[NSString alloc] initWithString:[filteredTables objectAtIndex:[tablesListView selectedRow]]];
+	selectedTableType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	
+	// Remove the "current selection" item for filtered lists if appropriate
+	if (isTableListFiltered && [tablesListView selectedRow] < [filteredTables count] - 2 && [filteredTables count] > 2
+		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] intValue] == SP_TABLETYPE_NONE
+		&& [[filteredTables objectAtIndex:[filteredTables count]-2] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
+	{
+		[filteredTables removeObjectsInRange:NSMakeRange([filteredTables count]-2, 2)];
+		[filteredTableTypes removeObjectsInRange:NSMakeRange([filteredTableTypes count]-2, 2)];
+		[tablesListView reloadData];
+	}
+		
+	// Reset the table information caches
+	[tableDataInstance resetAllData];
+
+	[separatorTableMenuItem setHidden:NO];
+	[separatorTableContextMenuItem setHidden:NO];
+
+	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
+
+		// tableEncoding == nil indicates that there was an error while retrieving table data
+		NSString *tableEncoding = [tableDataInstance tableEncoding];
+
+		// If encoding is set to Autodetect, update the connection character set encoding
+		// based on the newly selected table's encoding - but only if it differs from the current encoding.
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] isEqualToString:@"Autodetect"]) {
+			if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
+				[tableDataInstance resetAllData];
+			}
+		}
+	
+		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
+			[tableSourceInstance loadTable:selectedTableName];
+			structureLoaded = YES;
+			contentLoaded = NO;
+			statusLoaded = NO;
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
+			if(tableEncoding == nil) {
+				[tableContentInstance loadTable:nil];
+			} else {
+				[tableContentInstance loadTable:selectedTableName];
+			}
+			structureLoaded = NO;
+			contentLoaded = YES;
+			statusLoaded = NO;
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+			[extendedTableInfoInstance loadTable:selectedTableName];
+			structureLoaded = NO;
+			contentLoaded = NO;
+			statusLoaded = YES;
+		} else {
+			structureLoaded = NO;
+			contentLoaded = NO;
+			statusLoaded = NO;
+		}
+	} else {
+
+		// if we are not looking at a table or view, clear these
+		[tableSourceInstance loadTable:nil];
+		[tableContentInstance loadTable:nil];
+		[extendedTableInfoInstance loadTable:nil];
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
+	}
+
+	// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
+	// according to the table types
+	NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
+	
+	if(selectedTableType == SP_TABLETYPE_VIEW)
+	{
+		// Change mainMenu > Table > ... according to table type
+		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:NO]; // divider
+		[[tableSubMenu itemAtIndex:3] setHidden:NO];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
+		[[tableSubMenu itemAtIndex:4] setHidden:YES]; // repair
+		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // analyse
+		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // optimize
+		[[tableSubMenu itemAtIndex:8] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
+		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
+
+		[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
+		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
+		[duplicateTableMenuItem setHidden:NO];
+		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
+		[truncateTableButton setHidden:YES];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+
+		[renameTableContextMenuItem setHidden:NO]; // we don't have to check the mysql version
+		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
+		[duplicateTableContextMenuItem setHidden:NO];
+		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
+		[truncateTableContextButton setHidden:YES];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+	} 
+	else if(selectedTableType == SP_TABLETYPE_TABLE) {
+		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:NO]; // divider
+		[[tableSubMenu itemAtIndex:3] setHidden:NO];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
+		[[tableSubMenu itemAtIndex:4] setHidden:NO];
+		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
+		[[tableSubMenu itemAtIndex:6] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+		[[tableSubMenu itemAtIndex:9] setHidden:NO];
+
+		[renameTableMenuItem setHidden:NO];
+		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
+		[duplicateTableMenuItem setHidden:NO];
+		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
+		[truncateTableButton setHidden:NO];
+		[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+
+		[renameTableContextMenuItem setHidden:NO];
+		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
+		[duplicateTableContextMenuItem setHidden:NO];
+		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
+		[truncateTableContextButton setHidden:NO];
+		[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+
+	} 
+	else if(selectedTableType == SP_TABLETYPE_PROC) {
+		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
+		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:3] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:4] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:5] setHidden:YES];
+		[[tableSubMenu itemAtIndex:6] setHidden:YES];
+		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:8] setHidden:YES];
+		[[tableSubMenu itemAtIndex:9] setHidden:YES];
+		
+		[renameTableMenuItem setHidden:NO];
+		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
+		[duplicateTableMenuItem setHidden:NO];
+		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
+		[truncateTableButton setHidden:YES];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
+
+		[renameTableContextMenuItem setHidden:NO];
+		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
+		[duplicateTableContextMenuItem setHidden:NO];
+		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
+		[truncateTableContextButton setHidden:YES];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
+
+	}
+	else if(selectedTableType == SP_TABLETYPE_FUNC) {
+		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
+		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:3] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:4] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:5] setHidden:YES];
+		[[tableSubMenu itemAtIndex:6] setHidden:YES];
+		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:8] setHidden:YES];
+		[[tableSubMenu itemAtIndex:9] setHidden:YES];	
+		
+		[renameTableMenuItem setHidden:NO];
+		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
+		[duplicateTableMenuItem setHidden:NO];
+		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
+		[truncateTableButton setHidden:YES];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
+
+		[renameTableContextMenuItem setHidden:NO];
+		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
+		[duplicateTableContextMenuItem setHidden:NO];
+		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
+		[truncateTableContextButton setHidden:YES];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
 
 	}
 
+	// set window title
+	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+
+	// Update the "Show Create Syntax" window if it's already opened
+	// according to the selected table/view/proc/func
+	if([[tableDocumentInstance getCreateTableSyntaxWindow] isVisible])
+		[tableDocumentInstance showCreateTableSyntax:self];
+
+	// Add a history entry
 	[spHistoryControllerInstance updateHistoryEntries];
+		
+	// Notify listeners of the table change now that the state is fully set up
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPTableChangedNotification object:tableDocumentInstance];
+
+	// Empty the loading pool and exit the thread
+	[tableDocumentInstance endTask];
+	[selectionChangePool drain];
 }
 
 #pragma mark -
@@ -1082,7 +1106,7 @@
 			selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemIndex]];
 			selectedTableType = [[tableTypes objectAtIndex:itemIndex] intValue];
 			[self updateFilter:self];
-			[self updateSelection];
+			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), theName]];
 		}
 	}
 	return YES;
@@ -1306,7 +1330,10 @@
 	// Save existing scroll position and details
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	[self updateSelection];
+	NSString *tableName = @"data";
+	if ([tablesListView numberOfSelectedRows] == 1 && [[filteredTables objectAtIndex:[tablesListView selectedRow]] length])
+		tableName = [filteredTables objectAtIndex:[tablesListView selectedRow]];
+	[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), tableName]];
 }
 
 /**
@@ -1557,10 +1584,6 @@
  */
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
-
-	// Only proceed if the notification was received from the current document.
-	if ([aNotification object] != tableDocumentInstance) return;
-
 	[toolbarAddButton setEnabled:NO];
 	[toolbarActionsButton setEnabled:NO];
 	[toolbarReloadButton setEnabled:NO];
@@ -1571,8 +1594,6 @@
  */
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
-	if ([aNotification object] != tableDocumentInstance) return;
-
 	[toolbarAddButton setEnabled:YES];
 	[toolbarActionsButton setEnabled:YES];
 	[toolbarReloadButton setEnabled:YES];
@@ -1642,11 +1663,11 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
 												 name:SPDocumentTaskStartNotification
-											   object:nil];
+											   object:tableDocumentInstance];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
-											   object:nil];
+											   object:tableDocumentInstance];
 }
 
 /**
@@ -1836,8 +1857,8 @@
 		selectedTableName = [[NSString alloc] initWithString:tableName];
 		selectedTableType = SP_TABLETYPE_TABLE;
 		[self updateFilter:self];
-		[self updateSelection];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
 	} 
 	else {
 		// Error while creating new table
@@ -2028,8 +2049,8 @@
 			selectedTableName = [[NSString alloc] initWithString:[copyTableNameField stringValue]];
 			selectedTableType = tblType;
 			[self updateFilter:self];
-			[self updateSelection];
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
 		}
 	}
 }
@@ -2056,7 +2077,8 @@
 			if (selectedTableName) [selectedTableName release];
 			selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
 			[tablesListView reloadData];
-			[self updateSelection];
+			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+			return;
 		}
 	} else {
 		// procedures and functions can only be renamed if one creates the new one and delete the old one
@@ -2120,7 +2142,8 @@
 			if (selectedTableName) [selectedTableName release];
 			selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
 			[tablesListView reloadData];
-			[self updateSelection];
+			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+			return;
 		}
 	}
 	

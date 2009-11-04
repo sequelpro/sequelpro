@@ -159,3 +159,4 @@ extern NSString *SPQueryFavoriteReplacesContent;
 extern NSString *SPQueryHistory;
 extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPQuickLookTypes;
+extern NSString *SPTableChangedNotification;

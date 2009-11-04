@@ -68,4 +68,8 @@
 - (IBAction)selectReferenceTable:(id)sender;
 - (IBAction)refreshRelations:(id)sender;
 
+// Task interaction
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+
 @end

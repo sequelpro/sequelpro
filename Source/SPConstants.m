@@ -117,3 +117,4 @@ NSString *SPQueryFavoriteReplacesContent         = @"QueryFavoriteReplacesConten
 NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
+NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";

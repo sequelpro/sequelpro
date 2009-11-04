@@ -28,6 +28,8 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
+#import "SPConstants.h"
+#import "TableDocument.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
@@ -54,6 +56,16 @@
 						   toObject:[NSUserDefaultsController sharedUserDefaultsController]
 						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
 							options:bindingOptions];
+
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:tableDocumentInstance];
 }
 
 #pragma mark -
@@ -163,10 +175,13 @@
  
 /**
  * Load all the info for the supplied table by querying the table data instance and updaing the interface 
- * elements accordingly. 
+ * elements accordingly.
+ * Note that interface elements are also toggled in start/endDocumentTaskForTab:, with similar logic.
  */
 - (void)loadTable:(NSString *)table
 {	
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO] || ![tableDocumentInstance isWorking];
+
 	// Store the table name away for future use
 	selectedTable = table;
 	
@@ -230,7 +245,7 @@
 		}	
 		
 		[tableTypePopUpButton selectItemWithTitle:[statusFields objectForKey:@"Engine"]];
-		[tableTypePopUpButton setEnabled:YES];
+		[tableTypePopUpButton setEnabled:enableInteraction];
 	}
 	else {
 		[tableTypePopUpButton addItemWithTitle:@"Not available"];
@@ -252,7 +267,7 @@
 		}	
 		
 		[tableEncodingPopUpButton selectItemWithTitle:selectedTitle];
-		[tableEncodingPopUpButton setEnabled:YES];
+		[tableEncodingPopUpButton setEnabled:enableInteraction];
 	}
 	else {
 		[tableEncodingPopUpButton addItemWithTitle:@"Not available"];
@@ -266,7 +281,7 @@
 		}	
 				
 		[tableCollationPopUpButton selectItemWithTitle:[statusFields objectForKey:@"Collation"]];
-		[tableCollationPopUpButton setEnabled:YES];
+		[tableCollationPopUpButton setEnabled:enableInteraction];
 	}
 	else {
 		[tableCollationPopUpButton addItemWithTitle:@"Not available"];
@@ -288,7 +303,7 @@
 	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields withLabel:@"Free data size"]];	 
 	
 	// Set comments
-	[tableCommentsTextView setEditable:YES];
+	[tableCommentsTextView setEditable:enableInteraction];
 	[tableCommentsTextView setString:[statusFields objectForKey:@"Comment"]];
 	
 	// Set create syntax
@@ -328,11 +343,63 @@
 	}
 }
 
+#pragma mark -
+#pragma mark Task interaction
+
+/**
+ * Disable all content interactive elements during an ongoing task.
+ */
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO])
+		return;
+
+	[tableTypePopUpButton setEnabled:NO];
+	[tableEncodingPopUpButton setEnabled:NO];
+	[tableCollationPopUpButton setEnabled:NO];
+	[tableCommentsTextView setEditable:NO];
+}
+
+/**
+ * Enable all content interactive elements after an ongoing task.
+ */
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO])
+		return;
+
+	NSDictionary *statusFields = [tableDataInstance statusValues];
+	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"])
+		return;
+
+	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"])
+		[tableTypePopUpButton setEnabled:YES];
+
+	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding])
+		[tableEncodingPopUpButton setEnabled:YES];
+
+	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count]
+		&& [statusFields objectForKey:@"Collation"])
+	{
+		[tableCollationPopUpButton setEnabled:YES];
+	}
+
+	[tableCommentsTextView setEditable:YES];
+}
+
+#pragma mark -
+
 /**
  * Release connection.
  */
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[connection release], connection = nil;
 	
 	[super dealloc];

@@ -47,7 +47,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	id extra;
 	int i;
 	SPSQLParser *fieldParser;
-	BOOL enableInteraction = ![tableDocumentInstance isWorking];
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE] || ![tableDocumentInstance isWorking];
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -1057,10 +1057,8 @@ returns a dictionary containing enum/set field names as key and possible values 
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only proceed if the current document is the notifying document, and only if 
-	// this view is selected.
-	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
 		return;
 
 	[tableSourceView setEnabled:NO];
@@ -1083,8 +1081,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only re-enable elements if the current tab is the structure view
-	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
 		return;
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
@@ -1471,11 +1468,11 @@ would result in a position change.
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
 												 name:SPDocumentTaskStartNotification
-											   object:nil];
+											   object:tableDocumentInstance];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
-											   object:nil];
+											   object:tableDocumentInstance];
 }
 
 - (void)dealloc

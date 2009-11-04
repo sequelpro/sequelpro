@@ -122,7 +122,8 @@ enum sp_table_types
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
-- (void)updateSelection;
+- (void)updateSelectionWithTaskString:(NSString *)taskString;
+- (void)updateSelectionTask;
 - (void)selectTableAtIndex:(NSNumber *)row;
 
 // Getters

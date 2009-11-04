@@ -30,6 +30,7 @@
 
 @interface SPExtendedTableInfo : NSObject
 {
+	IBOutlet id tableDocumentInstance;
 	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet SPDatabaseData *databaseDataInstance;
 
@@ -66,5 +67,9 @@
 
 // Others
 - (void)loadTable:(NSString *)table; 
+
+// Task interaction
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 @end

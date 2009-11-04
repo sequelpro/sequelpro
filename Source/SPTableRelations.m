@@ -63,8 +63,18 @@
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(tableSelectionChanged:) 
-												 name:NSTableViewSelectionDidChangeNotification 
-											   object:tableList];
+												 name:SPTableChangedNotification 
+											   object:tableDocumentInstance];
+
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:tableDocumentInstance];
 }
 
 #pragma mark -
@@ -210,9 +220,11 @@
  */
 - (void)tableSelectionChanged:(NSNotification *)notification
 {
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS] || ![tableDocumentInstance isWorking];
+
 	// To begin enable all interface elements
-	[addRelationButton setEnabled:YES];		
-	[refreshRelationsButton setEnabled:YES];
+	[addRelationButton setEnabled:enableInteraction];		
+	[refreshRelationsButton setEnabled:enableInteraction];
 	[relationsTableView setEnabled:YES];
 	
 	// Get the current table's storage engine
@@ -223,8 +235,8 @@
 		// Update the text label
 		[labelTextField setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
 		
-		[addRelationButton setEnabled:YES];
-		[refreshRelationsButton setEnabled:YES];
+		[addRelationButton setEnabled:enableInteraction];
+		[refreshRelationsButton setEnabled:enableInteraction];
 		[relationsTableView setEnabled:YES];
 	} 
 	else {
@@ -268,7 +280,52 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
+	if ([tableDocumentInstance isWorking]) return NO;
+
 	return NO;
+}
+
+/**
+ * Disable row selection while the document is working.
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	return ![tableDocumentInstance isWorking];
+}
+
+#pragma mark -
+#pragma mark Task interaction
+
+/**
+ * Disable all content interactive elements during an ongoing task.
+ */
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS])
+		return;
+
+	[addRelationButton setEnabled:NO];
+	[refreshRelationsButton setEnabled:NO];
+	[removeRelationButton setEnabled:NO];
+}
+
+/**
+ * Enable all content interactive elements after an ongoing task.
+ */
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+{
+
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS])
+		return;
+
+	if ([relationsTableView isEnabled]) {
+		[addRelationButton setEnabled:YES];
+		[refreshRelationsButton setEnabled:YES];
+	}
+	[removeRelationButton setEnabled:([relationsTableView numberOfSelectedRows] > 0)];
 }
 
 #pragma mark -

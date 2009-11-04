@@ -29,6 +29,7 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPTableData.h"
+#import "SPConstants.h"
 #import "SPStringAdditions.h"
 
 @interface SPTableInfo (PrivateAPI)
@@ -52,8 +53,8 @@
 {
 	[[NSNotificationCenter defaultCenter] addObserver:self
 		selector:@selector(tableChanged:) 
-		name:NSTableViewSelectionDidChangeNotification 
-		object:tableList];
+		name:SPTableChangedNotification 
+		object:tableDocumentInstance];
 
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 	[infoTable reloadData];

@@ -61,7 +61,7 @@
 	
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *tableValues, *dataColumns, *keys, *oldRow;
-	NSUInteger tableValuesCount;
+	NSUInteger tableRowsCount, previousTableRowsCount, tableColumnsCount;
 	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;

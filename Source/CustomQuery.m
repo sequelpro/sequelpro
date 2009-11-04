@@ -2567,10 +2567,8 @@
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only proceed if the current document is the notifying document, and only if 
-	// this view is selected.
-	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
 		return;
 
 	[runSelectionButton setEnabled:NO];
@@ -2585,10 +2583,8 @@
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
 
-	// Only proceed if the current document is the notifying document, and only if 
-	// this view is selected.
-	if ([aNotification object] != tableDocumentInstance
-		|| ![[[aNotification object] selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
+	// Only proceed if this view is selected.
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
 		return;
 
 	if (selectionButtonCanBeEnabled) {
@@ -2780,11 +2776,11 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
 												 name:SPDocumentTaskStartNotification
-											   object:nil];
+											   object:tableDocumentInstance];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
-											   object:nil];
+											   object:tableDocumentInstance];
 }
 
 - (void)dealloc
