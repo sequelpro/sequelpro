@@ -435,6 +435,9 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayGeneralPreferences:(id)sender
 {
+	[[self window] setMinSize:NSMakeSize(0, 0)];
+	[[self window] setShowsResizeIndicator:NO];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
 	[self _resizeWindowForContentView:generalView];
 }
@@ -444,6 +447,9 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayTablePreferences:(id)sender
 {
+	[[self window] setMinSize:NSMakeSize(0, 0)];
+	[[self window] setShowsResizeIndicator:NO];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_TABLES];
 	[self _resizeWindowForContentView:tablesView];
 }
@@ -453,6 +459,9 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayEditorPreferences:(id)sender
 {
+	[[self window] setMinSize:NSMakeSize(0, 0)];
+	[[self window] setShowsResizeIndicator:NO];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
 	NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]];
 	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
@@ -464,16 +473,18 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayFavoritePreferences:(id)sender
 {
+	// To make the Favorites pane resizable give the window a minimum size and display the resize indicator. 
+	// Notice that we still make all other panes non-resizable by removing the dsiplay of the indicator and
+	// resetting the minimum size to zero.
+	[[self window] setMinSize:NSMakeSize(500, 381)];
+	[[self window] setShowsResizeIndicator:YES];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
 	[self _resizeWindowForContentView:favoritesView];
 	
 	// Set the default favorite popup back to preference
 	if (sender == [defaultFavoritePopup lastItem]) {
-		if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
-			[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:SPDefaultFavorite]+2];
-		} else {
-			[defaultFavoritePopup selectItemAtIndex:0];
-		}
+		[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed]) ? ([prefs integerForKey:SPDefaultFavorite] + 2) : 0];
 	}
 }
 
@@ -482,6 +493,9 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayNotificationPreferences:(id)sender
 {
+	[[self window] setMinSize:NSMakeSize(0, 0)];
+	[[self window] setShowsResizeIndicator:NO];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
 	[self _resizeWindowForContentView:notificationsView];
 }
@@ -491,6 +505,9 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayAutoUpdatePreferences:(id)sender
 {
+	[[self window] setMinSize:NSMakeSize(0, 0)];
+	[[self window] setShowsResizeIndicator:NO];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
 	[self _resizeWindowForContentView:autoUpdateView];
 }
@@ -500,6 +517,9 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayNetworkPreferences:(id)sender
 {
+	[[self window] setMinSize:NSMakeSize(0, 0)];
+	[[self window] setShowsResizeIndicator:NO];
+	
 	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_NETWORK];
 	[self _resizeWindowForContentView:networkView];
 }
