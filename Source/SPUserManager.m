@@ -49,6 +49,11 @@
 @implementation SPUserManager
 
 @synthesize mySqlConnection;
+@synthesize privsSupportedByServer;
+@synthesize managedObjectContext;
+@synthesize managedObjectModel;
+@synthesize persistentStoreCoordinator;
+
 
 -(id)init
 {
@@ -84,12 +89,12 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self 
 													name:NSManagedObjectContextDidSaveNotification 
 												  object:nil];
-//	[managedObjectContext release];
-//    [persistentStoreCoordinator release];
-//    [managedObjectModel release];
+	[managedObjectContext release];
+    [persistentStoreCoordinator release];
+    [managedObjectModel release];
 	[privColumnToGrantMap release];
 	[mySqlConnection release];
-	//[privsSupportedByServer release];
+	[privsSupportedByServer release];
 	
 	[super dealloc];
 }
@@ -142,7 +147,7 @@
 	[self _initializeTree:usersResultArray];
 
 	// Set up the array of privs supported by this server.
-	[privsSupportedByServer removeAllObjects];
+	[self.privsSupportedByServer removeAllObjects];
 
 	// Attempt to use SHOW PRIVILEGES syntax - supported since 4.1.0
 	result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
@@ -151,7 +156,7 @@
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
 			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
 			[privKey appendString:@"_priv"];
-			[privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:privKey];
+			[self.privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:privKey];
 		}
 	
 	// If that fails, base privilege support on the mysql.users columns
@@ -161,7 +166,7 @@
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
 			if (![privKey hasSuffix:@"_priv"]) continue;
 			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
-			[privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
+			[self.privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
 		}
 	}
 
@@ -410,7 +415,7 @@
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
 
 	// Iterate through the supported privs, setting the value of each to true
-	for (NSString *key in privsSupportedByServer) {
+	for (NSString *key in self.privsSupportedByServer) {
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
@@ -427,7 +432,7 @@
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
 
 	// Iterate through the supported privs, setting the value of each to false
-	for (NSString *key in privsSupportedByServer) {
+	for (NSString *key in self.privsSupportedByServer) {
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
@@ -631,7 +636,7 @@
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
-		for(NSString *key in privsSupportedByServer)
+		for(NSString *key in self.privsSupportedByServer)
 		{
 			if (![key hasSuffix:@"_priv"]) continue;
 			NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];

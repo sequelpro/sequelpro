@@ -47,6 +47,7 @@
 @property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, retain) NSMutableDictionary *privsSupportedByServer;
 
 // Add/Remove Users
 - (IBAction)addUser:(id)sender;
