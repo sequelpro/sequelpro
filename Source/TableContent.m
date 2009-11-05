@@ -48,6 +48,7 @@
 #import "SPContentFilterManager.h"
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
+#import "TableDocument.h"
 
 @implementation TableContent
 
@@ -142,8 +143,8 @@
  */
 - (void)loadTable:(NSString *)aTable
 {
-	int			i;
-	NSNumber	*colWidth, *sortColumnNumberToRestore = nil;
+	NSInteger i;
+	NSNumber *colWidth, *sortColumnNumberToRestore = nil;
 	NSArray *columnNames;
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
@@ -251,7 +252,7 @@
 	for (NSDictionary *constraint in constraints) {
 		NSString *firstColumn = [[[constraint objectForKey:@"columns"] componentsSeparatedByString:@","] objectAtIndex:0];
 		NSString *firstRefColumn = [[[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","] objectAtIndex:0];
-		int columnIndex = [columnNames indexOfObject:firstColumn];
+		NSUInteger columnIndex = [columnNames indexOfObject:firstColumn];
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
@@ -481,7 +482,7 @@
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
 	MCPStreamingResult *streamingResult;
-	int rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
+	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
 
 	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 
@@ -912,7 +913,7 @@
 
 	// If limitRowsField > number of total table rows show the last limitRowsValue rows
 	if ([prefs boolForKey:SPLimitResults] && [limitRowsField intValue] >= maxNumRows) {
-		int newLimit = maxNumRows - [prefs integerForKey:SPLimitResultsValue];
+		NSUInteger newLimit = maxNumRows - [prefs integerForKey:SPLimitResultsValue];
 		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
 	}
 
@@ -1002,7 +1003,7 @@
 {
 	NSMutableDictionary *column;
 	NSMutableArray *newRow = [NSMutableArray array];
-	int i;
+	NSUInteger i;
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -1036,7 +1037,7 @@
 	MCPResult *queryResult;
 	NSDictionary *row;
 	NSArray *dbDataRow = nil;
-	int i;
+	NSUInteger i;
 	
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -1144,7 +1145,7 @@
 	id tableColumn;
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
-	int i;
+	NSUInteger i;
 	
 	//load table if not already done
 	if ( ![tablesListInstance contentLoaded] ) {
@@ -1175,7 +1176,7 @@
 			else {
 				NSImage *image = [[NSImage alloc] initWithData:o];
 				if(image) {
-					int imageWidth = [image size].width;
+					NSInteger imageWidth = [image size].width;
 					if (imageWidth > 100) imageWidth = 100;
 					[tempRow addObject:[NSString stringWithFormat:
 						@"<IMG WIDTH='%d' SRC=\"data:image/auto;base64,%@\">", 
@@ -1203,7 +1204,7 @@
 	id tableColumn;
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
-	int i;
+	NSUInteger i;
 	
 	//load table if not already done
 	if ( ![tablesListInstance contentLoaded] ) {
@@ -1265,7 +1266,7 @@
 	if ([tableDocumentInstance isWorking]) return;
 
 	if ([theArrowCell getClickedColumn] == NSNotFound || [theArrowCell getClickedRow] == NSNotFound) return;
-	int dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] intValue];
+	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] intValue];
 
 	// Ensure the clicked cell has foreign key details available
 	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
@@ -1463,7 +1464,7 @@
  */
 {
 	if ( [limitRowsStepper intValue] > 0 ) {
-		int newStep = [limitRowsField intValue]+[prefs integerForKey:SPLimitResultsValue];
+		NSInteger newStep = [limitRowsField intValue]+[prefs integerForKey:SPLimitResultsValue];
 		// if newStep > the total number of rows in the current table retain the old value
 		[limitRowsField setIntValue:(newStep>maxNumRows)?[limitRowsField intValue]:newStep];
 	} else {
@@ -1488,7 +1489,7 @@
 	NSMutableString *rowValue = [NSMutableString string];
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:SPLoadBlobsAsNeeded];
-	int i;
+	NSInteger i;
 	
 	if ( !isEditingRow || currentlyEditingRow == -1) {
 		return YES;
@@ -1578,7 +1579,26 @@
 		}
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
 	}
-	[mySQLConnection queryString:queryString];
+	
+	// If UTF-8 via Latin1 view encoding is set convert the queryString into Latin1 and
+	// set the MySQL connection to Latin1 before executing this query to allow editing.
+	// After executing reset all.
+	if([tableDocumentInstance connectionEncodingViaLatin1:mySQLConnection]) {
+
+		NSStringEncoding currentEncoding = [mySQLConnection encoding];
+		NSString *latin1String = [[NSString alloc] initWithCString:[queryString UTF8String] encoding:NSISOLatin1StringEncoding];
+		[mySQLConnection setEncoding:NSISOLatin1StringEncoding];
+		[mySQLConnection queryString:@"SET NAMES 'latin1'"];
+		[mySQLConnection queryString:latin1String];
+		[mySQLConnection setEncoding:currentEncoding];
+		[mySQLConnection queryString:@"SET NAMES 'utf8'"];
+		[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
+		[latin1String release];
+
+	} else {
+		[mySQLConnection queryString:queryString];
+	}
+		
 	[fieldValues release];
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
@@ -1683,7 +1703,7 @@
 	NSMutableString *argument = [NSMutableString string];
 	// NSString *columnType;
 	NSArray *columnNames;
-	int i;
+	NSInteger i;
 	
 	if ( row == -1 )
 		return @"";
@@ -1764,7 +1784,7 @@
  */
 - (BOOL)tableContainsBlobOrTextColumns
 {
-	int i;
+	NSInteger i;
 
 	for ( i = 0 ; i < [dataColumns count]; i++ ) {
 		if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
@@ -1781,7 +1801,7 @@
  */
 - (NSString *)fieldListForQuery
 {
-	int i;
+	NSInteger i;
 	NSMutableArray *fields = [NSMutableArray array];
 	NSArray *columnNames = [tableDataInstance columnNames];
 	
@@ -2379,7 +2399,7 @@
 	// In some loading situations, where the table is being redrawn while a load operation is in process on a background
 	// thread, an index higher than the available rows/columns may be requested.  Return "..." to indicate loading in these
 	// cases - when the load completes all table data will be redrawn.
-	int columnIndex = [[aTableColumn identifier] intValue];
+	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
 	if (rowIndex >= tableRowsCount) return @"...";
 	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
 	if (columnIndex >= [rowData count]) return @"...";
@@ -2408,7 +2428,7 @@
 	// In some loading situations, where the table is being redrawn while a load operation is in process on a background
 	// thread, an index higher than the available rows/columns may be requested.  Return gray to indicate loading in these
 	// cases - when the load completes all table data will be redrawn.
-	int columnIndex = [[aTableColumn identifier] intValue];
+	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
 	if (rowIndex >= tableRowsCount) {
 		[cell setTextColor:[NSColor lightGrayColor]];
 		return;
@@ -2767,7 +2787,7 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 	NSString *fieldType;
-	int row, column, i;
+	NSUInteger row, column, i;
 	
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
