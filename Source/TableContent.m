@@ -1106,6 +1106,12 @@
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
 	NSString *contextInfo = @"removerow";
 	
 	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited) {
