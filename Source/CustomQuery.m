@@ -389,7 +389,7 @@
 	[tableDocumentInstance setQueryMode:SP_QUERYMODE_CUSTOMQUERY];
 
 	// Notify listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
@@ -688,7 +688,7 @@
 		[streamingResult release];
 
 		// Notify any listeners that the query has completed
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 		// Perform the Growl notification for query completion
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
@@ -734,7 +734,7 @@
 	[customQueryView setTableInstance:self withTableData:fullResult withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 	
 	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
 	// Query finished Growl notification    
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
@@ -1376,7 +1376,7 @@
 		// Check if the IDstring identifies the current field bijectively
 		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
 		if(numberOfPossibleUpdateRows == 1) {
-			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 			
 			NSString *newObject = nil;
 			if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
@@ -1405,7 +1405,7 @@
 					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString],
 					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			
-			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 			// Check for errors while UPDATE
 			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {

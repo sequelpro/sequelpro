@@ -2148,17 +2148,7 @@
  */
 - (void)willPerformQuery:(NSNotification *)notification
 {
-	// Only start the progress indicator if this document window is key. 
-	// Because we are starting the progress indicator based on the notification
-	// of a query being started, we have to prevent other windows from 
-	// starting theirs. The same is also true for the below hasPerformedQuery:
-	// method.
-	//
-	// This code should be removed. Updating user interface elements based on 
-	// notifications is bad practice as notifications are global to the application.
-	if ([tableWindow isKeyWindow]) {
-		[queryProgressBar startAnimation:self];
-	}
+	[queryProgressBar startAnimation:self];
 }
 
 /**
@@ -2166,9 +2156,7 @@
  */
 - (void)hasPerformedQuery:(NSNotification *)notification
 {
-	if ([tableWindow isKeyWindow]) {
-		[queryProgressBar stopAnimation:self];
-	}
+	[queryProgressBar stopAnimation:self];
 }
 
 /**
@@ -3273,9 +3261,9 @@
 
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:nil];
+												 name:@"SMySQLQueryWillBePerformed" object:self];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
-												 name:@"SMySQLQueryHasBeenPerformed" object:nil];
+												 name:@"SMySQLQueryHasBeenPerformed" object:self];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
 

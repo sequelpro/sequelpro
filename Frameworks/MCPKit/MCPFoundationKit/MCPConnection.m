@@ -1278,7 +1278,7 @@ void performThreadedKeepAlive(void *ptr)
 		// Write a log entry
 		if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:@"No connection available!" connection:self];
 		// Notify that the query has been performed
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
 		// Show an error alert while resetting
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No connection available!", 
 						  nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No connection available!");
@@ -1330,7 +1330,7 @@ void performThreadedKeepAlive(void *ptr)
 			[self setLastErrorMessage:errorMessage];
 			
 			// Notify that the query has been performed
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
 			// Show an error alert while resetting
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 							  nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, errorMessage);
@@ -1347,7 +1347,7 @@ void performThreadedKeepAlive(void *ptr)
 			if (![self checkConnection]) {
 
 				// Notify that the query has been performed
-				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
 				return nil;
 			}
 		}
