@@ -676,12 +676,12 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else {
 		// CHANGE syntax
-		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || (![theRow objectForKey:@"Length"]) || ([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) {
-			
+		if (([[theRow objectForKey:@"Length"] isEqualToString:@""]) || 
+			(![theRow objectForKey:@"Length"]) || 
+			([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) 
+		{
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
-			if ([oldRow isEqualToDictionary:theRow]) {
-				return YES;
-			}
+			if ([oldRow isEqualToDictionary:theRow]) return YES;
 			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
 															[selectedTable backtickQuotedString], 
@@ -691,9 +691,7 @@ fetches the result as an array with a dictionary for each row in it
 		} 
 		else {
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
-			if ([oldRow isEqualToDictionary:theRow]) {
-				return YES;
-			}
+			if ([oldRow isEqualToDictionary:theRow]) return YES;
 			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@(%@)",
 															[selectedTable backtickQuotedString], 
@@ -728,19 +726,23 @@ fetches the result as an array with a dictionary for each row in it
 		[queryString appendString:@" "];
 	} 
 	else {
-		// If a null value has been specified, and null is allowed, specify DEFAULT NULL
+		// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
 		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			if ([[theRow objectForKey:@"Null"] intValue] == 1) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
-		
-		// Otherwise, if current_timestamp was specified for timestamps, use that
 		} 
+		// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps, use that
 		else if ([[theRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && 
 				 [[[theRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
 		{
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
 
+		}
+		// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
+		// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
+		else if ([[theRow objectForKey:@"Type"] isEqualToString:@"bit"]) {
+			[queryString appendString:[NSString stringWithFormat:@" DEFAULT %@ ", [theRow objectForKey:@"Default"]]];
 		}
 		// Otherwise, use the provided default
 		else {
@@ -815,7 +817,7 @@ fetches the result as an array with a dictionary for each row in it
 	else if (isEditingNewRow) {
 		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
 	}
-
+	
 	// Execute query
 	[mySQLConnection queryString:queryString];
 
