@@ -31,7 +31,6 @@ enum sptextandlinkcell_drawstates
 	SP_LINKDRAWSTATE_BACKGROUNDHIGHLIGHT = 2
 };
 
-
 @interface SPTextAndLinkCell : NSTextFieldCell {
 	BOOL hasLink;
 

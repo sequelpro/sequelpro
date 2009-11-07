@@ -46,7 +46,6 @@
 #define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
 #define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
 
-
 @class SPQueryFavoriteManager;
 
 @interface CustomQuery : NSObject 
@@ -136,7 +135,6 @@
 
 	NSUInteger numberOfQueries;
 	NSUInteger queryTextViewStartPosition;
-	
 }
 
 // IBAction methods

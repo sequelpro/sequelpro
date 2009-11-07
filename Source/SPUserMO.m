@@ -32,11 +32,7 @@
 
 - (NSString *)displayName
 {
-	if ([self valueForKey:@"parent"] == nil) {
-		return self.user;
-	} else {
-		return self.host;
-	}
+	return ([self valueForKey:@"parent"] == nil) ? self.user : self.host;
 }
 
 - (void)setDisplayName:(NSString *)value
@@ -66,7 +62,5 @@
     
     [changedObjects release];
 }
+
 @end
-
-
-

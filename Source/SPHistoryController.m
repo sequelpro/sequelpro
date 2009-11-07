@@ -27,7 +27,6 @@
 #import "TablesList.h"
 #import "SPHistoryController.h"
 
-
 @implementation SPHistoryController
 
 @synthesize history;

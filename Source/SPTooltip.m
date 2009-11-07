@@ -26,7 +26,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 //	Usage:
 //	#import "SPTooltip.h"
 //	
@@ -68,8 +67,8 @@ static float slow_in_out (float t)
 	return t;
 }
 
-
 @interface SPTooltip (Private)
+
 - (void)setContent:(NSString *)content withOptions:(NSDictionary *)displayOptions;
 - (void)runUntilUserActivity;
 - (void)stopAnimation:(id)sender;
@@ -77,13 +76,17 @@ static float slow_in_out (float t)
 + (NSPoint)caretPosition;
 + (void)setDisplayOptions:(NSDictionary *)aDict;
 - (void)initMeWithOptions:(NSDictionary *)displayOptions;
+
 @end
 
 @interface WebView (LeopardOnly)
+
 - (void)setDrawsBackground:(BOOL)drawsBackground;
+
 @end
 
 @implementation SPTooltip
+
 // ==================
 // = Setup/teardown =
 // ==================
@@ -456,4 +459,5 @@ static float slow_in_out (float t)
 		[self setAlphaValue:0.97f];
 	}
 }
+
 @end

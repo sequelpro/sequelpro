@@ -28,7 +28,8 @@ enum {
 	NoStringEncoding = 0xFFFFFFFF
 };
 
-@interface SPEncodingPopupAccessory : NSObject {
+@interface SPEncodingPopupAccessory : NSObject 
+{
 @public
 	IBOutlet NSPopUpButton *encodingPopUp;
 	IBOutlet NSView *encodingAccessoryView;

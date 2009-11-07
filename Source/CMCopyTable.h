@@ -35,7 +35,6 @@
 */
 @interface CMCopyTable : SPTableView 
 {
-
 	id tableInstance;				// the table content view instance
 	id tableData;					// the actual table data source
 	id mySQLConnection;				// current MySQL connection
@@ -43,7 +42,6 @@
 	NSString* selectedTable;		// the name of the current selected table
 	
 	NSUserDefaults *prefs;
-
 }
 
 /*!

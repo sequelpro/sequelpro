@@ -299,7 +299,7 @@
 /**
  * Disable all content interactive elements during an ongoing task.
  */
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
 
 	// Only proceed if this view is selected.
@@ -314,7 +314,7 @@
 /**
  * Enable all content interactive elements after an ongoing task.
  */
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
 
 	// Only proceed if this view is selected.

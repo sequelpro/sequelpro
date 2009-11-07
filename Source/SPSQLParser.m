@@ -981,7 +981,6 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 @end
 
-
 /*
  * As splitStringByCharacter: ..., but allows control over quoting
  * - it recognises CREATE ... BEGIN ... END statements

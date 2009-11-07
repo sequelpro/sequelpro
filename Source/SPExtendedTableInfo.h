@@ -69,7 +69,7 @@
 - (void)loadTable:(NSString *)table; 
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 @end

@@ -1,5 +1,5 @@
 //
-// Prefix header for all source files of the 'sequel-pro' target in the 'sequel-pro' project
+// Prefix header for all source files of the 'sequel-pro' target in the 'sequel-pro' project.
 //
 
 #ifdef __OBJC__

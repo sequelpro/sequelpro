@@ -241,8 +241,6 @@
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
 		[(ImageAndTextCell*)aCell setIndentationLevel:0];
-		//[(ImageAndTextCell*)aCell setDrawsBackground:YES];
-		//[(ImageAndTextCell*)aCell setBackgroundColor:[NSColor colorWithDeviceRed:0.894 green:0.917 blue:0.945 alpha:1]];
 	}
 }
 

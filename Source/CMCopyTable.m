@@ -424,7 +424,6 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-
 	// RETURN or ENTER invoke editing mode for selected row
 	// by calling tableView:shouldEditTableColumn: to validate
 	if([[[[self delegate] class] description] isEqualToString:@"TableContent"]) {
@@ -440,7 +439,5 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	[super keyDown:theEvent];		
 }
-
-
 
 @end

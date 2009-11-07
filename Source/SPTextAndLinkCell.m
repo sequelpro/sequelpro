@@ -25,13 +25,13 @@
 
 #import "SPTextAndLinkCell.h"
 
-
 @implementation SPTextAndLinkCell
 
 /**
  * Provide a method to derive the link rect from a cell rect.
  */
-static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect) {
+static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect) 
+{
 	return NSMakeRect(inRect.origin.x + inRect.size.width - 15, inRect.origin.y - 1, 12, inRect.size.height);
 }
 

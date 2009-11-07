@@ -70,7 +70,6 @@
 - (IBAction)duplicateContentFilter:(id)sender;
 - (IBAction)exportContentFilter:(id)sender;
 - (IBAction)importContentFilterByAdding:(id)sender;
-// - (IBAction)importContentFilterByReplacing:(id)sender;
 - (IBAction)closeContentFilterManagerSheet:(id)sender;
 
 @end

@@ -33,7 +33,9 @@
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
 
 @interface SPQueryFavoriteManager (Private)
+
 - (void)_initWithNoSelection;
+
 @end
 
 @implementation SPQueryFavoriteManager
@@ -828,4 +830,5 @@
 	[favoriteNameTextField setStringValue:@""];
 	[favoriteQueryTextView setString:@""];
 }
+
 @end

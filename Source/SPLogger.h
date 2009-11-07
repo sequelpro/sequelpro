@@ -25,8 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-
-@interface SPLogger : NSObject {
+@interface SPLogger : NSObject 
+{
 	BOOL initializedSuccessfully;
 	NSFileHandle *logFileHandle;
 }

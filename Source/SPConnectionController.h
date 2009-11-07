@@ -101,7 +101,6 @@ enum spconnection_types
 	IBOutlet NSButton *helpButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
-
 }
 
 @property (readwrite, assign) int type;

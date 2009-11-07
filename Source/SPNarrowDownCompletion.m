@@ -34,10 +34,24 @@
 #import "SPConstants.h"
 
 @interface NSTableView (MovingSelectedRow)
+
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent;
+
+@end
+
+@interface SPNarrowDownCompletion (Private)
+
+- (NSRect)rectOfMainScreen;
+- (NSString*)filterString;
+- (void)setupInterface;
+- (void)filter;
+- (void)insertCommonPrefix;
+- (void)completeAndInsertSnippet;
+
 @end
 
 @implementation NSTableView (MovingSelectedRow)
+
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent
 {
 	int visibleRows = (int)floorf(NSHeight([self visibleRect]) / ([self rowHeight]+[self intercellSpacing].height)) - 1;
@@ -75,15 +89,6 @@
 
 }
 
-@end
-
-@interface SPNarrowDownCompletion (Private)
-- (NSRect)rectOfMainScreen;
-- (NSString*)filterString;
-- (void)setupInterface;
-- (void)filter;
-- (void)insertCommonPrefix;
-- (void)completeAndInsertSnippet;
 @end
 
 @implementation SPNarrowDownCompletion
@@ -502,4 +507,5 @@
 	}
 	closeMe = YES;
 }
+
 @end

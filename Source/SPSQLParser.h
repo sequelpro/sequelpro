@@ -71,7 +71,6 @@
 	BOOL ignoreCommentStrings;
 }
 
-
 typedef enum _SPCommentTypes {
 	SPHashComment = 0,
 	SPDoubleDashComment = 1,

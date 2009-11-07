@@ -29,7 +29,6 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-
 @interface SPTooltip : NSWindow
 {
 	WebView*		webView;
@@ -43,7 +42,6 @@
 	NSPoint			mousePositionWhenOpened;
 	
 	NSString* 		SPTooltipPreferencesIdentifier;
-
 }
 
 + (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type displayOptions:(NSDictionary *)displayOptions;

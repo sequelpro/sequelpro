@@ -57,7 +57,6 @@ enum sp_current_query_mode
 	IBOutlet id exportControllerInstance;
 	IBOutlet SPUserManager *userManagerInstance;
 
-
 	IBOutlet NSSearchField *listFilterField;
 
 	IBOutlet id tableWindow;
@@ -276,9 +275,6 @@ enum sp_current_query_mode
 - (void)setupToolbar;
 - (NSString *)selectedToolbarItemIdentifier;
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar;
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar;
-- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 - (void)updateChooseDatabaseToolbarItemWidth;
 
 @end

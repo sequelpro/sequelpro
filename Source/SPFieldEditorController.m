@@ -957,6 +957,4 @@
 	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.2];
 }
 
-
-
 @end

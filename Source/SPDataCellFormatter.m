@@ -43,8 +43,6 @@
 	}
 #endif
 
-
-
 - (NSString *)stringForObjectValue:(id)anObject
 {
 

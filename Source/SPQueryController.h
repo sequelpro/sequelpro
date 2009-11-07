@@ -53,7 +53,6 @@
 	NSUInteger numberOfMaxAllowedHistory;
 
 	NSUserDefaults *prefs;
-	
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
@@ -97,6 +96,5 @@
 - (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL;
 
 - (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals;
-
 
 @end

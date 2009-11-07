@@ -64,5 +64,4 @@
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts;
 - (NSArray *) primaryKeyColumnNames;
 
-
 @end

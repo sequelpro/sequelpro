@@ -26,7 +26,6 @@
 
 @interface SPFieldEditorController : NSWindowController 
 {
-
 	IBOutlet id editSheetProgressBar;
 	IBOutlet id editSheetSegmentControl;
 	IBOutlet id editSheetQuickLookButton;
@@ -65,7 +64,6 @@
 	int editSheetReturnCode;
 
 	NSUndoManager *esUndoManager;
-
 }
 
 - (IBAction)closeEditSheet:(id)sender;
@@ -75,7 +73,6 @@
 - (IBAction)segmentControllerChanged:(id)sender;
 - (IBAction)quickLookFormatButton:(id)sender;
 - (IBAction)dropImage:(id)sender;
-
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
 	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow;

@@ -39,7 +39,6 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	return;
 }
 
-
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
 	BOOL autopairEnabled;

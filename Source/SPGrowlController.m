@@ -191,4 +191,5 @@ static SPGrowlController *sharedGrowlController = nil;
 
 	return (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-6);
 }
+
 @end
