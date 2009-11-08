@@ -104,6 +104,7 @@ enum sp_table_types
 	int selectedTableType;
 	NSString *selectedTableName;
 	BOOL isTableListFiltered;
+	BOOL tableListIsSelectable;
 	BOOL tableListContainsViews;
 
 	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
@@ -146,6 +147,9 @@ enum sp_table_types
 - (void)setStatusRequiresReload:(BOOL)reload;
 - (BOOL)selectTableOrViewWithName:(NSString *)theName;
 
+// Tabview delegate methods
+- (void)loadTabTask:(NSTabViewItem *)tabViewItem;
+
 // Table list filter interaction
 - (void) showFilter;
 - (void) hideFilter;
@@ -155,5 +159,6 @@ enum sp_table_types
 // Task interaction
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification;
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) setTableListSelectability:(BOOL)isSelectable;
 
 @end

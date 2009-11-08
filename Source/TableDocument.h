@@ -134,8 +134,9 @@ enum sp_current_query_mode
 	BOOL _encodingViaLatin1;
 	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
-	BOOL _isWorking;
+	int _isWorkingLevel;
 	BOOL _mainNibLoaded;
+	BOOL databaseListIsSelectable;
 	int _queryMode;
 
 	BOOL taskDisplayIsIndeterminate;
@@ -175,6 +176,7 @@ enum sp_current_query_mode
 // Database methods
 - (IBAction)setDatabases:(id)sender;
 - (IBAction)chooseDatabase:(id)sender;
+- (void)chooseDatabaseTask;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
@@ -190,6 +192,7 @@ enum sp_current_query_mode
 - (void) setTaskProgressToIndeterminate;
 - (void) endTask;
 - (BOOL) isWorking;
+- (void) setDatabaseListIsSelectable:(BOOL)isSelectable;
 
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;

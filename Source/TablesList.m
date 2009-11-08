@@ -697,9 +697,15 @@
 		return;
 	}
 
-	// Otherwise, set up a task and fire up a thread to deal with view changes and data loading
+	// Otherwise, set up a task
 	[tableDocumentInstance startTaskWithDescription:taskString];
-	[NSThread detachNewThreadSelector:@selector(updateSelectionTask) toTarget:self withObject:nil];
+
+	// If on the main thread, fire up a thread to deal with view changes and data loading, else perform inline
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(updateSelectionTask) toTarget:self withObject:nil];
+	} else {
+		[self updateSelectionTask];
+	}
 }
 
 - (void) updateSelectionTask
@@ -1294,8 +1300,8 @@
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {
 
-	// Don't allow selection changes while performing a task
-	if ([tableDocumentInstance isWorking]) return NO;
+	// Don't allow selection changes while performing a task.
+	if (!tableListIsSelectable) return NO;
 
 	// End editing (otherwise problems when user hits reload button)
 	[tableWindow endEditingFor:nil];
@@ -1317,6 +1323,9 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {	
+
+	// Reset selectability after change if necessary
+	if ([tableDocumentInstance isWorking]) tableListIsSelectable = NO;
 
 	// Perform no action if the selected table hasn't actually changed - reselection etc
 	if ([tablesListView numberOfSelectedRows] == 1
@@ -1405,12 +1414,16 @@
 
 /**
  * Loads structure or source if tab selected the first time,
- * using a threaded load.
+ * using a threaded load if currently on the main thread.
  */
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
-	[NSThread detachNewThreadSelector:@selector(loadTabTask:) toTarget:self withObject:tabViewItem];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(loadTabTask:) toTarget:self withObject:tabViewItem];
+	} else {
+		[self loadTabTask:tabViewItem];
+	}
 }
 - (void)loadTabTask:(NSTabViewItem *)tabViewItem
 {
@@ -1595,6 +1608,7 @@
  */
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
+	tableListIsSelectable = NO;
 	[toolbarAddButton setEnabled:NO];
 	[toolbarActionsButton setEnabled:NO];
 	[toolbarReloadButton setEnabled:NO];
@@ -1605,9 +1619,18 @@
  */
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
+	tableListIsSelectable = YES;
 	[toolbarAddButton setEnabled:YES];
 	[toolbarActionsButton setEnabled:YES];
 	[toolbarReloadButton setEnabled:YES];
+}
+
+/**
+ * Set the table list to selectable or not during the task process.
+ */
+- (void) setTableListSelectability:(BOOL)isSelectable
+{
+	tableListIsSelectable = isSelectable;
 }
 
 #pragma mark -
@@ -1636,6 +1659,7 @@
 		contentLoaded = NO;
 		statusLoaded = NO;
 		isTableListFiltered = NO;
+		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
 		selectedTableType = SP_TABLETYPE_NONE;
 		selectedTableName = nil;

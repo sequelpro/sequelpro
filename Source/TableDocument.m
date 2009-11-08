@@ -75,7 +75,8 @@
 		_mainNibLoaded = NO;
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
-		_isWorking = NO;
+		_isWorkingLevel = 0;
+		databaseListIsSelectable = YES;
 		_queryMode = SP_QUERYMODE_INTERFACE;
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
@@ -902,8 +903,8 @@
 }
 
 /**
- * selects the database choosen by the user
- * errorsheet if connection failed
+ * Selects the database choosen by the user, using a child task if necessary,
+ * and displaying errors in an alert sheet on failure.
  */
 - (IBAction)chooseDatabase:(id)sender
 {
@@ -919,6 +920,21 @@
 		return;
 	}
 
+	// Lock editability again if performing a task
+	if (_isWorkingLevel) databaseListIsSelectable = NO;
+
+	// Start a task
+	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(chooseDatabaseTask) toTarget:self withObject:nil];
+	} else {
+		[self chooseDatabaseTask];
+	}
+}
+- (void)chooseDatabaseTask
+{
+	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
+
 	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
 	BOOL historyStateChanging = [spHistoryControllerInstance modifyingHistoryState];
 	if (!historyStateChanging) {
@@ -932,6 +948,8 @@
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
 			[self setDatabases:self];
 		}
+		[self endTask];
+		[taskPool drain];
 		return;
 	}
 
@@ -956,6 +974,8 @@
 	else
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
+	[self endTask];
+	[taskPool drain];
 }
 
 /**
@@ -1148,21 +1168,30 @@
 - (void) startTaskWithDescription:(NSString *)description
 {
 
-	// Set flags and prevent further UI interaction in this window
-	_isWorking = YES;
-	[historyControl setEnabled:NO];
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
-
-	// Reset the progress indicator
-	taskDisplayIsIndeterminate = YES;
-	[taskProgressIndicator setIndeterminate:YES];
-	[taskProgressIndicator animate:self];
-	[taskProgressIndicator startAnimation:self];
-	taskDisplayLastValue = 0;
-
-	// Set the descriptive label and schedule appearance in the near future
+	// Increment the working level and set the task text
+	_isWorkingLevel++;
 	[taskDescriptionText setStringValue:description];
-	taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(showTaskProgressLayer:) userInfo:nil repeats:NO] retain];
+
+	// Reset the progress indicator if necessary
+	if (_isWorkingLevel == 1 || !taskDisplayIsIndeterminate) {
+		taskDisplayIsIndeterminate = YES;
+		[taskProgressIndicator setIndeterminate:YES];
+		[taskProgressIndicator animate:self];
+		[taskProgressIndicator startAnimation:self];
+		taskDisplayLastValue = 0;
+	}
+
+	// If the working level just moved to start a task, set up the interface
+	if (_isWorkingLevel == 1) {
+
+		// Set flags and prevent further UI interaction in this window
+		[historyControl setEnabled:NO];
+		databaseListIsSelectable = NO;
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
+
+		// Set the descriptive label and schedule appearance in the near future
+		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(showTaskProgressLayer:) userInfo:nil repeats:NO] retain];
+	}
 }
 
 /**
@@ -1189,6 +1218,11 @@
  */
 - (void) setTaskPercentage:(float)taskPercentage
 {
+	if (taskDisplayIsIndeterminate) {
+		taskDisplayIsIndeterminate = NO;
+		[taskProgressIndicator stopAnimation:self];
+	}
+
 	taskProgressValue = taskPercentage;
 	if (taskProgressValue > taskDisplayLastValue + taskProgressValueDisplayInterval
 		|| taskProgressValue < taskDisplayLastValue - taskProgressValueDisplayInterval)
@@ -1217,17 +1251,25 @@
 - (void) endTask
 {
 
-	// Cancel the draw timer if it exists
-	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+	// Decrement the working level
+	_isWorkingLevel--;
 
-	// Hide the task interface
-	if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
-	[taskProgressLayer setHidden:YES];
+	// If all tasks have ended, re-enable the interface
+	if (!_isWorkingLevel) {
 
-	// Re-enable window interface
-	_isWorking = NO;
-	[historyControl setEnabled:YES];
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
+		// Cancel the draw timer if it exists
+		if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+
+		// Hide the task interface
+		if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
+		[taskProgressLayer setHidden:YES];
+
+		// Re-enable window interface
+		[historyControl setEnabled:YES];
+		databaseListIsSelectable = YES;
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
+		[mainToolbar validateVisibleItems];
+	}
 }
 
 /**
@@ -1236,7 +1278,15 @@
  */
 - (BOOL) isWorking
 {
-	return _isWorking;
+	return (_isWorkingLevel > 0);
+}
+
+/**
+ * Set whether the database list is selectable or not during the task process.
+ */
+- (void) setDatabaseListIsSelectable:(BOOL)isSelectable
+{
+	databaseListIsSelectable = isSelectable;
 }
 
 #pragma mark -
@@ -2700,7 +2750,12 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if (!_isConnected || _isWorking) {
+
+	if ([menuItem menu] == chooseDatabaseButton) {
+		return (_isConnected && databaseListIsSelectable);
+	}
+
+	if (!_isConnected || _isWorkingLevel) {
 		return ([menuItem action] == @selector(newDocument:) || [menuItem action] == @selector(terminate:));
 	}
 
@@ -3205,7 +3260,7 @@
  */
 - (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
 {
-	if (!_isConnected || _isWorking) return NO;
+	if (!_isConnected || _isWorkingLevel) return NO;
 
 	NSString *identifier = [toolbarItem itemIdentifier];
 
@@ -3302,7 +3357,7 @@
  */
 - (BOOL)windowShouldClose:(id)sender
 {
-	if (_isWorking) {
+	if (_isWorkingLevel) {
 		return NO;
 	} else if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
 		return NO;

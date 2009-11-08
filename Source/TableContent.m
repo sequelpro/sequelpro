@@ -82,6 +82,7 @@
 		filterValueToRestore = nil;
 		firstBetweenValueToRestore = nil;
 		secondBetweenValueToRestore = nil;
+		tableRowsSelectable = YES;
 
 		isFiltered = NO;
 		isLimited = NO;
@@ -450,7 +451,10 @@
 
 	// Restore selection indexes if appropriate
 	if (selectionIndexToRestore) {
+		BOOL previousTableRowsSelectable = tableRowsSelectable;
+		tableRowsSelectable = YES;
 		[tableContentView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+		tableRowsSelectable = previousTableRowsSelectable;
 	}
 	
 	// Update display if necessary
@@ -859,12 +863,17 @@
 
 /*
  * Reloads the current table data, performing a new SQL query. Now attempts to preserve sort
- * order, filters, and viewport. Performs the action in a new thread.
+ * order, filters, and viewport. Performs the action in a new thread if a task is not already
+ * running.
  */
 - (IBAction)reloadTable:(id)sender
 {
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
-	[NSThread detachNewThreadSelector:@selector(reloadTableTask) toTarget:self withObject:nil];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(reloadTableTask) toTarget:self withObject:nil];
+	} else {
+		[self reloadTableTask];
+	}
 }
 - (void)reloadTableTask
 {
@@ -888,13 +897,17 @@
 
 /*
  * Filter the table with arguments given by the user.
- * Performs the action in a new thread.
+ * Performs the action in a new thread if necessary.
  */
 - (IBAction)filterTable:(id)sender
 {
 	if ([tableDocumentInstance isWorking]) return;
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Filtering table...", @"Filtering table task description")];
-	[NSThread detachNewThreadSelector:@selector(filterTableTask) toTarget:self withObject:nil];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(filterTableTask) toTarget:self withObject:nil];
+	} else {
+		[self filterTableTask];
+	}
 }
 - (void)filterTableTask
 {
@@ -2488,7 +2501,7 @@
 /**
  * Sorts the tableView by the clicked column.
  * If clicked twice, order is altered to descending.
- * Performs the task in a new thread.
+ * Performs the task in a new thread if necessary.
  */
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
@@ -2501,7 +2514,11 @@
 
 	// Start the task
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Sorting table...", @"Sorting table task description")];
-	[NSThread detachNewThreadSelector:@selector(sortTableTaskWithColumn:) toTarget:self withObject:tableColumn];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(sortTableTaskWithColumn:) toTarget:self withObject:tableColumn];
+	} else {
+		[self sortTableTaskWithColumn:tableColumn];
+	}
 }
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn
 {
@@ -2554,15 +2571,18 @@
 	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
 	if (isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
 	
-	// Update the row selection count
-    // and update the status of the delete/duplicate buttons
-	if ([tableContentView numberOfSelectedRows] > 0) {
-        [copyButton setEnabled:YES];
-        [removeButton setEnabled:YES];
-	} 
-	else {
-        [copyButton setEnabled:NO];
-        [removeButton setEnabled:NO];
+	if (![tableDocumentInstance isWorking]) {
+
+		// Update the row selection count
+		// and update the status of the delete/duplicate buttons
+		if ([tableContentView numberOfSelectedRows] > 0) {
+			[copyButton setEnabled:YES];
+			[removeButton setEnabled:YES];
+		} 
+		else {
+			[copyButton setEnabled:NO];
+			[removeButton setEnabled:NO];
+		}
 	}
 
 	[self updateCountText];
@@ -2717,7 +2737,7 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return ![tableDocumentInstance isWorking];
+	return tableRowsSelectable;
 }
 
 #pragma mark -
@@ -2756,6 +2776,7 @@
 	[copyButton setEnabled:NO];
 	[reloadButton setEnabled:NO];
 	[filterButton setEnabled:NO];
+	tableRowsSelectable = NO;
 }
 
 /**
@@ -2775,6 +2796,7 @@
 	}
 	[reloadButton setEnabled:YES];
 	[filterButton setEnabled:[fieldField isEnabled]];
+	tableRowsSelectable = YES;
 }
 
 #pragma mark -

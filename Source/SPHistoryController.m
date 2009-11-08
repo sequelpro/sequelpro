@@ -51,6 +51,7 @@
 - (void) awakeFromNib
 {
 	tableContentInstance = [theDocument valueForKey:@"tableContentInstance"];
+	tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
 }
 
 - (void) dealloc
@@ -252,6 +253,7 @@
 
 /**
  * Load a history entry and attempt to return the interface to that state.
+ * Performs the load in a task which is threaded as necessary.
  */
 - (void) loadEntryAtPosition:(unsigned int)position
 {
@@ -261,6 +263,22 @@
 		NSBeep();
 		return;
 	}
+
+	// Ensure a save of the current state - scroll position, selection - if we're at the last entry
+	if (historyPosition == [history count] - 1) [self updateHistoryEntries];
+
+	// Start the task and perform the load
+	[theDocument startTaskWithDescription:NSLocalizedString(@"Loading history entry...", @"Loading history entry task desc")];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(loadEntryTaskWithPosition:) toTarget:self withObject:[NSNumber numberWithUnsignedInt:position]];
+	} else {
+		[self loadEntryTaskWithPosition:[NSNumber numberWithUnsignedInt:position]];
+	}
+}
+- (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber
+{
+	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
+	unsigned int position = [positionNumber unsignedIntValue];
 
 	modifyingHistoryState = YES;
 
@@ -289,6 +307,10 @@
 	// Check and set the database
 	if (![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]) {
 		NSPopUpButton *chooseDatabaseButton = [theDocument valueForKey:@"chooseDatabaseButton"];
+		[tablesListInstance setTableListSelectability:YES];
+		[[tablesListInstance valueForKey:@"tablesListView"] deselectAll:self];		
+		[theDocument setDatabaseListIsSelectable:YES];
+		[tablesListInstance setTableListSelectability:YES];
 		[chooseDatabaseButton selectItemWithTitle:[historyEntry objectForKey:@"database"]];
 		[theDocument chooseDatabase:self];
 		if (![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]) {
@@ -298,7 +320,6 @@
 
 	// Check and set the table
 	if ([historyEntry objectForKey:@"table"] && ![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-		TablesList *tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
 		NSArray *tables = [tablesListInstance tables];
 		if ([tables indexOfObject:[historyEntry objectForKey:@"table"]] == NSNotFound) {
 			return [self abortEntryLoad];
@@ -308,10 +329,10 @@
 			return [self abortEntryLoad];
 		}
 	} else if (![historyEntry objectForKey:@"table"] && [theDocument table]) {
-		TablesList *tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
+		[tablesListInstance setTableListSelectability:YES];
 		[[tablesListInstance valueForKey:@"tablesListView"] deselectAll:self];		
 	} else {
-		[[theDocument valueForKey:@"tablesListInstance"] setContentRequiresReload:YES];	
+		[tablesListInstance setContentRequiresReload:YES];	
 	}
 
 	// Check and set the view
@@ -340,6 +361,10 @@
 
 	modifyingHistoryState = NO;
 	[self updateToolbarItem];
+
+	// End the task
+	[theDocument endTask];
+	[loadPool drain];
 }
 
 /**

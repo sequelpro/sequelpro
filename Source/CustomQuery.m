@@ -364,7 +364,13 @@
 	if (customQueryCallbackMethod)
 		encodedCallbackMethod = [NSValue valueWithBytes:&customQueryCallbackMethod objCType:@encode(SEL)];
 	NSDictionary *taskArguments = [NSDictionary dictionaryWithObjectsAndKeys:queries, @"queries", encodedCallbackMethod, @"callback", nil];
-	[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
+	
+	// If a helper thread is already running, execute inline - otherwise detach a new thread for the queries
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
+	} else {
+		[self performQueriesTask:taskArguments];
+	}
 }
 
 - (void)performQueriesTask:(NSDictionary *)taskArguments
@@ -745,7 +751,7 @@
 	// Set up the callback if present
 	if ([taskArguments objectForKey:@"callback"]) {
 		[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
-		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:YES];
 	}
 
 	[tableDocumentInstance endTask];

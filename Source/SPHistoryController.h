@@ -24,7 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class TableDocument, TableContent;
+@class TableDocument, TableContent, TablesList;
 
 enum sphistory_view_types
 {
@@ -41,6 +41,7 @@ enum sphistory_view_types
 	IBOutlet NSSegmentedControl *historyControl;
 
 	TableContent *tableContentInstance;
+	TablesList *tablesListInstance;
 	NSMutableArray *history;
 	NSUInteger historyPosition;
 	BOOL modifyingHistoryState;
@@ -62,6 +63,7 @@ enum sphistory_view_types
 
 // Loading history entries
 - (void) loadEntryAtPosition:(unsigned int)position;
+- (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber;
 - (void) abortEntryLoad;
 - (void) loadEntryFromMenuItem:(id)theMenuItem;
 

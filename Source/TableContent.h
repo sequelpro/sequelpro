@@ -75,6 +75,7 @@
 	id contentFilterManager;
 
 	BOOL sortColumnToRestoreIsAsc;
+	BOOL tableRowsSelectable;
 	NSString *sortColumnToRestore;
 	unsigned int limitStartPositionToRestore;
 	NSIndexSet *selectionIndexToRestore;
@@ -90,7 +91,9 @@
 
 // Table interface actions
 - (IBAction) reloadTable:(id)sender;
+- (void) reloadTableTask;
 - (IBAction) filterTable:(id)sender;
+- (void)filterTableTask;
 - (IBAction) toggleFilterField:(id)sender;
 - (NSString *) usedQuery;
 - (void) setUsedQuery:(NSString *)query;
@@ -122,6 +125,7 @@
 - (void)updateNumberOfRows;
 - (int)fetchNumberOfRows;
 - (BOOL)saveRowOnDeselect;
+- (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
 
 // Retrieving and setting table state
 - (NSString *) sortColumnName;
