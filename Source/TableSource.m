@@ -325,33 +325,33 @@ reloads the table (performing a new mysql-query)
  */
 - (IBAction)removeField:(id)sender
 {
-	if (![tableSourceView numberOfSelectedRows])
-		return;
+	if (![tableSourceView numberOfSelectedRows]) return;
 
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
 
 	// Check if the user tries to delete the last defined field in table
+	// Note that because of better menu item validation, this check will now never evaluate to true.
 	if ([tableSourceView numberOfRows] < 2) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while deleting field", @"Error while deleting field")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Use “Remove table” (DROP TABLE) instead.",
-							@"You cannot delete the last field in that table. Use “Remove table” (DROP TABLE) instead")];
+							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Use 'Remove table' (DROP TABLE) instead.", @"You cannot delete the last field in that table. Use 'Remove table' (DROP TABLE) instead")];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 
 		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
 		
 	}
+	
+	NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"];
 
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete field?", @"delete field message")
+	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete field '%@'?", @"delete field message"), field]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"),
-																			  [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"]]];
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -373,13 +373,14 @@ reloads the table (performing a new mysql-query)
 
 	// Check whether a save of the current fields row is required.
 	if (![self saveRowOnDeselect]) return;
+	
+	NSString *keyName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"];
 
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete Index?", @"delete index message")
+	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete index '%@'?", @"delete index message"), keyName]
 									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button") 
 								   alternateButton:NSLocalizedString(@"Delete", @"delete button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"),
-																			  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"]]];
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
