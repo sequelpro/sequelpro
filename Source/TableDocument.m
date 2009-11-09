@@ -500,11 +500,15 @@
  */
 - (void)restoreSession
 {
+	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
 
 	// Check and set the table
 	NSArray *tables = [tablesListInstance tables];
 
-	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) return;
+	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
+		[taskPool drain];
+		return;
+	}
 
 	// Restore toolbar setting
 	if([spfSession objectForKey:@"isToolbarVisible"])
@@ -559,6 +563,9 @@
 	[spfSession release];
 	spfSession = nil;
 
+	// End the task
+	[self endTask];
+	[taskPool drain];
 }
 
 /**
@@ -691,7 +698,14 @@
 		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
 	if(spfSession != nil) {
-		[self restoreSession];
+
+		// Start a task to restore the session details
+		[self startTaskWithDescription:NSLocalizedString(@"Restoring session...", @"Restoring session task description")];
+		if ([NSThread isMainThread]) {
+			[NSThread detachNewThreadSelector:@selector(restoreSession) toTarget:self withObject:nil];
+		} else {
+			[self restoreSession];
+		}
 	} else {
 		switch ([prefs integerForKey:SPDefaultViewMode] > 0 ? [prefs integerForKey:SPDefaultViewMode] : [prefs integerForKey:SPLastViewMode]) {
 			default:
