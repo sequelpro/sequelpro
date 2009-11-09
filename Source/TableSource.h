@@ -71,13 +71,12 @@
 // Edit methods
 - (IBAction)addField:(id)sender;
 - (IBAction)copyField:(id)sender;
-- (IBAction)addIndex:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (IBAction)removeIndex:(id)sender;
 
 // Index sheet methods
 - (IBAction)openIndexSheet:(id)sender;
-- (IBAction)closeIndexSheet:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 - (IBAction)chooseIndexType:(id)sender;
 - (void)closeAlertSheet;
 
@@ -97,7 +96,7 @@
 - (NSArray *)tableStructureForPrint;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 @end

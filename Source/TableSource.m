@@ -32,6 +32,13 @@
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
 
+@interface TableSource (PrivateAPI)
+
+- (void)_addIndex;
+- (void)_removeIndex;
+
+@end
+
 @implementation TableSource
 
 /*
@@ -314,58 +321,6 @@ reloads the table (performing a new mysql-query)
 }
 
 /**
- * adds the index to the mysql-db and stops modal session with code 1 when success, 0 when error and -1 when no columns specified
- */
-- (IBAction)addIndex:(id)sender
-{
-	NSString *indexName;
-	NSArray *indexedColumns;
-	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
-	NSEnumerator *enumerator;
-	NSString *string;
-
-	// Check whether a save of the current fields row is required.
-	if ( ![self saveRowOnDeselect] ) return;
-
-	if ( [[indexedColumnsField stringValue] isEqualToString:@""] ) {
-		[NSApp stopModalWithCode:-1];
-	} else {
-		if ( [[indexNameField stringValue] isEqualToString:@"PRIMARY"] ) {
-			indexName = @"";
-		 } else {
-			if ( [[indexNameField stringValue] isEqualToString:@""] )
-			{
-				indexName = @"";
-			} else {
-				indexName = [[indexNameField stringValue] backtickQuotedString];
-			}
-		}
-		indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
-		enumerator = [indexedColumns objectEnumerator];
-		while ( (string = [enumerator nextObject]) ) {
-			if ( ([string characterAtIndex:0] == ' ') ) {
-				[tempIndexedColumns addObject:[string substringWithRange:NSMakeRange(1,([string length]-1))]];
-			} else {
-				[tempIndexedColumns addObject:[NSString stringWithString:string]];
-			}
-		}
-		
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
-				[selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
-				[tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
-
-		if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-			[tableDataInstance resetAllData];
-			[tablesListInstance setStatusRequiresReload:YES];
-			[self loadTable:selectedTable];
-			[NSApp stopModalWithCode:1];
-		} else {
-			[NSApp stopModalWithCode:0];
-		}
-	}
-}
-
-/**
  * Ask the user to confirm that they really want to remove the selected field.
  */
 - (IBAction)removeField:(id)sender
@@ -374,8 +329,7 @@ reloads the table (performing a new mysql-query)
 		return;
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) 
-		return;
+	if (![self saveRowOnDeselect]) return;
 
 	// Check if the user tries to delete the last defined field in table
 	if ([tableSourceView numberOfRows] < 2) {
@@ -415,12 +369,10 @@ reloads the table (performing a new mysql-query)
  */
 - (IBAction)removeIndex:(id)sender
 {
-	if (![indexView numberOfSelectedRows])
-		return;
+	if (![indexView numberOfSelectedRows]) return;
 
 	// Check whether a save of the current fields row is required.
-	if (![self saveRowOnDeselect]) 
-		return;
+	if (![self saveRowOnDeselect]) return;
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete Index?", @"delete index message")
 									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button") 
@@ -437,21 +389,24 @@ reloads the table (performing a new mysql-query)
 	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeindex"];
+	[alert beginSheetModalForWindow:tableWindow
+					  modalDelegate:self 
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:@"removeIndex"];
 }
 
 #pragma mark -
 #pragma mark Index sheet methods
 
-/*
-opens the indexSheet
-*/
+/**
+ * Opens the add new index sheet.
+ */
 - (IBAction)openIndexSheet:(id)sender
 {
-	int i, code = 0;
+	int i;
 
 	// Check whether a save of the current field row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if (![self saveRowOnDeselect]) return;
 
 	// Set sheet defaults - key type PRIMARY, key name PRIMARY and disabled, and blank indexed columns
 	[indexTypeField selectItemAtIndex:0];
@@ -461,7 +416,8 @@ opens the indexSheet
 	[indexSheet makeFirstResponder:indexedColumnsField];
 	
 	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
-	for (i = 0; i < [tableFields count]; i++) {
+	for (i = 0; i < [tableFields count]; i++) 
+	{
 		if ([[[tableFields objectAtIndex:i] objectForKey:@"Key"] isEqualToString:@"PRI"]) {
 			[indexTypeField selectItemAtIndex:1];
 			[indexNameField setEnabled:YES];
@@ -473,31 +429,19 @@ opens the indexSheet
 
 	// Begin the sheet
 	[NSApp beginSheet:indexSheet
-			modalForWindow:tableWindow modalDelegate:self
-			didEndSelector:nil contextInfo:nil];
-	code = [NSApp runModalForWindow:indexSheet];
-	
-	[NSApp endSheet:indexSheet];
-	[indexSheet orderOut:nil];
-
-	//code == -1 -> no columns specified
-	//code == 0 -> error while adding index
-	//code == 1 -> index added with succes OR sheet closed without adding index
-	if ( code == 0 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, 
-		nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't add index.\nMySQL said: %@", @"message of panel when index cannot be created"), [mySQLConnection getLastErrorMessage]]);
-	} else if ( code == -1 ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, 
-		@selector(closeAlertSheet), nil, NSLocalizedString(@"Please insert the columns you want to index.", @"message of panel when no columns are specified to be indexed"));
-	}
+	   modalForWindow:tableWindow 
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		  contextInfo:@"addIndex"];
 }
 
-/*
-closes the indexSheet without adding the index (stops modal session with code 1)
-*/
-- (IBAction)closeIndexSheet:(id)sender
+/**
+ * Closes the current sheet and stops the modal session
+ */
+- (IBAction)closeSheet:(id)sender
 {
-	[NSApp stopModalWithCode:1];
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 /*
@@ -858,87 +802,6 @@ fetches the result as an array with a dictionary for each row in it
 	}
 }
 
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
-{
-	/*
-	 if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
-	 if contextInfo == removefield: removes row from mysql-db if user hits ok
-	 if contextInfo == removeindex: removes index from mysql-db if user hits ok
-	 if contextInfo == cannotremovefield: do nothing
-	 */
-
-	if ( [contextInfo isEqualToString:@"addrow"] ) {
-		[sheet orderOut:self];
-		
-		alertSheetOpened = NO;
-		if ( returnCode == NSAlertDefaultReturn ) {
-			//problem: reentering edit mode for first cell doesn't function
-			[tableSourceView editColumn:0 row:[tableSourceView selectedRow] withEvent:nil select:YES];
-		} else {
-			if ( !isEditingNewRow ) {
-				[tableFields replaceObjectAtIndex:[tableSourceView selectedRow]
-							withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
-				isEditingRow = NO;
-			} else {
-				[tableFields removeObjectAtIndex:[tableSourceView selectedRow]];
-				isEditingRow = NO;
-				isEditingNewRow = NO;
-			}
-			currentlyEditingRow = -1;
-		}
-		[tableSourceView reloadData];
-	} else if ( [contextInfo isEqualToString:@"removefield"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
-			//remove row
-			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
-					[selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
-			
-			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				[tableDataInstance resetAllData];
-				[tablesListInstance setStatusRequiresReload:YES];
-				[self loadTable:selectedTable];
-
-				// Mark the content table cache for refresh
-				[tablesListInstance setContentRequiresReload:YES];
-			} else {
-				[self performSelector:@selector(showErrorSheetWith:) 
-					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
-											[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
-											[mySQLConnection getLastErrorMessage]],
-								nil] 
-					afterDelay:0.3];
-			}
-		}
-	} else if ( [contextInfo isEqualToString:@"removeindex"] ) {
-		if ( returnCode == NSAlertAlternateReturn ) {
-			//remove index
-			if ( [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"] ) {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [selectedTable backtickQuotedString]]];
-			} else {
-				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
-						[selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
-			}
-		
-			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-				[tableDataInstance resetAllData];
-				[tablesListInstance setStatusRequiresReload:YES];
-				[self loadTable:selectedTable];
-			} else {
-				[self performSelector:@selector(showErrorSheetWith:) 
-					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-									[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove index.\nMySQL said: %@", @"message of panel when index cannot be removed"), 
-											[mySQLConnection getLastErrorMessage]],
-								nil] 
-					afterDelay:0.3];
-			}
-		}
-	} else if ( [contextInfo isEqualToString:@"cannotremovefield"]) {
-		;
-	}
-	
-}
-
 /*
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
@@ -983,6 +846,84 @@ fetches the result as an array with a dictionary for each row in it
 	}
 	
 	return YES;
+}
+
+#pragma mark -
+#pragma mark Alert sheet methods
+
+/**
+ * Called whenever a sheet is dismissed.
+ *
+ * if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
+ * if contextInfo == removefield: removes row from mysql-db if user hits ok
+ * if contextInfo == removeindex: removes index from mysql-db if user hits ok
+ * if contextInfo == addIndex: adds and index to the mysql-db if user hits ok
+ * if contextInfo == cannotremovefield: do nothing
+ */
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+{	
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
+	
+	if ([contextInfo isEqualToString:@"addrow"]) {
+		
+		alertSheetOpened = NO;
+		if ( returnCode == NSAlertDefaultReturn ) {
+			
+			// Problem: reentering edit mode for first cell doesn't function
+			[tableSourceView editColumn:0 row:[tableSourceView selectedRow] withEvent:nil select:YES];
+		} else {
+			if ( !isEditingNewRow ) {
+				[tableFields replaceObjectAtIndex:[tableSourceView selectedRow]
+									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+				isEditingRow = NO;
+			} else {
+				[tableFields removeObjectAtIndex:[tableSourceView selectedRow]];
+				isEditingRow = NO;
+				isEditingNewRow = NO;
+			}
+			currentlyEditingRow = -1;
+		}
+		[tableSourceView reloadData];
+	} 
+	else if ([contextInfo isEqualToString:@"removefield"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+			
+			// Remove row
+			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
+										  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
+			
+			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				[tableDataInstance resetAllData];
+				[tablesListInstance setStatusRequiresReload:YES];
+				[self loadTable:selectedTable];
+				
+				// Mark the content table cache for refresh
+				[tablesListInstance setContentRequiresReload:YES];
+			} else {
+				[self performSelector:@selector(showErrorSheetWith:) 
+						   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+									   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+										[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
+										[mySQLConnection getLastErrorMessage]],
+									   nil] 
+						   afterDelay:0.3];
+			}
+		}
+	} 
+	else if ([contextInfo isEqualToString:@"addIndex"]) {
+		if (returnCode == NSOKButton) {
+			[self _addIndex];
+		}
+	}
+	else if ([contextInfo isEqualToString:@"removeIndex"]) {
+		if (returnCode == NSAlertAlternateReturn) {
+			[self _removeIndex];
+		}
+	} 
+	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
+		;
+	}
 }
 
 #pragma mark -
@@ -1489,6 +1430,91 @@ would result in a position change.
 	if (selectedTable) [selectedTable release];
 	
 	[super dealloc];
+}
+
+@end
+
+@implementation TableSource (PrivateAPI)
+
+/**
+ * Adds an index to the current table.
+ */
+- (IBAction)_addIndex;
+{
+	NSString *indexName;
+	NSArray *indexedColumns;
+	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
+	NSString *string;
+	
+	// Check whether a save of the current fields row is required.
+	if (![self saveRowOnDeselect]) return;
+	
+	if (![[indexedColumnsField stringValue] isEqualToString:@""]) {
+		
+		if ([[indexNameField stringValue] isEqualToString:@"PRIMARY"]) {
+			indexName = @"";
+		} 
+		else {
+			indexName = ([[indexNameField stringValue] isEqualToString:@""]) ? @"" : [[indexNameField stringValue] backtickQuotedString];
+		}
+		
+		indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
+		
+		NSEnumerator *enumerator = [indexedColumns objectEnumerator];
+		
+		while ((string = [enumerator nextObject])) 
+		{
+			if (([string characterAtIndex:0] == ' ')) {
+				[tempIndexedColumns addObject:[string substringWithRange:NSMakeRange(1, ([string length] - 1))]];
+			} 
+			else {
+				[tempIndexedColumns addObject:[NSString stringWithString:string]];
+			}
+		}
+		
+		// Execute the query
+		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
+									  [selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
+									  [tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
+		
+		// Check for errors
+		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			[tableDataInstance resetAllData];
+			[tablesListInstance setStatusRequiresReload:YES];
+			[self loadTable:selectedTable];
+		}
+		else {
+			NSBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
+		}
+	}
+}
+
+/**
+ * Removes an index from the current table.
+ */
+- (void)_removeIndex
+{
+	if ([[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
+		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [selectedTable backtickQuotedString]]];
+	}
+	else {
+		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
+									  [selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
+	}
+	
+	// Check for errors
+	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		[tableDataInstance resetAllData];
+		[tablesListInstance setStatusRequiresReload:YES];
+		[self loadTable:selectedTable];
+	} 
+	else {
+		[self performSelector:@selector(showErrorSheetWith:) 
+				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Unable to remove index", @"error removing index message"),
+							   [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]], nil] 
+				   afterDelay:0.3];
+	}
 }
 
 @end
