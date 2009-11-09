@@ -270,8 +270,8 @@
 - (IBAction)removeContentFilter:(id)sender
 {
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected content filters?", @"remove selected content filters message") 
-									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")
-								   alternateButton:NSLocalizedString(@"Remove", @"remove button")
+									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
 						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected content filters? This action cannot be undone.", @"remove all selected content filters informative message")];
 
@@ -280,8 +280,9 @@
 	NSArray *buttons = [alert buttons];
 	
 	// Change the alert's cancel button to have the key equivalent of return
-	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
-	[[buttons objectAtIndex:1] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFilters"];
 }
@@ -706,7 +707,7 @@
 	// 	}
 	// }
 	if([contextInfo isEqualToString:@"removeSelectedFilters"]) {
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
 			// get last index

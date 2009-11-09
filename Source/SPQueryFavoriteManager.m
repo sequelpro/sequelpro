@@ -240,8 +240,8 @@
 - (IBAction)removeQueryFavorite:(id)sender
 {
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected query favorites?", @"remove selected query favorites message") 
-									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")
-								   alternateButton:NSLocalizedString(@"Remove", @"remove button")
+									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
 						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected query favorites? This action cannot be undone.", @"remove all selected query favorites informative message")];
 
@@ -250,8 +250,9 @@
 	NSArray *buttons = [alert buttons];
 	
 	// Change the alert's cancel button to have the key equivalent of return
-	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
-	[[buttons objectAtIndex:1] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFavorites"];
 }
@@ -262,8 +263,8 @@
 - (IBAction)removeAllQueryFavorites:(id)sender
 {
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove all query favorites?", @"remove all query favorites message") 
-									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button")
-								   alternateButton:NSLocalizedString(@"Remove All", @"remove all button")
+									 defaultButton:NSLocalizedString(@"Remove All", @"remove all button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
 						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all of your saved query favorites? This action cannot be undone.", @"remove all query favorites informative message")];
 
@@ -272,8 +273,9 @@
 	NSArray *buttons = [alert buttons];
 	
 	// Change the alert's cancel button to have the key equivalent of return
-	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
-	[[buttons objectAtIndex:1] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeAllFavorites"];
 }
@@ -672,7 +674,7 @@
 	// 	}
 	// }
 	if([contextInfo isEqualToString:@"removeSelectedFavorites"]) {
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
 
 			// get last index

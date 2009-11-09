@@ -1027,7 +1027,8 @@
 	NSArray *buttons = [alert buttons];
 
 	// Change the alert's cancel button to have the key equivalent of return
-	[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];

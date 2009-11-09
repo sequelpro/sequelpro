@@ -190,8 +190,8 @@
 	if ([relationsTableView numberOfSelectedRows] > 0) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete relation", @"delete relation message") 
-										 defaultButton:NSLocalizedString(@"Cancel", @"cancel button") 
-									   alternateButton:NSLocalizedString(@"Delete", @"delete button")
+										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 										   otherButton:nil 
 							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone.", @"delete selected relation informative message")];
 		
@@ -200,7 +200,8 @@
 		NSArray *buttons = [alert buttons];
 		
 		// Change the alert's cancel button to have the key equivalent of return
-		[[buttons objectAtIndex:0] setKeyEquivalent:@""];
+		[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 		
 		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
@@ -338,7 +339,7 @@
 {
 	if ([contextInfo isEqualToString:@"removeRelation"]) {
 		
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
