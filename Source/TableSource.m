@@ -377,8 +377,8 @@ reloads the table (performing a new mysql-query)
 	NSString *keyName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"];
 
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete index '%@'?", @"delete index message"), keyName]
-									 defaultButton:NSLocalizedString(@"Cancel", @"cancel button") 
-								   alternateButton:NSLocalizedString(@"Delete", @"delete button") 
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil 
 						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
 	
@@ -918,7 +918,7 @@ fetches the result as an array with a dictionary for each row in it
 		}
 	}
 	else if ([contextInfo isEqualToString:@"removeIndex"]) {
-		if (returnCode == NSAlertAlternateReturn) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeIndex];
 		}
 	} 
