@@ -41,7 +41,7 @@ static jmp_buf pingTimeoutJumpLocation;
 static void forcePingTimeout(int signalNumber);
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
-const char         *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
+const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const NSUInteger kMCPConnection_Not_Inited = 1000;
 const NSUInteger kLengthOfTruncationForLog = 100;
 
@@ -63,6 +63,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 @synthesize delegateQueryLogging;
 @synthesize connectionTimeout;
 @synthesize keepAliveInterval;
+@synthesize lastQueryExecutionTime;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -475,7 +476,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
 		// Ask delegate what to do
-		if ([delegate respondsToSelector:@selector(connectionLost:)]) {
+		if (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) {
 			failureDecision = [delegate connectionLost:self];
 		}
 		
@@ -515,15 +516,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	// If the connection doesn't appear to be responding, show a dialog asking how to proceed
 	if (!connectionVerified) {
 		
-		// Default to retry
-		MCPConnectionCheck failureDecision = MCPConnectionCheckRetry;
-		
 		// Ask delegate what to do
-		if (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) {
-			failureDecision = [delegate connectionLost:self];
-		} else {
-			failureDecision = MCPConnectionCheckDisconnect;
-		}
+		MCPConnectionCheck failureDecision = (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) ? [delegate connectionLost:self] : MCPConnectionCheckDisconnect;
 		
 		switch (failureDecision) {
 			// 'Reconnect' has been selected. Request a reconnect, and retry.
@@ -1042,14 +1036,10 @@ void performThreadedKeepAlive(void *ptr)
 	
 	[self stopKeepAliveTimer];
 	
-	if (![self checkConnection]) {
-		return NO;
-	}
+	if (![self checkConnection]) return NO;
 	
-	if (dbName == nil) {
-		// Here we should throw an exception, impossible to select a databse if the string is indeed a nil pointer
-		return NO;
-	}
+	// Here we should throw an exception, impossible to select a databse if the string is indeed a nil pointer
+	if (dbName == nil) return NO;
 	
 	if (mConnected) {
 		const char	 *theDBName = [self cStringFromString:dbName];
@@ -1111,7 +1101,6 @@ void performThreadedKeepAlive(void *ptr)
  */
 + (BOOL)isErrorNumberConnectionError:(NSInteger)theErrorNumber
 {
-	
 	switch (theErrorNumber) {
 		case 2001: // CR_SOCKET_CREATE_ERROR
 		case 2002: // CR_CONNECTION_ERROR
@@ -1266,10 +1255,10 @@ void performThreadedKeepAlive(void *ptr)
 	double			queryStartTime, queryExecutionTime;
 	const char		*theCQuery;
 	unsigned long	theCQueryLength;
-	NSInteger				queryResultCode;
-	NSInteger				queryErrorId = 0;
+	NSInteger		queryResultCode;
+	NSInteger		queryErrorId = 0;
 	my_ulonglong	queryAffectedRows = 0;
-	NSInteger				currentMaxAllowedPacket = -1;
+	NSInteger		currentMaxAllowedPacket = -1;
 	BOOL			isQueryRetry = NO;
 	NSString		*queryErrorMessage = nil;
 	
@@ -1291,7 +1280,6 @@ void performThreadedKeepAlive(void *ptr)
 	if (delegateQueryLogging && delegateResponseToWillQueryString) {
 		[delegate willQueryString:query connection:self];
 	}
-		
 	
 	// If thirty seconds have elapsed since the last query, check the connection.  This provides
 	// a balance between keeping high read/write timeouts for long queries, network issues, and
@@ -1319,8 +1307,8 @@ void performThreadedKeepAlive(void *ptr)
 			[self setMaxAllowedPacketTo:strlen(theCQuery)+1024 resetSize:NO];
 			[self reconnect];
 			
-		} else {
-			
+		} 
+		else {
 			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %ld bytes is larger than max_allowed_packet size (%ld).", 
 																				  @"error message if max_allowed_packet < query size"),
 									  (unsigned long)theCQueryLength, maxAllowedPacketSize];
@@ -1441,15 +1429,6 @@ void performThreadedKeepAlive(void *ptr)
 	if (!theResult) return nil;
 	if (streamResultType != MCP_NO_STREAMING) return theResult;
 	return [theResult autorelease];
-}
-
-/**
- * Return the time taken to execute the last query.  This should be close to the time it took
- * the server to run the query, but will include network lag and some client library overhead.
- */
-- (double)lastQueryExecutionTime
-{
-	return lastQueryExecutionTime;
 }
 
 /**
@@ -2011,9 +1990,7 @@ void performThreadedKeepAlive(void *ptr)
 	NSData	 *theData;
 	NSString *theString;
 	
-	if (theCString == NULL) {
-		return @"";
-	}
+	if (theCString == NULL) return @"";
 	
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
 	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
@@ -2032,9 +2009,7 @@ void performThreadedKeepAlive(void *ptr)
 {
 	NSString *theString;
 	
-	if (theTextData == nil) {
-		return nil;
-	}
+	if (theTextData == nil) return nil;
 	
 	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
 	
