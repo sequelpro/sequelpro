@@ -1340,8 +1340,10 @@ void performThreadedKeepAlive(void *ptr)
 			}
 		}
 		
-		// Lock the connection
-		[self lockConnection];
+		// Lock the connection - on this thread for normal result sets (avoiding blocking issues
+		// when the app is in modal mode), or ensuring a lock on the main thread for streaming queries.
+		if (streamResultType == MCP_NO_STREAMING) [queryLock lock];
+		else [self lockConnection];
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
@@ -1360,7 +1362,7 @@ void performThreadedKeepAlive(void *ptr)
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCP_NO_STREAMING) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-					[self unlockConnection];
+					[queryLock unlock];
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
 				} else if (streamResultType == MCP_FAST_STREAMING) {
@@ -1376,7 +1378,8 @@ void performThreadedKeepAlive(void *ptr)
 					break;
 				}
 			} else {
-				[self unlockConnection];
+				if (streamResultType == MCP_NO_STREAMING) [queryLock unlock];
+				else [self unlockConnection];
 			}
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
@@ -1387,7 +1390,8 @@ void performThreadedKeepAlive(void *ptr)
 			
 		// On failure, set the error messages and IDs
 		} else {
-			[self unlockConnection];
+			if (streamResultType == MCP_NO_STREAMING) [queryLock unlock];
+			else [self unlockConnection];
 			
 			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 			queryErrorId = mysql_errno(mConnection);

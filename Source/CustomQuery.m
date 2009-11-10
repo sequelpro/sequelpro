@@ -54,6 +54,9 @@
 	SPSQLParser *queryParser;
 	NSArray		*queries;
 
+	// Prevent multiple runs by holding the keys down
+	if ([tableDocumentInstance isWorking]) return;
+
 	// Fixes bug in key equivalents.
 	if ([[NSApp currentEvent] type] == NSKeyUp) {
 		return;
@@ -107,6 +110,9 @@
 	NSString *query;
 	NSRange selectedRange = [textView selectedRange];
 	SPSQLParser *queryParser;
+
+	// Prevent multiple runs by holding the keys down
+	if ([tableDocumentInstance isWorking]) return;
 
 	// If the current selection is a single caret position, run the current query.
 	if (selectedRange.length == 0) {
