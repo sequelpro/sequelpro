@@ -1138,13 +1138,6 @@
 
 	// Show or hide the console
 	[[[SPQueryController sharedQueryController] window] setIsVisible:(!isConsoleVisible)];
-
-	// Get the menu item for showing and hiding the console. This is isn't the best way to get it as any 
-	// changes to the menu structure will result in the wrong item being selected.
-	NSMenuItem *menuItem = [[[[NSApp mainMenu] itemWithTitle:@"View"] submenu] itemAtIndex:5];
-
-	// Only update the menu item title if its the menu item and not the toolbar
-	[menuItem setTitle:(!isConsoleVisible) ? NSLocalizedString(@"Hide Console", @"Hide Console") : NSLocalizedString(@"Show Console", @"show console")];
 }
 
 /**
@@ -2909,6 +2902,11 @@
 		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Values", @"copy server variable values menu item") : NSLocalizedString(@"Copy Variable Value", @"copy server variable value menu item")];
 
 		return ([variablesTableView numberOfSelectedRows] > 0);
+	}
+	
+	// Show/hide console
+	if ([menuItem action] == @selector(toggleConsole:)) {
+		[menuItem setTitle:([[[SPQueryController sharedQueryController] window] isVisible]) ? NSLocalizedString(@"Hide Console", @"hide console") : NSLocalizedString(@"Show Console", @"show console")];
 	}
 
 	return [super validateMenuItem:menuItem];
