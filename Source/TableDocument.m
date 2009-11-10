@@ -2803,7 +2803,6 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	if ([menuItem menu] == chooseDatabaseButton) {
 		return (_isConnected && databaseListIsSelectable);
 	}
@@ -2907,6 +2906,11 @@
 	// Show/hide console
 	if ([menuItem action] == @selector(toggleConsole:)) {
 		[menuItem setTitle:([[[SPQueryController sharedQueryController] window] isVisible]) ? NSLocalizedString(@"Hide Console", @"hide console") : NSLocalizedString(@"Show Console", @"show console")];
+	}
+	
+	// Clear console
+	if ([menuItem action] == @selector(clearConsole:)) {
+		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
 
 	return [super validateMenuItem:menuItem];

@@ -395,6 +395,7 @@ static SPQueryController *sharedQueryController = nil;
 		return ([consoleTableView numberOfSelectedRows] > 0);
 	}
 	
+	// Clear console
 	if ([menuItem action] == @selector(clearConsole:)) {
 		return ([self consoleMessageCount] > 0);
 	}
