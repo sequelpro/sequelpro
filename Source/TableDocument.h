@@ -139,11 +139,13 @@ enum sp_current_query_mode
 	BOOL databaseListIsSelectable;
 	int _queryMode;
 
+	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
 	float taskProgressValue;
 	float taskDisplayLastValue;
 	float taskProgressValueDisplayInterval;
 	NSTimer *taskDrawTimer;
+	NSViewAnimation *taskFadeAnimator;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -186,13 +188,14 @@ enum sp_current_query_mode
 
 // Task progress and notification methods
 - (void) startTaskWithDescription:(NSString *)description;
-- (void) showTaskProgressLayer:(NSTimer *)theTimer;
+- (void) showTaskProgressWindow:(NSTimer *)theTimer;
 - (void) setTaskDescription:(NSString *)description;
 - (void) setTaskPercentage:(float)taskPercentage;
 - (void) setTaskProgressToIndeterminate;
 - (void) endTask;
 - (BOOL) isWorking;
 - (void) setDatabaseListIsSelectable:(BOOL)isSelectable;
+- (void) centerTaskWindow;
 
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;

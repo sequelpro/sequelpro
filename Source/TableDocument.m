@@ -96,11 +96,13 @@
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
 
+		taskProgressWindow = nil;
 		taskDisplayIsIndeterminate = YES;
 		taskDisplayLastValue = 0;
 		taskProgressValue = 0;
 		taskProgressValueDisplayInterval = 1;
 		taskDrawTimer = nil;
+		taskFadeAnimator = nil;
 
 		keyChainID = nil;
 
@@ -211,10 +213,14 @@
 		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
 	}
 
-	// Set up the progress indicator layer - add to main window, change indicator color and size
-	[taskProgressLayer setHidden:YES];
-	[taskProgressLayer setFrame:[contentViewSplitter frame]];
-	[[tableWindow contentView] addSubview:taskProgressLayer positioned:NSWindowAbove relativeTo:contentViewSplitter];
+	// Set up the progress indicator child window and later - add to main window, change indicator color and size
+	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+	[taskProgressWindow setOpaque:NO];
+	[taskProgressWindow setIgnoresMouseEvents:YES];
+	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
+	[taskProgressWindow setAlphaValue:0.0];
+	[[taskProgressWindow contentView] addSubview:taskProgressLayer];
+	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 }
 
@@ -1183,9 +1189,18 @@
 - (void) startTaskWithDescription:(NSString *)description
 {
 
-	// Increment the working level and set the task text
+	// Set the task text.  If a nil string was supplied, a generic query notification is occurring -
+	// if a task is not already active, use default text.
+	if (!description) {
+		if (!_isWorkingLevel) [taskDescriptionText setStringValue:NSLocalizedString(@"Working...", @"Generic working description")];
+	
+	// Otherwise display the supplied string
+	} else {
+		[taskDescriptionText setStringValue:description];
+	}
+
+	// Increment the task level
 	_isWorkingLevel++;
-	[taskDescriptionText setStringValue:description];
 
 	// Reset the progress indicator if necessary
 	if (_isWorkingLevel == 1 || !taskDisplayIsIndeterminate) {
@@ -1204,20 +1219,29 @@
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 
-		// Set the descriptive label and schedule appearance in the near future
-		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(showTaskProgressLayer:) userInfo:nil repeats:NO] retain];
+		// Schedule appearance of the task window in the near future
+		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
 	}
 }
 
 /**
- * Show the task progress layer - after a small delay to minimise flicker.
+ * Show the task progress window, after a small delay to minimise flicker.
  */
-- (void) showTaskProgressLayer:(NSTimer *)theTimer
+- (void) showTaskProgressWindow:(NSTimer *)theTimer
 {
-	[taskProgressLayer setHidden:NO];
-	[taskProgressLayer display];
 	[taskDrawTimer release], taskDrawTimer = nil;
+
+	// Center the task window and fade it in
+	[self centerTaskWindow];
+	NSDictionary *animationDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
+										taskProgressWindow, NSViewAnimationTargetKey,
+										nil];
+	taskFadeAnimator = [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObject:animationDetails]];
+	[taskFadeAnimator setDuration:0.6];
+	[taskFadeAnimator startAnimation];
 }
+
 
 /**
  * Updates the task description shown to the user.
@@ -1275,9 +1299,15 @@
 		// Cancel the draw timer if it exists
 		if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
 
+		// Cancel the fade-in animator if it exists
+		if (taskFadeAnimator) {
+			if ([taskFadeAnimator isAnimating]) [taskFadeAnimator stopAnimation];
+			[taskFadeAnimator release], taskFadeAnimator = nil;
+		}
+
 		// Hide the task interface
 		if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
-		[taskProgressLayer setHidden:YES];
+		[taskProgressWindow setAlphaValue:0.0];
 
 		// Re-enable window interface
 		[historyControl setEnabled:YES];
@@ -1302,6 +1332,21 @@
 - (void) setDatabaseListIsSelectable:(BOOL)isSelectable
 {
 	databaseListIsSelectable = isSelectable;
+}
+
+/**
+ * Reposition the task window within the main window.
+ */
+- (void) centerTaskWindow
+{
+	NSPoint newBottomLeftPoint;
+	NSRect mainWindowRect = [tableWindow frame];
+	NSRect taskWindowRect = [taskProgressWindow frame];
+
+	newBottomLeftPoint.x = round(mainWindowRect.origin.x + mainWindowRect.size.width/2 - taskWindowRect.size.width/2);
+	newBottomLeftPoint.y = round(mainWindowRect.origin.y + mainWindowRect.size.height/2 - taskWindowRect.size.height/2);
+
+	[taskProgressWindow setFrameOrigin:newBottomLeftPoint];
 }
 
 #pragma mark -
@@ -3391,6 +3436,16 @@
 	return YES;
 }
 
+/**
+ * Invoked when the document window is resized
+ */
+- (void)windowDidResize:(NSNotification *)notification
+{
+
+	// If the task interface is visible, re-center the task child window
+	if (_isWorkingLevel) [self centerTaskWindow];
+}
+
 /*
  * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
  * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
@@ -3638,10 +3693,12 @@
 	if (mySQLVersion) [mySQLVersion release];
 	[allDatabases release];
 	if (taskDrawTimer) [taskDrawTimer release];
+	if (taskFadeAnimator) [taskFadeAnimator release];
 	if(queryEditorInitString) [queryEditorInitString release];
 	if(spfSession) [spfSession release];
 	if(spfDocData) [spfDocData release];
 	if(keyChainID) [keyChainID release];
+	if (taskProgressWindow) [taskProgressWindow release];
 	[super dealloc];
 }
 

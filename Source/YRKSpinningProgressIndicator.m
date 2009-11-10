@@ -192,6 +192,7 @@
 
 - (void)startAnimation:(id)sender
 {
+	if (_isAnimating) return;
     _isAnimating = YES;
 
 	_animationThread = [[NSThread alloc] initWithTarget:self selector:@selector(animateInBackgroundThread) object:nil];

@@ -63,6 +63,7 @@
 	int i;
 	NSString *previousSelectedTable = nil;
 	NSInteger selectedRowIndex;
+	BOOL previousTableListIsSelectable = tableListIsSelectable;
 	
 	selectedRowIndex = [tablesListView selectedRow];
 	
@@ -76,7 +77,9 @@
 	}
 	tableListContainsViews = NO;
 	
+	tableListIsSelectable = YES;
 	[tablesListView deselectAll:self];
+	tableListIsSelectable = previousTableListIsSelectable;
 	[tables removeAllObjects];
 	[tableTypes removeAllObjects];
 
@@ -216,7 +219,9 @@
 	// if the previous selected table still exists, select it
 	if( previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		int itemToReselect = [tables indexOfObject:previousSelectedTable];
+		tableListIsSelectable = YES;
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
+		tableListIsSelectable = previousTableListIsSelectable;
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
 		selectedTableType = [[tableTypes objectAtIndex:itemToReselect] intValue];
