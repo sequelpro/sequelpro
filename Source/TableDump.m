@@ -1596,6 +1596,8 @@
 
 /*
  Dump the selected tables to a file handle in Graphviz dot format.
+ See here for language syntax: http://www.graphviz.org/doc/info/lang.html
+ (Not the easiest to decode)
  */
 - (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle
 {
@@ -1664,7 +1666,7 @@
 		}
 		
 		[metaString setString:[NSString stringWithFormat:@"\tsubgraph \"table_%@\" {\n", tableName]];
-		[metaString appendString:@"\t\tnode = [ shape = \"plaintext\" ];\n"];
+		[metaString appendString:@"\t\tnode [ shape = \"plaintext\" ];\n"];
 		[metaString appendString:[NSString stringWithFormat:@"\t\t\"%@\" [ label=<\n", tableName]];
 		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
 		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"%@\">%@</TD></TR>\n", hdrColor, tableName]];
