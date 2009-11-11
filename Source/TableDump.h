@@ -99,6 +99,7 @@
 	NSMutableArray *tables;
 	NSArray *fieldMappingImportArray;
 	BOOL fieldMappingImportArrayIsPreview;
+	NSMutableArray *fieldMappingTableColumnNames;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
 	int fieldMappingCurrentRow;

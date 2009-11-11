@@ -971,7 +971,6 @@
 		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE || [NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
-	[returnArray sortUsingSelector:@selector(compare:)];
 	return returnArray;
 }
 - (NSArray *)allTableNames
@@ -983,7 +982,6 @@
 		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
-	[returnArray sortUsingSelector:@selector(compare:)];
 	return returnArray;
 }
 - (NSArray *)allViewNames
@@ -1007,7 +1005,6 @@
 		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_PROC)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
-	[returnArray sortUsingSelector:@selector(compare:)];
 	return returnArray;
 }
 - (NSArray *)allFunctionNames
@@ -1019,7 +1016,6 @@
 		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_FUNC)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
-	[returnArray sortUsingSelector:@selector(compare:)];
 	return returnArray;
 }
 
