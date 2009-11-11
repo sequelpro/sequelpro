@@ -163,6 +163,9 @@
 
 	// Set up the connection controller
 	connectionController = [[SPConnectionController alloc] initWithDocument:self];
+	
+	// Set the connection controller's delegate
+	[connectionController setDelegate:self];
 
 	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
 	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
@@ -3480,10 +3483,12 @@
  */
 - (NSString *)displaySPName
 {
-	if (!_isConnected) return [NSString stringWithFormat:@"%@%@", 
-		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"",
-		NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
+	if (!_isConnected) {
+		return [NSString stringWithFormat:@"%@%@", 
+				([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"", @"Sequel Pro"];
 
+	} 
+		
 	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
 		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
 		mySQLVersion,
@@ -3591,6 +3596,27 @@
 	}
 
 	return connectionErrorCode;
+}
+
+#pragma mark -
+#pragma mark 
+
+/**
+ * Invoked by the connection controller when it starts the process of initiating a connection.
+ */
+- (void)connectionControllerInitiatingConnection:(id)controller
+{
+	// Update the window title to indicate that we are try to establish a connection
+	[tableWindow setTitle:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
+}
+
+/**
+ * Invoked by the connection controller when the attempt to initiate a connection failed.
+ */
+- (void)connectionControllerConnectAttemptFailed:(id)controller
+{
+	// Reset the window title
+	[tableWindow setTitle:[self displaySPName]];
 }
 
 #pragma mark -

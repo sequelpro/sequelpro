@@ -32,6 +32,7 @@
 
 @implementation SPConnectionController
 
+@synthesize delegate;
 @synthesize type;
 @synthesize name;
 @synthesize host;
@@ -146,7 +147,7 @@
  * connection proxies in use.
  */
 - (IBAction)initiateConnection:(id)sender
-{
+{	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SP_CONNECTION_TCPIP || [self type] == SP_CONNECTION_SSHTUNNEL) && ![[self host] length]) {
 		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
@@ -161,7 +162,7 @@
 
 	// Ensure that a socket connection is not inadvertently used
 	if (![self checkHost]) return;
-
+	
 	// Basic details have validated - start the connection process animating
 	[addToFavoritesButton setHidden:YES];
 	[helpButton setHidden:YES];
@@ -192,6 +193,11 @@
 			[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
 			[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 		}
+	}
+	
+	// Inform the delegate that we are starting the connection process
+	if (delegate && [delegate respondsToSelector:@selector(connectionControllerInitiatingConnection:)]) {
+		[delegate connectionControllerInitiatingConnection:self];
 	}
 
 	// Initiate the SSH connection process for tunnels
@@ -395,6 +401,11 @@
 	}
 	
 	if (errorDetail) [errorDetailText setString:errorDetail];
+	
+	// Inform the delegate that the connection attempt failed
+	if (delegate && [delegate respondsToSelector:@selector(connectionControllerConnectAttemptFailed:)]) {
+		[delegate connectionControllerConnectAttemptFailed:self];
+	}
 
 	// Display the connection error message
 	NSBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, nil, @selector(errorSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);

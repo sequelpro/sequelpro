@@ -45,8 +45,18 @@ enum spconnection_types
 
 @end
 
+@interface NSObject (SPConnectionControllerDelegate)
+
+- (void)connectionControllerInitiatingConnection:(id)controller;
+- (void)connectionControllerConnectAttemptFailed:(id)controller;
+
+@end
+
+
 @interface SPConnectionController : NSObject 
 {
+	id delegate;
+	
 	TableDocument *tableDocument;
 	NSWindow *documentWindow;
 	NSSplitView *contentView;
@@ -103,6 +113,7 @@ enum spconnection_types
 	IBOutlet NSTextField *progressIndicatorText;
 }
 
+@property (readwrite, assign) id delegate;
 @property (readwrite, assign) int type;
 @property (readwrite, retain) NSString *name;
 @property (readwrite, retain) NSString *host;
