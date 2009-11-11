@@ -3575,11 +3575,10 @@
 	[NSApp endSheet:connectionErrorDialog];
 	[connectionErrorDialog orderOut:nil];
 
-	// If "disconnect" was selected, trigger a window close.
-	if (connectionErrorCode == 2) {
+	// If 'disconnect' was selected, trigger a window close.
+	if (connectionErrorCode == MCPConnectionCheckDisconnect) {
 		[self windowWillClose:nil];
-		if (connectionErrorCode == MCPConnectionCheckDisconnect) 
-			[tableWindow performSelector:@selector(close) withObject:nil afterDelay:0.0];
+		[tableWindow performSelector:@selector(close) withObject:nil afterDelay:0.0];
 	}
 
 	return connectionErrorCode;

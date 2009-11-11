@@ -630,6 +630,9 @@
 			dataBufferPosition -= dataBufferLastQueryEndPosition;
 			dataBufferLastQueryEndPosition = 0;
 		}
+		
+		// Before entering the following loop, check that we actually have a connection. If not, bail.
+		if (![mySQLConnection isConnected]) return;
 
 		// Extract and process any complete SQL queries that can be found in the strings parsed so far
 		while (query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO]) {
@@ -929,6 +932,9 @@
 				}
 			}
 			if (!fieldMappingArray) continue;
+			
+			// Before entering the following loop, check that we actually have a connection. If not, bail.
+			if (![mySQLConnection isConnected]) return;
 
 			// If we have more than the csvRowsPerQuery amount, or if we're at the end of the
 			// available data, construct and run a query.
