@@ -65,6 +65,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (NSString *)keychainPasswordForConnection:(id)connection;
 - (NSString *)onReconnectShouldSelectDatabase:(id)connection;
 - (NSString *)onReconnectShouldUseEncoding:(id)connection;
+- (void)noConnectionAvailable:(id)connection;
 - (MCPConnectionCheck)connectionLost:(id)connection;
 
 @end

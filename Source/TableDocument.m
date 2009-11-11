@@ -3565,6 +3565,15 @@
 }
 
 /**
+ * Invoked when an attempt was made to execute a query on the current connection, but the connection is not
+ * actually active.
+ */
+- (void)noConnectionAvailable:(id)connection
+{	
+	NSBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
+}
+
+/**
  * Invoked when the connection fails and the framework needs to know how to proceed.
  */
 - (MCPConnectionCheck)connectionLost:(id)connection

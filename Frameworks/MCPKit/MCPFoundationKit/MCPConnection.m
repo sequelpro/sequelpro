@@ -1266,11 +1266,15 @@ void performThreadedKeepAlive(void *ptr)
 	if (!mConnected) {
 		// Write a log entry
 		if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:@"No connection available!" connection:self];
+		
 		// Notify that the query has been performed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
-		// Show an error alert while resetting
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), @"No connection available!", 
-						  nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, @"No connection available!");
+		
+		// Inform the delegate that there is no connection available
+		if (delegate && [delegate respondsToSelector:@selector(noConnectionAvailable:)]) {
+			[delegate noConnectionAvailable:self];
+		}
+		
 		return nil;
 	}
 	
