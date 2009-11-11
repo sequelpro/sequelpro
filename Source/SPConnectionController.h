@@ -52,7 +52,6 @@ enum spconnection_types
 
 @end
 
-
 @interface SPConnectionController : NSObject 
 {
 	id delegate;

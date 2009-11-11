@@ -150,13 +150,13 @@
 {	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SP_CONNECTION_TCPIP || [self type] == SP_CONNECTION_SSHTUNNEL) && ![[self host] length]) {
-		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+		NSBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
 		return;
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
 	if ([self type] == SP_CONNECTION_SSHTUNNEL && ![[self sshHost] length]) {
-		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
+		NSBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
 		return;
 	}
 
