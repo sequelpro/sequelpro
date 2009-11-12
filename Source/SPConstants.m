@@ -25,6 +25,10 @@
 
 #import "SPConstants.h"
 
+// Kill mode constants
+NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
+NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
+
 // Preference key constants
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";

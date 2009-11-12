@@ -58,7 +58,7 @@
 #define MAIN_TOOLBAR_TABLE_RELATIONS    @"SwitchToTableRelationsToolbarItemIdentifier"
 #define MAIN_TOOLBAR_USER_MANAGER       @"SwitchToUserManagerToolbarItemIdentifier"
 
-// View Modes
+// View modes
 typedef enum {
 	SPStructureViewMode		= 1,
 	SPContentViewMode		= 2,
@@ -66,6 +66,10 @@ typedef enum {
 	SPTableInfoViewMode		= 4,
 	SPQueryEditorViewMode	= 5
 } SPViewMode;
+
+// Kill mode constants
+extern NSString *SPKillProcessQueryMode;
+extern NSString *SPKillProcessConnectionMode;
 
 // Preference key constants
 // General Prefpane

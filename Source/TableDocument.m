@@ -52,6 +52,7 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
 #import "YRKSpinningProgressIndicator.h"
+#import "SPProcessListController.h"
 
 // Printing
 #import "MGTemplateEngine.h"
@@ -166,8 +167,12 @@
 	
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
+	
+	// Set the server variables table view's vertical gridlines if required
+	[variablesTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
@@ -1043,6 +1048,23 @@
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
+}
+
+/**
+ * Displays the database process list sheet.
+ */
+- (IBAction)showDatabaseProcessList:(id)sender
+{
+	if (!processListController) {
+		processListController = [[SPProcessListController alloc] init];
+		
+		[processListController setConnection:mySQLConnection];
+		
+		// Register to obeserve table view vertical grid line pref changes
+		[prefs addObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	}
+	
+	[processListController displayProcessListSheetAttachedToWindow:tableWindow];
 }
 
 /**
@@ -2015,7 +2037,7 @@
 	// If it was the server variables sheet that was closed release the relevant arrays if necessary
 	if ([sender window] == variablesSheet) {
 
-		// If the filtered array is allocated and its not a reference to the variables array get rid of it
+		// If the filtered array is allocated and it's not a reference to the variables array get rid of it
 		if ((variablesFiltered) && (variablesFiltered != variables)) {
 			[variablesFiltered release], variablesFiltered = nil;
 		}
@@ -2167,6 +2189,9 @@
 {
 	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
+	}
+	else if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
+        [variablesTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }
 
@@ -3599,7 +3624,7 @@
 }
 
 #pragma mark -
-#pragma mark 
+#pragma mark Connection controller delegate methods
 
 /**
  * Invoked by the connection controller when it starts the process of initiating a connection.
@@ -3620,7 +3645,7 @@
 }
 
 #pragma mark -
-#pragma mark Database name field delegate methods
+#pragma mark Text field delegate methods
 
 /**
  * When adding a database, enable the button only if the new name has a length.
@@ -3717,12 +3742,15 @@
 
 #pragma mark -
 
+/**
+ * Dealloc
+ */
 - (void)dealloc
 {
-
 	[_encoding release];
 	[printWebView release];
 	if (connectionController) [connectionController release];
+	if (processListController) [processListController release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (variables) [variables release];
 	if (selectedDatabase) [selectedDatabase release];

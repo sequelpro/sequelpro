@@ -29,7 +29,7 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-@class SPConnectionController, SPUserManager;
+@class SPConnectionController, SPProcessListController, SPUserManager;
 
 enum sp_current_query_mode
 {
@@ -120,6 +120,7 @@ enum sp_current_query_mode
 	int passwordSheetReturnCode;
 
 	SPConnectionController *connectionController;
+	SPProcessListController *processListController;
 	
 	MCPConnection *mySQLConnection;
 
@@ -183,6 +184,7 @@ enum sp_current_query_mode
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)saveServerVariables:(id)sender;
+- (IBAction)showDatabaseProcessList:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
 
