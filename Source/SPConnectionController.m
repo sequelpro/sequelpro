@@ -165,9 +165,13 @@
 	
 	// Basic details have validated - start the connection process animating
 	[addToFavoritesButton setHidden:YES];
+	[addToFavoritesButton display];
 	[helpButton setHidden:YES];
+	[helpButton display];
 	[connectButton setEnabled:NO];
+	[connectButton display];
 	[progressIndicator startAnimation:self];
+	[progressIndicator display];
 	[progressIndicatorText setHidden:NO];
 	[progressIndicatorText display];
 
@@ -386,6 +390,7 @@
 	[progressIndicatorText setHidden:YES];
 	[progressIndicatorText display];
 	[addToFavoritesButton setHidden:NO];
+	[addToFavoritesButton display];
 	[connectButton setEnabled:YES];
 	[tableDocument clearStatusIcon];
 	
