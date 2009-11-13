@@ -1,5 +1,7 @@
 //
-//  mcpKitTest.m
+//  $Id$
+//
+//  MCPKitTest.m
 //  sequel-pro
 //
 //  Created by J Knight on 17/05/09.
@@ -23,9 +25,9 @@
 
 #import <MCPKit/MCPKit.h>
 
-#import "mcpKitTest.h"
+#import "MCPKitTest.h"
 
-@implementation mcpKitTest
+@implementation MCPKitTest
 
 - (void)setUp
 {

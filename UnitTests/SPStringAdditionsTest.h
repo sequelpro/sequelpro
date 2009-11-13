@@ -1,5 +1,7 @@
 //
-//  mcpKitTest.h
+//  $Id$
+//
+//  SPStringAdditionsTest.h
 //  sequel-pro
 //
 //  Created by J Knight on 17/05/09.
@@ -23,11 +25,6 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-@class MCPConnection;
-
-@interface mcpKitTest : SenTestCase 
-{	
-	MCPConnection *connection;
-}
+@interface SPStringAdditionsTest : SenTestCase
 
 @end

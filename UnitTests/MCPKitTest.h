@@ -1,5 +1,7 @@
 //
-//  stringCategoryAdditionsTest.h
+//  $Id$
+//
+//  MCPKitTest.h
 //  sequel-pro
 //
 //  Created by J Knight on 17/05/09.
@@ -23,6 +25,11 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface stringCategoryAdditionsTest : SenTestCase
+@class MCPConnection;
+
+@interface MCPKitTest : SenTestCase 
+{	
+	MCPConnection *connection;
+}
 
 @end

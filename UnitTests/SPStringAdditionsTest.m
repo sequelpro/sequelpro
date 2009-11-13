@@ -1,5 +1,7 @@
 //
-//  stringCategoryAdditionsTest.m
+//  $Id$
+//
+//  SPStringAdditionsTest.m
 //  sequel-pro
 //
 //  Created by J Knight on 17/05/09.
@@ -21,10 +23,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "stringCategoryAdditionsTest.h"
+#import "SPStringAdditionsTest.h"
 #import "SPStringAdditions.h"
 
-@implementation stringCategoryAdditionsTest
+@implementation SPStringAdditionsTest
 
 - (void)setUp
 {
