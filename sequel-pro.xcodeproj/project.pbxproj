@@ -87,7 +87,6 @@
 		17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6415F0EF01F15001BC333 /* SPTableInfo.m */; };
 		17E641650EF01F15001BC333 /* TablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* TablesList.m */; };
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
-		17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */; };
 		17E641750EF01F80001BC333 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417D0EF01FA8001BC333 /* CMCopyTable.m */; };
 		17E641830EF01FA8001BC333 /* CMImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417F0EF01FA8001BC333 /* CMImageView.m */; };
@@ -454,8 +453,6 @@
 		17E641610EF01F15001BC333 /* TablesList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TablesList.m; sourceTree = "<group>"; };
 		17E641680EF01F37001BC333 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		17E641690EF01F37001BC333 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
-		17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDocumentSplitView.h; sourceTree = "<group>"; };
-		17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocumentSplitView.m; sourceTree = "<group>"; };
 		17E641730EF01F80001BC333 /* SPKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPKeychain.h; sourceTree = "<group>"; };
 		17E641740EF01F80001BC333 /* SPKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPKeychain.m; sourceTree = "<group>"; };
 		17E6417C0EF01FA8001BC333 /* CMCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMCopyTable.h; sourceTree = "<group>"; };
@@ -1101,8 +1098,6 @@
 				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
 				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
 				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
-				17E6416A0EF01F37001BC333 /* TableDocumentSplitView.h */,
-				17E6416B0EF01F37001BC333 /* TableDocumentSplitView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1772,7 +1767,6 @@
 				17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */,
 				17E641650EF01F15001BC333 /* TablesList.m in Sources */,
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
-				17E6416D0EF01F37001BC333 /* TableDocumentSplitView.m in Sources */,
 				17E641750EF01F80001BC333 /* SPKeychain.m in Sources */,
 				17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */,
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
@@ -2260,6 +2254,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IBC_WARNINGS = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 			};
@@ -2409,6 +2404,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_FLATTEN_NIBS = NO;
+				IBC_WARNINGS = YES;
 				LEXFLAGS = "";
 				LEX_INSERT_LINE_DIRECTIVES = YES;
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
@@ -2427,6 +2423,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IBC_WARNINGS = YES;
 				OTHER_LDFLAGS = "-lcrypto";
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;

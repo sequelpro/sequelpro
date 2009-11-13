@@ -75,6 +75,9 @@
 	isNewFavorite = NO;
 }
 
+/**
+ * Menu item validation.
+ */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(openConnectionSheet:) && [menuItem tag] == 0)
@@ -88,8 +91,10 @@
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
 		[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
+		
 		return NO;
 	}
+	
 	return YES;
 }
 
@@ -101,8 +106,7 @@
  */
 - (void)panelSelectionDidChange:(id)sender
 {
-
-	if([sender isKindOfClass:[NSOpenPanel class]]) {
+	if ([sender isKindOfClass:[NSOpenPanel class]]) {
 		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
 			[encodingPopUp setEnabled:YES];
 			[sender setAllowsMultipleSelection:NO];
@@ -111,9 +115,9 @@
 			[sender setAllowsMultipleSelection:YES];
 		}
 	}
-	
 }
-/*
+
+/**
  * NSOpenPanel for selecting sql or spf file
  */
 - (IBAction)openConnectionSheet:(id)sender
@@ -146,26 +150,28 @@
 	// Check if at least one document exists, if so show a sheet
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		[panel beginSheetForDirectory:nil 
-							   file:@"" 
-							  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
-					 modalForWindow:[[[NSDocumentController sharedDocumentController] currentDocument] valueForKey:@"tableWindow"]
-					  modalDelegate:self 
-					 didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
-						contextInfo:NULL];
-	} else {
+								 file:@"" 
+								types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
+					   modalForWindow:[[[NSDocumentController sharedDocumentController] currentDocument] valueForKey:@"tableWindow"]
+						modalDelegate:self 
+					   didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
+						  contextInfo:NULL];
+	} 
+	else {
 		int returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
 
-		if( returnCode )
-			[self application:nil openFiles:[panel filenames]];
-			
+		if (returnCode) [self application:nil openFiles:[panel filenames]];
 
 		encodingPopUp = nil;
-
 	}
 }
-- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
+
+/**
+ * Invoked when the open connection panel is dismissed.
+ */
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
-	if ( returnCode ) {
+	if (returnCode) {
 		[panel orderOut:self];
 		[self application:nil openFiles:[panel filenames]];
 	}
@@ -179,9 +185,8 @@
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
 {
-
-	for( NSString* filename in filenames ) {
-		
+	for (NSString *filename in filenames) 
+	{
 		// Opens a sql file and insert its content into the Custom Query editor
 		if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
 
@@ -284,7 +289,6 @@
 			NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
 		}
 	}
-
 }
 
 #pragma mark -
@@ -299,7 +303,7 @@
 }
 
 #pragma mark -
-#pragma mark Getters
+#pragma mark Accessors
 
 /**
  * Provide a method to retrieve the prefs controller
@@ -308,7 +312,6 @@
 {
 	return prefsController;
 }
-
 
 #pragma mark -
 #pragma mark Services menu methods
@@ -409,13 +412,12 @@
 	return NO;
 }
 
-/*
+/**
  * Insert content of a plain text file for a given path.
  * In addition it tries to figure out the file's text encoding heuristically.
  */
 - (NSString *)contentOfFile:(NSString *)aPath
 {
-	
 	NSError *err = nil;
 	NSStringEncoding enc;
 	NSString *content = nil;
@@ -482,6 +484,7 @@
 	
 	return @"";
 }
+
 /**
  * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
  * sure that no sheets are currently open, which will prevent the app from being quit. 
@@ -533,16 +536,17 @@
 // }
 // 
 
-/*
+/**
  * Is needed to interact with AppleScript for set/get internal SP variables
  */
 - (BOOL)application:(NSApplication *)sender delegateHandlesKey:(NSString *)key
 {
 	NSLog(@"Not yet implemented.");
+	
 	return NO;
 }
 
-/*
+/**
  * AppleScript calls that method to get the available documents
  */
 - (NSArray *)orderedDocuments
@@ -550,27 +554,30 @@
 	return [[NSDocumentController sharedDocumentController] documents];
 }
 
-/* Support for "make new document"
-*/
-- (void)insertInOrderedDocuments:(TableDocument *)doc {
+/** 
+ * Support for 'make new document'.
+ */
+- (void)insertInOrderedDocuments:(TableDocument *)doc 
+{
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault])
 		[doc setShouldAutomaticallyConnect:YES];
+	
 	[[NSDocumentController sharedDocumentController] addDocument:doc];
 	[doc makeWindowControllers];
 	[doc showWindows];
 }
 
-/*
- * AppleScript calls that method to get the available windows
+/**
+ * AppleScript calls that method to get the available windows.
  */
 - (NSArray *)orderedWindows
 {
 	return [NSApp orderedWindows];
 }
-/*
+
+/**
  * AppleScript handler to quit Sequel Pro
- * This handler is needed to allow to quit SP via the Dock or AppleScript after
- * activating it by using AppleScript
+ * This handler is needed to allow to quit SP via the Dock or AppleScript after activating it by using AppleScript
  */
 - (id)handleQuitScriptCommand:(NSScriptCommand *)command
 {
