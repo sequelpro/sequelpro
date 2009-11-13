@@ -77,7 +77,7 @@
 		_isConnected = NO;
 		_isWorkingLevel = 0;
 		databaseListIsSelectable = YES;
-		_queryMode = SP_QUERYMODE_INTERFACE;
+		_queryMode = SPInterfaceQueryMode;
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
 		connectionController = nil;
@@ -3435,9 +3435,9 @@
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {
 	if ([prefs boolForKey:SPConsoleEnableLogging]) {
-		if ((_queryMode == SP_QUERYMODE_INTERFACE && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
-			|| (_queryMode == SP_QUERYMODE_CUSTOMQUERY && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
-			|| (_queryMode == SP_QUERYMODE_IMPORTEXPORT && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
+		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
+			|| (_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
+			|| (_queryMode == SPImportExportQueryMode && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
 		{
 			[[SPQueryController sharedQueryController] showMessageInConsole:query];
 		}

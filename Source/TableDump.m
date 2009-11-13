@@ -554,7 +554,7 @@
 	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[singleProgressSheet makeKeyWindow];
 
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
+	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Read in the file in a loop
 	sqlParser = [[SPSQLParser alloc] init];
@@ -577,7 +577,7 @@
 			[sqlParser release];
 			[sqlDataBuffer release];
 			[importPool drain];
-			[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+			[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 			return;
 		}
 
@@ -625,7 +625,7 @@
 						[sqlParser release];
 						[sqlDataBuffer release];
 						[importPool drain];
-						[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+						[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 						return;
 					}
 				}
@@ -704,7 +704,7 @@
 	[sqlParser release];
 	[sqlDataBuffer release];
 	[importPool drain];
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
 	// Close progress sheet
 	[self closeAndStopProgressSheet];
@@ -791,7 +791,7 @@
 	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[singleProgressSheet makeKeyWindow];
 
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
+	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Read in the file in a loop.  The loop actually needs to perform three tasks: read in
 	// CSV data and parse them into row arrays; present the field mapping interface once it
@@ -835,7 +835,7 @@
 			[parsedRows release];
 			[parsePositions release];
 			[importPool drain];
-			[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+			[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 			return;
 		}
 
@@ -875,7 +875,7 @@
 					[parsedRows release];
 					[parsePositions release];
 					[importPool drain];
-					[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 					return;
 				}
 
@@ -919,7 +919,7 @@
 					[parsedRows release];
 					[parsePositions release];
 					[importPool drain];
-					[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 					return;
 				}
 
@@ -1016,7 +1016,7 @@
 	[parsePositions release];
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[importPool drain];
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
 	// Close progress sheet
 	[self closeAndStopProgressSheet];
@@ -1311,7 +1311,7 @@
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
 
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
+	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Copy over the selected table names into a table in preparation for iteration
 	for ( i = 0 ; i < [tables count] ; i++ ) {
@@ -1608,7 +1608,7 @@
 		[errorsSheet orderOut:nil];
 	}
 
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
 	[sqlString release];
 	return TRUE;
@@ -2223,7 +2223,7 @@
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_IMPORTEXPORT];
+	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 	
 	// Open the progress sheet
 	[NSApp beginSheet:singleProgressSheet
@@ -2401,7 +2401,7 @@
 		[errorsSheet orderOut:nil];
 	}
 
-	[tableDocumentInstance setQueryMode:SP_QUERYMODE_INTERFACE];
+	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	
 	return TRUE;
 }

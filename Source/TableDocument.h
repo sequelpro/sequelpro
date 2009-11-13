@@ -31,13 +31,6 @@
 
 @class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager;
 
-enum sp_current_query_mode
-{
-	SP_QUERYMODE_INTERFACE = 0,
-	SP_QUERYMODE_CUSTOMQUERY = 1,
-	SP_QUERYMODE_IMPORTEXPORT = 2
-};
-
 /**
  * The TableDocument class controls the primary database view window.
  */

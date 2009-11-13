@@ -67,6 +67,13 @@ typedef enum {
 	SPQueryEditorViewMode	= 5
 } SPViewMode;
 
+// Query modes
+typedef enum {
+	SPInterfaceQueryMode    = 0,
+	SPCustomQueryQueryMode  = 1,
+	SPImportExportQueryMode = 2
+} SPQueryMode;
+
 // Kill mode constants
 extern NSString *SPKillProcessQueryMode;
 extern NSString *SPKillProcessConnectionMode;
