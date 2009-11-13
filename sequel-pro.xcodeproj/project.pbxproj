@@ -25,6 +25,7 @@
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
 		1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */; };
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
+		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B576101601C300F057DE /* libmysqlclient.a */; };
 		17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
@@ -375,6 +376,8 @@
 		1792C13110AD752100ABE758 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseServerVariables.xib; sourceTree = "<group>"; };
 		1792C13510AD75C800ABE758 /* SPServerVariablesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPServerVariablesController.h; sourceTree = "<group>"; };
 		1792C13610AD75C800ABE758 /* SPServerVariablesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPServerVariablesController.m; sourceTree = "<group>"; };
+		1792C25F10AE1A2D00ABE758 /* SPConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionDelegate.h; sourceTree = "<group>"; };
+		1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionDelegate.m; sourceTree = "<group>"; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
 		17B7B5621016012700F057DE /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -834,6 +837,7 @@
 				17E641530EF01EF6001BC333 /* TableDump.m */,
 				17E641540EF01EF6001BC333 /* TableSource.h */,
 				17E641550EF01EF6001BC333 /* TableSource.m */,
+				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
 			name = "Main View Controllers";
 			sourceTree = "<group>";
@@ -929,6 +933,15 @@
 				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
 			path = Scripts;
+			sourceTree = "<group>";
+		};
+		1792C28910AE1C7200ABE758 /* Controller Categories */ = {
+			isa = PBXGroup;
+			children = (
+				1792C25F10AE1A2D00ABE758 /* SPConnectionDelegate.h */,
+				1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */,
+			);
+			name = "Controller Categories";
 			sourceTree = "<group>";
 		};
 		17B7B5551016002900F057DE /* MCPKit */ = {
@@ -1130,8 +1143,6 @@
 		17E641710EF01F5C001BC333 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
-				BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */,
-				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
 				17E6417C0EF01FA8001BC333 /* CMCopyTable.h */,
 				17E6417D0EF01FA8001BC333 /* CMCopyTable.m */,
 				17E6417E0EF01FA8001BC333 /* CMImageView.h */,
@@ -1140,10 +1151,12 @@
 				17E641810EF01FA8001BC333 /* CMTextView.m */,
 				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
-				5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */,
-				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
 				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
 				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
+				5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */,
+				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
+				BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */,
+				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
 			);
 			name = GUI;
 			sourceTree = "<group>";
@@ -1293,21 +1306,21 @@
 			children = (
 				296DC8A50F909194002A3258 /* MGTemplateMarker.h */,
 				296DC8A60F909194002A3258 /* MGTemplateFilter.h */,
-				296DC8A70F909194002A3258 /* MGTemplateEngine.m */,
 				296DC8A80F909194002A3258 /* MGTemplateEngine.h */,
+				296DC8A70F909194002A3258 /* MGTemplateEngine.m */,
 				296DC8A90F909194002A3258 /* ICUTemplateMatcher.h */,
-				296DC8AA0F909194002A3258 /* DeepMutableCopy.h */,
-				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
 				296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */,
-				296DC8AD0F909194002A3258 /* MGTemplateStandardMarkers.m */,
-				296DC8AE0F909194002A3258 /* NSArray_DeepMutableCopy.m */,
-				296DC8AF0F909194002A3258 /* NSArray_DeepMutableCopy.h */,
+				296DC8AA0F909194002A3258 /* DeepMutableCopy.h */,
 				296DC8B00F909194002A3258 /* RegexKitLite.h */,
-				296DC8B10F909194002A3258 /* NSDictionary_DeepMutableCopy.m */,
+				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
+				296DC8AF0F909194002A3258 /* NSArray_DeepMutableCopy.h */,
+				296DC8AE0F909194002A3258 /* NSArray_DeepMutableCopy.m */,
 				296DC8B20F909194002A3258 /* NSDictionary_DeepMutableCopy.h */,
+				296DC8B10F909194002A3258 /* NSDictionary_DeepMutableCopy.m */,
 				296DC8B30F909194002A3258 /* MGTemplateStandardMarkers.h */,
-				296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */,
+				296DC8AD0F909194002A3258 /* MGTemplateStandardMarkers.m */,
 				296DC8B50F909194002A3258 /* MGTemplateStandardFilters.h */,
+				296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */,
 			);
 			name = MGTemplateEngine;
 			sourceTree = "<group>";
@@ -1827,6 +1840,7 @@
 				171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */,
 				174CE14210AB9281008F892B /* SPProcessListController.m in Sources */,
 				1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */,
+				1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
