@@ -253,19 +253,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1792C2CC10AE239D00ABE758 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17B7B5611016012700F057DE /* MCPKit */;
+			remoteInfo = MCPKit;
+		};
 		17B7B59A1016039200F057DE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 17B7B5611016012700F057DE;
 			remoteInfo = MCPKit;
-		};
-		380F4EDF0FC0B51D00B0BFD7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D15AC270486D014006FF6A4;
-			remoteInfo = "Sequel Pro";
 		};
 		58CDB34A0FCE144000F8ACA3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1351,10 +1351,10 @@
 		380F4EF20FC0B67A00B0BFD7 /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				380F4EF30FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.h */,
-				380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */,
 				380F4F230FC0C3D300B0BFD7 /* mcpKitTest.h */,
 				380F4F240FC0C3D300B0BFD7 /* mcpKitTest.m */,
+				380F4EF30FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.h */,
+				380F4EF40FC0B68F00B0BFD7 /* stringCategoryAdditionsTest.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1484,7 +1484,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				380F4EE00FC0B51D00B0BFD7 /* PBXTargetDependency */,
+				1792C2CD10AE239D00ABE758 /* PBXTargetDependency */,
 			);
 			name = "Unit Tests";
 			productName = "Unit Tests";
@@ -1847,15 +1847,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		1792C2CD10AE239D00ABE758 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17B7B5611016012700F057DE /* MCPKit */;
+			targetProxy = 1792C2CC10AE239D00ABE758 /* PBXContainerItemProxy */;
+		};
 		17B7B59B1016039200F057DE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 17B7B5611016012700F057DE /* MCPKit */;
 			targetProxy = 17B7B59A1016039200F057DE /* PBXContainerItemProxy */;
-		};
-		380F4EE00FC0B51D00B0BFD7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
-			targetProxy = 380F4EDF0FC0B51D00B0BFD7 /* PBXContainerItemProxy */;
 		};
 		58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2061,7 +2061,8 @@
 				BCB56194106F893700167321 /* English */,
 			);
 			name = ContentFilters.plist;
-			sourceTree = "<group>";
+			path = "/Users/stuart/Documents/Projects/SequelPro/sequel-pro/Resources";
+			sourceTree = "<absolute>";
 		};
 		BCB5619A106F8A1B00167321 /* EditorQuickLookTypes.plist */ = {
 			isa = PBXVariantGroup;
@@ -2196,6 +2197,8 @@
 					Cocoa,
 					"-framework",
 					SenTestingKit,
+					"-framework",
+					MCPKit,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Unit Tests";
@@ -2226,6 +2229,8 @@
 					Cocoa,
 					"-framework",
 					SenTestingKit,
+					"-framework",
+					MCPKit,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Unit Tests";
@@ -2254,6 +2259,8 @@
 					Cocoa,
 					"-framework",
 					SenTestingKit,
+					"-framework",
+					MCPKit,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Unit Tests";

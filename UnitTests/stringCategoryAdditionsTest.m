@@ -20,7 +20,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//
 
 #import "stringCategoryAdditionsTest.h"
 #import "SPStringAdditions.h"
@@ -40,14 +39,17 @@
 - (void)testStringByRemovingCharactersInSet
 {
 	NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:@"abc',ü"];
+	
 	NSString *s = @"this is  big, crazy st'ring";
 	NSString *expect = @"this is  ig rzy string";
-	STAssertEqualObjects( [s stringByRemovingCharactersInSet:junk], expect, @"stringByRemovingCharactersInSet" );
 	
-	// check UTF
+	STAssertEqualObjects([s stringByRemovingCharactersInSet:junk], expect, @"stringByRemovingCharactersInSet");
+	
+	// Check UTF
 	s = @"In der Kürze liegt die Würz";
 	expect = @"In der Krze liegt die Wrz";
-	STAssertEqualObjects( [s stringByRemovingCharactersInSet:junk], expect, @"stringByRemovingCharactersInSet" );
+	
+	STAssertEqualObjects([s stringByRemovingCharactersInSet:junk], expect, @"stringByRemovingCharactersInSet");
 }
 
 @end

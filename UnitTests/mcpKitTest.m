@@ -20,7 +20,8 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
-//
+
+#import <MCPKit/MCPKit.h>
 
 #import "mcpKitTest.h"
 
@@ -28,58 +29,55 @@
 
 - (void)setUp
 {
-	// for now, we try an find the following database in the local connection
-	// if the connection fails for any reasons, tests are not run.
+	// For now, we try an find the following database in the local connection.
+	// If the connection fails for any reasons, tests are not run.
 	// http://downloads.mysql.com/docs/sakila-db.zip
-	// set up a user called 'sakila' with no password that has all privs on the 
-	// database 'sakila'
+	//
+	// Set up a user called 'sakila' with no password that has all privs on the 
+	// database 'sakila'.
 	
-	mySQLConnection = [[MCPConnection alloc] initToSocket:@"/var/mysql/mysql.sock"
-												  withLogin:@"sakila"
-												   password:@""];
+	connection = [[MCPConnection alloc] initToSocket:@"/var/mysql/mysql.sock" withLogin:@"sakila"];
 	
-	if ( ![mySQLConnection isConnected] ) {
-		[mySQLConnection dealloc];
-		mySQLConnection = nil;
-		STFail(@"unable to connect with server. No tests run!");
-	} else {
-		if ( ! [mySQLConnection selectDB:@"sakila"]) {
-			[mySQLConnection dealloc];
-			mySQLConnection = nil;
-			STFail(@"unable to use `sakila` database. No tests run!");
+	// Set the 'sakila' user's password
+	[connection setPassword:@""];
+	
+	if (![connection isConnected]) {
+		[connection dealloc];
+		connection = nil;
+		STFail(@"Error connecting to database server. No tests were run.");
+	} 
+	else {
+		if (![connection selectDB:@"sakila"]) {
+			[connection dealloc];
+			connection = nil;
+			STFail(@"Error selecting database 'sakila'. No tests were run.");
 		}
 	}
 }
 
 - (void)tearDown
 {
-	if( mySQLConnection != nil ) {
-		[mySQLConnection disconnect];
-		[mySQLConnection dealloc];
+	if (connection != nil) {
+		[connection disconnect];
+		[connection dealloc];
 	}
 }
 
 - (void)testServerVersion
 {
-	if( mySQLConnection == nil )
-		return;
+	if (connection == nil) return;
 	
-	STAssertTrue( [mySQLConnection serverMajorVersion] != 0, @"server version");
-	STAssertTrue( [mySQLConnection serverMajorVersion] != 0, @"server version");
+	STAssertTrue([connection serverMajorVersion] != 0, @"server version");
+	STAssertTrue([connection serverMajorVersion] != 0, @"server version");
 }
-
 
 - (void)testTableList
 {
-	if( mySQLConnection == nil )
-		return;
-	
-	MCPResult *theResult;
+	if (connection == nil) return;
 
-	NSString *pQuery = @"SELECT * FROM actor";
-	theResult = [mySQLConnection queryString:pQuery];
+	MCPResult *queryResult = [connection queryString:@"SELECT * FROM actor"];
 	
-	STAssertEquals([theResult numOfRows],(my_ulonglong)200, @"actors table count" );
+	STAssertEquals([queryResult numOfRows], (my_ulonglong)200, @"actors table count");
 }
 
 @end
