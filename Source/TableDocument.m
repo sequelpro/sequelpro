@@ -53,6 +53,7 @@
 #import "SPConstants.h"
 #import "YRKSpinningProgressIndicator.h"
 #import "SPProcessListController.h"
+#import "SPServerVariablesController.h"
 
 // Printing
 #import "MGTemplateEngine.h"
@@ -62,8 +63,6 @@
 
 - (void)_addDatabase;
 - (void)_removeDatabase;
-- (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
-- (void)_copyServerVariablesToPasteboardIncludingName:(BOOL)name andValue:(BOOL)value;
 
 @end
 
@@ -106,7 +105,6 @@
 		taskFadeAnimator = nil;
 
 		keyChainID = nil;
-
 	}
 
 	return self;
@@ -168,9 +166,6 @@
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
 	
-	// Set the server variables table view's vertical gridlines if required
-	[variablesTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
 	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
@@ -1051,9 +1046,26 @@
 }
 
 /**
+ * Displays the database server variables sheet.
+ */
+- (IBAction)showServerVariables:(id)sender
+{
+	if (!serverVariablesController) {
+		serverVariablesController = [[SPServerVariablesController alloc] init];
+		
+		[serverVariablesController setConnection:mySQLConnection];
+		
+		// Register to obeserve table view vertical grid line pref changes
+		[prefs addObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	}
+	
+	[serverVariablesController displayServerVariablesSheetAttachedToWindow:tableWindow];
+}
+
+/**
  * Displays the database process list sheet.
  */
-- (IBAction)showDatabaseProcessList:(id)sender
+- (IBAction)showServerProcesses:(id)sender
 {
 	if (!processListController) {
 		processListController = [[SPProcessListController alloc] init];
@@ -2033,41 +2045,6 @@
 {
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
-
-	// If it was the server variables sheet that was closed release the relevant arrays if necessary
-	if ([sender window] == variablesSheet) {
-
-		// If the filtered array is allocated and it's not a reference to the variables array get rid of it
-		if ((variablesFiltered) && (variablesFiltered != variables)) {
-			[variablesFiltered release], variablesFiltered = nil;
-		}
-
-		if (variables) [variables release], variables = nil;
-	}
-}
-
-/**
- * Copy implementation for server variables table view.
- */
-- (IBAction)copy:(id)sender
-{
-	[self _copyServerVariablesToPasteboardIncludingName:YES andValue:YES];
-}
-
-/**
- * Copies the name(s) of the selected server variables.
- */
-- (IBAction)copyServerVariableName:(id)sender
-{
-	[self _copyServerVariablesToPasteboardIncludingName:YES andValue:NO];
-}
-
-/**
- * Copies the value(s) of the selected server variables.
- */
-- (IBAction)copyServerVariableValue:(id)sender
-{
-	[self _copyServerVariablesToPasteboardIncludingName:NO andValue:YES];
 }
 
 /**
@@ -2117,46 +2094,6 @@
 	}
 }
 
-/**
- * Shows the MySQL server variables
- */
-- (void)showVariables:(id)sender
-{
-	int i;
-
-	[variablesCountTextField setStringValue:@""];
-
-	if (variables) [variables release], variables = nil;
-
-	// Get variables
-	MCPResult *theResult = [mySQLConnection queryString:@"SHOW VARIABLES"];
-
-	if ([theResult numOfRows]) [theResult dataSeek:0];
-
-	variables = [[NSMutableArray alloc] init];
-
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		[variables addObject:[theResult fetchRowAsDictionary]];
-	}
-
-	// Weak reference
-	variablesFiltered = variables;
-
-	[variablesTableView reloadData];
-
-	// If the search field already has value from when the panel was previously open, apply the filter.
-	if ([[variablesSearchField stringValue] length] > 0) {
-		[self _updateServerVariablesFilterForFilterString:[variablesSearchField stringValue]];
-	}
-
-	// Show variables sheet
-	[NSApp beginSheet:variablesSheet
-	   modalForWindow:tableWindow 
-		modalDelegate:self
-	   didEndSelector:nil 
-		  contextInfo:nil];
-}
-
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender
 {
 	TableDocument *newTableDocument;
@@ -2189,9 +2126,6 @@
 {
 	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
-	}
-	else if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
-        [variablesTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }
 
@@ -2811,22 +2745,6 @@
 }
 
 /**
- * Saves the server variables to the selected file.
- */
-- (IBAction)saveServerVariables:(id)sender
-{
-	NSSavePanel *panel = [NSSavePanel savePanel];
-
-	[panel setRequiredFileType:@"cnf"];
-
-	[panel setExtensionHidden:NO];
-	[panel setAllowsOtherFileTypes:YES];
-	[panel setCanSelectHiddenExtension:YES];
-
-	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:variablesSheet modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"ServerVariables"];
-}
-
-/**
  * Menu item validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
@@ -2910,25 +2828,6 @@
 	// Forward in history menu item
 	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
 		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
-	}
-
-	// Copy selected server variable(s)
-	if ([menuItem action] == @selector(copy:)) {
-		return ([variablesTableView numberOfSelectedRows] > 0);
-	}
-
-	// Copy selected server variable name(s)
-	if ([menuItem action] == @selector(copyServerVariableName:)) {
-		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Names", @"copy server variable names menu item") : NSLocalizedString(@"Copy Variable Name", @"copy server variable name menu item")];
-
-		return ([variablesTableView numberOfSelectedRows] > 0);
-	}
-
-	// Copy selected server variable value(s)
-	if ([menuItem action] == @selector(copyServerVariableValue:)) {
-		[menuItem setTitle:([variablesTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Copy Variable Values", @"copy server variable values menu item") : NSLocalizedString(@"Copy Variable Value", @"copy server variable value menu item")];
-
-		return ([variablesTableView numberOfSelectedRows] > 0);
 	}
 	
 	// Show/hide console
@@ -3133,10 +3032,6 @@
 {
 	[titleImageView setImage:nil];
 }
-
-
-
-
 
 #pragma mark -
 #pragma mark Toolbar Methods
@@ -3396,13 +3291,13 @@
  * Code that need to be executed once the windowController has loaded the document's window
  * sets upt the interface (small fonts).
  */
-- (void)windowControllerDidLoadNib:(NSWindowController *) aController
+- (void)windowControllerDidLoadNib:(NSWindowController *)aController
 {
 	[aController setShouldCascadeWindows:YES];
 	[super windowControllerDidLoadNib:aController];
 
-	NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
-	NSTableColumn *theCol;
+	//NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
+	//NSTableColumn *theCol;
 
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
@@ -3413,7 +3308,7 @@
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
 
 	//set up interface
-	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
+	/*if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
 
 		while ( (theCol = [theCols nextObject]) ) {
@@ -3425,7 +3320,7 @@
 		while ( (theCol = [theCols nextObject]) ) {
 			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-	}
+	}*/
 }
 
 // NSWindow delegate methods
@@ -3657,11 +3552,6 @@
 	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
 	}
-
-	else if (object == variablesSearchField) {
-		[self _updateServerVariablesFilterForFilterString:[object stringValue]];
-	}
-
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
 	}
@@ -3748,21 +3638,24 @@
 - (void)dealloc
 {
 	[_encoding release];
+	[allDatabases release];
 	[printWebView release];
+	
 	if (connectionController) [connectionController release];
 	if (processListController) [processListController release];
+	if (serverVariablesController) [serverVariablesController release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (variables) [variables release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
-	[allDatabases release];
 	if (taskDrawTimer) [taskDrawTimer release];
 	if (taskFadeAnimator) [taskFadeAnimator release];
-	if(queryEditorInitString) [queryEditorInitString release];
-	if(spfSession) [spfSession release];
-	if(spfDocData) [spfDocData release];
-	if(keyChainID) [keyChainID release];
+	if (queryEditorInitString) [queryEditorInitString release];
+	if (spfSession) [spfSession release];
+	if (spfDocData) [spfDocData release];
+	if (keyChainID) [keyChainID release];
 	if (taskProgressWindow) [taskProgressWindow release];
+	
 	[super dealloc];
 }
 
@@ -3850,100 +3743,6 @@
 	[tableDumpInstance setConnection:mySQLConnection];
 	
 	[tableWindow setTitle:[self displaySPName]];
-}
-
-/**
- * Filter the displayed server variables by matching the variable name and value against the
- * filter string.
- */
-- (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString
-{
-	[saveVariablesButton setEnabled:NO];
-
-	filterString = [[filterString lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-
-	// If the filtered array is allocated and its not a reference to the variables array
-	// relase it to prevent memory leaks upon the next allocation.
-	if ((variablesFiltered) && (variablesFiltered != variables)) {
-		[variablesFiltered release], variablesFiltered = nil;
-	}
-
-	variablesFiltered = [[NSMutableArray alloc] init];
-
-	if ([filterString length] == 0) {
-		[variablesFiltered release];
-		variablesFiltered = variables;
-
-		[saveVariablesButton setEnabled:YES];
-		[saveVariablesButton setTitle:@"Save As..."];
-		[variablesCountTextField setStringValue:@""];
-
-		[variablesTableView reloadData];
-
-		return;
-	}
-
-	for (NSDictionary *variable in variables) 
-	{
-		if (([[variable objectForKey:@"Variable_name"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[variable objectForKey:@"Value"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))
-		{
-			[variablesFiltered addObject:variable];
-		}
-	}
-
-	[variablesTableView reloadData];
-	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered server variables count"), [variablesFiltered count], [variables count]]];
-
-	if ([variablesFiltered count] == 0) return;
-
-	[saveVariablesButton setEnabled:YES];
-	[saveVariablesButton setTitle:@"Save View As..."];
-}
-
-/**
- * Copies either the name or value or both (as name = value pairs) of the currently selected server variables.
- */
-- (void)_copyServerVariablesToPasteboardIncludingName:(BOOL)name andValue:(BOOL)value
-{
-	// At least one of either name or value must be true
-	if ((!name) && (!value)) return;
-
-	NSResponder *firstResponder = [variablesSheet firstResponder];
-
-	if ((firstResponder == variablesTableView) && ([variablesTableView numberOfSelectedRows] > 0)) {
-
-		NSString *string = @"";
-		NSIndexSet *rows = [variablesTableView selectedRowIndexes];
-
-		NSUInteger i = [rows firstIndex];
-
-		while (i != NSNotFound) 
-		{
-			if (i < [variablesFiltered count]) {
-				NSDictionary *variable = NSArrayObjectAtIndex(variablesFiltered, i);
-
-				NSString *variableName  = [variable objectForKey:@"Variable_name"];
-				NSString *variableValue = [variable objectForKey:@"Value"];
-
-				// Decide what to include in the string
-				if (name && value) {
-					string = [string stringByAppendingFormat:@"%@ = %@\n", variableName, variableValue];
-				}
-				else {
-					string = [string stringByAppendingFormat:@"%@\n", (name) ? variableName : variableValue];
-				}
-			}
-
-			i = [rows indexGreaterThanIndex:i];
-		}
-
-		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-
-		// Copy the string to the pasteboard
-		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
-		[pasteBoard setString:string forType:NSStringPboardType];
-	}
 }
 
 @end

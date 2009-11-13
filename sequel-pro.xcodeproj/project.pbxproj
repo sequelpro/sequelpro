@@ -23,6 +23,8 @@
 		177E79300FCB54EC00E9E122 /* table-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 177E792D0FCB54EC00E9E122 /* table-small-square.tiff */; };
 		177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
+		1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */; };
+		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B576101601C300F057DE /* libmysqlclient.a */; };
 		17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
@@ -371,6 +373,9 @@
 		1789343A0F30C1DD0097539A /* SPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditions.h; sourceTree = "<group>"; };
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
+		1792C13110AD752100ABE758 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseServerVariables.xib; sourceTree = "<group>"; };
+		1792C13510AD75C800ABE758 /* SPServerVariablesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPServerVariablesController.h; sourceTree = "<group>"; };
+		1792C13610AD75C800ABE758 /* SPServerVariablesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPServerVariablesController.m; sourceTree = "<group>"; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
 		17B7B5621016012700F057DE /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -849,6 +854,8 @@
 				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
 				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
 				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				1792C13510AD75C800ABE758 /* SPServerVariablesController.h */,
+				1792C13610AD75C800ABE758 /* SPServerVariablesController.m */,
 				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
 				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
 				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
@@ -1253,6 +1260,7 @@
 				173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */,
 				582A05A7108A5CCF0027D42B /* ProgressIndicatorLayer.xib */,
 				174CE11C10AB80B5008F892B /* DatabaseProcessList.xib */,
+				1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -1670,6 +1678,7 @@
 				BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */,
 				582A05A9108A5CCF0027D42B /* ProgressIndicatorLayer.xib in Resources */,
 				174CE11E10AB80B5008F892B /* DatabaseProcessList.xib in Resources */,
+				1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1823,6 +1832,7 @@
 				173284EA1088FEDE0062E892 /* SPConstants.m in Sources */,
 				171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */,
 				174CE14210AB9281008F892B /* SPProcessListController.m in Sources */,
+				1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1880,6 +1890,15 @@
 				1761FD470EF03A6F00331368 /* English */,
 			);
 			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1792C13110AD752100ABE758 /* English */,
+			);
+			name = DatabaseServerVariables.xib;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		17E642060EF020CB001BC333 /* DBView.xib */ = {

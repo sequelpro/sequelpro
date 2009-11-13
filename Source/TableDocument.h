@@ -29,7 +29,7 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-@class SPConnectionController, SPProcessListController, SPUserManager;
+@class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager;
 
 enum sp_current_query_mode
 {
@@ -55,8 +55,9 @@ enum sp_current_query_mode
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
+	
 	IBOutlet SPUserManager *userManagerInstance;
-
+	
 	IBOutlet NSSearchField *listFilterField;
 
 	IBOutlet id tableWindow;
@@ -66,7 +67,6 @@ enum sp_current_query_mode
 	IBOutlet id titleStringView;
 	
 	IBOutlet id databaseSheet;
-	IBOutlet id variablesSheet;
 
 	IBOutlet id queryProgressBar;
 	IBOutlet NSBox *taskProgressLayer;
@@ -81,11 +81,7 @@ enum sp_current_query_mode
 	IBOutlet id addDatabaseButton;
 	IBOutlet id chooseDatabaseButton;
 	IBOutlet id historyControl;
-	IBOutlet id variablesTableView;
 	IBOutlet NSTabView *tableTabView;
-	IBOutlet NSButton *saveVariablesButton;
-	IBOutlet NSSearchField *variablesSearchField;
-	IBOutlet NSTextField *variablesCountTextField;
 	
 	IBOutlet NSTableView *tableInfoTable;
 	IBOutlet NSButton *tableInfoCollapseButton;
@@ -118,9 +114,11 @@ enum sp_current_query_mode
 	IBOutlet id inputTextWindowMessage;
 	IBOutlet id inputTextWindowSecureTextField;
 	int passwordSheetReturnCode;
-
+	
+	// Controllers
 	SPConnectionController *connectionController;
 	SPProcessListController *processListController;
+	SPServerVariablesController *serverVariablesController;
 	
 	MCPConnection *mySQLConnection;
 
@@ -183,8 +181,8 @@ enum sp_current_query_mode
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
-- (IBAction)saveServerVariables:(id)sender;
-- (IBAction)showDatabaseProcessList:(id)sender;
+- (IBAction)showServerVariables:(id)sender;
+- (IBAction)showServerProcesses:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
 
@@ -230,7 +228,6 @@ enum sp_current_query_mode
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;
 - (void)flushPrivileges:(id)sender;
-- (void)showVariables:(id)sender;
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void)refreshCurrentDatabase;
@@ -239,9 +236,6 @@ enum sp_current_query_mode
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences;
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
-- (IBAction)copy:(id)sender;
-- (IBAction)copyServerVariableName:(id)sender;
-- (IBAction)copyServerVariableValue:(id)sender;
 - (IBAction)showUserManager:(id)sender;
 
 // Getter methods

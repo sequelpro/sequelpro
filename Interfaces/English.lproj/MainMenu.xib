@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="57"/>
+			<integer value="628"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2359,14 +2359,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">showVariables:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="973684327"/>
-					</object>
-					<int key="connectionID">784</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">flushPrivileges:</string>
 						<reference key="source" ref="63651044"/>
 						<reference key="destination" ref="7204100"/>
@@ -2839,11 +2831,19 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">showDatabaseProcessList:</string>
+						<string key="label">showServerVariables:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="973684327"/>
+					</object>
+					<int key="connectionID">1035</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showServerProcesses:</string>
 						<reference key="source" ref="63651044"/>
 						<reference key="destination" ref="6656160"/>
 					</object>
-					<int key="connectionID">1032</int>
+					<int key="connectionID">1036</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4673,7 +4673,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{108, 519}, {511, 20}}</string>
+					<string>{{454, 520}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4752,7 +4752,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{525, 564}, {255, 203}}</string>
+					<string>{{696, 317}, {255, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -5000,7 +5000,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1034</int>
+			<int key="maxID">1036</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5351,9 +5351,11 @@
 							<string>killProcessConnection:</string>
 							<string>killProcessQuery:</string>
 							<string>refreshProcessList:</string>
+							<string>saveServerProcesses:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5450,6 +5452,50 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">SPServerVariablesController</string>
+					<string key="superclassName">NSWindowController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeSheet:</string>
+							<string>copy:</string>
+							<string>copyServerVariableName:</string>
+							<string>copyServerVariableValue:</string>
+							<string>saveServerVariables:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>filterVariablesSearchField</string>
+							<string>saveVariablesButton</string>
+							<string>variablesCountTextField</string>
+							<string>variablesTableView</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSSearchField</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSTableView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPServerVariablesController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">SPTableView</string>
 					<string key="superclassName">NSTableView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -5526,11 +5572,8 @@
 							<string>closePanelSheet:</string>
 							<string>closePasswordSheet:</string>
 							<string>closeSheet:</string>
-							<string>copy:</string>
 							<string>copyCreateTableSyntax:</string>
 							<string>copyCreateTableSyntaxFromSheet:</string>
-							<string>copyServerVariableName:</string>
-							<string>copyServerVariableValue:</string>
 							<string>export:</string>
 							<string>exportMultipleTables:</string>
 							<string>exportTable:</string>
@@ -5543,13 +5586,12 @@
 							<string>repairTable:</string>
 							<string>saveConnectionSheet:</string>
 							<string>saveCreateSyntax:</string>
-							<string>saveServerVariables:</string>
 							<string>setDatabases:</string>
 							<string>showCreateTableSyntax:</string>
-							<string>showDatabaseProcessList:</string>
 							<string>showMySQLHelp:</string>
+							<string>showServerProcesses:</string>
+							<string>showServerVariables:</string>
 							<string>showUserManager:</string>
-							<string>showVariables:</string>
 							<string>validateSaveConnectionAccessory:</string>
 							<string>viewContent:</string>
 							<string>viewQuery:</string>
@@ -5559,10 +5601,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5640,7 +5678,6 @@
 							<string>saveConnectionIncludeQuery</string>
 							<string>saveConnectionSavePassword</string>
 							<string>saveConnectionSavePasswordAlert</string>
-							<string>saveVariablesButton</string>
 							<string>sidebarGrabber</string>
 							<string>spHistoryControllerInstance</string>
 							<string>tableContentInstance</string>
@@ -5662,10 +5699,6 @@
 							<string>titleImageView</string>
 							<string>titleStringView</string>
 							<string>userManagerInstance</string>
-							<string>variablesCountTextField</string>
-							<string>variablesSearchField</string>
-							<string>variablesSheet</string>
-							<string>variablesTableView</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5702,7 +5735,6 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>NSButton</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5724,10 +5756,6 @@
 							<string>id</string>
 							<string>id</string>
 							<string>SPUserManager</string>
-							<string>NSTextField</string>
-							<string>NSSearchField</string>
-							<string>id</string>
-							<string>id</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">

@@ -26,8 +26,9 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPProcessListController.h"
-#import "SPConstants.h"
 #import "SPArrayAdditions.h"
+#import "TableDocument.h"
+#import "SPConstants.h"
 
 @interface SPProcessListController (PrivateAPI)
 
@@ -277,9 +278,9 @@
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-	if (returnCode == NSAlertDefaultReturn) {
+	if (returnCode == NSOKButton) {
 		if ([processesFiltered count] > 0) {
-			NSMutableString *processesString = [NSMutableString string];
+			NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [(TableDocument *)[[NSApp mainWindow] delegate] host]];
 			
 			for (NSDictionary *process in processesFiltered)
 			{
