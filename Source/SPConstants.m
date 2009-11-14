@@ -30,7 +30,7 @@ NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
 NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
 
 // Default monospaced font name
-NSString *SPDefaultMonospacedFontName           = @"Courier";
+NSString *SPDefaultMonospacedFontName           = @"Monaco";
 
 // Preference key constants
 // General Prefpane
