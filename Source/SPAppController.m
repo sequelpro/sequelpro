@@ -391,8 +391,7 @@
 #pragma mark Other methods
 
 /**
- * Override the default open-blank-document methods to automatically connect
- * automatically opened windows.
+ * Override the default open-blank-document methods to automatically connect automatically opened windows.
  */
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
 {
@@ -403,11 +402,34 @@
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
 			[firstTableDocument setShouldAutomaticallyConnect:YES];
 		}
+		
 		[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
 		[firstTableDocument makeWindowControllers];
 		[firstTableDocument showWindows];
 	}
 
+	// Return NO to the automatic opening
+	return NO;
+}
+
+/**
+ * Implement this method to prevent the above being called in the case of a reopen (for example, clicking 
+ * the dock icon) where we don't want the auto-connect to kick in. 
+ */
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
+{
+	// Only create a new document (without auto-connect) when there are already no documents open.
+	if ([[[NSDocumentController sharedDocumentController] documents] count] == 0) {
+		TableDocument *firstTableDocument;
+		
+		// Manually open a new document, setting SPAppController as sender to trigger autoconnection
+		if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+			[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
+			[firstTableDocument makeWindowControllers];
+			[firstTableDocument showWindows];
+		}
+	}
+	
 	// Return NO to the automatic opening
 	return NO;
 }
@@ -505,16 +527,6 @@
 	}
 }
 
-/**
- * Deallocate prefs controller
- */
-- (void)dealloc
-{
-	[prefsController release], prefsController = nil;
-	
-	[super dealloc];
-}
-
 #pragma mark -
 #pragma mark AppleScript support
 
@@ -583,6 +595,18 @@
 {
 	[NSApp terminate:self];
 	return nil;
+}
+
+#pragma mark -
+
+/**
+ * Deallocate prefs controller
+ */
+- (void)dealloc
+{
+	[prefsController release], prefsController = nil;
+	
+	[super dealloc];
 }
 
 @end
