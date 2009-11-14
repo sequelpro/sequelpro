@@ -30,26 +30,38 @@
 @synthesize isError;
 @synthesize messageDate;
 @synthesize message;
+@synthesize messageConnection;
 
-+ (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)message date:(NSDate *)date
+/**
+ *
+ */
++ (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)message date:(NSDate *)date connection:(NSString *)connection
 {
-	return [[[SPConsoleMessage alloc] initWithMessage:message date:date] autorelease];
+	return [[[SPConsoleMessage alloc] initWithMessage:message date:date connection:connection] autorelease];
 }
 
-- (id)initWithMessage:(NSString *)consoleMessage date:(NSDate *)date
+/**
+ *
+ */
+- (id)initWithMessage:(NSString *)consoleMessage date:(NSDate *)date connection:(NSString *)connection
 {
 	if ((self = [super init])) {
-		[self setMessage:consoleMessage];
 		[self setMessageDate:date];
+		[self setMessage:consoleMessage];
+		[self setMessageConnection:connection];
 	}
 	
 	return self;
 }
 
+/**
+ * Dealloc.
+ */
 - (void)dealloc
 {
 	[message release], message = nil;
 	[messageDate release], messageDate = nil;
+	[messageConnection release], messageConnection = nil;
 	
 	[super dealloc];
 }

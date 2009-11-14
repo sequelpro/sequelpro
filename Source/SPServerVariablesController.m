@@ -317,7 +317,7 @@
 	[variablesTableView reloadData];
 	
 	[variablesCountTextField setHidden:NO];
-	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered server variables count"), [variablesFiltered count], [variables count]]];
+	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered item count"), [variablesFiltered count], [variables count]]];
 	
 	if ([variablesFiltered count] == 0) return;
 	

@@ -231,7 +231,7 @@
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
 
-// Getter methods
+// Accessor methods
 - (NSString *)host;
 - (NSString *)name;
 - (NSString *)database;

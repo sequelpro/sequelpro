@@ -1628,7 +1628,7 @@
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
-		[[SPQueryController sharedQueryController] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime]];
+		[[SPQueryController sharedQueryController] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime] connection:[tableDocumentInstance name]];
 		return YES;
 
 	// On success...

@@ -44,7 +44,7 @@
 			|| (_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
 			|| (_queryMode == SPImportExportQueryMode && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
 		{
-			[[SPQueryController sharedQueryController] showMessageInConsole:query];
+			[[SPQueryController sharedQueryController] showMessageInConsole:query connection:[self name]];
 		}
 	}
 }
@@ -55,7 +55,7 @@
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {
 	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPConsoleEnableErrorLogging]) {
-		[[SPQueryController sharedQueryController] showErrorInConsole:error];
+		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name]];
 	}
 }
 

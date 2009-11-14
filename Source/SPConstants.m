@@ -96,6 +96,7 @@ NSString *SPLastUsedVersion                      = @"LastUsedVersion";
 NSString *SPConsoleShowHelps                     = @"ConsoleShowHelps";
 NSString *SPConsoleShowSelectsAndShows           = @"ConsoleShowSelectsAndShows";
 NSString *SPConsoleShowTimestamps                = @"ConsoleShowTimestamps";
+NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";

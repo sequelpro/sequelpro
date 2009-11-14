@@ -29,15 +29,18 @@
 {
 	BOOL isError;
 	NSDate *messageDate;
+	
 	NSString *message;
+	NSString *messageConnection;
 }
 
 @property (readwrite, assign) BOOL isError;
 @property (readwrite, retain) NSDate *messageDate;
 @property (readwrite, retain) NSString *message;
+@property (readwrite, retain) NSString *messageConnection;
 
-+ (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)consoleMessage date:(NSDate *)date;
++ (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)consoleMessage date:(NSDate *)date connection:(NSString *)connection;
 
-- (id)initWithMessage:(NSString *)message date:(NSDate *)date;
+- (id)initWithMessage:(NSString *)message date:(NSDate *)date connection:(NSString *)connection;
 
 @end

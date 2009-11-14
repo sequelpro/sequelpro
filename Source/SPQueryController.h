@@ -33,8 +33,7 @@
 	IBOutlet NSSearchField *consoleSearchField;
 	IBOutlet NSTextField *loggingDisabledTextField;
 	IBOutlet NSProgressIndicator *progressIndicator;
-	IBOutlet NSButton *includeTimeStampsButton, *saveConsoleButton, *clearConsoleButton;
-	IBOutlet NSMenuItem *showTimeStampsMenuItem, *showSelectShowStatementsMenuItem, *showHelpMenuItem;
+	IBOutlet NSButton *includeTimeStampsButton, *includeConnectionButton, *saveConsoleButton, *clearConsoleButton;
 	
 	NSFont *consoleFont;
 	NSMutableArray *messagesFullSet, *messagesFilteredSet, *messagesVisibleSet;
@@ -53,6 +52,7 @@
 	NSUInteger numberOfMaxAllowedHistory;
 
 	NSUserDefaults *prefs;
+	NSDateFormatter *dateFormatter;
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
@@ -64,16 +64,17 @@
 - (IBAction)clearConsole:(id)sender;
 - (IBAction)saveConsoleAs:(id)sender;
 - (IBAction)toggleShowTimeStamps:(id)sender;
+- (IBAction)toggleShowConnections:(id)sender;
 - (IBAction)toggleShowSelectShowStatements:(id)sender;
 - (IBAction)toggleShowHelpStatements:(id)sender;
 
 - (void)updateEntries;
 
-- (BOOL) allowConsoleUpdate;
-- (void) setAllowConsoleUpdate:(BOOL)allowUpdate;
+- (BOOL)allowConsoleUpdate;
+- (void)setAllowConsoleUpdate:(BOOL)allowUpdate;
 
-- (void)showMessageInConsole:(NSString *)message;
-- (void)showErrorInConsole:(NSString *)error;
+- (void)showMessageInConsole:(NSString *)message connection:(NSString *)connection;
+- (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection;
 
 - (NSUInteger)consoleMessageCount;
 

@@ -487,7 +487,7 @@
 	
 	[processListTableView reloadData];
 	
-	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered server processes count"), [processesFiltered count], [processes count]]];
+	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered item count"), [processesFiltered count], [processes count]]];
 	[processesCountTextField setHidden:NO];
 	
 	if ([processesFiltered count] == 0) return;

@@ -102,6 +102,8 @@
 	<true/>
 	<key>ConsoleShowTimestamps</key>
 	<true/>
+	<key>ConsoleShowConnections</key>
+	<true/>
 	<key>ConsoleShowSelectsAndShows</key>
 	<true/>
 	<key>ConsoleShowHelps</key>

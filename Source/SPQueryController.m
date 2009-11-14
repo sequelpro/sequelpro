@@ -32,20 +32,19 @@
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
 
 #define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
-
 #define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
 
 // Table view column identifiers
-#define TABLEVIEW_MESSAGE_COLUMN_IDENTIFIER @"message"
-#define TABLEVIEW_DATE_COLUMN_IDENTIFIER @"messageDate"
+#define TABLEVIEW_MESSAGE_COLUMN_IDENTIFIER    @"message"
+#define TABLEVIEW_DATE_COLUMN_IDENTIFIER       @"messageDate"
+#define TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER @"messageConnection"
 
 @interface SPQueryController (PrivateAPI)
 
-- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps;
-
 - (void)_updateFilterState;
-- (void)_addMessageToConsole:(NSString *)message isError:(BOOL)error;
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message;
+- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections;
+- (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error;
 
 @end
 
@@ -131,36 +130,33 @@ static SPQueryController *sharedQueryController = nil;
 	prefs = [NSUserDefaults standardUserDefaults];
 	
 	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
+	
+	// Show/hide table columns
 	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPConsoleShowTimestamps]];
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPConsoleShowConnections]];
+	
 	showSelectStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowSelectsAndShows];
 	showHelpStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowHelps];
 	
 	[self _updateFilterState];
 	
-	[loggingDisabledTextField setStringValue:([prefs boolForKey:SPConsoleEnableLogging]) ? @"" : @"Query logging is currently disabled"];
-}
-
-/**
- * Standard dealloc.
- */
-- (void)dealloc
-{
-	messagesVisibleSet = nil;
-
-	[messagesFullSet release], messagesFullSet = nil;
-	[messagesFilteredSet release], messagesFilteredSet = nil;
-	[activeFilterString release], activeFilterString = nil;
+	[loggingDisabledTextField setStringValue:([prefs boolForKey:SPConsoleEnableLogging]) ? @"" : NSLocalizedString(@"Query logging is currently disabled", @"query logging disabled label")];
 	
-	[favoritesContainer release];
-	[historyContainer release];
-	[contentFilterContainer release];
+	// Setup data formatter
+	dateFormatter = [[NSDateFormatter alloc] init];
+	
+	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+	
+	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+	
+	// Set the process table view's vertical gridlines if required
+	[consoleTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
-	[super dealloc];
 }
 
 #pragma mark -
 #pragma mark QueryConsoleController
-
 
 /**
  * Copy implementation for console table view.
@@ -177,6 +173,7 @@ static SPQueryController *sharedQueryController = nil;
 		NSUInteger i = [rows firstIndex];
 		
 		BOOL dateColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] isHidden];
+		BOOL connectionColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER] isHidden];
 		
 		[string setString:@""];
 		
@@ -184,18 +181,21 @@ static SPQueryController *sharedQueryController = nil;
 		{
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
-				
-				NSString *consoleMessage = [message message];
-				
+								
 				// If the timestamp column is not hidden we need to include them in the copy
 				if (!dateColumnIsHidden) {
-					
-					NSString *dateString = [[message messageDate] descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
-					
-					consoleMessage = [NSString stringWithFormat:@"/* MySQL %@ */ %@", dateString, consoleMessage];
+					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
+					[string appendString:@" "];					
 				}
 				
-				[string appendFormat:@"%@\n", consoleMessage];
+				// If the connection column is not hidden we need to include them in the copy
+				if (!connectionColumnIsHidden) {
+					[string appendString:[message messageConnection]];
+					[string appendString:@" "];
+				}
+				
+				[string appendString:[message message]];
+				[string appendString:@"\n"];
 			}
 			
 			i = [rows indexGreaterThanIndex:i];
@@ -247,6 +247,14 @@ static SPQueryController *sharedQueryController = nil;
 }
 
 /**
+ * Toggles the display of message connections column in the table view.
+ */
+- (IBAction)toggleShowConnections:(id)sender
+{
+	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER] setHidden:([sender state])];
+}
+
+/**
  * Toggles the hiding of messages containing SELECT and SHOW statements
  */
 - (IBAction)toggleShowSelectShowStatements:(id)sender
@@ -269,19 +277,19 @@ static SPQueryController *sharedQueryController = nil;
 }
 
 /**
- * Shows the supplied message in the console.
+ * Shows the supplied message from the supplied connection in the console.
  */
-- (void)showMessageInConsole:(NSString *)message
+- (void)showMessageInConsole:(NSString *)message connection:(NSString *)connection
 {
-	[self _addMessageToConsole:message isError:NO];
+	[self _addMessageToConsole:message connection:connection isError:NO];
 }
 
 /**
- * Shows the supplied error in the console.
+ * Shows the supplied error from the supplied connection in the console.
  */
-- (void)showErrorInConsole:(NSString *)error
+- (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection
 {
-	[self _addMessageToConsole:error isError:YES];
+	[self _addMessageToConsole:error connection:connection isError:YES];
 }
 
 /**
@@ -298,7 +306,7 @@ static SPQueryController *sharedQueryController = nil;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton intValue]] writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton intValue] connections:[includeConnectionButton intValue]] writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 	}
 }
 
@@ -324,9 +332,11 @@ static SPQueryController *sharedQueryController = nil;
 	
 	if ([[tableColumn identifier] isEqualToString:TABLEVIEW_DATE_COLUMN_IDENTIFIER]) {
 		
-		NSString *dateString = [(NSDate *)object descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
+		//NSString *dateString = [(NSDate *)object descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
 		
-		returnValue = [NSString stringWithFormat:@"/* MySQL %@ */", dateString];
+		returnValue = [dateFormatter stringFromDate:(NSDate *)object];
+		
+		//returnValue = dateString;
 	} 
 	else {
 		if ([(NSString *)object length] > MESSAGE_TRUNCATE_CHARACTER_LENGTH) {
@@ -381,8 +391,13 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
+	// Show/hide logging disabled label
 	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[loggingDisabledTextField setStringValue:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? @"" : @"Query logging is currently disabled"];
+	}
+	// Show/hide vertical grid lines in console table view
+	else if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
+        [consoleTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 }
 
@@ -403,10 +418,13 @@ static SPQueryController *sharedQueryController = nil;
 	return [[self window] validateMenuItem:menuItem];
 }
 
-- (BOOL) allowConsoleUpdate {
+- (BOOL) allowConsoleUpdate 
+{
 	return allowConsoleUpdate;
 }
-- (void) setAllowConsoleUpdate:(BOOL)allowUpdate {
+
+- (void) setAllowConsoleUpdate:(BOOL)allowUpdate 
+{
 	allowConsoleUpdate = allowUpdate;
 	if (allowUpdate && [[self window] isVisible]) [self updateEntries];
 }
@@ -427,7 +445,6 @@ static SPQueryController *sharedQueryController = nil;
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
 {
-	
 	// Register a new untiled document and return its URL
 	if(fileURL == nil) {
 		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
@@ -476,6 +493,7 @@ static SPQueryController *sharedQueryController = nil;
 			[arr release];
 		}
 	}
+	
 	if(![historyContainer objectForKey:[fileURL absoluteString]]) {
 		if(contextInfo != nil && [contextInfo objectForKey:SPQueryHistory] && [[contextInfo objectForKey:SPQueryHistory] count]) {
 			NSMutableArray *arr = [[NSMutableArray alloc] init];
@@ -488,6 +506,7 @@ static SPQueryController *sharedQueryController = nil;
 			[arr release];
 		}
 	}
+	
 	if(![contentFilterContainer objectForKey:[fileURL absoluteString]]) {
 		if(contextInfo != nil && [contextInfo objectForKey:SPContentFilters]) {
 			[contentFilterContainer setObject:[contextInfo objectForKey:SPContentFilters] forKey:[fileURL absoluteString]];
@@ -499,12 +518,10 @@ static SPQueryController *sharedQueryController = nil;
 	}
 	
 	return fileURL;
-	
 }
 
 - (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
 {
-
 	// Check for multiple instance of the same document.
 	// Remove it if only one instance was registerd.
 	NSArray *allDocs = [[NSDocumentController sharedDocumentController] documents];
@@ -523,12 +540,10 @@ static SPQueryController *sharedQueryController = nil;
 		[historyContainer removeObjectForKey:[fileURL absoluteString]];
 	if([contentFilterContainer objectForKey:[fileURL absoluteString]])
 		[contentFilterContainer removeObjectForKey:[fileURL absoluteString]];
-
 }
 
 - (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL
 {
-
 	if([contentFilterContainer objectForKey:[fileURL absoluteString]]) {
 		NSMutableDictionary *c = [[NSMutableDictionary alloc] init];
 		[c setDictionary:[contentFilterContainer objectForKey:[fileURL absoluteString]]];
@@ -536,7 +551,6 @@ static SPQueryController *sharedQueryController = nil;
 		[contentFilterContainer setObject:c forKey:[fileURL absoluteString]];
 		[c release];
 	}
-
 }
 
 - (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL
@@ -559,7 +573,6 @@ static SPQueryController *sharedQueryController = nil;
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
-
 	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
 
 	// Save each history item due to its document source
@@ -575,7 +588,6 @@ static SPQueryController *sharedQueryController = nil;
 
 		[self replaceHistoryByArray:[uniquifier itemTitles] forFileURL:fileURL];
 		[uniquifier release];
-
 	}
 
 	// Save history items coming from each Untitled document in the global Preferences successively
@@ -592,9 +604,7 @@ static SPQueryController *sharedQueryController = nil;
 
 		[prefs setObject:[uniquifier itemTitles] forKey:SPQueryHistory];
 		[uniquifier release];
-
 	}
-
 }
 
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL
@@ -603,7 +613,6 @@ static SPQueryController *sharedQueryController = nil;
 		return [favoritesContainer objectForKey:[fileURL absoluteString]];
 
 	return [NSMutableArray array];
-
 }
 
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL
@@ -612,7 +621,6 @@ static SPQueryController *sharedQueryController = nil;
 		return [historyContainer objectForKey:[fileURL absoluteString]];
 
 	return [NSMutableArray array];
-
 }
 
 - (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL
@@ -621,12 +629,10 @@ static SPQueryController *sharedQueryController = nil;
 		return [contentFilterContainer objectForKey:[fileURL absoluteString]];
 
 	return [NSMutableDictionary dictionary];
-
 }
 
 - (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals
 {
-
 	if(![tabTrigger length]) return [NSArray array];
 
 	NSMutableArray *result = [[NSMutableArray alloc] init];
@@ -655,33 +661,31 @@ static SPQueryController *sharedQueryController = nil;
 	[[favoritesContainer objectForKey:[fileURL absoluteString]] insertObject:favorite atIndex:index];
 }
 
+#pragma mark -
+
+/**
+ * Dealloc.
+ */
+- (void)dealloc
+{
+	messagesVisibleSet = nil;
+	
+	[dateFormatter release], dateFormatter = nil;
+	
+	[messagesFullSet release], messagesFullSet = nil;
+	[messagesFilteredSet release], messagesFilteredSet = nil;
+	[activeFilterString release], activeFilterString = nil;
+	
+	[favoritesContainer release], favoritesContainer = nil;
+	[historyContainer release], historyContainer = nil;
+	[contentFilterContainer release], contentFilterContainer = nil;
+	
+	[super dealloc];
+}
 
 @end
 
 @implementation SPQueryController (PrivateAPI)
-
-/**
- * Creates and returns a string made entirely of all of the console's messages and includes the message
- * time stamps if specified.
- */
-- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps
-{
-	NSMutableString *consoleString = [[[NSMutableString alloc] init] autorelease];
-	
-	for (SPConsoleMessage *message in messagesVisibleSet) 
-	{
-		if (timeStamps) {
-			NSString *dateString = [[message messageDate] descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
-			
-			[consoleString appendString:[NSString stringWithFormat:@"/* MySQL %@ */ ", dateString]];
-		}
-		
-		[consoleString appendString:[NSString stringWithFormat:@"%@\n", [message message]]];
-	}
-	
-	return consoleString;
-}
-
 
 /**
  * Updates the filtered result set based on any filter string and whether or not
@@ -752,33 +756,6 @@ static SPQueryController *sharedQueryController = nil;
 }
 
 /**
- * Adds the supplied message to the query console.
- */
-- (void)_addMessageToConsole:(NSString *)message isError:(BOOL)error
-{
-	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "] stringByAppendingString:@";"] date:[NSDate date]];
-	
-	[consoleMessage setIsError:error];
-	
-	[messagesFullSet addObject:consoleMessage];
-	
-	// If filtering is active, determine whether to add a reference to the filtered set
-	if ((showSelectStatementsAreDisabled || showHelpStatementsAreDisabled || filterIsActive)
-		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
-	{
-		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
-		[saveConsoleButton setEnabled:YES];
-		[clearConsoleButton setEnabled:YES];
-	}
-	
-	// Reload the table and scroll to the new message if it's visible (for speed)
-	if ( allowConsoleUpdate && [[self window] isVisible] ) {
-		[consoleTableView reloadData];
-		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
-	}
-}
-
-/**
  * Checks whether the supplied message text matches the current filter text, if any,
  * and whether it should be hidden if the SELECT/SHOW toggle is off.
  */
@@ -800,6 +777,7 @@ static SPQueryController *sharedQueryController = nil;
 	{
 		messageMatchesCurrentFilters = NO;
 	}
+	
 	// If hiding HELP is toggled to on, check whether the message is a HELP
 	if (messageMatchesCurrentFilters
 		&& showHelpStatementsAreDisabled
@@ -809,6 +787,69 @@ static SPQueryController *sharedQueryController = nil;
 	}
 	
 	return messageMatchesCurrentFilters;
+}
+
+/**
+ * Creates and returns a string made entirely of all of the console's messages and includes the message
+ * time stamp and connection if specified.
+ */
+- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections
+{
+	NSMutableString *consoleString = [NSMutableString string];
+	
+	for (SPConsoleMessage *message in messagesVisibleSet) 
+	{
+		// As we are going to save the messages as an SQL file we need to comment 
+		// the timestamps and connections if included.
+		if (timeStamps || connections) [consoleString appendString:@"/* "];
+		
+		// If the timestamp column is not hidden we need to include them in the copy
+		if (timeStamps) {
+			[consoleString appendString:[dateFormatter stringFromDate:[message messageDate]]];
+			[consoleString appendString:@" "];					
+		}
+		
+		// If the connection column is not hidden we need to include them in the copy
+		if (connections) {
+			[consoleString appendString:[message messageConnection]];
+			[consoleString appendString:@" "];
+		}
+			
+		// Close the comment
+		if (timeStamps || connections) [consoleString appendString:@"*/ "];
+		
+		[consoleString appendString:[message message]];
+		[consoleString appendString:@"\n"];		
+	}
+	
+	return consoleString;
+}
+
+/**
+ * Adds the supplied message to the query console.
+ */
+- (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error
+{
+	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "] stringByAppendingString:@";"] date:[NSDate date] connection:connection];
+	
+	[consoleMessage setIsError:error];
+	
+	[messagesFullSet addObject:consoleMessage];
+	
+	// If filtering is active, determine whether to add a reference to the filtered set
+	if ((showSelectStatementsAreDisabled || showHelpStatementsAreDisabled || filterIsActive)
+		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
+	{
+		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
+		[saveConsoleButton setEnabled:YES];
+		[clearConsoleButton setEnabled:YES];
+	}
+	
+	// Reload the table and scroll to the new message if it's visible (for speed)
+	if (allowConsoleUpdate && [[self window] isVisible]) {
+		[consoleTableView reloadData];
+		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+	}
 }
 
 @end
