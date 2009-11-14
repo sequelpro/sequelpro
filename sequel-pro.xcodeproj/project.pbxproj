@@ -660,7 +660,7 @@
 		BCA6271B1031B9D40047E5D5 /* SPTooltip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTooltip.m; sourceTree = "<group>"; };
 		BCA6F630100FA7D700E80253 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/FieldEditorSheet.xib; sourceTree = "<group>"; };
 		BCB56190106F88E300167321 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = "English.lproj/sequel-pro-print-template.html"; sourceTree = "<group>"; };
-		BCB56194106F893700167321 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = English; path = English.lproj/ContentFilters.plist; sourceTree = "<group>"; };
+		BCB56194106F893700167321 /* ContentFilters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ContentFilters.plist; sourceTree = "<group>"; };
 		BCB56198106F8A1600167321 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = English; path = English.lproj/EditorQuickLookTypes.plist; sourceTree = "<group>"; };
 		BCCBD7FB104408B000D4C50A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SaveSPFAccessory.xib; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
@@ -2059,11 +2059,11 @@
 		BCB56196106F893F00167321 /* ContentFilters.plist */ = {
 			isa = PBXVariantGroup;
 			children = (
-				BCB56194106F893700167321 /* English */,
+				BCB56194106F893700167321 /* ContentFilters.plist */,
 			);
 			name = ContentFilters.plist;
-			path = "/Users/stuart/Documents/Projects/SequelPro/sequel-pro/Resources";
-			sourceTree = "<absolute>";
+			path = English.lproj;
+			sourceTree = "<group>";
 		};
 		BCB5619A106F8A1B00167321 /* EditorQuickLookTypes.plist */ = {
 			isa = PBXVariantGroup;
