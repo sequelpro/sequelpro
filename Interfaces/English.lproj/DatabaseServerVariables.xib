@@ -193,7 +193,7 @@
 													<bytes key="NSWhite">MC41AA</bytes>
 												</object>
 											</object>
-											<double key="NSRowHeight">13</double>
+											<double key="NSRowHeight">16</double>
 											<int key="NSTvFlags">1514176512</int>
 											<reference key="NSDelegate"/>
 											<reference key="NSDataSource"/>
@@ -256,7 +256,7 @@
 							<reference key="NSContentView" ref="892724959"/>
 							<reference key="NSHeaderClipView" ref="551149994"/>
 							<reference key="NSCornerView" ref="682935021"/>
-							<bytes key="NSScrollAmts">QSAAAEEgAABBcAAAQXAAAA</bytes>
+							<bytes key="NSScrollAmts">QSAAAEEgAABBkAAAQZAAAA</bytes>
 						</object>
 						<object class="NSButton" id="980756321">
 							<reference key="NSNextResponder" ref="605976451"/>
@@ -816,8 +816,6 @@
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="NSArray" key="dict.sortedKeys">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>-1.IBPluginDependency</string>
-					<string>-2.IBPluginDependency</string>
 					<string>-3.IBPluginDependency</string>
 					<string>1.IBEditorWindowLastContentRect</string>
 					<string>1.IBPluginDependency</string>
@@ -868,8 +866,6 @@
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{536, 452}, {411, 341}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

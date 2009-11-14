@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="7"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -359,7 +359,7 @@
 													<bytes key="NSWhite">MC41AA</bytes>
 												</object>
 											</object>
-											<double key="NSRowHeight">13</double>
+											<double key="NSRowHeight">16</double>
 											<int key="NSTvFlags">1514176512</int>
 											<reference key="NSDelegate"/>
 											<reference key="NSDataSource"/>
@@ -422,7 +422,7 @@
 							<reference key="NSContentView" ref="605698422"/>
 							<reference key="NSHeaderClipView" ref="908569337"/>
 							<reference key="NSCornerView" ref="779891178"/>
-							<bytes key="NSScrollAmts">QSAAAEEgAABBcAAAQXAAAA</bytes>
+							<bytes key="NSScrollAmts">QSAAAEEgAABBkAAAQZAAAA</bytes>
 						</object>
 						<object class="NSButton" id="11057255">
 							<reference key="NSNextResponder" ref="1010674838"/>
