@@ -216,28 +216,9 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	} else {
 		[indexedColumnsField setNumberOfVisibleItems:10];
 	}
-
-	// Reset font for field and index table
-	NSEnumerator *indexColumnsEnumerator = [[indexView tableColumns] objectEnumerator];
-	NSEnumerator *fieldColumnsEnumerator = [[tableSourceView tableColumns] objectEnumerator];
-	id indexColumn;
-	id fieldColumn;
-	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-
-	while ( (indexColumn = [indexColumnsEnumerator nextObject]) )
-		if ( useMonospacedFont )
-			[[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		else 
-			[[indexColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-
-	while ( (fieldColumn = [fieldColumnsEnumerator nextObject]) )
-		if ( useMonospacedFont )
-			[[fieldColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		else
-			[[fieldColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-
-	[tableSourceView reloadData];
+	
 	[indexView reloadData];
+	[tableSourceView reloadData];
 	
 	// display and *then* tile to force scroll bars to be in the correct position
 	[[tableSourceView enclosingScrollView] display];
@@ -246,8 +227,8 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	// Enable 'Duplicate field' if at least one field is specified
 	// if no field is selected 'Duplicate field' will copy the last field
 	// Enable 'Duplicate field' only for tables!
-	if([tablesListInstance tableType] == SP_TABLETYPE_TABLE)
-			[copyFieldButton setEnabled:enableInteraction && ([tableSourceView numberOfRows] > 0)];
+	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE)
+		[copyFieldButton setEnabled:enableInteraction && ([tableSourceView numberOfRows] > 0)];
 	else
 		[copyFieldButton setEnabled:NO];
 
@@ -255,16 +236,15 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 }
 
-/*
-reloads the table (performing a new mysql-query)
-*/
+/**
+ * Reloads the table (performing a new mysql-query)
+ */
 - (IBAction)reloadTable:(id)sender
 {
 	[tableDataInstance resetAllData];
 	[tablesListInstance setStatusRequiresReload:YES];
 	[self loadTable:selectedTable];
 }
-
 
 #pragma mark -
 #pragma mark Edit methods
@@ -482,39 +462,15 @@ closes the keySheet
 #pragma mark -
 #pragma mark Additional methods
 
-/*
-sets the connection (received from TableDocument) and makes things that have to be done only once 
-*/
+/**
+ * Sets the connection (received from TableDocument) and makes things that have to be done only once 
+ */
 - (void)setConnection:(MCPConnection *)theConnection
 {
-	NSEnumerator *indexColumnsEnumerator = [[indexView tableColumns] objectEnumerator];
-	NSEnumerator *fieldColumnsEnumerator = [[tableSourceView tableColumns] objectEnumerator];
-	id indexColumn;
-	id fieldColumn;
-
 	mySQLConnection = theConnection;
 
-	//set up tableView
+	// Set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
-
-	while ( (indexColumn = [indexColumnsEnumerator nextObject]) ) {
-		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-			[[indexColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		}
-		else 
-		{
-			[[indexColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
-	}
-	while ( (fieldColumn = [fieldColumnsEnumerator nextObject]) ) {
-		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-			[[fieldColumn dataCell] setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		}
-		else
-		{
-			[[fieldColumn dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
-	}
 }
 
 /*
@@ -822,9 +778,28 @@ fetches the result as an array with a dictionary for each row in it
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
+	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 		[indexView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+	// Use monospaced fonts preference changed
+	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
+		
+		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		
+		for (NSTableColumn *indexColumn in [indexView tableColumns])
+		{
+			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		for (NSTableColumn *fieldColumn in [tableSourceView tableColumns])
+		{
+			[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		[tableSourceView reloadData];
+		[indexView reloadData];
 	}
 }
 
@@ -1057,26 +1032,12 @@ returns a dictionary containing enum/set field names as key and possible values 
 	return (aTableView == tableSourceView) ? [tableFields count] : [indexes count];
 }
 
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
-{
-	id theRow, theValue;
-	
-	if ( aTableView == tableSourceView ) {
-		theRow = [tableFields objectAtIndex:rowIndex];
-	} else {
-		theRow = [indexes objectAtIndex:rowIndex];
-	}
-	theValue = [theRow objectForKey:[aTableColumn identifier]];
-
-	return theValue;
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+{	
+	return [(aTableView == tableSourceView) ? [tableFields objectAtIndex:rowIndex] : [indexes objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
 
-- (void)tableView:(NSTableView *)aTableView
-			setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
     // Make sure that the drag operation is for the right table view
     if (aTableView!=tableSourceView) return;
@@ -1369,12 +1330,12 @@ would result in a position change.
 
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
 {
-		return proposedMax - 150;
+	return proposedMax - 150;
 }
 
 - (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
 {
-		return proposedMin + 150;
+	return proposedMin + 150;
 }
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
@@ -1409,7 +1370,20 @@ would result in a position change.
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	[indexView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
+		
+	// Set the strutcture and index view's font
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	
+	for (NSTableColumn *indexColumn in [indexView tableColumns])
+	{
+		[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+	
+	for (NSTableColumn *fieldColumn in [tableSourceView tableColumns])
+	{
+		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+	
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)

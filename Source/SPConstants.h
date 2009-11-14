@@ -78,6 +78,9 @@ typedef enum {
 extern NSString *SPKillProcessQueryMode;
 extern NSString *SPKillProcessConnectionMode;
 
+// Default monospaced font name
+extern NSString *SPDefaultMonospacedFontName;
+
 // Preference key constants
 // General Prefpane
 extern NSString *SPDefaultFavorite;

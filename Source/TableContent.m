@@ -119,11 +119,14 @@
 	return self;
 }
 
+/**
+ * Initialise various interface controls
+ */
 - (void)awakeFromNib
 {
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
+	
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -319,11 +322,7 @@
 		}
 		
 		// Set the data cell font according to the preferences
-		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-			[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		} else {
-			[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
+		[dataCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 
 		// Assign the data cell
 		[theCol setDataCell:dataCell];
@@ -1257,14 +1256,8 @@
 	
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
 	
-	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-		[argumentField setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		[limitRowsField setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	} else {
-		[limitRowsField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[argumentField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
 	[limitRowsStepper setEnabled:NO];
+	
 	if ( ![prefs boolForKey:SPLimitResults] ) {
 		[limitRowsField setStringValue:@""];
 	}
@@ -2878,8 +2871,21 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
+	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+	// Use monospaced fonts preference changed
+	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
+		
+		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		
+		for (NSTableColumn *column in [tableContentView tableColumns])
+		{
+			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		[tableContentView reloadData];
 	}
 }
 

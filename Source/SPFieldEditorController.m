@@ -131,18 +131,15 @@
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
 {
-
-	if ( ![prefs objectForKey:SPFieldEditorSheetFont] )
-		if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-			[editTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		} else {
-			[editTextView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-			// [prefs setObject:[NSArchiver archivedDataWithRootObject:[editTextView font]] forKey:@"FieldEditorSheetFont"];
-		}
-	else
+	// If required, use monospaced fonts
+	if (![prefs objectForKey:SPFieldEditorSheetFont]) {
+		[editTextView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+	else {
 		[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
+	}
 		
-	[hexTextView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+	[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 
 	[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), fieldName]];
 
@@ -153,7 +150,7 @@
 	[editTextView setHidden:YES];
 	[editTextScrollView setHidden:YES];
 	
-	if(!isEditable) {
+	if (!isEditable) {
 		[editSheetOkButton setHidden:YES];
 		[editSheetCancelButton setHidden:YES];
 		[editSheetIsNotEditableCancelButton setHidden:NO];
@@ -180,7 +177,7 @@
 	[editSheetSegmentControl setHidden:(!isBlob)];
 
 	// Set window's min size since no segment and quicklook buttons are hidden
-	if(isBlob) {
+	if (isBlob) {
 		[editSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
 		[editSheet setMinSize:NSMakeSize(560, 200)];
 	} else {

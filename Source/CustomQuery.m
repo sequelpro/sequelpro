@@ -468,11 +468,7 @@
 					SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 					[dataCell setEditable:YES];
 					[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-					if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-						[dataCell setFont:[NSFont fontWithName:@"Monaco" size:10]];
-					} else {
-						[dataCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-					}
+					[dataCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 					[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 					[theCol setDataCell:dataCell];
 					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
@@ -2623,8 +2619,21 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
+	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [customQueryView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+	// Use monospaced fonts preference changed
+	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
+				
+		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+				
+		for (NSTableColumn *column in [customQueryView tableColumns])
+		{
+			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		[customQueryView reloadData];
 	}
 }
 
@@ -2761,7 +2770,6 @@
 	for (i=6; i< [menu numberOfItems]; i++)
 		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG 
 			&& ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
-	
 }
 
 - (IBAction)filterQueryHistory:(id)sender
@@ -2771,19 +2779,17 @@
 	NSString *searchPattern = [queryHistorySearchField stringValue];
 	for (i=2; i< [menu numberOfItems]; i++)
 		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
-	
 }
 
 - (void)awakeFromNib
 {
-
 	// Set pre-defined menu tags 
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
 	
 	// Set the structure and index view's vertical gridlines if required
-	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
+	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];	
+	
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -2802,6 +2808,7 @@
 	[usedQuery release];
 	[fullResult release];
 	[favoritesManager release];
+	
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];

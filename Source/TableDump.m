@@ -2525,14 +2525,14 @@
 	[switchButton release];
 	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleXMLTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 		[[[fieldMappingTableView tableColumnWithIdentifier:@"0"] dataCell]
-		 setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-		[errorsView setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
+		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
+		[errorsView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 	} else {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -2544,7 +2544,6 @@
 		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[errorsView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
-	//	[self reloadTables:self];
 }
 
 #pragma mark -
@@ -2552,30 +2551,15 @@
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
-	if ( aTableView == fieldMappingTableView ) {
-		return [fieldMappingTableColumnNames count];
-	} else {
-		return [tables count];
-	}
+	return (aTableView == fieldMappingTableView) ? [fieldMappingTableColumnNames count] : [tables count];
 }
 
-- (void)tableView:(NSTableView *)aTableView 
-  willDisplayCell:(id)aCell 
-   forTableColumn:(NSTableColumn *)aTableColumn 
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-	if ( [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts] ) {
-		[aCell setFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-	}
-	else
-	{
-		[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+	[aCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
 
-- (id)tableView:(NSTableView *)aTableView
-objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	id returnObject = nil;
 	
@@ -2603,15 +2587,12 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
 	return returnObject;
 }
 
-- (void)tableView:(NSTableView *)aTableView
-   setObjectValue:(id)anObject
-   forTableColumn:(NSTableColumn *)aTableColumn
-			  row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
 	if ( aTableView == fieldMappingTableView ) {		
 		[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
-		
-	} else {
+	} 
+	else {
 		[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
 	}
 }

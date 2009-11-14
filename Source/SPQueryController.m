@@ -153,6 +153,13 @@ static SPQueryController *sharedQueryController = nil;
 	// Set the process table view's vertical gridlines if required
 	[consoleTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
+	// Set the strutcture and index view's font
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	
+	for (NSTableColumn *column in [consoleTableView tableColumns])
+	{
+		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
 }
 
 #pragma mark -
@@ -395,9 +402,21 @@ static SPQueryController *sharedQueryController = nil;
 	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[loggingDisabledTextField setStringValue:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? @"" : @"Query logging is currently disabled"];
 	}
-	// Show/hide vertical grid lines in console table view
+	// Display table veiew vertical gridlines preference changed
 	else if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [consoleTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+	// Use monospaced fonts preference changed
+	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
+		
+		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		
+		for (NSTableColumn *column in [consoleTableView tableColumns])
+		{
+			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		[consoleTableView reloadData];
 	}
 }
 

@@ -174,6 +174,12 @@
 	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 
+	// Register observers for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	
 	// Register observers for when the logging preference changes
 	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
 
@@ -3300,9 +3306,6 @@
 	[aController setShouldCascadeWindows:YES];
 	[super windowControllerDidLoadNib:aController];
 
-	//NSEnumerator *theCols = [[variablesTableView tableColumns] objectEnumerator];
-	//NSTableColumn *theCol;
-
 	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
 												 name:@"SMySQLQueryWillBePerformed" object:self];
@@ -3310,21 +3313,6 @@
 												 name:@"SMySQLQueryHasBeenPerformed" object:self];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
-
-	//set up interface
-	/*if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont fontWithName:@"Monaco" size:[NSFont smallSystemFontSize]]];
-
-		while ( (theCol = [theCols nextObject]) ) {
-			[[theCol dataCell] setFont:[NSFont fontWithName:@"Monaco" size:10]];
-		}
-	} else {
-		[[SPQueryController sharedQueryController] setConsoleFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-
-		while ( (theCol = [theCols nextObject]) ) {
-			[[theCol dataCell] setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
-	}*/
 }
 
 // NSWindow delegate methods

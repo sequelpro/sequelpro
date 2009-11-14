@@ -60,8 +60,21 @@
  */
 - (void)awakeFromNib
 {
+	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+	
 	// Set the process table view's vertical gridlines if required
-	[processListTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[processListTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
+	// Set the strutcture and index view's font
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	
+	for (NSTableColumn *column in [processListTableView tableColumns])
+	{
+		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+	
+	// Register as an observer for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
 }
 
 #pragma mark -
@@ -326,8 +339,21 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {	
+	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [processListTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+	// Use monospaced fonts preference changed
+	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
+		
+		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		
+		for (NSTableColumn *column in [processListTableView tableColumns])
+		{
+			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		
+		[processListTableView reloadData];
 	}
 }
 

@@ -29,6 +29,9 @@
 NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
 NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
 
+// Default monospaced font name
+NSString *SPDefaultMonospacedFontName           = @"Courier";
+
 // Preference key constants
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";

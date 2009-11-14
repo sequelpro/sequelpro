@@ -31,7 +31,7 @@
 //	
 //	[SPTooltip showWithObject:@"<h1>Hello</h1>I am a <b>tooltip</b>" ofType:@"html" 
 //			displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
-//			@"Monaco", @"fontname", 
+//			SPDefaultMonospacedFontName, @"fontname", 
 //			@"#EEEEEE", @"backgroundcolor", 
 //			@"20", @"fontsize", 
 //			@"transparent", @"transparent", nil]];
