@@ -65,7 +65,7 @@
 	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
-	BOOL isFiltered, isLimited, maxNumRowsIsEstimate;
+	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
 	NSUserDefaults *prefs;
 	int currentlyEditingRow, maxNumRows;
 

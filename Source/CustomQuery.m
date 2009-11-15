@@ -388,6 +388,7 @@
 	MCPStreamingResult	*streamingResult  = nil;
 	NSMutableString		*errors     = [NSMutableString string];
 	SEL					callbackMethod = NULL;
+	NSString			*taskButtonString;
 	
 	int i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
@@ -425,6 +426,13 @@
 	long queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
+	// Enable task cancellation
+	if (queryCount > 1)
+		taskButtonString = NSLocalizedString(@"Stop queries", @"Stop queries string");
+	else
+		taskButtonString = NSLocalizedString(@"Stop query", @"Stop query string");
+	[tableDocumentInstance enableTaskCancellationWithTitle:taskButtonString callbackObject:nil callbackFunction:NULL];
+
 	// Perform the supplied queries in series
 	for ( i = 0 ; i < queryCount ; i++ ) {
 
@@ -450,7 +458,7 @@
 
 		// If this is the last query, retrieve and store the result; otherwise,
 		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount) {
+		if (totalQueriesRun == queryCount || [mySQLConnection queryCancelled]) {
 
 			// get column definitions for the result array
 			if (cqColumnDefinition) [cqColumnDefinition release];
@@ -507,7 +515,17 @@
 			totalAffectedRows += [streamingResult numOfRows];
 
 		// Store any error messages
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || [mySQLConnection queryCancelled]) {
+
+			NSString *errorString;
+			if ([mySQLConnection queryCancelled]) {
+				if ([mySQLConnection queryCancellationUsedReconnect])
+					errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
+				else
+					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
+			} else {
+				errorString = [mySQLConnection getLastErrorMessage];
+			}
 
 			// If the query errored, append error to the error log for display at the end
 			if ( queryCount > 1 ) {
@@ -519,35 +537,37 @@
 					// Update error text for the user
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
 										i+1,
-										[mySQLConnection getLastErrorMessage]]];
+										errorString]];
 					[errorText setStringValue:errors];
-					// ask the user to continue after detecting an error
-					NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-					[alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
-					[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
-					[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
-					[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
-					[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
-					[alert setAlertStyle:NSWarningAlertStyle];
-					int choice = [alert runModal];
-					switch (choice){
-						case NSAlertFirstButtonReturn:
-							suppressErrorSheet = YES;
-						case NSAlertSecondButtonReturn:
-							break;
-						default:
-							if(i < queryCount-1) // output that message only if it was not the last one
-								[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
-							i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
-					}
 
+					// ask the user to continue after detecting an error
+					if (![mySQLConnection queryCancelled]) {
+						NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+						[alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
+						[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
+						[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
+						[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
+						[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
+						[alert setAlertStyle:NSWarningAlertStyle];
+						int choice = [alert runModal];
+						switch (choice){
+							case NSAlertFirstButtonReturn:
+								suppressErrorSheet = YES;
+							case NSAlertSecondButtonReturn:
+								break;
+							default:
+								if(i < queryCount-1) // output that message only if it was not the last one
+									[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
+								i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
+						}
+					}
 				} else {
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
 											i+1,
-											[mySQLConnection getLastErrorMessage]]];
+											errorString]];
 				}
 			} else {
-				[errors setString:[mySQLConnection getLastErrorMessage]];
+				[errors setString:errorString];
 			}
 		} else {
 			// Check if table/db list needs an update
@@ -557,6 +577,9 @@
 			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
 				databaseWasChanged = YES;
 		}
+
+		// If the query was cancelled, end all queries.
+		if ([mySQLConnection queryCancelled]) break;
 	}
 
 	// Reload table list if at least one query began with drop, alter, rename, or create
@@ -605,7 +628,7 @@
 	}
 
 	// Error checking
-	if ( [errors length] && !queryIsTableSorter ) {
+	if ( [mySQLConnection queryCancelled] || ([errors length] && !queryIsTableSorter)) {
 		// set the error text
 		[errorText setStringValue:errors];
 		// select the line x of the first error if error message contains "at line x"
@@ -656,7 +679,18 @@
 	}
 	
 	// Set up the status string
-	if ( totalQueriesRun > 1 ) {
+	if ( [mySQLConnection queryCancelled] ) {
+		if (totalQueriesRun > 1) {
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled in query %i, after %@", @"text showing multiple queries were cancelled"),
+                                              totalQueriesRun,
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+		} else {
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled after %@", @"text showing a query was cancelled"),
+                                              [NSString stringForTimeInterval:executionTime]
+                                              ]];
+		}
+	} else if ( totalQueriesRun > 1 ) {
 		if (totalAffectedRows==1) {
 			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %i queries taking %@", @"text showing one row has been affected by multiple queries"),
                                               totalQueriesRun,

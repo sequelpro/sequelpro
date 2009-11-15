@@ -101,6 +101,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		connectionProxy = nil;
 		connectionStartTime = -1;
 		lastQueryExecutedAtTime = CGFLOAT_MAX;
+		queryCancelled = NO;
+		queryCancelUsedReconnect = NO;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -1261,6 +1263,9 @@ void performThreadedKeepAlive(void *ptr)
 	NSInteger		currentMaxAllowedPacket = -1;
 	BOOL			isQueryRetry = NO;
 	NSString		*queryErrorMessage = nil;
+
+	// Reset the query cancelled boolean
+	queryCancelled = NO;
 	
 	// If no connection is present, return nil.
 	if (!mConnected) {
@@ -1290,7 +1295,6 @@ void performThreadedKeepAlive(void *ptr)
 	// minimising the impact of performing lots of additional checks.
 	if ([self timeConnected] - lastQueryExecutedAtTime > 30
 		&& ![self checkConnection]) {
-			NSLog(@"returning nil!");
 			return nil;
 			}
 
@@ -1366,7 +1370,7 @@ void performThreadedKeepAlive(void *ptr)
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCP_NO_STREAMING) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-					[queryLock unlock];
+					if (!queryCancelled || !queryCancelUsedReconnect) [queryLock unlock];
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
 				} else if (streamResultType == MCP_FAST_STREAMING) {
@@ -1394,16 +1398,23 @@ void performThreadedKeepAlive(void *ptr)
 			
 		// On failure, set the error messages and IDs
 		} else {
-			if (streamResultType == MCP_NO_STREAMING) [queryLock unlock];
-			else [self unlockConnection];
+			if (!queryCancelled || !queryCancelUsedReconnect) {
+				if (streamResultType == MCP_NO_STREAMING) [queryLock unlock];
+				else [self unlockConnection];
+			}
 			
-			queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
-			queryErrorId = mysql_errno(mConnection);
+			if (queryCancelled) {
+				queryErrorMessage = [[NSString alloc] initWithString:NSLocalizedString(@"Query cancelled.", @"Query cancelled error")];
+				queryErrorId = 1152;
+			} else {			
+				queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+				queryErrorId = mysql_errno(mConnection);
 
-			// If the error was a connection error, retry once
-			if (!isQueryRetry && retryAllowed && [MCPConnection isErrorNumberConnectionError:queryErrorId]) {
-				isQueryRetry = YES;
-				continue;
+				// If the error was a connection error, retry once
+				if (!isQueryRetry && retryAllowed && [MCPConnection isErrorNumberConnectionError:queryErrorId]) {
+					isQueryRetry = YES;
+					continue;
+				}
 			}
 		}
 		
@@ -1464,6 +1475,104 @@ void performThreadedKeepAlive(void *ptr)
 	return 0;
 }
 
+/**
+ * Cancel the currently running query.  This tries to kill the current query, and if that
+ * isn't possible, resets the connection.
+ */
+- (void) cancelCurrentQuery
+{
+
+	// If not connected, return.
+	if (![self isConnected]) return;
+
+	// Check whether a query is actually being performed - if not, also return.
+	if ([queryLock tryLock]) {
+		[queryLock unlock];
+		return;
+	}
+
+	// Set queryCancelled to prevent query retries
+	queryCancelled = YES;
+
+	// For MySQL server versions >=5, try to kill the connection.  This requires
+	// setting up a new connection, and running a KILL QUERY via it.
+	if ([self serverMajorVersion] >= 5) {
+
+		MYSQL *killerConnection = mysql_init(NULL);
+		if (killerConnection) {
+			const char *theLogin = [self cStringFromString:connectionLogin];
+			const char *theHost;
+			const char *thePass;
+			const char *theSocket;
+			void *connectionSetupStatus;
+
+			mysql_options(killerConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+
+			// Set up the host, socket and password as per the connect method
+			if (!connectionHost || ![connectionHost length]) {
+				theHost = NULL;
+			} else {
+				theHost = [self cStringFromString:connectionHost];
+			}
+			if (connectionSocket == nil || ![connectionSocket length]) {
+				theSocket = kMCPConnectionDefaultSocket;
+			} else {
+				theSocket = [self cStringFromString:connectionSocket];
+			}
+			if (!connectionPassword) {
+				if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+					thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+				}
+			} else {		
+				thePass = [self cStringFromString:connectionPassword];
+			}
+			
+			// Connect
+			connectionSetupStatus = mysql_real_connect(killerConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+			thePass = NULL;
+			if (connectionSetupStatus) {
+				NSStringEncoding killerConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(killerConnection)];
+				NSString *killerQueryString = [NSString stringWithFormat:@"KILL QUERY %lu", mConnection->thread_id];
+				NSData *encodedKillerQueryData = NSStringDataUsingLossyEncoding(killerQueryString, killerConnectionEncoding, 1);
+				const char *killerQueryCString = [encodedKillerQueryData bytes];
+				unsigned long killerQueryCStringLength = [encodedKillerQueryData length];
+				if (mysql_real_query(killerConnection, killerQueryCString, killerQueryCStringLength) == 0) {
+					mysql_close(killerConnection);
+					queryCancelUsedReconnect = NO;
+					return;
+				}
+				mysql_close(killerConnection);
+			}
+		}
+	}
+
+	// Reset the connection
+	[self unlockConnection];
+	[self reconnect];
+
+	// Set queryCancelled again to handle requery cleanups, and return.
+	queryCancelled = YES;
+	queryCancelUsedReconnect = YES;
+}
+
+/**
+ * Return whether the last query was cancelled
+ */
+- (BOOL)queryCancelled
+{
+	return queryCancelled;
+}
+
+/**
+ * If the last query was cancelled, returns whether that cancellation
+ * required a connection reset.  If the last query was not cancelled
+ * the behaviour is undefined.
+ */
+- (BOOL)queryCancellationUsedReconnect
+{
+	return queryCancelUsedReconnect;
+}
+
 #pragma mark -
 #pragma mark Connection locking
 
@@ -1483,6 +1592,13 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (void)unlockConnection
 {
+
+	// Make sure the unlock is performed safely - eg for reconnected queries
+	if ([queryLock tryLock]) {
+		[queryLock unlock];
+		return;
+	}
+
 	if ([NSThread isMainThread]) [queryLock unlock];
 	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
 }

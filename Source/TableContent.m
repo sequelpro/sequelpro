@@ -86,6 +86,7 @@
 
 		isFiltered = NO;
 		isLimited = NO;
+		isInterruptedLoad = NO;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 		
@@ -532,7 +533,10 @@
 		rowsToLoad = rowsToLoad - ([limitRowsField intValue]-1);
 		if (rowsToLoad > [prefs integerForKey:SPLimitResultsValue]) rowsToLoad = [prefs integerForKey:SPLimitResultsValue];
 	}
-	
+
+	// If within a task, allow this query to be cancelled
+	[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Stop", @"Stop load") callbackObject:nil callbackFunction:NULL];
+
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
@@ -541,7 +545,7 @@
 	[streamingResult release];
 
 	// If the result is empty, and a limit is active, reset the limit
-	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount) {
+	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		[limitRowsField setStringValue:@"1"];
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
@@ -549,6 +553,14 @@
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 		[streamingResult release];
 	}
+	
+	if ([mySQLConnection queryCancelled] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+		isInterruptedLoad = YES;
+	else 
+		isInterruptedLoad = NO;
+
+	// End cancellation ability
+	[tableDocumentInstance disableTaskCancellation];
 
 	if ([prefs boolForKey:SPLimitResults]
 		&& ([limitRowsField intValue] > 1
@@ -821,8 +833,15 @@
 	NSString *rowString;
 	NSMutableString *countString = [NSMutableString string];
 
+	// If the result is partial due to an error or query cancellation, show a very basic count
+	if (isInterruptedLoad) {
+		if (tableRowsCount == 1)
+			[countString appendFormat:NSLocalizedString(@"%d row in partial load", @"text showing a single row a partially loaded result"), tableRowsCount];
+		else
+			[countString appendFormat:NSLocalizedString(@"%d rows in partial load", @"text showing how many rows are in a partially loaded result"), tableRowsCount];
+		
 	// If no filter or limit is active, show just the count of rows in the table
-	if (!isFiltered && !isLimited) {
+	} else if (!isFiltered && !isLimited) {
 		if (tableRowsCount == 1)
 			[countString appendFormat:NSLocalizedString(@"%d row in table", @"text showing a single row in the result"), tableRowsCount];
 		else
@@ -1128,7 +1147,7 @@
 	
 	NSString *contextInfo = @"removerow";
 	
-	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited) {
+	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited && !isInterruptedLoad) {
 		
 		contextInfo = @"removeallrows";
 		
@@ -2288,7 +2307,7 @@
 	BOOL checkStatusCount = NO;
 
 	// For unfiltered and non-limited tables, use the result count - and update the status count
-	if (!isLimited && !isFiltered) {
+	if (!isLimited && !isFiltered && !isInterruptedLoad) {
 		maxNumRows = tableRowsCount;
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];

@@ -138,6 +138,9 @@
 	float taskProgressValueDisplayInterval;
 	NSTimer *taskDrawTimer;
 	NSViewAnimation *taskFadeAnimator;
+	BOOL taskCanBeCancelled;
+	id taskCancellationCallbackObject;
+	SEL taskCancellationCallbackSelector;
 
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
@@ -186,6 +189,9 @@
 - (void) setTaskPercentage:(float)taskPercentage;
 - (void) setTaskProgressToIndeterminate;
 - (void) endTask;
+- (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction;
+- (void) disableTaskCancellation;
+- (IBAction) cancelTask:(id)sender;
 - (BOOL) isWorking;
 - (void) setDatabaseListIsSelectable:(BOOL)isSelectable;
 - (void) centerTaskWindow;

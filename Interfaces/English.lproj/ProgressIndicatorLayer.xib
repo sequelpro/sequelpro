@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10B504</string>
-		<string key="IBDocument.InterfaceBuilderVersion">732</string>
+		<string key="IBDocument.InterfaceBuilderVersion">740</string>
 		<string key="IBDocument.AppKitVersion">1038.2</string>
 		<string key="IBDocument.HIToolboxVersion">437.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,7 +15,7 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>732</string>
+				<string>740</string>
 				<string>1.2.1</string>
 			</object>
 		</object>
@@ -117,8 +117,8 @@
 									</object>
 									<object class="BWTransparentButton" id="540103856">
 										<reference key="NSNextResponder" ref="950529842"/>
-										<int key="NSvFlags">-2147483358</int>
-										<string key="NSFrame">{{89, 4}, {81, 28}}</string>
+										<int key="NSvFlags">290</int>
+										<string key="NSFrame">{{64, 4}, {132, 28}}</string>
 										<reference key="NSSuperview" ref="950529842"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="BWTransparentButtonCell" key="NSCell" id="1030687082">
@@ -217,6 +217,14 @@
 					</object>
 					<int key="connectionID">34</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">cancelTask:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="540103856"/>
+					</object>
+					<int key="connectionID">35</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -259,20 +267,11 @@
 						<reference key="object" ref="450247213"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="540103856"/>
 							<reference ref="545295640"/>
+							<reference ref="540103856"/>
 							<reference ref="602680912"/>
 						</object>
 						<reference key="parent" ref="1005"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">17</int>
-						<reference key="object" ref="540103856"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1030687082"/>
-						</object>
-						<reference key="parent" ref="450247213"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">15</int>
@@ -292,6 +291,15 @@
 						<int key="objectID">16</int>
 						<reference key="object" ref="39991509"/>
 						<reference key="parent" ref="545295640"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">17</int>
+						<reference key="object" ref="540103856"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1030687082"/>
+						</object>
+						<reference key="parent" ref="450247213"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">18</int>
@@ -373,7 +381,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">34</int>
+			<int key="maxID">37</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -555,6 +563,7 @@
 							<string>addDatabase:</string>
 							<string>analyzeTable:</string>
 							<string>backForwardInHistory:</string>
+							<string>cancelTask:</string>
 							<string>checkTable:</string>
 							<string>checksumTable:</string>
 							<string>chooseDatabase:</string>
@@ -595,6 +604,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -690,6 +700,7 @@
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
 							<string>taskCancelButton</string>
+							<string>taskCancellationCallbackObject</string>
 							<string>taskDescriptionText</string>
 							<string>taskProgressIndicator</string>
 							<string>taskProgressLayer</string>
@@ -752,6 +763,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSButton</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSBox</string>

@@ -103,6 +103,9 @@
 		taskProgressValueDisplayInterval = 1;
 		taskDrawTimer = nil;
 		taskFadeAnimator = nil;
+		taskCanBeCancelled = NO;
+		taskCancellationCallbackObject = nil;
+		taskCancellationCallbackSelector = NULL;
 
 		keyChainID = nil;
 	}
@@ -223,15 +226,17 @@
 		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
 	}
 
-	// Set up the progress indicator child window and later - add to main window, change indicator color and size
+	// Set up the progress indicator child window and layer - add to main window, change indicator color and size
+	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
 	[taskProgressWindow setOpaque:NO];
-	[taskProgressWindow setIgnoresMouseEvents:YES];
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
 	[taskProgressWindow setAlphaValue:0.0];
-	[[taskProgressWindow contentView] addSubview:taskProgressLayer];
+	[taskProgressWindow orderWindow:NSWindowAbove relativeTo:[tableWindow windowNumber]];
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
-	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
+	[taskProgressWindow release];
+	[taskProgressWindow setContentView:taskProgressLayer];
+	[self centerTaskWindow];
 }
 
 /**
@@ -1258,7 +1263,7 @@
 		[historyControl setEnabled:NO];
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
-
+		
 		// Schedule appearance of the task window in the near future
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
 	}
@@ -1333,6 +1338,9 @@
 	// Decrement the working level
 	_isWorkingLevel--;
 
+	// Ensure cancellation interface is reset
+	[self disableTaskCancellation];
+
 	// If all tasks have ended, re-enable the interface
 	if (!_isWorkingLevel) {
 
@@ -1354,6 +1362,57 @@
 		databaseListIsSelectable = YES;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
 		[mainToolbar validateVisibleItems];
+	}
+}
+
+/**
+ * Allow a task to be cancelled, enabling the button with a supplied title
+ * and optionally supplying a callback object and function.
+ */
+- (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction
+{
+
+	// If no task is active, return
+	if (!_isWorkingLevel) return;
+
+	if (callbackObject && callbackFunction) {
+		taskCancellationCallbackObject = callbackObject;
+		taskCancellationCallbackSelector = callbackFunction;
+	}
+	taskCanBeCancelled = YES;
+
+	[taskCancelButton setTitle:buttonTitle];
+	[taskCancelButton setEnabled:YES];
+	[taskCancelButton setHidden:NO];
+}
+
+/**
+ * Disable task cancellation.  Called automatically at the end of a task.
+ */
+- (void) disableTaskCancellation
+{
+
+	// If no task is active, return
+	if (!_isWorkingLevel) return;
+	
+	taskCanBeCancelled = NO;
+	taskCancellationCallbackObject = nil;
+	taskCancellationCallbackSelector = NULL;
+	[taskCancelButton setHidden:YES];
+}
+
+/**
+ * Action sent by the cancel button when it's active.
+ */
+- (IBAction) cancelTask:(id)sender
+{
+	if (!taskCanBeCancelled) return;
+
+	[taskCancelButton setEnabled:NO];
+	[mySQLConnection cancelCurrentQuery];
+
+	if (taskCancellationCallbackObject && taskCancellationCallbackSelector) {
+		[taskCancellationCallbackObject performSelector:taskCancellationCallbackSelector];
 	}
 }
 
@@ -3553,7 +3612,6 @@
 	if (spfSession) [spfSession release];
 	if (spfDocData) [spfDocData release];
 	if (keyChainID) [keyChainID release];
-	if (taskProgressWindow) [taskProgressWindow release];
 	
 	[super dealloc];
 }

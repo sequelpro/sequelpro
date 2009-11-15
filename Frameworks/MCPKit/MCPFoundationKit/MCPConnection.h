@@ -111,6 +111,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	uint64_t connectionStartTime;
 	
 	BOOL retryAllowed;
+	BOOL queryCancelled;
+	BOOL queryCancelUsedReconnect;
 	BOOL delegateQueryLogging;
 	BOOL delegateResponseToWillQueryString;
 	
@@ -205,6 +207,9 @@ void performThreadedKeepAlive(void *ptr);
 - (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResult;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;
+- (void)cancelCurrentQuery;
+- (BOOL)queryCancelled;
+- (BOOL)queryCancellationUsedReconnect;
 
 // Locking
 - (void)lockConnection;

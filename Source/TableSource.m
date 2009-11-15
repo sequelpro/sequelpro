@@ -1033,8 +1033,20 @@ returns a dictionary containing enum/set field names as key and possible values 
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{	
-	return [(aTableView == tableSourceView) ? [tableFields objectAtIndex:rowIndex] : [indexes objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+{
+	NSDictionary *theRow;
+
+	if (aTableView == tableSourceView) {
+		
+		// Return a placeholder if the table is reloading
+		if (rowIndex >= [tableFields count]) return @"...";
+
+		theRow = [tableFields objectAtIndex:rowIndex];
+	} else {
+		theRow = [indexes objectAtIndex:rowIndex];
+	}
+
+	return [theRow objectForKey:[aTableColumn identifier]];
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
