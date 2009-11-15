@@ -351,7 +351,6 @@
  */
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
-
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO])
 		return;
@@ -367,28 +366,34 @@
  */
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
-
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO])
 		return;
 
 	NSDictionary *statusFields = [tableDataInstance statusValues];
+	
 	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"])
 		return;
 
-	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"])
-		[tableTypePopUpButton setEnabled:YES];
+	// If we are viewing tables in the information_schema database, then disable all controls that cause table
+	// changes as these tables are not modifiable by anyone.
+	BOOL isInformationSchemaDb = [[tableDocumentInstance database] isEqualToString:@"information_schema"];
+	
+	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"]) {
+		[tableTypePopUpButton setEnabled:(!isInformationSchemaDb)];
+	}
 
-	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding])
-		[tableEncodingPopUpButton setEnabled:YES];
+	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding]) {
+		[tableEncodingPopUpButton setEnabled:(!isInformationSchemaDb)];
+	}
 
 	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count]
 		&& [statusFields objectForKey:@"Collation"])
 	{
-		[tableCollationPopUpButton setEnabled:YES];
+		[tableCollationPopUpButton setEnabled:(!isInformationSchemaDb)];
 	}
 
-	[tableCommentsTextView setEditable:YES];
+	[tableCommentsTextView setEditable:(!isInformationSchemaDb)];
 }
 
 #pragma mark -

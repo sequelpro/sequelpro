@@ -372,7 +372,6 @@ static SPQueryController *sharedQueryController = nil;
 	return [[[NSAttributedString alloc] initWithString:returnValue attributes:stringAtributes] autorelease];
 }
 
-
 #pragma mark -
 #pragma mark Other
 

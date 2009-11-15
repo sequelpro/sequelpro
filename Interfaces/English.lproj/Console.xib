@@ -12,8 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
-			<integer value="49"/>
+			<integer value="14"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -296,7 +295,7 @@
 													<string key="NSIdentifier">message</string>
 													<double key="NSWidth">367</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">1000</double>
+													<double key="NSMaxWidth">10000</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -581,6 +580,7 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{10, 6}, {151, 18}}</string>
 						<reference key="NSSuperview" ref="841319465"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="570624841">
 							<int key="NSCellFlags">-2080244224</int>
@@ -608,6 +608,7 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{10, 30}, {154, 18}}</string>
 						<reference key="NSSuperview" ref="841319465"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="640143248">
 							<int key="NSCellFlags">-2080244224</int>
@@ -628,6 +629,7 @@
 				</object>
 				<string key="NSFrameSize">{178, 54}</string>
 				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSMenu" id="1011399888">
