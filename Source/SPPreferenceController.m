@@ -336,7 +336,7 @@
 
 		// Remove passwords from the Keychain
 		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
-								account:[keychain accountForUser:user host:((type == SP_CONNECTION_SOCKET)?@"localhost":host) database:database]];
+								account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
 		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
 								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
 		
@@ -370,7 +370,7 @@
 
 		// Select the keychain passwords for duplication
 		keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
-		keychainAccount = [keychain accountForUser:[favorite objectForKey:@"user"] host:((duplicatedFavoriteType == SP_CONNECTION_SOCKET)?@"localhost":[favorite objectForKey:@"host"]) database:[favorite objectForKey:@"database"]];
+		keychainAccount = [keychain accountForUser:[favorite objectForKey:@"user"] host:((duplicatedFavoriteType == SPSocketConnection)?@"localhost":[favorite objectForKey:@"host"]) database:[favorite objectForKey:@"database"]];
 		password = [keychain getPasswordForName:keychainName account:keychainAccount];
 		keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
 		keychainSSHAccount = [keychain accountForSSHUser:[favorite objectForKey:@"sshUser"] sshHost:[favorite objectForKey:@"sshHost"]];
@@ -641,7 +641,7 @@
 {
 	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
 		[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
-		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] intValue] == SP_CONNECTION_SOCKET) {
+		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] intValue] == SPSocketConnection) {
 			[cell setFavoriteHost:@"localhost"];
 		} else {
 			[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
@@ -673,7 +673,7 @@
 
 	// Retrieve and set the password.
 	NSString *keychainName = [keychain nameForFavoriteName:[currentFavorite objectForKey:@"name"] id:[currentFavorite objectForKey:@"id"]];
-	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:(([[currentFavorite objectForKey:@"type"] intValue] == SP_CONNECTION_SOCKET)?@"localhost":[currentFavorite objectForKey:@"host"]) database:[currentFavorite objectForKey:@"database"]];
+	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:(([[currentFavorite objectForKey:@"type"] intValue] == SPSocketConnection)?@"localhost":[currentFavorite objectForKey:@"host"]) database:[currentFavorite objectForKey:@"database"]];
 	NSString *passwordValue = [keychain getPasswordForName:keychainName account:keychainAccount];
 	[standardPasswordField setStringValue:passwordValue];
 	[socketPasswordField setStringValue:passwordValue];
@@ -881,8 +881,8 @@
 	NSString *passwordValue;
 	NSString *oldKeychainName, *newKeychainName;
 	NSString *oldKeychainAccount, *newKeychainAccount;
-	NSString *oldHostnameForPassword = ([[currentFavorite objectForKey:@"type"] intValue] == SP_CONNECTION_SOCKET) ? @"localhost" : [currentFavorite objectForKey:@"host"];
-	NSString *newHostnameForPassword = ([[favoritesController valueForKeyPath:@"selection.type"] intValue] == SP_CONNECTION_SOCKET) ? @"localhost" : [favoritesController valueForKeyPath:@"selection.host"];
+	NSString *oldHostnameForPassword = ([[currentFavorite objectForKey:@"type"] intValue] == SPSocketConnection) ? @"localhost" : [currentFavorite objectForKey:@"host"];
+	NSString *newHostnameForPassword = ([[favoritesController valueForKeyPath:@"selection.type"] intValue] == SPSocketConnection) ? @"localhost" : [favoritesController valueForKeyPath:@"selection.host"];
 
 	// SQL passwords are indexed by name, host, user and database.  If any of these
 	// have changed, or a standard password field has, alter the keychain item to match.

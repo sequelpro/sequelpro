@@ -109,8 +109,8 @@
 			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:tableRow] byExtendingSelection:NO];
 			[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 		} else {
-			previousType = SP_CONNECTION_TCPIP;
-			[self resizeTabViewToConnectionType:SP_CONNECTION_TCPIP animating:NO];
+			previousType = SPTCPIPConnection;
+			[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
 		}
 
 		// If the document is set to automatically connect, do so.
@@ -149,13 +149,13 @@
 - (IBAction)initiateConnection:(id)sender
 {	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
-	if (([self type] == SP_CONNECTION_TCPIP || [self type] == SP_CONNECTION_SSHTUNNEL) && ![[self host] length]) {
+	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
 		return;
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
-	if ([self type] == SP_CONNECTION_SSHTUNNEL && ![[self sshHost] length]) {
+	if ([self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
 		return;
 	}
@@ -205,7 +205,7 @@
 	}
 
 	// Initiate the SSH connection process for tunnels
-	if ([self type] == SP_CONNECTION_SSHTUNNEL) {
+	if ([self type] == SPSSHTunnelConnection) {
 		[self performSelector:@selector(initiateSSHTunnelConnection) withObject:nil afterDelay:0.0];
 		return;
 	}
@@ -276,12 +276,12 @@
 	[progressIndicatorText display];
 
 	// Initialise to socket if appropriate.
-	if ([self type] == SP_CONNECTION_SOCKET) {
+	if ([self type] == SPSocketConnection) {
 		mySQLConnection = [[MCPConnection alloc] initToSocket:[self socket] withLogin:[self user]];
 
 	// Otherwise, initialise to host, using tunnel if appropriate
 	} else {
-		if ([self type] == SP_CONNECTION_SSHTUNNEL) {
+		if ([self type] == SPSSHTunnelConnection) {
 			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
 														withLogin:[self user]
 														usingPort:[sshTunnel localPort]];
@@ -338,10 +338,10 @@
 			} else if ([mySQLConnection getLastErrorID] == 1045) { // "Access denied" error
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because access was denied.\n\nDouble-check your username and password and ensure that access from your current location is permitted.\n\nMySQL said: %@", @"message of panel when connection to host failed due to access denied error"), [self host], [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Access denied!", @"connection failed due to access denied title") errorMessage:errorMessage detail:nil];
-			} else if ([self type] == SP_CONNECTION_SOCKET && (![self socket] || ![[self socket] length]) && ![mySQLConnection findSocketPath]) {
+			} else if ([self type] == SPSocketConnection && (![self socket] || ![[self socket] length]) && ![mySQLConnection findSocketPath]) {
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The socket file could not be found in any common location. Please supply the correct socket location.\n\nMySQL said: %@", @"message of panel when connection to socket failed because optional socket could not be found"), [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Socket not found!", @"socket not found title") errorMessage:errorMessage detail:nil];
-			} else if ([self type] == SP_CONNECTION_SOCKET) {
+			} else if ([self type] == SPSocketConnection) {
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
 			} else {
@@ -443,14 +443,14 @@
 		NSString *tunnelPort = [[[errorDetailText string] componentsMatchedByRegex:@"LOCALHOST:([0-9]+)" capture:1L] lastObject];
 		
 		// Change the connection type to standard TCP/IP
-		[self setType:SP_CONNECTION_TCPIP];
+		[self setType:SPTCPIPConnection];
 				
 		// Change connection details
 		[self setPort:tunnelPort];
 		[self setHost:@"127.0.0.1"];
 				
 		// Change to standard TCP/IP connection view
-		[self resizeTabViewToConnectionType:SP_CONNECTION_TCPIP animating:YES];
+		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:YES];
 		
 		// Initiate the connection after half a second to give the connection view a chance to resize
 		[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.5];				
@@ -531,7 +531,7 @@
 	[self resizeTabViewToConnectionType:selectedTabView animating:YES];
 	
 	// Update the host as appropriate
-	if ((selectedTabView != SP_CONNECTION_SOCKET) && [[self host] isEqualToString:@"localhost"]) {
+	if ((selectedTabView != SPSocketConnection) && [[self host] isEqualToString:@"localhost"]) {
 		[self setHost:@""];
 	}
 
@@ -571,13 +571,13 @@
 	frameRect = [connectionResizeContainer frame];
 
 	switch (theType) {
-		case SP_CONNECTION_TCPIP:
+		case SPTCPIPConnection:
 			targetResizeRect = [standardConnectionFormContainer frame];
 			break;
-		case SP_CONNECTION_SOCKET:
+		case SPSocketConnection:
 			targetResizeRect = [socketConnectionFormContainer frame];
 			break;
-		case SP_CONNECTION_SSHTUNNEL:
+		case SPSSHTunnelConnection:
 			targetResizeRect = [sshConnectionFormContainer frame];
 			break;
 	} 
@@ -597,7 +597,7 @@
  */
 - (BOOL) checkHost
 {
-	if ([self type] != SP_CONNECTION_SOCKET && [[self host] isEqualToString:@"localhost"]) {
+	if ([self type] != SPSocketConnection && [[self host] isEqualToString:@"localhost"]) {
 		NSBeginAlertSheet(NSLocalizedString(@"You have entered 'localhost' for a non-socket connection", @"title of error when using 'localhost' for a network connection"),
 							NSLocalizedString(@"Use 127.0.0.1", @"Use 127.0.0.1 button"),	// Main button
 							NSLocalizedString(@"Connect via socket", @"Connect via socket button"),	// Alternate button
@@ -621,7 +621,7 @@
 {	
 	[sheet orderOut:self];
 	if (returnCode == NSAlertAlternateReturn) {
-		[self setType:SP_CONNECTION_SOCKET];
+		[self setType:SPSocketConnection];
 		[self setHost:@""];
 	} else {
 		[self setHost:@"127.0.0.1"];
@@ -665,7 +665,7 @@
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	
 	// Update key-value properties from the selected favourite, using empty strings where not found
-	[self setType:([self valueForKeyPath:@"selectedFavorite.type"] ? [[self valueForKeyPath:@"selectedFavorite.type"] intValue] : SP_CONNECTION_TCPIP)];
+	[self setType:([self valueForKeyPath:@"selectedFavorite.type"] ? [[self valueForKeyPath:@"selectedFavorite.type"] intValue] : SPTCPIPConnection)];
 	[self setName:([self valueForKeyPath:@"selectedFavorite.name"] ? [self valueForKeyPath:@"selectedFavorite.name"] : @"")];
 	[self setHost:([self valueForKeyPath:@"selectedFavorite.host"] ? [self valueForKeyPath:@"selectedFavorite.host"] : @"")];
 	[self setSocket:([self valueForKeyPath:@"selectedFavorite.socket"] ? [self valueForKeyPath:@"selectedFavorite.socket"] : @"")];
@@ -679,7 +679,7 @@
 	// Check whether the password exists in the keychain, and if so add it; also record the
 	// keychain details so we can pass around only those details if the password doesn't change
 	connectionKeychainItemName = [[keychain nameForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]] retain];
-	connectionKeychainItemAccount = [[keychain accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:(([self type] == SP_CONNECTION_SOCKET)?@"localhost":[self valueForKeyPath:@"selectedFavorite.host"]) database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
+	connectionKeychainItemAccount = [[keychain accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:(([self type] == SPSocketConnection)?@"localhost":[self valueForKeyPath:@"selectedFavorite.host"]) database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
 	[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 	if (![[self password] length]) {
 		[connectionKeychainItemName release], connectionKeychainItemName = nil;
@@ -717,18 +717,18 @@
 {
 	NSString *thePassword, *theSSHPassword;
 	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", (([self type] == SP_CONNECTION_SOCKET)?@"localhost":[self host])];
+	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", (([self type] == SPSocketConnection)?@"localhost":[self host])];
 	if (![[self name] length] && [self database] && ![[self database] isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", [self database], favoriteName];
 	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
-	if (([self type] == SP_CONNECTION_TCPIP || [self type] == SP_CONNECTION_SSHTUNNEL) && ![[self host] length]) {
+	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
 		return;
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
-	if ([self type] == SP_CONNECTION_SSHTUNNEL && ![[self sshHost] length]) {
+	if ([self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
 		NSRunAlertPanel(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete"), NSLocalizedString(@"OK", @"OK button"), nil, nil);
 		return;
 	}
@@ -770,7 +770,7 @@
 	if (thePassword && ![thePassword isEqualToString:@""]) {
 		[keychain addPassword:thePassword
 					  forName:[keychain nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
-					  account:[keychain accountForUser:[self user] host:(([self type] == SP_CONNECTION_SOCKET)?@"localhost":[self host]) database:[self database]]];
+					  account:[keychain accountForUser:[self user] host:(([self type] == SPSocketConnection)?@"localhost":[self host]) database:[self database]]];
 	}
 
 	// Add the SSH password to keychain as appropriate

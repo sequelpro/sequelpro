@@ -421,14 +421,14 @@
 	connection = [NSDictionary dictionaryWithDictionary:[data objectForKey:@"connection"]];
 
 	if([connection objectForKey:@"type"]) {
-		if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_TCPIP"])
-			connectionType = SP_CONNECTION_TCPIP;
-		else if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_SOCKET"])
-			connectionType = SP_CONNECTION_SOCKET;
-		else if([[connection objectForKey:@"type"] isEqualToString:@"SP_CONNECTION_SSHTUNNEL"])
-			connectionType = SP_CONNECTION_SSHTUNNEL;
+		if([[connection objectForKey:@"type"] isEqualToString:@"SPTCPIPConnection"])
+			connectionType = SPTCPIPConnection;
+		else if([[connection objectForKey:@"type"] isEqualToString:@"SPSocketConnection"])
+			connectionType = SPSocketConnection;
+		else if([[connection objectForKey:@"type"] isEqualToString:@"SPSSHTunnelConnection"])
+			connectionType = SPSSHTunnelConnection;
 		else
-			connectionType = SP_CONNECTION_TCPIP;
+			connectionType = SPTCPIPConnection;
 
 		[connectionController setType:connectionType];
 		[connectionController resizeTabViewToConnectionType:connectionType animating:NO];
@@ -454,10 +454,10 @@
 			[connectionController setPassword:pw];
 	}
 
-	if(connectionType == SP_CONNECTION_SOCKET && [connection objectForKey:@"socket"])
+	if(connectionType == SPSocketConnection && [connection objectForKey:@"socket"])
 		[connectionController setSocket:[connection objectForKey:@"socket"]];
 
-	if(connectionType == SP_CONNECTION_SSHTUNNEL) {
+	if(connectionType == SPSSHTunnelConnection) {
 		if([connection objectForKey:@"ssh_host"])
 			[connectionController setSshHost:[connection objectForKey:@"ssh_host"]];
 		if([connection objectForKey:@"ssh_user"])
@@ -2156,7 +2156,7 @@
  */
 - (NSString *)host
 {
-	if ([connectionController type] == SP_CONNECTION_SOCKET) return @"localhost";
+	if ([connectionController type] == SPSocketConnection) return @"localhost";
 	NSString *theHost = [connectionController host];
 	if (!theHost) theHost = @"";
 	return theHost;
@@ -2170,7 +2170,7 @@
 	if ([connectionController name] && [[connectionController name] length]) {
 		return [connectionController name];
 	}
-	if ([connectionController type] == SP_CONNECTION_SOCKET) {
+	if ([connectionController type] == SPSocketConnection) {
 		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
 	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
@@ -2556,22 +2556,22 @@
 	[connection setObject:[self user] forKey:@"user"];
 
 	switch([connectionController type]) {
-		case SP_CONNECTION_TCPIP:
-		aString = @"SP_CONNECTION_TCPIP";
+		case SPTCPIPConnection:
+		aString = @"SPTCPIPConnection";
 		break;
-		case SP_CONNECTION_SOCKET:
-		aString = @"SP_CONNECTION_SOCKET";
+		case SPSocketConnection:
+		aString = @"SPSocketConnection";
 		[connection setObject:[connectionController socket] forKey:@"socket"];
 		break;
-		case SP_CONNECTION_SSHTUNNEL:
-		aString = @"SP_CONNECTION_SSHTUNNEL";
+		case SPSSHTunnelConnection:
+		aString = @"SPSSHTunnelConnection";
 		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
 		if([connectionController port] && [[connectionController port] length])
 			[connection setObject:[NSNumber numberWithInt:[[connectionController sshPort] intValue]] forKey:@"ssh_port"];
 		break;
 		default:
-		aString = @"SP_CONNECTION_TCPIP";
+		aString = @"SPTCPIPConnection";
 	}
 	[connection setObject:aString forKey:@"type"];
 
@@ -2580,7 +2580,7 @@
 		NSString *pw = [self keychainPasswordForConnection:nil];
 		if(![pw length]) pw = [connectionController password];
 		[connection setObject:pw forKey:@"password"];
-		if([connectionController type] == SP_CONNECTION_SSHTUNNEL)
+		if([connectionController type] == SPSSHTunnelConnection)
 			[connection setObject:[connectionController sshPassword] forKey:@"ssh_password"];
 	}
 

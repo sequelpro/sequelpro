@@ -74,6 +74,13 @@ typedef enum {
 	SPImportExportQueryMode = 2
 } SPQueryMode;
 
+// Connection types
+typedef enum {
+	SPTCPIPConnection     = 0,
+	SPSocketConnection    = 1,
+	SPSSHTunnelConnection = 2
+} SPConnectionType;
+
 // Kill mode constants
 extern NSString *SPKillProcessQueryMode;
 extern NSString *SPKillProcessConnectionMode;

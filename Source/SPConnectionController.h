@@ -30,13 +30,6 @@
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
 
-enum spconnection_types
-{
-	SP_CONNECTION_TCPIP = 0,
-	SP_CONNECTION_SOCKET = 1,
-	SP_CONNECTION_SSHTUNNEL = 2
-};
-
 @class BWAnchoredButtonBar;
 
 @interface NSObject (BWAnchoredButtonBar)
