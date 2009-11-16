@@ -553,7 +553,7 @@
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 		[streamingResult release];
 	}
-	
+
 	if ([mySQLConnection queryCancelled] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 		isInterruptedLoad = YES;
 	else 

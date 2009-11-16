@@ -170,6 +170,11 @@
 		// once all memory has been freed
 		if (processedRowCount == downloadedRowCount) {
 			while (!dataFreed) usleep(1000);
+
+			// Update the connection's error statuses in case of error during content download
+			[parentConnection updateErrorStatuses];
+
+			// Unlock the connection and return
 			[parentConnection unlockConnection];
 			connectionUnlocked = YES;
 			return nil;

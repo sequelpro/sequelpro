@@ -196,6 +196,7 @@ void performThreadedKeepAlive(void *ptr);
 - (void)setLastErrorMessage:(NSString *)theErrorMessage;
 - (NSUInteger)getLastErrorID;
 + (BOOL)isErrorNumberConnectionError:(NSInteger)theErrorNumber;
+- (void)updateErrorStatuses;
 
 // Queries
 - (NSString *)prepareBinaryData:(NSData *)theData;

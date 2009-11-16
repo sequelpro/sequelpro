@@ -1126,6 +1126,15 @@ void performThreadedKeepAlive(void *ptr)
 	return NO;
 }
 
+/**
+ * Update error messages - for example after a streaming result has finished processing.
+ */
+- (void)updateErrorStatuses
+{
+	[self setLastErrorMessage:nil];
+	lastQueryErrorId = mysql_errno(mConnection);
+}
+
 #pragma mark -
 #pragma mark Queries
 
@@ -1405,7 +1414,7 @@ void performThreadedKeepAlive(void *ptr)
 			
 			if (queryCancelled) {
 				queryErrorMessage = [[NSString alloc] initWithString:NSLocalizedString(@"Query cancelled.", @"Query cancelled error")];
-				queryErrorId = 1152;
+				queryErrorId = 1317;
 			} else {			
 				queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 				queryErrorId = mysql_errno(mConnection);
