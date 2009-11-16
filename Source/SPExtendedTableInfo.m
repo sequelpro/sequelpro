@@ -177,6 +177,7 @@
  * Load all the info for the supplied table by querying the table data instance and updaing the interface 
  * elements accordingly.
  * Note that interface elements are also toggled in start/endDocumentTaskForTab:, with similar logic.
+ * Due to the large quantity of interface interaction in this function it is not thread-safe.
  */
 - (void)loadTable:(NSString *)table
 {	

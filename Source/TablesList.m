@@ -629,7 +629,7 @@
 
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance loadTable:nil];
+		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
@@ -773,7 +773,7 @@
 			contentLoaded = YES;
 			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-			[extendedTableInfoInstance loadTable:selectedTableName];
+			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
 			structureLoaded = NO;
 			contentLoaded = NO;
 			statusLoaded = YES;
@@ -787,7 +787,7 @@
 		// if we are not looking at a table or view, clear these
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance loadTable:nil];
+		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
@@ -1450,7 +1450,7 @@
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
-			[extendedTableInfoInstance loadTable:selectedTableName];
+			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
 			statusLoaded = YES;
 		}
 	}

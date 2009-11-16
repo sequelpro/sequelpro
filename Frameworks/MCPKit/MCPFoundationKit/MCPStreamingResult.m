@@ -364,7 +364,7 @@
 /**
  * Used internally to download results in a background thread
  */
-	- (void)_downloadAllData
+- (void)_downloadAllData
 {
 	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
 	MYSQL_ROW theRow;
