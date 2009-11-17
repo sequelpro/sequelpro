@@ -238,9 +238,7 @@
 
 	// Set the filter placeholder text
 	if ([tableDocumentInstance database]) {
-		if ([theResult numOfRows]) [[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter tables, views, procs & funcs", @"Filter placeholder when all tables types are present")];
-		else if (tableListContainsViews) [[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter tables and views", @"Filter placeholder when tables and views are present")];
-		else [[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter tables", @"Filter placeholder when only tables are present")];
+		[[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter", @"Filter placeholder")];
 	}
 
 	if (previousSelectedTable) [previousSelectedTable release];

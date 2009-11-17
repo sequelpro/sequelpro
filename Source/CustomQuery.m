@@ -2796,23 +2796,35 @@
 	return self;
 }
 
+/**
+ * Filters the query favorites menu.
+ */
 - (IBAction)filterQueryFavorites:(id)sender
 {
-	int i;
+	NSUInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
 	NSString *searchPattern = [queryFavoritesSearchField stringValue];
-	for (i=6; i< [menu numberOfItems]; i++)
+	
+	for (i = 6; i < [menu numberOfItems]; i++)
+	{
 		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG 
-			&& ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+	}
 }
 
+/**
+ * Filters the query history menu.
+ */
 - (IBAction)filterQueryHistory:(id)sender
 {
-	int i;
+	NSUInteger i;
 	NSMenu *menu = [queryHistoryButton menu];
 	NSString *searchPattern = [queryHistorySearchField stringValue];
-	for (i=2; i< [menu numberOfItems]; i++)
+	
+	for (i = 3; i < [menu numberOfItems]; i++)
+	{
 		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+	}
 }
 
 - (void)awakeFromNib
