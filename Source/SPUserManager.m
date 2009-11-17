@@ -33,7 +33,7 @@
 
 #define COLUMNIDNAME @"NameColumn"
 
-@interface SPUserManager (PrivateMethods)
+@interface SPUserManager (PrivateAPI)
 
 - (void)_initializeTree:(NSArray *)items;
 - (void)_initializeUsers;
@@ -54,11 +54,10 @@
 @synthesize managedObjectModel;
 @synthesize persistentStoreCoordinator;
 
-
 -(id)init
 {
-	if ((self = [super initWithWindowNibName:@"UserManagerView"]))
-	{
+	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
+		
 		// When reading privileges from the database, they are converted automatically to a
 		// lowercase key used in the user privileges stores, from which a GRANT syntax
 		// is derived automatically.  While most keys can be automatically converted without
@@ -78,6 +77,7 @@
 												   object:nil];
 		
 	}
+	
 	return self;
 }
 
@@ -99,8 +99,10 @@
 	[super dealloc];
 }
 
-// UI specific items to set up when the window loads.  This is different
-// than awakeFromNib as it's only called once.
+/** 
+ * UI specific items to set up when the window loads. This is different than awakeFromNib 
+ * as it's only called once.
+ */
 -(void)windowDidLoad
 {
 	[tabView selectTabViewItemAtIndex:0];
@@ -115,12 +117,12 @@
 	[super windowDidLoad];
 }
 
+/**
+ * This method reads in the users from the mysql.user table of the current
+ * connection. Then uses this information to initialize the NSOutlineView.
+ */
 - (void)_initializeUsers
 {
-	/**
-	 * This method reads in the users from the mysql.user table of the current
-	 * connection.  Then uses this information to initialize the NSOutlineView.
-	 */
 	isInitializing = TRUE; // Don't want to do some of the notifications if initializing
 	NSMutableString *privKey;
 	NSArray *privRow;
@@ -132,16 +134,17 @@
 	// Select users from the mysql.user table
 	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	int rows = [result numOfRows];
-	if (rows > 0)
-	{
+	
+	if (rows > 0) {
 		// Go to the beginning
 		[result dataSeek:0];
 	}
 	
-	for(int i = 0; i < rows; i++)
+	for (int i = 0; i < rows; i++)
 	{
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
+	
 	[usersResultArray addObjectsFromArray:resultAsArray];
 
 	[self _initializeTree:usersResultArray];
@@ -225,7 +228,9 @@
 	[outlineView reloadData];
 }
 
-// Set NSManagedObject with values from the passed in dictionary
+/**
+ * Set NSManagedObject with values from the passed in dictionary.
+ */
 - (void)initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item
 {
 	for (NSString *key in item)
@@ -261,7 +266,6 @@
 		DLog(@"%@ not implemented yet.", key);
 		NS_ENDHANDLER
 	}
-	
 }
 
 /**
@@ -332,8 +336,7 @@
 			[image1 release];
 			
 		} 
-		else 
-		{
+		else {
 			NSImage *image1 = [[NSImage imageNamed:NSImageNameUser] retain];
 			[image1 setScalesWhenResized:YES];
 			[image1 setSize:(NSSize){16,16}];
@@ -361,14 +364,12 @@
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
 {
 	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
-	if ([selectedObject parent] == nil && !([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]))
-	{
+	
+	if ([selectedObject parent] == nil && !([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"])) {
 		[tabView selectTabViewItemWithIdentifier:@"General"];
 	}
-	else
-	{
-		if ([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"])
-		{
+	else {
+		if ([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
 			[tabView selectTabViewItemWithIdentifier:@"Global Privileges"];
 		}
 	}
@@ -427,6 +428,9 @@
 	}
 }
 
+/**
+ * Disables all privileges.
+ */
 - (IBAction)uncheckAllPrivileges:(id)sender
 {
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
@@ -448,13 +452,12 @@
 - (IBAction)addUser:(id)sender
 {
 	// Adds a new SPUser objects to the managedObjectContext and sets default values
-	if ([[treeController selectedObjects] count] > 0)
-	{
-		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil)
-		{
+	if ([[treeController selectedObjects] count] > 0) {
+		if ([[[treeController selectedObjects] objectAtIndex:0] parent] != nil) {
 			[self _selectParentFromSelection];
 		}
 	}	
+	
 	NSManagedObject *newItem = [self _createNewSPUser];
 	NSManagedObject *newChild = [self _createNewSPUser];
 	[newChild setValue:@"localhost" forKey:@"host"];
@@ -495,7 +498,6 @@
 {
 	[treeController remove:sender];
 }
-
 
 - (void)_clearData
 {
@@ -541,9 +543,11 @@
 #pragma mark -
 #pragma mark Notifications
 
-// This notification is called when the managedObjectContext save happens.
-// This takes the inserted, updated, and deleted arrays and applys them to 
-// the database.
+/** 
+ * This notification is called when the managedObjectContext save happens.
+ * This takes the inserted, updated, and deleted arrays and applys them to 
+ * the database.
+ */
 - (void)contextDidSave:(NSNotification *)notification
 {	
 	if (!isInitializing)
@@ -551,6 +555,8 @@
 		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
 		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
 		NSArray *deleted = [[notification userInfo] valueForKey:NSDeletedObjectsKey];
+		
+		NSLog(@"%d", [inserted count]);
 		
 		if ([inserted count] > 0) {
 			[self insertUsers:inserted];
@@ -567,9 +573,7 @@
 }
 
 - (void)contextDidChange:(NSNotification *)notification
-{
-	DLog(@"contextDidChange:");
-	
+{	
 	if (!isInitializing) [outlineView reloadData];
 }
 
@@ -578,7 +582,8 @@
 	for (NSManagedObject *user in updatedUsers) {
 		[self grantPrivilegesToUser:user];
 	}
-	return TRUE;
+	
+	return YES;
 }
 
 - (BOOL)deleteUsers:(NSArray *)deletedUsers
@@ -607,7 +612,7 @@
 {	
 	for (NSManagedObject *user in insertedUsers)
 	{
-		if ([user parent] != nil) {
+		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
 			
 			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
 										 [[[user parent] valueForKey:@"user"] tickQuotedString], 
@@ -731,17 +736,18 @@
 
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	if ([[treeController selectedObjects] count] == 0)
-		return FALSE;
+	if ([[treeController selectedObjects] count] == 0) return NO;
 	
 	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+	
 	if ([[tabViewItem identifier] isEqualToString:@"General"]) {
 		return ([selectedObject parent] == nil);
-	} else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
+	} 
+	else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
 		return ([selectedObject parent] != nil);
 	}
 	
-	return TRUE;
+	return NO;
 }
 
 #pragma mark -

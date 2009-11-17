@@ -35,9 +35,9 @@
 	
 	BOOL isInitializing;
 	
-	MCPConnection* mySqlConnection;
+	MCPConnection *mySqlConnection;
 	
-	IBOutlet NSOutlineView* outlineView;
+	IBOutlet NSOutlineView *outlineView;
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
 	IBOutlet NSMutableDictionary *privsSupportedByServer;
@@ -49,7 +49,7 @@
 @property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain) NSMutableDictionary *privsSupportedByServer;
 
-// Add/Remove Users
+// Add/Remove users
 - (IBAction)addUser:(id)sender;
 - (IBAction)removeUser:(id)sender;
 - (IBAction)addHost:(id)sender;
@@ -62,7 +62,7 @@
 - (IBAction)checkAllPrivileges:(id)sender;
 - (IBAction)uncheckAllPrivileges:(id)sender;
 
-// Core Data Notifications
+// Core Data notifications
 - (void)contextDidSave:(NSNotification *)notification;
 - (BOOL)insertUsers:(NSArray *)insertedUsers;
 - (BOOL)deleteUsers:(NSArray *)deletedUsers;

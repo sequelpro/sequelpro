@@ -26,7 +26,8 @@
 
 @implementation NSManagedObject (CoreDataGeneratedAccessors)
 
-@dynamic user, host;
+@dynamic user;
+@dynamic host;
 @dynamic parent;
 @dynamic children;
 
