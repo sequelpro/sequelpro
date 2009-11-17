@@ -211,7 +211,6 @@
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
-		// [textView insertText:[[[prefs objectForKey:SPQueryFavorites] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
 		// The actual query strings have been already stored as tooltip
 		[textView insertText:[[queryFavoritesButton selectedItem] toolTip]];
 	}
@@ -2560,7 +2559,7 @@
 	NSMenu *menu = [queryFavoritesButton menu];
 
 	// Remove all favorites beginning from the end
-	while([queryFavoritesButton numberOfItems] > 6)
+	while([queryFavoritesButton numberOfItems] > 7)
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Build document-based list
@@ -2805,7 +2804,7 @@
 	NSMenu *menu = [queryFavoritesButton menu];
 	NSString *searchPattern = [queryFavoritesSearchField stringValue];
 	
-	for (i = 6; i < [menu numberOfItems]; i++)
+	for (i = 7; i < [menu numberOfItems]; i++)
 	{
 		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG 
 										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
@@ -2827,6 +2826,9 @@
 	}
 }
 
+/**
+ * Setup various interface controls.
+ */
 - (void)awakeFromNib
 {
 	// Set pre-defined menu tags 
@@ -2847,6 +2849,9 @@
 											   object:tableDocumentInstance];
 }
 
+/**
+ * Dealloc.
+ */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
