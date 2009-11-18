@@ -256,8 +256,8 @@
 	// "Clear History" menu item - clear query history
 	if (sender == clearHistoryMenuItem) {
 
-		// Remove all history buttons except the search field beginning from the end
-		while([queryHistoryButton numberOfItems] > 2)
+		// Remove all history buttons except the search field and separator beginning from the end
+		while([queryHistoryButton numberOfItems] > 3)
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
 		// Remove all items from the queryController
