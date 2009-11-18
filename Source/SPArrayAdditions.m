@@ -54,7 +54,7 @@
 	for (NSString *component in self)
 	{
 		if ([result length])
-			[result appendString:@","];
+			[result appendString:@", "];
 
 		[result appendString:component];
 	}

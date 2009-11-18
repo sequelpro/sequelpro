@@ -254,10 +254,13 @@
 	
 	// Retrieve the constraints, and loop through them to add up to one foreign key to each column
 	NSArray *constraints = [tableDataInstance getConstraints];
-	for (NSDictionary *constraint in constraints) {
-		NSString *firstColumn = [[[constraint objectForKey:@"columns"] componentsSeparatedByString:@","] objectAtIndex:0];
+	
+	for (NSDictionary *constraint in constraints) 
+	{
+		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
 		NSString *firstRefColumn = [[[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","] objectAtIndex:0];
-		NSUInteger columnIndex = [columnNames indexOfObject:firstColumn];
+		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
+				
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
@@ -282,7 +285,7 @@
 	// Add the new columns to the table
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		columnDefinition = NSArrayObjectAtIndex(dataColumns, i);
-
+		
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];

@@ -326,12 +326,29 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	}
 	
 	NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"];
-
+	
+	BOOL hasForeignKey = NO;
+	NSString *referencedTable = @"";
+		
+	// Check to see whether the user is attempting to remove a field that has foreign key constraints and thus
+	// would result in an error if not dropped before removing the field.
+	for (NSDictionary *constraint in [tableDataInstance getConstraints])
+	{
+		for (NSString *column in [constraint objectForKey:@"columns"])
+		{
+			if ([column isEqualToString:field]) {
+				hasForeignKey = YES;
+				referencedTable = [constraint objectForKey:@"ref_table"];
+				break;
+			}
+		}
+	}
+	
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete field '%@'?", @"delete field message"), field]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
+						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to remove the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -342,7 +359,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removefield"];
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
 }
 
 /**
@@ -864,10 +881,39 @@ fetches the result as an array with a dictionary for each row in it
 		}
 		[tableSourceView reloadData];
 	} 
-	else if ([contextInfo isEqualToString:@"removefield"]) {
+	else if ([contextInfo isEqualToString:@"removeField"] || [contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			
-			// Remove row
+			// Remove the foreign key before the field if required
+			if ([contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
+			
+				NSString *relationName = @"";
+				NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"];
+				
+				// Get the foreign key name
+				for (NSDictionary *constraint in [tableDataInstance getConstraints])
+				{
+					for (NSString *column in [constraint objectForKey:@"columns"])
+					{
+						if ([column isEqualToString:field]) {
+							relationName = [constraint objectForKey:@"name"];
+							break;
+						}
+					}
+				}
+				
+				[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
+								
+				if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+					
+					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+									  NSLocalizedString(@"OK", @"OK button"),
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), [relationName backtickQuotedString], [mySQLConnection getLastErrorMessage]]);	
+				} 
+			}
+			
+			// Remove field
 			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
 										  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 			

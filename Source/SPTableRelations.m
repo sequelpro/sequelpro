@@ -455,7 +455,7 @@
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									[constraint objectForKey:@"name"], @"name",
-									[constraint objectForKey:@"columns"], @"columns",
+									[[constraint objectForKey:@"columns"] objectAtIndex:0], @"columns",
 									[constraint objectForKey:@"ref_table"], @"fk_table",
 									[constraint objectForKey:@"ref_columns"], @"fk_columns",
 									[constraint objectForKey:@"update"], @"on_update",

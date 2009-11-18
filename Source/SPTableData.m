@@ -267,7 +267,7 @@
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
 
-	if( [tableListInstance tableType] == SP_TABLETYPE_TABLE || [tableListInstance tableType] == SP_TABLETYPE_VIEW ) {
+	if( [tableListInstance tableType] == SP_TABLETYPE_TABLE || [tableListInstance tableType] == SP_TABLETYPE_VIEW ) {		
 		tableData = [self informationForTable:[tableListInstance tableName]];
 	}
 	
@@ -437,8 +437,16 @@
 				[fieldsParser setString:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:bracketSet]];
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"name"];
 
-				[fieldsParser setString:[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet]];
-				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"columns"];
+				NSMutableArray *keyColumns = [NSMutableArray array];
+				NSArray *keyColumnStrings = [[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
+				
+				for (NSString *keyColumn in keyColumnStrings)
+				{
+					[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
+					[keyColumns addObject:[fieldsParser unquotedString]];
+				}
+				
+				[constraintDetails setObject:keyColumns forKey:@"columns"];
 
 				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
