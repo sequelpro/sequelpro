@@ -1492,7 +1492,7 @@
 - (void) showFilter
 {
 	if ([tableListFilterSplitView collapsibleSubviewIsCollapsed])
-		[tableListFilterSplitView performSelector:@selector(toggleCollapse:) withObject:nil afterDelay:0.0];
+		[tableListFilterSplitView performSelectorOnMainThread:@selector(toggleCollapse:) withObject:nil waitUntilDone:NO];
 }
 
 /**
@@ -1502,7 +1502,7 @@
 - (void) hideFilter
 {
 	if (![tableListFilterSplitView collapsibleSubviewIsCollapsed])
-		[tableListFilterSplitView performSelector:@selector(toggleCollapse:) withObject:nil afterDelay:0.0];
+		[tableListFilterSplitView performSelectorOnMainThread:@selector(toggleCollapse:) withObject:nil waitUntilDone:NO];
 }
 
 /**
