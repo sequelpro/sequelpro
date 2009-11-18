@@ -538,7 +538,7 @@
 	}
 
 	// If within a task, allow this query to be cancelled
-	[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Stop", @"Stop load") callbackObject:nil callbackFunction:NULL];
+	[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Stop", @"stop button") callbackObject:nil callbackFunction:NULL];
 
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
