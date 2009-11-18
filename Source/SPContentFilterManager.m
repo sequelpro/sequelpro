@@ -29,6 +29,7 @@
 #import "SPQueryController.h"
 #import "TableContent.h"
 #import "SPConstants.h"
+#import "SPConnectionController.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -75,7 +76,6 @@
  */
 - (void)awakeFromNib
 {
-
 	[contentFilterTextView setAllowsDocumentBackgroundColorChange:YES];
 	
 	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
@@ -141,6 +141,8 @@
 	// Set column header
 	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"content filter for field type ‘%@’"), filterType]];
 
+	// Set the button delegate 
+	[splitViewButtonBar setSplitViewDelegate:self];
 }
 
 #pragma mark -
@@ -384,7 +386,7 @@
  */
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
 {
-	return (proposedMax - 220);
+	return (proposedMax - 245);
 }
 
 /**
