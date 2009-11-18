@@ -204,12 +204,19 @@
 			[tableTypePopUpButton addItemWithTitle:@"View"];
 			// Set create syntax
 			[tableCreateSyntaxTextView setEditable:YES];
+			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
 			[tableCreateSyntaxTextView setString:@""];
-			[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier]];
+			NSString *createViewSyntax = [[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier];
+			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
+			[tableCreateSyntaxTextView insertText:createViewSyntax];
+			[tableCreateSyntaxTextView didChangeText];
 			[tableCreateSyntaxTextView setEditable:NO];
 		} else {
-			[tableCreateSyntaxTextView setEditable:NO];
+			[tableCreateSyntaxTextView setEditable:YES];
+			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
 			[tableCreateSyntaxTextView setString:@""];
+			[tableCreateSyntaxTextView didChangeText];
+			[tableCreateSyntaxTextView setEditable:NO];
 		}
 		
 		[tableCreatedAt setStringValue:@"Created at: "];
@@ -228,8 +235,10 @@
 		[tableSizeFree setStringValue:@"Free data size: "];
 		
 		// Set comments 
-		[tableCommentsTextView setString:@""];
 		[tableCommentsTextView setEditable:NO];
+		[tableCommentsTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:@""];
+		[tableCommentsTextView setString:@""];
+		[tableCommentsTextView didChangeText];
 		
 		return;
 	}
@@ -304,13 +313,20 @@
 	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields withLabel:@"Free data size"]];	 
 	
 	// Set comments
-	[tableCommentsTextView setEditable:enableInteraction];
+	[tableCommentsTextView setEditable:YES];
+	[tableCommentsTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:[statusFields objectForKey:@"Comment"]];
 	[tableCommentsTextView setString:[statusFields objectForKey:@"Comment"]];
+	[tableCommentsTextView didChangeText];
+	[tableCommentsTextView setEditable:enableInteraction];
 	
 	// Set create syntax
 	[tableCreateSyntaxTextView setEditable:YES];
+	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:@""];
 	[tableCreateSyntaxTextView setString:@""];
+	[tableCreateSyntaxTextView didChangeText];
+	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:[tableDataInstance tableCreateSyntax]];
 	[tableCreateSyntaxTextView insertText:[tableDataInstance tableCreateSyntax]];
+	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
 }
 

@@ -2313,7 +2313,7 @@
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] loadTable:selectedTable];
+		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
 
 	// Otherwise, if the table status value is accurate, use it
 	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
@@ -2328,7 +2328,7 @@
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] loadTable:selectedTable];
+		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
 
 	// Use the estimate count
 	} else {
