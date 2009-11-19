@@ -66,7 +66,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>0.9.6 (r1130)</string>
+	<string>Copyright 2002-2009 Sequel Pro and CocoaMySQL team.</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>NSMainNibFile</key>

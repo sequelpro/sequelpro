@@ -25,18 +25,20 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class SPPreferenceController;
+@class SPPreferenceController, SPAboutController;
 
 @interface SPAppController : NSObject 
 {
 	BOOL isNewFavorite;
 	
+	SPAboutController *aboutController;
 	SPPreferenceController *prefsController;
 
 	id encodingPopUp;
 }
 
 // IBAction methods
+- (IBAction)openAboutPanel:(id)sender;
 - (IBAction)openPreferences:(id)sender;
 - (IBAction)openConnectionSheet:(id)sender;
 

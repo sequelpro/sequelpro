@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="628"/>
+			<integer value="57"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1935,14 +1935,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">orderFrontStandardAboutPanel:</string>
-						<reference key="source" ref="515727999"/>
-						<reference key="destination" ref="962420073"/>
-					</object>
-					<int key="connectionID">142</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">hideOtherApplications:</string>
 						<reference key="source" ref="515727999"/>
 						<reference key="destination" ref="778958493"/>
@@ -2844,6 +2836,14 @@
 						<reference key="destination" ref="6656160"/>
 					</object>
 					<int key="connectionID">1036</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openAboutPanel:</string>
+						<reference key="source" ref="432083121"/>
+						<reference key="destination" ref="962420073"/>
+					</object>
+					<int key="connectionID">1037</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4673,7 +4673,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{454, 520}, {511, 20}}</string>
+					<string>{{666, 356}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4744,7 +4744,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{120, 266}, {215, 253}}</string>
+					<string>{{678, 103}, {215, 253}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{518, 583}, {218, 253}}</string>
@@ -4752,7 +4752,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{696, 317}, {255, 203}}</string>
+					<string>{{600, 317}, {255, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -5000,7 +5000,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1036</int>
+			<int key="maxID">1037</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5235,6 +5235,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>donate:</string>
+							<string>openAboutPanel:</string>
 							<string>openConnectionSheet:</string>
 							<string>openPreferences:</string>
 							<string>provideFeedback:</string>
@@ -5244,6 +5245,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5401,12 +5403,14 @@
 							<string>clearConsole:</string>
 							<string>copy:</string>
 							<string>saveConsoleAs:</string>
+							<string>toggleShowConnections:</string>
 							<string>toggleShowHelpStatements:</string>
 							<string>toggleShowSelectShowStatements:</string>
 							<string>toggleShowTimeStamps:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5422,14 +5426,12 @@
 							<string>clearConsoleButton</string>
 							<string>consoleSearchField</string>
 							<string>consoleTableView</string>
+							<string>includeConnectionButton</string>
 							<string>includeTimeStampsButton</string>
 							<string>loggingDisabledTextField</string>
 							<string>progressIndicator</string>
 							<string>saveConsoleButton</string>
 							<string>saveLogView</string>
-							<string>showHelpMenuItem</string>
-							<string>showSelectShowStatementsMenuItem</string>
-							<string>showTimeStampsMenuItem</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5437,13 +5439,11 @@
 							<string>NSSearchField</string>
 							<string>NSTableView</string>
 							<string>NSButton</string>
+							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSProgressIndicator</string>
 							<string>NSButton</string>
 							<string>NSView</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -5555,6 +5555,13 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">TableDocument</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPConnectionDelegate.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">TableDocument</string>
 					<string key="superclassName">NSDocument</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5564,6 +5571,7 @@
 							<string>addDatabase:</string>
 							<string>analyzeTable:</string>
 							<string>backForwardInHistory:</string>
+							<string>cancelTask:</string>
 							<string>checkTable:</string>
 							<string>checksumTable:</string>
 							<string>chooseDatabase:</string>
@@ -5601,6 +5609,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5692,6 +5701,7 @@
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
 							<string>taskCancelButton</string>
+							<string>taskCancellationCallbackObject</string>
 							<string>taskDescriptionText</string>
 							<string>taskProgressIndicator</string>
 							<string>taskProgressLayer</string>
@@ -5749,6 +5759,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSButton</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSBox</string>
