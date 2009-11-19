@@ -126,3 +126,4 @@ NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
+NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";

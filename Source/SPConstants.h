@@ -182,3 +182,4 @@ extern NSString *SPQueryHistory;
 extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
+extern NSString *SPBlobTextEditorSpellCheckingEnabled;

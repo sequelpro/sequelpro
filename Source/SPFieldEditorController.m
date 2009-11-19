@@ -138,7 +138,9 @@
 	else {
 		[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
 	}
-		
+
+	[editTextView setContinuousSpellCheckingEnabled:[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]];
+
 	[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 
 	[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), fieldName]];
@@ -319,6 +321,9 @@
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
 
+	// Remember spell cheecker status
+	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
+	
 	return ( editSheetReturnCode && isEditable ) ? [sheetEditData retain] : nil;
 }
 
