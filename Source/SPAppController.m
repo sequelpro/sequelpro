@@ -616,6 +616,7 @@
 - (void)dealloc
 {
 	[prefsController release], prefsController = nil;
+	[aboutController release], aboutController = nil;
 	
 	[super dealloc];
 }
