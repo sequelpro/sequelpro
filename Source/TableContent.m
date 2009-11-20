@@ -890,12 +890,14 @@
 - (IBAction)reloadTable:(id)sender
 {
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
+		
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(reloadTableTask) toTarget:self withObject:nil];
 	} else {
 		[self reloadTableTask];
 	}
 }
+
 - (void)reloadTableTask
 {
 	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
@@ -913,6 +915,7 @@
 	[self loadTable:selectedTable];
 
 	[tableDocumentInstance endTask];
+	
 	[reloadPool drain];
 }
 
@@ -1832,21 +1835,25 @@
 {
 	NSInteger i;
 	NSMutableArray *fields = [NSMutableArray array];
-	NSArray *columnNames = [tableDataInstance columnNames];
 	
-	if ( [prefs boolForKey:SPLoadBlobsAsNeeded] ) {
-		for ( i = 0 ; i < [columnNames count] ; i++ ) {
+	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && ([dataColumns count] > 0)) {
+		
+		NSArray *columnNames = [tableDataInstance columnNames];
+		
+		for (i = 0 ; i < [columnNames count]; i++) 
+		{
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
 				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
-			} else {
-			
+			} 
+			else {
 				// For blob/text fields, select a null placeholder so the column count is still correct
 				[fields addObject:@"NULL"];
 			}
 		}
 
 		return [fields componentsJoinedByString:@","];
-	} else {
+	} 
+	else {
 		return @"*";
 	}
 }

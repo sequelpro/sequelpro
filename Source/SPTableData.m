@@ -120,7 +120,7 @@
  * Retrieve a column with a specified name, using or refreshing the cache as appropriate.
  */
 - (NSDictionary *) columnWithName:(NSString *)colName
-{
+{	
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
 			[self updateInformationForCurrentView];
@@ -138,7 +138,7 @@
  * Retrieve column names for the current table as an array, using or refreshing the cache as appropriate.
  */
 - (NSArray *) columnNames
-{
+{	
 	if ([columnNames count] == 0) {
 		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
 			[self updateInformationForCurrentView];
@@ -154,7 +154,7 @@
  * Retrieve a specified column for the current table as a dictionary, using or refreshing the cache as appropriate.
  */
 - (NSDictionary *) columnAtIndex:(int)index
-{
+{	
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
 			[self updateInformationForCurrentView];
@@ -171,7 +171,7 @@
  */
 
 - (BOOL) columnIsBlobOrText:(NSString *)colName
-{
+{	
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
 			[self updateInformationForCurrentView];
@@ -266,7 +266,7 @@
 	NSDictionary *tableData = nil;
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
-
+	
 	if( [tableListInstance tableType] == SP_TABLETYPE_TABLE || [tableListInstance tableType] == SP_TABLETYPE_VIEW ) {		
 		tableData = [self informationForTable:[tableListInstance tableName]];
 	}
@@ -303,7 +303,7 @@
  * Returns a boolean indicating success.
  */
 - (NSDictionary *) informationForTable:(NSString *)tableName
-{
+{	
 	SPSQLParser *createTableParser, *fieldsParser, *fieldParser;
 	NSMutableArray *tableColumns, *fieldStrings, *definitionParts;
 	NSMutableDictionary *tableColumn, *tableData;
@@ -315,30 +315,29 @@
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
 	
-	if (tableCreateSyntax != nil) [tableCreateSyntax release];
-	
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
 	// Retrieve the CREATE TABLE syntax for the table
-	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
-																					   [tableName backtickQuotedString]
-																					]];
-
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+	
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			NSBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving table information.\nMySQL said: %@", @"message of panel when retrieving table information failed"),
-					   [mySQLConnection getLastErrorMessage]]);
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+					   tableName, [mySQLConnection getLastErrorMessage]]);
 		}
+		
 		return nil;
 	}
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
 	NSArray *resultFieldNames = [theResult fetchFieldNames];
+	
+	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 	
 	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
 		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
