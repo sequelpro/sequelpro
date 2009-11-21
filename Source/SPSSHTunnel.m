@@ -281,8 +281,6 @@
 	// Set up the environment for the task
 	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
 	taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
-	[taskEnvironment removeObjectForKey: @"SSH_AGENT_PID"];
-	[taskEnvironment removeObjectForKey: @"SSH_AUTH_SOCK"];
 	[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 	[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
 	[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];

@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="14"/>
+			<integer value="79"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -533,7 +533,7 @@
 										</object>
 									</object>
 								</object>
-								<int key="NSSelectedIndex">1</int>
+								<int key="NSSelectedIndex">2</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -571,7 +571,7 @@
 				<string key="NSFrameAutosaveName"/>
 			</object>
 			<object class="NSCustomView" id="841319465">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -580,7 +580,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{10, 6}, {151, 18}}</string>
 						<reference key="NSSuperview" ref="841319465"/>
-						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="570624841">
 							<int key="NSCellFlags">-2080244224</int>
@@ -608,7 +607,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{10, 30}, {154, 18}}</string>
 						<reference key="NSSuperview" ref="841319465"/>
-						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="640143248">
 							<int key="NSCellFlags">-2080244224</int>
@@ -628,8 +626,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{178, 54}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSMenu" id="1011399888">
@@ -647,6 +643,11 @@
 				</object>
 			</object>
 			<object class="NSUserDefaultsController" id="320962651">
+				<object class="NSMutableArray" key="NSDeclaredKeys">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<string>ConsoleShowTimestamps</string>
+					<string>ConsoleShowConnections</string>
+				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 		</object>
@@ -879,19 +880,23 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.SPConsoleShowTimestamps</string>
+						<string key="label">value: values.ConsoleShowConnections</string>
 						<reference key="source" ref="825047486"/>
 						<reference key="destination" ref="320962651"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="825047486"/>
 							<reference key="NSDestination" ref="320962651"/>
-							<string key="NSLabel">value: values.SPConsoleShowTimestamps</string>
+							<string key="NSLabel">value: values.ConsoleShowConnections</string>
 							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.SPConsoleShowTimestamps</string>
+							<string key="NSKeyPath">values.ConsoleShowConnections</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSConditionallySetsEnabled</string>
+								<boolean value="NO" key="NS.object.0"/>
+							</object>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">121</int>
+					<int key="connectionID">124</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1325,7 +1330,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{255, 376}, {283, 223}}</string>
+					<string>{{256, 481}, {283, 118}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -1366,7 +1371,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">121</int>
+			<int key="maxID">124</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

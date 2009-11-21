@@ -133,5 +133,7 @@
 	<string>\</string>
 	<key>CSVImportFirstLineIsHeader</key>
 	<true/>
+	<key>BlobTextEditorSpellCheckingEnabled</key>
+	<false/>
 </dict>
 </plist>

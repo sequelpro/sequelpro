@@ -161,8 +161,11 @@
 		copiedDataLength = 0;
 
 		// Check to see whether we need to wait for the data to be availabe
-		// - if so, wait 1ms before checking again
-		while (!dataDownloaded && processedRowCount == downloadedRowCount) {
+		// - if so, wait 1ms before checking again.
+		// Keep the data processing thread at least one full row behind the download
+		// thread - this aids memory issues across the threads and prevents occasional
+		// race condition crashes.
+		while (!dataDownloaded && (processedRowCount + 2 > downloadedRowCount)) {
 			usleep(1000);
 		}
 
@@ -326,7 +329,7 @@
 
 		while (1) {
 		
-			// Check to see whether we need to wait for the data to be availabe
+			// Check to see whether we need to wait for the data to be available
 			// - if so, wait 1ms before checking again
 			while (!dataDownloaded && processedRowCount == downloadedRowCount) usleep(1000);
 

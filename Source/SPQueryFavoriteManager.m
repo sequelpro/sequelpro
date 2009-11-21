@@ -28,6 +28,7 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
 #import "SPConstants.h"
+#import "SPConnectionController.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -73,7 +74,6 @@
  */
 - (void)awakeFromNib
 {
-
 	[favoriteQueryTextView setAllowsDocumentBackgroundColorChange:YES];
 	
 	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
@@ -110,12 +110,11 @@
 			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
 
-
-	// Select the first query if any
-	NSUInteger i = 0;
-	for(i=0; i < [favorites count]; i++ )
-		if(![[favorites objectAtIndex:i] objectForKey:@"headerOfFileURL"])
-			break;
+	// Select the first query if any		
+	for (NSDictionary *favorite in favorites) 
+	{
+		if (![favorite objectForKey:@"headerOfFileURL"]) break;
+	}
 
 	[[self window] makeFirstResponder:favoritesTableView];
 	[self _initWithNoSelection];
@@ -128,7 +127,9 @@
 
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
-
+	
+	// Set the button delegate 
+	[splitViewButtonBar setSplitViewDelegate:self];
 }
 
 #pragma mark -
@@ -388,7 +389,7 @@
  */
 - (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
 {
-	return (proposedMax - 220);
+	return (proposedMax - 240);
 }
 
 /**

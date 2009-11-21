@@ -25,6 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class BWAnchoredButtonBar;
+
 @interface NSObject (SPContentFilterManagerDelegate)
 
 - (void)contentFiltersHaveBeenUpdated:(id)manager;
@@ -47,6 +49,8 @@
 	IBOutlet id resultingClauseLabel;
 	IBOutlet id resultingClauseContentLabel;
 	IBOutlet id insertPlaceholderButton;
+	
+	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	IBOutlet id contentFilterArrayController;
 	

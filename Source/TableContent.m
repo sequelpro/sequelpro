@@ -254,10 +254,13 @@
 	
 	// Retrieve the constraints, and loop through them to add up to one foreign key to each column
 	NSArray *constraints = [tableDataInstance getConstraints];
-	for (NSDictionary *constraint in constraints) {
-		NSString *firstColumn = [[[constraint objectForKey:@"columns"] componentsSeparatedByString:@","] objectAtIndex:0];
+	
+	for (NSDictionary *constraint in constraints) 
+	{
+		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
 		NSString *firstRefColumn = [[[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","] objectAtIndex:0];
-		NSUInteger columnIndex = [columnNames indexOfObject:firstColumn];
+		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
+				
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
@@ -282,7 +285,7 @@
 	// Add the new columns to the table
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		columnDefinition = NSArrayObjectAtIndex(dataColumns, i);
-
+		
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
@@ -535,7 +538,7 @@
 	}
 
 	// If within a task, allow this query to be cancelled
-	[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Stop", @"Stop load") callbackObject:nil callbackFunction:NULL];
+	[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Stop", @"stop button") callbackObject:nil callbackFunction:NULL];
 
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
@@ -887,12 +890,14 @@
 - (IBAction)reloadTable:(id)sender
 {
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
+		
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(reloadTableTask) toTarget:self withObject:nil];
 	} else {
 		[self reloadTableTask];
 	}
 }
+
 - (void)reloadTableTask
 {
 	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
@@ -910,6 +915,7 @@
 	[self loadTable:selectedTable];
 
 	[tableDocumentInstance endTask];
+	
 	[reloadPool drain];
 }
 
@@ -1829,21 +1835,25 @@
 {
 	NSInteger i;
 	NSMutableArray *fields = [NSMutableArray array];
-	NSArray *columnNames = [tableDataInstance columnNames];
 	
-	if ( [prefs boolForKey:SPLoadBlobsAsNeeded] ) {
-		for ( i = 0 ; i < [columnNames count] ; i++ ) {
+	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && ([dataColumns count] > 0)) {
+		
+		NSArray *columnNames = [tableDataInstance columnNames];
+		
+		for (i = 0 ; i < [columnNames count]; i++) 
+		{
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
 				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
-			} else {
-			
+			} 
+			else {
 				// For blob/text fields, select a null placeholder so the column count is still correct
 				[fields addObject:@"NULL"];
 			}
 		}
 
 		return [fields componentsJoinedByString:@","];
-	} else {
+	} 
+	else {
 		return @"*";
 	}
 }
@@ -2313,7 +2323,7 @@
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] loadTable:selectedTable];
+		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
 
 	// Otherwise, if the table status value is accurate, use it
 	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
@@ -2328,7 +2338,7 @@
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] loadTable:selectedTable];
+		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
 
 	// Use the estimate count
 	} else {

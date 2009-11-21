@@ -25,6 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class BWAnchoredButtonBar;
+
 @interface NSObject (SPQueryFavoriteManagerDelegate)
 
 - (void)queryFavoritesHaveBeenUpdated:(id)manager;
@@ -40,7 +42,8 @@
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSTextField *favoriteNameTextField;
 	IBOutlet NSTextView  *favoriteQueryTextView;
-	IBOutlet id removeButton;
+	IBOutlet NSButton *removeButton;
+	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	IBOutlet NSArrayController *favoritesArrayController;
 

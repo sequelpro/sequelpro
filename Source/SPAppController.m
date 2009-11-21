@@ -27,6 +27,7 @@
 #import "SPAppController.h"
 #import "TableDocument.h"
 #import "SPPreferenceController.h"
+#import "SPAboutController.h"
 #import "TableDump.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
@@ -295,7 +296,17 @@
 #pragma mark IBAction methods
 
 /**
- * Opens the preferences window
+ * Opens the about panel.
+ */
+- (IBAction)openAboutPanel:(id)sender
+{
+	if (!aboutController) aboutController = [[SPAboutController alloc] init];
+	
+	[aboutController showWindow:self];
+}
+
+/**
+ * Opens the preferences window.
  */
 - (IBAction)openPreferences:(id)sender
 {
@@ -605,6 +616,7 @@
 - (void)dealloc
 {
 	[prefsController release], prefsController = nil;
+	[aboutController release], aboutController = nil;
 	
 	[super dealloc];
 }

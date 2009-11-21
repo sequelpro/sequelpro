@@ -211,7 +211,6 @@
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
-		// [textView insertText:[[[prefs objectForKey:SPQueryFavorites] objectAtIndex:([queryFavoritesButton indexOfSelectedItem] - 6)] objectForKey:@"query"]];
 		// The actual query strings have been already stored as tooltip
 		[textView insertText:[[queryFavoritesButton selectedItem] toolTip]];
 	}
@@ -257,8 +256,8 @@
 	// "Clear History" menu item - clear query history
 	if (sender == clearHistoryMenuItem) {
 
-		// Remove all history buttons except the search field beginning from the end
-		while([queryHistoryButton numberOfItems] > 2)
+		// Remove all history buttons except the search field and separator beginning from the end
+		while([queryHistoryButton numberOfItems] > 3)
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
 		// Remove all items from the queryController
@@ -390,7 +389,7 @@
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
 	
-	int i, totalQueriesRun = 0, totalAffectedRows = 0;
+	int i, j, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
 	int firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
@@ -468,8 +467,8 @@
 			theColumns = [streamingResult fetchFieldNames];
 
 			if(!tableReloadAfterEditing) {
-				for ( i = 0 ; i < [streamingResult numOfFields] ; i++) {
-					NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,i);
+				for ( j = 0 ; j < [streamingResult numOfFields] ; j++) {
+					NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,j);
 					theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 					[theCol setResizingMask:NSTableColumnUserResizingMask];
 					[theCol setEditable:YES];
@@ -479,7 +478,7 @@
 					[dataCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 					[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 					[theCol setDataCell:dataCell];
-					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, i)];
+					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, j)];
 
 					// Set the width of this column to saved value if exists and maps to a real column
 					if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
@@ -618,11 +617,11 @@
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
 
 		// Add it to the document's current popup list
-		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:2];
+		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:3];
 
 		// Check for max history
 		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
-		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 2 )
+		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 3 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
 	}
@@ -2560,7 +2559,7 @@
 	NSMenu *menu = [queryFavoritesButton menu];
 
 	// Remove all favorites beginning from the end
-	while([queryFavoritesButton numberOfItems] > 6)
+	while([queryFavoritesButton numberOfItems] > 7)
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Build document-based list
@@ -2796,25 +2795,40 @@
 	return self;
 }
 
+/**
+ * Filters the query favorites menu.
+ */
 - (IBAction)filterQueryFavorites:(id)sender
 {
-	int i;
+	NSUInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
 	NSString *searchPattern = [queryFavoritesSearchField stringValue];
-	for (i=6; i< [menu numberOfItems]; i++)
+	
+	for (i = 7; i < [menu numberOfItems]; i++)
+	{
 		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG 
-			&& ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+	}
 }
 
+/**
+ * Filters the query history menu.
+ */
 - (IBAction)filterQueryHistory:(id)sender
 {
-	int i;
+	NSUInteger i;
 	NSMenu *menu = [queryHistoryButton menu];
 	NSString *searchPattern = [queryHistorySearchField stringValue];
-	for (i=2; i< [menu numberOfItems]; i++)
+	
+	for (i = 3; i < [menu numberOfItems]; i++)
+	{
 		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+	}
 }
 
+/**
+ * Setup various interface controls.
+ */
 - (void)awakeFromNib
 {
 	// Set pre-defined menu tags 
@@ -2835,6 +2849,9 @@
 											   object:tableDocumentInstance];
 }
 
+/**
+ * Dealloc.
+ */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

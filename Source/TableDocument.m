@@ -70,6 +70,7 @@
 
 - (id)init
 {
+	
 	if ((self = [super init])) {
 
 		_mainNibLoaded = NO;
