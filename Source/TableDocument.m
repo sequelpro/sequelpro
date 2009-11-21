@@ -1266,7 +1266,7 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		
 		// Schedule appearance of the task window in the near future
-		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
+		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
 	}
 }
 
@@ -1306,6 +1306,7 @@
 	if (taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = NO;
 		[taskProgressIndicator stopAnimation:self];
+		[taskProgressIndicator setDoubleValue:0.5];
 	}
 
 	taskProgressValue = taskPercentage;
@@ -1319,10 +1320,17 @@
 
 /**
  * Sets the task progress indicator back to indeterminate (also performed
- * automatically whenever a new task is started)
+ * automatically whenever a new task is started).
+ * This can optionally be called with afterDelay set, in which case the intederminate
+ * switch will be made a fter a short pause to minimise flicker for short actions.
  */
-- (void) setTaskProgressToIndeterminate
+- (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay
 {
+	if (afterDelay) {
+		[self performSelector:@selector(setTaskProgressToIndeterminateAfterDelay:) withObject:nil afterDelay:0.5];
+		return;
+	}
+
 	if (taskDisplayIsIndeterminate) return;
 	taskDisplayIsIndeterminate = YES;
 	[taskProgressIndicator setIndeterminate:YES];
@@ -1354,9 +1362,11 @@
 			[taskFadeAnimator release], taskFadeAnimator = nil;
 		}
 
-		// Hide the task interface
+		// Hide the task interface and reset to indeterminate
 		if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
 		[taskProgressWindow setAlphaValue:0.0];
+		taskDisplayIsIndeterminate = YES;
+		[taskProgressIndicator setIndeterminate:YES];
 
 		// Re-enable window interface
 		[historyControl setEnabled:YES];

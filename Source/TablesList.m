@@ -35,6 +35,7 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "NSMutableArray-MultipleSort.h"
+#import "NSNotificationAdditions.h"
 #import "SPConstants.h"
 
 @interface TablesList (PrivateAPI)
@@ -738,6 +739,14 @@
 		
 	// Reset the table information caches
 	[tableDataInstance resetAllData];
+	if (selectedTableType == SP_TABLETYPE_TABLE) {
+		[tableDataInstance updateInformationForCurrentTable];
+	} else if (selectedTableType == SP_TABLETYPE_VIEW) {
+		[tableDataInstance updateInformationForCurrentView];
+	}
+		
+	// Notify listeners of the table change now that the state is fully set up.
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
 
 	[separatorTableMenuItem setHidden:NO];
 	[separatorTableContextMenuItem setHidden:NO];
@@ -921,9 +930,6 @@
 
 	// Add a history entry
 	[spHistoryControllerInstance updateHistoryEntries];
-		
-	// Notify listeners of the table change now that the state is fully set up
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPTableChangedNotification object:tableDocumentInstance];
 
 	// Empty the loading pool and exit the thread
 	[tableDocumentInstance endTask];

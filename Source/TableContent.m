@@ -638,7 +638,8 @@
 			if (rowsProcessed < targetRowCount) {
 				[tableDocumentInstance setTaskPercentage:(rowsProcessed*relativeTargetRowCount)];
 			} else if (rowsProcessed == targetRowCount) {
-				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminate) withObject:nil waitUntilDone:NO];
+				[tableDocumentInstance setTaskPercentage:100.0];
+				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminateAfterDelay:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:NO];
 			}
 		}
 
