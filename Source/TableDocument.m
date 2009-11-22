@@ -528,6 +528,7 @@
 	NSArray *tables = [tablesListInstance tables];
 
 	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
+		[self endTask];
 		[taskPool drain];
 		return;
 	}
