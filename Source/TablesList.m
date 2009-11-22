@@ -721,6 +721,7 @@
 - (void) updateSelectionTask
 {	
 	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
+	NSString *tableEncoding = nil;
 
 	// Update the selected table name and type
 	if (selectedTableName) [selectedTableName release];
@@ -739,22 +740,12 @@
 		
 	// Reset the table information caches
 	[tableDataInstance resetAllData];
-	if (selectedTableType == SP_TABLETYPE_TABLE) {
-		[tableDataInstance updateInformationForCurrentTable];
-	} else if (selectedTableType == SP_TABLETYPE_VIEW) {
-		[tableDataInstance updateInformationForCurrentView];
-	}
-		
-	// Notify listeners of the table change now that the state is fully set up.
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
 
-	[separatorTableMenuItem setHidden:NO];
-	[separatorTableContextMenuItem setHidden:NO];
-
+	// Check the encoding if appropriate to determine if an encoding change and reset is required
 	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
 
 		// tableEncoding == nil indicates that there was an error while retrieving table data
-		NSString *tableEncoding = [tableDataInstance tableEncoding];
+		tableEncoding = [tableDataInstance tableEncoding];
 
 		// If encoding is set to Autodetect, update the connection character set encoding
 		// based on the newly selected table's encoding - but only if it differs from the current encoding.
@@ -762,9 +753,21 @@
 			if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
 				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
 				[tableDataInstance resetAllData];
+				tableEncoding = [tableDataInstance tableEncoding];
 			}
 		}
-	
+	}
+
+	// Ensure status information is cached on the working thread	
+	[tableDataInstance updateStatusInformationForCurrentTable];
+
+	// Notify listeners of the table change now that the state is fully set up.
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
+
+	[separatorTableMenuItem setHidden:NO];
+	[separatorTableContextMenuItem setHidden:NO];
+
+	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;

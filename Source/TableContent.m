@@ -410,7 +410,7 @@
 	}
 
 	// Restore first responder
-	[tableWindow makeFirstResponder:currentFirstResponder];
+	[tableWindow performSelectorOnMainThread:@selector(makeFirstResponder:) withObject:currentFirstResponder waitUntilDone:NO];
 
 	// Enable or disable the limit fields according to preference setting
 	if ( [prefs boolForKey:SPLimitResults] ) {
