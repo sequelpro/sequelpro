@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -104,7 +104,7 @@
 													</object>
 												</object>
 												<string key="NS.positiveformat">#,##1</string>
-												<string key="NS.negativeformat">#,##0</string>
+												<string key="NS.negativeformat">#,##1</string>
 												<nil key="NS.positiveattrs"/>
 												<nil key="NS.negativeattrs"/>
 												<nil key="NS.zero"/>
@@ -403,6 +403,13 @@
 							<bytes key="NSWhite">MC45NDc1ODA2NDUyAA</bytes>
 						</object>
 					</object>
+					<object class="NSCustomView" id="298938363">
+						<reference key="NSNextResponder" ref="1005"/>
+						<int key="NSvFlags">301</int>
+						<string key="NSFrameSize">{278, 135}</string>
+						<reference key="NSSuperview" ref="1005"/>
+						<string key="NSClassName">NSButton</string>
+					</object>
 				</object>
 				<string key="NSFrameSize">{278, 135}</string>
 				<reference key="NSSuperview"/>
@@ -410,12 +417,6 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="763599508">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>LimitResults</string>
-					<string>LimitResultsValue</string>
-					<string>LoadBlobsAsNeeded</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 		</object>
@@ -656,6 +657,7 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="323537221"/>
+							<reference ref="298938363"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -822,6 +824,11 @@
 						<reference key="object" ref="763599508"/>
 						<reference key="parent" ref="0"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">52</int>
+						<reference key="object" ref="298938363"/>
+						<reference key="parent" ref="1005"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -852,6 +859,7 @@
 					<string>3.IBPluginDependency</string>
 					<string>4.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
+					<string>52.IBPluginDependency</string>
 					<string>6.IBPluginDependency</string>
 					<string>7.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
@@ -887,6 +895,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -905,7 +914,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">51</int>
+			<int key="maxID">52</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

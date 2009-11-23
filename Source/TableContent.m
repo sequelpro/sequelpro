@@ -1136,7 +1136,9 @@
 
 	// Update the pagination button text
 	if ([prefs boolForKey:SPLimitResults]) {
-		if (isFiltered) {
+		if (maxPage <= 1) {
+			[paginationButton setTitle:@""];
+		} else if (isFiltered) {
 			[paginationButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Page %@", @"Filtered pagination button status text"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]]];		
 		} else {
 			[paginationButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Page %@ of %@", @"Pagination button status text"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:maxPage]]]];
