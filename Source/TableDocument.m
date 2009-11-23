@@ -551,8 +551,8 @@
 	// Set table content details for restore
 	if([spfSession objectForKey:@"contentSortCol"])
 		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
-	if([spfSession objectForKey:@"contentLimitStartPosition"])
-		[tableContentInstance setLimitStartToRestore:[[spfSession objectForKey:@"contentLimitStartPosition"] intValue]];
+	if([spfSession objectForKey:@"contentPageNumber"])
+		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] intValue]];
 	if([spfSession objectForKey:@"contentViewport"])
 		[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
 	if([spfSession objectForKey:@"contentFilter"])
@@ -2696,7 +2696,7 @@
 		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-		[session setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
+		[session setObject:[NSNumber numberWithInt:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
 		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 		if([tableContentInstance filterSettings])
 			[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];

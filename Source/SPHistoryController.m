@@ -188,7 +188,7 @@
 	unsigned int theView = [self currentlySelectedView];
 	NSString *contentSortCol = [tableContentInstance sortColumnName];
 	BOOL contentSortColIsAsc = [tableContentInstance sortColumnIsAscending];
-	unsigned int contentLimitStartPosition = [tableContentInstance limitStart];
+	unsigned int contentPageNumber = [tableContentInstance pageNumber];
 	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 	NSRect contentViewport = [tableContentInstance viewport];
 	NSDictionary *contentFilter = [tableContentInstance filterSettings];
@@ -232,7 +232,7 @@
 										theTable, @"table",
 										[NSNumber numberWithInt:theView], @"view",
 										[NSNumber numberWithBool:contentSortColIsAsc], @"contentSortColIsAsc",
-										[NSNumber numberWithInt:contentLimitStartPosition], @"contentLimitStartPosition",
+										[NSNumber numberWithInt:contentPageNumber], @"contentPageNumber",
 										[NSValue valueWithRect:contentViewport], @"contentViewport",
 										nil];
 	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
@@ -288,7 +288,7 @@
 
 	// Set table content details for restore
 	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortCol"] boolValue]];
-	[tableContentInstance setLimitStartToRestore:[[historyEntry objectForKey:@"contentLimitStartPosition"] intValue]];
+	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] intValue]];
 	[tableContentInstance setSelectedRowIndexesToRestore:[historyEntry objectForKey:@"contentSelectedIndexSet"]];
 	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
 	[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
@@ -415,14 +415,24 @@
 	if (![theEntry objectForKey:@"table"] || ![[theEntry objectForKey:@"table"] length]) return theName;
 
 	[theName appendFormat:@"/%@", [theEntry objectForKey:@"table"]];
-	if (![theEntry objectForKey:@"contentFilter"]) return theName;
 
-	NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
-	if (![filterSettings objectForKey:@"filterField"]) return theName;
+	if ([theEntry objectForKey:@"contentFilter"]) {
+		NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
+		if ([filterSettings objectForKey:@"filterField"]) {
+			if([filterSettings objectForKey:@"menuLabel"]) {
+				theName = [NSString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"), 
+							theName, [filterSettings objectForKey:@"menuLabel"]];
+			}
+		}
+	}
 
-	if([filterSettings objectForKey:@"menuLabel"])
-		return [NSString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"), 
-				theName, [filterSettings objectForKey:@"menuLabel"]];
+	if ([theEntry objectForKey:@"contentPageNumber"]) {
+		NSUInteger pageNumber = [[theEntry objectForKey:@"contentPageNumber"] unsignedIntValue];
+		if (pageNumber > 1) {
+			theName = [NSString stringWithFormat:NSLocalizedString(@"%@ (Page %i)", @"History item with page number label"),
+						theName, pageNumber];
+		}
+	}
 
 	return theName;
 }

@@ -162,10 +162,10 @@
 
 		// Check to see whether we need to wait for the data to be availabe
 		// - if so, wait 1ms before checking again.
-		// Keep the data processing thread at least one full row behind the download
+		// Keep the data processing thread at a number of rows behind the download
 		// thread - this aids memory issues across the threads and prevents occasional
 		// race condition crashes.
-		while (!dataDownloaded && (processedRowCount + 2 > downloadedRowCount)) {
+		while (!dataDownloaded && (processedRowCount + 10 > downloadedRowCount)) {
 			usleep(1000);
 		}
 

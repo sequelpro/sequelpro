@@ -58,7 +58,8 @@
 - (id)init
 {
 	if ((self == [super init])) {
-		
+		_mainNibLoaded = NO;
+
 		tableValues      = [[NSMutableArray alloc] init];
 		tableRowsCount = 0;
 		previousTableRowsCount = 0;
@@ -71,10 +72,11 @@
 		keys		  = nil;
 
 		currentlyEditingRow = -1;
+		contentPage = 1;
 
 		sortColumnToRestore = nil;
 		sortColumnToRestoreIsAsc = YES;
-		limitStartPositionToRestore = 1;
+		pageToRestore = 1;
 		selectionIndexToRestore = nil;
 		selectionViewportToRestore = NSZeroRect;
 		filterFieldToRestore = nil;
@@ -125,8 +127,24 @@
  */
 - (void)awakeFromNib
 {
+	if (_mainNibLoaded) return;
+	_mainNibLoaded = YES;
+
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
+	// Add the pagination view to the content area with ourselves as the owner
+	if (![NSBundle loadNibNamed:@"ContentPaginationView" owner:self]) {
+		NSLog(@"Content pagination nib could not be loaded; pagination will not function correctly.");
+	}
+	NSRect paginationViewFrame = [paginationView frame];
+	NSRect paginationButtonFrame = [paginationButton frame];
+	paginationViewHeight = paginationViewFrame.size.height;
+	paginationViewFrame.origin.x = paginationButtonFrame.origin.x + paginationButtonFrame.size.width - paginationViewFrame.size.width;
+	paginationViewFrame.origin.y = paginationButtonFrame.origin.y + paginationButtonFrame.size.height - 2;
+	paginationViewFrame.size.height = 0;
+	[paginationView setFrame:paginationViewFrame];
+	[contentViewPane addSubview:paginationView];
 	
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -154,6 +172,7 @@
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT] || ![tableDocumentInstance isWorking];
+	[self performSelectorOnMainThread:@selector(setPaginationViewVisibility:) withObject:nil waitUntilDone:NO];
 
 	// Abort the reload if the user is still editing a row
 	if ( isEditingRow )
@@ -168,6 +187,8 @@
 	} else {
 		selectedTable = aTable;
 		previousTableRowsCount = 0;
+		contentPage = 1;
+		[paginationPageField setStringValue:@"1"];
 
 		// Clear the selection
 		[tableContentView deselectAll:self];
@@ -227,11 +248,11 @@
 		[secondBetweenField setHidden:YES];
 		[betweenTextField setHidden:YES];
 		
-		// Empty and disable the limit field
-		[limitRowsField setStringValue:@""];
-		[limitRowsField setEnabled:NO];
-		[limitRowsButton setEnabled:NO];
-		[limitRowsStepper setEnabled:NO];
+		// Disable pagination
+		[paginationPreviousButton setEnabled:NO];
+		[paginationButton setEnabled:NO];
+		[paginationButton setTitle:@""];
+		[paginationNextButton setEnabled:NO];
 
 		// Disable table action buttons
 		[addButton setEnabled:NO];
@@ -409,26 +430,11 @@
 		}
 	}
 
+	// Restore page number if limiting is set
+	if ([prefs boolForKey:SPLimitResults]) contentPage = pageToRestore;
+
 	// Restore first responder
 	[tableWindow performSelectorOnMainThread:@selector(makeFirstResponder:) withObject:currentFirstResponder waitUntilDone:NO];
-
-	// Enable or disable the limit fields according to preference setting
-	if ( [prefs boolForKey:SPLimitResults] ) {
-
-		// Preserve the limit field - if this is beyond the current number of rows,
-		// reloadData will reset as necessary.
-		if (limitStartPositionToRestore < 1) limitStartPositionToRestore = 1;
-		[limitRowsField setStringValue:[NSString stringWithFormat:@"%u", limitStartPositionToRestore]];
-
-		[limitRowsField setEnabled:YES];
-		[limitRowsButton setEnabled:YES];
-		[limitRowsStepper setEnabled:YES];
-	} else {
-		[limitRowsField setEnabled:NO];
-		[limitRowsButton setEnabled:NO];
-		[limitRowsStepper setEnabled:NO];
-		[limitRowsField setStringValue:@""];
-	}
 
 	// Set the state of the table buttons
 	[addButton setEnabled:enableInteraction];
@@ -518,22 +524,23 @@
 	// Check to see if a limit needs to be applied
 	if ([prefs boolForKey:SPLimitResults]) {
 
-		// Ensure the limit isn't negative
-		if ([limitRowsField intValue] <= 0) {
-			[limitRowsField setStringValue:@"1"];
-		}
+		// Ensure the page supplied is within the appropriate limits
+		if (contentPage <= 0)
+			contentPage = 1;
+		else if (contentPage > 1 && (contentPage - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
+			contentPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 
-		// If the result set is being limited, take a copy of the string to allow resetting limit
+		// If the result set is from a late page, take a copy of the string to allow resetting limit
 		// if no results are found
-		if ([limitRowsField intValue] > 1) {
+		if (contentPage > 1) {
 			queryStringBeforeLimit = [NSString stringWithString:queryString];
 		}
 
 		// Append the limit settings
-		[queryString appendFormat:@" LIMIT %d,%d", [limitRowsField intValue]-1, [prefs integerForKey:SPLimitResultsValue]];
+		[queryString appendFormat:@" LIMIT %d,%d", (contentPage-1)*[prefs integerForKey:SPLimitResultsValue], [prefs integerForKey:SPLimitResultsValue]];
 
 		// Update the approximate count of the rows to load
-		rowsToLoad = rowsToLoad - ([limitRowsField intValue]-1);
+		rowsToLoad = rowsToLoad - (contentPage-1)*[prefs integerForKey:SPLimitResultsValue];
 		if (rowsToLoad > [prefs integerForKey:SPLimitResultsValue]) rowsToLoad = [prefs integerForKey:SPLimitResultsValue];
 	}
 
@@ -547,9 +554,9 @@
 	[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
 	[streamingResult release];
 
-	// If the result is empty, and a limit is active, reset the limit
+	// If the result is empty, and a late page is selected, reset the page
 	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
-		[limitRowsField setStringValue:@"1"];
+		contentPage = 1;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
 		streamingResult = [mySQLConnection streamingQueryString:queryString];
@@ -566,7 +573,7 @@
 	[tableDocumentInstance disableTaskCancellation];
 
 	if ([prefs boolForKey:SPLimitResults]
-		&& ([limitRowsField intValue] > 1
+		&& (contentPage > 1
 			|| tableRowsCount == [prefs integerForKey:SPLimitResultsValue]))
 	{
 		isLimited = YES;
@@ -579,7 +586,10 @@
 
 	// Set the filter text
 	[self updateCountText];
-	
+
+	// Update pagination
+	[self updatePaginationState];
+
 	// Notify listenters that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 }
@@ -836,35 +846,43 @@
 {
 	NSString *rowString;
 	NSMutableString *countString = [NSMutableString string];
+	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
+	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+
+	// Set up a couple of common strings
+	NSString *tableCountString = [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:tableRowsCount]];
+	NSString *maxRowsString = [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:maxNumRows]];
 
 	// If the result is partial due to an error or query cancellation, show a very basic count
 	if (isInterruptedLoad) {
 		if (tableRowsCount == 1)
-			[countString appendFormat:NSLocalizedString(@"%d row in partial load", @"text showing a single row a partially loaded result"), tableRowsCount];
+			[countString appendFormat:NSLocalizedString(@"%@ row in partial load", @"text showing a single row a partially loaded result"), tableCountString];
 		else
-			[countString appendFormat:NSLocalizedString(@"%d rows in partial load", @"text showing how many rows are in a partially loaded result"), tableRowsCount];
+			[countString appendFormat:NSLocalizedString(@"%@ rows in partial load", @"text showing how many rows are in a partially loaded result"), tableCountString];
 		
 	// If no filter or limit is active, show just the count of rows in the table
 	} else if (!isFiltered && !isLimited) {
 		if (tableRowsCount == 1)
-			[countString appendFormat:NSLocalizedString(@"%d row in table", @"text showing a single row in the result"), tableRowsCount];
+			[countString appendFormat:NSLocalizedString(@"%@ row in table", @"text showing a single row in the result"), tableCountString];
 		else
-			[countString appendFormat:NSLocalizedString(@"%d rows in table", @"text showing how many rows are in the result"), tableRowsCount];
+			[countString appendFormat:NSLocalizedString(@"%@ rows in table", @"text showing how many rows are in the result"), tableCountString];
 
 	// If a limit is active, display a string suggesting a limit is active
 	} else if (!isFiltered && isLimited) {
-		[countString appendFormat:NSLocalizedString(@"Rows %d-%d of %@%d from table", @"text showing how many rows are in the limited result"), [limitRowsField intValue], [limitRowsField intValue]+tableRowsCount-1, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
+		NSUInteger limitStart = (contentPage-1)*[prefs integerForKey:SPLimitResultsValue] + 1;
+		[countString appendFormat:NSLocalizedString(@"Rows %@ - %@ of %@%@ from table", @"text showing how many rows are in the limited result"),  [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:limitStart]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:(limitStart+tableRowsCount-1)]], maxNumRowsIsEstimate?@"~":@"", maxRowsString];
 
 	// If just a filter is active, show a count and an indication a filter is active
 	} else if (isFiltered && !isLimited) {
 		if (tableRowsCount == 1)
-			[countString appendFormat:NSLocalizedString(@"%d row of %@%d matches filter", @"text showing how a single rows matched filter"), tableRowsCount, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
+			[countString appendFormat:NSLocalizedString(@"%@ row of %@%@ matches filter", @"text showing how a single rows matched filter"), tableCountString, maxNumRowsIsEstimate?@"~":@"", maxRowsString];
 		else
-			[countString appendFormat:NSLocalizedString(@"%d rows of %@%d match filter", @"text showing how many rows matched filter"), tableRowsCount, maxNumRowsIsEstimate?@"~":@"", maxNumRows];
+			[countString appendFormat:NSLocalizedString(@"%@ rows of %@%@ match filter", @"text showing how many rows matched filter"), tableCountString, maxNumRowsIsEstimate?@"~":@"", maxRowsString];
 
 	// If both a filter and limit is active, display full string
 	} else {
-		[countString appendFormat:NSLocalizedString(@"Rows %d-%d from filtered matches", @"text showing how many rows are in the limited filter match"), [limitRowsField intValue], [limitRowsField intValue]+tableRowsCount-1];
+		NSUInteger limitStart = (contentPage-1)*[prefs integerForKey:SPLimitResultsValue] + 1;
+		[countString appendFormat:NSLocalizedString(@"Rows %@ - %@ from filtered matches", @"text showing how many rows are in the limited filter match"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:limitStart]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:(limitStart+tableRowsCount-1)]]];
 	}
 
 	// If rows are selected, append selection count
@@ -874,7 +892,7 @@
 			rowString = [NSString stringWithString:NSLocalizedString(@"row", @"singular word for row")];
 		else
 			rowString = [NSString stringWithString:NSLocalizedString(@"rows", @"plural word for rows")];
-		[countString appendFormat:NSLocalizedString(@"%d %@ selected", @"text showing how many rows are selected"), [tableContentView numberOfSelectedRows], rowString];
+		[countString appendFormat:NSLocalizedString(@"%@ %@ selected", @"text showing how many rows are selected"), [numberFormatter stringFromNumber:[NSNumber numberWithInteger:[tableContentView numberOfSelectedRows]]], rowString];
 	}
 
 	[countText setStringValue:countString];
@@ -927,6 +945,7 @@
 - (IBAction)filterTable:(id)sender
 {
 	if ([tableDocumentInstance isWorking]) return;
+	[self setPaginationViewVisibility:FALSE];
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Filtering table...", @"Filtering table task description")];
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(filterTableTask) toTarget:self withObject:nil];
@@ -944,16 +963,13 @@
 	// Update history
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Update negative limits
-	if ([limitRowsField intValue] <= 0) {
-		[limitRowsField setStringValue:@"1"];
-	}
-
-	// If limitRowsField > number of total table rows show the last limitRowsValue rows
-	if ([prefs boolForKey:SPLimitResults] && [limitRowsField intValue] >= maxNumRows) {
-		NSUInteger newLimit = maxNumRows - [prefs integerForKey:SPLimitResultsValue];
-		[limitRowsField setStringValue:[[NSNumber numberWithInt:(newLimit<1)?1:newLimit] stringValue]];
-	}
+	// Select the correct pagination value
+	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
+		contentPage = 1;
+	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
+		contentPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+	else
+		contentPage = [paginationPageField integerValue];
 
 	// Reset and reload data using the new filter settings
 	previousTableRowsCount = 0;
@@ -1029,6 +1045,111 @@
 {
 	if (usedQuery) [usedQuery release];
 	usedQuery = [[NSString alloc] initWithString:query];
+}
+
+#pragma mark -
+#pragma mark Pagination
+
+/**
+ * Move the pagination backwards or forwards one page
+ */
+- (IBAction) navigatePaginationFromButton:(id)sender
+{
+	if (sender == paginationPreviousButton) {
+		if (contentPage <= 1) return;
+		[paginationPageField setIntValue:(contentPage - 1)];
+		[self filterTable:sender];
+	} else if (sender == paginationNextButton) {
+		if (contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
+		[paginationPageField setIntValue:(contentPage + 1)];
+		[self filterTable:sender];
+	}
+}
+
+/**
+ * When the Pagination button is pressed, show or hide the pagination
+ * layer depending on the current state.
+ */
+- (IBAction) togglePagination:(id)sender
+{
+	if ([sender state] == NSOnState) [self setPaginationViewVisibility:YES];
+	else [self setPaginationViewVisibility:NO];
+}
+
+/**
+ * Show or hide the pagination layer, also changing the first responder as appropriate.
+ */
+- (void) setPaginationViewVisibility:(BOOL)makeVisible
+{
+	NSRect paginationViewFrame = [paginationView frame];
+
+	if (makeVisible) {
+		if (paginationViewFrame.size.height == paginationViewHeight) return;
+		paginationViewFrame.size.height = paginationViewHeight;
+		[paginationButton setState:NSOnState];
+		[tableWindow makeFirstResponder:paginationPageField];
+	} else {
+		if (paginationViewFrame.size.height == 0) return;
+		paginationViewFrame.size.height = 0;	
+		[paginationButton setState:NSOffState];
+		if ([tableWindow firstResponder] == paginationPageField
+			|| ([[tableWindow firstResponder] respondsToSelector:@selector(superview)]
+				&& [(id)[tableWindow firstResponder] superview]
+				&& [[(id)[tableWindow firstResponder] superview] respondsToSelector:@selector(superview)]
+				&& [[(id)[tableWindow firstResponder] superview] superview] == paginationPageField))
+		{
+			[tableWindow makeFirstResponder:nil];
+		}
+	}
+
+	[[paginationView animator] setFrame:paginationViewFrame]; 
+}
+
+/**
+ * Update the state of the pagination buttons and text.
+ */
+- (void) updatePaginationState
+{
+	NSUInteger maxPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+	if (isFiltered && isLimited && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
+		maxPage = contentPage;
+	}
+	BOOL enabledMode = ![tableDocumentInstance isWorking];
+	
+	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
+	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+
+	// Set up the previous page button
+	if ([prefs boolForKey:SPLimitResults] && contentPage > 1)
+		[paginationPreviousButton setEnabled:enabledMode];
+	else
+		[paginationPreviousButton setEnabled:NO];
+
+	// Set up the next page button
+	if ([prefs boolForKey:SPLimitResults] && contentPage < maxPage)
+		[paginationNextButton setEnabled:enabledMode];
+	else
+		[paginationNextButton setEnabled:NO];
+
+	// As long as a table is selected (which it will be if this is called), enable pagination detail button
+	[paginationButton setEnabled:enabledMode];
+
+	// Update the pagination button text
+	if ([prefs boolForKey:SPLimitResults]) {
+		if (isFiltered) {
+			[paginationButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Page %@", @"Filtered pagination button status text"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]]];		
+		} else {
+			[paginationButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Page %@ of %@", @"Pagination button status text"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:maxPage]]]];
+		}
+	} else {
+		[paginationButton setTitle:NSLocalizedString(@"Pagination disabled", @"Pagination text shown when LIMIT is off")];
+	}
+
+	// Set the values and maximums for the text field and associated pager
+	[paginationPageField setStringValue:[numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]];
+	[[paginationPageField formatter] setMaximum:[NSNumber numberWithUnsignedInteger:maxPage]];
+	[paginationPageStepper setIntValue:contentPage];
+	[paginationPageStepper setMaxValue:maxPage];
 }
 
 #pragma mark -
@@ -1281,12 +1402,6 @@
 	mySQLConnection = theConnection;
 	
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
-	
-	[limitRowsStepper setEnabled:NO];
-	
-	if ( ![prefs boolForKey:SPLimitResults] ) {
-		[limitRowsField setStringValue:@""];
-	}
 }
 
 /**
@@ -1489,25 +1604,6 @@
 		modalDelegate:contentFilterManager
 	   didEndSelector:nil 
 		  contextInfo:nil];
-}
-
-- (IBAction)stepLimitRows:(id)sender
-/*
- steps the start row up or down (+/- limitRowsValue)
- */
-{
-	if ( [limitRowsStepper intValue] > 0 ) {
-		NSInteger newStep = [limitRowsField intValue]+[prefs integerForKey:SPLimitResultsValue];
-		// if newStep > the total number of rows in the current table retain the old value
-		[limitRowsField setIntValue:(newStep>maxNumRows)?[limitRowsField intValue]:newStep];
-	} else {
-		if ( ([limitRowsField intValue]-[prefs integerForKey:SPLimitResultsValue]) < 1 ) {
-			[limitRowsField setIntValue:1];
-		} else {
-			[limitRowsField setIntValue:[limitRowsField intValue]-[prefs integerForKey:SPLimitResultsValue]];
-		}
-	}
-	[limitRowsStepper setIntValue:0];
 }
 
 /*
@@ -2163,11 +2259,11 @@
 }
 
 /**
- * Provide a getter for the LIMIT position
+ * Provide a getter for the page number
  */
-- (unsigned int) limitStart
+- (unsigned int) pageNumber
 {
-	return [limitRowsField intValue];
+	return contentPage;
 }
 
 /**
@@ -2214,11 +2310,11 @@
 }
 
 /**
- * Sets the value for the limit start position to use on next table load
+ * Sets the value for the page number to use on next table load
  */
-- (void) setLimitStartToRestore:(unsigned int)theLimitStart
+- (void) setPageToRestore:(unsigned int)thePage
 {
-	limitStartPositionToRestore = theLimitStart;
+	pageToRestore = thePage;
 }
 
 /**
@@ -2284,7 +2380,7 @@
 - (void) storeCurrentDetailsForRestoration
 {
 	[self setSortColumnNameToRestore:[self sortColumnName] isAscending:[self sortColumnIsAscending]];
-	[self setLimitStartToRestore:[self limitStart]];
+	[self setPageToRestore:[self pageNumber]];
 	[self setSelectedRowIndexesToRestore:[self selectedRowIndexes]];
 	[self setViewportToRestore:[self viewport]];
 	[self setFiltersToRestore:[self filterSettings]];
@@ -2296,7 +2392,7 @@
 - (void) clearDetailsToRestore
 {
 	[self setSortColumnNameToRestore:nil isAscending:YES];
-	[self setLimitStartToRestore:1];
+	[self setPageToRestore:1];
 	[self setSelectedRowIndexesToRestore:nil];
 	[self setViewportToRestore:NSZeroRect];
 	[self setFiltersToRestore:nil];
@@ -2352,9 +2448,9 @@
 	if (checkStatusCount) {
 		NSInteger foundMaxRows; 
 		if ([prefs boolForKey:SPLimitResults]) {
-			foundMaxRows = [limitRowsField intValue] - 1 + tableRowsCount;
+			foundMaxRows = ((contentPage - 1) * [prefs integerForKey:SPLimitResultsValue]) + tableRowsCount;
 			if (foundMaxRows > maxNumRows) {
-				if (foundMaxRows == [limitRowsField intValue] - 1 + [prefs integerForKey:SPLimitResultsValue]) {
+				if (tableRowsCount == [prefs integerForKey:SPLimitResultsValue]) {
 					maxNumRows = foundMaxRows + 1;
 					maxNumRowsIsEstimate = YES;
 				} else {
@@ -2439,7 +2535,7 @@
 	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
 	if (rowIndex >= tableRowsCount) return @"...";
 	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
-	if (columnIndex >= [rowData count]) return @"...";
+	if (rowData && columnIndex >= [rowData count]) return @"...";
 
 	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
 
@@ -2471,7 +2567,7 @@
 		return;
 	}
 	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
-	if (columnIndex >= [rowData count]) {
+	if (!rowData || columnIndex >= [rowData count]) {
 		[cell setTextColor:[NSColor lightGrayColor]];
 		return;
 	}
@@ -2801,6 +2897,9 @@
 	[reloadButton setEnabled:NO];
 	[filterButton setEnabled:NO];
 	tableRowsSelectable = NO;
+	[paginationPreviousButton setEnabled:NO];
+	[paginationNextButton setEnabled:NO];
+	[paginationButton setEnabled:NO];
 }
 
 /**
@@ -2813,12 +2912,15 @@
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
 		return;
 
-	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) [addButton setEnabled:YES];
+	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) {
+		[addButton setEnabled:YES];
+		[self updatePaginationState];
+		[reloadButton setEnabled:YES];
+	}
 	if ([tableContentView numberOfSelectedRows] > 0) {
 		[removeButton setEnabled:YES];
 		[copyButton setEnabled:YES];
 	}
-	[reloadButton setEnabled:YES];
 	[filterButton setEnabled:[fieldField isEnabled]];
 	tableRowsSelectable = YES;
 }

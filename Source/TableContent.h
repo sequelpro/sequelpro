@@ -56,9 +56,19 @@
 	IBOutlet id firstBetweenField;
 	IBOutlet id secondBetweenField;
 	IBOutlet id betweenTextField;
+
+	IBOutlet NSButton *paginationPreviousButton;
+	IBOutlet NSButton *paginationButton;
+	IBOutlet NSButton *paginationNextButton;
+	IBOutlet NSView *contentViewPane;
+	IBOutlet NSView *paginationView;
+	IBOutlet NSTextField *paginationPageField;
+	IBOutlet NSStepper *paginationPageStepper;
 	
 	MCPConnection *mySQLConnection;
-	
+
+	BOOL _mainNibLoaded;
+
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *tableValues, *dataColumns, *keys, *oldRow;
 	NSUInteger tableRowsCount, previousTableRowsCount;
@@ -73,14 +83,17 @@
 	NSMutableDictionary *numberOfDefaultFilters;
 	NSUInteger lastSelectedContentFilterIndex;
 	id contentFilterManager;
+	NSUInteger contentPage;
 
 	BOOL sortColumnToRestoreIsAsc;
 	BOOL tableRowsSelectable;
 	NSString *sortColumnToRestore;
-	unsigned int limitStartPositionToRestore;
+	unsigned int pageToRestore;
 	NSIndexSet *selectionIndexToRestore;
 	NSRect selectionViewportToRestore;
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
+
+	int paginationViewHeight;
 }
 
 // Table loading methods and information
@@ -97,6 +110,12 @@
 - (IBAction) toggleFilterField:(id)sender;
 - (NSString *) usedQuery;
 - (void) setUsedQuery:(NSString *)query;
+
+// Pagination
+- (IBAction) navigatePaginationFromButton:(id)sender;
+- (IBAction) togglePagination:(id)sender;
+- (void) setPaginationViewVisibility:(BOOL)makeVisible;
+- (void) updatePaginationState;
 
 // Edit methods
 - (IBAction)addRow:(id)sender;
@@ -115,7 +134,6 @@
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
-- (IBAction)stepLimitRows:(id)sender;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(long)targetRowCount;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(int)row;
@@ -130,12 +148,12 @@
 // Retrieving and setting table state
 - (NSString *) sortColumnName;
 - (BOOL) sortColumnIsAscending;
-- (unsigned int) limitStart;
+- (unsigned int) pageNumber;
 - (NSIndexSet *) selectedRowIndexes;
 - (NSRect) viewport;
 - (NSDictionary *) filterSettings;
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
-- (void) setLimitStartToRestore:(unsigned int)theLimitStart;
+- (void) setPageToRestore:(unsigned int)thePage;
 - (void) setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
 - (void) setViewportToRestore:(NSRect)theViewport;
 - (void) setFiltersToRestore:(NSDictionary *)filterSettings;
