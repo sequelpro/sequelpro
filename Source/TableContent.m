@@ -467,7 +467,7 @@
 	}
 	
 	// Update display if necessary
-	[tableContentView displayIfNeeded];
+	[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
@@ -1584,10 +1584,10 @@
 	[item release];
 
 	// Update the argumentField enabled state
-	[self toggleFilterField:self];
+	[self performSelectorOnMainThread:@selector(toggleFilterField:) withObject:self waitUntilDone:YES];
 
 	// set focus on argumentField
-	[argumentField selectText:self];
+	[argumentField performSelectorOnMainThread:@selector(selectText:) withObject:self waitUntilDone:YES];
 
 }
 
@@ -2536,10 +2536,14 @@
 	// cases - when the load completes all table data will be redrawn.
 	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
 	if (rowIndex >= tableRowsCount) return @"...";
-	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
-	if (rowData && columnIndex >= [rowData count]) return @"...";
+	NSMutableArray *rowData = [NSArrayObjectAtIndex(tableValues, rowIndex) retain];
+	if (!rowData || columnIndex >= [rowData count]) {
+			if (rowData) [rowData release];
+			return @"...";
+	}
 
 	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+	[rowData release];
 
 	if ([theValue isNSNull])
 		return [prefs objectForKey:SPNullValue];
@@ -2568,13 +2572,15 @@
 		[cell setTextColor:[NSColor lightGrayColor]];
 		return;
 	}
-	NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
+	NSMutableArray *rowData = [NSArrayObjectAtIndex(tableValues, rowIndex) retain];
 	if (!rowData || columnIndex >= [rowData count]) {
+		if (rowData) [rowData release];
 		[cell setTextColor:[NSColor lightGrayColor]];
 		return;
 	}
 
 	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+	[rowData release];
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
