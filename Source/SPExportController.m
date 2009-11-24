@@ -30,6 +30,7 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
+#import "SPLogger.h"
 
 @interface SPExportController (PrivateAPI)
 
@@ -234,6 +235,7 @@
 - (void)exporterDataConversionProcessComplete:(SPExporter *)exporter
 {	
 	// Do something with the data...
+	[[SPLogger logger] log:[exporter exportData]];
 	
 	// If there are no more operations in the queue, close the progress sheet
 	if ([[operationQueue operations] count] == 0) {
@@ -349,11 +351,7 @@
 - (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type toMultipleFiles:(BOOL)multipleFiles
 {
 	NSUInteger i;
-	
-	NSMutableString *errors = [NSMutableString string];
-	
 	NSDictionary *tableDetails;
-	//NSStringEncoding encoding = [[self connection] encoding];
 	
 	// Reset the interface
 	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), @"CSV"]];
@@ -437,17 +435,6 @@
 																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
 		}
 		
-		// Use low memory export?
-		BOOL useLowMemoryBlockingStreaming = ([exportProcessLowMemory state] == NSOnState);
-		
-		// Make a streaming request for the data
-		MCPStreamingResult *queryResultStreaming = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:useLowMemoryBlockingStreaming];
-		
-		// Note any errors during retrieval
-		if (![[connection getLastErrorMessage] isEqualToString:@""]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
-		}
-		
 		SPExporter *exporter;
 		SPCSVExporter *csvExporter;
 		
@@ -460,6 +447,8 @@
 			case SP_CSV_EXPORT:
 				csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
 				
+				[csvExporter setCsvTableName:tableName];
+				
 				[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
 				[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
 				[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
@@ -470,9 +459,6 @@
 				[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]];
 				
 				[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
-				
-				// Assign the data to the exporter
-				[csvExporter setCsvDataResult:queryResultStreaming];
 				
 				exporter = csvExporter;
 				
@@ -490,6 +476,10 @@
 				
 				break;
 		}
+		
+		// Set the exporter's generic properties
+		[exporter setConnection:connection];
+		[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemory state] == NSOnState)];
 		
 		// Update the progress text and set the progress bar back to determinate
 		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %d of %d (%@): Writing...", @"text showing that app is writing data for table export"), (i + 1), tableCount, tableName]];

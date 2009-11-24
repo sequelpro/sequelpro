@@ -103,7 +103,6 @@
 	
 	// Table/export operation mapping 
 	NSMutableDictionary *tableExportMapping;
-	
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

@@ -29,8 +29,10 @@
 
 @synthesize delegate;
 @synthesize didEndSelector;
+@synthesize connection;
 @synthesize exportProgressValue;
 @synthesize exportProcessIsRunning;
+@synthesize exportUsingLowMemoryBlockingStreaming;
 @synthesize exportData;
 @synthesize exportOutputEncoding;
 
@@ -71,6 +73,7 @@
 - (void)dealloc
 {
 	[exportData release], exportData = nil;
+	[connection release], connection = nil;
 	
 	[super dealloc];
 }

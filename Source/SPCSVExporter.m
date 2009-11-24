@@ -25,13 +25,18 @@
 
 #import "SPCSVExporter.h"
 #import "SPArrayAdditions.h"
+#import "MCPStreamingResult.h"
+#import "SPStringAdditions.h"
 
 @implementation SPCSVExporter
 
 @synthesize csvDataArray;
 @synthesize csvDataResult;
 
+@synthesize csvTableName;
+
 @synthesize csvOutputFieldNames;
+
 @synthesize csvFieldSeparatorString;
 @synthesize csvEnclosingCharacterString;
 @synthesize csvEscapeString;
@@ -80,12 +85,14 @@
 		{
 			return;
 		}
-		
-		// Check that we have at least some data to export
-		if ((![self csvDataArray]) && (![self csvDataResult])) return;
 				
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
+		
+		// Make a streaming request for the data if the data array isn't set
+		if ((![self csvDataArray]) && [self csvTableName]) {
+			[self setCsvDataResult:[connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]]];
+		}
 		
 		// Detect and restore special characters being used as terminating or line end strings
 		NSMutableString *tempSeparatorString = [NSMutableString stringWithString:[self csvFieldSeparatorString]];

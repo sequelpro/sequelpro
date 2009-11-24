@@ -29,13 +29,17 @@
 #import "SPExporter.h"
 
 @interface SPCSVExporter : SPExporter
-{	
+{		
 	// CSV data
 	NSArray *csvDataArray;
 	MCPStreamingResult *csvDataResult;
 	
+	// Table
+	NSString *csvTableName;
+	
 	// CSV options
 	BOOL csvOutputFieldNames;
+	
 	NSString *csvFieldSeparatorString;
 	NSString *csvEnclosingCharacterString;
 	NSString *csvEscapeString;
@@ -47,7 +51,10 @@
 @property (readwrite, retain) NSArray *csvDataArray;
 @property (readwrite, retain) MCPStreamingResult *csvDataResult;
 
+@property (readwrite, retain) NSString *csvTableName;
+
 @property (readwrite, assign) BOOL csvOutputFieldNames;
+
 @property (readwrite, retain) NSString *csvFieldSeparatorString;
 @property (readwrite, retain) NSString *csvEnclosingCharacterString;
 @property (readwrite, retain) NSString *csvEscapeString;

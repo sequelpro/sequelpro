@@ -47,14 +47,19 @@
  * once the exporter instance is placed on the operation queue once its ready to be run.
  */
 
+@class MCPConnection;
+
 @interface SPExporter : NSOperation
 {
 	id <SPExporterDataAccess> delegate;
 	SEL didEndSelector;
+	
+	MCPConnection *connection;
 		
 	double exportProgressValue;
 	
 	BOOL exportProcessIsRunning;
+	BOOL exportUsingLowMemoryBlockingStreaming;
 	
 	NSString *exportData;
 	NSStringEncoding exportOutputEncoding;
@@ -62,9 +67,13 @@
 
 @property (readwrite, assign) id delegate;
 @property (readwrite, assign) SEL didEndSelector;
+
+@property (readwrite, retain) MCPConnection *connection;
+
 @property (readwrite, assign) double exportProgressValue;
 
 @property (readwrite, assign) BOOL exportProcessIsRunning;
+@property (readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
 
 @property (readwrite, retain) NSString *exportData;
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
