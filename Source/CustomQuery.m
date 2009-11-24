@@ -1322,73 +1322,73 @@
 	return fieldIDQueryStr;
 }
 
-
 #pragma mark -
 #pragma mark TableView datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+/**
+ * Returns the number of rows in the result set table view.
+ */
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	if ( aTableView == customQueryView ) {
-		if ( nil == fullResult ) {
-			return 0;
-		} else {
-			return fullResultCount;
-		}
-	} else {
+	if (aTableView == customQueryView) {
+		return (fullResult == nil) ? 0 : fullResultCount;
+	} 
+	else {
 		return 0;
 	}
 }
 
 /**
- * This function changes the text color of text/blob fields whose content is NULL
+ * This function changes the text color of text/blob fields whose content is NULL.
  */
-- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
+- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {	
-	if ( aTableView == customQueryView ) {
-		if (row > fullResultCount) return;
-
+	if (aTableView == customQueryView) {
+		
+		// Perform various result set checks to prevent crashes
+		if ((fullResultCount == 0) || (rowIndex > fullResultCount)) return;
+		
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
 		
-			id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, row), [[aTableColumn identifier] intValue]);
-			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+			id value = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
+			
+			[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
 		}
 	}
-
 }
 
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+/**
+ * Returns the object for the requested column and row index.
+ */
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
+	if (aTableView == customQueryView) {
+		
+		// Perform various result set checks to prevent crashes
+		if ((fullResultCount == 0) || (rowIndex > fullResultCount)) return nil;
+		
+		id value = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
+		
+		if ([value isKindOfClass:[NSData class]])
+			return [value shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
-	if ( aTableView == customQueryView ) {
-		if (rowIndex > fullResultCount) return nil;
-
-		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
-
-		if ( [theValue isKindOfClass:[NSData class]] )
-			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
-
-		if ( [theValue isNSNull] )
+		if ([value isNSNull])
 			return [prefs objectForKey:SPNullValue];
 
-	    return theValue;
-
+	    return value;
 	}
 	else {
 		return @"";
 	}
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if ( aTableView == customQueryView ) {
+	if (aTableView == customQueryView) {
 
 		// Field editing
-
-		if(fieldIDQueryString == nil) return;
+		if (fieldIDQueryString == nil) return;
 
 		NSDictionary *columnDefinition;
 
