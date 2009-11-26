@@ -447,7 +447,7 @@
 	if([connection objectForKey:@"host"])
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if([connection objectForKey:@"port"])
-		[connectionController setPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"port"]]];
+		[connectionController setPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"port"] intValue]]];
 	if([connection objectForKey:@"kcid"] && [[connection objectForKey:@"kcid"] length])
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
 
@@ -469,7 +469,7 @@
 		if([connection objectForKey:@"ssh_user"])
 			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
 		if([connection objectForKey:@"ssh_port"])
-			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"ssh_port"]]];
+			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"ssh_port"] intValue]]];
 
 		// Set ssh password - if not in SPF file try to get it via the KeyChain
 		if([connection objectForKey:@"ssh_password"])
