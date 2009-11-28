@@ -122,10 +122,12 @@
 	NSString *helpHTMLTemplate;
 
 	NSMutableArray *fullResult;
+	pthread_mutex_t fullResultLock;
 	NSInteger fullResultCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 
+	BOOL isWorking;
 	BOOL tableReloadAfterEditing;
 	BOOL queryIsTableSorter;
 	BOOL isDesc;

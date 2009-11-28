@@ -807,7 +807,9 @@
 	// Remove all items from the table
 	fullResultCount = 0;
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+	pthread_mutex_lock(&fullResultLock);
 	[fullResult removeAllObjects];
+	pthread_mutex_unlock(&fullResultLock);
 
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
@@ -815,8 +817,10 @@
 	// Loop through the result rows as they become available
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 
+		pthread_mutex_lock(&fullResultLock);
 		NSMutableArrayAddObject(fullResult, [NSMutableArray arrayWithArray:tempRow]);
 		fullResultCount++;
+		pthread_mutex_unlock(&fullResultLock);
 
 		// Update the count of rows processed
 		rowsProcessed++;
@@ -1344,16 +1348,34 @@
 - (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {	
 	if (aTableView == customQueryView) {
-		
-		// Perform various result set checks to prevent crashes
-		if ((fullResultCount == 0) || (rowIndex > fullResultCount)) return;
-		
+
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
-		
-			id value = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
+			NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+			id theValue = nil;
+
+			// While the table is being loaded, additional validation is required - data
+			// locks must be used to avoid crashes, and indexes higher than the available
+			// rows or columns may be requested.  Use gray to show loading in these cases.
+			if (isWorking) {
+				pthread_mutex_lock(&fullResultLock);
+				if (rowIndex < fullResultCount) {
+					NSMutableArray *rowData = NSArrayObjectAtIndex(fullResult, rowIndex);
+					if (columnIndex < [rowData count]) {
+						theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+					}
+				}
+				pthread_mutex_unlock(&fullResultLock);
+
+				if (!theValue) {
+					[cell setTextColor:[NSColor lightGrayColor]];
+					return;
+				}
+			} else {
+				theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), columnIndex);
+			}
 			
-			[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
 		}
 	}
 }
@@ -1364,19 +1386,35 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == customQueryView) {
-		
-		// Perform various result set checks to prevent crashes
-		if ((fullResultCount == 0) || (rowIndex > fullResultCount)) return nil;
-		
-		id value = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
-		
-		if ([value isKindOfClass:[NSData class]])
-			return [value shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+		NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+		id theValue = nil;
 
-		if ([value isNSNull])
+		// While the table is being loaded, additional validation is required - data
+		// locks must be used to avoid crashes, and indexes higher than the available
+		// rows or columns may be requested.  Return "..." to indicate loading in these
+		// cases.
+		if (isWorking) {
+			pthread_mutex_lock(&fullResultLock);
+			if (rowIndex < fullResultCount) {
+				NSMutableArray *rowData = NSArrayObjectAtIndex(fullResult, rowIndex);
+				if (columnIndex < [rowData count]) {
+					theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+				}
+			}
+			pthread_mutex_unlock(&fullResultLock);
+
+			if (!theValue) return @"...";
+		} else {
+			theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), columnIndex);
+		}
+		
+		if ([theValue isKindOfClass:[NSData class]])
+			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+
+		if ([theValue isNSNull])
 			return [prefs objectForKey:SPNullValue];
 
-	    return value;
+	    return theValue;
 	}
 	else {
 		return @"";
@@ -2607,6 +2645,7 @@
  */
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
+	isWorking = YES;
 
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
@@ -2623,6 +2662,7 @@
  */
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
+	isWorking = NO;
 
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])

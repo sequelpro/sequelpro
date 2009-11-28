@@ -68,6 +68,8 @@
 	MCPConnection *mySQLConnection;
 
 	BOOL _mainNibLoaded;
+	BOOL isWorking;
+	pthread_mutex_t tableValuesLock;
 
 	NSString *selectedTable, *usedQuery;
 	NSMutableArray *tableValues, *dataColumns, *keys, *oldRow;
@@ -98,6 +100,7 @@
 
 // Table loading methods and information
 - (void) loadTable:(NSString *)aTable;
+- (void) clearTableValues;
 - (void) loadTableValues;
 - (NSString *) tableFilterString;
 - (void) updateCountText;

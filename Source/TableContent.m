@@ -59,6 +59,8 @@
 {
 	if ((self == [super init])) {
 		_mainNibLoaded = NO;
+		isWorking = NO;
+		pthread_mutex_init(&tableValuesLock, NULL);
 
 		tableValues      = [[NSMutableArray alloc] init];
 		tableRowsCount = 0;
@@ -214,10 +216,11 @@
 			[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
 		}
 
-		// Empty the stored data arrays
+		// Empty the stored data arrays, including emptying the tableValues array
+		// by ressignment for thread safety.
 		tableRowsCount = 0;
 		previousTableRowsCount = 0;
-		[tableValues removeAllObjects];
+		[self clearTableValues];
 		[tableContentView reloadData];
 		isFiltered = NO;
 		isLimited = NO;
@@ -441,10 +444,11 @@
 	[copyButton setEnabled:NO];
 	[removeButton setEnabled:NO];
 
-	// Reset the table store if required - basically if the table is being changed
+	// Reset the table store if required - basically if the table is being changed,
+	// reassigning before emptying for thread safety.
 	if (!previousTableRowsCount) {
 		tableRowsCount = 0;
-		[tableValues removeAllObjects];
+		[self clearTableValues];
 	}
 
 	// Trigger a data refresh
@@ -479,6 +483,22 @@
 	[self clearDetailsToRestore];
 }
 
+/**
+ * Remove all items from the current table value store.  Do this by
+ * reassigning the tableValues store and releasing the old location,
+ * while setting thread safety flags.
+ */
+- (void) clearTableValues
+{
+	NSMutableArray *tableValuesTransition;
+
+	tableValuesTransition = tableValues;
+	pthread_mutex_lock(&tableValuesLock);
+	tableValues = [[NSMutableArray alloc] init];
+	pthread_mutex_unlock(&tableValuesLock);
+	[tableValuesTransition release];
+}
+ 
 /**
  * Reload the table data without reconfiguring the tableView,
  * using filters and limits as appropriate.
@@ -625,6 +645,7 @@
 
 	// Loop through the result rows as they become available
 	while (tempRow = [theResult fetchNextRowAsArray]) {
+		pthread_mutex_lock(&tableValuesLock);
 
 		if (rowsProcessed < previousTableRowsCount) {
 			NSMutableArrayReplaceObject(tableValues, rowsProcessed, [NSMutableArray arrayWithArray:tempRow]);
@@ -642,6 +663,8 @@
 			}
 		}
 		rowsProcessed++;
+
+		pthread_mutex_unlock(&tableValuesLock);
 
 		// Update the task interface as necessary
 		if (!isFiltered) {
@@ -674,7 +697,9 @@
 
 	// If the reloaded table is shorter than the previous table, remove the extra values from the storage
 	if (tableRowsCount < [tableValues count]) {
+		pthread_mutex_lock(&tableValuesLock);
 		[tableValues removeObjectsInRange:NSMakeRange(tableRowsCount, [tableValues count] - tableRowsCount)];
+		pthread_mutex_unlock(&tableValuesLock);
 	}
 
 	[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
@@ -974,7 +999,7 @@
 	// Reset and reload data using the new filter settings
 	previousTableRowsCount = 0;
 	tableRowsCount = 0;
-	[tableValues removeAllObjects];
+	[self clearTableValues];
 	[self loadTableValues];
 	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
 
@@ -2530,20 +2555,27 @@
 
 - (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
-
-	// In some loading situations, where the table is being redrawn while a load operation is in process on a background
-	// thread, an index higher than the available rows/columns may be requested.  Return "..." to indicate loading in these
-	// cases - when the load completes all table data will be redrawn.
 	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
-	if (rowIndex >= tableRowsCount) return @"...";
-	NSMutableArray *rowData = [NSArrayObjectAtIndex(tableValues, rowIndex) retain];
-	if (!rowData || columnIndex >= [rowData count]) {
-			if (rowData) [rowData release];
-			return @"...";
-	}
+	id theValue = nil;
 
-	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
-	[rowData release];
+	// While the table is being loaded, additional validation is required - data
+	// locks must be used to avoid crashes, and indexes higher than the available
+	// rows or columns may be requested.  Return "..." to indicate loading in these
+	// cases.
+	if (isWorking) {
+		pthread_mutex_lock(&tableValuesLock);
+		if (rowIndex < tableRowsCount) {
+			NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
+			if (columnIndex < [rowData count]) {
+				theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+			}
+		}
+		pthread_mutex_unlock(&tableValuesLock);
+
+		if (!theValue) return @"...";
+	} else {
+		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), columnIndex);
+	}
 
 	if ([theValue isNSNull])
 		return [prefs objectForKey:SPNullValue];
@@ -2564,23 +2596,29 @@
 {
 	if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 
-	// In some loading situations, where the table is being redrawn while a load operation is in process on a background
-	// thread, an index higher than the available rows/columns may be requested.  Return gray to indicate loading in these
-	// cases - when the load completes all table data will be redrawn.
 	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
-	if (rowIndex >= tableRowsCount) {
-		[cell setTextColor:[NSColor lightGrayColor]];
-		return;
-	}
-	NSMutableArray *rowData = [NSArrayObjectAtIndex(tableValues, rowIndex) retain];
-	if (!rowData || columnIndex >= [rowData count]) {
-		if (rowData) [rowData release];
-		[cell setTextColor:[NSColor lightGrayColor]];
-		return;
-	}
+	id theValue = nil;
 
-	id theValue = NSArrayObjectAtIndex(rowData, columnIndex);
-	[rowData release];
+	// While the table is being loaded, additional validation is required - data
+	// locks must be used to avoid crashes, and indexes higher than the available
+	// rows or columns may be requested.  Use gray to indicate loading in these cases.
+	if (isWorking) {
+		pthread_mutex_lock(&tableValuesLock);
+		if (rowIndex < tableRowsCount) {
+			NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
+			if (columnIndex < [rowData count]) {
+				theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+			}
+		}
+		pthread_mutex_unlock(&tableValuesLock);
+
+		if (!theValue) {
+			[cell setTextColor:[NSColor lightGrayColor]];
+			return;
+		}
+	} else {
+		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), columnIndex);
+	}
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
@@ -2894,6 +2932,7 @@
  */
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
+	isWorking = YES;
 
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
@@ -2915,6 +2954,7 @@
  */
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
+	isWorking = NO;
 
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
@@ -3055,6 +3095,7 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	[tableValues release];
+	pthread_mutex_destroy(&tableValuesLock);
 	[dataColumns release];
 	[oldRow release];
 	if (contentFilters) [contentFilters release];
