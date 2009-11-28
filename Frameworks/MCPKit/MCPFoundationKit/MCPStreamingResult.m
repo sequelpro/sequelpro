@@ -415,9 +415,6 @@
 		for (i = 0; i < mNumOfFields; i++)
 			rowDataLength += fieldLengths[i];
 
-		// Lock the data mutex
-		pthread_mutex_lock(&dataCreationLock);
-
 		// Initialise memory for the row and set a NULL pointer for the next item
 		newRowStore = malloc(sizeOfLocalRowData);
 		newRowStore->nextRow = NULL;
@@ -438,7 +435,8 @@
 		// Set up and copy in the field lengths
 		newRowStore->dataLengths = memcpy(malloc(sizeOfDataLengths), fieldLengths, sizeOfDataLengths);
 		
-		// Lock the data free mutex
+		// Lock both mutexes
+		pthread_mutex_lock(&dataCreationLock);
 		pthread_mutex_lock(&dataFreeLock);
 
 		// Add the newly allocated row to end of the storage linked list
