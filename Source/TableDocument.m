@@ -1260,6 +1260,7 @@
 
 	// If the working level just moved to start a task, set up the interface
 	if (_isWorkingLevel == 1) {
+		[taskCancelButton setHidden:YES];
 
 		// Set flags and prevent further UI interaction in this window
 		[historyControl setEnabled:NO];
