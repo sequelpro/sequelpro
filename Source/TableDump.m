@@ -235,31 +235,54 @@
 					   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
-/*
- Save the export file; open a file handle, pass it to the appropriate data-writing function for streaming the export, and close the handle.
+/**
+ * When the export "Save" dialog is closed, fire up a background thread to perform
+ * the requested export.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
-	NSFileHandle *fileHandle = nil;
-	BOOL success;
-	
 	[sheet orderOut:self];
 	
 	if ( returnCode != NSOKButton )
 		return;
 	
+	// Save path to preferences
+	[prefs setObject:[sheet directory] forKey:@"savePath"];
+
+	// Set up the details required for the export and pass them into a new worker thread
+	NSDictionary *exportProcessDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+												contextInfo, @"action",
+												[sheet filename], @"filename",
+												nil];
+	[NSThread detachNewThreadSelector:@selector(exportBackgroundProcess:) toTarget:self withObject:exportProcessDictionary];
+}
+
+/**
+ * Save the export file in a background thread; open a file handle, pass it in to
+ * the appropriate data-writing function for streaming the export data to, and
+ * close the handle.
+ */
+- (void)exportBackgroundProcess:(NSDictionary *)exportAction
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSString *exportActionName = [exportAction objectForKey:@"action"];
+	NSString *exportFile = [exportAction objectForKey:@"filename"];
+	NSFileHandle *fileHandle = nil;
+	BOOL success;	
+
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
 
-	// Save path to preferences
-	[prefs setObject:[sheet directory] forKey:@"savePath"];
+	// Reset the progress cancelled boolean
+	progressCancelled = NO;
 	
 	// Error if the file already exists and is not writable, and get a fileHandle to it.
-	if ( [[NSFileManager defaultManager] fileExistsAtPath:[sheet filename]] ) {
-		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:[sheet filename]]
-			|| !(fileHandle = [NSFileHandle fileHandleForWritingAtPath:[sheet filename]]) ) {
+	if ( [[NSFileManager defaultManager] fileExistsAtPath:exportFile] ) {
+		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:exportFile]
+			|| !(fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile]) ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
+			[pool release];
 			return;
 		}
 		
@@ -268,37 +291,39 @@
 		
 		// Otherwise attempt to create a file
 	} else {
-		if ( ![[NSFileManager defaultManager] createFileAtPath:[sheet filename] contents:[NSData data] attributes:nil] ) {
+		if ( ![[NSFileManager defaultManager] createFileAtPath:exportFile contents:[NSData data] attributes:nil] ) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+			[pool release];
 			return;
 		}
 		
 		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [NSFileHandle fileHandleForWritingAtPath:[sheet filename]];
+		fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile];
 		if ( !fileHandle ) {
-			[[NSFileManager defaultManager] removeFileAtPath:[sheet filename] handler:nil];
+			[[NSFileManager defaultManager] removeFileAtPath:exportFile handler:nil];
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+			[pool release];
 			return;
 		}
 	}
 	
 	// Export the tables selected in the MySQL export sheet to a file
-	if ( [contextInfo isEqualToString:@"exportDump"] ) {
+	if ( [exportActionName isEqualToString:@"exportDump"] ) {
 		success = [self dumpSelectedTablesAsSqlToFileHandle:fileHandle];
 		
 		// Export the full resultset for the currently selected table to a file in CSV format
-	} else if ( [contextInfo isEqualToString:@"exportTableContentAsCSV"] ) {
+	} else if ( [exportActionName isEqualToString:@"exportTableContentAsCSV"] ) {
 		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv" usingMulti:NO];
 		
 		// Export the full resultset for the currently selected table to a file in XML format
-	} else if ( [contextInfo isEqualToString:@"exportTableContentAsXML"] ) {
+	} else if ( [exportActionName isEqualToString:@"exportTableContentAsXML"] ) {
 		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml" usingMulti:NO];
 		
 	// Export the current "browse" view to a file in CSV or XML format
-	} else if ( [contextInfo isEqualToString:@"exportBrowseViewAsCSV"]
-				|| [contextInfo isEqualToString:@"exportBrowseViewAsXML"] )
+	} else if ( [exportActionName isEqualToString:@"exportBrowseViewAsCSV"]
+				|| [exportActionName isEqualToString:@"exportBrowseViewAsXML"] )
 	{
 
 		// Start an indeterminate progress sheet, as getting the current result set can take a significant period of time
@@ -307,11 +332,12 @@
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar setIndeterminate:YES];
 		[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
 
 		[singleProgressBar startAnimation:self];		
 		NSArray *contentViewArray = [tableContentInstance currentResult];
 
-		if ( [contextInfo isEqualToString:@"exportBrowseViewAsCSV"] ) {
+		if ( [exportActionName isEqualToString:@"exportBrowseViewAsCSV"] ) {
 			success = [self writeCsvForArray:contentViewArray orStreamingResult:nil
 								toFileHandle:fileHandle
 							outputFieldNames:[exportFieldNamesSwitch state]
@@ -335,21 +361,26 @@
 		[self closeAndStopProgressSheet];
 		
 	// Export the current custom query result set to a file in CSV or XML format
-	} else if ( [contextInfo isEqualToString:@"exportCustomResultAsCSV"]
-				|| [contextInfo isEqualToString:@"exportCustomResultAsXML"] )
+	} else if ( [exportActionName isEqualToString:@"exportCustomResultAsCSV"]
+				|| [exportActionName isEqualToString:@"exportCustomResultAsXML"] )
 	{
 
 		// Start an indeterminate progress sheet, as getting the current result set can take a significant period of time
-		[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to CSV", @"title showing that application is saving custom query view as CSV")]];
+		if ([exportActionName isEqualToString:@"exportCustomResultAsCSV"]) {
+			[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to CSV", @"title showing that application is saving custom query view as CSV")]];
+		} else {
+			[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to XML", @"title showing that application is saving custom query view as XML")]];
+		}
 		[singleProgressText setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar setIndeterminate:YES];
 		[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
 
 		[singleProgressBar startAnimation:self];
 		NSArray *customQueryViewArray = [customQueryInstance currentResult];
 
-		if ( [contextInfo isEqualToString:@"exportCustomResultAsCSV"] ) {
+		if ( [exportActionName isEqualToString:@"exportCustomResultAsCSV"] ) {
 			success = [self writeCsvForArray:customQueryViewArray orStreamingResult:nil
 								toFileHandle:fileHandle
 							outputFieldNames:[exportFieldNamesSwitch state]
@@ -373,39 +404,44 @@
 		[self closeAndStopProgressSheet];
 
 		// Export multiple tables to a file in CSV format
-	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsCSV"] ) {
+	} else if ( [exportActionName isEqualToString:@"exportMultipleTablesAsCSV"] ) {
 		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"csv"];
 		
 		// Export multiple tables to a file in XML format
-	} else if ( [contextInfo isEqualToString:@"exportMultipleTablesAsXML"] ) {
+	} else if ( [exportActionName isEqualToString:@"exportMultipleTablesAsXML"] ) {
 		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"xml"];
 		
 		// Export the tables selected in the MySQL export sheet to a file
-	} else if ( [contextInfo isEqualToString:@"exportDot"] ) {
+	} else if ( [exportActionName isEqualToString:@"exportDot"] ) {
 			success = [self dumpSchemaAsDotToFileHandle:fileHandle];
 			
 		// Unknown operation
 	} else {
-		ALog(@"Unknown export operation: %@", [contextInfo description]);
+		ALog(@"Unknown export operation: %@", [exportActionName description]);
+		[pool release];
 		return;
 	}
 	
 	// Close the file handle
 	[fileHandle closeFile];
-	
-	if ( !success ) {
+
+	// If progress was cancelled, remove the file
+	if (progressCancelled) {
+		[[NSFileManager defaultManager] removeItemAtPath:exportFile error:nil];
+	}
+
+	// Display error message on problems
+	if ( !progressCancelled && !success ) {
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 	}
-    if (progressCancelled)
-	{
-		progressCancelled = NO;
-	}
+
     // Export finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@",@"description for finished exporting growl notification"), [[sheet filename] lastPathComponent]] 
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@",@"description for finished exporting growl notification"), [exportFile lastPathComponent]] 
 														window:tableWindow
                                               notificationName:@"Export Finished"];
+	[pool release];
 }
 
 #pragma mark -
@@ -1310,6 +1346,7 @@
 	[NSApp beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
+	[singleProgressSheet makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -1360,6 +1397,7 @@
 	
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
+		if (progressCancelled) break;
 		lastProgressValue = 0;
 		
 		// Update the progress text and reset the progress bar to indeterminate status while fetching data
@@ -1461,6 +1499,11 @@
 				j = 0;
 				exportAutoReleasePool = [[NSAutoreleasePool alloc] init];
 				while (theRow = [streamingResult fetchNextRowAsArray]) {
+					if (progressCancelled) {
+						[mySQLConnection cancelCurrentQuery];
+						[streamingResult cancelResultLoad];
+						break;
+					}
 					j++;
 					[sqlString setString:@""];
 					
@@ -1533,7 +1576,7 @@
 					// Write this row to the file
 					[fileHandle writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
 				}
-				
+
 				// Complete the command
 				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 
@@ -1542,7 +1585,7 @@
 				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\n", [tableName backtickQuotedString]]];
 				[metaString appendString:@"UNLOCK TABLES;\n"];
 				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-				
+
 				if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 					if ( [addErrorsSwitch state] == NSOnState ) {
@@ -1558,11 +1601,11 @@
 			// Release the result set
 			[streamingResult release];
 		}
-		
+
 		// Add an additional separator between tables
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
-	
+
 	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
 	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
 	while (tableName = [viewSyntaxEnumerator nextObject]) {
@@ -1593,7 +1636,7 @@
 	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
 	 reloadingViews:NO];
 	[previousConnectionEncoding release];
-	
+
 	// Close the progress sheet
 	[self closeAndStopProgressSheet];
 
@@ -1638,6 +1681,7 @@
 	[NSApp beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
+	[singleProgressSheet makeKeyWindow];
 		
 	[metaString setString:@"// Generated by: Sequel Pro\n"];
 	[metaString appendString:[NSString stringWithFormat:@"// Version %@\n",
@@ -1670,6 +1714,7 @@
 	
 	// tables here
 	for ( int i = 0 ; i < [tables count] ; i++ ) {
+		if (progressCancelled) break;
 
 		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
 		NSDictionary *tinfo = [tableDataInstance informationForTable:tableName];
@@ -1705,15 +1750,18 @@
 		// see about relations
 		cinfo = [tinfo objectForKey:@"constraints"];
 		for( int j = 0; j < [cinfo count]; j++ ) {
-			// get the column refs. these can be comma separated.
-			NSString *ccol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"columns"];
+			if (progressCancelled) break;
+
+			// Get the column references.  Currently the columns themselves are an array,
+			// while reference columns and tables are comma separated if there are more than
+			// one.  Only use the first of each for the time being.
+			NSArray *ccols = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"columns"];
+			NSString *ccol = NSArrayObjectAtIndex(ccols, 0);
 			NSString *rcol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_columns"];
 			NSString *extra = @"";
-			NSArray *tc = [ccol componentsSeparatedByString:@","];
-			if( [tc count] > 1 ) {
+			if( [ccols count] > 1 ) {
 				extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
-				ccol = NSArrayObjectAtIndex(tc, 0);
-				rcol = NSArrayObjectAtIndex([ccol componentsSeparatedByString:@","], 0);
+				rcol = NSArrayObjectAtIndex([rcol componentsSeparatedByString:@","], 0);
 			}
 			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@",
 							   tableName,
@@ -1842,6 +1890,7 @@
 		[NSApp beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
 	}
 	
 	// Set up escaped versions of strings for substitution within the loop
@@ -1861,6 +1910,13 @@
 	csvExportPool = [[NSAutoreleasePool alloc] init];
 	currentPoolDataLength = 0;
 	while (1) {
+		if (progressCancelled) {
+			if (streamingResult) {
+				[mySQLConnection cancelCurrentQuery];
+				[streamingResult cancelResultLoad];
+			}
+			break;
+		}
 
 		// Retrieve the next row from the supplied data, either directly from the array...
 		if (array) {
@@ -2037,6 +2093,7 @@
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
 	progressBarWidth = (int)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
+	[singleProgressBar setIndeterminate:NO];
 	[singleProgressBar setMaxValue:progressBarWidth];
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
@@ -2065,6 +2122,7 @@
 		[NSApp beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
 	}
 	
 	// Output the XML header if required
@@ -2097,6 +2155,13 @@
 	xmlExportPool = [[NSAutoreleasePool alloc] init];
 	currentPoolDataLength = 0;
 	while (1) {
+		if (progressCancelled) {
+			if (streamingResult) {
+				[mySQLConnection cancelCurrentQuery];
+				[streamingResult cancelResultLoad];
+			}
+			break;
+		}
 
 		// Retrieve the next row from the supplied data, either directly from the array...
 		if (array) {
@@ -2229,8 +2294,8 @@
 	[NSApp beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	
-	
+	[singleProgressSheet makeKeyWindow];	
+
 	// Add a dump header to the dump file, dependant on export type.
 	if ( [type isEqualToString:@"csv"] ) {
 		csvLineEnd = [NSMutableString stringWithString:[exportMultipleLinesTerminatedField stringValue]]; 
@@ -2266,6 +2331,7 @@
 	
 	// Loop through the selected tables
 	for ( i = 0 ; i < [selectedTables count] && !progressCancelled; i++ ) {
+		if (progressCancelled) break;
 		
 		// Update the progress text and reset the progress bar to indeterminate status
 		tableName = [selectedTables objectAtIndex:i];
