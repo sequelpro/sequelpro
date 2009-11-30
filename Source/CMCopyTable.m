@@ -212,7 +212,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		else
 			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
 	}
-
+NSLog([types description]);
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 	
@@ -245,8 +245,13 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						[value appendString:[NSString stringWithFormat:@"%@, ", [rowData description]]];
 						break;
 					case 1: // string
-						[value appendString:[NSString stringWithFormat:@"'%@', ", 
-							[mySQLConnection prepareString:[rowData description]]]];
+						if ([rowData isKindOfClass:[NSData class]]) {
+							[value appendString:[NSString stringWithFormat:@"X'%@', ", 
+								[mySQLConnection prepareBinaryData:rowData]]];
+						} else {
+							[value appendString:[NSString stringWithFormat:@"'%@', ", 
+								[mySQLConnection prepareString:[rowData description]]]];
+						}
 						break;
 					case 2: // blob
 						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [rowData isSPNotLoaded]) {
