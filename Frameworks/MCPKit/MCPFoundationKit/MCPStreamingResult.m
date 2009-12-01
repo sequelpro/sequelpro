@@ -108,6 +108,8 @@
 			downloadedRowCount = 0;
 			processedRowCount = 0;
 			freedRowCount = 0;
+			pthread_mutex_init(&dataCreationLock, NULL);
+			pthread_mutex_init(&dataFreeLock, NULL);
 
 			// Start the data download thread
 			[NSThread detachNewThreadSelector:@selector(_downloadAllData) toTarget:self withObject:nil];
@@ -126,6 +128,11 @@
 - (void) dealloc
 {
 	if (!connectionUnlocked) [parentConnection unlockConnection];
+
+	if (!fullyStreaming) {
+		pthread_mutex_destroy(&dataFreeLock);
+		pthread_mutex_destroy(&dataCreationLock);
+	}
 
 	[super dealloc];
 }
@@ -160,18 +167,22 @@
 	} else {
 		copiedDataLength = 0;
 
+		// Lock the data mutex
+		pthread_mutex_lock(&dataCreationLock);
+
 		// Check to see whether we need to wait for the data to be availabe
 		// - if so, wait 1ms before checking again.
-		// Keep the data processing thread at least one full row behind the download
-		// thread - this aids memory issues across the threads and prevents occasional
-		// race condition crashes.
-		while (!dataDownloaded && (processedRowCount + 2 > downloadedRowCount)) {
+		while (!dataDownloaded && processedRowCount == downloadedRowCount) {
+			pthread_mutex_unlock(&dataCreationLock);
 			usleep(1000);
+			pthread_mutex_lock(&dataCreationLock);
 		}
 
 		// If all rows have been processed, we're at the end of the result set - return nil
 		// once all memory has been freed
 		if (processedRowCount == downloadedRowCount) {
+			pthread_mutex_unlock(&dataCreationLock);
+
 			while (!dataFreed) usleep(1000);
 
 			// Update the connection's error statuses in case of error during content download
@@ -186,6 +197,9 @@
 		// Retrieve a reference to the data and the associated lengths
 		theRowData = currentDataStoreEntry->data;
 		fieldLengths = currentDataStoreEntry->dataLengths;
+
+		// Unlock the data mutex
+		pthread_mutex_unlock(&dataCreationLock);
 	}
 
 	// Initialise the array to return
@@ -297,11 +311,19 @@
 	// If in cached-streaming mode, update the current entry processed count
 	if (!fullyStreaming) {
 
+		// Lock both mutexes
+		pthread_mutex_lock(&dataCreationLock);
+		pthread_mutex_lock(&dataFreeLock);
+
 		// Update the active-data pointer to the next item in the list, or set to NULL if no more items
 		currentDataStoreEntry = currentDataStoreEntry->nextRow;
 
 		// Increment counter
 		processedRowCount++;
+
+		// Unlock both mutexes
+		pthread_mutex_unlock(&dataCreationLock);
+		pthread_mutex_unlock(&dataFreeLock);
 	}
 
 	return returnArray;
@@ -412,6 +434,10 @@
 
 		// Set up and copy in the field lengths
 		newRowStore->dataLengths = memcpy(malloc(sizeOfDataLengths), fieldLengths, sizeOfDataLengths);
+		
+		// Lock both mutexes
+		pthread_mutex_lock(&dataCreationLock);
+		pthread_mutex_lock(&dataFreeLock);
 
 		// Add the newly allocated row to end of the storage linked list
 		if (localDataStore) {
@@ -424,6 +450,10 @@
 
 		// Update the downloaded row count
 		downloadedRowCount++;
+		
+		// Unlock both mutexes
+		pthread_mutex_unlock(&dataCreationLock);
+		pthread_mutex_unlock(&dataFreeLock);
 	}
 
 	dataDownloaded = YES;
@@ -440,8 +470,12 @@
 
 	while (!dataDownloaded || freedRowCount != downloadedRowCount) {
 
+		// Lock the data free mutex
+		pthread_mutex_lock(&dataFreeLock);
+
 		// If the freed row count matches the processed row count, wait before retrying
 		if (freedRowCount == processedRowCount) {
+			pthread_mutex_unlock(&dataFreeLock);
 			usleep(1000);
 			continue;
 		}
@@ -459,6 +493,9 @@
 
 		// Increment the counter
 		freedRowCount++;
+
+		// Unlock the data free mutex
+		pthread_mutex_unlock(&dataFreeLock);
 	}
 
 	dataFreed = YES;

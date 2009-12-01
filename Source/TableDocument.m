@@ -447,7 +447,7 @@
 	if([connection objectForKey:@"host"])
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if([connection objectForKey:@"port"])
-		[connectionController setPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"port"]]];
+		[connectionController setPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"port"] intValue]]];
 	if([connection objectForKey:@"kcid"] && [[connection objectForKey:@"kcid"] length])
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
 
@@ -469,7 +469,7 @@
 		if([connection objectForKey:@"ssh_user"])
 			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
 		if([connection objectForKey:@"ssh_port"])
-			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [connection objectForKey:@"ssh_port"]]];
+			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"ssh_port"] intValue]]];
 
 		// Set ssh password - if not in SPF file try to get it via the KeyChain
 		if([connection objectForKey:@"ssh_password"])
@@ -528,6 +528,7 @@
 	NSArray *tables = [tablesListInstance tables];
 
 	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
+		[self endTask];
 		[taskPool drain];
 		return;
 	}
@@ -550,8 +551,8 @@
 	// Set table content details for restore
 	if([spfSession objectForKey:@"contentSortCol"])
 		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
-	if([spfSession objectForKey:@"contentLimitStartPosition"])
-		[tableContentInstance setLimitStartToRestore:[[spfSession objectForKey:@"contentLimitStartPosition"] intValue]];
+	if([spfSession objectForKey:@"contentPageNumber"])
+		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] intValue]];
 	if([spfSession objectForKey:@"contentViewport"])
 		[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
 	if([spfSession objectForKey:@"contentFilter"])
@@ -1259,6 +1260,7 @@
 
 	// If the working level just moved to start a task, set up the interface
 	if (_isWorkingLevel == 1) {
+		[taskCancelButton setHidden:YES];
 
 		// Set flags and prevent further UI interaction in this window
 		[historyControl setEnabled:NO];
@@ -1266,7 +1268,7 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		
 		// Schedule appearance of the task window in the near future
-		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
+		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
 	}
 }
 
@@ -1306,6 +1308,7 @@
 	if (taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = NO;
 		[taskProgressIndicator stopAnimation:self];
+		[taskProgressIndicator setDoubleValue:0.5];
 	}
 
 	taskProgressValue = taskPercentage;
@@ -1319,10 +1322,17 @@
 
 /**
  * Sets the task progress indicator back to indeterminate (also performed
- * automatically whenever a new task is started)
+ * automatically whenever a new task is started).
+ * This can optionally be called with afterDelay set, in which case the intederminate
+ * switch will be made a fter a short pause to minimise flicker for short actions.
  */
-- (void) setTaskProgressToIndeterminate
+- (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay
 {
+	if (afterDelay) {
+		[self performSelector:@selector(setTaskProgressToIndeterminateAfterDelay:) withObject:nil afterDelay:0.5];
+		return;
+	}
+
 	if (taskDisplayIsIndeterminate) return;
 	taskDisplayIsIndeterminate = YES;
 	[taskProgressIndicator setIndeterminate:YES];
@@ -1354,9 +1364,11 @@
 			[taskFadeAnimator release], taskFadeAnimator = nil;
 		}
 
-		// Hide the task interface
+		// Hide the task interface and reset to indeterminate
 		if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
 		[taskProgressWindow setAlphaValue:0.0];
+		taskDisplayIsIndeterminate = YES;
+		[taskProgressIndicator setIndeterminate:YES];
 
 		// Re-enable window interface
 		[historyControl setEnabled:YES];
@@ -2685,7 +2697,7 @@
 		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-		[session setObject:[NSNumber numberWithInt:[tableContentInstance limitStart]] forKey:@"contentLimitStartPosition"];
+		[session setObject:[NSNumber numberWithInt:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
 		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 		if([tableContentInstance filterSettings])
 			[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];

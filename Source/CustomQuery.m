@@ -807,7 +807,9 @@
 	// Remove all items from the table
 	fullResultCount = 0;
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+	pthread_mutex_lock(&fullResultLock);
 	[fullResult removeAllObjects];
+	pthread_mutex_unlock(&fullResultLock);
 
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
@@ -815,8 +817,10 @@
 	// Loop through the result rows as they become available
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 
+		pthread_mutex_lock(&fullResultLock);
 		NSMutableArrayAddObject(fullResult, [NSMutableArray arrayWithArray:tempRow]);
 		fullResultCount++;
+		pthread_mutex_unlock(&fullResultLock);
 
 		// Update the count of rows processed
 		rowsProcessed++;
@@ -1322,73 +1326,107 @@
 	return fieldIDQueryStr;
 }
 
-
 #pragma mark -
 #pragma mark TableView datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+/**
+ * Returns the number of rows in the result set table view.
+ */
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	if ( aTableView == customQueryView ) {
-		if ( nil == fullResult ) {
-			return 0;
-		} else {
-			return fullResultCount;
-		}
-	} else {
+	if (aTableView == customQueryView) {
+		return (fullResult == nil) ? 0 : fullResultCount;
+	} 
+	else {
 		return 0;
 	}
 }
 
 /**
- * This function changes the text color of text/blob fields whose content is NULL
+ * This function changes the text color of text/blob fields whose content is NULL.
  */
-- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)row
+- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {	
-	if ( aTableView == customQueryView ) {
-		if (row > fullResultCount) return;
+	if (aTableView == customQueryView) {
 
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
-		
-			id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, row), [[aTableColumn identifier] intValue]);
+			NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+			id theValue = nil;
+
+			// While the table is being loaded, additional validation is required - data
+			// locks must be used to avoid crashes, and indexes higher than the available
+			// rows or columns may be requested.  Use gray to show loading in these cases.
+			if (isWorking) {
+				pthread_mutex_lock(&fullResultLock);
+				if (rowIndex < fullResultCount) {
+					NSMutableArray *rowData = NSArrayObjectAtIndex(fullResult, rowIndex);
+					if (columnIndex < [rowData count]) {
+						theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+					}
+				}
+				pthread_mutex_unlock(&fullResultLock);
+
+				if (!theValue) {
+					[cell setTextColor:[NSColor lightGrayColor]];
+					return;
+				}
+			} else {
+				theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), columnIndex);
+			}
+			
 			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
 		}
 	}
-
 }
 
-- (id)tableView:(NSTableView *)aTableView
-			objectValueForTableColumn:(NSTableColumn *)aTableColumn
-			row:(int)rowIndex
+/**
+ * Returns the object for the requested column and row index.
+ */
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
+	if (aTableView == customQueryView) {
+		NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+		id theValue = nil;
 
-	if ( aTableView == customQueryView ) {
-		if (rowIndex > fullResultCount) return nil;
+		// While the table is being loaded, additional validation is required - data
+		// locks must be used to avoid crashes, and indexes higher than the available
+		// rows or columns may be requested.  Return "..." to indicate loading in these
+		// cases.
+		if (isWorking) {
+			pthread_mutex_lock(&fullResultLock);
+			if (rowIndex < fullResultCount) {
+				NSMutableArray *rowData = NSArrayObjectAtIndex(fullResult, rowIndex);
+				if (columnIndex < [rowData count]) {
+					theValue = NSArrayObjectAtIndex(rowData, columnIndex);
+				}
+			}
+			pthread_mutex_unlock(&fullResultLock);
 
-		id theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), [[aTableColumn identifier] intValue]);
-
-		if ( [theValue isKindOfClass:[NSData class]] )
+			if (!theValue) return @"...";
+		} else {
+			theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), columnIndex);
+		}
+		
+		if ([theValue isKindOfClass:[NSData class]])
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
-		if ( [theValue isNSNull] )
+		if ([theValue isNSNull])
 			return [prefs objectForKey:SPNullValue];
 
 	    return theValue;
-
 	}
 	else {
 		return @"";
 	}
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject
-			forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if ( aTableView == customQueryView ) {
+	if (aTableView == customQueryView) {
 
 		// Field editing
-
-		if(fieldIDQueryString == nil) return;
+		if (fieldIDQueryString == nil) return;
 
 		NSDictionary *columnDefinition;
 
@@ -1443,8 +1481,8 @@
 
 			[mySQLConnection queryString:
 				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@=%@ %@ LIMIT 1", 
-					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString],
-					[columnDefinition objectForKey:@"db"], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
+					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
+					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
@@ -2607,6 +2645,7 @@
  */
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification
 {
+	isWorking = YES;
 
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
@@ -2623,6 +2662,7 @@
  */
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification
 {
+	isWorking = NO;
 
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])

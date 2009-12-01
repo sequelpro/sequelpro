@@ -187,7 +187,7 @@
 - (void) showTaskProgressWindow:(NSTimer *)theTimer;
 - (void) setTaskDescription:(NSString *)description;
 - (void) setTaskPercentage:(float)taskPercentage;
-- (void) setTaskProgressToIndeterminate;
+- (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay;
 - (void) endTask;
 - (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction;
 - (void) disableTaskCancellation;

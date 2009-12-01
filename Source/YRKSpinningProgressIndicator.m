@@ -192,6 +192,7 @@
 
 - (void)startAnimation:(id)sender
 {
+	if (!_isIndeterminate) return;
 	if (_isAnimating) return;
     _isAnimating = YES;
 

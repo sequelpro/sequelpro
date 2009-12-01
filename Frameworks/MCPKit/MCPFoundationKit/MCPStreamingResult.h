@@ -51,6 +51,8 @@ typedef struct SP_MYSQL_ROWS {
 	unsigned long downloadedRowCount;
 	unsigned long processedRowCount;
 	unsigned long freedRowCount;
+	pthread_mutex_t dataCreationLock;
+	pthread_mutex_t dataFreeLock;
 }
 
 - (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection;

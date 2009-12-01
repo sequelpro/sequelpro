@@ -118,6 +118,7 @@
 - (void)export;
 - (void)exportFile:(int)tag;
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
+- (void)exportBackgroundProcess:(NSDictionary *)exportAction;
 
 // Import methods
 - (void)importFile;
