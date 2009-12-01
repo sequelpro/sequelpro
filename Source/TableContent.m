@@ -702,6 +702,8 @@
 		pthread_mutex_unlock(&tableValuesLock);
 	}
 
+	// Ensure the table is aware of changes, especially for non-threaded loads
+	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
 	
 	// Clean up the autorelease pool and reset the progress indicator
