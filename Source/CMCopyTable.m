@@ -212,7 +212,6 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		else
 			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
 	}
-NSLog([types description]);
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 	

@@ -689,6 +689,7 @@
 
 		// Extract and process any complete SQL queries that can be found in the strings parsed so far
 		while (query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO]) {
+			if (progressCancelled) break;
 			fileProcessedLength += [query lengthOfBytesUsingEncoding:sqlEncoding] + 1;
 		
 			// Skip blank or whitespace-only queries to avoid errors
@@ -997,6 +998,7 @@
 			while ([parsedRows count] >= csvRowsPerQuery
 					|| (!csvRowArray && allDataRead && [parsedRows count]))
 			{
+				if (progressCancelled) break;
 				query = [[NSMutableString alloc] initWithString:insertBaseString];
 				csvRowsThisQuery = 0;
 				for (i = 0; i < csvRowsPerQuery && i < [parsedRows count]; i++) {
