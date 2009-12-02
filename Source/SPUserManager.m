@@ -226,6 +226,7 @@
 	}
 	// Reload data of the outline view with the changes.
 	[outlineView reloadData];
+	[treeController rearrangeObjects];
 }
 
 /**
@@ -373,6 +374,12 @@
 			[tabView selectTabViewItemWithIdentifier:@"Global Privileges"];
 		}
 	}
+}
+
+- (NSArray *)treeSortDescriptors
+{
+	NSSortDescriptor *descriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
+	return [NSArray arrayWithObject:descriptor];
 }
 
 #pragma mark -

@@ -69,4 +69,5 @@
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 
+- (NSArray *)treeSortDescriptors;
 @end
