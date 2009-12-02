@@ -795,6 +795,7 @@
 	NSInteger dataBufferLastQueryEndPosition = 0;
 	int i;
 	BOOL allDataRead = NO;
+	BOOL insertBaseStringHasEntries;
 	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 
@@ -970,9 +971,11 @@
 				[insertBaseString appendString:@"INSERT INTO "];
 				[insertBaseString appendString:[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString]];
 				[insertBaseString appendString:@" ("];
+				insertBaseStringHasEntries = NO;
 				for (i = 0; i < [fieldMappingArray count]; i++) {
 					if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
-						if (i > 0) [insertBaseString appendString:@","];
+						if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
+						else insertBaseStringHasEntries = YES;
 						[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
 					}
 				}
