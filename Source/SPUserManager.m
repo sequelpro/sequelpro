@@ -70,12 +70,6 @@
 								@"Replication_slave_priv", @"Repl_slave_priv", 
 								@"Replication_client_priv", @"Repl_client_priv",
 								nil];
-				
-		//[[NSNotificationCenter defaultCenter] addObserver:self 
-//												 selector:@selector(contextDidSave:) 
-//													 name:NSManagedObjectContextDidSaveNotification 
-//												   object:nil];
-		
 	}
 	
 	return self;
@@ -374,7 +368,7 @@
 		[tabView selectTabViewItemWithIdentifier:@"General"];
 	}
 	else {
-		if ([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
+		if ([selectedObject parent] != nil && [[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
 			[tabView selectTabViewItemWithIdentifier:@"Global Privileges"];
 		}
 	}
@@ -548,6 +542,26 @@
 			NSArray *selectedIndexPaths = [treeController selectionIndexPaths];
 			[treeController removeSelectionIndexPaths:selectedIndexPaths];
 		}
+	}
+}
+
+- (void)_selectFirstChildOfParentNode
+{
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		[outlineView expandItem:[outlineView itemAtRow:[outlineView selectedRow]]];
+		
+		id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+		NSTreeNode *firstSelectedNode = [[treeController selectedNodes] objectAtIndex:0];
+		id parent = [selectedObject parent];
+		// If this is already a parent, then parentNode should be null.
+		// If a child is already selected, then we want to not change the selection
+		if (!parent)
+		{
+			NSIndexPath *childIndex = [[[firstSelectedNode childNodes] objectAtIndex:0] indexPath];
+			[treeController setSelectionIndexPath:childIndex];
+		}
+
 	}
 }
 
@@ -748,25 +762,25 @@
 #pragma mark -
 #pragma mark Tab View Delegate methods
 
-- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
+-(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	if ([[treeController selectedObjects] count] == 0) return NO;
+	if ([[treeController selectedObjects] count] == 0) return;
 	
 	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
 	
+	// If the selected tab is General and a child is selected, select the
+	// parent (user info)
 	if ([[tabViewItem identifier] isEqualToString:@"General"]) {
-		return ([selectedObject parent] == nil);
-	} 
-	else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
-		return ([selectedObject parent] != nil);
+		if ([selectedObject parent] != nil)
+		{
+			[self _selectParentFromSelection];
+		}
+	} else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
+			   || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
+		// if the tab is either Global Privs or Resources and we have a user 
+		// selected, then open tree and select first child node.
+		[self _selectFirstChildOfParentNode];
 	}
-	
-	return NO;
-}
-
--(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	
 }
 
 #pragma mark -
