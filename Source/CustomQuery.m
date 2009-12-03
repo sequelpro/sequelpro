@@ -2131,10 +2131,17 @@
 /*
  * Show the data for "HELP 'searchString'".
  */
-- (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory
+- (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory calledByAutoHelp:(BOOL)autoHelp
 {
-	
-	NSString * helpString = [self getHTMLformattedMySQLHelpFor:searchString];
+
+	if(![searchString length]) return;
+
+	NSString *helpString = [self getHTMLformattedMySQLHelpFor:searchString calledByAutoHelp:autoHelp];
+
+	if(autoHelp && [helpString isEqualToString:SP_HELP_NOT_AVAILABLE]) {
+		[helpWebViewWindow orderOut:nil];
+		return;
+	}
 
 	// Order out resp. init the Help window if not visible
 	if(![helpWebViewWindow isVisible])
@@ -2163,7 +2170,7 @@
 			
 	}
 
-	// close Help window if no Help avaiable
+	// close Help window if no Help available
 	if([helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
 		[helpWebViewWindow close];
 	
@@ -2205,7 +2212,7 @@
 			[self openMySQLonlineDocumentationWithString:searchString];
 			break;
 		case SP_HELP_SEARCH_IN_MYSQL:
-			[self showHelpFor:searchString addToHistory:YES];
+			[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:NO];
 			break;
 	}
 }
@@ -2215,7 +2222,7 @@
  */
 - (IBAction)showHelpForWebViewSelection:(id)sender
 {
-	[self showHelpFor:[[helpWebView selectedDOMRange] text] addToHistory:YES];
+	[self showHelpFor:[[helpWebView selectedDOMRange] text] addToHistory:YES calledByAutoHelp:NO];
 }
 
 /*
@@ -2239,7 +2246,7 @@
 - (IBAction)showHelpForCurrentWord:(id)sender
 {
 	NSString *searchString = [[sender string] substringWithRange:[sender getRangeForCurrentWord]];
-	[self showHelpFor:searchString addToHistory:YES];
+	[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:NO];
 }
 
 /*
@@ -2269,7 +2276,7 @@
 			[helpWebView goBack];
 			break;
 		case SP_HELP_SHOW_TOC_BUTTON:
-			[self showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
+			[self showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
 			break;
 		case SP_HELP_GOFORWARD_BUTTON:
 			[helpWebView goForward];
@@ -2309,6 +2316,15 @@
 }
 
 /*
+ * Show the data for "HELP 'currentWord' invoked by autohelp"
+ */
+- (void)showAutoHelpForCurrentWord:(id)sender
+{
+	NSString *searchString = [[sender string] substringWithRange:[sender getRangeForCurrentWord]];
+	[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:YES];
+}
+
+/*
  * Control the help search field behaviour.
  */
 - (void)helpTargetValidation
@@ -2339,7 +2355,7 @@
  * Return the help string HTML formatted from executing "HELP 'searchString'".
  * If more than one help topic was found return a link list.
  */
-- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString
+- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString calledByAutoHelp:(BOOL)autoHelp
 {
 
 	if(![searchString length]) return @"";
@@ -2353,11 +2369,14 @@
 	
 	// search via: HELP 'searchString'
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 	{
-		// if an error or HELP is not supported fall back to online search
-		NSLog(@"Error in HELP statement for '%@'", searchString);
-		[self openMySQLonlineDocumentationWithString:searchString];
+		// if an error or HELP is not supported fall back to online search but
+		// don't open it if autoHelp is enabled
+		if(!autoHelp)
+			[self openMySQLonlineDocumentationWithString:searchString];
+
+		[helpWebViewWindow close];
 		return SP_HELP_NOT_AVAILABLE;
 	}
 	// nothing found?
@@ -2487,7 +2506,7 @@
 	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
 
 	if([[[request URL] scheme] isEqualToString:@"applewebdata"] && navigationType == WebNavigationTypeLinkClicked){
-		[self showHelpFor:[[[request URL] path] lastPathComponent] addToHistory:YES];
+		[self showHelpFor:[[[request URL] path] lastPathComponent] addToHistory:YES calledByAutoHelp:NO];
 		[listener ignore];
 	} else {
 		if (navigationType == WebNavigationTypeOther) {
@@ -2502,7 +2521,7 @@
 			[listener ignore];
 		} else if (navigationType == WebNavigationTypeBackForward) {
 			// catch back/forward events from contextual menu
-			[self showHelpFor:[[[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSASCIIStringEncoding] addToHistory:NO];
+			[self showHelpFor:[[[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSASCIIStringEncoding] addToHistory:NO calledByAutoHelp:NO];
 			[listener ignore];
 		} else if (navigationType == WebNavigationTypeReload) {
 			// just in case

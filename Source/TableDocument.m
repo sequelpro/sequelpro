@@ -2822,7 +2822,7 @@
  */
 - (IBAction)showMySQLHelp:(id)sender
 {
-	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
+	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
 	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
 }
 
