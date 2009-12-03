@@ -71,10 +71,10 @@
 								@"Replication_client_priv", @"Repl_client_priv",
 								nil];
 				
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(contextDidSave:) 
-													 name:NSManagedObjectContextDidSaveNotification 
-												   object:nil];
+		//[[NSNotificationCenter defaultCenter] addObserver:self 
+//												 selector:@selector(contextDidSave:) 
+//													 name:NSManagedObjectContextDidSaveNotification 
+//												   object:nil];
 		
 	}
 	
@@ -316,6 +316,10 @@
         managedObjectContext = [[NSManagedObjectContext alloc] init];
         [managedObjectContext setPersistentStoreCoordinator: coordinator];
     }
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(contextDidSave:) 
+												 name:NSManagedObjectContextDidSaveNotification 
+											   object:nil];	
     
     return managedObjectContext;
 }
@@ -557,6 +561,9 @@
  */
 - (void)contextDidSave:(NSNotification *)notification
 {	
+	NSManagedObjectContext *notificationContext = (NSManagedObjectContext *)[notification object];
+	if (notificationContext != self.managedObjectContext) return;
+	
 	if (!isInitializing)
 	{		
 		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
@@ -755,6 +762,11 @@
 	}
 	
 	return NO;
+}
+
+-(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	
 }
 
 #pragma mark -
