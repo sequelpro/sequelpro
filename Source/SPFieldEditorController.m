@@ -103,7 +103,7 @@
 				[qlTypesItems addObject:type];
 			}
 		}
-		qlTypes = [NSDictionary dictionaryWithObject:[qlTypesItems retain] forKey:SPQuickLookTypes];
+		qlTypes = [NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes];
 		[qlTypesItems release];
 	}
 	return self;
@@ -324,7 +324,7 @@
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
 	
-	return ( editSheetReturnCode && isEditable ) ? [sheetEditData retain] : nil;
+	return ( editSheetReturnCode && isEditable ) ? sheetEditData : nil;
 }
 
 /*

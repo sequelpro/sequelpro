@@ -218,7 +218,6 @@
 
 		// Empty the stored data arrays, including emptying the tableValues array
 		// by ressignment for thread safety.
-		tableRowsCount = 0;
 		previousTableRowsCount = 0;
 		[self clearTableValues];
 		[tableContentView reloadData];
@@ -447,7 +446,6 @@
 	// Reset the table store if required - basically if the table is being changed,
 	// reassigning before emptying for thread safety.
 	if (!previousTableRowsCount) {
-		tableRowsCount = 0;
 		[self clearTableValues];
 	}
 
@@ -494,6 +492,7 @@
 
 	tableValuesTransition = tableValues;
 	pthread_mutex_lock(&tableValuesLock);
+	tableRowsCount = 0;
 	tableValues = [[NSMutableArray alloc] init];
 	pthread_mutex_unlock(&tableValuesLock);
 	[tableValuesTransition release];
@@ -1000,7 +999,6 @@
 
 	// Reset and reload data using the new filter settings
 	previousTableRowsCount = 0;
-	tableRowsCount = 0;
 	[self clearTableValues];
 	[self loadTableValues];
 	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
@@ -2851,7 +2849,8 @@
 				currentlyEditingRow = rowIndex;
 			}
 
-			if ([editData isEqualToString:[prefs objectForKey:SPNullValue]]
+			if ([editData isKindOfClass:[NSString class]]
+				&& [editData isEqualToString:[prefs objectForKey:SPNullValue]]
 				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]) objectForKey:@"null"] boolValue])
 			{
 				[editData release];
