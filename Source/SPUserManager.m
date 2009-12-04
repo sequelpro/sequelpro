@@ -576,6 +576,8 @@
 - (void)contextDidSave:(NSNotification *)notification
 {	
 	NSManagedObjectContext *notificationContext = (NSManagedObjectContext *)[notification object];
+	// If there are multiple user manager windows open, it's possible to get this
+	// notification from foreign windows.  Ignore those notifications.
 	if (notificationContext != self.managedObjectContext) return;
 	
 	if (!isInitializing)

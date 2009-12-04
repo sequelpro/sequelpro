@@ -828,6 +828,8 @@
 		173E70A1107FF495008733C9 /* Core Data */ = {
 			isa = PBXGroup;
 			children = (
+				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
+				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
 				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
 			);
 			name = "Core Data";
@@ -1105,8 +1107,6 @@
 			isa = PBXGroup;
 			children = (
 				173E70A1107FF495008733C9 /* Core Data */,
-				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
-				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
