@@ -2343,11 +2343,16 @@
 
 - (void)openMySQLonlineDocumentationWithString:(NSString *)searchString
 {
+	NSString *version = nil;
+	if([[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""] intValue] < 42)
+		version = @"41";
+	else
+		version = [mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""];
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
 		[[NSString stringWithFormat:
 			SP_MYSQL_DEV_SEARCH_URL,
 			searchString,
-			[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""]]
+			version]
 		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 }
 
