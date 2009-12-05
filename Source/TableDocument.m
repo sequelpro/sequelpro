@@ -634,9 +634,10 @@
 	mySQLConnection = [theConnection retain];
 
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
-	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]]];
-
-	[spfPreferences release];
+	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
+	
+	// ...but hide the icon while the document is temporary
+	if ([self isUntitled]) [[tableWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
 
 	// Set the connection encoding
 	NSString *encodingName = [prefs objectForKey:SPDefaultEncoding];
@@ -3435,6 +3436,14 @@
 	if (_isWorkingLevel) [self centerTaskWindow];
 }
 
+/**
+ * Invoked when the user command-clicks on the window title to see the document path
+ */
+- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
+{
+	return ![self isUntitled];
+}
+
 /*
  * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
  * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
@@ -3469,12 +3478,12 @@
 {
 	if (!_isConnected) {
 		return [NSString stringWithFormat:@"%@%@", 
-				([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"", @"Sequel Pro"];
+				([[[self fileURL] absoluteString] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"", @"Sequel Pro"];
 
 	} 
 		
 	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
-		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
+		([[[self fileURL] absoluteString] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
 		mySQLVersion,
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
