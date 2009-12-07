@@ -408,6 +408,7 @@
 	}
 	else {
 		// Close sheet
+		[self.mySqlConnection queryString:@"FLUSH PRIVILEGES"];
 		[NSApp endSheet:[self window] returnCode:0];
 		[[self window] orderOut:self];
 	}
@@ -610,7 +611,25 @@
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
 	for (NSManagedObject *user in updatedUsers) {
-		[self grantPrivilegesToUser:user];
+		if (![user host])
+		{
+			// Just the user password was changed.
+			// Change password to be the same on all hosts.
+			NSArray *hosts = [user valueForKey:@"children"];
+			for(NSManagedObject *child in hosts)
+			{
+				NSString *changePasswordStatement = [NSString stringWithFormat:
+													 @"SET PASSWORD FOR %@@%@ = PASSWORD('%@')",
+													 [[user valueForKey:@"user"] tickQuotedString],
+													 [[child host] tickQuotedString],
+													 [user valueForKey:@"password"]];
+				[self.mySqlConnection queryString:changePasswordStatement];	
+				[self checkAndDisplayMySqlError];
+			}
+		} else {
+			[self grantPrivilegesToUser:user];			
+		}
+
 	}
 	
 	return YES;
@@ -642,22 +661,24 @@
 {	
 	for (NSManagedObject *user in insertedUsers)
 	{
+		NSString *createStatement;
+
 		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
 			
-			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
+			createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
 										 [[[user parent] valueForKey:@"user"] tickQuotedString], 
 										 [[user valueForKey:@"host"] tickQuotedString],
 										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
-						
+			
 			// Create user in database
 			[self.mySqlConnection queryString:[NSString stringWithFormat:createStatement]];
 			
 			if ([self checkAndDisplayMySqlError]) {
 				[self grantPrivilegesToUser:user];
-			}			
+			}	
 		}
+		
 	}
-	
 	return YES;
 }
 
