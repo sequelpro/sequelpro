@@ -2650,6 +2650,7 @@
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
+		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
 		[item setIndentationLevel:1];

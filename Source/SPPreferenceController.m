@@ -267,8 +267,8 @@
 		[prefs setObject:[NSDictionary dictionaryWithDictionary:toolbarDict] forKey:@"NSToolbar Configuration TableWindowToolbar"];
 	}
 	
-	// For versions prior to r1263 (~0.9.7), convert the query favorites array to an array of dictionaries
-	if (recordedVersionNumber < 1263 && [prefs objectForKey:SPQueryFavorites]) {
+	// For versions prior to r1598 (~0.9.7), convert the query favorites array to an array of dictionaries
+	if (recordedVersionNumber < 1598 && [prefs objectForKey:SPQueryFavorites]) {
 		NSMutableArray *queryFavoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPQueryFavorites]];
 		
 		for (i = 0; i < [queryFavoritesArray count]; i++)
