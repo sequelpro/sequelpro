@@ -2275,7 +2275,7 @@
 																<reference key="NSNextResponder" ref="1013108064"/>
 																<int key="NSvFlags">1289</int>
 																<object class="NSPSMatrix" key="NSDrawMatrix"/>
-																<string key="NSFrame">{{676, 513}, {16, 16}}</string>
+																<string key="NSFrame">{{674, 515}, {16, 16}}</string>
 																<reference key="NSSuperview" ref="1013108064"/>
 																<int key="NSpiFlags">28938</int>
 																<double key="NSMaxValue">100</double>
@@ -24203,11 +24203,13 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>helpTargetDispatcher:</string>
 							<string>runAllQueries:</string>
 							<string>runSelectedQueries:</string>
+							<string>showAutoHelpForCurrentWord:</string>
 							<string>showHelpForCurrentWord:</string>
 							<string>showHelpForSearchString:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
