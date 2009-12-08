@@ -615,6 +615,124 @@
 
 	// If there is a multiple or blank selection, clear all views directly.
 	if ( [tablesListView numberOfSelectedRows] != 1 || ![[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
+		
+		// Update the selection variables and the interface
+		[self performSelectorOnMainThread:@selector(setSelection:) withObject:nil waitUntilDone:YES];
+
+		// Add a history entry
+		[spHistoryControllerInstance updateHistoryEntries];
+		
+		// Notify listeners of the table change now that the state is fully set up
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPTableChangedNotification object:tableDocumentInstance];
+
+		return;
+	}
+
+	// Otherwise, set up a task
+	[tableDocumentInstance startTaskWithDescription:taskString];
+
+	// If on the main thread, fire up a thread to deal with view changes and data loading, else perform inline
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(updateSelectionTask) toTarget:self withObject:nil];
+	} else {
+		[self updateSelectionTask];
+	}
+}
+
+- (void) updateSelectionTask
+{	
+	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
+	NSString *tableEncoding = nil;
+
+	// Update selection variables and interface
+	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										[filteredTables objectAtIndex:[tablesListView selectedRow]], @"name",
+										[filteredTableTypes objectAtIndex:[tablesListView selectedRow]], @"type",
+										nil];
+	[self performSelectorOnMainThread:@selector(setSelection:) withObject:selectionDetails waitUntilDone:YES];
+		
+	// Check the encoding if appropriate to determine if an encoding change and reset is required
+	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
+
+		// tableEncoding == nil indicates that there was an error while retrieving table data
+		tableEncoding = [tableDataInstance tableEncoding];
+
+		// If encoding is set to Autodetect, update the connection character set encoding
+		// based on the newly selected table's encoding - but only if it differs from the current encoding.
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] isEqualToString:@"Autodetect"]) {
+			if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
+				[tableDataInstance resetAllData];
+				tableEncoding = [tableDataInstance tableEncoding];
+			}
+		}
+	}
+
+	// Ensure status information is cached on the working thread	
+	[tableDataInstance updateStatusInformationForCurrentTable];
+
+	// Notify listeners of the table change now that the state is fully set up.
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
+
+	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
+		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
+			[tableSourceInstance loadTable:selectedTableName];
+			structureLoaded = YES;
+			contentLoaded = NO;
+			statusLoaded = NO;
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
+			if(tableEncoding == nil) {
+				[tableContentInstance loadTable:nil];
+			} else {
+				[tableContentInstance loadTable:selectedTableName];
+			}
+			structureLoaded = NO;
+			contentLoaded = YES;
+			statusLoaded = NO;
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
+			structureLoaded = NO;
+			contentLoaded = NO;
+			statusLoaded = YES;
+		} else {
+			structureLoaded = NO;
+			contentLoaded = NO;
+			statusLoaded = NO;
+		}
+	} else {
+
+		// if we are not looking at a table or view, clear these
+		[tableSourceInstance loadTable:nil];
+		[tableContentInstance loadTable:nil];
+		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
+	}
+
+	// Update the "Show Create Syntax" window if it's already opened
+	// according to the selected table/view/proc/func
+	if([[tableDocumentInstance getCreateTableSyntaxWindow] isVisible])
+		[tableDocumentInstance performSelectorOnMainThread:@selector(showCreateTableSyntax:) withObject:self waitUntilDone:YES];
+
+	// Add a history entry
+	[spHistoryControllerInstance updateHistoryEntries];
+
+	// Empty the loading pool and exit the thread
+	[tableDocumentInstance endTask];
+	[selectionChangePool drain];
+}
+
+/**
+ * Takes a dictionary of selection details, containing the selection name
+ * and type, and updates stored variables and the table list interface to
+ * match.
+ * Should be called on the main thread.
+ */
+- (void)setSelection:(NSDictionary *)selectionDetails
+{
+	// First handle empty or multiple selections
+	if (!selectionDetails || ![selectionDetails objectForKey:@"name"]) {
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
 		// Update the selected table name and type
@@ -628,7 +746,7 @@
 
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
+		[extendedTableInfoInstance loadTable:nil];
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
@@ -697,36 +815,18 @@
 
 		// set window title
 		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
-		
-		// Add a history entry
-		[spHistoryControllerInstance updateHistoryEntries];
-		
-		// Notify listeners of the table change now that the state is fully set up
-		[[NSNotificationCenter defaultCenter] postNotificationName:SPTableChangedNotification object:tableDocumentInstance];
 
 		return;
 	}
 
-	// Otherwise, set up a task
-	[tableDocumentInstance startTaskWithDescription:taskString];
-
-	// If on the main thread, fire up a thread to deal with view changes and data loading, else perform inline
-	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(updateSelectionTask) toTarget:self withObject:nil];
-	} else {
-		[self updateSelectionTask];
-	}
-}
-
-- (void) updateSelectionTask
-{	
-	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
-	NSString *tableEncoding = nil;
+	// If a new selection has been provided, store variables and update the interface to match
+	NSString *selectedItemName = [selectionDetails objectForKey:@"name"];
+	NSInteger selectedItemType = [[selectionDetails objectForKey:@"type"] integerValue];
 
 	// Update the selected table name and type
 	if (selectedTableName) [selectedTableName release];
-	selectedTableName = [[NSString alloc] initWithString:[filteredTables objectAtIndex:[tablesListView selectedRow]]];
-	selectedTableType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	selectedTableName = [[NSString alloc] initWithString:selectedItemName];
+	selectedTableType = selectedItemType;
 	
 	// Remove the "current selection" item for filtered lists if appropriate
 	if (isTableListFiltered && [tablesListView selectedRow] < [filteredTables count] - 2 && [filteredTables count] > 2
@@ -737,71 +837,12 @@
 		[filteredTableTypes removeObjectsInRange:NSMakeRange([filteredTableTypes count]-2, 2)];
 		[tablesListView reloadData];
 	}
-		
+
 	// Reset the table information caches
 	[tableDataInstance resetAllData];
 
-	// Check the encoding if appropriate to determine if an encoding change and reset is required
-	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
-
-		// tableEncoding == nil indicates that there was an error while retrieving table data
-		tableEncoding = [tableDataInstance tableEncoding];
-
-		// If encoding is set to Autodetect, update the connection character set encoding
-		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] isEqualToString:@"Autodetect"]) {
-			if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
-				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
-				[tableDataInstance resetAllData];
-				tableEncoding = [tableDataInstance tableEncoding];
-			}
-		}
-	}
-
-	// Ensure status information is cached on the working thread	
-	[tableDataInstance updateStatusInformationForCurrentTable];
-
-	// Notify listeners of the table change now that the state is fully set up.
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
-
 	[separatorTableMenuItem setHidden:NO];
 	[separatorTableContextMenuItem setHidden:NO];
-
-	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
-		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
-			[tableSourceInstance loadTable:selectedTableName];
-			structureLoaded = YES;
-			contentLoaded = NO;
-			statusLoaded = NO;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
-			if(tableEncoding == nil) {
-				[tableContentInstance loadTable:nil];
-			} else {
-				[tableContentInstance loadTable:selectedTableName];
-			}
-			structureLoaded = NO;
-			contentLoaded = YES;
-			statusLoaded = NO;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = YES;
-		} else {
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = NO;
-		}
-	} else {
-
-		// if we are not looking at a table or view, clear these
-		[tableSourceInstance loadTable:nil];
-		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
-		structureLoaded = NO;
-		contentLoaded = NO;
-		statusLoaded = NO;
-	}
 
 	// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 	// according to the table types
@@ -925,18 +966,6 @@
 
 	// set window title
 	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
-
-	// Update the "Show Create Syntax" window if it's already opened
-	// according to the selected table/view/proc/func
-	if([[tableDocumentInstance getCreateTableSyntaxWindow] isVisible])
-		[tableDocumentInstance showCreateTableSyntax:self];
-
-	// Add a history entry
-	[spHistoryControllerInstance updateHistoryEntries];
-
-	// Empty the loading pool and exit the thread
-	[tableDocumentInstance endTask];
-	[selectionChangePool drain];
 }
 
 #pragma mark -

@@ -125,6 +125,7 @@ enum sp_table_types
 - (void)doPerformQueryService:(NSString *)query;
 - (void)updateSelectionWithTaskString:(NSString *)taskString;
 - (void)updateSelectionTask;
+- (void)setSelection:(NSDictionary *)selectionDetails;
 - (void)selectTableAtIndex:(NSNumber *)row;
 
 // Getters
