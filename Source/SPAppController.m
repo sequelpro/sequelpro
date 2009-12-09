@@ -242,7 +242,7 @@
 				TableDocument *firstTableDocument;
 
 				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 					[firstTableDocument setShouldAutomaticallyConnect:NO];
 
 					// user comes from a openPanel? if so use the chosen encoding
@@ -277,7 +277,7 @@
 			TableDocument *newTableDocument;
 
 			// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 				[newTableDocument setShouldAutomaticallyConnect:NO];
 				[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
 				[newTableDocument makeWindowControllers];
@@ -409,7 +409,7 @@
 	TableDocument *firstTableDocument;
 
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
 			[firstTableDocument setShouldAutomaticallyConnect:YES];
 		}
@@ -434,7 +434,7 @@
 		TableDocument *firstTableDocument;
 		
 		// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-		if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+		if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 			[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
 			[firstTableDocument makeWindowControllers];
 			[firstTableDocument showWindows];

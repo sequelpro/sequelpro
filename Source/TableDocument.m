@@ -2182,7 +2182,7 @@
 	TableDocument *newTableDocument;
 
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-	if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+	if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 		[newTableDocument setShouldAutomaticallyConnect:NO];
 		[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
 		[newTableDocument makeWindowControllers];
