@@ -3248,15 +3248,6 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewRelations:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_USER_MANAGER]) {
-		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
-		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
-		//set up tooltip and image
-		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the User Manager tab", @"tooltip for toolbar item for switching to the User Manager tab")];
-		[toolbarItem setImage:[NSImage imageNamed:NSImageNameEveryone]];
-		//set up the target action
-		[toolbarItem setTarget:self];
-		[toolbarItem setAction:@selector(showUserManager:)];
 	} else {
 		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
 		toolbarItem = nil;
@@ -3281,7 +3272,6 @@
 			MAIN_TOOLBAR_CUSTOM_QUERY,
 			MAIN_TOOLBAR_TABLE_INFO,
 			MAIN_TOOLBAR_TABLE_RELATIONS,
-			MAIN_TOOLBAR_USER_MANAGER,
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
 			NSToolbarSpaceItemIdentifier,
@@ -3303,7 +3293,6 @@
 			MAIN_TOOLBAR_CUSTOM_QUERY,
 			NSToolbarFlexibleSpaceItemIdentifier,
 			MAIN_TOOLBAR_HISTORY_NAVIGATION,
-			MAIN_TOOLBAR_USER_MANAGER,
 			MAIN_TOOLBAR_SHOW_CONSOLE,
 			nil];
 }
