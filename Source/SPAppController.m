@@ -363,7 +363,7 @@
  */
 - (IBAction)donate:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_DONATIONS_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDonationsURL]];
 }
 
 /**
@@ -371,7 +371,7 @@
  */
 - (IBAction)visitWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_HOME_PAGE_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPHomePageURL]];
 }
 
 /**
@@ -379,7 +379,7 @@
  */
 - (IBAction)visitHelpWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_DOCS_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDocumentationURL]];
 }
 
 /**
@@ -387,7 +387,7 @@
  */
 - (IBAction)visitFAQWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_FAQ_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPFAQURL]];
 }
 
 /**
@@ -395,7 +395,7 @@
  */
 - (IBAction)provideFeedback:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_CONTACT_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPContactURL]];
 }
 
 #pragma mark -

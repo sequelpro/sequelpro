@@ -28,13 +28,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-// URLs
-#define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
-#define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
-#define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
-#define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
-#define SEQUEL_PRO_CONTACT_URL   @"http://www.sequelpro.com/docs/Contact_the_developers"
-
 // Main toolbar constants
 #define MAIN_TOOLBAR_DATABASE_SELECTION @"DatabaseSelectToolbarItemIdentifier"
 #define MAIN_TOOLBAR_HISTORY_NAVIGATION @"HistoryNavigationToolbarItemIdentifier"
@@ -183,6 +176,13 @@ extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
 extern NSString *SPBlobTextEditorSpellCheckingEnabled;
+
+// URLs
+extern NSString *SPHomePageURL;
+extern NSString *SPDonationsURL;
+extern NSString *SPFAQURL;
+extern NSString *SPDocumentationURL;
+extern NSString *SPContactURL;
 
 // Toolbar constants
 

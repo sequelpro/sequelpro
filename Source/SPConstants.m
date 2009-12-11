@@ -136,6 +136,13 @@ NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
 
+// URLs
+NSString *SPHomePageURL                          = @"http://www.sequelpro.com/";
+NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
+NSString *SPFAQURL                               = @"http://www.sequelpro.com/docs/Frequently_Asked_Questions";
+NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
+NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
+
 // Toolbar constants
 
 // Preferences toolbar
