@@ -267,21 +267,31 @@
 		[prefs setObject:[NSDictionary dictionaryWithDictionary:toolbarDict] forKey:@"NSToolbar Configuration TableWindowToolbar"];
 	}
 	
-	// For versions prior to r1598 (~0.9.7), convert the query favorites array to an array of dictionaries
-	if (recordedVersionNumber < 1598 && [prefs objectForKey:SPQueryFavorites]) {
+	// For versions prior to r1609 (~0.9.7), convert the query favorites array to an array of dictionaries
+	if (recordedVersionNumber < 1609 && [prefs objectForKey:SPQueryFavorites]) {
 		NSMutableArray *queryFavoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPQueryFavorites]];
 		
 		for (i = 0; i < [queryFavoritesArray count]; i++)
 		{
 			id favorite = [queryFavoritesArray objectAtIndex:i];
 			
-			if (([favorite isKindOfClass:[NSDictionary class]]) && ([favorite objectForKey:@"name"]) && ([favorite objectForKey:@"query"])) continue;
+			// If the favorite is already a dictionary, just make sure there's no newlines in the title
+			if (([favorite isKindOfClass:[NSDictionary class]]) && ([favorite objectForKey:@"name"]) && ([favorite objectForKey:@"query"])) {
+				NSMutableString *favoriteName = [NSMutableString stringWithString:[favorite objectForKey:@"name"]];
+				[favoriteName replaceOccurrencesOfString:@"\n" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, [favoriteName length])];
+				[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithString:favoriteName], [favorite objectForKey:@"query"], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+				continue;
+			}
 			
-			// By default make the query's name the first 32 characters of the query with '...' appended
-			int idx = ( [favorite length] > 32 ) ? 32 : [favorite length]-1;
-			NSString *favoriteName = [[[favorite stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] substringToIndex:idx] stringByAppendingString:@"..."];
-						
-			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:favoriteName, favorite, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+			// By default make the query's name the first 32 characters of the query with '...' appended, stripping newlines
+			NSMutableString *favoriteName = [NSMutableString stringWithString:[favorite stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
+			[favoriteName replaceOccurrencesOfString:@"\n" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, [favoriteName length])];
+			if ([favoriteName length] > 32) {
+				[favoriteName deleteCharactersInRange:NSMakeRange(32, [favoriteName length] - 32)];
+				[favoriteName appendString:@"..."];
+			}
+
+			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithString:favoriteName], favorite, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
 		}
 		
 		[prefs setObject:queryFavoritesArray forKey:SPQueryFavorites];
