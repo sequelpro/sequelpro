@@ -28,16 +28,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-// Extensions
-#define DEFAULT_SEQUEL_PRO_FILE_EXTENSION     @"spf"
-#define DEFAULT_QUERY_FAVORITE_FILE_EXTENSION @"sql"
-#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION    @"sql"
-
-// Tableview drag types
-#define FAVORITES_PB_DRAG_TYPE       @"SequelProPreferencesPasteboard"
-#define CONTENT_FILTER_PB_DRAG_TYPE  @"SequelProContentFilterPasteboard"
-#define QUERY_FAVORITES_PB_DRAG_TYPE @"SequelProQueryFavoritesPasteboard"
-
 // URLs
 #define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
 #define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
@@ -87,6 +77,16 @@ extern NSString *SPKillProcessConnectionMode;
 
 // Default monospaced font name
 extern NSString *SPDefaultMonospacedFontName;
+
+// Table view drag types
+extern NSString *SPFavoritesPasteboardDragType;
+extern NSString *SPContentFilterPasteboardDragType;
+extern NSString *SPQueryFavortiesPasteboardDragType;
+
+// File extensions
+extern NSString *SPFileExtensionDefault;
+extern NSString *SPFileExtensionSQL;
+
 
 // Preference key constants
 // General Prefpane
@@ -183,3 +183,15 @@ extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
 extern NSString *SPBlobTextEditorSpellCheckingEnabled;
+
+// Toolbar constants
+
+// Preferences toolbar
+extern NSString *SPPreferenceToolbarGeneral;
+extern NSString *SPPreferenceToolbarTables;
+extern NSString *SPPreferenceToolbarFavorites;
+extern NSString *SPPreferenceToolbarNotifications;
+extern NSString *SPPreferenceToolbarAutoUpdate;
+extern NSString *SPPreferenceToolbarNetwork;
+extern NSString *SPPreferenceToolbarEditor;
+extern NSString *SPPreferenceToolbarShortcuts;

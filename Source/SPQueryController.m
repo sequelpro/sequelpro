@@ -237,7 +237,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_CONSOLE_LOG_FILE_EXTENSION];
+	[panel setRequiredFileType:SPFileExtensionSQL];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];

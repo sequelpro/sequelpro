@@ -30,7 +30,15 @@ NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
 NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
 
 // Default monospaced font name
-NSString *SPDefaultMonospacedFontName           = @"Monaco";
+NSString *SPDefaultMonospacedFontName            = @"Monaco";
+
+// Table view drag types
+NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
+NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
+
+// File extensions
+NSString *SPFileExtensionDefault                 = @"spf";
+NSString *SPFileExtensionSQL                     = @"sql";
 
 // Preference key constants
 // General Prefpane
@@ -127,3 +135,15 @@ NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
+
+// Toolbar constants
+
+// Preferences toolbar
+NSString *SPPreferenceToolbarGeneral             = @"SPPreferenceToolbarGeneral";
+NSString *SPPreferenceToolbarTables              = @"SPPreferenceToolbarTables";
+NSString *SPPreferenceToolbarFavorites           = @"SPPreferenceToolbarFavorites";
+NSString *SPPreferenceToolbarNotifications       = @"SPPreferenceToolbarNotifications";
+NSString *SPPreferenceToolbarAutoUpdate          = @"SPPreferenceToolbarAutoUpdate";
+NSString *SPPreferenceToolbarNetwork             = @"SPPreferenceToolbarNetwork";
+NSString *SPPreferenceToolbarEditor              = @"SPPreferenceToolbarEditor";
+NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcuts";

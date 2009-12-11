@@ -31,15 +31,6 @@
 #import "SPConnectionController.h"
 #import "SPConstants.h"
 
-#define PREFERENCE_TOOLBAR_GENERAL			@"Preference Toolbar General"
-#define PREFERENCE_TOOLBAR_TABLES			@"Preference Toolbar Tables"
-#define PREFERENCE_TOOLBAR_FAVORITES		@"Preference Toolbar Favorites"
-#define PREFERENCE_TOOLBAR_NOTIFICATIONS	@"Preference Toolbar Notifications"
-#define PREFERENCE_TOOLBAR_AUTOUPDATE		@"Preference Toolbar Auto Update"
-#define PREFERENCE_TOOLBAR_NETWORK			@"Preference Toolbar Network"
-#define PREFERENCE_TOOLBAR_EDITOR			@"Preference Toolbar Editor"
-#define PREFERENCE_TOOLBAR_SHORTCUTS		@"Preference Toolbar Shortcuts"
-
 #pragma mark -
 
 @interface SPPreferenceController (PrivateAPI)
@@ -85,7 +76,7 @@
 	// Replace column's NSTextFieldCell with custom SWProfileTextFieldCell
 	[[[favoritesTableView tableColumns] objectAtIndex:0] setDataCell:tableCell];
 	
-	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:FAVORITES_PB_DRAG_TYPE]];
+	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
 	
 	[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 	[favoritesTableView reloadData];
@@ -448,7 +439,7 @@
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarGeneral];
 	[self _resizeWindowForContentView:generalView];
 }
 
@@ -460,7 +451,7 @@
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_TABLES];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarTables];
 	[self _resizeWindowForContentView:tablesView];
 }
 
@@ -472,7 +463,7 @@
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarEditor];
 	NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]];
 	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 	[self _resizeWindowForContentView:editorView];
@@ -489,7 +480,7 @@
 	[[self window] setMinSize:NSMakeSize(500, 381)];
 	[[self window] setShowsResizeIndicator:YES];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarFavorites];
 	[self _resizeWindowForContentView:favoritesView];
 	
 	// Set the default favorite popup back to preference
@@ -506,7 +497,7 @@
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarNotifications];
 	[self _resizeWindowForContentView:notificationsView];
 }
 
@@ -518,7 +509,7 @@
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarAutoUpdate];
 	[self _resizeWindowForContentView:autoUpdateView];
 }
 
@@ -530,7 +521,7 @@
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_NETWORK];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarNetwork];
 	[self _resizeWindowForContentView:networkView];
 }
 
@@ -565,11 +556,11 @@
 	NSArray *pboardTypes;
 	
 	if ([rows count] == 1) {
-		pboardTypes = [NSArray arrayWithObject:FAVORITES_PB_DRAG_TYPE];
+		pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
 		originalRow = [[rows objectAtIndex:0] intValue];
 		
 		[pboard declareTypes:pboardTypes owner:nil];
-		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:FAVORITES_PB_DRAG_TYPE];
+		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:SPFavoritesPasteboardDragType];
 		
 		return YES;
 	} 
@@ -587,8 +578,8 @@
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
 	if (([pboardTypes count] > 1) && (row != -1)) {
-		if (([pboardTypes containsObject:FAVORITES_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
-			originalRow = [[[info draggingPasteboard] stringForType:FAVORITES_PB_DRAG_TYPE] intValue];
+		if (([pboardTypes containsObject:SPFavoritesPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
+			originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] intValue];
 						
 			if ((row != originalRow) && (row != (originalRow + 1))) {
 				return NSDragOperationMove;
@@ -609,7 +600,7 @@
 	int lastFavoriteIndexCached;
 	NSMutableDictionary *draggedRow;
 	
-	originalRow = [[[info draggingPasteboard] stringForType:FAVORITES_PB_DRAG_TYPE] intValue];
+	originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] intValue];
 	destinationRow = row;
 
 	if (destinationRow > originalRow) {
@@ -705,28 +696,28 @@
 // -------------------------------------------------------------------------------
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {		
-    if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_GENERAL]) {
+    if ([itemIdentifier isEqualToString:SPPreferenceToolbarGeneral]) {
         return generalItem;
     }
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_TABLES]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarTables]) {
 		return tablesItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_FAVORITES]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarFavorites]) {
 		return favoritesItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_NOTIFICATIONS]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNotifications]) {
 		return notificationsItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_AUTOUPDATE]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarAutoUpdate]) {
 		return autoUpdateItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_NETWORK]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNetwork]) {
 		return networkItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_EDITOR]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarEditor]) {
 		return editorItem;
 	}
-	else if ([itemIdentifier isEqualToString:PREFERENCE_TOOLBAR_SHORTCUTS]) {
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarShortcuts]) {
 		return shortcutItem;
 	}
 	
@@ -738,7 +729,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
+    return [NSArray arrayWithObjects:SPPreferenceToolbarGeneral, SPPreferenceToolbarTables, SPPreferenceToolbarFavorites, SPPreferenceToolbarNotifications, SPPreferenceToolbarEditor, SPPreferenceToolbarShortcuts, SPPreferenceToolbarAutoUpdate, SPPreferenceToolbarNetwork, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -746,7 +737,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
+    return [NSArray arrayWithObjects:SPPreferenceToolbarGeneral, SPPreferenceToolbarTables, SPPreferenceToolbarFavorites, SPPreferenceToolbarNotifications, SPPreferenceToolbarEditor, SPPreferenceToolbarShortcuts, SPPreferenceToolbarAutoUpdate, SPPreferenceToolbarNetwork, nil];
 }
 
 // -------------------------------------------------------------------------------
@@ -754,7 +745,7 @@
 // -------------------------------------------------------------------------------
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:PREFERENCE_TOOLBAR_GENERAL, PREFERENCE_TOOLBAR_TABLES, PREFERENCE_TOOLBAR_FAVORITES, PREFERENCE_TOOLBAR_NOTIFICATIONS, PREFERENCE_TOOLBAR_EDITOR, PREFERENCE_TOOLBAR_SHORTCUTS, PREFERENCE_TOOLBAR_AUTOUPDATE, PREFERENCE_TOOLBAR_NETWORK, nil];
+	return [NSArray arrayWithObjects:SPPreferenceToolbarGeneral, SPPreferenceToolbarTables, SPPreferenceToolbarFavorites, SPPreferenceToolbarNotifications, SPPreferenceToolbarEditor, SPPreferenceToolbarShortcuts, SPPreferenceToolbarAutoUpdate, SPPreferenceToolbarNetwork, nil];
 }
 
 #pragma mark -
@@ -1126,7 +1117,7 @@
 	toolbar = [[[NSToolbar alloc] initWithIdentifier:@"Preference Toolbar"] autorelease];
 
 	// General preferences
-	generalItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
+	generalItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarGeneral];
 
 	[generalItem setLabel:NSLocalizedString(@"General", @"")];
 	[generalItem setImage:[NSImage imageNamed:@"toolbar-preferences-general"]];
@@ -1134,7 +1125,7 @@
 	[generalItem setAction:@selector(displayGeneralPreferences:)];
 
 	// Table preferences
-	tablesItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_TABLES];
+	tablesItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarTables];
 
 	[tablesItem setLabel:NSLocalizedString(@"Tables", @"")];
 	[tablesItem setImage:[NSImage imageNamed:@"toolbar-preferences-tables"]];
@@ -1142,7 +1133,7 @@
 	[tablesItem setAction:@selector(displayTablePreferences:)];
 
 	// Favorite preferences
-	favoritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_FAVORITES];
+	favoritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarFavorites];
 
 	[favoritesItem setLabel:NSLocalizedString(@"Favorites", @"")];
 	[favoritesItem setImage:[NSImage imageNamed:@"toolbar-preferences-favorites"]];
@@ -1150,7 +1141,7 @@
 	[favoritesItem setAction:@selector(displayFavoritePreferences:)];
 
 	// Notification preferences
-	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NOTIFICATIONS];
+	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarNotifications];
 
 	[notificationsItem setLabel:NSLocalizedString(@"Alerts & Logs", @"")];
 	[notificationsItem setImage:[NSImage imageNamed:@"toolbar-preferences-notifications"]];
@@ -1158,7 +1149,7 @@
 	[notificationsItem setAction:@selector(displayNotificationPreferences:)];
 
 	// Editor preferences
-	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_EDITOR];
+	editorItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarEditor];
 	
 	[editorItem setLabel:NSLocalizedString(@"Query Editor", @"")];
 	[editorItem setImage:[NSImage imageNamed:@"toolbar-preferences-queryeditor"]];
@@ -1166,7 +1157,7 @@
 	[editorItem setAction:@selector(displayEditorPreferences:)];
 	
 	// Shortcut preferences
-	/*shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_SHORTCUTS];
+	/*shortcutItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarShortcuts];
 	
 	[shortcutItem setLabel:NSLocalizedString(@"Shortcuts", @"")];
 	[shortcutItem setImage:[NSImage imageNamed:@"toolbar-preferences-shortcuts"]];
@@ -1174,7 +1165,7 @@
 	[shortcutItem setAction:@selector(NSBeep)];*/
 	
 	// AutoUpdate preferences
-	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_AUTOUPDATE];
+	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarAutoUpdate];
 
 	[autoUpdateItem setLabel:NSLocalizedString(@"Auto Update", @"")];
 	[autoUpdateItem setImage:[NSImage imageNamed:@"toolbar-preferences-autoupdate"]];
@@ -1182,7 +1173,7 @@
 	[autoUpdateItem setAction:@selector(displayAutoUpdatePreferences:)];
 
 	// Network preferences
-	networkItem = [[NSToolbarItem alloc] initWithItemIdentifier:PREFERENCE_TOOLBAR_NETWORK];
+	networkItem = [[NSToolbarItem alloc] initWithItemIdentifier:SPPreferenceToolbarNetwork];
 
 	[networkItem setLabel:NSLocalizedString(@"Network", @"")];
 	[networkItem setImage:[NSImage imageNamed:@"toolbar-preferences-network"]];
@@ -1190,7 +1181,7 @@
 	[networkItem setAction:@selector(displayNetworkPreferences:)];
 
 	[toolbar setDelegate:self];
-	[toolbar setSelectedItemIdentifier:PREFERENCE_TOOLBAR_GENERAL];
+	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarGeneral];
 	[toolbar setAllowsUserCustomization:NO];
 
 	[preferencesWindow setToolbar:toolbar];

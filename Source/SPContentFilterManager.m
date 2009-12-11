@@ -130,7 +130,7 @@
 	[self _initWithNoSelection];
 
 	// Register drag types
-	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:CONTENT_FILTER_PB_DRAG_TYPE]];
+	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:SPContentFilterPasteboardDragType]];
 	
 	[contentFilterArrayController setContent:contentFilters];
 	[contentFilterTableView reloadData];
@@ -301,7 +301,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_SEQUEL_PRO_FILE_EXTENSION];
+	[panel setRequiredFileType:SPFileExtensionDefault];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -322,7 +322,7 @@
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
-						  types:[NSArray arrayWithObjects:@"spf", nil] 
+						  types:[NSArray arrayWithObjects:SPFileExtensionDefault, nil] 
 				 modalForWindow:[self window]
 				  modalDelegate:self 
 				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
@@ -608,7 +608,7 @@
 - (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
 {
 
-	NSArray *pboardTypes = [NSArray arrayWithObject:CONTENT_FILTER_PB_DRAG_TYPE];
+	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
 	NSInteger originalRow = [[rows objectAtIndex:0] intValue];
 
 	if(originalRow < 1) return NO;
@@ -622,7 +622,7 @@
 	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
 	[archiver encodeObject:rows forKey:@"indexdata"];
 	[archiver finishEncoding];
-	[pboard setData:indexdata forType:CONTENT_FILTER_PB_DRAG_TYPE];
+	[pboard setData:indexdata forType:SPContentFilterPasteboardDragType];
 
 	return YES;
 
@@ -636,7 +636,7 @@
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
 	if (([pboardTypes count] > 1) && (row != -1)) {
-		if (([pboardTypes containsObject:CONTENT_FILTER_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
+		if (([pboardTypes containsObject:SPContentFilterPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
 			if (row > 0) {
 				return NSDragOperationMove;
 			}
@@ -655,7 +655,7 @@
 
 	if(row < 1) return NO;
 
-	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:CONTENT_FILTER_PB_DRAG_TYPE]] autorelease];
+	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPContentFilterPasteboardDragType]] autorelease];
 	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
 
