@@ -232,7 +232,7 @@
  */
 - (void)tableSelectionChanged:(NSNotification *)notification
 {
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS] || ![tableDocumentInstance isWorking];
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations] || ![tableDocumentInstance isWorking];
 
 	// To begin enable all interface elements
 	[addRelationButton setEnabled:enableInteraction];		
@@ -315,7 +315,7 @@
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations])
 		return;
 
 	[addRelationButton setEnabled:NO];
@@ -330,7 +330,7 @@
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations])
 		return;
 
 	if ([relationsTableView isEnabled]) {

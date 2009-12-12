@@ -1080,7 +1080,7 @@
 	// If the table selected for import is also selected in the content view,
 	// update the content view - on the main thread to avoid crashes.
 	if ([tablesListInstance tableName] && [[fieldMappingPopup titleOfSelectedItem] isEqualToString:[tablesListInstance tableName]]) {
-		if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT]) {
+		if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
 			[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
 		} else {
 			[tablesListInstance setContentRequiresReload:YES];

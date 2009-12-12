@@ -145,6 +145,18 @@ NSString *SPContactURL                           = @"http://www.sequelpro.com/do
 
 // Toolbar constants
 
+// Main window toolbar
+NSString *SPMainToolbarDatabaseSelection         = @"DatabaseSelectToolbarItemIdentifier";
+NSString *SPMainToolbarHistoryNavigation         = @"HistoryNavigationToolbarItemIdentifier";
+NSString *SPMainToolbarShowConsole               = @"ShowConsoleIdentifier";
+NSString *SPMainToolbarClearConsole              = @"ClearConsoleIdentifier";
+NSString *SPMainToolbarTableStructure            = @"SwitchToTableStructureToolbarItemIdentifier";
+NSString *SPMainToolbarTableContent              = @"SwitchToTableContentToolbarItemIdentifier";
+NSString *SPMainToolbarCustomQuery               = @"SwitchToRunQueryToolbarItemIdentifier";
+NSString *SPMainToolbarTableInfo                 = @"SwitchToTableInfoToolbarItemIdentifier";
+NSString *SPMainToolbarTableRelations            = @"SwitchToTableRelationsToolbarItemIdentifier";
+NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarItemIdentifier";
+
 // Preferences toolbar
 NSString *SPPreferenceToolbarGeneral             = @"SPPreferenceToolbarGeneral";
 NSString *SPPreferenceToolbarTables              = @"SPPreferenceToolbarTables";

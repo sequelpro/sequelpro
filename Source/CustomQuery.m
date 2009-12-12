@@ -2673,7 +2673,7 @@
 	isWorking = YES;
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery])
 		return;
 
 	[runSelectionButton setEnabled:NO];
@@ -2690,7 +2690,7 @@
 	isWorking = NO;
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery])
 		return;
 
 	if (selectionButtonCanBeEnabled) {

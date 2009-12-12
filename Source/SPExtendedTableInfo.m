@@ -181,7 +181,7 @@
  */
 - (void)loadTable:(NSString *)table
 {	
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO] || ![tableDocumentInstance isWorking];
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo] || ![tableDocumentInstance isWorking];
 
 	// Store the table name away for future use
 	selectedTable = table;
@@ -369,7 +369,7 @@
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo])
 		return;
 
 	[tableTypePopUpButton setEnabled:NO];
@@ -384,7 +384,7 @@
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_INFO])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo])
 		return;
 
 	NSDictionary *statusFields = [tableDataInstance statusValues];

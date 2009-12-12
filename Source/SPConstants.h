@@ -23,23 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-// TODO: change #defines
-// see http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/CodingGuidelines/Articles/NamingIvarsAndTypes.html#//apple_ref/doc/uid/20001284-1003095
-
 #import <Cocoa/Cocoa.h>
-
-// Main toolbar constants
-#define MAIN_TOOLBAR_DATABASE_SELECTION @"DatabaseSelectToolbarItemIdentifier"
-#define MAIN_TOOLBAR_HISTORY_NAVIGATION @"HistoryNavigationToolbarItemIdentifier"
-#define MAIN_TOOLBAR_SHOW_CONSOLE       @"ShowConsoleIdentifier"
-#define MAIN_TOOLBAR_CLEAR_CONSOLE      @"ClearConsoleIdentifier"
-#define MAIN_TOOLBAR_FLUSH_PRIVILEGES   @"FlushPrivilegesIdentifier"
-#define MAIN_TOOLBAR_TABLE_STRUCTURE    @"SwitchToTableStructureToolbarItemIdentifier"
-#define MAIN_TOOLBAR_TABLE_CONTENT      @"SwitchToTableContentToolbarItemIdentifier"
-#define MAIN_TOOLBAR_CUSTOM_QUERY       @"SwitchToRunQueryToolbarItemIdentifier"
-#define MAIN_TOOLBAR_TABLE_INFO         @"SwitchToTableInfoToolbarItemIdentifier"
-#define MAIN_TOOLBAR_TABLE_RELATIONS    @"SwitchToTableRelationsToolbarItemIdentifier"
-#define MAIN_TOOLBAR_USER_MANAGER       @"SwitchToUserManagerToolbarItemIdentifier"
 
 // View modes
 typedef enum {
@@ -185,6 +169,18 @@ extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
 
 // Toolbar constants
+
+// Main window toolbar
+extern NSString *SPMainToolbarDatabaseSelection;
+extern NSString *SPMainToolbarHistoryNavigation;
+extern NSString *SPMainToolbarShowConsole;
+extern NSString *SPMainToolbarClearConsole;
+extern NSString *SPMainToolbarTableStructure;
+extern NSString *SPMainToolbarTableContent;
+extern NSString *SPMainToolbarCustomQuery;
+extern NSString *SPMainToolbarTableInfo;
+extern NSString *SPMainToolbarTableRelations;
+extern NSString *SPMainToolbarUserManager;
 
 // Preferences toolbar
 extern NSString *SPPreferenceToolbarGeneral;
