@@ -12,9 +12,9 @@
 				<string>spf</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>appicon.icns</string>
+			<string>spficon.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>SequelPro connection</string>
+			<string>Sequel Pro connection</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>connection</string>
@@ -30,7 +30,7 @@
 				<string>sql</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>appicon.icns</string>
+			<string>sqlicon.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>SQL file</string>
 			<key>CFBundleTypeOSTypes</key>
@@ -60,15 +60,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.9.6</string>
+	<string>0.9.7</string>
 	<key>CFBundleVersion</key>
 	<string></string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.5.0</string>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright 2002-2009 Sequel Pro and CocoaMySQL team.</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>10.5.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

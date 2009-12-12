@@ -30,7 +30,15 @@ NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
 NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
 
 // Default monospaced font name
-NSString *SPDefaultMonospacedFontName           = @"Monaco";
+NSString *SPDefaultMonospacedFontName            = @"Monaco";
+
+// Table view drag types
+NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
+NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
+
+// File extensions
+NSString *SPFileExtensionDefault                 = @"spf";
+NSString *SPFileExtensionSQL                     = @"sql";
 
 // Preference key constants
 // General Prefpane
@@ -127,3 +135,34 @@ NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
+
+// URLs
+NSString *SPHomePageURL                          = @"http://www.sequelpro.com/";
+NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
+NSString *SPFAQURL                               = @"http://www.sequelpro.com/docs/Frequently_Asked_Questions";
+NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
+NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
+
+// Toolbar constants
+
+// Main window toolbar
+NSString *SPMainToolbarDatabaseSelection         = @"DatabaseSelectToolbarItemIdentifier";
+NSString *SPMainToolbarHistoryNavigation         = @"HistoryNavigationToolbarItemIdentifier";
+NSString *SPMainToolbarShowConsole               = @"ShowConsoleIdentifier";
+NSString *SPMainToolbarClearConsole              = @"ClearConsoleIdentifier";
+NSString *SPMainToolbarTableStructure            = @"SwitchToTableStructureToolbarItemIdentifier";
+NSString *SPMainToolbarTableContent              = @"SwitchToTableContentToolbarItemIdentifier";
+NSString *SPMainToolbarCustomQuery               = @"SwitchToRunQueryToolbarItemIdentifier";
+NSString *SPMainToolbarTableInfo                 = @"SwitchToTableInfoToolbarItemIdentifier";
+NSString *SPMainToolbarTableRelations            = @"SwitchToTableRelationsToolbarItemIdentifier";
+NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarItemIdentifier";
+
+// Preferences toolbar
+NSString *SPPreferenceToolbarGeneral             = @"SPPreferenceToolbarGeneral";
+NSString *SPPreferenceToolbarTables              = @"SPPreferenceToolbarTables";
+NSString *SPPreferenceToolbarFavorites           = @"SPPreferenceToolbarFavorites";
+NSString *SPPreferenceToolbarNotifications       = @"SPPreferenceToolbarNotifications";
+NSString *SPPreferenceToolbarAutoUpdate          = @"SPPreferenceToolbarAutoUpdate";
+NSString *SPPreferenceToolbarNetwork             = @"SPPreferenceToolbarNetwork";
+NSString *SPPreferenceToolbarEditor              = @"SPPreferenceToolbarEditor";
+NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcuts";

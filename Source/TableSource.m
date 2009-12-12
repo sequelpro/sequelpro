@@ -55,7 +55,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	id extra;
 	int i;
 	SPSQLParser *fieldParser;
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE] || ![tableDocumentInstance isWorking];
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] || ![tableDocumentInstance isWorking];
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
@@ -992,7 +992,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure])
 		return;
 
 	[tableSourceView setEnabled:NO];
@@ -1015,7 +1015,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only re-enable elements if the current tab is the structure view
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure])
 		return;
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);

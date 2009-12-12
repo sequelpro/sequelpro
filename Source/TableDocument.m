@@ -634,9 +634,10 @@
 	mySQLConnection = [theConnection retain];
 
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
-	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:[spfPreferences retain]]];
-
-	[spfPreferences release];
+	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
+	
+	// ...but hide the icon while the document is temporary
+	if ([self isUntitled]) [[tableWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
 
 	// Set the connection encoding
 	NSString *encodingName = [prefs objectForKey:SPDefaultEncoding];
@@ -2181,7 +2182,7 @@
 	TableDocument *newTableDocument;
 
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-	if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+	if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 		[newTableDocument setShouldAutomaticallyConnect:NO];
 		[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
 		[newTableDocument makeWindowControllers];
@@ -2639,7 +2640,7 @@
 		aString = @"SPSSHTunnelConnection";
 		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
-		if([connectionController port] && [[connectionController port] length])
+		if([connectionController sshPort] && [[connectionController sshPort] length])
 			[connection setObject:[NSNumber numberWithInt:[[connectionController sshPort] intValue]] forKey:@"ssh_port"];
 		break;
 		default:
@@ -2822,7 +2823,7 @@
  */
 - (IBAction)showMySQLHelp:(id)sender
 {
-	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES];
+	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
 	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
 }
 
@@ -2930,12 +2931,12 @@
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_CONTENT];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
 		return;
 	}
 
 	[tableTabView selectTabViewItemAtIndex:0];
-	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_STRUCTURE];
+	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
 	[prefs setInteger:SPStructureViewMode forKey:SPLastViewMode];
@@ -2946,12 +2947,12 @@
 	// Cancel the selection if currently editing structure/a field and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
 		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_STRUCTURE];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
 		return;
 	}
 
 	[tableTabView selectTabViewItemAtIndex:1];
-	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_CONTENT];
+	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
 	[prefs setInteger:SPContentViewMode forKey:SPLastViewMode];
@@ -2962,19 +2963,19 @@
 	// Cancel the selection if currently editing structure/a field and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
 		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_STRUCTURE];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
 		return;
 	}
 
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_CONTENT];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
 		return;
 	}
 
 	[tableTabView selectTabViewItemAtIndex:2];
-	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_CUSTOM_QUERY];
+	[mainToolbar setSelectedItemIdentifier:SPMainToolbarCustomQuery];
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	// Set the focus on the text field if no query has been run
@@ -2988,19 +2989,19 @@
 	// Cancel the selection if currently editing structure/a field and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
 		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_STRUCTURE];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
 		return;
 	}
 
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_CONTENT];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
 		return;
 	}
 
 	[tableTabView selectTabViewItemAtIndex:3];
-	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_INFO];
+	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableInfo];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
 	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];
@@ -3011,19 +3012,19 @@
 	// Cancel the selection if currently editing structure/a field and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
 		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_STRUCTURE];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
 		return;
 	}
 
 	// Cancel the selection if currently editing a content row and unable to save
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
 		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_CONTENT];
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
 		return;
 	}
 
 	[tableTabView selectTabViewItemAtIndex:4];
-	[mainToolbar setSelectedItemIdentifier:MAIN_TOOLBAR_TABLE_RELATIONS];
+	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableRelations];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
 	[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
@@ -3156,7 +3157,7 @@
 {
 	NSToolbarItem *toolbarItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
 
-	if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_DATABASE_SELECTION]) {
+	if ([itemIdentifier isEqualToString:SPMainToolbarDatabaseSelection]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Select Database", @"toolbar item for selecting a db")];
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
 		[toolbarItem setView:chooseDatabaseButton];
@@ -3170,12 +3171,12 @@
 			[self updateChooseDatabaseToolbarItemWidth];
 		} 
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_HISTORY_NAVIGATION]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarHistoryNavigation]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Table History", @"toolbar item for navigation history")];
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
 		[toolbarItem setView:historyControl];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_SHOW_CONSOLE]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarShowConsole]) {
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"show console")];
 		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
 
@@ -3186,7 +3187,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(showConsole:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_CLEAR_CONSOLE]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarClearConsole]) {
 		//set the text label to be displayed in the toolbar and customization palette 
 		[toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
@@ -3197,7 +3198,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(clearConsole:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_TABLE_STRUCTURE]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarTableStructure]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Structure", @"toolbar item label for switching to the Table Structure tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Edit Table Structure", @"toolbar item label for switching to the Table Structure tab")];
 		//set up tooltip and image
@@ -3207,7 +3208,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewStructure:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarTableContent]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Content", @"toolbar item label for switching to the Table Content tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Browse & Edit Table Content", @"toolbar item label for switching to the Table Content tab")];
 		//set up tooltip and image
@@ -3217,7 +3218,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewContent:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarCustomQuery]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Query", @"toolbar item label for switching to the Run Query tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Run Custom Query", @"toolbar item label for switching to the Run Query tab")];
 		//set up tooltip and image
@@ -3227,7 +3228,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewQuery:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_TABLE_INFO]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarTableInfo]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Table Info", @"toolbar item label for switching to the Table Info tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Info", @"toolbar item label for switching to the Table Info tab")];
 		//set up tooltip and image
@@ -3237,7 +3238,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewStatus:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_TABLE_RELATIONS]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarTableRelations]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Relations", @"toolbar item label for switching to the Table Relations tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab")];
 		//set up tooltip and image
@@ -3247,7 +3248,7 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewRelations:)];
 
-	} else if ([itemIdentifier isEqualToString:MAIN_TOOLBAR_USER_MANAGER]) {
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarUserManager]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		//set up tooltip and image
@@ -3270,17 +3271,16 @@
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [NSArray arrayWithObjects:
-			MAIN_TOOLBAR_DATABASE_SELECTION,
-			MAIN_TOOLBAR_HISTORY_NAVIGATION,
-			MAIN_TOOLBAR_SHOW_CONSOLE,
-			MAIN_TOOLBAR_CLEAR_CONSOLE,
-			MAIN_TOOLBAR_FLUSH_PRIVILEGES,
-			MAIN_TOOLBAR_TABLE_STRUCTURE,
-			MAIN_TOOLBAR_TABLE_CONTENT,
-			MAIN_TOOLBAR_CUSTOM_QUERY,
-			MAIN_TOOLBAR_TABLE_INFO,
-			MAIN_TOOLBAR_TABLE_RELATIONS,
-			MAIN_TOOLBAR_USER_MANAGER,
+			SPMainToolbarDatabaseSelection,
+			SPMainToolbarHistoryNavigation,
+			SPMainToolbarShowConsole,
+			SPMainToolbarClearConsole,
+			SPMainToolbarTableStructure,
+			SPMainToolbarTableContent,
+			SPMainToolbarCustomQuery,
+			SPMainToolbarTableInfo,
+			SPMainToolbarTableRelations,
+			SPMainToolbarUserManager,
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
 			NSToolbarSpaceItemIdentifier,
@@ -3294,16 +3294,16 @@
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [NSArray arrayWithObjects:
-			MAIN_TOOLBAR_DATABASE_SELECTION,
-			MAIN_TOOLBAR_TABLE_STRUCTURE,
-			MAIN_TOOLBAR_TABLE_CONTENT,
-			MAIN_TOOLBAR_TABLE_RELATIONS,
-			MAIN_TOOLBAR_TABLE_INFO,
-			MAIN_TOOLBAR_CUSTOM_QUERY,
+			SPMainToolbarDatabaseSelection,
+			SPMainToolbarTableStructure,
+			SPMainToolbarTableContent,
+			SPMainToolbarTableRelations,
+			SPMainToolbarTableInfo,
+			SPMainToolbarCustomQuery,
 			NSToolbarFlexibleSpaceItemIdentifier,
-			MAIN_TOOLBAR_HISTORY_NAVIGATION,
-			MAIN_TOOLBAR_USER_MANAGER,
-			MAIN_TOOLBAR_SHOW_CONSOLE,
+			SPMainToolbarHistoryNavigation,
+			SPMainToolbarUserManager,
+			SPMainToolbarShowConsole,
 			nil];
 }
 
@@ -3313,11 +3313,11 @@
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
 	return [NSArray arrayWithObjects:
-			MAIN_TOOLBAR_TABLE_STRUCTURE,
-			MAIN_TOOLBAR_TABLE_CONTENT,
-			MAIN_TOOLBAR_CUSTOM_QUERY,
-			MAIN_TOOLBAR_TABLE_INFO,
-			MAIN_TOOLBAR_TABLE_RELATIONS,
+			SPMainToolbarTableStructure,
+			SPMainToolbarTableContent,
+			SPMainToolbarCustomQuery,
+			SPMainToolbarTableInfo,
+			SPMainToolbarTableRelations,
 			nil];
 
 }
@@ -3332,7 +3332,7 @@
 	NSString *identifier = [toolbarItem itemIdentifier];
 
 	// Show console item
-	if ([identifier isEqualToString:MAIN_TOOLBAR_SHOW_CONSOLE]) {
+	if ([identifier isEqualToString:SPMainToolbarShowConsole]) {
 		if ([[[SPQueryController sharedQueryController] window] isVisible]) {
 			[toolbarItem setImage:[NSImage imageNamed:@"showconsole"]];
 		} else {
@@ -3346,11 +3346,11 @@
 	}
 
 	// Clear console item
-	if ([identifier isEqualToString:MAIN_TOOLBAR_CLEAR_CONSOLE]) {
+	if ([identifier isEqualToString:SPMainToolbarClearConsole]) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
 	
-	if (![identifier isEqualToString:MAIN_TOOLBAR_CUSTOM_QUERY]) {
+	if (![identifier isEqualToString:SPMainToolbarCustomQuery]) {
 		return (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) || 
 				([tablesListInstance tableType] == SP_TABLETYPE_VIEW));
 	}
@@ -3435,6 +3435,14 @@
 	if (_isWorkingLevel) [self centerTaskWindow];
 }
 
+/**
+ * Invoked when the user command-clicks on the window title to see the document path
+ */
+- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
+{
+	return ![self isUntitled];
+}
+
 /*
  * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
  * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
@@ -3469,12 +3477,12 @@
 {
 	if (!_isConnected) {
 		return [NSString stringWithFormat:@"%@%@", 
-				([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"", @"Sequel Pro"];
+				([[[self fileURL] absoluteString] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"", @"Sequel Pro"];
 
 	} 
 		
 	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
-		([[[self fileURL] absoluteString] length]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
+		([[[self fileURL] absoluteString] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
 		mySQLVersion,
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),

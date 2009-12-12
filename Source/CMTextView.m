@@ -2005,14 +2005,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// If selection show Help for it
 	if([self selectedRange].length)
 	{
-		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
 		return;
 	}
 	// Otherwise show Help if caret is not inside quotes
 	long cursorPosition = [self selectedRange].location;
 	if (cursorPosition >= [[self string] length]) cursorPosition--;
 	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
-		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showHelpForCurrentWord:) withObject:self afterDelay:0.1];
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
 	
 }
 

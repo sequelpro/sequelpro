@@ -235,7 +235,7 @@
 - (void)exporterDataConversionProcessComplete:(SPExporter *)exporter
 {	
 	// Do something with the data...
-	[[SPLogger logger] log:[exporter exportData]];
+	[[SPLogger logger] log:[NSString stringWithFormat:@"Exporter finished: %@", exporter]];
 	
 	// If there are no more operations in the queue, close the progress sheet
 	if ([[operationQueue operations] count] == 0) {

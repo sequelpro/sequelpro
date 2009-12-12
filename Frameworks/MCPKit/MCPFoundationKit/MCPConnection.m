@@ -395,7 +395,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	NSString *currentDatabase = nil;
 	
 	// Store the currently selected database and encoding so they can be re-set if reconnection was successful
-	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldSelectDatabase:)]) {
+	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldSelectDatabase:)] && [delegate onReconnectShouldSelectDatabase:self]) {
 		currentDatabase = [NSString stringWithString:[delegate onReconnectShouldSelectDatabase:self]];
 	}
 	

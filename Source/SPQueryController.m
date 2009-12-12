@@ -191,14 +191,17 @@ static SPQueryController *sharedQueryController = nil;
 								
 				// If the timestamp column is not hidden we need to include them in the copy
 				if (!dateColumnIsHidden) {
+					[string appendString:@"/* "];
 					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
-					[string appendString:@" "];					
+					if (connectionColumnIsHidden) [string appendString:@" */ "];
+					else [string appendString:@" "];				
 				}
 				
 				// If the connection column is not hidden we need to include them in the copy
 				if (!connectionColumnIsHidden) {
+					if (dateColumnIsHidden) [string appendString:@"/* "];
 					[string appendString:[message messageConnection]];
-					[string appendString:@" "];
+					[string appendString:@" */ "];
 				}
 				
 				[string appendString:[message message]];
@@ -234,7 +237,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_CONSOLE_LOG_FILE_EXTENSION];
+	[panel setRequiredFileType:SPFileExtensionSQL];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -865,8 +868,9 @@ static SPQueryController *sharedQueryController = nil;
 	
 	// Reload the table and scroll to the new message if it's visible (for speed)
 	if (allowConsoleUpdate && [[self window] isVisible]) {
-		[consoleTableView reloadData];
+		[consoleTableView noteNumberOfRowsChanged];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+		[consoleTableView reloadData];
 	}
 }
 

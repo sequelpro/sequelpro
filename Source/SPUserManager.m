@@ -70,12 +70,6 @@
 								@"Replication_slave_priv", @"Repl_slave_priv", 
 								@"Replication_client_priv", @"Repl_client_priv",
 								nil];
-				
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(contextDidSave:) 
-													 name:NSManagedObjectContextDidSaveNotification 
-												   object:nil];
-		
 	}
 	
 	return self;
@@ -226,6 +220,7 @@
 	}
 	// Reload data of the outline view with the changes.
 	[outlineView reloadData];
+	[treeController rearrangeObjects];
 }
 
 /**
@@ -315,6 +310,10 @@
         managedObjectContext = [[NSManagedObjectContext alloc] init];
         [managedObjectContext setPersistentStoreCoordinator: coordinator];
     }
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(contextDidSave:) 
+												 name:NSManagedObjectContextDidSaveNotification 
+											   object:nil];	
     
     return managedObjectContext;
 }
@@ -369,10 +368,16 @@
 		[tabView selectTabViewItemWithIdentifier:@"General"];
 	}
 	else {
-		if ([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
+		if ([selectedObject parent] != nil && [[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
 			[tabView selectTabViewItemWithIdentifier:@"Global Privileges"];
 		}
 	}
+}
+
+- (NSArray *)treeSortDescriptors
+{
+	NSSortDescriptor *descriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
+	return [NSArray arrayWithObject:descriptor];
 }
 
 #pragma mark -
@@ -403,6 +408,7 @@
 	}
 	else {
 		// Close sheet
+		[self.mySqlConnection queryString:@"FLUSH PRIVILEGES"];
 		[NSApp endSheet:[self window] returnCode:0];
 		[[self window] orderOut:self];
 	}
@@ -540,6 +546,26 @@
 	}
 }
 
+- (void)_selectFirstChildOfParentNode
+{
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		[outlineView expandItem:[outlineView itemAtRow:[outlineView selectedRow]]];
+		
+		id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+		NSTreeNode *firstSelectedNode = [[treeController selectedNodes] objectAtIndex:0];
+		id parent = [selectedObject parent];
+		// If this is already a parent, then parentNode should be null.
+		// If a child is already selected, then we want to not change the selection
+		if (!parent)
+		{
+			NSIndexPath *childIndex = [[[firstSelectedNode childNodes] objectAtIndex:0] indexPath];
+			[treeController setSelectionIndexPath:childIndex];
+		}
+
+	}
+}
+
 #pragma mark -
 #pragma mark Notifications
 
@@ -550,6 +576,11 @@
  */
 - (void)contextDidSave:(NSNotification *)notification
 {	
+	NSManagedObjectContext *notificationContext = (NSManagedObjectContext *)[notification object];
+	// If there are multiple user manager windows open, it's possible to get this
+	// notification from foreign windows.  Ignore those notifications.
+	if (notificationContext != self.managedObjectContext) return;
+	
 	if (!isInitializing)
 	{		
 		NSArray *updated = [[notification userInfo] valueForKey:NSUpdatedObjectsKey];
@@ -580,7 +611,25 @@
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
 	for (NSManagedObject *user in updatedUsers) {
-		[self grantPrivilegesToUser:user];
+		if (![user host])
+		{
+			// Just the user password was changed.
+			// Change password to be the same on all hosts.
+			NSArray *hosts = [user valueForKey:@"children"];
+			for(NSManagedObject *child in hosts)
+			{
+				NSString *changePasswordStatement = [NSString stringWithFormat:
+													 @"SET PASSWORD FOR %@@%@ = PASSWORD('%@')",
+													 [[user valueForKey:@"user"] tickQuotedString],
+													 [[child host] tickQuotedString],
+													 [user valueForKey:@"password"]];
+				[self.mySqlConnection queryString:changePasswordStatement];	
+				[self checkAndDisplayMySqlError];
+			}
+		} else {
+			[self grantPrivilegesToUser:user];			
+		}
+
 	}
 	
 	return YES;
@@ -612,22 +661,24 @@
 {	
 	for (NSManagedObject *user in insertedUsers)
 	{
+		NSString *createStatement;
+
 		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
 			
-			NSString *createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
+			createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
 										 [[[user parent] valueForKey:@"user"] tickQuotedString], 
 										 [[user valueForKey:@"host"] tickQuotedString],
 										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
-						
+			
 			// Create user in database
 			[self.mySqlConnection queryString:[NSString stringWithFormat:createStatement]];
 			
 			if ([self checkAndDisplayMySqlError]) {
 				[self grantPrivilegesToUser:user];
-			}			
+			}	
 		}
+		
 	}
-	
 	return YES;
 }
 
@@ -734,20 +785,25 @@
 #pragma mark -
 #pragma mark Tab View Delegate methods
 
-- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
+-(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	if ([[treeController selectedObjects] count] == 0) return NO;
+	if ([[treeController selectedObjects] count] == 0) return;
 	
 	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
 	
+	// If the selected tab is General and a child is selected, select the
+	// parent (user info)
 	if ([[tabViewItem identifier] isEqualToString:@"General"]) {
-		return ([selectedObject parent] == nil);
-	} 
-	else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
-		return ([selectedObject parent] != nil);
+		if ([selectedObject parent] != nil)
+		{
+			[self _selectParentFromSelection];
+		}
+	} else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
+			   || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
+		// if the tab is either Global Privs or Resources and we have a user 
+		// selected, then open tree and select first child node.
+		[self _selectFirstChildOfParentNode];
 	}
-	
-	return NO;
 }
 
 #pragma mark -

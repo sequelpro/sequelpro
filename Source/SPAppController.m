@@ -242,7 +242,7 @@
 				TableDocument *firstTableDocument;
 
 				// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+				if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 					[firstTableDocument setShouldAutomaticallyConnect:NO];
 
 					// user comes from a openPanel? if so use the chosen encoding
@@ -277,7 +277,7 @@
 			TableDocument *newTableDocument;
 
 			// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+			if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 				[newTableDocument setShouldAutomaticallyConnect:NO];
 				[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
 				[newTableDocument makeWindowControllers];
@@ -363,7 +363,7 @@
  */
 - (IBAction)donate:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_DONATIONS_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDonationsURL]];
 }
 
 /**
@@ -371,7 +371,7 @@
  */
 - (IBAction)visitWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_HOME_PAGE_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPHomePageURL]];
 }
 
 /**
@@ -379,7 +379,7 @@
  */
 - (IBAction)visitHelpWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_DOCS_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDocumentationURL]];
 }
 
 /**
@@ -387,7 +387,7 @@
  */
 - (IBAction)visitFAQWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_FAQ_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPFAQURL]];
 }
 
 /**
@@ -395,7 +395,7 @@
  */
 - (IBAction)provideFeedback:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SEQUEL_PRO_CONTACT_URL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPContactURL]];
 }
 
 #pragma mark -
@@ -409,7 +409,7 @@
 	TableDocument *firstTableDocument;
 
 	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+	if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
 			[firstTableDocument setShouldAutomaticallyConnect:YES];
 		}
@@ -434,7 +434,7 @@
 		TableDocument *firstTableDocument;
 		
 		// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-		if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"SequelPro connection" error:nil]) {
+		if (firstTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
 			[[NSDocumentController sharedDocumentController] addDocument:firstTableDocument];
 			[firstTableDocument makeWindowControllers];
 			[firstTableDocument showWindows];

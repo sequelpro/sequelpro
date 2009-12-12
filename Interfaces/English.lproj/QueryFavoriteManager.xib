@@ -25,8 +25,8 @@
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.brandonwalkin.BWToolkit</string>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+			<string>com.brandonwalkin.BWToolkit</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -56,7 +56,7 @@
 				<string key="NSWindowTitle">Query Favorite Manager</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{500, 371}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
@@ -383,7 +383,7 @@
 																	</object>
 																	<object class="NSTextFieldCell" key="NSDataCell" id="56401947">
 																		<int key="NSCellFlags">337772097</int>
-																		<int key="NSCellFlags2">133120</int>
+																		<int key="NSCellFlags2">133184</int>
 																		<string key="NSContents">Text Cell</string>
 																		<reference key="NSSupport" ref="26"/>
 																		<reference key="NSControlView" ref="522643855"/>
@@ -393,7 +393,7 @@
 																			<string key="NSColorName">controlBackgroundColor</string>
 																			<object class="NSColor" key="NSColor" id="276872502">
 																				<int key="NSColorSpace">3</int>
-																				<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+																				<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 																			</object>
 																		</object>
 																		<object class="NSColor" key="NSTextColor" id="810868150">
@@ -535,7 +535,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="474077606">
 												<int key="NSCellFlags">-1804468671</int>
-												<int key="NSCellFlags2">272761856</int>
+												<int key="NSCellFlags2">272761920</int>
 												<string key="NSContents"/>
 												<reference key="NSSupport" ref="26"/>
 												<string key="NSPlaceholderString">[no selection]</string>
@@ -696,7 +696,7 @@
 											<string key="NSFrame">{{20, 54}, {250, 266}}</string>
 											<reference key="NSSuperview" ref="954707656"/>
 											<reference key="NSNextKeyView" ref="221447089"/>
-											<int key="NSsFlags">514</int>
+											<int key="NSsFlags">530</int>
 											<reference key="NSVScroller" ref="978638217"/>
 											<reference key="NSHScroller" ref="1008017707"/>
 											<reference key="NSContentView" ref="221447089"/>
@@ -761,7 +761,7 @@
 							<string key="NSAutosaveName">SPQueryFavoriteSplitView</string>
 							<object class="NSColor" key="BWSVColor">
 								<int key="NSColorSpace">1</int>
-								<bytes key="NSRGB">MC42NjY2NjY2ODY1IDAuNjY2NjY2Njg2NSAwLjY2NjY2NjY4NjUAA</bytes>
+								<bytes key="NSRGB">MC42NjY2NjY2NjY3IDAuNjY2NjY2NjY2NyAwLjY2NjY2NjY2NjcAA</bytes>
 							</object>
 							<bool key="BWSVColorIsEnabled">YES</bool>
 							<object class="NSMutableDictionary" key="BWSVMinValues">
@@ -819,7 +819,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{500, 393}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">SPQueryFavoriteManagerWindow</string>
 			</object>
 			<object class="NSUserDefaultsController" id="592597522">
@@ -1676,9 +1676,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{417, 428}, {500, 371}}</string>
+					<string>{{323, 319}, {500, 371}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{417, 428}, {500, 371}}</string>
+					<string>{{323, 319}, {500, 371}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>

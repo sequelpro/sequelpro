@@ -23,40 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-// TODO: change #defines
-// see http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/CodingGuidelines/Articles/NamingIvarsAndTypes.html#//apple_ref/doc/uid/20001284-1003095
-
 #import <Cocoa/Cocoa.h>
-
-// Extensions
-#define DEFAULT_SEQUEL_PRO_FILE_EXTENSION     @"spf"
-#define DEFAULT_QUERY_FAVORITE_FILE_EXTENSION @"sql"
-#define DEFAULT_CONSOLE_LOG_FILE_EXTENSION    @"sql"
-
-// Tableview drag types
-#define FAVORITES_PB_DRAG_TYPE       @"SequelProPreferencesPasteboard"
-#define CONTENT_FILTER_PB_DRAG_TYPE  @"SequelProContentFilterPasteboard"
-#define QUERY_FAVORITES_PB_DRAG_TYPE @"SequelProQueryFavoritesPasteboard"
-
-// URLs
-#define SEQUEL_PRO_HOME_PAGE_URL @"http://www.sequelpro.com/"
-#define SEQUEL_PRO_DONATIONS_URL @"http://www.sequelpro.com/donate.html"
-#define SEQUEL_PRO_FAQ_URL       @"http://www.sequelpro.com/frequently-asked-questions.html"
-#define SEQUEL_PRO_DOCS_URL      @"http://www.sequelpro.com/docs"
-#define SEQUEL_PRO_CONTACT_URL   @"http://www.sequelpro.com/docs/Contact_the_developers"
-
-// Main toolbar constants
-#define MAIN_TOOLBAR_DATABASE_SELECTION @"DatabaseSelectToolbarItemIdentifier"
-#define MAIN_TOOLBAR_HISTORY_NAVIGATION @"HistoryNavigationToolbarItemIdentifier"
-#define MAIN_TOOLBAR_SHOW_CONSOLE       @"ShowConsoleIdentifier"
-#define MAIN_TOOLBAR_CLEAR_CONSOLE      @"ClearConsoleIdentifier"
-#define MAIN_TOOLBAR_FLUSH_PRIVILEGES   @"FlushPrivilegesIdentifier"
-#define MAIN_TOOLBAR_TABLE_STRUCTURE    @"SwitchToTableStructureToolbarItemIdentifier"
-#define MAIN_TOOLBAR_TABLE_CONTENT      @"SwitchToTableContentToolbarItemIdentifier"
-#define MAIN_TOOLBAR_CUSTOM_QUERY       @"SwitchToRunQueryToolbarItemIdentifier"
-#define MAIN_TOOLBAR_TABLE_INFO         @"SwitchToTableInfoToolbarItemIdentifier"
-#define MAIN_TOOLBAR_TABLE_RELATIONS    @"SwitchToTableRelationsToolbarItemIdentifier"
-#define MAIN_TOOLBAR_USER_MANAGER       @"SwitchToUserManagerToolbarItemIdentifier"
 
 // View modes
 enum {
@@ -109,6 +76,16 @@ extern NSString *SPKillProcessConnectionMode;
 
 // Default monospaced font name
 extern NSString *SPDefaultMonospacedFontName;
+
+// Table view drag types
+extern NSString *SPFavoritesPasteboardDragType;
+extern NSString *SPContentFilterPasteboardDragType;
+extern NSString *SPQueryFavortiesPasteboardDragType;
+
+// File extensions
+extern NSString *SPFileExtensionDefault;
+extern NSString *SPFileExtensionSQL;
+
 
 // Preference key constants
 // General Prefpane
@@ -205,3 +182,34 @@ extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
 extern NSString *SPBlobTextEditorSpellCheckingEnabled;
+
+// URLs
+extern NSString *SPHomePageURL;
+extern NSString *SPDonationsURL;
+extern NSString *SPFAQURL;
+extern NSString *SPDocumentationURL;
+extern NSString *SPContactURL;
+
+// Toolbar constants
+
+// Main window toolbar
+extern NSString *SPMainToolbarDatabaseSelection;
+extern NSString *SPMainToolbarHistoryNavigation;
+extern NSString *SPMainToolbarShowConsole;
+extern NSString *SPMainToolbarClearConsole;
+extern NSString *SPMainToolbarTableStructure;
+extern NSString *SPMainToolbarTableContent;
+extern NSString *SPMainToolbarCustomQuery;
+extern NSString *SPMainToolbarTableInfo;
+extern NSString *SPMainToolbarTableRelations;
+extern NSString *SPMainToolbarUserManager;
+
+// Preferences toolbar
+extern NSString *SPPreferenceToolbarGeneral;
+extern NSString *SPPreferenceToolbarTables;
+extern NSString *SPPreferenceToolbarFavorites;
+extern NSString *SPPreferenceToolbarNotifications;
+extern NSString *SPPreferenceToolbarAutoUpdate;
+extern NSString *SPPreferenceToolbarNetwork;
+extern NSString *SPPreferenceToolbarEditor;
+extern NSString *SPPreferenceToolbarShortcuts;

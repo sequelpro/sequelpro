@@ -120,7 +120,7 @@
 	[self _initWithNoSelection];
 
 	// Register drag types
-	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:QUERY_FAVORITES_PB_DRAG_TYPE]];
+	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
 	
 	[favoritesArrayController setContent:favorites];
 	[favoritesTableView reloadData];
@@ -288,7 +288,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_QUERY_FAVORITE_FILE_EXTENSION];
+	[panel setRequiredFileType:SPFileExtensionSQL];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -306,7 +306,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:DEFAULT_SEQUEL_PRO_FILE_EXTENSION];
+	[panel setRequiredFileType:SPFileExtensionDefault];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -571,7 +571,7 @@
 	// Up to now only one row can be dragged
 	// if ([rows count] == 1) {
 
-		NSArray *pboardTypes = [NSArray arrayWithObject:QUERY_FAVORITES_PB_DRAG_TYPE];
+		NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
 		NSInteger originalRow = [[rows objectAtIndex:0] intValue];
 
 		if(originalRow < 1) return NO;
@@ -585,7 +585,7 @@
 		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
 		[archiver encodeObject:rows forKey:@"indexdata"];
 		[archiver finishEncoding];
-		[pboard setData:indexdata forType:QUERY_FAVORITES_PB_DRAG_TYPE];
+		[pboard setData:indexdata forType:SPFavoritesPasteboardDragType];
 
 		return YES;
 
@@ -602,7 +602,7 @@
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
 	if (([pboardTypes count] > 1) && (row != -1)) {
-		if (([pboardTypes containsObject:QUERY_FAVORITES_PB_DRAG_TYPE]) && (operation == NSTableViewDropAbove)) {
+		if (([pboardTypes containsObject:SPFavoritesPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
 			if (row > 0) {
 				return NSDragOperationMove;
 			}
@@ -621,7 +621,7 @@
 
 	if(row < 1) return NO;
 
-	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:QUERY_FAVORITES_PB_DRAG_TYPE]] autorelease];
+	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPFavoritesPasteboardDragType]] autorelease];
 	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
 

@@ -168,26 +168,107 @@
  */
 - (void)loadTable:(NSString *)aTable
 {
-	NSInteger i;
-	NSNumber *colWidth, *sortColumnNumberToRestore = nil;
-	NSArray *columnNames;
-	NSDictionary *columnDefinition;
-	NSTableColumn	*theCol;
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT] || ![tableDocumentInstance isWorking];
-	[self performSelectorOnMainThread:@selector(setPaginationViewVisibility:) withObject:nil waitUntilDone:NO];
 
 	// Abort the reload if the user is still editing a row
 	if ( isEditingRow )
 		return;
 
+	// If no table has been supplied, clear the table interface and return
+	if (!aTable || [aTable isEqualToString:@""]) {
+		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
+		return;
+	}
+
+	// Attempt to retrieve the table encoding; if that fails (indicating an error occurred
+	// while retrieving table data), or if the Rows variable is null, clear and return
+	if (![tableDataInstance tableEncoding] || [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull]) {
+		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
+		return;
+	}
+
+	// Post a notification that a query will be performed
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+
+	// Set up the table details for the new table, and trigger an interface update
+	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+									aTable, @"name",
+									[tableDataInstance columns], @"columns",
+									[tableDataInstance columnNames], @"columnNames",
+									[tableDataInstance getConstraints], @"constraints",
+									nil];
+	[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
+	
+	// Trigger a data refresh
+	[self loadTableValues];
+
+	// Restore the view origin if appropriate
+	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+
+		// Scroll the viewport to the saved location
+		selectionViewportToRestore.size = [tableContentView visibleRect].size;
+		[tableContentView scrollRectToVisible:selectionViewportToRestore];
+	}
+
+	// Restore selection indexes if appropriate
+	if (selectionIndexToRestore) {
+		BOOL previousTableRowsSelectable = tableRowsSelectable;
+		tableRowsSelectable = YES;
+		[tableContentView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+		tableRowsSelectable = previousTableRowsSelectable;
+	}
+	
+	// Update display if necessary
+	[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+	
+	// Init copyTable with necessary information for copying selected rows as SQL INSERT
+	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
+
+	// Post the notification that the query is finished
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+
+	// Clear any details to restore now that they have been restored
+	[self clearDetailsToRestore];
+}
+
+/**
+ * Update stored table details and update the interface to match the supplied
+ * table details.
+ * Should be called on the main thread.
+ */
+- (void) setTableDetails:(NSDictionary *)tableDetails
+{
+	NSString *newTableName;
+	NSInteger i;
+	NSNumber *colWidth, *sortColumnNumberToRestore = nil;
+	NSArray *columnNames;
+	NSDictionary *columnDefinition;
+	NSTableColumn	*theCol;
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] || ![tableDocumentInstance isWorking];
+
+	if (!tableDetails) {
+		newTableName = nil;
+	} else {
+		newTableName = [tableDetails objectForKey:@"name"];
+	}
+
+	// Ensure the pagination view hides itself if visible, after a tiny delay for smoothness
+	[self performSelector:@selector(setPaginationViewVisibility:) withObject:nil afterDelay:0.1];
+
+	// Reset table key store for use in argumentForRow:
+	if (keys) [keys release], keys = nil;
+
+	// Reset data column store
+	[dataColumns removeAllObjects];
+
 	// Check the supplied table name.  If it matches the old one, a reload is being performed;
 	// reload the data in-place to maintain table state if possible.
-	if ([selectedTable isEqualToString:aTable]) {
+	if ([selectedTable isEqualToString:newTableName]) {
 		previousTableRowsCount = tableRowsCount;
 
 	// Otherwise store the newly selected table name and reset the data
 	} else {
-		selectedTable = aTable;
+		if (selectedTable) [selectedTable release], selectedTable = nil;
+		if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
 		previousTableRowsCount = 0;
 		contentPage = 1;
 		[paginationPageField setStringValue:@"1"];
@@ -200,17 +281,8 @@
 		[tableContentView scrollColumnToVisible:0];
 	}
 
-	// Reset table key store for use in argumentForRow:
-	if (keys) [keys release], keys = nil;
-
-	// Reset data column store
-	[dataColumns removeAllObjects];
-
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
-	// [tableDataInstance tableEncoding] == nil indicates that an error occured while retrieving table data
-	if ( [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] || [aTable isEqualToString:@""] || !aTable || [tableDataInstance tableEncoding] == nil)
-	{
-
+	if (!newTableName) {
 		// Remove existing columns from the table
 		while ([[tableContentView tableColumns] count]) {
 			[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
@@ -218,7 +290,6 @@
 
 		// Empty the stored data arrays, including emptying the tableValues array
 		// by ressignment for thread safety.
-		tableRowsCount = 0;
 		previousTableRowsCount = 0;
 		[self clearTableValues];
 		[tableContentView reloadData];
@@ -268,16 +339,20 @@
 		return;
 	}
 
-	// Post a notification that a query will be performed
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	// Otherwise, prepare to set up the new table - the table data instance already has table details set.
+
+	// Remove existing columns from the table
+	while ([[tableContentView tableColumns] count]) {
+		[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
+	}
 
 	// Retrieve the field names and types for this table from the data cache. This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
-	[dataColumns addObjectsFromArray:[tableDataInstance columns]];
-	columnNames = [tableDataInstance columnNames];
+	[dataColumns addObjectsFromArray:[tableDetails objectForKey:@"columns"]];
+	columnNames = [tableDetails objectForKey:@"columnNames"];
 	
 	// Retrieve the constraints, and loop through them to add up to one foreign key to each column
-	NSArray *constraints = [tableDataInstance getConstraints];
+	NSArray *constraints = [tableDetails objectForKey:@"constraints"];
 	
 	for (NSDictionary *constraint in constraints) 
 	{
@@ -297,14 +372,6 @@
 	}
 	
 	NSString *nullValue = [prefs objectForKey:SPNullValue];
-
-	// Lock drawing in the window
-	[tableWindow disableFlushWindow];
-
-	// Remove existing columns from the table
-	while ([[tableContentView tableColumns] count]) {
-		[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
-	}
 
 	// Add the new columns to the table
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
@@ -392,9 +459,6 @@
 		isDesc = NO;
 	}
 
-	// Restore window drawing
-	[tableWindow enableFlushWindow];
-
 	// Store the current first responder so filter field doesn't steal focus
 	id currentFirstResponder = [tableWindow firstResponder];
 	
@@ -437,7 +501,7 @@
 	if ([prefs boolForKey:SPLimitResults]) contentPage = pageToRestore;
 
 	// Restore first responder
-	[tableWindow performSelectorOnMainThread:@selector(makeFirstResponder:) withObject:currentFirstResponder waitUntilDone:NO];
+	[tableWindow makeFirstResponder:currentFirstResponder];
 
 	// Set the state of the table buttons
 	[addButton setEnabled:enableInteraction];
@@ -447,40 +511,9 @@
 	// Reset the table store if required - basically if the table is being changed,
 	// reassigning before emptying for thread safety.
 	if (!previousTableRowsCount) {
-		tableRowsCount = 0;
 		[self clearTableValues];
 	}
-
-	// Trigger a data refresh
-	[self loadTableValues];
-
-	// Restore the view origin if appropriate
-	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
-
-		// Scroll the viewport to the saved location
-		selectionViewportToRestore.size = [tableContentView visibleRect].size;
-		[tableContentView scrollRectToVisible:selectionViewportToRestore];
-	}
-
-	// Restore selection indexes if appropriate
-	if (selectionIndexToRestore) {
-		BOOL previousTableRowsSelectable = tableRowsSelectable;
-		tableRowsSelectable = YES;
-		[tableContentView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-		tableRowsSelectable = previousTableRowsSelectable;
-	}
 	
-	// Update display if necessary
-	[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
-	
-	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
-
-	// Post the notification that the query is finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-
-	// Clear any details to restore now that they have been restored
-	[self clearDetailsToRestore];
 }
 
 /**
@@ -494,6 +527,7 @@
 
 	tableValuesTransition = tableValues;
 	pthread_mutex_lock(&tableValuesLock);
+	tableRowsCount = 0;
 	tableValues = [[NSMutableArray alloc] init];
 	pthread_mutex_unlock(&tableValuesLock);
 	[tableValuesTransition release];
@@ -702,6 +736,8 @@
 		pthread_mutex_unlock(&tableValuesLock);
 	}
 
+	// Ensure the table is aware of changes, especially for non-threaded loads
+	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
 	
 	// Clean up the autorelease pool and reset the progress indicator
@@ -949,8 +985,10 @@
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
 
-	// Save view details to restore safely if possible
+	// Save view details to restore safely if possible (except viewport, which will be
+	// preserved automatically, and can then be scrolled as the table loads)
 	[self storeCurrentDetailsForRestoration];
+	[self setViewportToRestore:NSZeroRect];
 
 	// Clear the table data column cache
 	[tableDataInstance resetColumnData];
@@ -998,7 +1036,6 @@
 
 	// Reset and reload data using the new filter settings
 	previousTableRowsCount = 0;
-	tableRowsCount = 0;
 	[self clearTableValues];
 	[self loadTableValues];
 	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
@@ -1136,7 +1173,7 @@
 - (void) updatePaginationState
 {
 	NSUInteger maxPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
-	if (isFiltered && isLimited && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
+	if (isFiltered && !isLimited) {
 		maxPage = contentPage;
 	}
 	BOOL enabledMode = ![tableDocumentInstance isWorking];
@@ -2849,7 +2886,8 @@
 				currentlyEditingRow = rowIndex;
 			}
 
-			if ([editData isEqualToString:[prefs objectForKey:SPNullValue]]
+			if ([editData isKindOfClass:[NSString class]]
+				&& [editData isEqualToString:[prefs objectForKey:SPNullValue]]
 				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]) objectForKey:@"null"] boolValue])
 			{
 				[editData release];
@@ -2935,7 +2973,7 @@
 	isWorking = YES;
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent])
 		return;
 
 	[addButton setEnabled:NO];
@@ -2957,7 +2995,7 @@
 	isWorking = NO;
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT])
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent])
 		return;
 
 	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) {
@@ -3098,6 +3136,7 @@
 	pthread_mutex_destroy(&tableValuesLock);
 	[dataColumns release];
 	[oldRow release];
+	if (selectedTable) [selectedTable release];
 	if (contentFilters) [contentFilters release];
 	if (numberOfDefaultFilters) [numberOfDefaultFilters release];
 	if (keys) [keys release];

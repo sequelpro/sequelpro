@@ -689,6 +689,7 @@
 
 		// Extract and process any complete SQL queries that can be found in the strings parsed so far
 		while (query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO]) {
+			if (progressCancelled) break;
 			fileProcessedLength += [query lengthOfBytesUsingEncoding:sqlEncoding] + 1;
 		
 			// Skip blank or whitespace-only queries to avoid errors
@@ -795,6 +796,7 @@
 	NSInteger dataBufferLastQueryEndPosition = 0;
 	int i;
 	BOOL allDataRead = NO;
+	BOOL insertBaseStringHasEntries;
 	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 
@@ -970,9 +972,11 @@
 				[insertBaseString appendString:@"INSERT INTO "];
 				[insertBaseString appendString:[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString]];
 				[insertBaseString appendString:@" ("];
+				insertBaseStringHasEntries = NO;
 				for (i = 0; i < [fieldMappingArray count]; i++) {
 					if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
-						if (i > 0) [insertBaseString appendString:@","];
+						if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
+						else insertBaseStringHasEntries = YES;
 						[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
 					}
 				}
@@ -994,6 +998,7 @@
 			while ([parsedRows count] >= csvRowsPerQuery
 					|| (!csvRowArray && allDataRead && [parsedRows count]))
 			{
+				if (progressCancelled) break;
 				query = [[NSMutableString alloc] initWithString:insertBaseString];
 				csvRowsThisQuery = 0;
 				for (i = 0; i < csvRowsPerQuery && i < [parsedRows count]; i++) {
@@ -1075,7 +1080,7 @@
 	// If the table selected for import is also selected in the content view,
 	// update the content view - on the main thread to avoid crashes.
 	if ([tablesListInstance tableName] && [[fieldMappingPopup titleOfSelectedItem] isEqualToString:[tablesListInstance tableName]]) {
-		if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:MAIN_TOOLBAR_TABLE_CONTENT]) {
+		if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
 			[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
 		} else {
 			[tablesListInstance setContentRequiresReload:YES];
