@@ -301,6 +301,8 @@
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingHistoryState = NO;
 		[self updateToolbarItem];
+		[theDocument endTask];
+		[loadPool drain];
 		return;
 	}
 
@@ -314,7 +316,7 @@
 		[chooseDatabaseButton selectItemWithTitle:[historyEntry objectForKey:@"database"]];
 		[theDocument chooseDatabase:self];
 		if (![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]) {
-			return [self abortEntryLoad];
+			return [self abortEntryLoadWithPool:loadPool];
 		}
 	}
 
@@ -322,11 +324,11 @@
 	if ([historyEntry objectForKey:@"table"] && ![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
 		NSArray *tables = [tablesListInstance tables];
 		if ([tables indexOfObject:[historyEntry objectForKey:@"table"]] == NSNotFound) {
-			return [self abortEntryLoad];
+			return [self abortEntryLoadWithPool:loadPool];
 		}
 		[[tablesListInstance valueForKey:@"tablesListView"] selectRowIndexes:[NSIndexSet indexSetWithIndex:[tables indexOfObject:[historyEntry objectForKey:@"table"]]] byExtendingSelection:NO];
 		if (![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-			return [self abortEntryLoad];
+			return [self abortEntryLoadWithPool:loadPool];
 		}
 	} else if (![historyEntry objectForKey:@"table"] && [theDocument table]) {
 		[tablesListInstance setTableListSelectability:YES];
@@ -355,7 +357,7 @@
 				break;
 		}
 		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] intValue]) {
-			return [self abortEntryLoad];
+			return [self abortEntryLoadWithPool:loadPool];
 		}
 	}
 
@@ -371,10 +373,12 @@
  * Convenience method for aborting history load - could at some point
  * clean up the history list, show an alert, etc
  */
-- (void) abortEntryLoad
+- (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool
 {
 	NSBeep();
 	modifyingHistoryState = NO;
+	[theDocument endTask];
+	if (pool) [pool drain];
 }
 
 /**
