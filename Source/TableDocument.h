@@ -115,7 +115,6 @@
 	
 	MCPConnection *mySQLConnection;
 
-	NSMutableArray *variables, *variablesFiltered;
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;

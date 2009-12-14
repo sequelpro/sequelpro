@@ -85,7 +85,6 @@
 		selectedDatabase = nil;
 		mySQLConnection = nil;
 		mySQLVersion = nil;
-		variables = nil;
 
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
@@ -3055,20 +3054,7 @@
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if ([contextInfo isEqualToString:@"ServerVariables"]) {
-			if ([variablesFiltered count] > 0) {
-				NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [self host]];
-
-				for (NSDictionary *variable in variablesFiltered) 
-				{
-					[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
-				}
-
-				[variablesString writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-			}
-		}
-		else if ([contextInfo isEqualToString:@"CreateSyntax"]) {
-
+		if ([contextInfo isEqualToString:@"CreateSyntax"]) {
 
 			NSString *createSyntax = [createTableSyntaxTextView string];
 
@@ -3588,30 +3574,6 @@
 }
 
 #pragma mark -
-#pragma mark TableView datasource methods
-
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
-{
-	return [variablesFiltered count];
-}
-
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
-{
-	id theValue = [[variablesFiltered objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
-
-	if ([theValue isKindOfClass:[NSData class]]) {
-		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
-		if (theValue == nil) {
-			theValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
-		}
-
-		if (theValue) [theValue autorelease];
-	}
-
-	return theValue;
-}
-
-#pragma mark -
 
 /**
  * Dealloc
@@ -3626,7 +3588,6 @@
 	if (processListController) [processListController release];
 	if (serverVariablesController) [serverVariablesController release];
 	if (mySQLConnection) [mySQLConnection release];
-	if (variables) [variables release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 	if (taskDrawTimer) [taskDrawTimer release];
