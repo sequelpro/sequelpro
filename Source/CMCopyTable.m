@@ -256,8 +256,10 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [rowData isSPNotLoaded]) {
 
 							// Abort if there are no indices on this table or if there's no table name given.
-							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil)
+							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil) {
+								[columnMappings release];
 								return nil;
+							}
 
 							//if we have indexes, use argumentForRow
 							dbDataRow = [[mySQLConnection queryString:
@@ -294,6 +296,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 						}
 						break;
 					default:
+						[columnMappings release];
 						return nil;
 				}
 			}

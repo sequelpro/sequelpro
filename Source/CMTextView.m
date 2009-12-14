@@ -446,7 +446,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Start autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] floatValue]];
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] floatValue]];
 	
 }
 
@@ -461,7 +461,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 									selector:@selector(autoHelp) 
 									object:nil];
 		[self performSelector:@selector(autoHelp) withObject:nil 
-			afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] floatValue]];
+			afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] floatValue]];
 	}
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);

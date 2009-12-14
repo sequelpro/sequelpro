@@ -809,14 +809,14 @@
  */
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts
 {
+	if (![definitionParts count]) return [NSDictionary dictionary];
+
 	SPSQLParser *detailParser;
 	SPSQLParser *fieldParser = [[SPSQLParser alloc] init];
 	NSMutableDictionary *fieldDetails = [[NSMutableDictionary alloc] init];
 	NSMutableArray *detailParts;
 	NSString *detailString;
 	int i, definitionPartsIndex = 0, partsArrayLength;
-
-	if (![definitionParts count]) return [NSDictionary dictionary];
 
 	// Skip blank items within the definition parts
 	while (definitionPartsIndex < [definitionParts count]

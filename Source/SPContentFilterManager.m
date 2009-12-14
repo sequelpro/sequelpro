@@ -762,6 +762,7 @@
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
+				if (spf) [spf release];
 				return;
 			}
 

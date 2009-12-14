@@ -63,11 +63,8 @@
 	NSArray *resultRow;
 	int i;
 	NSString *previousSelectedTable = nil;
-	NSInteger selectedRowIndex;
 	BOOL previousTableListIsSelectable = tableListIsSelectable;
-	
-	selectedRowIndex = [tablesListView selectedRow];
-	
+
 	if (selectedTableName) previousSelectedTable = [[NSString alloc] initWithString:selectedTableName];
 	if (isTableListFiltered) {
 		if (filteredTables) [filteredTables release];
@@ -2050,12 +2047,10 @@
 			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
 			
 			if ([tableSyntax isKindOfClass:[NSData class]])
-				tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+				tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
 			
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
-			
-			[tableSyntax release];
 			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -2182,7 +2177,7 @@
 		id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
 		
 		if ([tableSyntax isKindOfClass:[NSData class]])
-			tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+			tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
 		
 		NSString *tableType;
 		
@@ -2203,7 +2198,6 @@
 		
 		// replace the old name by the new one and drop the old one
 		[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[tableRenameField stringValue] backtickQuotedString]]];
-		[tableSyntax release];
 		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			if ([mySQLConnection isConnected]) {
 				[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[self tableName] backtickQuotedString]]];

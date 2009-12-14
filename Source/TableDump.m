@@ -2709,6 +2709,7 @@
 				else if ([lineEndingString isEqualToString:@"CRLF"]) [importLinesTerminatedField setStringValue:@"\\r\\n"];
 			}
 		}
+		if (fileCheckOutput) [fileCheckOutput release];
 
 		[fileTask release];
 		[filePipe release];

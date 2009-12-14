@@ -376,7 +376,7 @@
 
 - (NSArray *)treeSortDescriptors
 {
-	NSSortDescriptor *descriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
+	NSSortDescriptor *descriptor = [[[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES] autorelease];
 	return [NSArray arrayWithObject:descriptor];
 }
 

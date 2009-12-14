@@ -195,7 +195,7 @@
 
 	NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"foo"] autorelease];
 	//
-	[column setDataCell:[ImageAndTextCell new]];
+	[column setDataCell:[[ImageAndTextCell new] autorelease]];
 	[column setEditable:NO];
 	[theTableView addTableColumn:column];
 	[column setWidth:[theTableView bounds].size.width];

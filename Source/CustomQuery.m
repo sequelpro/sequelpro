@@ -107,7 +107,7 @@
 - (IBAction)runSelectedQueries:(id)sender
 {
 	NSArray *queries;
-	NSString *query;
+	NSString *query = nil;
 	NSRange selectedRange = [textView selectedRange];
 	SPSQLParser *queryParser;
 
@@ -726,7 +726,7 @@
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !fullResultCount ) {
 		[customQueryView reloadData];
-		[streamingResult release];
+		if (streamingResult) [streamingResult release];
 
 		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -753,11 +753,9 @@
 	// If more than one table name is found set resultTableName to nil.
 	// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
 	// and the resultTableName can differ due to case-sensitive/insensitive settings!.
-	BOOL resultShowsColumnsFromOneTable = YES;
 	NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
 	for(id field in cqColumnDefinition) {
 		if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
-			resultShowsColumnsFromOneTable = NO;
 			resultTableName = nil;
 			break;
 		}
@@ -2772,7 +2770,7 @@
 				[prefs setObject:favorites forKey:SPQueryFavorites];
 			} else {
 				[[SPQueryController sharedQueryController] addFavorite:[NSMutableDictionary dictionaryWithObjects:
-					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [queryToBeAddded mutableCopy], nil] 
+					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [[queryToBeAddded mutableCopy] autorelease], nil] 
 						forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]] forFileURL:[tableDocumentInstance fileURL]];
 			}
 

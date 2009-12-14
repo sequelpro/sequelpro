@@ -295,6 +295,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
+		if (spf) [spf release];
 		[self close];
 		return;
 	}
@@ -1703,7 +1704,7 @@
 	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
 	if ([tableSyntax isKindOfClass:[NSData class]])
-		tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
 
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
 
@@ -2549,6 +2550,7 @@
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
+			if (spf) [spf release];
 			// [self close];
 			return NO;
 		}
@@ -3451,7 +3453,7 @@
 {
 	if(saveOperation == NSSaveOperation) {
 		// Dummy error to avoid crashes after Canceling the Save Panel
-		*outError = [NSError errorWithDomain:@"SP_DOMAIN" code:1000 userInfo:nil];
+		if (outError) *outError = [NSError errorWithDomain:@"SP_DOMAIN" code:1000 userInfo:nil];
 		[self saveConnectionSheet:nil];
 		return NO;
 	}
@@ -3600,7 +3602,7 @@
 	if ([theValue isKindOfClass:[NSData class]]) {
 		theValue = [[NSString alloc] initWithData:theValue encoding:[mySQLConnection encoding]];
 		if (theValue == nil) {
-			[[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
+			theValue = [[NSString alloc] initWithData:theValue encoding:NSASCIIStringEncoding];
 		}
 
 		if (theValue) [theValue autorelease];
