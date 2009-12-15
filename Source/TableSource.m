@@ -1559,7 +1559,6 @@ would result in a position change.
 		
 		NSString *columnName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Column_name"];
 		
-		BOOL hasForeignKey = NO;
 		NSString *constraintName = @"";
 		
 		// Check to see whether the user is attempting to remove an index that a foreign key constraint depends on
@@ -1569,7 +1568,6 @@ would result in a position change.
 			for (NSString *column in [constraint objectForKey:@"columns"])
 			{
 				if ([column isEqualToString:columnName]) {
-					hasForeignKey = YES;
 					constraintName = [constraint objectForKey:@"name"];
 					break;
 				}
