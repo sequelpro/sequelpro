@@ -2640,7 +2640,7 @@
 		aString = @"SPSSHTunnelConnection";
 		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
-		if([connectionController port] && [[connectionController port] length])
+		if([connectionController sshPort] && [[connectionController sshPort] length])
 			[connection setObject:[NSNumber numberWithInt:[[connectionController sshPort] intValue]] forKey:@"ssh_port"];
 		break;
 		default:

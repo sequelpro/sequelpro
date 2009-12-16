@@ -1149,11 +1149,13 @@
 		if (paginationViewFrame.size.height == paginationViewHeight) return;
 		paginationViewFrame.size.height = paginationViewHeight;
 		[paginationButton setState:NSOnState];
+		[paginationButton setImage:[NSImage imageNamed:@"button_action"]];
 		[tableWindow makeFirstResponder:paginationPageField];
 	} else {
 		if (paginationViewFrame.size.height == 0) return;
 		paginationViewFrame.size.height = 0;	
 		[paginationButton setState:NSOffState];
+		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
 		if ([tableWindow firstResponder] == paginationPageField
 			|| ([[tableWindow firstResponder] respondsToSelector:@selector(superview)]
 				&& [(id)[tableWindow firstResponder] superview]
@@ -1195,19 +1197,6 @@
 
 	// As long as a table is selected (which it will be if this is called), enable pagination detail button
 	[paginationButton setEnabled:enabledMode];
-
-	// Update the pagination button text
-	if ([prefs boolForKey:SPLimitResults]) {
-		if (maxPage <= 1) {
-			[paginationButton setTitle:@""];
-		} else if (isFiltered) {
-			[paginationButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Page %@", @"Filtered pagination button status text"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]]];		
-		} else {
-			[paginationButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Page %@ of %@", @"Pagination button status text"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:maxPage]]]];
-		}
-	} else {
-		[paginationButton setTitle:NSLocalizedString(@"Pagination disabled", @"Pagination text shown when LIMIT is off")];
-	}
 
 	// Set the values and maximums for the text field and associated pager
 	[paginationPageField setStringValue:[numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]];
