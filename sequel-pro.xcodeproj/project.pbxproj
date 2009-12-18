@@ -1517,7 +1517,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */;
 			buildPhases = (
-				380F4ED40FC0B50500B0BFD7 /* Resources */,
 				380F4ED50FC0B50500B0BFD7 /* Sources */,
 				380F4ED60FC0B50500B0BFD7 /* Frameworks */,
 				380F4ED70FC0B50500B0BFD7 /* ShellScript */,
@@ -1552,9 +1551,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */;
 			buildPhases = (
-				8D15AC2B0486D014006FF6A4 /* Resources */,
 				8D15AC300486D014006FF6A4 /* Sources */,
 				8D15AC330486D014006FF6A4 /* Frameworks */,
+				8D15AC2B0486D014006FF6A4 /* Resources */,
 				4DECC4940EC2B447008D359E /* CopyFiles */,
 				1761FDAF0EF0496500331368 /* Run Scripts */,
 			);
@@ -1616,13 +1615,6 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
-		380F4ED40FC0B50500B0BFD7 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8D15AC2B0486D014006FF6A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
