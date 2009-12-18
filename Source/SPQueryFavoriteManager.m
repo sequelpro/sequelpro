@@ -190,7 +190,6 @@
  */
 - (IBAction)addQueryFavorite:(id)sender
 {
-
 	NSMutableDictionary *favorite;
 	NSUInteger insertIndex;
 
@@ -198,16 +197,17 @@
 	[[self window] makeFirstResponder:favoriteNameTextField];
 
 	// Duplicate a selected favorite if sender == self
-	if(sender == self)
+	if (sender == self)
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[favoriteNameTextField stringValue] stringByAppendingFormat:@" Copy"], [favoriteQueryTextView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
 	// Add a new favorite
 	else
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
 	
-	if([favoritesTableView numberOfSelectedRows] > 0) {
+	if ([favoritesTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex]+1;
 		[favorites insertObject:favorite atIndex:insertIndex];
-	} else {
+	} 
+	else {
 		[favorites addObject:favorite];
 		insertIndex = [favorites count] - 1;
 	}
@@ -221,7 +221,6 @@
 
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:favoriteNameTextField];
-
 }
 
 /**

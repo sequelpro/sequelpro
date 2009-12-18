@@ -1219,7 +1219,6 @@
 	
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
-
 	
 	// Disable runSelectionMenuItem in the gear menu
 	[runSelectionMenuItem setEnabled:NO];
@@ -2613,15 +2612,14 @@
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
 - (void)queryFavoritesHaveBeenUpdated:(id)manager
-{
-
+{	
 	NSMenuItem *headerMenuItem;
 	NSMenu *menu = [queryFavoritesButton menu];
 
 	// Remove all favorites beginning from the end
 	while([queryFavoritesButton numberOfItems] > 7)
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
-
+	
 	// Build document-based list
 	headerMenuItem = [[NSMenuItem alloc] initWithTitle:
 		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent] 
@@ -2655,9 +2653,6 @@
 		[menu addItem:item];
 		[item release];
 	}
-
-	// [queryFavoritesSearchField setStringValue:@""];
-
 }
 
 #pragma mark -
@@ -2789,7 +2784,6 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	// Control "Save ... to Favorites"
 	if ( [menuItem tag] == SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG ) {
 		if ([[textView string] length] < 1) return NO;
@@ -2812,9 +2806,7 @@
 	}
 
 	return YES;
-
 }
-
 
 #pragma mark -
 
