@@ -29,7 +29,7 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-@class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager;
+@class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager, BDAlias;
 
 /**
  * The TableDocument class controls the primary database view window.
@@ -150,6 +150,7 @@
 	
 	NSString *queryEditorInitString;
 	
+	BDAlias *spfAlias;
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;

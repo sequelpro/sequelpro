@@ -54,6 +54,7 @@
 #import "YRKSpinningProgressIndicator.h"
 #import "SPProcessListController.h"
 #import "SPServerVariablesController.h"
+#import "BDAlias.h"
 
 // Printing
 #import "MGTemplateEngine.h"
@@ -70,7 +71,6 @@
 
 - (id)init
 {
-	
 	if ((self = [super init])) {
 
 		_mainNibLoaded = NO;
@@ -92,6 +92,7 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		queryEditorInitString = nil;
 
+		spfAlias = nil;
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
@@ -244,7 +245,6 @@
  */
 - (void)initWithConnectionFile:(NSString *)path
 {
-
 	NSError *readError = nil;
 	NSString *convError = nil;
 	NSPropertyListFormat format;
@@ -632,7 +632,7 @@
 
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
-
+	
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
 	
@@ -1144,7 +1144,7 @@
  */
 - (void)refreshCurrentDatabase
 {
-	NSString *dbName;
+	NSString *dbName = nil;
 
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
@@ -2503,7 +2503,7 @@
 
 	if(fileName == nil)
 		fileName = [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-
+	
 	// Store save panel settings or take them from spfDocData
 	if(!saveInBackground) {
 		[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
@@ -3485,6 +3485,32 @@
 	return [[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 }
 
+/**
+ * Overriden version NSDocument's setFileURL: so we can track the location of the document using an alias to
+ * accommmodate situations where it has been moved on disk.
+ */
+- (void)setFileURL:(NSURL *)url
+{			
+	[super setFileURL:url];
+
+	// Only attempt to create an alias from the supplied URL if it is absolute file path.
+	if ([[url absoluteString] hasPrefix:@"/"]) {
+							
+		if (spfAlias) [spfAlias release], spfAlias = nil;
+				
+		spfAlias = [[BDAlias alloc] initWithPath:[url path]];
+	}
+}
+
+/**
+ * Return the document's file URL, by either extracting it from the alias if available or simply returning
+ * the URL instance.
+ */
+- (NSURL *)fileURL
+{			
+	return (spfAlias && [spfAlias fullPath]) ? [NSURL URLWithString:[[spfAlias fullPath] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : [super fileURL];
+}
+
 #pragma mark -
 #pragma mark Connection controller delegate methods
 
@@ -3593,6 +3619,7 @@
 	if (taskDrawTimer) [taskDrawTimer release];
 	if (taskFadeAnimator) [taskFadeAnimator release];
 	if (queryEditorInitString) [queryEditorInitString release];
+	if (spfAlias) [spfAlias release];
 	if (spfSession) [spfSession release];
 	if (spfDocData) [spfDocData release];
 	if (keyChainID) [keyChainID release];

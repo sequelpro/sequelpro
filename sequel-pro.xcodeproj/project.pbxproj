@@ -76,6 +76,7 @@
 		17B7B5F0101603D200F057DE /* mysql_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E8101603D200F057DE /* mysql_version.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B5F1101603D200F057DE /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E9101603D200F057DE /* typelib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B61D101605E300F057DE /* MCPKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 17B7B5621016012700F057DE /* MCPKit.framework */; };
+		17BFC82010D4097B00A3B112 /* BDAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 17BFC81E10D4097B00A3B112 /* BDAlias.m */; };
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
@@ -441,6 +442,8 @@
 		17B7B5E8101603D200F057DE /* mysql_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_version.h; sourceTree = "<group>"; };
 		17B7B5E9101603D200F057DE /* typelib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = typelib.h; sourceTree = "<group>"; };
 		17B7B698101611C800F057DE /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
+		17BFC81E10D4097B00A3B112 /* BDAlias.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BDAlias.m; sourceTree = "<group>"; };
+		17BFC81F10D4097B00A3B112 /* BDAlias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BDAlias.h; sourceTree = "<group>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
 		17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		17CC97F110B4ABE90034CD7A /* SPAboutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAboutController.h; sourceTree = "<group>"; };
@@ -1075,6 +1078,15 @@
 			name = Icons;
 			sourceTree = "<group>";
 		};
+		17BFC81D10D4096200A3B112 /* BDAlias */ = {
+			isa = PBXGroup;
+			children = (
+				17BFC81F10D4097B00A3B112 /* BDAlias.h */,
+				17BFC81E10D4097B00A3B112 /* BDAlias.m */,
+			);
+			name = BDAlias;
+			sourceTree = "<group>";
+		};
 		17E641420EF01E8A001BC333 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -1153,6 +1165,7 @@
 		17E6416E0EF01F3B001BC333 /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				17BFC81D10D4096200A3B112 /* BDAlias */,
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
 				17128B890FE6DFFA0035DD75 /* QuickLook */,
 				173284E51088FEC20062E892 /* Data */,
@@ -1890,6 +1903,7 @@
 				1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */,
 				17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */,
 				58C34F5310B86CAE00D37E14 /* NSNotificationAdditions.m in Sources */,
+				17BFC82010D4097B00A3B112 /* BDAlias.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
