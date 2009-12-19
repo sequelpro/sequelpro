@@ -33,26 +33,6 @@
 		17B7B594101602D200F057DE /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B593101602D200F057DE /* libz.dylib */; };
 		17B7B595101602D800F057DE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		17B7B5991016038400F057DE /* MCPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B5621016012700F057DE /* MCPKit.framework */; };
-		17B7B5B0101603A400F057DE /* MCPAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B59C101603A400F057DE /* MCPAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5B1101603A400F057DE /* MCPAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B59D101603A400F057DE /* MCPAttribute.m */; };
-		17B7B5B2101603A400F057DE /* MCPClassDescription+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B59E101603A400F057DE /* MCPClassDescription+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5B3101603A400F057DE /* MCPClassDescription+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B59F101603A400F057DE /* MCPClassDescription+MCPEntreprise.m */; };
-		17B7B5B4101603A400F057DE /* MCPClassDescription+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A0101603A400F057DE /* MCPClassDescription+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5B5101603A400F057DE /* MCPClassDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A1101603A400F057DE /* MCPClassDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5B6101603A400F057DE /* MCPClassDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A2101603A400F057DE /* MCPClassDescription.m */; };
-		17B7B5B7101603A400F057DE /* MCPEntrepriseNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A3101603A400F057DE /* MCPEntrepriseNotifications.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5B8101603A400F057DE /* MCPEntrepriseNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A4101603A400F057DE /* MCPEntrepriseNotifications.m */; };
-		17B7B5B9101603A400F057DE /* MCPJoin.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A5101603A400F057DE /* MCPJoin.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5BA101603A400F057DE /* MCPJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A6101603A400F057DE /* MCPJoin.m */; };
-		17B7B5BB101603A400F057DE /* MCPModel+MCPEntreprise.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A7101603A400F057DE /* MCPModel+MCPEntreprise.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5BC101603A400F057DE /* MCPModel+MCPEntreprise.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5A8101603A400F057DE /* MCPModel+MCPEntreprise.m */; };
-		17B7B5BD101603A400F057DE /* MCPModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5A9101603A400F057DE /* MCPModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5BE101603A400F057DE /* MCPModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5AA101603A400F057DE /* MCPModel.m */; };
-		17B7B5BF101603A400F057DE /* MCPObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5AB101603A400F057DE /* MCPObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5C0101603A400F057DE /* MCPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5AC101603A400F057DE /* MCPObject.m */; };
-		17B7B5C1101603A400F057DE /* MCPRelation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5AD101603A400F057DE /* MCPRelation+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5C2101603A400F057DE /* MCPRelation.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5AE101603A400F057DE /* MCPRelation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17B7B5C3101603A400F057DE /* MCPRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5AF101603A400F057DE /* MCPRelation.m */; };
 		17B7B5D3101603B200F057DE /* MCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5C4101603B200F057DE /* MCPConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B5D4101603B200F057DE /* MCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B7B5C5101603B200F057DE /* MCPConnection.m */; };
 		17B7B5D5101603B200F057DE /* MCPConnectionProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1461,17 +1441,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17B7B5B0101603A400F057DE /* MCPAttribute.h in Headers */,
-				17B7B5B2101603A400F057DE /* MCPClassDescription+MCPEntreprise.h in Headers */,
-				17B7B5B4101603A400F057DE /* MCPClassDescription+Private.h in Headers */,
-				17B7B5B5101603A400F057DE /* MCPClassDescription.h in Headers */,
-				17B7B5B7101603A400F057DE /* MCPEntrepriseNotifications.h in Headers */,
-				17B7B5B9101603A400F057DE /* MCPJoin.h in Headers */,
-				17B7B5BB101603A400F057DE /* MCPModel+MCPEntreprise.h in Headers */,
-				17B7B5BD101603A400F057DE /* MCPModel.h in Headers */,
-				17B7B5BF101603A400F057DE /* MCPObject.h in Headers */,
-				17B7B5C1101603A400F057DE /* MCPRelation+Private.h in Headers */,
-				17B7B5C2101603A400F057DE /* MCPRelation.h in Headers */,
 				17B7B5D3101603B200F057DE /* MCPConnection.h in Headers */,
 				17B7B5D5101603B200F057DE /* MCPConnectionProxy.h in Headers */,
 				17B7B5D6101603B200F057DE /* MCPConstants.h in Headers */,
@@ -1766,15 +1735,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17B7B5B1101603A400F057DE /* MCPAttribute.m in Sources */,
-				17B7B5B3101603A400F057DE /* MCPClassDescription+MCPEntreprise.m in Sources */,
-				17B7B5B6101603A400F057DE /* MCPClassDescription.m in Sources */,
-				17B7B5B8101603A400F057DE /* MCPEntrepriseNotifications.m in Sources */,
-				17B7B5BA101603A400F057DE /* MCPJoin.m in Sources */,
-				17B7B5BC101603A400F057DE /* MCPModel+MCPEntreprise.m in Sources */,
-				17B7B5BE101603A400F057DE /* MCPModel.m in Sources */,
-				17B7B5C0101603A400F057DE /* MCPObject.m in Sources */,
-				17B7B5C3101603A400F057DE /* MCPRelation.m in Sources */,
 				17B7B5D4101603B200F057DE /* MCPConnection.m in Sources */,
 				17B7B5D8101603B200F057DE /* MCPFastQueries.m in Sources */,
 				17B7B5DB101603B200F057DE /* MCPNull.m in Sources */,
