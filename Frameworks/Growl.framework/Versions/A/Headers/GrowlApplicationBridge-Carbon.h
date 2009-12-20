@@ -15,7 +15,7 @@
 #include <Carbon/Carbon.h>
 
 #ifndef GROWL_EXPORT
-#define GROWL_EXPORT __attribute__((visibility("default")))
+#define GROWL_EXPORT __attribute__((visibility("default"))) DEPRECATED_ATTRIBUTE
 #endif
 
 /*!	@header GrowlApplicationBridge-Carbon.h
