@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>Sequel Pro</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css" media="all">
+html {
+	font-size:82%;
+}
+.nowrap {
+	white-space:nowrap;
+}
+div.nowrap {
+	margin:0;
+	padding:0;
+}
+body, table, th, td {
+	background-color:#FFFFFF;
+	color:#000000;
+}
+table, th, td {
+	border:0.1em solid #000000;
+}
+
+table {
+	border-collapse:collapse;
+	border-spacing:0;
+	width: 100%;
+}
+
+th, td {
+	padding:0.2em;
+}
+
+th {
+	background-color:#E5E5E5;
+	font-weight:bold;
+}
+
+tr > td {
+	text-align: left;
+}
+
+tr.even > td {
+	background-color: #EDF3FE;
+}
+
+tr.odd > td {
+	background-color: #FFFFFF;
+}
+
+</style>
+</head>
+
+<body>
+<p>
+    <b>Connection:</b> {{c.username}}{% if c.username %}@{% /if %}{{c.hostname}}{% if c.port %}:{% /if %}{{c.port}}/{{c.database}}<br>
+    <b>Generated on:</b> {% now | date_format: "dd MMM yyyy 'at' HH:mm:ss" %} by {{c.version}}<br>
+    {% if c.query %}<b>SQL query:</b> {{c.query}}{% /if %}
+    <br>
+</p>
+<table id="table_results" class="data">
+<thead><tr>
+{% for column in columns %}<th>{{ column }}</th>{% /for %}
+</tr></thead>
+
+<tbody>
+{% for row in rows %}
+<tr {% cycle 'class="odd" ' 'class="even" ' %}>
+	{% for cell in row %}<td>{{ cell }}</td>{% /for %}
+</tr>
+{% /for %}
+</tbody>
+</table>
+
+</body></html>
