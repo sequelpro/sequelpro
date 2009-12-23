@@ -909,8 +909,7 @@
  */
 - (IBAction)setDatabases:(id)sender;
 {
-	if (!chooseDatabaseButton)
-		return;
+	if (!chooseDatabaseButton) return;
 
 	[chooseDatabaseButton removeAllItems];
 
@@ -922,23 +921,43 @@
 
 	MCPResult *queryResult = [mySQLConnection listDBs];
 
-	if ([queryResult numOfRows]) {
-		[queryResult dataSeek:0];
-	}
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 
-	// if([allDatabases count])
-	// 	[allDatabases removeAllObjects];
-
-	if(allDatabases)
-		[allDatabases release];
-
+	if (allDatabases) [allDatabases release];
+	
 	allDatabases = [[NSMutableArray alloc] initWithCapacity:[queryResult numOfRows]];
 
+	NSMutableArray *systemDatabases = [NSMutableArray array];
+	
 	for (int i = 0 ; i < [queryResult numOfRows] ; i++)
-		[allDatabases addObject:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0)];
+	{
+		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
+		
+		// If the database is either information_schema or mysql then it is classed as a system table
+		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"]) {
+			[systemDatabases addObject:database];
+		}
+		else {
+			[allDatabases addObject:database];
+		}
+	}
 
-	for (id db in allDatabases)
+	// Add system databases
+	for (NSString *db in systemDatabases) 
+	{
 		[chooseDatabaseButton addItemWithTitle:db];
+	}
+	
+	// Add a separator between the system and user databases
+	if ([systemDatabases count] > 0) {
+		[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
+	}
+
+	// Add user databases
+	for (NSString *db in allDatabases) 
+	{
+		[chooseDatabaseButton addItemWithTitle:db];
+	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
