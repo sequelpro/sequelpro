@@ -42,9 +42,9 @@
  * While some methods may look similar to NSScanner methods, and others look like they could be
  * achieved with Regex libraries or other string parsing libraries, this class was written with
  * the following goals in mind:
- *  - SQL comments, in "/* ... * /", "#" and "--[\s]" form, are ignored automatically while parsing -
+ *  - SQL comments, in "⁄* ... *⁄", "#" and "--[\s]" form, are ignored automatically while parsing -
         *but* are left in the strings in question, to allow (for example) MySQL-version specific query
-		support, eg /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT * /
+		support, eg ⁄*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT *⁄
  *  - Support for quoted strings in most commands, allowing strings quoted with ", ', and ` characters -
         including support for \-escaping of the quote characters within "- and '-terminated strings.
  *  - Optional support for bracket capturing in most commands.  This can allow simpler parsing of strings
@@ -80,7 +80,7 @@ typedef enum _SPCommentTypes {
 - (void) setIgnoringCommentStrings:(BOOL)ignoringCommentStrings;
 
 /*
- * Removes comments within the current string, trimming "#", "--[/s]", and "/* * /" style strings.
+ * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
  */
 - (void) deleteComments;
 

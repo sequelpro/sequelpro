@@ -1032,7 +1032,7 @@
 }
 
 /*
- * Add or remove "/*  *~/" for each line in the current query
+ * Add or remove "⁄*  *⁄" for each line in the current query
  * a given selection
  */
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection
@@ -1085,8 +1085,8 @@
 
 /*
  * Add or remove "-- " for each line in the current query or selection,
- * if the selection is in-line wrap selection into /* block comments and
- * place the caret after /* to allow to enter !xxxxxx e.g.
+ * if the selection is in-line wrap selection into ⁄* block comments and
+ * place the caret after ⁄* to allow to enter !xxxxxx e.g.
  */
 - (void)commentOut
 {

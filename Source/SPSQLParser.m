@@ -48,7 +48,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 
 /*
- * Removes comments within the current string, trimming "#", "--[/s]", and "/* * /" style strings.
+ * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
  */
 - (void) deleteComments
 {
