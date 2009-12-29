@@ -410,7 +410,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		lineRanges = [[[self string] substringWithRange:[self selectedRange]] lineRangesForRange:NSMakeRange(0, [self selectedRange].length)];
 	else
 		lineRanges = [[self string] lineRangesForRange:NSMakeRange(0, [[self string] length])];
-	int offset = 0;
+
 	if(ignLeadingNewLines) // ignore leading empty lines
 	{
 		int arrayCount = [lineRanges count];
@@ -418,10 +418,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for (i = 0; i < arrayCount; i++) {
 			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
 				break;
-			offset++;
+			lineNumber++;
 		}
 	}
-	selRange = NSRangeFromString([lineRanges objectAtIndex:lineNumber-1+offset]);
+	
+	// Safety-check the line number
+	if (lineNumber > [lineRanges count]) lineNumber = [lineRanges count];
+
+	// Grab the range to select
+	selRange = NSRangeFromString([lineRanges objectAtIndex:lineNumber-1]);
 
 	// adjust selRange if a selection was given
 	if([self selectedRange].length)

@@ -631,7 +631,7 @@
 		// set the error text
 		[errorText setStringValue:errors];
 		// select the line x of the first error if error message contains "at line x"
-		NSRange errorLineNumberRange = [errors rangeOfRegex:@"([0-9]+)$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
+		NSRange errorLineNumberRange = [errors rangeOfRegex:@"(?<!key )([0-9]+)$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
 		if(errorLineNumberRange.length) // if a line number was found
 		{
 			// Get the line number
