@@ -2482,7 +2482,11 @@
 		checkStatusCount = YES;
 
 	// Choose whether to display an estimate, or to fetch the correct row count, based on prefs
-	} else if ([prefs boolForKey:SPFetchCorrectRowCount]) {
+	} else if ([[prefs objectForKey:SPTableRowCountQueryLevel] intValue] == SPRowCountFetchAlways
+				|| ([[prefs objectForKey:SPTableRowCountQueryLevel] intValue] == SPRowCountFetchIfCheap
+					&& [tableDataInstance statusValueForKey:@"Data_length"]
+					&& [[prefs objectForKey:SPTableRowCountCheapSizeBoundary] intValue] > [[tableDataInstance statusValueForKey:@"Data_length"] intValue]))
+	{
 		maxNumRows = [self fetchNumberOfRows];
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];

@@ -166,7 +166,7 @@
 			@"reloadAfterEditing", SPReloadAfterEditingRow,
 			@"reloadAfterRemoving", SPReloadAfterRemovingRow,
 			@"dontShowBlob", SPLoadBlobsAsNeeded,
-			@"fetchRowCount", SPFetchCorrectRowCount,
+			@"fetchRowCount", @"FetchCorrectRowCount",
 			@"limitRows", SPLimitResults,
 			@"limitRowsValue", SPLimitResultsValue,
 			@"nullValue", SPNullValue,
@@ -286,6 +286,11 @@
 		}
 		
 		[prefs setObject:queryFavoritesArray forKey:SPQueryFavorites];
+	}
+
+	// For versions prior to r1636 (<0.9.8), remove the old "Fetch correct row count" pref
+	if (recordedVersionNumber < 1636 && [prefs objectForKey:@"FetchCorrectRowCount"]) {
+		[prefs removeObjectForKey:@"FetchCorrectRowCount"];
 	}
 
 	// Update the prefs revision

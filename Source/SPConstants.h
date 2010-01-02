@@ -48,6 +48,13 @@ typedef enum {
 	SPSSHTunnelConnection = 2
 } SPConnectionType;
 
+// Table row count query usage levels
+typedef enum {
+	SPRowCountFetchNever	= 0,
+	SPRowCountFetchIfCheap	= 1,
+	SPRowCountFetchAlways	= 2
+} SPRowCountQueryUsageLevels;
+
 // Kill mode constants
 extern NSString *SPKillProcessQueryMode;
 extern NSString *SPKillProcessConnectionMode;
@@ -83,7 +90,8 @@ extern NSString *SPReloadAfterAddingRow;
 extern NSString *SPReloadAfterEditingRow;
 extern NSString *SPReloadAfterRemovingRow;
 extern NSString *SPLoadBlobsAsNeeded;
-extern NSString *SPFetchCorrectRowCount;
+extern NSString *SPTableRowCountQueryLevel;
+extern NSString *SPTableRowCountCheapSizeBoundary;
 extern NSString *SPNewFieldsAllowNulls;
 extern NSString *SPLimitResults;
 extern NSString *SPLimitResultsValue;
