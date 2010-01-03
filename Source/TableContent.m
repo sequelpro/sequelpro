@@ -1279,6 +1279,7 @@
 	
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	[queryResult setReturnDataAsStrings:YES];
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
 		row = [queryResult fetchRowAsDictionary];
@@ -1899,6 +1900,7 @@
 		setLimit = NO;
 		keys = [[NSMutableArray alloc] init];
 		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+		[theResult setReturnDataAsStrings:YES];
 		if ([theResult numOfRows]) [theResult dataSeek:0];
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 			theRow = [theResult fetchRowAsDictionary];

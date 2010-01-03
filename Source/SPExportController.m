@@ -418,6 +418,7 @@
 		
 		// Determine whether this table is a table or a view via the create table command, and get the table details
 		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
 		
 		if ([queryResult numOfRows]) {
 			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];

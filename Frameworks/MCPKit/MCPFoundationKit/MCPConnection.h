@@ -173,6 +173,7 @@ void performThreadedKeepAlive(void *ptr);
 - (double)timeConnected;
 
 // Server versions
+- (NSString *)serverVersionString;
 - (NSInteger)serverMajorVersion;
 - (NSInteger)serverMinorVersion;
 - (NSInteger)serverReleaseVersion;

@@ -734,6 +734,24 @@ void performThreadedKeepAlive(void *ptr)
 #pragma mark Server versions
 
 /**
+ * Return the server version string, or nil on failure.
+ */
+- (NSString *)serverVersionString
+{
+	if (mConnected) {
+		if (serverVersionString == nil) {
+			[self _getServerVersionString];
+		}
+
+		if (serverVersionString) {
+			return [NSString stringWithString:serverVersionString];
+		}
+	}
+
+	return nil;
+}
+
+/**
  * rReturn the server major version or -1 on fail
  */
 - (NSInteger)serverMajorVersion
@@ -1744,6 +1762,7 @@ void performThreadedKeepAlive(void *ptr)
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@ LIKE '%@'", dbName, tablesName];
 		theResult = [self queryString:theQuery];
 	}
+	[theResult setReturnDataAsStrings:YES];
 	
 	return theResult;
 }
@@ -1773,7 +1792,8 @@ void performThreadedKeepAlive(void *ptr)
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@ LIKE '%@'", tableName, fieldsName];
 		theResult = [self queryString:theQuery];
 	}
-	
+	[theResult setReturnDataAsStrings:YES];
+
 	return theResult;
 }
 
@@ -1936,15 +1956,11 @@ void performThreadedKeepAlive(void *ptr)
 		NSArray		*theRow;
 		id			theTZName;
 		NSTimeZone	*theTZ;
-		
+
+		[theSessionTZ setReturnDataAsStrings:YES];
 		[theSessionTZ dataSeek:1ULL];
 		theRow = [theSessionTZ fetchRowAsArray];
 		theTZName = [theRow objectAtIndex:1];
-		
-		if ( [theTZName isKindOfClass:[NSData class]] ) {
-			// MySQL 4.1.14 returns the mysql variables as NSData
-			theTZName = [self stringWithText:theTZName];
-		}
 		
 		if ([theTZName isEqualToString:@"SYSTEM"]) {
 			[theSessionTZ dataSeek:0ULL];
@@ -1963,6 +1979,7 @@ void performThreadedKeepAlive(void *ptr)
 			// By default set the time zone to the local one..
 			// Try to get the name using the previously available variable:
 			theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE 'timezone'"];
+			[theSessionTZ setReturnDataAsStrings:YES];
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
@@ -2003,6 +2020,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (0 == mysql_query(mConnection, queryString)) {
 		if (mysql_field_count(mConnection) != 0) {
 			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			[r setReturnDataAsStrings:YES];
 			NSArray *a = [r fetchRowAsArray];
 			[r autorelease];
 			if([a count]) {
@@ -2183,6 +2201,7 @@ void performThreadedKeepAlive(void *ptr)
 {
 	if (mConnected) {
 		MCPResult *theResult = [self queryString:@"SHOW VARIABLES LIKE 'version'"];
+		[theResult setReturnDataAsStrings:YES];
 		
 		if ([theResult numOfRows]) {
 			[theResult dataSeek:0];

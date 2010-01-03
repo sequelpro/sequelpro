@@ -648,15 +648,7 @@
 	}
 
 	// Get the mysql version
-	theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
-	version = [[theResult fetchRowAsArray] objectAtIndex:1];
-	if (mySQLVersion) [mySQLVersion release], mySQLVersion = nil;
-	if ( [version isKindOfClass:[NSData class]] ) {
-		// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
-		mySQLVersion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
-	} else {
-		mySQLVersion = [[NSString alloc] initWithString:version];
-	}
+	mySQLVersion = [[NSString alloc] initWithString:[mySQLConnection serverVersionString]];
 
 	// Update the selected database if appropriate
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
@@ -1640,17 +1632,22 @@
  */
 - (NSString *)databaseEncoding
 {
+	MCPResult *charSetResult;
+	NSString *mysqlEncoding;
+
 	// MySQL > 4.0
-	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
+	charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"];
+	[charSetResult setReturnDataAsStrings:YES];
+	mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
 	_supportsEncoding = (mysqlEncoding != nil);
 
-	if ( [mysqlEncoding isKindOfClass:[NSData class]] ) { // MySQL 4.1.14 returns the mysql variables as nsdata
-		mysqlEncoding = [mySQLConnection stringWithText:mysqlEncoding];
-	}
-	if ( !mysqlEncoding ) { // mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
+	// mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
+	if ( !mysqlEncoding ) {
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
-	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1
+
+	// older version? -> set encoding to mysql default encoding latin1
+	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
@@ -1709,6 +1706,7 @@
 	if (query == nil) return;
 
 	MCPResult *theResult = [mySQLConnection queryString:query];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1719,10 +1717,7 @@
 		return;
 	}
 
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-
-	if ([tableSyntax isKindOfClass:[NSData class]])
-		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
+	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
 
@@ -1767,6 +1762,7 @@
 		return;
 
 	MCPResult *theResult = [mySQLConnection queryString:query];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1776,10 +1772,7 @@
 		return;
 	}
 
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-
-	if ([tableSyntax isKindOfClass:[NSData class]])
-		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
+	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];

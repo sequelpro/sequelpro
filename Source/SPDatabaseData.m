@@ -299,6 +299,7 @@ const CHAR_SETS charsets[] =
 			
 			// Check if InnoDB support is enabled
 			MCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			[result setReturnDataAsStrings:YES];
 			
 			if ([result numOfRows] == 1) {
 				if ([[[result fetchRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {

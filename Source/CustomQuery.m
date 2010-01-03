@@ -1278,6 +1278,7 @@
 	// Get the primary key if there is one
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
 	if ([theResult numOfRows]) [theResult dataSeek:0];
 	int i;
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {

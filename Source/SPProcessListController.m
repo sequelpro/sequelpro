@@ -418,6 +418,7 @@
 	
 	// Get processes
 	MCPResult *processList = [connection queryString:@"SHOW PROCESSLIST"];
+	[processList setReturnDataAsStrings:YES];
 	
 	if ([processList numOfRows]) [processList dataSeek:0];
 	

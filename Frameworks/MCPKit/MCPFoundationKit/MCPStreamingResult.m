@@ -276,8 +276,8 @@
 				case FIELD_TYPE_MEDIUM_BLOB:
 				case FIELD_TYPE_LONG_BLOB:
 					
-					// For binary data, return the data
-					if (fieldDefinitions[i].flags & BINARY_FLAG) {
+					// For binary data, return the data if force-return-as-string is not enabled
+					if ((fieldDefinitions[i].flags & BINARY_FLAG) && !mReturnDataAsStrings) {
 						cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 					}
 					else {

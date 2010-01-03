@@ -148,6 +148,7 @@
 
 	// Attempt to use SHOW PRIVILEGES syntax - supported since 4.1.0
 	result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
+	[result setReturnDataAsStrings:YES];
 	if ([result numOfRows]) {
 		while (privRow = [result fetchRowAsArray]) {
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
@@ -159,6 +160,7 @@
 	// If that fails, base privilege support on the mysql.users columns
 	} else {
 		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM `mysql`.`user`"];
+		[result setReturnDataAsStrings:YES];
 		while (privRow = [result fetchRowAsArray]) {
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
 			if (![privKey hasSuffix:@"_priv"]) continue;

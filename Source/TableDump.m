@@ -1420,6 +1420,7 @@
 		
 		// Determine whether this table is a table or a view via the create table command, and keep the create table syntax
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {
@@ -2353,6 +2354,7 @@
 
 		// Determine whether this table is a table or a view via the create table command, and get the table details
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
 		if ( [queryResult numOfRows] ) {
 			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
 			if ([tableDetails objectForKey:@"Create View"]) {

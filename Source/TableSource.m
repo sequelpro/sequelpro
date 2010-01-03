@@ -98,6 +98,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
   
 	//perform queries and load results in array (each row as a dictionary)
 	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
+	[tableSourceResult setReturnDataAsStrings:YES];
 	
 	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
 	//	tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
@@ -106,6 +107,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableSourceResult release];
 
 	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
+	[indexResult setReturnDataAsStrings:YES];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
 	[indexResult release];
@@ -972,6 +974,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	int i;
 	
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	[queryResult setReturnDataAsStrings:YES];
 	
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	[tempResult addObject:[queryResult fetchFieldNames]];

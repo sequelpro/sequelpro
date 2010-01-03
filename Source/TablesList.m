@@ -1242,10 +1242,8 @@
 				return;
 			}
 
-			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
-
-			if ([tableSyntax isKindOfClass:[NSData class]])
-				tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
+			[theResult setReturnDataAsStrings:YES];
+			NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
 
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", tableType] withString:[anObject backtickQuotedString]]];
@@ -1991,7 +1989,8 @@
 												[tableType uppercaseString],
 												[[filteredTables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 												]];
-	
+	[queryResult setReturnDataAsStrings:YES];
+
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
 		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -2044,10 +2043,8 @@
 				return;
 			}
 			
-			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
-			
-			if ([tableSyntax isKindOfClass:[NSData class]])
-				tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
+			[theResult setReturnDataAsStrings:YES];
+			NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
 			
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
@@ -2173,14 +2170,12 @@
 			}
 			return;
 		}
-		
-		id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
-		
-		if ([tableSyntax isKindOfClass:[NSData class]])
-			tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
-		
+
+		[theResult setReturnDataAsStrings:YES];
+		NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+
 		NSString *tableType;
-		
+
 		switch([self tableType]){
 			case SP_TABLETYPE_TABLE:
 				tableType = NSLocalizedString(@"table",@"table");

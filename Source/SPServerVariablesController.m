@@ -289,6 +289,7 @@
 	
 	// Get processes
 	MCPResult *serverVariables = [connection queryString:@"SHOW VARIABLES"];
+	[serverVariables setReturnDataAsStrings:YES];
 	
 	if ([serverVariables numOfRows]) [serverVariables dataSeek:0];
 	

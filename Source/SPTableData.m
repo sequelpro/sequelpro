@@ -320,6 +320,7 @@
 
 	// Retrieve the CREATE TABLE syntax for the table
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
 	
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -339,13 +340,8 @@
 	
 	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 	
-	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
-		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
-		createTableParser = [[SPSQLParser alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]]; 
-	} else {
-		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
-		createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
-	}
+	tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
 
 	// Extract the fields definition string from the CREATE TABLE syntax
 	fieldsParser = [[SPSQLParser alloc] initWithString:[createTableParser trimAndReturnStringFromCharacter:'(' toCharacter:')' trimmingInclusively:YES returningInclusively:NO skippingBrackets:YES]];
@@ -632,6 +628,7 @@
 	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [viewName backtickQuotedString]
 																					]];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -645,17 +642,11 @@
 	}
 
 	// Retrieve the table syntax string
-	NSArray *syntaxResult = [theResult fetchRowAsArray];
-	
-	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
-		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
-	} else {
-		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
-	}
-
+	tableCreateSyntax = [[NSString alloc] initWithString:[[theResult fetchRowAsArray] objectAtIndex:1]];
 
 	// Retrieve the SHOW COLUMNS syntax for the table
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -757,6 +748,7 @@
 	}
 	else if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
+		[tableStatusResult setReturnDataAsStrings:YES];
 	}
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
@@ -1008,6 +1000,7 @@
 	NSMutableArray *keyColumns = [NSMutableArray array];
 
 	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ WHERE `key` = 'PRI'", [selectedTable backtickQuotedString]]];
+	[r setReturnDataAsStrings:YES];
 
 	if([r numOfRows] < 1) return nil;
 
