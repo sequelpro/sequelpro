@@ -57,8 +57,8 @@
 	debugMessages = [[NSMutableArray alloc] init];
 
 	// Set up a connection for use by the tunnel process
-	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%f", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%f", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%u", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%u", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
 	tunnelConnection = [[NSConnection defaultConnection] retain];
 	[tunnelConnection runInNewThread];
 	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
