@@ -627,9 +627,6 @@
 
 - (void) setConnection:(MCPConnection *)theConnection
 {
-	MCPResult *theResult;
-	id version;
-
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
 
