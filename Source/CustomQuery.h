@@ -72,6 +72,7 @@
 
 	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
+	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
@@ -126,6 +127,8 @@
 	NSInteger fullResultCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
+	NSInteger editedRow;
+	NSRect editedScrollViewRect;
 
 	BOOL isWorking;
 	BOOL tableReloadAfterEditing;

@@ -443,8 +443,23 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			}
 		}
 	}
+	if([[[[self delegate] class] description] isEqualToString:@"CustomQuery"]) {
+		id tableContentView = [[self delegate] valueForKeyPath:@"customQueryView"];
+		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 
-	[super keyDown:theEvent];		
+			// TODO: this works until the user presses OK in the Field Editor Sheet!!
+			// in the future we should store the new row data temporarily and then
+			// after editing the last column update the db field by field (ask HansJB)
+			NSInteger colNum = [[tableContentView tableColumns] count];
+			NSInteger i;
+			for(i=0; i<colNum; i++) {
+				[[self delegate] tableView:tableContentView shouldEditTableColumn:[[tableContentView tableColumns] objectAtIndex:i] row:[tableContentView selectedRow]];
+			}
+			return;
+		}
+	}
+
+	[super keyDown:theEvent];
 }
 
 @end

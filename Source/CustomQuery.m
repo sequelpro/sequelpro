@@ -408,8 +408,10 @@
 
 	// Reset the current table view as necessary to avoid redraw and reload issues.
 	// Restore the view position to the top left to be within the results for all datasets.
-	[customQueryView scrollRowToVisible:0];
-	[customQueryView scrollColumnToVisible:0];
+	if(editedRow == -1) {
+		[customQueryView scrollRowToVisible:0];
+		[customQueryView scrollColumnToVisible:0];
+	}
 
 	// Remove all the columns
 	if(!tableReloadAfterEditing) {
@@ -576,7 +578,6 @@
 			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
 				databaseWasChanged = YES;
 		}
-
 		// If the query was cancelled, end all queries.
 		if ([mySQLConnection queryCancelled]) break;
 	}
@@ -761,14 +762,20 @@
 		}
 	}
 
+	[customQueryView reloadData];
+
 	if(tableReloadAfterEditing) {
-		// scroll to last edited row after refreshing data
-		// TODO: should be improved
-		[customQueryView scrollRowToVisible:[customQueryView selectedRow]];
+		// scroll to last edited row/view port after refreshing data
+		if(editedRow > -1) {
+			[customQueryView selectRowIndexes:[NSIndexSet indexSetWithIndex:editedRow] byExtendingSelection:NO];
+			[[customQueryScrollView contentView] scrollToPoint:NSMakePoint(editedScrollViewRect.origin.x, editedScrollViewRect.origin.y)];
+			[customQueryScrollView reflectScrolledClipView:[customQueryScrollView contentView]];
+			editedRow = -1;
+		} else {
+			[customQueryView scrollRowToVisible:[customQueryView selectedRow]];
+		}
 	}
 
-	[customQueryView reloadData];
-	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[customQueryView setTableInstance:self withTableData:fullResult withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 	
@@ -1506,6 +1513,7 @@
 
 			// On success reload table data by executing the last query
 			tableReloadAfterEditing = YES;
+
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
 			
 		} else {
@@ -1753,7 +1761,7 @@
 /*
  * Double-click action on a field
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
 	// Only allow editing if a task is not active
@@ -1819,6 +1827,11 @@
 
 
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+
+		// Remember edited row for reselecting and setting the scroll view after reload
+		editedRow = rowIndex;
+		editedScrollViewRect = [customQueryScrollView documentVisibleRect];
+
 		// Set max text length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
 		 && [columnDefinition valueForKey:@"char_length"])
@@ -2844,6 +2857,7 @@
 		// init tableView's data source
 		fullResultCount = 0;
 		fullResult = [[NSMutableArray alloc] init];
+		editedRow = -1;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
