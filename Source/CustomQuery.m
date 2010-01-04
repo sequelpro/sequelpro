@@ -1643,10 +1643,10 @@
 #pragma mark -
 #pragma mark TableView Drag & Drop datasource methods
 
-- (BOOL)tableView:(NSTableView *)aTableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 	if ( aTableView == customQueryView ) {
-		NSString *tmp = [customQueryView draggedRowsAsTabString:rows];
+		NSString *tmp = [customQueryView draggedRowsAsTabString];
 		if ( nil != tmp )
 		{
 			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 

@@ -1082,29 +1082,23 @@ returns a dictionary containing enum/set field names as key and possible values 
 /*
 Begin a drag and drop operation from the table - copy a single dragged row to the drag pasteboard.
 */
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
-    //make sure that the drag operation is started from the right table view
-    if (tableView!=tableSourceView) return NO;
-    
-    
-	int originalRow;
-	NSArray *pboardTypes;
+
+	//make sure that the drag operation is started from the right table view
+	if (aTableView != tableSourceView) return NO;
 
 	// Check whether a save of the current field row is required.
 	if ( ![self saveRowOnDeselect] ) return NO;
 
-	if ( ([rows count] == 1)  && (tableView == tableSourceView) ) {
-		pboardTypes=[NSArray arrayWithObjects:@"SequelProPasteboard", nil];
-		originalRow = [[rows objectAtIndex:0] intValue];
-
-		[pboard declareTypes:pboardTypes owner:nil];
-		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:@"SequelProPasteboard"];
-
+	if ([rows count] == 1) {
+		[pboard declareTypes:[NSArray arrayWithObject:@"SequelProPasteboard"] owner:nil];
+		[pboard setString:[[NSNumber numberWithInt:[rows firstIndex]] stringValue] forType:@"SequelProPasteboard"];
 		return YES;
 	} else {
 		return NO;
 	}
+
 }
 
 /*

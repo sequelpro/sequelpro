@@ -92,7 +92,7 @@
 	   returns something meaningful. 
 	@result	 The above described string, or nil if nothing selected
 */
-- (NSString *)draggedRowsAsTabString:(NSArray *)rows;
+- (NSString *)draggedRowsAsTabString;
 
 /*
  * Generate a string in form of INSERT INTO <table> VALUES () of 

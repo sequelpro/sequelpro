@@ -564,33 +564,27 @@
 /**
  * Return whether or not the supplied rows can be written.
  */
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
-	// Up to now only one row can be dragged
-	// if ([rows count] == 1) {
+	NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
+	NSInteger originalRow = [rows firstIndex];
 
-		NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
-		NSInteger originalRow = [[rows objectAtIndex:0] intValue];
+	if(originalRow < 1) return NO;
 
-		if(originalRow < 1) return NO;
+	// Do not drag headers
+	if([[favorites objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
 
-		// Do not drag headers
-		if([[favorites objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
+	[pboard declareTypes:pboardTypes owner:nil];
 
-		[pboard declareTypes:pboardTypes owner:nil];
+	NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
+	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
+	[archiver encodeObject:rows forKey:@"indexdata"];
+	[archiver finishEncoding];
+	[pboard setData:indexdata forType:SPFavoritesPasteboardDragType];
 
-		NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
-		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
-		[archiver encodeObject:rows forKey:@"indexdata"];
-		[archiver finishEncoding];
-		[pboard setData:indexdata forType:SPFavoritesPasteboardDragType];
+	return YES;
 
-		return YES;
-
-	// } 
-
-	// return NO;
 }
 
 /**
@@ -621,8 +615,16 @@
 	if(row < 1) return NO;
 
 	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPFavoritesPasteboardDragType]] autorelease];
-	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
+	NSIndexSet *draggedIndexes = [[NSIndexSet alloc] initWithIndexSet:(NSIndexSet *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
+
+	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
+	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
+	NSUInteger rowIndex = [draggedIndexes firstIndex];
+	while ( rowIndex != NSNotFound ) {
+		[draggedRows addObject:[NSNumber numberWithInt:rowIndex]];
+		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
+	}
 
 	NSInteger destinationRow = row;
 	NSInteger offset = 0;
@@ -655,6 +657,8 @@
 
 	[favoritesTableView reloadData];
 	[favoritesArrayController rearrangeObjects];
+	[draggedIndexes release];
+	[draggedRows release];
 
 	return YES;
 }

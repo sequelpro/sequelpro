@@ -348,70 +348,64 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 //get dragged rows a string of newline separated lines of tab separated fields
 //the value in each field is from the objects description method
-- (NSString *)draggedRowsAsTabString:(NSArray *)rows
+- (NSString *)draggedRowsAsTabString
 {
-	if ( [rows count] > 0 )
-	{
-		NSArray *columns = [self tableColumns];
-		NSUInteger numColumns = [columns count];
-		NSIndexSet *selectedRows = [self selectedRowIndexes];
-		id dataSource = [self dataSource];
-		
-		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
+	NSArray *columns = [self tableColumns];
+	NSUInteger numColumns = [columns count];
+	NSIndexSet *selectedRows = [self selectedRowIndexes];
+	id dataSource = [self dataSource];
+	
+	NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 
-		NSUInteger c;
+	NSUInteger c;
 
-		id rowData = nil;
-		NSTableColumn *col = nil;
-		
-		NSUInteger rowIndex = [selectedRows firstIndex];
+	id rowData = nil;
+	NSTableColumn *col = nil;
+	
+	NSUInteger rowIndex = [selectedRows firstIndex];
 
-		while ( rowIndex != NSNotFound )
-		{ 
-			rowData = nil;
-			for ( c = 0; c < numColumns; c++)
-			{
-				col = [columns objectAtIndex:c];
-				rowData = [dataSource tableView:self 
-					  objectValueForTableColumn:col 
-											row:rowIndex ];
-				
-				if ( nil != rowData )
-				{
-					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
-					else if ([rowData isSPNotLoaded])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
-					else
-						[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
-				}
-				else
-				{
-					[result appendString:@"\t"];
-				}
-			} //end for each column
+	while ( rowIndex != NSNotFound )
+	{ 
+		rowData = nil;
+		for ( c = 0; c < numColumns; c++)
+		{
+			col = [columns objectAtIndex:c];
+			rowData = [dataSource tableView:self 
+				  objectValueForTableColumn:col 
+										row:rowIndex ];
 			
-			if ( [result length] )
+			if ( nil != rowData )
 			{
-				[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
+				if ([rowData isNSNull])
+					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
+				else if ([rowData isSPNotLoaded])
+					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
+				else
+					[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
 			}
-			[result appendString: [ NSString stringWithFormat:@"\n"]];
-
-			// next selected row
-			rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
-
-		} //end for each row
+			else
+			{
+				[result appendString:@"\t"];
+			}
+		} //end for each column
 		
 		if ( [result length] )
 		{
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
-		return result;
-	}
-	else
+		[result appendString: [ NSString stringWithFormat:@"\n"]];
+
+		// next selected row
+		rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
+
+	} //end for each row
+	
+	if ( [result length] )
 	{
-		return nil;
+		[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 	}
+
+	return result;
 }
 
 /*

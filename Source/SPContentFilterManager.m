@@ -605,11 +605,11 @@
 /**
  * Return whether or not the supplied rows can be written.
  */
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
 	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
-	NSInteger originalRow = [[rows objectAtIndex:0] intValue];
+	NSUInteger originalRow = [rows firstIndex];
 
 	if(originalRow < 1) return NO;
 
@@ -656,8 +656,17 @@
 	if(row < 1) return NO;
 
 	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPContentFilterPasteboardDragType]] autorelease];
-	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
+	NSIndexSet *draggedIndexes = [[NSIndexSet alloc] initWithIndexSet:(NSIndexSet *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
+
+	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
+	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
+	NSUInteger rowIndex = [draggedIndexes firstIndex];
+	while ( rowIndex != NSNotFound ) {
+		[draggedRows addObject:[NSNumber numberWithInt:rowIndex]];
+		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
+	}
+	
 
 	NSInteger destinationRow = row;
 	NSInteger offset = 0;
@@ -690,7 +699,8 @@
 
 	[contentFilterTableView reloadData];
 	[contentFilterArrayController rearrangeObjects];
-
+	[draggedIndexes release];
+	[draggedRows release];
 	return YES;
 }
 

@@ -2907,9 +2907,9 @@
 /**
  * Enable drag from tableview
  */
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
-{	
-	if (tableView == tableContentView) {
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
+{
+	if (aTableView == tableContentView) {
 		NSString *tmp;
 		
 		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
@@ -2917,7 +2917,7 @@
 		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
 			tmp = [tableContentView selectedRowsAsSqlInserts];
 		else
-			tmp = [tableContentView draggedRowsAsTabString:rows];
+			tmp = [tableContentView draggedRowsAsTabString];
 		
 		if ( nil != tmp && [tmp length] )
 		{
@@ -2930,7 +2930,7 @@
 			return YES;
 		}
 	}
-	
+
 	return NO;
 }
 

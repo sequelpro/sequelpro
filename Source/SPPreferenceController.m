@@ -553,25 +553,19 @@
 #pragma mark TableView drag & drop datasource methods
 
 // -------------------------------------------------------------------------------
-// tableView:writeRows:toPasteboard:
+// tableView:writeRowsWithIndexes:toPasteboard:
 // -------------------------------------------------------------------------------
-- (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
-	int originalRow;
-	NSArray *pboardTypes;
-	
+
 	if ([rows count] == 1) {
-		pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
-		originalRow = [[rows objectAtIndex:0] intValue];
-		
-		[pboard declareTypes:pboardTypes owner:nil];
-		[pboard setString:[[NSNumber numberWithInt:originalRow] stringValue] forType:SPFavoritesPasteboardDragType];
-		
+		[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:nil];
+		[pboard setString:[[NSNumber numberWithInt:[rows firstIndex]] stringValue] forType:SPFavoritesPasteboardDragType];
 		return YES;
-	} 
-	else {		
+	} else {
 		return NO;
 	}
+
 }
 
 // -------------------------------------------------------------------------------
