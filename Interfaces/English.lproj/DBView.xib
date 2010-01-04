@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="663"/>
+			<integer value="662"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3279,7 +3279,7 @@
 																								<reference key="NSMenu" ref="960790892"/>
 																								<string key="NSTitle">Save Query to Favorites</string>
 																								<string key="NSKeyEquiv"/>
-																								<int key="NSKeyEquivModMask">1048576</int>
+																								<int key="NSKeyEquivModMask">524288</int>
 																								<int key="NSMnemonicLoc">2147483647</int>
 																								<reference key="NSOnImage" ref="450876295"/>
 																								<reference key="NSMixedImage" ref="414351669"/>
@@ -3346,6 +3346,7 @@
 																							</object>
 																						</object>
 																					</object>
+																					<int key="NSSelectedIndex">2</int>
 																					<bool key="NSPullDown">YES</bool>
 																					<int key="NSPreferredEdge">3</int>
 																					<bool key="NSUsesItemFromMenu">YES</bool>
@@ -22447,7 +22448,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{384, 575}, {212, 108}}</string>
+					<string>{{570, 699}, {212, 108}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<object class="NSMutableDictionary">
@@ -23847,7 +23848,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="336702336"/>
-							<string key="toolTip">Save editor content to Favorite. Press ⌘ to restrict for current query or selection.</string>
+							<string key="toolTip">Save editor content to Favorite. Press ⌥ to restrict for current query or selection.</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
