@@ -1061,11 +1061,14 @@
 
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:lastSelectedContentFilterIndex];
 	NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] intValue];
-	if ([[filter objectForKey:@"NumberOfArguments"] intValue] == 2) {
+	if (numOfArgs == 2) {
 		[argumentField setHidden:YES];
 
-		if(numOfArgs == 1)
+		if([filter objectForKey:@"ConjunctionLabels"] && [[filter objectForKey:@"ConjunctionLabels"] count] == 1)
 			[betweenTextField setStringValue:[[filter objectForKey:@"ConjunctionLabels"] objectAtIndex:0]];
+		else
+			[betweenTextField setStringValue:@""];
+
 		[betweenTextField setHidden:NO];
 		[firstBetweenField setHidden:NO];
 		[secondBetweenField setHidden:NO];

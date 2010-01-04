@@ -182,7 +182,7 @@
 			NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
 			[d setDictionary:[contentFilters objectAtIndex:i]];
 			NSMutableArray *conjLabel = [[NSMutableArray alloc] init];
-			numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
+			numOfArgs = [[[d objectForKey:@"Clause"] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
 			if(numOfArgs > 1) {
 				if([d objectForKey:@"ConjunctionLabel"]) {
 					[conjLabel addObject:[d objectForKey:@"ConjunctionLabel"]];
