@@ -3018,6 +3018,22 @@
 }
 
 /**
+ * Abort editing of the Favorite and History search field editors if user presses ARROW UP or DOWN
+ * to allow to navigate through the menu item list.
+ */
+- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView doCommandBySelector:(SEL)commandSelector
+{
+	if(control == queryHistorySearchField || control == queryFavoritesSearchField) {
+		if(commandSelector == @selector(moveDown:) || commandSelector == @selector(moveUp:)) {
+			[queryHistorySearchField abortEditing];
+			[queryFavoritesSearchField abortEditing];
+			return YES;
+		}
+	}
+	return NO;
+}
+
+/**
  * Setup various interface controls.
  */
 - (void)awakeFromNib
