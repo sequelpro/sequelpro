@@ -3027,11 +3027,30 @@
 		if(commandSelector == @selector(moveDown:) || commandSelector == @selector(moveUp:)) {
 			[queryHistorySearchField abortEditing];
 			[queryFavoritesSearchField abortEditing];
+
+			// Send moveDown/Up to the popup menu
+			NSEvent *arrowEvent;
+			if(commandSelector == @selector(moveDown:))
+				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7D];
+			else
+				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7E];
+			[[NSApplication sharedApplication] postEvent:arrowEvent atStart:NO];
 			return YES;
+
 		}
 	}
 	return NO;
 }
+// - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item
+// {
+// // Set the focus at the search field
+// // TODO : but no way out; always selecting first/last menu item
+// // because after setting focus to search field NSMenu selectedItemIndex is -1
+// 	if(item == queryHistorySearchMenuItem) {
+// 		[queryHistorySearchField selectText:nil];
+// 	}
+// 
+// }
 
 /**
  * Setup various interface controls.
@@ -3041,7 +3060,7 @@
 	// Set pre-defined menu tags 
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
-	
+
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];	
 	
