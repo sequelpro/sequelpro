@@ -40,6 +40,7 @@
 #import "SPQueryFavoriteManager.h"
 #import "SPQueryController.h"
 #import "SPConstants.h"
+#import "SPEncodingPopupAccessory.h"
 
 @implementation CustomQuery
 
@@ -225,7 +226,7 @@
 	[prefs synchronize];
 
 	// Choose history item
-	if ([queryHistoryButton indexOfSelectedItem] > 1) {
+	if ([queryHistoryButton indexOfSelectedItem] > 6) {
 
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
 
@@ -253,17 +254,6 @@
  */
 - (IBAction)gearMenuItemSelected:(id)sender
 {
-	// "Clear History" menu item - clear query history
-	if (sender == clearHistoryMenuItem) {
-
-		// Remove all history buttons except the search field and separator beginning from the end
-		while([queryHistoryButton numberOfItems] > 3)
-			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-
-		// Remove all items from the queryController
-		[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
-
-	}
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
 	if (sender == shiftRightMenuItem) {
@@ -336,6 +326,67 @@
 		[autouppercaseKeywordsMenuItem setState:enableAutouppercaseKeywords?NSOnState:NSOffState];
 		[textView setAutouppercaseKeywords:enableAutouppercaseKeywords];
 	}
+}
+
+- (IBAction)saveQueryHistory:(id)sender
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:SPFileExtensionSQL];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:YES];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setCanCreateDirectories:YES];
+
+	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
+	
+	[encodingPopUp setEnabled:YES];
+	
+	[panel beginSheetForDirectory:nil file:@"history" modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveHistory"];
+}
+
+- (IBAction)copyQueryHistory:(id)sender
+{
+
+	NSPasteboard *pb = [NSPasteboard generalPasteboard];
+
+	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+	[pb setString:[self buildHistoryString] forType:NSStringPboardType];
+
+}
+
+// "Clear History" menu item - clear query history
+- (IBAction)clearQueryHistory:(id)sender
+{
+
+	NSString *infoString;
+
+	if ([tableDocumentInstance isUntitled])
+		infoString = NSLocalizedString(@"Are you sure you want to clear the global history list? This action cannot be undone.", @"clear global history list informative message");
+	else
+		infoString = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to clear the history list for “%@”? This action cannot be undone.", @"clear history list for “%@” informative message"), [tableDocumentInstance displayName]];
+
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Clear History?", @"clear history message") 
+									 defaultButton:NSLocalizedString(@"Clear", @"clear button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+									   otherButton:nil
+						 informativeTextWithFormat:infoString];
+
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
+	[alert beginSheetModalForWindow:tableWindow 
+					  modalDelegate:self 
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:@"clearHistory"];
+
 }
 
 /*
@@ -618,11 +669,14 @@
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
 
 		// Add it to the document's current popup list
-		[queryHistoryButton insertItemWithTitle:usedQuery atIndex:3];
+		if([queryHistoryButton numberOfItems] > 8)
+			[queryHistoryButton insertItemWithTitle:usedQuery atIndex:7];
+		else
+			[queryHistoryButton addItemWithTitle:usedQuery];
 
 		// Check for max history
 		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
-		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 3 )
+		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 6 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
 	}
@@ -2719,6 +2773,19 @@
 	return numberOfQueries;
 }
 
+- (NSString *)buildHistoryString
+{
+	NSMutableString *history = [NSMutableString string];
+	NSMenu *menu = [queryHistoryButton menu];
+	NSInteger i;
+	
+	for (i = 7; i < [menu numberOfItems]; i++) {
+		[history appendString:[[menu itemAtIndex:i] title]];
+		[history appendString:@";\n"];
+	}
+
+	return history;
+}
 /*
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
@@ -2743,10 +2810,29 @@
 }
 
 /**
- * Called when the save query favorite sheet is dismissed.
+ * Called when the save query favorite/clear history sheet is dismissed.
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
 {
+
+	if ([contextInfo isEqualToString:@"clearHistory"]) {
+		if (returnCode == NSOKButton) {
+
+			// Remove all history buttons up to the search field and separator beginning from the end
+			while([queryHistoryButton numberOfItems] > 7)
+				[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+
+			// Clear the global history list if doc is Untitled
+			if ([tableDocumentInstance isUntitled])
+				[prefs setObject:[NSArray array] forKey:SPQueryHistory];
+			// otherwise remove all document-based history items from the queryController
+			else
+				[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
+
+		}
+		return;
+	}
+
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
 		if (returnCode == NSOKButton) {
 			
@@ -2793,6 +2879,25 @@
 	[queryFavoriteNameTextField setStringValue:@""];
 }
 
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo
+{
+	if([contextInfo isEqualToString:@"saveHistory"]) {
+		if (returnCode == NSOKButton) {
+			NSError *error = nil;
+		
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
+			[prefs synchronize];
+		
+			[[self buildHistoryString] writeToFile:[panel filename] 
+										atomically:YES 
+										  encoding:[[encodingPopUp selectedItem] tag] 
+											 error:&error];
+		
+			if (error) [[NSAlert alertWithError:error] runModal];
+		}
+	}
+}
+
 /**
  * Menu item validation.
  */
@@ -2817,6 +2922,22 @@
 	// Avoid selecting button list headers
 	if ( [menuItem tag] == SP_FAVORITE_HEADER_MENUITEM_TAG ) {
 		return NO;
+	}
+
+	// Control Clear History menu item title according to isUntitled
+	if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
+		if ( [tableDocumentInstance isUntitled] ) {
+			[menuItem setTitle:NSLocalizedString(@"Clear global History", @"clear global history menu item title")];
+			[menuItem setToolTip:NSLocalizedString(@"Clear the global history list", @"clear the global history list tooltip message")];
+		} else {
+			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Clear History for “%@”", @"clear history for “%@” menu title"), [tableDocumentInstance displayName]]];
+			[menuItem setToolTip:NSLocalizedString(@"Clear the document-based history list", @"clear the document-based history list tooltip message")];
+		}
+	}
+
+	// Check for History items
+	if ( [menuItem tag] >= SP_HISTORY_COPY_MENUITEM_TAG && [menuItem tag] <= SP_HISTORY_CLEAR_MENUITEM_TAG ) {
+		return ([queryHistoryButton numberOfItems]-7);
 	}
 
 	return YES;
@@ -2890,7 +3011,7 @@
 	NSMenu *menu = [queryHistoryButton menu];
 	NSString *searchPattern = [queryHistorySearchField stringValue];
 	
-	for (i = 3; i < [menu numberOfItems]; i++)
+	for (i = 7; i < [menu numberOfItems]; i++)
 	{
 		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
 	}

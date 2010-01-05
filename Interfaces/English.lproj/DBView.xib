@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="662"/>
+			<integer value="1183"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3207,9 +3207,55 @@
 																						<object class="NSMutableArray" key="NSMenuItems">
 																							<bool key="EncodedWithXMLCoder">YES</bool>
 																							<reference ref="13183167"/>
+																							<object class="NSMenuItem" id="839393306">
+																								<reference key="NSMenu" ref="766637184"/>
+																								<string key="NSTitle">Copy History</string>
+																								<string key="NSKeyEquiv"/>
+																								<int key="NSKeyEquivModMask">524288</int>
+																								<int key="NSMnemonicLoc">2147483647</int>
+																								<reference key="NSOnImage" ref="450876295"/>
+																								<reference key="NSMixedImage" ref="414351669"/>
+																								<string key="NSAction">_popUpItemAction:</string>
+																								<int key="NSTag">300000</int>
+																								<reference key="NSTarget" ref="830957297"/>
+																							</object>
+																							<object class="NSMenuItem" id="216334303">
+																								<reference key="NSMenu" ref="766637184"/>
+																								<bool key="NSIsAlternate">YES</bool>
+																								<string key="NSTitle">Save History…</string>
+																								<string key="NSKeyEquiv"/>
+																								<int key="NSMnemonicLoc">2147483647</int>
+																								<reference key="NSOnImage" ref="450876295"/>
+																								<reference key="NSMixedImage" ref="414351669"/>
+																								<string key="NSAction">_popUpItemAction:</string>
+																								<int key="NSTag">300001</int>
+																								<reference key="NSTarget" ref="830957297"/>
+																							</object>
+																							<object class="NSMenuItem" id="6128">
+																								<reference key="NSMenu" ref="766637184"/>
+																								<string key="NSTitle">Clear History</string>
+																								<string key="NSKeyEquiv"/>
+																								<int key="NSMnemonicLoc">2147483647</int>
+																								<reference key="NSOnImage" ref="450876295"/>
+																								<reference key="NSMixedImage" ref="414351669"/>
+																								<string key="NSAction">_popUpItemAction:</string>
+																								<int key="NSTag">300002</int>
+																								<reference key="NSTarget" ref="830957297"/>
+																							</object>
+																							<object class="NSMenuItem" id="584172454">
+																								<reference key="NSMenu" ref="766637184"/>
+																								<bool key="NSIsDisabled">YES</bool>
+																								<bool key="NSIsSeparator">YES</bool>
+																								<string key="NSTitle"/>
+																								<string key="NSKeyEquiv"/>
+																								<int key="NSMnemonicLoc">2147483647</int>
+																								<reference key="NSOnImage" ref="450876295"/>
+																								<reference key="NSMixedImage" ref="414351669"/>
+																								<string key="NSAction">_popUpItemAction:</string>
+																								<reference key="NSTarget" ref="830957297"/>
+																							</object>
 																							<object class="NSMenuItem" id="252023923">
 																								<reference key="NSMenu" ref="766637184"/>
-																								<bool key="NSIsHidden">YES</bool>
 																								<string key="NSTitle">..placeholder for seachfield..</string>
 																								<string key="NSKeyEquiv"/>
 																								<int key="NSMnemonicLoc">2147483647</int>
@@ -3232,6 +3278,7 @@
 																							</object>
 																						</object>
 																					</object>
+																					<int key="NSSelectedIndex">3</int>
 																					<bool key="NSPullDown">YES</bool>
 																					<int key="NSPreferredEdge">3</int>
 																					<bool key="NSUsesItemFromMenu">YES</bool>
@@ -3346,7 +3393,6 @@
 																							</object>
 																						</object>
 																					</object>
-																					<int key="NSSelectedIndex">2</int>
 																					<bool key="NSPullDown">YES</bool>
 																					<int key="NSPreferredEdge">3</int>
 																					<bool key="NSUsesItemFromMenu">YES</bool>
@@ -3452,17 +3498,6 @@
 																								<reference key="NSMixedImage" ref="414351669"/>
 																								<string key="NSAction">_popUpItemAction:</string>
 																								<int key="NSTag">4</int>
-																								<reference key="NSTarget" ref="984501775"/>
-																							</object>
-																							<object class="NSMenuItem" id="131332669">
-																								<reference key="NSMenu" ref="60735230"/>
-																								<string key="NSTitle">Clear History</string>
-																								<string key="NSKeyEquiv"/>
-																								<int key="NSMnemonicLoc">2147483647</int>
-																								<reference key="NSOnImage" ref="450876295"/>
-																								<reference key="NSMixedImage" ref="414351669"/>
-																								<string key="NSAction">_popUpItemAction:</string>
-																								<int key="NSTag">5</int>
 																								<reference key="NSTarget" ref="984501775"/>
 																							</object>
 																							<object class="NSMenuItem" id="128208712">
@@ -3639,7 +3674,7 @@
 																						</object>
 																						<bool key="NSNoAutoenable">YES</bool>
 																					</object>
-																					<int key="NSSelectedIndex">18</int>
+																					<int key="NSSelectedIndex">17</int>
 																					<bool key="NSPullDown">YES</bool>
 																					<int key="NSPreferredEdge">1</int>
 																					<bool key="NSUsesItemFromMenu">YES</bool>
@@ -12504,22 +12539,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">clearHistoryMenuItem</string>
-						<reference key="source" ref="601471102"/>
-						<reference key="destination" ref="131332669"/>
-					</object>
-					<int key="connectionID">5315</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">gearMenuItemSelected:</string>
-						<reference key="source" ref="601471102"/>
-						<reference key="destination" ref="131332669"/>
-					</object>
-					<int key="connectionID">5316</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">autouppercaseKeywordsMenuItem</string>
 						<reference key="source" ref="601471102"/>
 						<reference key="destination" ref="81663257"/>
@@ -14810,6 +14829,54 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="678281118"/>
 					</object>
 					<int key="connectionID">6667</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">clearHistoryMenuItem</string>
+						<reference key="source" ref="601471102"/>
+						<reference key="destination" ref="6128"/>
+					</object>
+					<int key="connectionID">6671</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">saveHistoryMenuItem</string>
+						<reference key="source" ref="601471102"/>
+						<reference key="destination" ref="216334303"/>
+					</object>
+					<int key="connectionID">6672</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">copyHistoryMenuItem</string>
+						<reference key="source" ref="601471102"/>
+						<reference key="destination" ref="839393306"/>
+					</object>
+					<int key="connectionID">6673</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">copyQueryHistory:</string>
+						<reference key="source" ref="601471102"/>
+						<reference key="destination" ref="839393306"/>
+					</object>
+					<int key="connectionID">6674</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">saveQueryHistory:</string>
+						<reference key="source" ref="601471102"/>
+						<reference key="destination" ref="216334303"/>
+					</object>
+					<int key="connectionID">6675</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">clearQueryHistory:</string>
+						<reference key="source" ref="601471102"/>
+						<reference key="destination" ref="6128"/>
+					</object>
+					<int key="connectionID">6676</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -17262,7 +17329,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<reference ref="92094248"/>
 							<reference ref="1041161373"/>
 							<reference ref="371024017"/>
-							<reference ref="131332669"/>
 							<reference ref="233912625"/>
 							<reference ref="413416694"/>
 							<reference ref="852328440"/>
@@ -17321,11 +17387,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<object class="IBObjectRecord">
 						<int key="objectID">5295</int>
 						<reference key="object" ref="371024017"/>
-						<reference key="parent" ref="60735230"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">5294</int>
-						<reference key="object" ref="131332669"/>
 						<reference key="parent" ref="60735230"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -17424,6 +17485,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<reference ref="13183167"/>
 							<reference ref="252023923"/>
 							<reference ref="194438958"/>
+							<reference ref="216334303"/>
+							<reference ref="6128"/>
+							<reference ref="584172454"/>
+							<reference ref="839393306"/>
 						</object>
 						<reference key="parent" ref="830957297"/>
 					</object>
@@ -20871,6 +20936,26 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="object" ref="843215079"/>
 						<reference key="parent" ref="429029434"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">6668</int>
+						<reference key="object" ref="839393306"/>
+						<reference key="parent" ref="766637184"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">6669</int>
+						<reference key="object" ref="216334303"/>
+						<reference key="parent" ref="766637184"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">6670</int>
+						<reference key="object" ref="6128"/>
+						<reference key="parent" ref="766637184"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">6677</int>
+						<reference key="object" ref="584172454"/>
+						<reference key="parent" ref="766637184"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -21568,7 +21653,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>5291.IBPluginDependency</string>
 					<string>5292.IBPluginDependency</string>
 					<string>5293.IBPluginDependency</string>
-					<string>5294.IBPluginDependency</string>
 					<string>5295.IBPluginDependency</string>
 					<string>5296.IBPluginDependency</string>
 					<string>5297.IBPluginDependency</string>
@@ -22151,6 +22235,13 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>6653.IBAttributePlaceholdersKey</string>
 					<string>6653.IBPluginDependency</string>
 					<string>6654.IBPluginDependency</string>
+					<string>6668.IBAttributePlaceholdersKey</string>
+					<string>6668.IBPluginDependency</string>
+					<string>6669.IBAttributePlaceholdersKey</string>
+					<string>6669.IBPluginDependency</string>
+					<string>6670.IBAttributePlaceholdersKey</string>
+					<string>6670.IBPluginDependency</string>
+					<string>6677.IBPluginDependency</string>
 					<string>669.IBPluginDependency</string>
 					<string>669.ImportedFromIB2</string>
 					<string>67.ImportedFromIB2</string>
@@ -22448,7 +22539,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{570, 699}, {212, 108}}</string>
+					<string>{{510, 680}, {212, 108}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<object class="NSMutableDictionary">
@@ -22473,7 +22564,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{502, 636}, {212, 47}}</string>
+					<string>{{628, 680}, {212, 108}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23032,10 +23123,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{313, 430}, {944, 550}}</string>
+					<string>{{253, 411}, {944, 550}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="NO"/>
-					<string>{{313, 430}, {944, 550}}</string>
+					<string>{{253, 411}, {944, 550}}</string>
 					<integer value="1"/>
 					<integer value="1"/>
 					<string>{{62, 352}, {845, 504}}</string>
@@ -23201,8 +23292,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{247, 228}, {256, 357}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{522, 364}, {256, 445}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23986,6 +24076,33 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="839393306"/>
+							<string key="toolTip">Copy all history items into the pasteboard.</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="216334303"/>
+							<string key="toolTip">Save all history items to file. Press ⌥ for copy them.</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<reference key="dict.sortedKeys" ref="0"/>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<integer value="1"/>
@@ -24149,7 +24266,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">6667</int>
+			<int key="maxID">6677</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -25662,7 +25779,9 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>chooseQueryFavorite:</string>
 							<string>chooseQueryHistory:</string>
+							<string>clearQueryHistory:</string>
 							<string>closeSheet:</string>
+							<string>copyQueryHistory:</string>
 							<string>filterQueryFavorites:</string>
 							<string>filterQueryHistory:</string>
 							<string>gearMenuItemSelected:</string>
@@ -25675,12 +25794,16 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>helpTargetDispatcher:</string>
 							<string>runAllQueries:</string>
 							<string>runSelectedQueries:</string>
+							<string>saveQueryHistory:</string>
 							<string>showAutoHelpForCurrentWord:</string>
 							<string>showHelpForCurrentWord:</string>
 							<string>showHelpForSearchString:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -25714,6 +25837,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>commentCurrentQueryMenuItem</string>
 							<string>commentLineOrSelectionMenuItem</string>
 							<string>completionListMenuItem</string>
+							<string>copyHistoryMenuItem</string>
 							<string>customQueryScrollView</string>
 							<string>customQueryView</string>
 							<string>editorFontMenuItem</string>
@@ -25741,6 +25865,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>runAllMenuItem</string>
 							<string>runSelectionButton</string>
 							<string>runSelectionMenuItem</string>
+							<string>saveHistoryMenuItem</string>
 							<string>saveQueryFavoriteButton</string>
 							<string>saveQueryFavoriteGlobal</string>
 							<string>shiftLeftMenuItem</string>
@@ -25754,6 +25879,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
+							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
@@ -25788,6 +25914,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>id</string>
 							<string>NSMenuItem</string>
 							<string>id</string>
+							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
 							<string>NSButton</string>
 							<string>id</string>
