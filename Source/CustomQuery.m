@@ -669,14 +669,14 @@
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
 
 		// Add it to the document's current popup list
-		if([queryHistoryButton numberOfItems] > 8)
+		if([queryHistoryButton numberOfItems] > 7)
 			[queryHistoryButton insertItemWithTitle:usedQuery atIndex:7];
 		else
 			[queryHistoryButton addItemWithTitle:usedQuery];
 
 		// Check for max history
 		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
-		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 6 )
+		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 7 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
 	}
