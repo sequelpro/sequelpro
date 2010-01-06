@@ -2927,7 +2927,7 @@
 	// Control Clear History menu item title according to isUntitled
 	if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
 		if ( [tableDocumentInstance isUntitled] ) {
-			[menuItem setTitle:NSLocalizedString(@"Clear global History", @"clear global history menu item title")];
+			[menuItem setTitle:NSLocalizedString(@"Clear Global History", @"clear global history menu item title")];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the global history list", @"clear the global history list tooltip message")];
 		} else {
 			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Clear History for “%@”", @"clear history for “%@” menu title"), [tableDocumentInstance displayName]]];
