@@ -1131,8 +1131,15 @@
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _addDatabase];
+		} else {
+			// reset chooseDatabaseButton
+			if([[self database] length])
+				[chooseDatabaseButton selectItemWithTitle:[self database]];
+			else
+				[chooseDatabaseButton selectItemAtIndex:0];
 		}
 	}
+
 }
 
 /**
@@ -3346,8 +3353,8 @@
 	if ([identifier isEqualToString:SPMainToolbarClearConsole]) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
-	
-	if (![identifier isEqualToString:SPMainToolbarCustomQuery]) {
+
+	if (![identifier isEqualToString:SPMainToolbarCustomQuery] && ![identifier isEqualToString:SPMainToolbarUserManager]) {
 		return (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) || 
 				([tablesListInstance tableType] == SP_TABLETYPE_VIEW));
 	}
