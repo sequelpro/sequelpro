@@ -116,39 +116,40 @@
 		 * using information_schema gives us more info (for information window perhaps?) but breaks
 		 * backward compatibility with pre 4 I believe. I left the other methods below, in case.
 		 */
-		NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
-		theResult = [mySQLConnection queryString:pQuery];
+		if ([mySQLConnection serverMajorVersion] >= 5) {
+			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
+			theResult = [mySQLConnection queryString:pQuery];
 		
-		// Check for mysql errors - if information_schema is not accessible for some reasons
-		// omit adding procedures and functions
-		if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
-			// add the header row
-			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
-			[theResult dataSeek:0];
+			// Check for mysql errors - if information_schema is not accessible for some reasons
+			// omit adding procedures and functions
+			if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
+				// add the header row
+				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
+				[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+				[theResult dataSeek:0];
 			
-			if( [theResult numOfFields] == 1 ) {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
-					if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
-					} else {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+				if( [theResult numOfFields] == 1 ) {
+					for( i = 0; i < [theResult numOfRows]; i++ ) {
+						[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
+						if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
+							[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
+						} else {
+							[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+						}
 					}
+				} else {
+					for( i = 0; i < [theResult numOfRows]; i++ ) {
+						resultRow = [theResult fetchRowAsArray];
+						[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
+						if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
+							[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
+						} else {
+							[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+						}
+					}	
 				}
-			} else {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					resultRow = [theResult fetchRowAsArray];
-					[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
-					if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
-					} else {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
-					}
-				}	
 			}
 		}
-		
 		/*
 		BOOL addedPFHeader = FALSE;
 		NSString *pQuery = [NSString stringWithFormat:@"SHOW PROCEDURE STATUS WHERE db = '%@'",[tableDocumentInstance database]];
