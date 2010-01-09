@@ -129,7 +129,7 @@
 	if(self = [self init])
 	{
 
-		if(aUserString)
+		if(aUserString && ![aUserString isEqualToString:@"`"])
 			[mutablePrefix appendString:aUserString];
 
 		if(aStaticPrefix)

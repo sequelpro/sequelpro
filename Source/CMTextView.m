@@ -226,7 +226,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
 	// plus all unique words used in the textView
-	BOOL isDictMode = ([[[self textStorage] attribute:kQuote atIndex:[self getRangeForCurrentWord].location effectiveRange:nil] isEqualToString:kQuoteValue] );
+	BOOL isDictMode = NO;
+	if([self getRangeForCurrentWord].length)
+		isDictMode = ([[[self textStorage] attribute:kQuote atIndex:[self getRangeForCurrentWord].location effectiveRange:nil] isEqualToString:kQuoteValue] );
 
 	// Refresh quote attributes
 	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
