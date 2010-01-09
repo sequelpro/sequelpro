@@ -424,9 +424,11 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
-	if([[aTableColumn identifier] isEqualToString:@"MenuLabel"] && [anObject length]) {
-		[[contentFilters objectAtIndex:rowIndex] setObject:[anObject description] forKey:@"MenuLabel"];
-		[contentFilterNameTextField setStringValue:[anObject description]];
+	if([[aTableColumn identifier] isEqualToString:@"MenuLabel"]) {
+		if([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length]) {
+			[[contentFilters objectAtIndex:rowIndex] setObject:anObject forKey:@"MenuLabel"];
+			[contentFilterNameTextField setStringValue:anObject];
+		}
 	}
 
 	[contentFilterTableView reloadData];

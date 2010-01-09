@@ -411,7 +411,7 @@
 			break;
 		case 2: // hex - load on demand
 			[[self window] makeFirstResponder:hexTextView];
-			if([sheetEditData length] && [[hexTextView string] isEqualToString:@""]) {
+			if([[hexTextView string] isEqualToString:@""]) {
 				[editSheetProgressBar startAnimation:self];
 				if([sheetEditData isKindOfClass:[NSData class]]) {
 					[hexTextView setString:[sheetEditData dataToFormattedHexString]];

@@ -426,10 +426,12 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
-	if([[aTableColumn identifier] isEqualToString:@"name"] && [anObject length]) {
-		[[favorites objectAtIndex:rowIndex] setObject:[anObject description] forKey:@"name"];
-		// [[favorites objectAtIndex:rowIndex] setObject:[favoriteQueryTextView string] forKey:@"query"];
-		[favoriteNameTextField setStringValue:[anObject description]];
+	if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		if([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length]) {
+			[[favorites objectAtIndex:rowIndex] setObject:anObject forKey:@"name"];
+			// [[favorites objectAtIndex:rowIndex] setObject:[favoriteQueryTextView string] forKey:@"query"];
+			[favoriteNameTextField setStringValue:anObject];
+		}
 	}
 
 	[favoritesTableView reloadData];
