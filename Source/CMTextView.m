@@ -128,11 +128,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode
 {
+
 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
+
+	if(isDictMode) {
+		for (id w in [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[currentWord length]) inString:currentWord language:nil inSpellDocumentWithTag:0])
+			[compl addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
+
+		return [compl autorelease];
+	}
+
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
 
-
-	if([mySQLConnection isConnected] && !isDictMode)
+	if([mySQLConnection isConnected])
 	{
 		// Add table names to completions list
 		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
@@ -214,15 +222,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// No completion for a selection (yet?)
 	if ([self selectedRange].length > 0) return;
-	
-	// Refresh quote attributes
-	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
-	// [self insertText:@""];
-	
+
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
 	// plus all unique words used in the textView
 	BOOL isDictMode = ([[[self textStorage] attribute:kQuote atIndex:[self getRangeForCurrentWord].location effectiveRange:nil] isEqualToString:kQuoteValue] );
+
+	// Refresh quote attributes
+	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
+	// [self insertText:@""];
 
 	NSString* filter     = [[self string] substringWithRange:[self getRangeForCurrentWord]];
 	NSString* prefix     = @"";
