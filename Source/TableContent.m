@@ -1840,7 +1840,7 @@
 
 	// Report errors which have occurred
 	} else {
-		NSBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
+		NSBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
 						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
@@ -1869,8 +1869,7 @@
 		return YES;
 	}
 
-	// Saving failed - reselect the old row and return failure.
-	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+	// Saving failed - return failure.
 	isSavingRow = NO;
 	return NO;
 }
@@ -2033,11 +2032,10 @@
 		[[sheet window] orderOut:self];
 
 	if ( [contextInfo isEqualToString:@"addrow"] ) {
-		[sheet orderOut:self];
 		
 		if ( returnCode == NSAlertDefaultReturn ) {
-			//problem: reenter edit mode doesn't function
-			[tableContentView editColumn:0 row:[tableContentView selectedRow] withEvent:nil select:YES];
+			[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+			[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 		} else {
 			if ( !isEditingNewRow ) {
 				[tableValues replaceObjectAtIndex:[tableContentView selectedRow]

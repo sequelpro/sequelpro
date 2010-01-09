@@ -570,8 +570,7 @@ fetches the result as an array with a dictionary for each row in it
 		return YES;
 	}
 
-	// Saving failed - reselect the old row and return failure.
-	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+	// Saving failed - return failure.
 	isSavingRow = NO;
 	return NO;
 }
@@ -779,15 +778,15 @@ fetches the result as an array with a dictionary for each row in it
 		// Problem: alert sheet doesn't respond to first click
 		if (isEditingNewRow) {
 			NSBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
-							  NSLocalizedString(@"OK", @"OK button"), 
-							  NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
+							  NSLocalizedString(@"Edit row", @"Edit row button"), 
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@'.\n\nMySQL said: %@", @"error adding field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		} 
 		else {
 			NSBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"), 
-							  NSLocalizedString(@"OK", @"OK button"), 
-							  NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
+							  NSLocalizedString(@"Edit row", @"Edit row button"), 
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@'.\n\nMySQL said: %@", @"error changing field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		}
@@ -884,10 +883,11 @@ fetches the result as an array with a dictionary for each row in it
 		if ( returnCode == NSAlertDefaultReturn ) {
 			
 			// Problem: reentering edit mode for first cell doesn't function
-			[tableSourceView editColumn:0 row:[tableSourceView selectedRow] withEvent:nil select:YES];
+			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+			[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 		} else {
 			if ( !isEditingNewRow ) {
-				[tableFields replaceObjectAtIndex:[tableSourceView selectedRow]
+				[tableFields replaceObjectAtIndex:currentlyEditingRow
 									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 				isEditingRow = NO;
 			} else {
@@ -1079,6 +1079,19 @@ returns a dictionary containing enum/set field names as key and possible values 
 	[[tableFields objectAtIndex:rowIndex] setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
 }
 
+/**
+ * Confirm whether to allow editing of a row. Returns YES by default, but NO for views.
+ */
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if ([tableDocumentInstance isWorking]) return NO;
+
+	// Return NO for views
+	if ([tablesListInstance tableType] == SP_TABLETYPE_VIEW) return NO;
+
+	return YES;
+}
+
 /*
 Begin a drag and drop operation from the table - copy a single dragged row to the drag pasteboard.
 */
@@ -1248,10 +1261,7 @@ would result in a position change.
 	// Check for which table view the selection changed
 	if (object == tableSourceView) {
 		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
-		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow) {
-			[self saveRowOnDeselect];
-			isEditingRow = NO;
-		}
+		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
 		
 		[copyFieldButton setEnabled:YES];
 
