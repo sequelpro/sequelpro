@@ -384,7 +384,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 245);
 }
@@ -392,7 +392,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 120);
 }
@@ -548,7 +548,7 @@
 		[numberOfArgsLabel setHidden:(![[contentFilterTextView string] length])];
 
 		NSUInteger numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
-		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %d", @"Number of arguments: %d"), numOfArgs]];
+		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %lu", @"Number of arguments: %lu"), (unsigned long)numOfArgs]];
 
 		[contentFilterConjunctionTextField setHidden:(numOfArgs < 2)];
 		[contentFilterConjunctionLabel setHidden:(numOfArgs < 2)];
@@ -663,7 +663,7 @@
 	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
 	NSUInteger rowIndex = [draggedIndexes firstIndex];
 	while ( rowIndex != NSNotFound ) {
-		[draggedRows addObject:[NSNumber numberWithInt:rowIndex]];
+		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
 		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
 	}
 	
@@ -675,7 +675,7 @@
 
 	for(i=0; i<[draggedRows count]; i++) {
 
-		NSInteger originalRow = [[draggedRows objectAtIndex:i] intValue];
+		NSInteger originalRow = [[draggedRows objectAtIndex:i] integerValue];
 
 		if(originalRow < destinationRow) destinationRow--;
 
@@ -710,7 +710,7 @@
 /**
  * Sheet did end method
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Is disabled - do we need that?
 	// if ([contextInfo isEqualToString:@"removeAllFavorites"]) {
@@ -745,7 +745,7 @@
 /**
  * Import panel did end method.
  */
-- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if (returnCode == NSOKButton) {
@@ -809,7 +809,7 @@
 /**
  * Save panel did end method.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if([contextInfo isEqualToString:@"exportFilter"]) {
@@ -821,7 +821,7 @@
 			NSMutableArray *filterData = [NSMutableArray array];
 
 	
-			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"content filters" forKey:@"format"];
 			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
 

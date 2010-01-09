@@ -70,7 +70,7 @@
 {
 	BOOL backEnabled = NO;
 	BOOL forwardEnabled = NO;
-	int i;
+	NSInteger i;
 	NSMenu *navMenu;
 
 	// Set the active state of the segments if appropriate
@@ -146,9 +146,9 @@
 /**
  * Retrieve the view that is currently selected from the database
  */
-- (unsigned int) currentlySelectedView
+- (NSUInteger) currentlySelectedView
 {
-	unsigned int theView = NSNotFound;
+	NSUInteger theView = NSNotFound;
 
 	NSString *viewName = [[[theDocument valueForKey:@"tableTabView"] selectedTabViewItem] identifier];
 	if ([viewName isEqualToString:@"source"]) {
@@ -185,10 +185,10 @@
 	// Work out the current document details
 	NSString *theDatabase = [theDocument database];
 	NSString *theTable = [theDocument table];
-	unsigned int theView = [self currentlySelectedView];
+	NSUInteger theView = [self currentlySelectedView];
 	NSString *contentSortCol = [tableContentInstance sortColumnName];
 	BOOL contentSortColIsAsc = [tableContentInstance sortColumnIsAscending];
-	unsigned int contentPageNumber = [tableContentInstance pageNumber];
+	NSUInteger contentPageNumber = [tableContentInstance pageNumber];
 	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 	NSRect contentViewport = [tableContentInstance viewport];
 	NSDictionary *contentFilter = [tableContentInstance filterSettings];
@@ -206,10 +206,10 @@
 		// creating a new entry every time detail is changed.
 		if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
 			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] intValue] != theView
+			&& ([[currentHistoryEntry objectForKey:@"view"] integerValue] != theView
 				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && !contentFilter)
 					|| (![currentHistoryEntry objectForKey:@"contentFilter"]
-						&& ![[contentFilter objectForKey:@"filterValue"] length]
+						&& ![(NSString *)[contentFilter objectForKey:@"filterValue"] length]
 						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NULL"]
 						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NOT NULL"])
 					|| [[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
@@ -230,9 +230,9 @@
 	NSMutableDictionary *newEntry = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 										theDatabase, @"database",
 										theTable, @"table",
-										[NSNumber numberWithInt:theView], @"view",
+										[NSNumber numberWithInteger:theView], @"view",
 										[NSNumber numberWithBool:contentSortColIsAsc], @"contentSortColIsAsc",
-										[NSNumber numberWithInt:contentPageNumber], @"contentPageNumber",
+										[NSNumber numberWithInteger:contentPageNumber], @"contentPageNumber",
 										[NSValue valueWithRect:contentViewport], @"contentViewport",
 										nil];
 	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
@@ -255,7 +255,7 @@
  * Load a history entry and attempt to return the interface to that state.
  * Performs the load in a task which is threaded as necessary.
  */
-- (void) loadEntryAtPosition:(unsigned int)position
+- (void) loadEntryAtPosition:(NSUInteger)position
 {
 
 	// Sanity check the input
@@ -270,15 +270,15 @@
 	// Start the task and perform the load
 	[theDocument startTaskWithDescription:NSLocalizedString(@"Loading history entry...", @"Loading history entry task desc")];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(loadEntryTaskWithPosition:) toTarget:self withObject:[NSNumber numberWithUnsignedInt:position]];
+		[NSThread detachNewThreadSelector:@selector(loadEntryTaskWithPosition:) toTarget:self withObject:[NSNumber numberWithUnsignedInteger:position]];
 	} else {
-		[self loadEntryTaskWithPosition:[NSNumber numberWithUnsignedInt:position]];
+		[self loadEntryTaskWithPosition:[NSNumber numberWithUnsignedInteger:position]];
 	}
 }
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber
 {
 	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
-	unsigned int position = [positionNumber unsignedIntValue];
+	NSUInteger position = [positionNumber unsignedIntegerValue];
 
 	modifyingHistoryState = YES;
 
@@ -288,7 +288,7 @@
 
 	// Set table content details for restore
 	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortCol"] boolValue]];
-	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] intValue]];
+	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
 	[tableContentInstance setSelectedRowIndexesToRestore:[historyEntry objectForKey:@"contentSelectedIndexSet"]];
 	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
 	[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
@@ -296,7 +296,7 @@
 	// If the database, table, and view are the same and content - just trigger a table reload (filters)
 	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
 		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] intValue] == [self currentlySelectedView] == SP_VIEW_CONTENT)
+		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SP_VIEW_CONTENT)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingHistoryState = NO;
@@ -338,8 +338,8 @@
 	}
 
 	// Check and set the view
-	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] intValue]) {
-		switch ([[historyEntry objectForKey:@"view"] intValue]) {
+	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
 			case SP_VIEW_STRUCTURE:
 				[theDocument viewStructure:self];
 				break;
@@ -356,7 +356,7 @@
 				[theDocument viewRelations:self];
 				break;
 		}
-		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] intValue]) {
+		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
 			return [self abortEntryLoadWithPool:loadPool];
 		}
 	}
@@ -395,7 +395,7 @@
 /**
  * Returns a menuitem for a history entry at a supplied index
  */
-- (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(int)theIndex
+- (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(NSInteger)theIndex
 {
 	NSMenuItem *theMenuItem = [[NSMenuItem alloc] init];
 	NSDictionary *theHistoryEntry = [history objectAtIndex:theIndex];
@@ -416,7 +416,7 @@
 	if (![theEntry objectForKey:@"database"]) return NSLocalizedString(@"(no selection)", @"History item title with nothing selected");
 
 	NSMutableString *theName = [NSMutableString stringWithString:[theEntry objectForKey:@"database"]];
-	if (![theEntry objectForKey:@"table"] || ![[theEntry objectForKey:@"table"] length]) return theName;
+	if (![theEntry objectForKey:@"table"] || ![(NSString *)[theEntry objectForKey:@"table"] length]) return theName;
 
 	[theName appendFormat:@"/%@", [theEntry objectForKey:@"table"]];
 
@@ -431,10 +431,10 @@
 	}
 
 	if ([theEntry objectForKey:@"contentPageNumber"]) {
-		NSUInteger pageNumber = [[theEntry objectForKey:@"contentPageNumber"] unsignedIntValue];
+		NSUInteger pageNumber = [[theEntry objectForKey:@"contentPageNumber"] unsignedIntegerValue];
 		if (pageNumber > 1) {
-			theName = [NSString stringWithFormat:NSLocalizedString(@"%@ (Page %i)", @"History item with page number label"),
-						theName, pageNumber];
+			theName = [NSString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"),
+						theName, (unsigned long)pageNumber];
 		}
 	}
 

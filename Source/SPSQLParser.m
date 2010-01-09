@@ -30,8 +30,8 @@
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
 #import "SPSQLTokenizer.h"
-extern int tolex();
-extern int yyuoffset, yyuleng;
+extern NSInteger tolex();
+extern NSInteger yyuoffset, yyuleng;
 typedef struct to_buffer_state *TO_BUFFER_STATE;
 void to_switch_to_buffer(TO_BUFFER_STATE);
 TO_BUFFER_STATE to_scan_string (const char *);
@@ -52,9 +52,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (void) deleteComments
 {
-	long currentStringIndex, commentEndIndex, quotedStringEndIndex;
+	NSUInteger currentStringIndex, commentEndIndex, quotedStringEndIndex;
 	unichar currentCharacter;
-	long stringLength = [string length];
+	NSUInteger stringLength = [string length];
 	
 	// Walk along the string, processing characters.
 	for (currentStringIndex = 0; currentStringIndex < stringLength; currentStringIndex++) {
@@ -116,7 +116,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 - (NSString *) unquotedString
 {
 	NSMutableString *returnString;
-	long stringEndIndex;
+	NSUInteger stringEndIndex;
 	unichar quoteCharacter;
 
 	if (![string length]) return nil;
@@ -167,7 +167,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (BOOL) trimToCharacter:(unichar)character inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	long stringIndex;
+	NSUInteger stringIndex;
 	
 	// Get the first occurrence of the specified character, returning NO if not found
 	stringIndex = [self firstOccurrenceOfCharacter:character ignoringQuotedStrings:ignoreQuotedStrings];
@@ -193,7 +193,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * are ignored.
  */
 - (NSString *) stringToCharacter:(unichar)character inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings {
-	long stringIndex;
+	NSUInteger stringIndex;
 	
 	// Get the first occurrence of the specified character, returning nil if not found
 	stringIndex = [self firstOccurrenceOfCharacter:character ignoringQuotedStrings:ignoreQuotedStrings];
@@ -220,7 +220,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSString *) trimAndReturnStringToCharacter:(unichar)character trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	long stringIndex;
+	NSUInteger stringIndex;
 	NSString *resultString;
 
 	if (character != parsedToChar) {
@@ -275,7 +275,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	long fromCharacterIndex, toCharacterIndex;
+	NSUInteger fromCharacterIndex, toCharacterIndex;
 
 	// Look for the first occurrence of the from: character
 	fromCharacterIndex = [self firstOccurrenceOfCharacter:fromCharacter afterIndex:-1 skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
@@ -326,7 +326,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSString *) trimAndReturnStringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	long fromCharacterIndex, toCharacterIndex;
+	NSUInteger fromCharacterIndex, toCharacterIndex;
 	NSString *resultString;
 
 	// Look for the first occurrence of the from: character
@@ -376,7 +376,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 - (NSArray *) splitStringByCharacter:(unichar)character skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
 	NSMutableArray *resultsArray = [NSMutableArray array];
-	long stringIndex = -1, nextIndex = 0;
+	NSInteger stringIndex = -1;
+	NSUInteger nextIndex = 0;
 	
 	// Walk through the string finding the character to split by, and add all strings to the array.
 	while (1) {
@@ -404,8 +405,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 {
 	NSMutableArray *resultsArray = [NSMutableArray arrayWithCapacity:2000];
 
-	long stringIndex = -1, nextIndex = 0;
-	int queryLength;
+	NSInteger stringIndex = -1;
+	NSUInteger nextIndex = 0;
+	NSInteger queryLength;
 
 	// these delimiter variables will be set in firstOccurrenceOfCharacter:
 	delimiter = nil;
@@ -419,7 +421,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	// Walk through the string finding the character to split by, and add all strings to the array.
 	while (1) {
 
-		nextIndex = (long)(*firstOccOfChar)(self, @selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
+		nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
 		if (nextIndex == NSNotFound)
 			break;
 
@@ -451,8 +453,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 {
 	NSMutableArray *resultsArray = [NSMutableArray arrayWithCapacity:2000];
 
-	long stringIndex = -1, nextIndex = 0;
-	int queryLength;
+	NSInteger stringIndex = -1;
+	NSUInteger nextIndex = 0;
+	NSInteger queryLength;
 
 	// these delimiter variables will be set in firstOccurrenceOfCharacter:
 	delimiter = nil;
@@ -465,7 +468,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	// Walk through the string finding the character to split by, and add all strings to the array.
 	while (1) {
 
-		nextIndex = (long)(*firstOccOfChar)(self, @selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
+		nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
 		if (nextIndex == NSNotFound)
 			break;
 
@@ -488,7 +491,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /*
  * A method intended for use by the functions above.
  */
-- (long) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
+- (NSUInteger) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
 	return [self firstOccurrenceOfCharacter:character afterIndex:-1 skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
 }
@@ -497,18 +500,18 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /*
  * A method intended for use by the functions above.
  */
-- (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
+- (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
 	return [self firstOccurrenceOfCharacter:character afterIndex:startIndex skippingBrackets:NO ignoringQuotedStrings:ignoreQuotedStrings];
 }
 
 
-- (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
+- (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	long currentStringIndex, quotedStringEndIndex;
+	NSUInteger currentStringIndex, quotedStringEndIndex;
 	unichar currentCharacter;
-	long stringLength = [string length];
-	int bracketingLevel = 0;
+	NSUInteger stringLength = [string length];
+	NSInteger bracketingLevel = 0;
 
 	// Cache frequently used selectors, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
@@ -537,7 +540,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			case '"':
 			case '`':
 				if (!ignoreQuotedStrings) break;
-				quotedStringEndIndex = (long)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
+				quotedStringEndIndex = (NSUInteger)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
 				if (quotedStringEndIndex == NSNotFound) {
 					parsedToPosition = stringLength - 1;
 					return NSNotFound;
@@ -586,12 +589,12 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * Look for the first occurence of a char and reset the split char on runtime
  * via “delimiter” command for splitSqlStringIntoRangesByCharacter: and splitSqlStringByCharacter.
  */
-- (long) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
+- (NSUInteger) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	long currentStringIndex, quotedStringEndIndex;
+	NSUInteger currentStringIndex, quotedStringEndIndex;
 	unichar currentCharacter;
-	long stringLength = [string length];
-	int bracketingLevel = 0;
+	NSUInteger stringLength = [string length];
+	NSInteger bracketingLevel = 0;
 
 	// Cache frequently used selectors, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
@@ -628,7 +631,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			case '"':
 			case '`':
 				if (!ignoreQuotedStrings) break;
-				quotedStringEndIndex = (long)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
+				quotedStringEndIndex = (NSUInteger)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
 				if (quotedStringEndIndex == NSNotFound) {
 					return NSNotFound;
 				}
@@ -711,9 +714,10 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /*
  * A method intended for use by the functions above.
  */
-- (long) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(long)index
+- (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)index
 {
-	long currentStringIndex, stringLength, i, quotedStringLength;
+	NSInteger currentStringIndex;
+	NSUInteger stringLength, i, quotedStringLength;
 	BOOL characterIsEscaped;
 	unichar currentCharacter;
 
@@ -769,9 +773,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /*
  * A method intended for use by the functions above.
  */
-- (long) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(long)index
+- (NSUInteger) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(NSInteger)index
 {
-	long stringLength = [string length];
+	NSUInteger stringLength = [string length];
 	unichar currentCharacter;
 
 	// Cache the charAtIndex selector, avoiding dynamic binding overhead
@@ -817,7 +821,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * Does no bounds checking on the underlying string, and so is kept
  * separate for characterAtIndex:.
  */
-- (unichar) charAtIndex:(long)index
+- (unichar) charAtIndex:(NSInteger)index
 {
 
 	// If the current cache doesn't include the current character, update it.
@@ -825,8 +829,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		if (charCacheEnd > -1) {
 			free(stringCharCache);
 		}
-		unsigned int remainingStringLength = [string length] - index;
-		unsigned int newcachelength = (CHARACTER_CACHE_LENGTH < remainingStringLength)?CHARACTER_CACHE_LENGTH:remainingStringLength;
+		NSUInteger remainingStringLength = [string length] - index;
+		NSUInteger newcachelength = (CHARACTER_CACHE_LENGTH < remainingStringLength)?CHARACTER_CACHE_LENGTH:remainingStringLength;
 		stringCharCache = (unichar *)calloc(newcachelength, sizeof(unichar));
 		[string getCharacters:stringCharCache range:NSMakeRange(index, newcachelength)];
 		charCacheEnd = index + newcachelength - 1;
@@ -873,7 +877,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	return self;
 }
-- (id) initWithBytes:(const void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding {
+- (id) initWithBytes:(const void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytes:bytes length:length encoding:encoding];
 	}
@@ -882,7 +886,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	charCacheEnd = -1;
 	return self;
 }
-- (id) initWithBytesNoCopy:(void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag {
+- (id) initWithBytesNoCopy:(void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytesNoCopy:bytes length:length encoding:encoding freeWhenDone:flag];
 	}
@@ -891,7 +895,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	charCacheEnd = -1;
 	return self;
 }
-- (id) initWithCapacity:(unsigned int)capacity {
+- (id) initWithCapacity:(NSUInteger)capacity {
 	if (self = [super init]) {
 		string = [[NSMutableString stringWithCapacity:capacity] retain];
 	}
@@ -900,7 +904,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	charCacheEnd = -1;
 	return self;
 }
-- (id) initWithCharactersNoCopy:(unichar *)characters length:(unsigned int)length freeWhenDone:(BOOL)flag {
+- (id) initWithCharactersNoCopy:(unichar *)characters length:(NSUInteger)length freeWhenDone:(BOOL)flag {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCharactersNoCopy:characters length:length freeWhenDone:flag];
 	}
@@ -952,16 +956,16 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	charCacheEnd = -1;
 	return self;
 }
-- (unsigned int) length {
+- (NSUInteger) length {
 	return [string length];
 }
-- (unichar) characterAtIndex:(unsigned int)index {
+- (unichar) characterAtIndex:(NSUInteger)index {
 	return [string characterAtIndex:index];
 }
 - (id) description {
 	return [string description];
 }
-- (unsigned int) replaceOccurrencesOfString:(NSString *)target withString:(NSString *)replacement options:(unsigned)options range:(NSRange)searchRange {
+- (NSUInteger) replaceOccurrencesOfString:(NSString *)target withString:(NSString *)replacement options:(NSUInteger)options range:(NSRange)searchRange {
 	return [string replaceOccurrencesOfString:target withString:replacement options:options range:searchRange];
 	[self clearCharCache];
 }

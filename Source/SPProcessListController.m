@@ -201,7 +201,7 @@
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %d.\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), processId]];
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lu?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), (unsigned long)processId]];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -229,7 +229,7 @@
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %d.\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), processId]];
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lu?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), (unsigned long)processId]];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -363,7 +363,7 @@
 /**
  * Table view delegate method. Returns the number of rows in the table veiw.
  */
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [processesFiltered count];
 }
@@ -436,12 +436,12 @@
 - (void)_killProcessQueryWithId:(NSUInteger)processId
 {
 	// Kill the query
-	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %d", processId]];
+	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %lu", (unsigned long)processId]];
 	
 	// Check for errors
 	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %d.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
 	}
 	
 	// Refresh the process list
@@ -454,12 +454,12 @@
 - (void)_killProcessConnectionWithId:(NSUInteger)processId
 {
 	// Kill the connection
-	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %d", processId]];
+	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %lu", (unsigned long)processId]];
 	
 	// Check for errors
 	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
 		NSBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %d.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
 	}
 	
 	// Refresh the process list
@@ -514,7 +514,7 @@
 	
 	[processListTableView reloadData];
 	
-	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered item count"), [processesFiltered count], [processes count]]];
+	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%lu of %lu", "filtered item count"), (unsigned long)[processesFiltered count], (unsigned long)[processes count]]];
 	[processesCountTextField setHidden:NO];
 	
 	if ([processesFiltered count] == 0) return;

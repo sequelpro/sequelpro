@@ -392,7 +392,7 @@
 /*
  * Set font panel's valid modes
  */
-- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+- (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
 	return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
 }
@@ -408,7 +408,7 @@
 {
 	NSString *taskString;
 	if ([queries count] > 1) {
-		taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %i...", @"Running multiple queries string"), 1, [queries count]];
+		taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %lu...", @"Running multiple queries string"), 1, (unsigned long)[queries count]];
 	} else {
 		taskString = NSLocalizedString(@"Running query...", @"Running single query string");
 	}
@@ -440,9 +440,9 @@
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
 	
-	int i, j, totalQueriesRun = 0, totalAffectedRows = 0;
+	NSInteger i, j, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
-	int firstErrorOccuredInQuery = -1;
+	NSInteger firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
 	BOOL tableListNeedsReload = NO;
 	BOOL databaseWasChanged = NO;
@@ -475,7 +475,7 @@
 	// Disable automatic query retries on failure for the custom queries
 	[mySQLConnection setAllowQueryRetries:NO];
 
-	long queryCount = [queries count];
+	NSUInteger queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
 	// Enable task cancellation
@@ -489,7 +489,7 @@
 	for ( i = 0 ; i < queryCount ; i++ ) {
 
 		if (i > 0) {
-			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %i...", @"Running multiple queries string"), i+1, queryCount];
+			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
 			[tableDocumentInstance setTaskDescription:taskString];
 			[errorText setStringValue:taskString];
 		}
@@ -534,10 +534,10 @@
 					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, j)];
 
 					// Set the width of this column to saved value if exists and maps to a real column
-					if ([columnDefinition objectForKey:@"org_name"] && [[columnDefinition objectForKey:@"org_name"] length]) {
+					if ([columnDefinition objectForKey:@"org_name"] && [(NSString *)[columnDefinition objectForKey:@"org_name"] length]) {
 						NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
 						if ( colWidth ) {
-							[theCol setWidth:[colWidth floatValue]];
+							[theCol setWidth:[colWidth doubleValue]];
 						}
 					}
 
@@ -550,9 +550,9 @@
 				//tries to fix problem with last row (otherwise to small)
 				//sets last column to width of the first if smaller than 30
 				//problem not fixed for resizing window
-				if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]] width] < 30 )
-					[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:[theColumns count]-1]]
-							setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInt:0]] width]];
+				if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]] width] < 30 )
+					[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]]
+							setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:0]] width]];
 			}
 
 			[self processResultIntoDataStorage:streamingResult];
@@ -587,8 +587,8 @@
 				if(!suppressErrorSheet)
 				{
 					// Update error text for the user
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
-										i+1,
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+										(long)(i+1),
 										errorString]];
 					[errorText setStringValue:errors];
 
@@ -601,7 +601,7 @@
 						[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
 						[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
 						[alert setAlertStyle:NSWarningAlertStyle];
-						int choice = [alert runModal];
+						NSInteger choice = [alert runModal];
 						switch (choice){
 							case NSAlertFirstButtonReturn:
 								suppressErrorSheet = YES;
@@ -614,8 +614,8 @@
 						}
 					}
 				} else {
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"),
-											i+1,
+					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+											(long)(i+1),
 											errorString]];
 				}
 			} else {
@@ -675,7 +675,7 @@
 			[queryHistoryButton addItemWithTitle:usedQuery];
 
 		// Check for max history
-		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
+		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
 		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 7 )
 			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 
@@ -690,7 +690,7 @@
 		if(errorLineNumberRange.length) // if a line number was found
 		{
 			// Get the line number
-			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] intValue];
+			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] integerValue];
 			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:queryTextViewStartPosition] - 1;
 			[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 
@@ -735,8 +735,8 @@
 	// Set up the status string
 	if ( [mySQLConnection queryCancelled] ) {
 		if (totalQueriesRun > 1) {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled in query %i, after %@", @"text showing multiple queries were cancelled"),
-                                              totalQueriesRun,
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
+                                              (long)totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 		} else {
@@ -746,15 +746,15 @@
 		}
 	} else if ( totalQueriesRun > 1 ) {
 		if (totalAffectedRows==1) {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %i queries taking %@", @"text showing one row has been affected by multiple queries"),
-                                              totalQueriesRun,
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
+                                              (long)totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 
 		} else {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected in total, by %i queries taking %@", @"text showing how many rows have been affected by multiple queries"),
-                                              totalAffectedRows,
-                                              totalQueriesRun,
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+                                              (long)totalAffectedRows,
+                                              (long)totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 
@@ -765,8 +765,8 @@
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 		} else {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%i rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
-                                              totalAffectedRows,
+			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+                                              (long)totalAffectedRows,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 
@@ -858,7 +858,7 @@
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
 {
 	NSArray *tempRow;
-	long rowsProcessed = 0;
+	NSUInteger rowsProcessed = 0;
 	NSUInteger nextTableDisplayBoundary = 50;
 	NSAutoreleasePool *dataLoadingPool;
 	BOOL tableViewRedrawn = NO;
@@ -912,15 +912,15 @@
  * Retrieve the range of the query at a position specified 
  * within the custom query text view.
  */
-- (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
+- (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind
 {
 	SPSQLParser *customQueryParser;
 	NSArray     *queries;
 	NSString    *query = nil;
 	NSRange     queryRange;
 	
-	long i, j, queryPosition = 0;
-	long queryCount;
+	NSUInteger i, j, queryPosition = 0;
+	NSUInteger queryCount;
 
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *whitespaceSet           = [NSCharacterSet whitespaceCharacterSet];
@@ -1016,8 +1016,8 @@
 
 	// Highlight by setting a background color the current query
 	// and ignore leading/trailing white spaces
-	int biasStart = [query rangeOfRegex:@"^\\s*"].length;
-	int biasEnd   = [query rangeOfRegex:@"\\s*$"].length;
+	NSInteger biasStart = [query rangeOfRegex:@"^\\s*"].length;
+	NSInteger biasEnd   = [query rangeOfRegex:@"\\s*$"].length;
 	queryRange.location += biasStart;
 	queryRange.length   -= biasEnd+biasStart;
 
@@ -1035,7 +1035,7 @@
  * Retrieve the range of the query for the passed index seen from a start position
  * specified within the custom query text view.  
  */
-- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position
+- (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position
 {
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
@@ -1063,7 +1063,7 @@
 	[queries release];
 	
 	// Remove all leading white spaces
-	int offset = [theQueryString rangeOfRegex:@"^(\\s*)"].length;
+	NSInteger offset = [theQueryString rangeOfRegex:@"^(\\s*)"].length;
 	theQueryRange.location += offset;
 	theQueryRange.length -= offset;
 	return theQueryRange;
@@ -1076,7 +1076,7 @@
  * If lookBehind is set, returns the *previous* query, but only if the
  * caret should be associated with the previous query based on whitespace.
  */
-- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind
+- (NSString *)queryAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind
 {
 
 	BOOL lookBehind = *doLookBehind;
@@ -1214,7 +1214,7 @@
 	id tableColumn;
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
-	int i;
+	NSInteger i;
 	
 	//set field names as first line
 	while ( (tableColumn = [enumerator nextObject]) ) {
@@ -1341,12 +1341,12 @@
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	if ([theResult numOfRows]) [theResult dataSeek:0];
-	int i;
+	NSInteger i;
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		theRow = [theResult fetchRowAsDictionary];
 		if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
 			for(field in columnsForFieldTableName) {
-				id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
+				id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
 				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
 					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)", 
 						[database backtickQuotedString], 
@@ -1361,7 +1361,7 @@
 	
 	// If there is no primary key, all found fields belonging to the same table are used in the argument
 	for(field in columnsForFieldTableName) {
-		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] intValue]];
+		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
 			[fieldIDQueryStr appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
@@ -1410,7 +1410,7 @@
 
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
-			NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 			id theValue = nil;
 
 			// While the table is being loaded, additional validation is required - data
@@ -1445,7 +1445,7 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == customQueryView) {
-		NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 		id theValue = nil;
 
 		// While the table is being loaded, additional validation is required - data
@@ -1512,7 +1512,7 @@
 		// NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
 		
 		// Check if the IDstring identifies the current field bijectively
-		int numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
 		if(numberOfPossibleUpdateRows == 1) {
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 			
@@ -1572,8 +1572,8 @@
 			
 		} else {
 			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%d match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
-										numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
+							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
+										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
 
 		}
 
@@ -1600,10 +1600,10 @@
 	}
 
 	if (sortField) [sortField release];
-	sortField = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
+	sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 
 	// Order by the column position number to avoid ambiguous name errors
-	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %i %@ ", [[tableColumn identifier] intValue]+1, (isDesc)?@"DESC":@"ASC"];
+	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %ld %@ ", (long)([[tableColumn identifier] integerValue]+1), (isDesc)?@"DESC":@"ASC"];
 	
 	// Remove any comments
 	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
@@ -1612,7 +1612,7 @@
 
 	// Remove all quoted strings as a temp string to match the correct clauses
 	NSRange matchedRange;
-	int i;
+	NSInteger i;
 	NSMutableString *tmpString = [NSMutableString stringWithString:queryString];
 	NSMutableString *qq = [NSMutableString string];
 	matchedRange = [tmpString rangeOfRegex:@"\"(?:[^\"\\\\]*+|\\\\.)*\""];
@@ -1791,7 +1791,7 @@
 	// possible exceptions (eg for reloading tables etc.)
 	id theValue;
 	@try{
-		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, row), [[aTableColumn identifier] intValue]);
+		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, row), [[aTableColumn identifier] integerValue]);
 	}
 	@catch(id ae) {
 		return nil;
@@ -1829,7 +1829,7 @@
 		BOOL noTableName = NO;
 		BOOL isFieldEditable;
 		BOOL isBlob;
-		int numberOfPossibleUpdateRows = -1;
+		NSInteger numberOfPossibleUpdateRows = -1;
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
@@ -1862,7 +1862,7 @@
 			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 	
 			// Actual check whether field can be identified bijectively
-			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] intValue];
+			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
 
 			isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
 
@@ -1870,7 +1870,7 @@
 				if(numberOfPossibleUpdateRows == 0)
 					[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", tableForColumn]];
 				else
-			 		[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%d match%@).", numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+			 		[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
 
 		} else {
 			// no table/databse name are given
@@ -1889,9 +1889,9 @@
 		// Set max text length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
 		 && [columnDefinition valueForKey:@"char_length"])
-			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] intValue]];
+			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
 
-		id originalData = [[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
+		id originalData = [[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] integerValue]];
 		if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
 
 		id editData = [[fieldEditor editWithObject:originalData
@@ -1935,11 +1935,11 @@
 	if (![cqColumnDefinition count]) return;
 
 	// Retrieve the original index of the column from the identifier
-	int columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] intValue];
+	NSInteger columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] integerValue];
 	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
 
 	// Don't save if the column doesn't map to an underlying SQL field
-	if (![columnDefinition objectForKey:@"org_name"] || ![[columnDefinition objectForKey:@"org_name"] length])
+	if (![columnDefinition objectForKey:@"org_name"] || ![(NSString *)[columnDefinition objectForKey:@"org_name"] length])
 		return;
 
 	NSMutableDictionary *tableColumnWidths;
@@ -1969,7 +1969,7 @@
 	}
 
 	// Save the column size
-	[[[tableColumnWidths objectForKey:host_db] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:col];
+	[[[tableColumnWidths objectForKey:host_db] objectForKey:table] setObject:[NSNumber numberWithDouble:[(NSTableColumn *)[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:col];
 	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 }
 
@@ -2037,7 +2037,7 @@
 
 	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
-	long caretPosition = currentSelection.location;
+	NSUInteger caretPosition = currentSelection.location;
 	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
 
 	// Highlight by setting a background color the current query
@@ -2150,7 +2150,7 @@
 /*
  * Defines max position of splitView
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	if ( offset == 0 ) {
 		return proposedMax - 100;
@@ -2162,7 +2162,7 @@
 /*
  * Defines min position of splitView
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	if ( offset == 0 ) {
 		return proposedMin + 100;
@@ -2181,7 +2181,7 @@
 - (void)setMySQLversion:(NSString *)theVersion
 {
 	mySQLversion = [[theVersion substringToIndex:3] retain];
-	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] intValue]];
+	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] integerValue]];
 	
 }
 
@@ -2409,7 +2409,7 @@
 - (void)openMySQLonlineDocumentationWithString:(NSString *)searchString
 {
 	NSString *version = nil;
-	if([[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""] intValue] < 42)
+	if([[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""] integerValue] < 42)
 		version = @"41";
 	else
 		version = [mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""];
@@ -2477,7 +2477,7 @@
 
 			// detect and generate http links
 			aRange = NSMakeRange(0,0);
-			int safeCnt = 0; // safety counter - not more than 200 loops allowed
+			NSInteger safeCnt = 0; // safety counter - not more than 200 loops allowed
 			while(1){
 				aRange = [desc rangeOfRegex:@"\\s((https?|ftp|file)://.*?html)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
 				if(aRange.location != NSNotFound) {
@@ -2536,8 +2536,8 @@
 			}
 		}
 	} else { // list all found topics
-		int i;
-		int r = [theResult numOfRows];
+		NSInteger i;
+		NSInteger r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
@@ -2573,7 +2573,7 @@
  */
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
-	int navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
+	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
 
 	if([[[request URL] scheme] isEqualToString:@"applewebdata"] && navigationType == WebNavigationTypeLinkClicked){
 		[self showHelpFor:[[[request URL] path] lastPathComponent] addToHistory:YES calledByAutoHelp:NO];
@@ -2619,7 +2619,7 @@
 		NSMenuItem *menuItem = nil;
 		while (menuItem = [itemEnumerator nextObject])
 		{
-			int tag = [menuItem tag];
+			NSInteger tag = [menuItem tag];
 			switch (tag)
 			{
 				case 2000: // WebMenuItemTagOpenLink
@@ -2812,7 +2812,7 @@
 /**
  * Called when the save query favorite/clear history sheet is dismissed.
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if ([contextInfo isEqualToString:@"clearHistory"]) {

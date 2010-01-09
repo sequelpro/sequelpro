@@ -78,7 +78,7 @@ static SPGrowlController *sharedGrowlController = nil;
 
 - (id)retain { return self; }
 
-- (unsigned)retainCount { return UINT_MAX; }
+- (NSUInteger)retainCount { return NSUIntegerMax; }
 
 - (id)autorelease { return self; }
 
@@ -124,7 +124,7 @@ static SPGrowlController *sharedGrowlController = nil;
 /**
  * Posts a Growl notification using the supplied details and effectively ignoring the default values.
  */
-- (void)notifyWithTitle:(NSString *)title description:(NSString *)description window:(NSWindow *)window notificationName:(NSString *)name iconData:(NSData *)data priority:(int)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
+- (void)notifyWithTitle:(NSString *)title description:(NSString *)description window:(NSWindow *)window notificationName:(NSString *)name iconData:(NSData *)data priority:(NSInteger)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
 {
 	BOOL postNotification = YES;
 

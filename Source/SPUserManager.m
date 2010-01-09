@@ -127,14 +127,14 @@
 	
 	// Select users from the mysql.user table
 	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
-	int rows = [result numOfRows];
+	NSInteger rows = [result numOfRows];
 	
 	if (rows > 0) {
 		// Go to the beginning
 		[result dataSeek:0];
 	}
 	
-	for (int i = 0; i < rows; i++)
+	for (NSInteger i = 0; i < rows; i++)
 	{
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
@@ -180,7 +180,7 @@
 	
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
-	for(int i = 0; i < [items count]; i++)
+	for(NSInteger i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
@@ -251,7 +251,7 @@
 		} 
 		else if ([key hasPrefix:@"max"]) // Resource Management restrictions
 		{
-			NSNumber *value = [NSNumber numberWithInt:[[item objectForKey:key] intValue]];
+			NSNumber *value = [NSNumber numberWithInteger:[[item objectForKey:key] integerValue]];
 			[child setValue:value forKey:key];
 		}
 		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
@@ -589,8 +589,6 @@
 		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
 		NSArray *deleted = [[notification userInfo] valueForKey:NSDeletedObjectsKey];
 		
-		NSLog(@"%d", [inserted count]);
-		
 		if ([inserted count] > 0) {
 			[self insertUsers:inserted];
 		}
@@ -814,7 +812,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 220);
 }
@@ -822,7 +820,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 120);
 }

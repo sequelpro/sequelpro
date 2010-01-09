@@ -35,9 +35,9 @@
 	// Construct and get the sub text attributed string
 	NSAttributedString *string = [self attributedStringValue];
 
-	int i;
-	float maxWidth = cellFrame.size.width;
-	float stringWidth = [string size].width;
+	NSInteger i;
+	CGFloat maxWidth = cellFrame.size.width;
+	CGFloat stringWidth = [string size].width;
 
 	// Set a right padding
 	maxWidth -= 5;

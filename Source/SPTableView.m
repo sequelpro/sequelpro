@@ -40,12 +40,12 @@
 		return [self menu];
 	
 	// Right-click at a row will select that row before ordering out the context menu
-	int row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
+	NSInteger row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
 	if(row >= 0 && row < [self numberOfRows]) {
 		
 		// Check for TablesList if right-click on header, then suppress context menu
 		if([[[[self delegate] class] description] isEqualToString:@"TablesList"]) {
-			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) intValue] == -1)
+			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) integerValue] == -1)
 				return nil;
 		}
 		if([[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {

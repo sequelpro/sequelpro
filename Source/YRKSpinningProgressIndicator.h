@@ -8,8 +8,8 @@
 
 
 @interface YRKSpinningProgressIndicator : NSView {
-    int _position;
-    int _numFins;
+    NSInteger _position;
+    NSInteger _numFins;
 
 	BOOL _isIndeterminate;
 	double _currentValue;

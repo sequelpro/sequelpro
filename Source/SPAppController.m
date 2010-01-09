@@ -159,7 +159,7 @@
 						  contextInfo:NULL];
 	} 
 	else {
-		int returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
+		NSInteger returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
 
 		if (returnCode) [self application:nil openFiles:[panel filenames]];
 
@@ -170,7 +170,7 @@
 /**
  * Invoked when the open connection panel is dismissed.
  */
-- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode) {
 		[panel orderOut:self];

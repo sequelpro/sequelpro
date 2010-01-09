@@ -149,7 +149,7 @@
 		// Set the new insertion point
 		NSPoint draggingLocation = [sender draggingLocation];
 		draggingLocation = [self convertPoint:draggingLocation fromView:nil];
-		unsigned int characterIndex = [self characterIndexOfPoint:draggingLocation];
+		NSUInteger characterIndex = [self characterIndexOfPoint:draggingLocation];
 		[self setSelectedRange:NSMakeRange(characterIndex,0)];
 
 		// Check if user pressed  ⌘ while dragging for inserting only the file path
@@ -197,7 +197,7 @@
 /*
  * Confirmation sheetDidEnd method
  */
-- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 
 	[[sheet window] orderOut:nil];
@@ -209,11 +209,11 @@
  * Convert a NSPoint, usually the mouse location, to
  * a character index of the text view.
  */
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint
+- (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint
 {
-	unsigned int glyphIndex;
+	NSUInteger glyphIndex;
 	NSLayoutManager *layoutManager = [self layoutManager];
-	float fraction;
+	CGFloat fraction;
 	NSRange range;
 
 	range = [layoutManager glyphRangeForTextContainer:[self textContainer]];

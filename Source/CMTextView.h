@@ -57,7 +57,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	NSUserDefaults *prefs;
 
 	MCPConnection *mySQLConnection;
-	int mySQLmajorVersion;
+	NSInteger mySQLmajorVersion;
 
 }
 
@@ -69,7 +69,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
-- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
+- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
 - (NSArray *) keywords;
 - (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
@@ -82,16 +82,16 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) autouppercaseKeywords;
 - (void) setAutohelp:(BOOL)enableAutohelp;
 - (BOOL) autohelp;
-- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
-- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
+- (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
+- (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
-- (void) setConnection:(MCPConnection *)theConnection withVersion:(int)majorVersion;
+- (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
 - (void) doCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
 - (void) selectCurrentQuery;
 
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 
 @end

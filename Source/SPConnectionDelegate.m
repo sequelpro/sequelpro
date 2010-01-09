@@ -111,7 +111,7 @@
 - (MCPConnectionCheck)connectionLost:(id)connection
 {
 	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	int connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+	NSInteger connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
 	
 	[NSApp endSheet:connectionErrorDialog];
 	[connectionErrorDialog orderOut:nil];

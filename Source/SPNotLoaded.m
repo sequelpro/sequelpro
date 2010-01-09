@@ -67,7 +67,7 @@ static SPNotLoaded *notLoaded = nil;
 
 - (id) retain { return self; }
 
-- (unsigned) retainCount { return UINT_MAX; }
+- (NSUInteger) retainCount { return NSUIntegerMax; }
 
 - (void) release {}
 

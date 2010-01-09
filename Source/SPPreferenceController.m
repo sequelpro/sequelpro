@@ -100,22 +100,22 @@
 // -------------------------------------------------------------------------------
 - (void)applyRevisionChanges
 {
-	int i;
-	int currentVersionNumber, recordedVersionNumber = 0;
+	NSInteger i;
+	NSInteger currentVersionNumber, recordedVersionNumber = 0;
 
 	// Get the current bundle version number (the SVN build number) for per-version upgrades
-	currentVersionNumber = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] intValue];
+	currentVersionNumber = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] integerValue];
 
 	// Get the current revision
-	if ([prefs objectForKey:@"lastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"lastUsedVersion"] intValue];
-	if ([prefs objectForKey:SPLastUsedVersion]) recordedVersionNumber = [[prefs objectForKey:SPLastUsedVersion] intValue];
+	if ([prefs objectForKey:@"lastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"lastUsedVersion"] integerValue];
+	if ([prefs objectForKey:SPLastUsedVersion]) recordedVersionNumber = [[prefs objectForKey:SPLastUsedVersion] integerValue];
 
 	// Skip processing if the current version matches or is less than recorded version
 	if (currentVersionNumber <= recordedVersionNumber) return;
 
 	// If no recorded version, update to current revision and skip processing
 	if (!recordedVersionNumber) {
-		[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:SPLastUsedVersion];
+		[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];
 		return;
 	}
 
@@ -125,7 +125,7 @@
 		NSEnumerator *databaseEnumerator, *tableEnumerator, *columnEnumerator;
 		NSString *databaseKey, *tableKey, *columnKey;
 		NSMutableDictionary *newDatabase, *newTable;
-		float columnWidth;
+		CGFloat columnWidth;
 		NSMutableDictionary *newTableColumnWidths = [[NSMutableDictionary alloc] init];
 
 		databaseEnumerator = [[prefs objectForKey:SPTableColumnWidths] keyEnumerator];
@@ -136,9 +136,9 @@
 				newTable = [[NSMutableDictionary alloc] init];
 				columnEnumerator = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] keyEnumerator];
 				while (columnKey = [columnEnumerator nextObject]) {
-					columnWidth = [[[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] floatValue];
+					columnWidth = [[[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] doubleValue];
 					if (columnWidth >= 15) {
-						[newTable setObject:[NSNumber numberWithFloat:columnWidth] forKey:[NSString stringWithString:columnKey]];
+						[newTable setObject:[NSNumber numberWithDouble:columnWidth] forKey:[NSString stringWithString:columnKey]];
 					}
 				}
 				if ([newTable count]) {
@@ -201,14 +201,14 @@
 		for (i = 0; i < [favoritesArray count]; i++) {
 			favorite = [NSMutableDictionary dictionaryWithDictionary:[favoritesArray objectAtIndex:i]];
 			if ([favorite objectForKey:@"id"]) continue;	
-			[favorite setObject:[NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
+			[favorite setObject:[NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
 			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]];
 			keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 								[favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
 			password = [upgradeKeychain getPasswordForName:keychainName account:keychainAccount];
 			[upgradeKeychain deletePasswordForName:keychainName account:keychainAccount];
 			if (password && [password length]) {
-				keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)", [favorite objectForKey:@"name"], [[favorite objectForKey:@"id"] intValue]];
+				keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%ld)", [favorite objectForKey:@"name"], (long)[[favorite objectForKey:@"id"] integerValue]];
 				[upgradeKeychain addPassword:password forName:keychainName account:keychainAccount];
 			}
 			[favoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithDictionary:favorite]];
@@ -230,17 +230,17 @@
 
 			// If the favorite has a socket, or has the host set to "localhost", set to socket-type connection
 			if ([[favorite objectForKey:@"host"] isEqualToString:@"localhost"]
-				|| ([favorite objectForKey:@"socket"] && [[favorite objectForKey:@"socket"] length]))
+				|| ([favorite objectForKey:@"socket"] && [(NSString *)[favorite objectForKey:@"socket"] length]))
 			{
-				[favorite setObject:[NSNumber numberWithInt:1] forKey:@"type"];
+				[favorite setObject:[NSNumber numberWithInteger:1] forKey:@"type"];
 			
 			// If SSH details are set, set to tunnel connection
-			} else if ([favorite objectForKey:@"useSSH"] && [[favorite objectForKey:@"useSSH"] intValue]) {
-				[favorite setObject:[NSNumber numberWithInt:2] forKey:@"type"];
+			} else if ([favorite objectForKey:@"useSSH"] && [[favorite objectForKey:@"useSSH"] integerValue]) {
+				[favorite setObject:[NSNumber numberWithInteger:2] forKey:@"type"];
 
 			// Default to TCP/IP
 			} else {
-				[favorite setObject:[NSNumber numberWithInt:0] forKey:@"type"];
+				[favorite setObject:[NSNumber numberWithInteger:0] forKey:@"type"];
 			}
 			
 			// Remove SSH tunnel flag - no longer required
@@ -294,7 +294,7 @@
 	}
 
 	// Update the prefs revision
-	[prefs setObject:[NSNumber numberWithInt:currentVersionNumber] forKey:SPLastUsedVersion];	
+	[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];	
 }
 
 #pragma mark -
@@ -305,10 +305,10 @@
 // -------------------------------------------------------------------------------
 - (IBAction)addFavorite:(id)sender
 {
-	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 
 	// Create default favorite
-	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", [NSNumber numberWithInt:0], @"", @"", @"", @"", @"", @"", @"", @"", favoriteid, nil] 
+	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", [NSNumber numberWithInteger:0], @"", @"", @"", @"", @"", @"", @"", @"", favoriteid, nil] 
 																	   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"host", @"socket", @"user", @"port", @"database", @"sshHost", @"sshUser", @"sshPort", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
@@ -338,7 +338,7 @@
 		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
 		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
 		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
-		int type		   = [[favoritesController valueForKeyPath:@"selection.type"] intValue];
+		NSInteger type		   = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
 
 		// Remove passwords from the Keychain
 		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
@@ -371,8 +371,8 @@
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
 		NSString *keychainName, *keychainAccount, *password, *keychainSSHName, *keychainSSHAccount, *sshPassword;
 		NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:[favoritesTableView selectedRow]]];
-		NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-		int duplicatedFavoriteType = [[favorite objectForKey:@"type"] intValue];
+		NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+		NSInteger duplicatedFavoriteType = [[favorite objectForKey:@"type"] integerValue];
 
 		// Select the keychain passwords for duplication
 		keychainName = [keychain nameForFavoriteName:[favorite objectForKey:@"name"] id:[favorite objectForKey:@"id"]];
@@ -536,7 +536,7 @@
 // -------------------------------------------------------------------------------
 // numberOfRowsInTableView:
 // -------------------------------------------------------------------------------
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [[favoritesController arrangedObjects] count];
 }
@@ -544,7 +544,7 @@
 // -------------------------------------------------------------------------------
 // tableView:objectValueForTableColumn:row:
 // -------------------------------------------------------------------------------
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
@@ -560,7 +560,7 @@
 
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:nil];
-		[pboard setString:[[NSNumber numberWithInt:[rows firstIndex]] stringValue] forType:SPFavoritesPasteboardDragType];
+		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPFavoritesPasteboardDragType];
 		return YES;
 	} else {
 		return NO;
@@ -571,14 +571,14 @@
 // -------------------------------------------------------------------------------
 // tableView:validateDrop:proposedRow:proposedDropOperation:
 // -------------------------------------------------------------------------------
-- (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)operation
+- (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
-	int originalRow;
+	NSInteger originalRow;
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
 	if (([pboardTypes count] > 1) && (row != -1)) {
 		if (([pboardTypes containsObject:SPFavoritesPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
-			originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] intValue];
+			originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] integerValue];
 						
 			if ((row != originalRow) && (row != (originalRow + 1))) {
 				return NSDragOperationMove;
@@ -592,14 +592,14 @@
 // -------------------------------------------------------------------------------
 // tableView:acceptDrop:row:dropOperation:
 // -------------------------------------------------------------------------------
-- (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)operation
+- (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
 {
-	int originalRow;
-	int destinationRow;
-	int lastFavoriteIndexCached;
+	NSInteger originalRow;
+	NSInteger destinationRow;
+	NSInteger lastFavoriteIndexCached;
 	NSMutableDictionary *draggedRow;
 	
-	originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] intValue];
+	originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] integerValue];
 	destinationRow = row;
 
 	if (destinationRow > originalRow) {
@@ -637,11 +637,11 @@
 // -------------------------------------------------------------------------------
 // tableView:willDisplayCell:forTableColumn:row:
 // -------------------------------------------------------------------------------
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(int)index
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)index
 {
 	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
 		[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
-		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] intValue] == SPSocketConnection) {
+		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] integerValue] == SPSocketConnection) {
 			[cell setFavoriteHost:@"localhost"];
 		} else {
 			[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
@@ -673,7 +673,7 @@
 
 	// Retrieve and set the password.
 	NSString *keychainName = [keychain nameForFavoriteName:[currentFavorite objectForKey:@"name"] id:[currentFavorite objectForKey:@"id"]];
-	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:(([[currentFavorite objectForKey:@"type"] intValue] == SPSocketConnection)?@"localhost":[currentFavorite objectForKey:@"host"]) database:[currentFavorite objectForKey:@"database"]];
+	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:(([[currentFavorite objectForKey:@"type"] integerValue] == SPSocketConnection)?@"localhost":[currentFavorite objectForKey:@"host"]) database:[currentFavorite objectForKey:@"database"]];
 	NSString *passwordValue = [keychain getPasswordForName:keychainName account:keychainAccount];
 	[standardPasswordField setStringValue:passwordValue];
 	[socketPasswordField setStringValue:passwordValue];
@@ -753,7 +753,7 @@
 // -------------------------------------------------------------------------------
 // splitView:constrainMaxCoordinate:ofSubviewAt:
 // -------------------------------------------------------------------------------
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 220);
 }
@@ -761,7 +761,7 @@
 // -------------------------------------------------------------------------------
 // splitView:constrainMinCoordinate:ofSubviewAt:
 // -------------------------------------------------------------------------------
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 94);
 }
@@ -881,8 +881,8 @@
 	NSString *passwordValue;
 	NSString *oldKeychainName, *newKeychainName;
 	NSString *oldKeychainAccount, *newKeychainAccount;
-	NSString *oldHostnameForPassword = ([[currentFavorite objectForKey:@"type"] intValue] == SPSocketConnection) ? @"localhost" : [currentFavorite objectForKey:@"host"];
-	NSString *newHostnameForPassword = ([[favoritesController valueForKeyPath:@"selection.type"] intValue] == SPSocketConnection) ? @"localhost" : [favoritesController valueForKeyPath:@"selection.host"];
+	NSString *oldHostnameForPassword = ([[currentFavorite objectForKey:@"type"] integerValue] == SPSocketConnection) ? @"localhost" : [currentFavorite objectForKey:@"host"];
+	NSString *newHostnameForPassword = ([[favoritesController valueForKeyPath:@"selection.type"] integerValue] == SPSocketConnection) ? @"localhost" : [favoritesController valueForKeyPath:@"selection.host"];
 
 	// SQL passwords are indexed by name, host, user and database.  If any of these
 	// have changed, or a standard password field has, alter the keychain item to match.
@@ -1005,7 +1005,7 @@
 	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
-	int i;
+	NSInteger i;
 	for(i=0; i<[[[favoritesController arrangedObjects] valueForKeyPath:@"name"] count]; i++ ){
 		NSMenuItem *favoritePrefMenuItem = [[NSMenuItem alloc] initWithTitle:[[[favoritesController arrangedObjects] valueForKeyPath:@"name"] objectAtIndex:i] 
 																	  action:NULL
@@ -1044,7 +1044,7 @@
 //
 // Selects the favorite at the specified index in the favorites list
 // -------------------------------------------------------------------------------
-- (void)selectFavoriteAtIndex:(unsigned int)theIndex
+- (void)selectFavoriteAtIndex:(NSUInteger)theIndex
 {
 	[favoritesController setSelectionIndex:theIndex];
 	[favoritesTableView scrollRowToVisible:theIndex];
@@ -1077,7 +1077,7 @@
 
 }
 // set font panel's valid modes
-- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+- (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
    return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
 }

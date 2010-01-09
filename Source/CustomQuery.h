@@ -174,9 +174,9 @@
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
 - (void)performQueriesTask:(NSDictionary *)taskArguments;
-- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
-- (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
-- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
+- (NSString *)queryAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
 
 // Accessors
 - (NSArray *)currentResult;

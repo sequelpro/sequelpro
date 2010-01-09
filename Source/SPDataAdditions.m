@@ -49,16 +49,16 @@ static char base64encodingTable[64] = {
  *
  * Convert self to a base64 encoded NSString
  */
-- (NSString *) base64EncodingWithLineLength:(unsigned int)lineLength {
+- (NSString *) base64EncodingWithLineLength:(NSUInteger)lineLength {
 
 	const unsigned char *bytes = [self bytes];
-	unsigned long ixtext = 0;
-	unsigned long lentext = [self length];
-	long ctremaining = 0;
+	NSUInteger ixtext = 0;
+	NSUInteger lentext = [self length];
+	NSInteger ctremaining = 0;
 	unsigned char inbuf[3], outbuf[4];
 	short i = 0;
 	short charsonline = 0, ctcopy = 0;
-	unsigned long ix = 0;
+	NSUInteger ix = 0;
 
 	NSMutableString *base64 = [NSMutableString stringWithCapacity:lentext];
 
@@ -111,15 +111,15 @@ static char base64encodingTable[64] = {
 {
 	// Create a random 128-bit initialization vector
 	srand(time(NULL));
-	int ivIndex;
+	NSInteger ivIndex;
 	unsigned char iv[16];
 	for (ivIndex = 0; ivIndex < 16; ivIndex++)
 		iv[ivIndex] = rand() & 0xff;
 		
 	// Calculate the 16-byte AES block padding
-	int dataLength = [self length];
-	int paddedLength = dataLength + (32 - (dataLength % 16));
-	int totalLength = paddedLength + 16; // Data plus IV
+	NSInteger dataLength = [self length];
+	NSInteger paddedLength = dataLength + (32 - (dataLength % 16));
+	NSInteger totalLength = paddedLength + 16; // Data plus IV
 	
 	// Allocate enough space for the IV + ciphertext
 	unsigned char *encryptedBytes = calloc(1, totalLength);
@@ -130,7 +130,7 @@ static char base64encodingTable[64] = {
 	memcpy(paddedBytes, [self bytes], dataLength);
 	
 	// The last 32-bit chunk is the size of the plaintext, which is encrypted with the plaintext
-	int bigIntDataLength = NSSwapHostIntToBig(dataLength);
+	NSInteger bigIntDataLength = NSSwapHostIntToBig(dataLength);
 	memcpy(paddedBytes + (paddedLength - 4), &bigIntDataLength, 4);
 	
 	// Create the key from first 128-bits of the 160-bit password hash
@@ -157,8 +157,8 @@ static char base64encodingTable[64] = {
 	AES_set_decrypt_key(passwordDigest, 128, &aesKey);
 	
 	// Total length = encrypted length + IV
-	int totalLength = [self length];
-	int encryptedLength = totalLength - 16;
+	NSInteger totalLength = [self length];
+	NSInteger encryptedLength = totalLength - 16;
 	
 	// Take the IV from the first 128-bit block
 	unsigned char iv[16];
@@ -169,16 +169,16 @@ static char base64encodingTable[64] = {
 	AES_cbc_encrypt([self bytes] + 16, decryptedBytes, encryptedLength, &aesKey, iv, AES_DECRYPT);
 	
 	// If decryption was successful, these blocks will be zeroed
-	if ( *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 4)) ||
-		 *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
-		 *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 2)) )
+	if ( *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 4)) ||
+		 *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
+		 *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 2)) )
 	{
 		return nil;
 	}
 	
 	// Get the size of the data from the last 32-bit chunk
-	int bigIntDataLength = *((unsigned int*)decryptedBytes + ((encryptedLength / 4) - 1));
-	int dataLength = NSSwapBigIntToHost(bigIntDataLength);
+	NSInteger bigIntDataLength = *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 1));
+	NSInteger dataLength = NSSwapBigIntToHost(bigIntDataLength);
 	
 	return [NSData dataWithBytesNoCopy:decryptedBytes length:dataLength];
 }
@@ -187,12 +187,12 @@ static char base64encodingTable[64] = {
 {
 	if ([self length] == 0) return self;
 
-	unsigned full_length = [self length];
-	unsigned half_length = [self length] / 2;
+	NSUInteger full_length = [self length];
+	NSUInteger half_length = [self length] / 2;
 
 	NSMutableData *unzipData = [NSMutableData dataWithLength: full_length + half_length];
 	BOOL done = NO;
-	int status;
+	NSInteger status;
 
 	z_stream zlibStream;
 	zlibStream.next_in = (Bytef *)[self bytes];
@@ -295,7 +295,7 @@ static char base64encodingTable[64] = {
 			buffLength = totalLength - i;
 		}
 
-		buffer = (unsigned char*) malloc( sizeof( unsigned char ) * buffLength + 1);
+		buffer = (unsigned char*) malloc( sizeof(unsigned char) * buffLength + 1);
 
 		[self getBytes:buffer range:NSMakeRange(i, buffLength)];
 		

@@ -32,10 +32,10 @@
 //
 // Returns the height of the currently visible toolbar.
 // -------------------------------------------------------------------------------
-- (float)toolbarHeight
+- (CGFloat)toolbarHeight
 {
     NSRect windowFrame;
-	float toolbarHeight = 0.0;
+	CGFloat toolbarHeight = 0.0;
 	
     if (([self toolbar]) && ([[self toolbar] isVisible])) {
         windowFrame = [NSWindow contentRectForFrameRect:[self frame] styleMask:[self styleMask]];
@@ -60,7 +60,7 @@
 		viewSize.height = [self contentMinSize].height;
 	}
 	
-	float newHeight = (viewSize.height + [self toolbarHeight]);
+	CGFloat newHeight = (viewSize.height + [self toolbarHeight]);
 	
 	// If the title bar is visible add 22 pixels to new height of window.
 	if (visible) { 

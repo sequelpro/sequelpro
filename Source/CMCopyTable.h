@@ -70,7 +70,7 @@
 	@param	  isLocal who cares
 	@result	 Always calls for a copy type drag operation
 */
-- (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
+- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 /*!
 	@method	 selectedRowsAsTabStringWithHeaders
@@ -107,5 +107,5 @@
 
 @end
 
-extern int MENU_EDIT_COPY_WITH_COLUMN;
-extern int MENU_EDIT_COPY_AS_SQL;
+extern NSInteger MENU_EDIT_COPY_WITH_COLUMN;
+extern NSInteger MENU_EDIT_COPY_AS_SQL;

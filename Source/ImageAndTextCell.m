@@ -66,7 +66,7 @@
 	[super editWithFrame:aRect inView: controlView editor:textObj delegate:anObject event:theEvent];
 }
 
-- (void)selectWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)anObject start:(int)selStart length:(int)selLength
+- (void)selectWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)anObject start:(NSInteger)selStart length:(NSInteger)selLength
 {
 	if (_indentationLevel != 0) {
 		NSRect indentationFrame;
@@ -167,12 +167,12 @@
 	return cellSize;
 }
 
-- (void)setIndentationLevel:(int)level
+- (void)setIndentationLevel:(NSInteger)level
 {
 	_indentationLevel = MAX(0,level);
 }
 
-- (int)IndentationLevel
+- (NSInteger)IndentationLevel
 {
 	return _indentationLevel;
 }

@@ -113,9 +113,9 @@
 			NSLog(@"Error while reading 'ContentFilters.plist':\n%@\n%@", [readError localizedDescription], convError);
 			NSBeep();
 		} else {
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInt:[[contentFilters objectForKey:@"number"] count]] forKey:@"number"];
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInt:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInt:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"number"] count]] forKey:@"number"];
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
 		}
 		
 
@@ -413,7 +413,7 @@
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
-			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"length"] intValue]];
+			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"length"] integerValue]];
 		}
 		
 		// Set the data cell font according to the preferences
@@ -425,7 +425,7 @@
 		// Set the width of this column to saved value if exists
 		colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]];
 		if ( colWidth ) {
-			[theCol setWidth:[colWidth floatValue]];
+			[theCol setWidth:[colWidth doubleValue]];
 		}
 		
 		// Set the column to be reselected for sorting if appropriate
@@ -549,7 +549,7 @@
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
 	MCPStreamingResult *streamingResult;
-	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
+	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 
 	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 
@@ -571,7 +571,7 @@
 
 	// Add sorting details if appropriate
 	if (sortCol) {
-		[queryString appendFormat:@" ORDER BY %@", [[[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"] backtickQuotedString]];
+		[queryString appendFormat:@" ORDER BY %@", [[[dataColumns objectAtIndex:[sortCol integerValue]] objectForKey:@"name"] backtickQuotedString]];
 		if (isDesc) [queryString appendString:@" DESC"];
 	}
 
@@ -582,7 +582,7 @@
 		if (contentPage <= 0)
 			contentPage = 1;
 		else if (contentPage > 1 && (contentPage - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
-			contentPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+			contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 
 		// If the result set is from a late page, take a copy of the string to allow resetting limit
 		// if no results are found
@@ -591,7 +591,7 @@
 		}
 
 		// Append the limit settings
-		[queryString appendFormat:@" LIMIT %d,%d", (contentPage-1)*[prefs integerForKey:SPLimitResultsValue], [prefs integerForKey:SPLimitResultsValue]];
+		[queryString appendFormat:@" LIMIT %ld,%ld", (long)((contentPage-1)*[prefs integerForKey:SPLimitResultsValue]), (long)[prefs integerForKey:SPLimitResultsValue]];
 
 		// Update the approximate count of the rows to load
 		rowsToLoad = rowsToLoad - (contentPage-1)*[prefs integerForKey:SPLimitResultsValue];
@@ -611,7 +611,7 @@
 	// If the result is empty, and a late page is selected, reset the page
 	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		contentPage = 1;
-		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%d", queryStringBeforeLimit, [prefs integerForKey:SPLimitResultsValue]];
+		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
 		streamingResult = [mySQLConnection streamingQueryString:queryString];
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
@@ -651,7 +651,7 @@
 /*
  * Processes a supplied streaming result set, loading it into the data array.
  */
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(long)targetRowCount
+- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount
 {
 	NSArray *tempRow;
 	NSMutableArray *newRow;
@@ -659,11 +659,11 @@
 	NSUInteger i;
 	NSUInteger dataColumnsCount = [dataColumns count];
 	
-	float relativeTargetRowCount = 100.0/targetRowCount;
+	CGFloat relativeTargetRowCount = 100.0/targetRowCount;
 	NSUInteger nextTableDisplayBoundary = 50;
 	BOOL tableViewRedrawn = NO;
 
-	long rowsProcessed = 0;
+	NSUInteger rowsProcessed = 0;
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
@@ -783,7 +783,7 @@
 		return nil;
 	}
 
-	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] intValue];
+	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] integerValue];
 
 	// argument if Filter requires only one argument
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
@@ -1030,7 +1030,7 @@
 	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
 		contentPage = 1;
 	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
-		contentPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+		contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	else
 		contentPage = [paginationPageField integerValue];
 
@@ -1060,7 +1060,7 @@
 	lastSelectedContentFilterIndex = [[compareField selectedItem] tag];
 
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:lastSelectedContentFilterIndex];
-	NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] intValue];
+	NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] integerValue];
 	if (numOfArgs == 2) {
 		[argumentField setHidden:YES];
 
@@ -1122,11 +1122,11 @@
 {
 	if (sender == paginationPreviousButton) {
 		if (contentPage <= 1) return;
-		[paginationPageField setIntValue:(contentPage - 1)];
+		[paginationPageField setIntegerValue:(contentPage - 1)];
 		[self filterTable:sender];
 	} else if (sender == paginationNextButton) {
 		if (contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
-		[paginationPageField setIntValue:(contentPage + 1)];
+		[paginationPageField setIntegerValue:(contentPage + 1)];
 		[self filterTable:sender];
 	}
 }
@@ -1177,7 +1177,7 @@
  */
 - (void) updatePaginationState
 {
-	NSUInteger maxPage = ceil((float)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+	NSUInteger maxPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	if (isFiltered && !isLimited) {
 		maxPage = contentPage;
 	}
@@ -1204,7 +1204,7 @@
 	// Set the values and maximums for the text field and associated pager
 	[paginationPageField setStringValue:[numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]];
 	[[paginationPageField formatter] setMaximum:[NSNumber numberWithUnsignedInteger:maxPage]];
-	[paginationPageStepper setIntValue:contentPage];
+	[paginationPageStepper setIntegerValue:contentPage];
 	[paginationPageStepper setMaxValue:maxPage];
 }
 
@@ -1337,15 +1337,15 @@
 		contextInfo = @"removeallrows";
 		
 		[alert setMessageText:NSLocalizedString(@"Delete all rows?", @"delete all rows message")];
-		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete all the rows from this table. This action cannot be undone.", @"delete all rows informative message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete all the rows from this table? This action cannot be undone.", @"delete all rows informative message")];
 	} 
 	else if ([tableContentView numberOfSelectedRows] == 1) {
 		[alert setMessageText:NSLocalizedString(@"Delete selected row?", @"delete selected row message")];
-		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected row from this table. This action cannot be undone.", @"delete selected row informative message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected row from this table? This action cannot be undone.", @"delete selected row informative message")];
 	} 
 	else {
 		[alert setMessageText:NSLocalizedString(@"Delete rows?", @"delete rows message")];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %d rows from this table. This action cannot be undone.", @"delete rows informative message"), [tableContentView numberOfSelectedRows]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.", @"delete rows informative message"), (long)[tableContentView numberOfSelectedRows]]];
 	}
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
@@ -1383,7 +1383,7 @@
 		[tempRow removeAllObjects];
 		enumerator = [tableColumns objectEnumerator];
 		while ( (tableColumn = [enumerator nextObject]) ) {
-			id o = [NSArrayObjectAtIndex(tableValues, i) objectAtIndex:[[tableColumn identifier] intValue]];
+			id o = [NSArrayObjectAtIndex(tableValues, i) objectAtIndex:[[tableColumn identifier] integerValue]];
 			if([o isNSNull])
 				[tempRow addObject:@"NULL"];
 			else if ([o isSPNotLoaded])
@@ -1396,8 +1396,8 @@
 					NSInteger imageWidth = [image size].width;
 					if (imageWidth > 100) imageWidth = 100;
 					[tempRow addObject:[NSString stringWithFormat:
-						@"<IMG WIDTH='%d' SRC=\"data:image/auto;base64,%@\">", 
-						imageWidth, 
+						@"<IMG WIDTH='%ld' SRC=\"data:image/auto;base64,%@\">", 
+						(long)imageWidth, 
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0]]];
 				} else {
 					[tempRow addObject:@"&lt;BLOB&gt;"];
@@ -1471,7 +1471,7 @@
 	if ([tableDocumentInstance isWorking]) return;
 
 	if ([theArrowCell getClickedColumn] == NSNotFound || [theArrowCell getClickedRow] == NSNotFound) return;
-	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] intValue];
+	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
 
 	// Ensure the clicked cell has foreign key details available
 	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
@@ -1581,7 +1581,7 @@
 
 	// Remove user-defined filters first
 	if([numberOfDefaultFilters objectForKey:compareType]) {
-		NSUInteger cycles = [[contentFilters objectForKey:compareType] count] - [[numberOfDefaultFilters objectForKey:compareType] intValue];
+		NSUInteger cycles = [[contentFilters objectForKey:compareType] count] - [[numberOfDefaultFilters objectForKey:compareType] integerValue];
 		while(cycles > 0) {
 			[[contentFilters objectForKey:compareType] removeLastObject];
 			cycles--;
@@ -1704,7 +1704,7 @@
 
 		// Catch CURRENT_TIMESTAMP automatic updates - if the row is new and the cell value matches
 		// the default value, or if the cell hasn't changed, update the current timestamp.
-		} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] intValue]
+		} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] integerValue]
 					&& (   (isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
 						|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
 		{
@@ -1817,7 +1817,7 @@
 
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [dataColumns count] ; i++ ) {
-					if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"autoincrement"] intValue]) {
+					if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"autoincrement"] integerValue]) {
 						[[tableValues objectAtIndex:currentlyEditingRow] replaceObjectAtIndex:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
 					}
 				}
@@ -1880,7 +1880,7 @@
  * If "row" is -2, it uses the oldRow.
  * Uses the primary key if available, otherwise uses all fields as argument and sets LIMIT to 1
  */
-- (NSString *)argumentForRow:(int)row
+- (NSString *)argumentForRow:(NSInteger)row
 {
 	MCPResult *theResult;
 	NSDictionary *theRow;
@@ -1936,11 +1936,11 @@
 
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			tempValue = [NSArrayObjectAtIndex(tableValues, row) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
+			tempValue = [NSArrayObjectAtIndex(tableValues, row) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 
 		// Otherwise use the oldRow
 		} else {
-			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] intValue]];
+			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 		}
 
 		if ( [tempValue isNSNull] ) {
@@ -2013,7 +2013,7 @@
 	}
 }
 
-- (void)sheetDidEnd:(id)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 /*
  if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
  if contextInfo == removerow: removes row if user hits OK
@@ -2100,7 +2100,7 @@
 				}
 				// Check for uniqueness via LIMIT numberOfRows-1,numberOfRows for speed
 				if(numberOfRows > 0) {
-					[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ GROUP BY %@ LIMIT %d,%d", [selectedTable backtickQuotedString], [primaryKeyFieldNames componentsJoinedAndBacktickQuoted], numberOfRows-1, numberOfRows]];
+					[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ GROUP BY %@ LIMIT %ld,%ld", [selectedTable backtickQuotedString], [primaryKeyFieldNames componentsJoinedAndBacktickQuoted], (long)(numberOfRows-1), (long)numberOfRows]];
 					if([mySQLConnection affectedRows] == 0)
 						primaryKeyFieldNames = nil;
 				} else {
@@ -2143,7 +2143,7 @@
 
 				while (index != NSNotFound) {
 
-					id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] intValue]];
+					id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
 
 					if([keyValue isKindOfClass:[NSData class]])
 						[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
@@ -2190,7 +2190,7 @@
 					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
 						
 						
-						id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] intValue]];
+						id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
 						
 						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
 						if ([keyValue isKindOfClass:[NSData class]]) {
@@ -2240,16 +2240,16 @@
 				NSArray *message;
 				if(errors < 0) {
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							   [NSString stringWithFormat:NSLocalizedString(@"%d row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), errors*-1, ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
 							   nil];
 				} else {
 					if(primaryKeyFieldNames == nil)
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
 								   nil];
 					else
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%d row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
 								   nil];
 				}
 				[self performSelector:@selector(showErrorSheetWith:)
@@ -2297,7 +2297,7 @@
 {
 	if (!sortCol || !dataColumns) return nil;
 
-	return [[dataColumns objectAtIndex:[sortCol intValue]] objectForKey:@"name"];
+	return [[dataColumns objectAtIndex:[sortCol integerValue]] objectForKey:@"name"];
 }
 
 /**
@@ -2319,7 +2319,7 @@
 /**
  * Provide a getter for the page number
  */
-- (unsigned int) pageNumber
+- (NSUInteger) pageNumber
 {
 	return contentPage;
 }
@@ -2345,7 +2345,7 @@
 						[self tableFilterString], @"menuLabel",
 						[[fieldField selectedItem] title], @"filterField",
 						[[compareField selectedItem] title], @"filterComparison",
-						[NSNumber numberWithInt:[[compareField selectedItem] tag]], @"filterComparisonTag",
+						[NSNumber numberWithInteger:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
 						[firstBetweenField stringValue], @"firstBetweenField",
 						[secondBetweenField stringValue], @"secondBetweenField",
@@ -2370,7 +2370,7 @@
 /**
  * Sets the value for the page number to use on next table load
  */
-- (void) setPageToRestore:(unsigned int)thePage
+- (void) setPageToRestore:(NSUInteger)thePage
 {
 	pageToRestore = thePage;
 }
@@ -2475,33 +2475,33 @@
 	if (!isLimited && !isFiltered && !isInterruptedLoad) {
 		maxNumRows = tableRowsCount;
 		maxNumRowsIsEstimate = NO;
-		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
+		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
 		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
 
 	// Otherwise, if the table status value is accurate, use it
 	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
+		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 		maxNumRowsIsEstimate = NO;
 		checkStatusCount = YES;
 
 	// Choose whether to display an estimate, or to fetch the correct row count, based on prefs
-	} else if ([[prefs objectForKey:SPTableRowCountQueryLevel] intValue] == SPRowCountFetchAlways
-				|| ([[prefs objectForKey:SPTableRowCountQueryLevel] intValue] == SPRowCountFetchIfCheap
+	} else if ([[prefs objectForKey:SPTableRowCountQueryLevel] integerValue] == SPRowCountFetchAlways
+				|| ([[prefs objectForKey:SPTableRowCountQueryLevel] integerValue] == SPRowCountFetchIfCheap
 					&& [tableDataInstance statusValueForKey:@"Data_length"]
-					&& [[prefs objectForKey:SPTableRowCountCheapSizeBoundary] intValue] > [[tableDataInstance statusValueForKey:@"Data_length"] intValue]))
+					&& [[prefs objectForKey:SPTableRowCountCheapSizeBoundary] integerValue] > [[tableDataInstance statusValueForKey:@"Data_length"] integerValue]))
 	{
 		maxNumRows = [self fetchNumberOfRows];
 		maxNumRowsIsEstimate = NO;
-		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
+		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
 		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
 
 	// Use the estimate count
 	} else {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] intValue];
+		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 		maxNumRowsIsEstimate = YES;
 		checkStatusCount = YES;
 	}
@@ -2524,7 +2524,7 @@
 			maxNumRows = tableRowsCount;
 			maxNumRowsIsEstimate = YES;
 		}
-		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%d", maxNumRows] forKey:@"Rows"];
+		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:maxNumRowsIsEstimate?@"n":@"y" forKey:@"RowsCountAccurate"];
 		[tableInfoInstance tableChanged:nil];
 	}
@@ -2533,9 +2533,9 @@
 /*
  * Fetches the number of rows in the selected table using a "SELECT COUNT(1)" query and return it
  */
-- (int)fetchNumberOfRows
+- (NSInteger)fetchNumberOfRows
 {
-	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] intValue];
+	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
 }
 
 #pragma mark -
@@ -2562,7 +2562,7 @@
 	// possible exceptions (eg for reloading tables etc.)
 	id theValue;
 	@try{
-		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, row), [[aTableColumn identifier] intValue]);
+		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, row), [[aTableColumn identifier] integerValue]);
 	}
 	@catch(id ae) {
 		return nil;
@@ -2583,14 +2583,14 @@
 	return nil;
 }
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return tableRowsCount;
 }
 
-- (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+	NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 	id theValue = nil;
 
 	// While the table is being loaded, additional validation is required - data
@@ -2627,11 +2627,11 @@
 /**
  * This function changes the text color of text/blob fields which are null or not yet loaded to gray
  */
-- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(int)rowIndex
+- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {
 	if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 
-	NSUInteger columnIndex = [[aTableColumn identifier] intValue];
+	NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 	id theValue = nil;
 
 	// While the table is being loaded, additional validation is required - data
@@ -2657,7 +2657,7 @@
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
-	if ( [aTableView editedColumn] == [[aTableColumn identifier] intValue] && [aTableView editedRow] == rowIndex) {
+	if ( [aTableView editedColumn] == [[aTableColumn identifier] integerValue] && [aTableView editedRow] == rowIndex) {
 		[cell setTextColor:[NSColor blackColor]];
 		return;
 	}
@@ -2672,7 +2672,7 @@
 	}
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
@@ -2682,7 +2682,7 @@
 		currentlyEditingRow = rowIndex;
 	}
 
-	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]);
+	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]);
 	
 	if (anObject) {
 
@@ -2690,9 +2690,9 @@
 		if ([anObject isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue])
 			anObject = [NSNull null];
 
-		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:anObject];
+		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] integerValue] withObject:anObject];
 	} else {
-		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:@""];
+		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] integerValue] withObject:@""];
 	}
 }
 
@@ -2739,7 +2739,7 @@
 		[tableContentView setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
 	}
 	if (sortCol) [sortCol release];
-	sortCol = [[NSNumber alloc] initWithInt:[[tableColumn identifier] intValue]];
+	sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 
 	// Update data using the new sort order
 	previousTableRowsCount = tableRowsCount;
@@ -2823,7 +2823,7 @@
 
 	}
 	// save column size
-	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithFloat:[[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[[aNotification userInfo] objectForKey:@"NSTableColumn"] headerCell] stringValue]];
+	[[[tableColumnWidths objectForKey:database] objectForKey:table] setObject:[NSNumber numberWithDouble:[(NSTableColumn *)[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:[[[[aNotification userInfo] objectForKey:@"NSTableColumn"] headerCell] stringValue]];
 	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 }
 
@@ -2841,7 +2841,7 @@
 	if ([wherePart length] == 0) return NO;
 
 	// If the selected cell hasn't been loaded, load it.
-	if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] intValue]) isSPNotLoaded]) {
+	if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] integerValue]) isSPNotLoaded]) {
 
 		// Only get the data for the selected column, not all of them
 		NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
@@ -2867,7 +2867,7 @@
 		
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
 		
-		id cellValue = [[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] intValue]];
+		id cellValue = [[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] integerValue]];
 		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 		
 		id editData = [[fieldEditor editWithObject:cellValue
@@ -2886,12 +2886,12 @@
 
 			if ([editData isKindOfClass:[NSString class]]
 				&& [editData isEqualToString:[prefs objectForKey:SPNullValue]]
-				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] intValue]) objectForKey:@"null"] boolValue])
+				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]) objectForKey:@"null"] boolValue])
 			{
 				[editData release];
 				editData = [[NSNull null] retain];
 			}
-			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] intValue] withObject:[[editData copy] autorelease]];
+			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
 		}
 
 		[fieldEditor release];
@@ -2950,12 +2950,12 @@
 	return NO;
 }
 
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 180);
 }
 
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 200);
 }

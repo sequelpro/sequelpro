@@ -271,7 +271,7 @@
 
 	// wait for editSheet
 	NSModalSession session = [NSApp beginModalSessionForWindow:editSheet];
-	int cycleCounter = 0;
+	NSInteger cycleCounter = 0;
 	BOOL doGroupDueToChars = NO;
 	for (;;) {
 
@@ -355,7 +355,7 @@
 		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %d.", @"Text is too long. Maximum text length is set to %d."), maxTextLength]];
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
 			return;
 		}
 		[NSApp stopModal];
@@ -445,7 +445,7 @@
 /**
  * Save panel didEndSelector. Writes the current content to disk.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
 		
@@ -473,7 +473,7 @@
 /**
  * Open panel didEndSelector. Opens the selected file.
  */
-- (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
+- (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo
 {
 	if (returnCode == NSOKButton) {
 		NSString *fileName = [panel filename];
@@ -543,7 +543,7 @@
 {
 	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > [sender tag] - 2) {
 		NSDictionary *type = [[qlTypes objectForKey:@"QuickLookTypes"] objectAtIndex:[sender tag] - 2];
-		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] intValue])];
+		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] integerValue])];
 	}
 }
 
@@ -844,7 +844,7 @@
 	if(textView == editTextView && maxTextLength > 0 
 		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 
-		int newLength;
+		NSInteger newLength;
 
 		// Auxilary to ensure that eg textViewDidChangeSelection:
 		// saves a non-space char + base char if that combination
@@ -862,7 +862,7 @@
 		if ([textView hasMarkedText] && maxTextLength > 0 && r.location < maxTextLength)
 			// User tries to insert a new char but max text length was already reached - return NO
 			if( !r.length  && [[textView textStorage] length] >= maxTextLength ) {
-				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d.", @"Maximum text length is set to %d."), maxTextLength]];
+				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
 				[textView unmarkText];
 				return NO;
 			}
@@ -884,9 +884,9 @@
 			
 			if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length <= [replacementString length]) {
 				if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length)
-					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d. Inserted text was truncated.", @"Maximum text length is set to %d. Inserted text was truncated."), maxTextLength]];
+					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu. Inserted text was truncated.", @"Maximum text length is set to %llu. Inserted text was truncated."), maxTextLength]];
 				else
-					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %d.", @"Maximum text length is set to %d."), maxTextLength]];
+					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
 				[textView insertText:[replacementString substringToIndex:maxTextLength-[[textView textStorage] length]+[textView selectedRange].length]];
 			}
 			return NO;

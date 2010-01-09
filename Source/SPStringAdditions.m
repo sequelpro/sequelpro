@@ -27,7 +27,7 @@
 #import "RegexKitLite.h"
 
 @interface NSString (Private)
-- (int)smallestOf:(int)a andOf:(int)b andOf:(int)c;
+- (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c;
 @end
 
 @implementation NSString (SPStringAdditions)
@@ -37,7 +37,7 @@
  */
 + (NSString *)stringForByteSize:(long long)byteSize
 {
-	float size = byteSize;
+	CGFloat size = byteSize;
 	
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 	
@@ -46,7 +46,7 @@
 	if (size < 1023) {
 		[numberFormatter setFormat:@"#,##0 B"];
 		
-		return [numberFormatter stringFromNumber:[NSNumber numberWithInt:size]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithInteger:size]];
 	}
 	
 	size = (size / 1024);
@@ -54,7 +54,7 @@
 	if (size < 1023) {
 		[numberFormatter setFormat:@"#,##0.0 KB"];
 		
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
 	
 	size = (size / 1024);
@@ -62,7 +62,7 @@
 	if (size < 1023) {
 		[numberFormatter setFormat:@"#,##0.0 MB"];
 		
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
 	
 	size = (size / 1024);
@@ -70,14 +70,14 @@
 	if (size < 1023) {
 		[numberFormatter setFormat:@"#,##0.0 GB"];
 		
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
 
 	size = (size / 1024);
 	
 	[numberFormatter setFormat:@"#,##0.0 TB"];
 	
-	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:size]];
+	return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 }
 
 
@@ -86,7 +86,7 @@
 //
 // Returns a human readable version string of the supplied time interval.
 // -------------------------------------------------------------------------------
-+ (NSString *)stringForTimeInterval:(float)timeInterval
++ (NSString *)stringForTimeInterval:(CGFloat)timeInterval
 {
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 
@@ -96,51 +96,51 @@
 	if (timeInterval < 0.0001) {
 		[numberFormatter setFormat:@"< #,##0.0 ms"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:0.1]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:0.1]];
 	}
 
 	if (timeInterval < 0.1) {
 		timeInterval = (timeInterval * 1000);
 		[numberFormatter setFormat:@"#,##0.0 ms"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 	}
 	if (timeInterval < 1) {
 		timeInterval = (timeInterval * 1000);
 		[numberFormatter setFormat:@"#,##0 ms"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 	}
 	
 	if (timeInterval < 10) {
 		[numberFormatter setFormat:@"#,##0.00 s"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 	}
 
 	if (timeInterval < 100) {
 		[numberFormatter setFormat:@"#,##0.0 s"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 	}
 
 	if (timeInterval < 300) {
 		[numberFormatter setFormat:@"#,##0 s"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 	}
 
 	if (timeInterval < 3600) {
 		timeInterval = (timeInterval / 60);
 		[numberFormatter setFormat:@"#,##0 min"];
 
-		return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 	}
 
 	timeInterval = (timeInterval / 3600);
 	[numberFormatter setFormat:@"#,##0 hours"];
 
-	return [numberFormatter stringFromNumber:[NSNumber numberWithFloat:timeInterval]];
+	return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 }
 
 
@@ -320,11 +320,11 @@
 #endif
 
 
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(NSUInteger) mask
 {
 	NSRange                 range;
 	NSMutableString*        newString = [NSMutableString string];
-	unsigned                len = [self length];
+	NSUInteger                len = [self length];
 	
 	mask &= ~NSBackwardsSearch;
 	range = NSMakeRange (0, len);
@@ -332,7 +332,7 @@
 	while (range.length)
 	{
 		NSRange substringRange;
-		unsigned pos = range.location;
+		NSUInteger pos = range.location;
 		
 		range = [self rangeOfCharacterFromSet:charSet options:mask range:range];
 		if (range.location == NSNotFound)
@@ -356,7 +356,7 @@
 }
 
 // calculate the distance between two string case-insensitively
-- (float)levenshteinDistanceWithWord:(NSString *)stringB
+- (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB
 {
 	// normalize strings
 	NSString * stringA = [NSString stringWithString: self];
@@ -367,14 +367,14 @@
 	stringA = [stringA lowercaseString];
 	stringB = [stringB lowercaseString];
 
-	int k, i, j, cost, * d, distance;
+	NSInteger k, i, j, cost, * d, distance;
 
-	int n = [stringA length];
-	int m = [stringB length];	
+	NSInteger n = [stringA length];
+	NSInteger m = [stringB length];	
 
 	if( n++ != 0 && m++ != 0 ) {
 
-		d = malloc( sizeof(int) * m * n );
+		d = malloc( sizeof(NSInteger) * m * n );
 
 		for( k = 0; k < n; k++)
 			d[k] = k;
@@ -405,9 +405,9 @@
 }
 
 // return the minimum of a, b and c
-- (int)smallestOf:(int)a andOf:(int)b andOf:(int)c
+- (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c
 {
-	int min = a;
+	NSInteger min = a;
 	if ( b < min )
 		min = b;
 

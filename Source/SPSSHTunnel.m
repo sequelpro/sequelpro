@@ -38,7 +38,7 @@
  * therefore not recommended, or via setPasswordKeychainName:, which will use the keychain on-demand
  * and is therefore preferred.
  */
-- (id) initToHost:(NSString *) theHost port:(int) thePort login:(NSString *) theLogin tunnellingToPort:(int) targetPort onHost:(NSString *) targetHost
+- (id) initToHost:(NSString *) theHost port:(NSInteger) thePort login:(NSString *) theLogin tunnellingToPort:(NSInteger) targetPort onHost:(NSString *) targetHost
 {
 	if (!theHost || !thePort || !targetPort || !targetHost) return nil;
 
@@ -57,8 +57,8 @@
 	debugMessages = [[NSMutableArray alloc] init];
 
 	// Set up a connection for use by the tunnel process
-	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%u", [[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%u", [[NSString stringWithFormat:@"%f%i", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
 	tunnelConnection = [[NSConnection defaultConnection] retain];
 	[tunnelConnection runInNewThread];
 	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
@@ -135,7 +135,7 @@
 /*
  * Get the state of the connection.
  */
-- (int) state
+- (NSInteger) state
 {
 	return connectionState;
 }
@@ -195,7 +195,7 @@
 		return;
 	}
 
-	int connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] intValue];
+	NSInteger connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] integerValue];
 	if (!connectionTimeout) connectionTimeout = 10;
 	BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:SPUseKeepAlive] doubleValue];
 	double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:SPKeepAliveInterval] doubleValue];
@@ -203,9 +203,9 @@
 
 	// If no local port has yet been chosen, choose one
 	if (!localPort) {
-		int tempSocket;
+		NSInteger tempSocket;
 		struct sockaddr_in tempSocketAddress;
-		int addressLength = sizeof(tempSocketAddress);
+		NSInteger addressLength = sizeof(tempSocketAddress);
 		if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
 			memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
 			tempSocketAddress.sin_family = AF_INET;
@@ -257,24 +257,24 @@
 //	[taskArguments addObject:@"-C"]; // TODO: compression?
 	[taskArguments addObject:@"-M"]; // Places the ssh client into 'master' mode for connection sharing
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
-	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%i", connectionTimeout]];
+	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
-		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%i", (int)ceil(keepAliveInterval)]];		
+		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]];		
 		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
 	}
-	[taskArguments addObject:[NSString stringWithFormat:@"-p %i", sshPort]];
+	[taskArguments addObject:[NSString stringWithFormat:@"-p %ld", (long)sshPort]];
 	if ([sshLogin length]) {
 		[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
 	} else {
 		[taskArguments addObject:sshHost];
 	}
 	if (useHostFallback) {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %i/127.0.0.1/%i", localPort, remotePort]];
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %i/%@/%i", localPortFallback, remoteHost, remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/127.0.0.1/%ld", (long)localPort, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPortFallback, remoteHost, (long)remotePort]];
 	} else {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %i/%@/%i", localPort, remoteHost, remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPort, remoteHost, (long)remotePort]];
 	}
 	[task setArguments:taskArguments];
 
@@ -286,13 +286,13 @@
 	[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];
 	[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
 	if (passwordInKeychain) {
-		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 		[taskEnvironment setObject:keychainName forKey:@"SP_KEYCHAIN_ITEM_NAME"];
 		[taskEnvironment setObject:keychainAccount forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
 	} else if (password) {
-		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 	} else {
-		[taskEnvironment setObject:[[NSNumber numberWithInt:SPSSH_NO_PASSWORD] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSH_NO_PASSWORD] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 	}
 	[task setEnvironment:taskEnvironment];
 
@@ -420,7 +420,7 @@
 				connectionState = PROXY_STATE_IDLE;
 				[task terminate];
 				if (lastError) [lastError release];
-				lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).", @"SSH tunnel failed or timed out message"), sshHost, [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] intValue]];
+				lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds).", @"SSH tunnel failed or timed out message"), sshHost, (long)[[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] integerValue]];
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
 		}
@@ -436,7 +436,7 @@
 /*
  * Returns the local port assigned for use by the tunnel
  */
-- (int) localPort
+- (NSInteger) localPort
 {
 	return localPort;
 }
@@ -444,7 +444,7 @@
 /*
  * Returns the local port assigned for fallback use by the tunnel, if any
  */
-- (int) localPortFallback
+- (NSInteger) localPortFallback
 {
 	if (!useHostFallback) return 0;
 	return localPortFallback;
@@ -486,7 +486,7 @@
 	windowFrameRect.size.height = ((questionTextSize.height < 100)?100:questionTextSize.height) + 70 + ([sshPasswordDialog isSheet]?0:22);
 	[sshQuestionDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	int sshQueryResponseCode = [NSApp runModalForWindow:sshQuestionDialog];
+	NSInteger sshQueryResponseCode = [NSApp runModalForWindow:sshQuestionDialog];
 	[NSApp endSheet:sshQuestionDialog];
 	[sshQuestionDialog orderOut:nil];
 
@@ -544,7 +544,7 @@
 	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	int sshQueryResponseCode = [NSApp runModalForWindow:sshPasswordDialog];
+	NSInteger sshQueryResponseCode = [NSApp runModalForWindow:sshPasswordDialog];
 	[NSApp endSheet:sshPasswordDialog];
 	[sshPasswordDialog orderOut:nil];
 

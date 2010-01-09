@@ -53,7 +53,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	NSMutableDictionary *tempDefaultValues;
 	NSEnumerator *extrasEnumerator;
 	id extra;
-	int i;
+	NSInteger i;
 	SPSQLParser *fieldParser;
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] || ![tableDocumentInstance isWorking];
 
@@ -170,7 +170,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		// For timestamps check to see whether "on update CURRENT_TIMESTAMP" - not returned
 		// by SHOW COLUMNS - should be set from the table data store
 		if ([type isEqualToString:@"timestamp"]
-			&& [[[tableDataInstance columnWithName:[field objectForKey:@"Field"]] objectForKey:@"onupdatetimestamp"] intValue])
+			&& [[[tableDataInstance columnWithName:[field objectForKey:@"Field"]] objectForKey:@"onupdatetimestamp"] integerValue])
 		{
 			[field setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
 		}
@@ -260,7 +260,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	int insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
+	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 	
 	[tableFields insertObject:[NSMutableDictionary 
 							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"int", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", nil]
@@ -421,7 +421,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
  */
 - (IBAction)openIndexSheet:(id)sender
 {
-	int i;
+	NSInteger i;
 
 	// Check whether a save of the current field row is required.
 	if (![self saveRowOnDeselect]) return;
@@ -513,12 +513,12 @@ fetches the result as an array with a dictionary for each row in it
 */
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
-	unsigned long numOfRows = [theResult numOfRows];
+	NSUInteger numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
 	id key;
-	int i;
+	NSInteger i;
 	Class nullClass = [NSNull class];
 	id prefsNullValue = [prefs objectForKey:SPNullValue];
 
@@ -528,7 +528,7 @@ fetches the result as an array with a dictionary for each row in it
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
 		keys = [tempRow allKeys];
-		for (int i = 0; i < [keys count] ; i++) {
+		for (NSInteger i = 0; i < [keys count] ; i++) {
 			key = NSArrayObjectAtIndex(keys, i);
 			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] )
 				[tempRow setObject:prefsNullValue forKey:key];
@@ -583,7 +583,7 @@ fetches the result as an array with a dictionary for each row in it
  */
 - (BOOL)addRowToDB;
 {
-	int code;
+	NSInteger code;
 	NSDictionary *theRow;
 	NSMutableString *queryString;
 
@@ -641,19 +641,19 @@ fetches the result as an array with a dictionary for each row in it
 	}
 	
 	// Field specification
-	if ([[theRow objectForKey:@"unsigned"] intValue] == 1) {
+	if ([[theRow objectForKey:@"unsigned"] integerValue] == 1) {
 		[queryString appendString:@" UNSIGNED"];
 	}
 	
-	if ( [[theRow objectForKey:@"zerofill"] intValue] == 1) {
+	if ( [[theRow objectForKey:@"zerofill"] integerValue] == 1) {
 		[queryString appendString:@" ZEROFILL"];
 	}
 	
-	if ( [[theRow objectForKey:@"binary"] intValue] == 1) {
+	if ( [[theRow objectForKey:@"binary"] integerValue] == 1) {
 		[queryString appendString:@" BINARY"];
 	}
 
-	if ([[theRow objectForKey:@"Null"] intValue] == 0) {
+	if ([[theRow objectForKey:@"Null"] integerValue] == 0) {
 		[queryString appendString:@" NOT NULL"];
 	} else {
 		[queryString appendString:@" NULL"];
@@ -666,7 +666,7 @@ fetches the result as an array with a dictionary for each row in it
 	else {
 		// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
 		if ([[theRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			if ([[theRow objectForKey:@"Null"] intValue] == 1) {
+			if ([[theRow objectForKey:@"Null"] integerValue] == 1) {
 				[queryString appendString:@" DEFAULT NULL "];
 			}
 		} 
@@ -704,7 +704,7 @@ fetches the result as an array with a dictionary for each row in it
 		NSDictionary *originalColumnDetails = [[tableDataInstance columns] objectAtIndex:currentlyEditingRow];
 
 		// Any column comments
-		if ([originalColumnDetails objectForKey:@"comment"] && [[originalColumnDetails objectForKey:@"comment"] length]) {
+		if ([originalColumnDetails objectForKey:@"comment"] && [(NSString *)[originalColumnDetails objectForKey:@"comment"] length]) {
 			[queryString appendString:[NSString stringWithFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]]];
 		}
 
@@ -873,7 +873,7 @@ fetches the result as an array with a dictionary for each row in it
  * if contextInfo == addIndex: adds and index to the mysql-db if user hits ok
  * if contextInfo == cannotremovefield: do nothing
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
@@ -971,7 +971,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 	MCPResult *queryResult;
 	NSMutableArray *tempResult = [NSMutableArray array];
-	int i;
+	NSInteger i;
 	
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 	[queryResult setReturnDataAsStrings:YES];
@@ -1043,12 +1043,12 @@ returns a dictionary containing enum/set field names as key and possible values 
 #pragma mark -
 #pragma mark TableView datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return (aTableView == tableSourceView) ? [tableFields count] : [indexes count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSDictionary *theRow;
 
@@ -1065,7 +1065,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	return [theRow objectForKey:[aTableColumn identifier]];
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
     // Make sure that the drag operation is for the right table view
     if (aTableView!=tableSourceView) return;
@@ -1093,7 +1093,7 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:@"SequelProPasteboard"] owner:nil];
-		[pboard setString:[[NSNumber numberWithInt:[rows firstIndex]] stringValue] forType:@"SequelProPasteboard"];
+		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:@"SequelProPasteboard"];
 		return YES;
 	} else {
 		return NO;
@@ -1106,21 +1106,21 @@ Determine whether to allow a drag and drop operation on this table - for the pur
 validate that the original source is of the correct type and within the same table, and that the drag
 would result in a position change.
 */
-- (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row
+- (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row
 	proposedDropOperation:(NSTableViewDropOperation)operation
 {
     //make sure that the drag operation is for the right table view
     if (tableView!=tableSourceView) return NO;
 
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
-	int originalRow;
+	NSInteger originalRow;
 
 	// Ensure the drop is of the correct type
 	if (operation == NSTableViewDropAbove && row != -1 && [pboardTypes containsObject:@"SequelProPasteboard"]) {
 	
 		// Ensure the drag originated within this table
 		if ([info draggingSource] == tableView) {
-			originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+			originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] integerValue];
 			
 			if (row != originalRow && row != (originalRow+1)) {
 				return NSDragOperationMove;
@@ -1134,17 +1134,17 @@ would result in a position change.
 /*
  * Having validated a drop, perform the field/column reordering to match.
  */
-- (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(int)destinationRowIndex dropOperation:(NSTableViewDropOperation)operation
+- (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)destinationRowIndex dropOperation:(NSTableViewDropOperation)operation
 {
     //make sure that the drag operation is for the right table view
     if (tableView!=tableSourceView) return NO;
 
-	int originalRowIndex;
+	NSInteger originalRowIndex;
 	NSMutableString *queryString;
 	NSDictionary *originalRow;
 
 	// Extract the original row position from the pasteboard and retrieve the details
-	originalRowIndex = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+	originalRowIndex = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] integerValue];
 	originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
@@ -1179,7 +1179,7 @@ would result in a position change.
 
 	// Add the default value
 	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-		if ([[originalRow objectForKey:@"Null"] intValue] == 1) {
+		if ([[originalRow objectForKey:@"Null"] integerValue] == 1) {
 			[queryString appendString:@" DEFAULT NULL"];
 		}
 	} else if ( [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
@@ -1192,7 +1192,7 @@ would result in a position change.
 	NSDictionary *originalColumnDetails = [[tableDataInstance columns] objectAtIndex:originalRowIndex];
 
 	// Any column comments
-	if ([originalColumnDetails objectForKey:@"comment"] && [[originalColumnDetails objectForKey:@"comment"] length]) {
+	if ([originalColumnDetails objectForKey:@"comment"] && [(NSString *)[originalColumnDetails objectForKey:@"comment"] length]) {
 		[queryString appendString:[NSString stringWithFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]]];
 	}
 
@@ -1280,7 +1280,7 @@ would result in a position change.
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-	int row, column;
+	NSInteger row, column;
 
 	row = [tableSourceView editedRow];
 	column = [tableSourceView editedColumn];
@@ -1334,7 +1334,7 @@ would result in a position change.
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
  * is uneditable.
  */
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
     
     //make sure that the message is from the right table view
     if (tableView!=tableSourceView) return;
@@ -1350,17 +1350,17 @@ would result in a position change.
 	return YES;
 }
 
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return proposedMax - 150;
 }
 
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return proposedMin + 150;
 }
 
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {	
 	return [structureGrabber convertRect:[structureGrabber bounds] toView:splitView];
 }

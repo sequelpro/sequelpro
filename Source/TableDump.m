@@ -49,7 +49,7 @@
 - (IBAction)reloadTables:(id)sender
 {
 	MCPResult *queryResult;
-	int i;
+	NSInteger i;
 	
 	//get tables
 	[tables removeAllObjects];
@@ -130,12 +130,12 @@
 	[NSApp beginSheet:exportWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
 }
 
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[sheet orderOut:self];
 }
 
-- (void)exportFile:(int)tag
+- (void)exportFile:(NSInteger)tag
 /*
  invoked when user clicks on an export menuItem
  */
@@ -239,7 +239,7 @@
  * When the export "Save" dialog is closed, fire up a background thread to perform
  * the requested export.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	[sheet orderOut:self];
 	
@@ -517,7 +517,7 @@
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %@%i records", fieldMappingCurrentRow+1, fieldMappingImportArrayIsPreview?@"first ":@"", [fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 
 	[self updateFieldMappingButtonCell];
 	[fieldMappingTableView reloadData];
@@ -609,7 +609,7 @@
 			NSBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"SQL read error", @"An error occurred when reading the file.\n\nOnly %i queries were executed.\n\n(%@)"), queriesPerformed, [exception reason]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"SQL read error", @"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)"), (long)queriesPerformed, [exception reason]]);
 			[sqlParser release];
 			[sqlDataBuffer release];
 			[importPool drain];
@@ -657,7 +657,7 @@
 						NSBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 										  NSLocalizedString(@"OK", @"OK button"),
 										  nil, nil, tableWindow, self, nil, nil, nil,
-										  [NSString stringWithFormat:NSLocalizedString(@"SQL encoding read error", @"An error occurred when reading the file, as it could not be read in either UTF-8 or %@.\n\nOnly %i queries were executed."), [[tableDocumentInstance connectionEncoding] UTF8String], queriesPerformed]);
+										  [NSString stringWithFormat:NSLocalizedString(@"SQL encoding read error", @"An error occurred when reading the file, as it could not be read in either UTF-8 or %@.\n\nOnly %ld queries were executed."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)queriesPerformed]);
 						[sqlParser release];
 						[sqlDataBuffer release];
 						[importPool drain];
@@ -701,7 +701,7 @@
 
 			// Check for any errors
 			if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
+				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
 			}
 
 			// Increment the processed queries count
@@ -730,7 +730,7 @@
 
 		// Check for any errors
 		if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-			[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %d] %@\n", @"error text when multiple custom query failed"), (queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
+			[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
 		}
 
 		// Increment the processed queries count
@@ -794,7 +794,7 @@
 	NSInteger dataBufferLength = 0;
 	NSInteger dataBufferPosition = 0;
 	NSInteger dataBufferLastQueryEndPosition = 0;
-	int i;
+	NSInteger i;
 	BOOL allDataRead = NO;
 	BOOL insertBaseStringHasEntries;
 	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
@@ -867,7 +867,7 @@
 			NSBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"CSV read error", @"An error occurred when reading the file.\n\nOnly %i rows were imported.\n\n(%@)"), rowsImported, [exception reason]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"CSV read error", @"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)"), (long)rowsImported, [exception reason]]);
 			[csvParser release];
 			[csvDataBuffer release];
 			[parsedRows release];
@@ -907,7 +907,7 @@
 					NSBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, tableWindow, self, nil, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"CSV encoding read error", @"An error occurred when reading the file, as it could not be read using %@.\n\nOnly %i rows were imported."), [[tableDocumentInstance connectionEncoding] UTF8String], rowsImported]);
+									  [NSString stringWithFormat:NSLocalizedString(@"CSV encoding read error", @"An error occurred when reading the file, as it could not be read using %@.\n\nOnly %ld rows were imported."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)rowsImported]);
 					[csvParser release];
 					[csvDataBuffer release];
 					[parsedRows release];
@@ -942,7 +942,7 @@
 			// If valid, add the row array and length to local storage
 			if (csvRowArray) {
 				[parsedRows addObject:csvRowArray];
-				[parsePositions addObject:[NSNumber numberWithLong:[csvParser totalLengthParsed]]];
+				[parsePositions addObject:[NSNumber numberWithUnsignedInteger:[csvParser totalLengthParsed]]];
 			}
 
 			// If we have no field mapping array, and either the first hundred rows or all
@@ -974,7 +974,7 @@
 				[insertBaseString appendString:@" ("];
 				insertBaseStringHasEntries = NO;
 				for (i = 0; i < [fieldMappingArray count]; i++) {
-					if ([NSArrayObjectAtIndex(fieldMappingArray, i) intValue] > 0) {
+					if ([NSArrayObjectAtIndex(fieldMappingArray, i) integerValue] > 0) {
 						if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
 						else insertBaseStringHasEntries = YES;
 						[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
@@ -1021,8 +1021,8 @@
 						[query release];
 						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 							[errors appendString:[NSString stringWithFormat:
-								NSLocalizedString(@"[ERROR in row %d] %@\n", @"error text when reading of csv file gave errors"),
-								(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
+								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
+								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
 						}
 						rowsImported++;
 						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
@@ -1088,7 +1088,7 @@
 	}
 }
 
-- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// save values to preferences
 	[prefs setObject:[sheet directory] forKey:@"openPath"];
@@ -1194,7 +1194,7 @@
 	   didEndSelector:nil
 		  contextInfo:nil];
 
-	int code = [NSApp runModalForWindow:fieldMappingSheet];
+	NSInteger code = [NSApp runModalForWindow:fieldMappingSheet];
 	[NSApp endSheet:fieldMappingSheet];
 	[fieldMappingSheet orderOut:nil];
 
@@ -1211,7 +1211,7 @@
  */
 - (void)setupFieldMappingArray
 {
-	int i, value;
+	NSInteger i, value;
 	
     if (!fieldMappingArray) {
         fieldMappingArray = [[NSMutableArray alloc] init];
@@ -1223,7 +1223,7 @@
 				value = 0;
 			}
 			
-            [fieldMappingArray addObject:[NSNumber numberWithInt:value]];
+            [fieldMappingArray addObject:[NSNumber numberWithInteger:value]];
         }
     }
 	
@@ -1262,7 +1262,7 @@
 	//-----------[self setupFieldMappingArray];
 	[fieldMappingTableView reloadData];
 	
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%i of %@%i records", fieldMappingCurrentRow+1, fieldMappingImportArrayIsPreview?@"first ":@"", [fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 	
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
@@ -1276,13 +1276,13 @@
 - (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray
 {
 	NSMutableString *valueString = [NSMutableString stringWithString:@"("];
-	int i;
-	int mapColumn;
+	NSInteger i;
+	NSInteger mapColumn;
 	id cellData;
-	int mappingArrayCount = [fieldMappingArray count];
+	NSInteger mappingArrayCount = [fieldMappingArray count];
 
 	for (i = 0; i < mappingArrayCount; i++) {
-		mapColumn = [NSArrayObjectAtIndex(fieldMappingArray, i) intValue];
+		mapColumn = [NSArrayObjectAtIndex(fieldMappingArray, i) integerValue];
 
 		// Skip unmapped columns
 		if (!mapColumn) continue;
@@ -1313,9 +1313,9 @@
  */
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
-	int i,j,t,rowCount, colCount, lastProgressValue, queryLength;
-	int progressBarWidth;
-	int tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
+	NSInteger i,j,t,rowCount, colCount, lastProgressValue, queryLength;
+	NSInteger progressBarWidth;
+	NSInteger tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
 	MCPResult *queryResult;
 	MCPStreamingResult *streamingResult;
 	NSAutoreleasePool *exportAutoReleasePool = nil;
@@ -1344,7 +1344,7 @@
 	[singleProgressText displayIfNeeded];
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 	[singleProgressBar setMaxValue:progressBarWidth];
 	
 	// Open the progress sheet
@@ -1407,7 +1407,7 @@
 		
 		// Update the progress text and reset the progress bar to indeterminate status while fetching data
 		tableName = NSArrayObjectAtIndex(selectedTables, i);
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [selectedTables count], tableName]];
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
@@ -1481,7 +1481,7 @@
 			fieldNames = [streamingResult fetchFieldNames];			
 			
 			// Update the progress text and set the progress bar back to determinate
-			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Dumping...", @"text showing that app is writing data for table dump"), (i+1), [selectedTables count], tableName]];
+			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Dumping...", @"text showing that app is writing data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
 			[singleProgressText displayIfNeeded];
 			[singleProgressBar stopAnimation:self];
 			[singleProgressBar setIndeterminate:NO];
@@ -1515,8 +1515,8 @@
 					
 					// Update the progress bar
 					[singleProgressBar setDoubleValue:(j*progressBarWidth/rowCount)];
-					if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
-						lastProgressValue = (int)[singleProgressBar doubleValue];
+					if ((NSInteger)[singleProgressBar doubleValue] > lastProgressValue) {
+						lastProgressValue = (NSInteger)[singleProgressBar doubleValue];
 						[singleProgressBar displayIfNeeded];
 					}
 					
@@ -1671,7 +1671,7 @@
 - (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle
 {
 	NSMutableString *metaString = [NSMutableString string];
-	int  progressBarWidth;
+	NSInteger  progressBarWidth;
 	NSString *previousConnectionEncoding;
 	BOOL previousConnectionEncodingViaLatin1;
 	
@@ -1679,7 +1679,7 @@
 	[singleProgressTitle displayIfNeeded];
 	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	[singleProgressText displayIfNeeded];
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 	[singleProgressBar setDoubleValue:0];
 	[singleProgressBar displayIfNeeded];
 	
@@ -1719,13 +1719,13 @@
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
 	// tables here
-	for ( int i = 0 ; i < [tables count] ; i++ ) {
+	for ( NSInteger i = 0 ; i < [tables count] ; i++ ) {
 		if (progressCancelled) break;
 
 		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
 		NSDictionary *tinfo = [tableDataInstance informationForTable:tableName];
 
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [tables count], tableName]];
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[tables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
@@ -1744,7 +1744,7 @@
 		
 		// grab column info
 		NSArray *cinfo = [tinfo objectForKey:@"columns"];
-		for( int j = 0; j < [cinfo count]; j++ ) {
+		for( NSInteger j = 0; j < [cinfo count]; j++ ) {
 			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"type"]]];
 		}
 		
@@ -1755,7 +1755,7 @@
 		
 		// see about relations
 		cinfo = [tinfo objectForKey:@"constraints"];
-		for( int j = 0; j < [cinfo count]; j++ ) {
+		for( NSInteger j = 0; j < [cinfo count]; j++ ) {
 			if (progressCancelled) break;
 
 			// Get the column references.  Currently the columns themselves are an array,
@@ -1789,7 +1789,7 @@
 	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
 	
 	// grab the relations
-	for( int i = 0; i < [fkInfo count]; i++ ) {
+	for( NSInteger i = 0; i < [fkInfo count]; i++ ) {
 		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [fkInfo objectAtIndex:i]]];
 	}
 	
@@ -1850,8 +1850,8 @@
 	NSScanner *csvNumericTester;
 	BOOL quoteFieldSeparators = [enclosingString isEqualToString:@""];
 	BOOL csvCellIsNumeric;
-	int i, progressBarWidth, lastProgressValue, currentPoolDataLength;
-	int csvCellCount = 0;
+	NSInteger i, progressBarWidth, lastProgressValue, currentPoolDataLength;
+	NSInteger csvCellCount = 0;
 
 	// Detect and restore special characters being used as terminating or line end strings
 	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:fieldSeparatorString];
@@ -1878,7 +1878,7 @@
 	lineEndString = [NSString stringWithString:tempLineEndString];
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setMaxValue:progressBarWidth];
 	[singleProgressBar setDoubleValue:0];
@@ -2046,8 +2046,8 @@
 		currentRowIndex++;
 		if (totalRows)
 			[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-		if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
-			lastProgressValue = (int)[singleProgressBar doubleValue];
+		if ((NSInteger)[singleProgressBar doubleValue] > lastProgressValue) {
+			lastProgressValue = (NSInteger)[singleProgressBar doubleValue];
 			[singleProgressBar displayIfNeeded];
 		}
 		
@@ -2093,11 +2093,11 @@
 	NSMutableString *xmlString = [NSMutableString string];
 	NSMutableString *xmlItem = [NSMutableString string];
 	NSString *dataConversionString;
-	int i, currentRowIndex, lastProgressValue, progressBarWidth, currentPoolDataLength;
-	int xmlRowCount = 0;
+	NSInteger i, currentRowIndex, lastProgressValue, progressBarWidth, currentPoolDataLength;
+	NSInteger xmlRowCount = 0;
 	
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (int)[singleProgressBar bounds].size.width;
+	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
 	[singleProgressBar setIndeterminate:NO];
 	[singleProgressBar setMaxValue:progressBarWidth];
@@ -2214,8 +2214,8 @@
 		currentRowIndex++;
 		if (totalRows)
 			[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-		if ((int)[singleProgressBar doubleValue] > lastProgressValue) {
-			lastProgressValue = (int)[singleProgressBar doubleValue];
+		if ((NSInteger)[singleProgressBar doubleValue] > lastProgressValue) {
+			lastProgressValue = (NSInteger)[singleProgressBar doubleValue];
 			[singleProgressBar displayIfNeeded];
 		}
 		
@@ -2254,7 +2254,7 @@
  */
 - (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type
 {
-	int i;
+	NSInteger i;
 	NSMutableArray *selectedTables = [NSMutableArray array];
 	
 	// Extract the table names of the selected tables
@@ -2273,7 +2273,7 @@
  */
 - (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
 {
-	int i, j;
+	NSInteger i, j;
 	MCPResult *queryResult;
 	MCPStreamingResult *streamingResult;
 	NSInteger streamingResultCount;
@@ -2341,7 +2341,7 @@
 		
 		// Update the progress text and reset the progress bar to indeterminate status
 		tableName = [selectedTables objectAtIndex:i];
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): fetching data...", @"text showing that app is fetching data for table dump"), (i+1), [selectedTables count], tableName]];
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar setIndeterminate:YES];
 		[singleProgressBar setUsesThreadedAnimation:YES];
@@ -2396,7 +2396,7 @@
 		}
 
 		// Update the progress text and set the progress bar back to determinate
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %i of %i (%@): Writing data...", @"text showing that app is writing data for table export"), (i+1), [selectedTables count], tableName]];
+		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Writing data...", @"text showing that app is writing data for table export"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
 		[singleProgressText displayIfNeeded];
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setUsesThreadedAnimation:NO];
@@ -2513,7 +2513,7 @@
 	NSMutableString *placeholderSyntax, *fieldString;
 	NSArray *viewColumns;
 	NSDictionary *column;
-	int i, j;
+	NSInteger i, j;
 
 	// Get structured information for the view via the SPTableData parsers
 	viewInformation = [tableDataInstance informationForView:viewName];
@@ -2543,17 +2543,17 @@
 		}
 	
 		// Field specification details
-		if ([[column objectForKey:@"unsigned"] intValue] == 1) [fieldString appendString:@" UNSIGNED"];
-		if ([[column objectForKey:@"zerofill"] intValue] == 1) [fieldString appendString:@" ZEROFILL"];
-		if ([[column objectForKey:@"binary"] intValue] == 1) [fieldString appendString:@" BINARY"];
-		if ([[column objectForKey:@"null"] intValue] == 0) [fieldString appendString:@" NOT NULL"];
+		if ([[column objectForKey:@"unsigned"] integerValue] == 1) [fieldString appendString:@" UNSIGNED"];
+		if ([[column objectForKey:@"zerofill"] integerValue] == 1) [fieldString appendString:@" ZEROFILL"];
+		if ([[column objectForKey:@"binary"] integerValue] == 1) [fieldString appendString:@" BINARY"];
+		if ([[column objectForKey:@"null"] integerValue] == 0) [fieldString appendString:@" NOT NULL"];
 
 		// Provide the field default if appropriate
 		if ([column objectForKey:@"default"]) {
 
 			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those.
 			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
-				if ([[column objectForKey:@"null"] intValue])
+				if ([[column objectForKey:@"null"] integerValue])
 					[fieldString appendString:@" DEFAULT NULL"];
 
 			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
@@ -2622,17 +2622,17 @@
 #pragma mark -
 #pragma mark Table view datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
 	return (aTableView == fieldMappingTableView) ? [fieldMappingTableColumnNames count] : [tables count];
 }
 
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	[aCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	id returnObject = nil;
 	
@@ -2660,7 +2660,7 @@
 	return returnObject;
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if ( aTableView == fieldMappingTableView ) {		
 		[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];

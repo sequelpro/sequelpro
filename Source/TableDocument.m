@@ -47,7 +47,7 @@
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
 #import "SPPrintAccessory.h"
-#import "QLPreviewPanel.h"
+//#import "QLPreviewPanel.h"
 #import "SPUserManager.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
@@ -254,7 +254,7 @@
 	NSDictionary *connection = nil;
 	NSDictionary *spf = nil;
 
-	int connectionType;
+	NSInteger connectionType;
 
 	// Inform about the data source in the window title bar
 	[tableWindow setTitle:[self displaySPName]];
@@ -447,8 +447,8 @@
 	if([connection objectForKey:@"host"])
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if([connection objectForKey:@"port"])
-		[connectionController setPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"port"] intValue]]];
-	if([connection objectForKey:@"kcid"] && [[connection objectForKey:@"kcid"] length])
+		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
+	if([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length])
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
 
 	// Set password - if not in SPF file try to get it via the KeyChain
@@ -469,7 +469,7 @@
 		if([connection objectForKey:@"ssh_user"])
 			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
 		if([connection objectForKey:@"ssh_port"])
-			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"ssh_port"] intValue]]];
+			[connectionController setSshPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"ssh_port"] integerValue]]];
 
 		// Set ssh password - if not in SPF file try to get it via the KeyChain
 		if([connection objectForKey:@"ssh_password"])
@@ -541,7 +541,7 @@
 	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
 		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
 		NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-		unsigned int i;
+		NSUInteger i;
 		for(i=0; i<[items count]; i++)
 			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
 
@@ -552,7 +552,7 @@
 	if([spfSession objectForKey:@"contentSortCol"])
 		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
 	if([spfSession objectForKey:@"contentPageNumber"])
-		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] intValue]];
+		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
 	if([spfSession objectForKey:@"contentViewport"])
 		[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
 	if([spfSession objectForKey:@"contentFilter"])
@@ -560,7 +560,7 @@
 
 
 	// Select table
-	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
 
 	// Reset database view encoding if differs from default
 	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
@@ -918,7 +918,7 @@
 
 	NSMutableArray *systemDatabases = [NSMutableArray array];
 	
-	for (int i = 0 ; i < [queryResult numOfRows] ; i++)
+	for (NSInteger i = 0 ; i < [queryResult numOfRows] ; i++)
 	{
 		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
 		
@@ -1057,7 +1057,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									  otherButton:nil 
-						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
+						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]]];
 
 	NSArray *buttons = [alert buttons];
 
@@ -1119,7 +1119,7 @@
  * if contextInfo == removeDatabase -> Remove the selected database
  * if contextInfo == addDatabase    -> Add a new database
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Remove the current database
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
@@ -1166,8 +1166,8 @@
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		int i;
-		int r = [theResult numOfRows];
+		NSInteger i;
+		NSInteger r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		for ( i = 0 ; i < r ; i++ ) {
 			dbName = NSArrayObjectAtIndex([theResult fetchRowAsArray], 0);
@@ -1235,7 +1235,7 @@
 /**
  * Set a query mode, used to control logging dependant on preferences
  */
-- (void) setQueryMode:(int)theQueryMode
+- (void) setQueryMode:(NSInteger)theQueryMode
 {
 	_queryMode = theQueryMode;
 }
@@ -1319,7 +1319,7 @@
  * Sets the task percentage progress - the first call to this automatically
  * switches the progress display to determinate.
  */
-- (void) setTaskPercentage:(float)taskPercentage
+- (void) setTaskPercentage:(CGFloat)taskPercentage
 {
 	if (taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = NO;
@@ -1553,7 +1553,7 @@
 {
 	NSEnumerator *dbEncodingMenuEn = [[selectEncodingMenu itemArray] objectEnumerator];
 	id menuItem;
-	int correctStateForMenuItem;
+	NSInteger correctStateForMenuItem;
 	while (menuItem = [dbEncodingMenuEn nextObject]) {
 		correctStateForMenuItem = [[menuItem title] isEqualToString:encoding] ? NSOnState : NSOffState;
 
@@ -1684,7 +1684,7 @@
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
-	int colOffs = 1;
+	NSInteger colOffs = 1;
 	NSString *query = nil;
 	NSString *typeString = @"";
 
@@ -1745,7 +1745,7 @@
 {
 	// Create the query and get results
 	NSString *query = nil;
-	int colOffs = 1;
+	NSInteger colOffs = 1;
 
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
@@ -2465,7 +2465,7 @@
 
 }
 
-- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 
 	if ( returnCode ) {
@@ -2624,7 +2624,7 @@
 
 	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 
-	[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+	[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 	[spfdata setObject:@"connection" forKey:@"format"];
 	[spfdata setObject:@"mysql" forKey:@"rdbms_type"];
 	[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
@@ -2658,7 +2658,7 @@
 		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
 		if([connectionController sshPort] && [[connectionController sshPort] length])
-			[connection setObject:[NSNumber numberWithInt:[[connectionController sshPort] intValue]] forKey:@"ssh_port"];
+			[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
 		break;
 		default:
 		aString = @"SPTCPIPConnection";
@@ -2675,7 +2675,7 @@
 	}
 
 	if([connectionController port] && [[connectionController port] length])
-		[connection setObject:[NSNumber numberWithInt:[[connectionController port] intValue]] forKey:@"port"];
+		[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
 
 	if([[self database] length])
 		[connection setObject:[self database] forKey:@"database"];
@@ -2715,18 +2715,18 @@
 		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-		[session setObject:[NSNumber numberWithInt:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
+		[session setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
 		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 		if([tableContentInstance filterSettings])
 			[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
 		if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
 			NSMutableArray *indices = [NSMutableArray array];
-			unsigned indexBuffer[[contentSelectedIndexSet count]];
-			unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-			unsigned idx;
+			NSUInteger indexBuffer[[contentSelectedIndexSet count]];
+			NSUInteger limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
+			NSUInteger idx;
 			for (idx = 0; idx < limit; idx++) {
-				[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
+				[indices addObject:[NSNumber numberWithInteger:indexBuffer[idx]]];
 			}
 			[session setObject:indices forKey:@"contentSelectedIndexSet"];
 		}
@@ -3067,7 +3067,7 @@
 /**
  * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if (returnCode == NSOKButton) {
 		if ([contextInfo isEqualToString:@"CreateSyntax"]) {
@@ -3557,7 +3557,7 @@
 	[self updateChooseDatabaseToolbarItemWidth];
 }
 
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {
 	if (sidebarGrabber != nil) {
 		return [sidebarGrabber convertRect:[sidebarGrabber bounds] toView:splitView];
@@ -3573,7 +3573,7 @@
 		return;
 
 	// grab the width of the left pane
-	float leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
+	CGFloat leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 
 	// subtract some pixels to allow for misc stuff
 	leftPaneWidth -= 12;

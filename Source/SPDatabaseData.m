@@ -437,7 +437,7 @@ const CHAR_SETS charsets[] =
 	if ([[connection getLastErrorMessage] isEqualToString:@""]) {
 		[result dataSeek:0];
 
-		for (int i = 0; i < [result numOfRows]; i++)
+		for (NSInteger i = 0; i < [result numOfRows]; i++)
 		{
 			[array addObject:[result fetchRowAsDictionary]];
 		}

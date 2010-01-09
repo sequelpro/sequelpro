@@ -81,7 +81,7 @@
 		NSString *matchType = nil;
 		NSRange mrkrSubRange = [matchString rangeOfRegex:regex options:RKLNoOptions inRange:localRange capture:1 error:NULL];
 		BOOL isMarker = (mrkrSubRange.length > 0); // only matches if match has marker-delimiters
-		int offset = 0;
+		NSInteger offset = 0;
 		if (isMarker) {
 			matchType = MARKER_TYPE_MARKER;
 		} else  {
@@ -99,7 +99,7 @@
 			NSArray *markerComponents = [self argumentsFromString:markerString];
 			if (markerComponents && [markerComponents count] > 0) {
 				[markerInfo setObject:[markerComponents objectAtIndex:0] forKey:MARKER_NAME_KEY];
-				int count = [markerComponents count];
+				NSInteger count = [markerComponents count];
 				if (count > 1) {
 					[markerInfo setObject:[markerComponents subarrayWithRange:NSMakeRange(1, count - 1)] 
 								   forKey:MARKER_ARGUMENTS_KEY];
@@ -130,7 +130,7 @@
 				NSArray *filterComponents = [self argumentsFromString:filterString];
 				if (filterComponents && [filterComponents count] > 0) {
 					[markerInfo setObject:[filterComponents objectAtIndex:0] forKey:MARKER_FILTER_KEY];
-					int count = [filterComponents count];
+					NSInteger count = [filterComponents count];
 					if (count > 1) {
 						[markerInfo setObject:[filterComponents subarrayWithRange:NSMakeRange(1, count - 1)] 
 									   forKey:MARKER_FILTER_ARGUMENTS_KEY];
@@ -151,7 +151,7 @@
 	NSString *argsPattern = @"\"(.*?)(?<!\\\\)\"|'(.*?)(?<!\\\\)'|(\\S+)";
 	NSMutableArray *args = [NSMutableArray array];
 	
-	int location = 0;
+	NSInteger location = 0;
 	while (location != NSNotFound) {
 		NSRange searchRange  = NSMakeRange(location, [argString length] - location);
 		NSRange entireRange = [argString rangeOfRegex:argsPattern options:RKLNoOptions 

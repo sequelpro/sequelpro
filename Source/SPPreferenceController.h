@@ -77,7 +77,7 @@
 	NSUserDefaults *prefs;
 	
 	BOOL favoriteNameFieldWasTouched;
-	int favoriteType;
+	NSInteger favoriteType;
 }
 
 - (void)applyRevisionChanges;
@@ -103,7 +103,7 @@
 // Other
 - (void)updateDefaultFavoritePopup;
 - (void)selectFavorites:(NSArray *)favorite;
-- (void)selectFavoriteAtIndex:(unsigned int)theIndex;
+- (void)selectFavoriteAtIndex:(NSUInteger)theIndex;
 - (void)changeFont:(id)sender;
 - (IBAction)favoriteTypeDidChange:(id)sender;
 - (void)updateFavoritePasswordsFromField:(NSControl *)passwordControl;

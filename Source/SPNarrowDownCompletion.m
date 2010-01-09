@@ -32,6 +32,7 @@
 #import "SPArrayAdditions.h"
 #import "ImageAndTextCell.h"
 #import "SPConstants.h"
+#include <tgmath.h>
 
 @interface NSTableView (MovingSelectedRow)
 
@@ -54,9 +55,9 @@
 
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent
 {
-	int visibleRows = (int)floorf(NSHeight([self visibleRect]) / ([self rowHeight]+[self intercellSpacing].height)) - 1;
+	NSInteger visibleRows = (NSInteger)floor(NSHeight([self visibleRect]) / ([self rowHeight]+[self intercellSpacing].height)) - 1;
 
-	struct { unichar key; int rows; } const key_movements[] =
+	struct { unichar key; NSInteger rows; } const key_movements[] =
 	{
 		{ NSUpArrowFunctionKey,              -1 },
 		{ NSDownArrowFunctionKey,            +1 },
@@ -77,7 +78,7 @@
 	{
 		if(keyCode == key_movements[i].key)
 		{
-			int row = MAX(0, MIN([self selectedRow] + key_movements[i].rows, [self numberOfRows]-1));
+			NSInteger row = MAX(0, MIN([self selectedRow] + key_movements[i].rows, [self numberOfRows]-1));
 			[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 			[self scrollRowToVisible:row];
 
@@ -158,7 +159,7 @@
 	
 	NSRect mainScreen = [self rectOfMainScreen];
 	
-	int offx = (caretPos.x/mainScreen.size.width) + 1;
+	NSInteger offx = (caretPos.x/mainScreen.size.width) + 1;
 	if((caretPos.x + [self frame].size.width) > (mainScreen.size.width*offx))
 		caretPos.x = caretPos.x - [self frame].size.width;
 	
@@ -209,12 +210,12 @@
 // ========================
 // = TableView DataSource =
 // ========================
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [filtered count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;
 	NSString* imageName = nil;
@@ -259,15 +260,15 @@
 	}
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 	
-	int displayedRows = [newFiltered count] < SP_NARROWDOWNLIST_MAX_ROWS ? [newFiltered count] : SP_NARROWDOWNLIST_MAX_ROWS;
-	float newHeight   = ([theTableView rowHeight] + [theTableView intercellSpacing].height) * displayedRows;
+	NSInteger displayedRows = [newFiltered count] < SP_NARROWDOWNLIST_MAX_ROWS ? [newFiltered count] : SP_NARROWDOWNLIST_MAX_ROWS;
+	CGFloat newHeight   = ([theTableView rowHeight] + [theTableView intercellSpacing].height) * displayedRows;
 	
-	float maxLen = 1;
+	CGFloat maxLen = 1;
 	NSString* item;
-	int i;
+	NSInteger i;
 	BOOL spaceInSuggestion = NO;
 	[textualInputCharacters removeCharactersInString:@" "];
-	float maxWidth = [self frame].size.width;
+	CGFloat maxWidth = [self frame].size.width;
 	if([newFiltered count]>0)
 	{
 		for(i=0; i<[newFiltered count]; i++)
@@ -357,7 +358,7 @@
 		}
 		else if(t == NSKeyDown)
 		{
-			unsigned int flags = [event modifierFlags];
+			NSUInteger flags = [event modifierFlags];
 			unichar key        = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
 
 			// Check if user pressed ⌥ to allow composing of accented characters.
@@ -440,7 +441,7 @@
 // ==================
 - (void)insertCommonPrefix
 {
-	int row = [theTableView selectedRow];
+	NSInteger row = [theTableView selectedRow];
 	if(row == -1)
 		return;
 
@@ -454,7 +455,7 @@
 	{
 		NSString* prefix = [curMatch substringToIndex:[[self filterString] length] + 1];
 		NSMutableArray* candidates = [NSMutableArray array];
-		for(int i = row; i < [filtered count]; ++i)
+		for(NSInteger i = row; i < [filtered count]; ++i)
 		{
 			id candidate = [filtered objectAtIndex:i];
 			NSString* candidateMatch;

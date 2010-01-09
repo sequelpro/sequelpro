@@ -128,7 +128,7 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	int columnIndex = [columnNames indexOfObject:colName];
+	NSInteger columnIndex = [columnNames indexOfObject:colName];
 	if (columnIndex == NSNotFound) return nil;
 	return [columns objectAtIndex:columnIndex];
 }
@@ -153,7 +153,7 @@
 /*
  * Retrieve a specified column for the current table as a dictionary, using or refreshing the cache as appropriate.
  */
-- (NSDictionary *) columnAtIndex:(int)index
+- (NSDictionary *) columnAtIndex:(NSInteger)index
 {	
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
@@ -308,7 +308,7 @@
 	NSMutableArray *tableColumns, *fieldStrings, *definitionParts;
 	NSMutableDictionary *tableColumn, *tableData;
 	NSString *encodingString;
-	unsigned i, stringStart;
+	NSUInteger i, stringStart;
 	unichar quoteCharacter;
 
 	[columns removeAllObjects];
@@ -406,14 +406,14 @@
 			}
 			[fieldsParser setIgnoringCommentStrings:NO];
 			
-			[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
+			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
 			
 			//if column is not null, but doesn't have a default value, set empty string
-			if([[tableColumn objectForKey:@"null"] intValue] == 0 && [[tableColumn objectForKey:@"autoincrement"] intValue] == 0 && ![tableColumn objectForKey:@"default"]) {
+			if([[tableColumn objectForKey:@"null"] integerValue] == 0 && [[tableColumn objectForKey:@"autoincrement"] integerValue] == 0 && ![tableColumn objectForKey:@"default"]) {
 				[tableColumn setObject:@"" forKey:@"default"];
 			}
 			
@@ -449,7 +449,7 @@
 				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
 
-				int nextOffs = 12;
+				NSInteger nextOffs = 12;
 				if( [parts count] > 8 ) {
 					// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
 					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
@@ -619,7 +619,7 @@
 	NSMutableArray *tableColumns;
 	NSDictionary *resultRow;
 	NSMutableDictionary *tableColumn, *viewData;
-	unsigned i;
+	NSUInteger i;
 
 	// Catch unselected views and return nil
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
@@ -669,7 +669,7 @@
 		resultRow = [theResult fetchRowAsDictionary];
 
 		// Add the column index and name
-		[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
+		[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 		[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Field"]] forKey:@"name"];
 
 		// Populate type, length, and other available details from the Type columns
@@ -808,7 +808,7 @@
 	NSMutableDictionary *fieldDetails = [[NSMutableDictionary alloc] init];
 	NSMutableArray *detailParts;
 	NSString *detailString;
-	int i, definitionPartsIndex = 0, partsArrayLength;
+	NSInteger i, definitionPartsIndex = 0, partsArrayLength;
 
 	// Skip blank items within the definition parts
 	while (definitionPartsIndex < [definitionParts count]

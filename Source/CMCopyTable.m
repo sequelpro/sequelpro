@@ -32,8 +32,8 @@
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
 
-int MENU_EDIT_COPY_WITH_COLUMN = 2001;
-int MENU_EDIT_COPY_AS_SQL      = 2002;
+NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2001;
+NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 @implementation CMCopyTable
 
@@ -71,7 +71,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 }
 
 //allow for drag-n-drop out of the application as a copy
-- (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
 	return NSDragOperationCopy;
 }
@@ -202,15 +202,15 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	for(id enumObj in columns)
 	{
 		[tbHeader addObject:[[enumObj headerCell] stringValue]];
-		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] intValue]] objectForKey:@"typegrouping"];
+		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] integerValue]] objectForKey:@"typegrouping"];
 		if([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
-			[types addObject:[NSNumber numberWithInt:0]]; // numeric
+			[types addObject:[NSNumber numberWithInteger:0]]; // numeric
 		else if([t isEqualToString:@"blobdata"])
-			[types addObject:[NSNumber numberWithInt:2]]; // blob data
+			[types addObject:[NSNumber numberWithInteger:2]]; // blob data
 		else if([t isEqualToString:@"textdata"])
-			[types addObject:[NSNumber numberWithInt:3]]; // long text data
+			[types addObject:[NSNumber numberWithInteger:3]]; // long text data
 		else
-			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
+			[types addObject:[NSNumber numberWithInteger:1]]; // string (fallback coevally)
 	}
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
@@ -230,7 +230,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] intValue]];
+			rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]];
 
 			// Check for NULL value
 			if([rowData isNSNull]) {
@@ -239,7 +239,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			}
 			else if ( rowData != nil ) {
 				// check column type and insert the data accordingly
-				switch([[types objectAtIndex:c] intValue]) {
+				switch([[types objectAtIndex:c] integerValue]) {
 					case 0: // numeric
 						[value appendString:[NSString stringWithFormat:@"%@, ", [rowData description]]];
 						break;
@@ -265,11 +265,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
 									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isNSNull])
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] isNSNull])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"X'%@', ", 
-									[mySQLConnection prepareBinaryData:[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]]]]];
+									[mySQLConnection prepareBinaryData:[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]]]]];
 						} else {
 							[value appendString:[NSString stringWithFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:rowData]]];
 						}
@@ -285,11 +285,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
 									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"'%@', ", 
-									[mySQLConnection prepareString:[[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] description]]]];
+									[mySQLConnection prepareString:[[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] description]]]];
 						} else {
 							[value appendString:[NSString stringWithFormat:@"'%@', ", 
 								[[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"] ] ];

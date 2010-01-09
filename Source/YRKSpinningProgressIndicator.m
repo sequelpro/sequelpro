@@ -81,12 +81,12 @@
 
 - (void)drawRect:(NSRect)rect
 {
-	int i;
-	float alpha = 1.0;
+	NSInteger i;
+	CGFloat alpha = 1.0;
 
 	// Determine size based on current bounds
 	NSSize size = [self bounds].size;
-	float maxSize;
+	CGFloat maxSize;
 	if(size.width >= size.height)
 		maxSize = size.height;
 	else
@@ -110,9 +110,9 @@
 		CGContextRotateCTM(currentContext, 3.14159*2/_numFins * _position);
 
 		NSBezierPath *path = [[NSBezierPath alloc] init];
-		float lineWidth = 0.08 * maxSize; // should be 2.75 for 32x32
-		float lineStart = 0.234375 * maxSize; // should be 7.5 for 32x32
-		float lineEnd = 0.421875 * maxSize;  // should be 13.5 for 32x32
+		CGFloat lineWidth = 0.08 * maxSize; // should be 2.75 for 32x32
+		CGFloat lineStart = 0.234375 * maxSize; // should be 7.5 for 32x32
+		CGFloat lineEnd = 0.421875 * maxSize;  // should be 13.5 for 32x32
 		[path setLineWidth:lineWidth];
 		[path setLineCapStyle:NSRoundLineCapStyle];
 		[path moveToPoint:NSMakePoint(0,lineStart)];
@@ -135,8 +135,8 @@
 
 	} else {
 
-		float lineWidth = 1 + (0.01 * maxSize);
-		float circleRadius = (maxSize - lineWidth) / 2.1;
+		CGFloat lineWidth = 1 + (0.01 * maxSize);
+		CGFloat circleRadius = (maxSize - lineWidth) / 2.1;
 		NSPoint circleCenter = NSMakePoint(0, 0);
 		[[_foreColor colorWithAlphaComponent:alpha] set];
 		NSBezierPath *path = [[NSBezierPath alloc] init];
@@ -173,8 +173,8 @@
 	NSAutoreleasePool *animationPool = [[NSAutoreleasePool alloc] init];
 	
 	// Set up the animation speed to subtly change with size > 32.
-	int animationDelay = 38000 + (2000 * ([self bounds].size.height / 32));
-	int poolFlushCounter = 0;
+	NSInteger animationDelay = 38000 + (2000 * ([self bounds].size.height / 32));
+	NSInteger poolFlushCounter = 0;
 
 	do {
 		[self animate:nil];

@@ -131,7 +131,7 @@
 	// Execute query
 	[connection queryString:query];
 	
-	int retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
+	NSInteger retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
 		
 	// 0 indicates success
 	if (retCode) {
@@ -179,7 +179,7 @@
 	
 	[result dataSeek:0];
 	
-	for (int i = 0; i < [result numOfRows]; i++)
+	for (NSInteger i = 0; i < [result numOfRows]; i++)
 	{		
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
@@ -265,12 +265,12 @@
 #pragma mark -
 #pragma mark Tableview datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [relationData count];
 }
 
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	return [[relationData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 }
@@ -290,7 +290,7 @@
  * Double-click action on table cells - for the time being, return
  * NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
@@ -346,7 +346,7 @@
 /**
  * NSAlert didEnd method.
  */
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if ([contextInfo isEqualToString:@"removeRelation"]) {
 		
@@ -355,7 +355,7 @@
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
 			
-			unsigned int row = [selectedSet lastIndex];
+			NSUInteger row = [selectedSet lastIndex];
 			
 			while (row != NSNotFound) 
 			{

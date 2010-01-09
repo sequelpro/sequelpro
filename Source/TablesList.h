@@ -101,7 +101,7 @@ enum sp_table_types
 	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
 	NSMutableArray *filteredTableTypes;
-	int selectedTableType;
+	NSInteger selectedTableType;
 	NSString *selectedTableName;
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;
@@ -130,7 +130,7 @@ enum sp_table_types
 
 // Getters
 - (NSString *)tableName;
-- (int)tableType;
+- (NSInteger)tableType;
 - (NSArray *)tables;
 - (NSArray *)tableTypes;
 - (NSArray *)allTableAndViewNames;

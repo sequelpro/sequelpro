@@ -52,11 +52,11 @@
 {
 	NSMutableString *csvString;
 
-	long trimPosition;
-	long parserPosition;
-	long totalLengthParsed;
-	long csvStringLength;
-	int fieldCount;
+	NSUInteger trimPosition;
+	NSUInteger parserPosition;
+	NSUInteger totalLengthParsed;
+	NSUInteger csvStringLength;
+	NSInteger fieldCount;
 
 	NSString *nullReplacementString;
 	NSString *fieldEndString;
@@ -67,10 +67,10 @@
 	NSString *escapedLineEndString;
 	NSString *escapedFieldQuoteString;
 	NSString *escapedEscapeString;
-	int fieldEndLength;
-	int lineEndLength;
-	int fieldQuoteLength;
-	int escapeLength;
+	NSInteger fieldEndLength;
+	NSInteger lineEndLength;
+	NSInteger fieldQuoteLength;
+	NSInteger escapeLength;
 	NSCharacterSet *skipCharacterSet;
 	NSScanner *csvScanner;
 
@@ -89,8 +89,8 @@
 /* Basic information */
 - (NSUInteger) length;
 - (NSString *) string;
-- (long) parserPosition;
-- (long) totalLengthParsed;
+- (NSUInteger) parserPosition;
+- (NSUInteger) totalLengthParsed;
 
 /* Setting the terminator, quote, escape and null character replacement strings */
 - (void) setFieldTerminatorString:(NSString *)theString convertDisplayStrings:(BOOL)convertString;
@@ -102,7 +102,7 @@
 /* Init and internal update methods */
 - (void) _initialiseCSVParserDefaults;
 - (void) _moveParserPastSkippableCharacters;
-- (long) _getDistanceToString:(NSString *)theString;
+- (NSUInteger) _getDistanceToString:(NSString *)theString;
 - (void) _updateState;
 - (NSString *) _convertDisplayString:(NSString *)theString;
 - (void) _updateSkipCharacterSet;

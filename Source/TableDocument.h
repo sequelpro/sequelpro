@@ -106,7 +106,7 @@
 	IBOutlet id inputTextWindowHeader;
 	IBOutlet id inputTextWindowMessage;
 	IBOutlet id inputTextWindowSecureTextField;
-	int passwordSheetReturnCode;
+	NSInteger passwordSheetReturnCode;
 	
 	// Controllers
 	SPConnectionController *connectionController;
@@ -125,16 +125,16 @@
 	BOOL _encodingViaLatin1;
 	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
-	int _isWorkingLevel;
+	NSInteger _isWorkingLevel;
 	BOOL _mainNibLoaded;
 	BOOL databaseListIsSelectable;
-	int _queryMode;
+	NSInteger _queryMode;
 
 	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
-	float taskProgressValue;
-	float taskDisplayLastValue;
-	float taskProgressValueDisplayInterval;
+	CGFloat taskProgressValue;
+	CGFloat taskDisplayLastValue;
+	CGFloat taskProgressValueDisplayInterval;
 	NSTimer *taskDrawTimer;
 	NSViewAnimation *taskFadeAnimator;
 	BOOL taskCanBeCancelled;
@@ -185,7 +185,7 @@
 - (void) startTaskWithDescription:(NSString *)description;
 - (void) showTaskProgressWindow:(NSTimer *)theTimer;
 - (void) setTaskDescription:(NSString *)description;
-- (void) setTaskPercentage:(float)taskPercentage;
+- (void) setTaskPercentage:(CGFloat)taskPercentage;
 - (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay;
 - (void) endTask;
 - (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction;
@@ -219,7 +219,7 @@
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
 
 // Other methods
-- (void) setQueryMode:(int)theQueryMode;
+- (void) setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closeErrorConnectionSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
@@ -229,7 +229,7 @@
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
 - (void)refreshCurrentDatabase;
-- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo;
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)validateSaveConnectionAccessory:(id)sender;
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences;
 - (IBAction)closePasswordSheet:(id)sender;

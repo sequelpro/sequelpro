@@ -80,7 +80,7 @@
 		
 		// Disable the toolbar icons
 		NSArray *toolbarItems = [[documentWindow toolbar] items];
-		for (int i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:NO];
+		for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:NO];
 		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
 		keychain = [[SPKeychain alloc] init];
@@ -97,15 +97,15 @@
 
 		// Set the focus to the favorites table and select the appropriate row
 		[documentWindow setInitialFirstResponder:favoritesTable];
-		int tableRow;
+		NSInteger tableRow;
 		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
 			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
 		} else {
 			tableRow = [prefs integerForKey:SPDefaultFavorite] + 1;
 		}
 		if (tableRow < [favorites count]) {
-			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] intValue];
-			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] intValue] animating:NO];
+			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue];
+			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
 			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:tableRow] byExtendingSelection:NO];
 			[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 		} else {
@@ -225,7 +225,7 @@
 	[progressIndicatorText display];
 
 	// Set up the tunnel details
-	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:([[self sshPort] length]?[[self sshPort] intValue]:22) login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] intValue]:3306) onHost:[self host]];
+	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:([[self sshPort] length]?[[self sshPort] integerValue]:22) login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] integerValue]:3306) onHost:[self host]];
 	[sshTunnel setParentWindow:documentWindow];
 	
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
@@ -250,7 +250,7 @@
  */
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel
 {
-	int newState = [theTunnel state];
+	NSInteger newState = [theTunnel state];
 
 	if (newState == PROXY_STATE_IDLE) {
 		[tableDocument setTitlebarStatus:@"SSH Disconnected"];
@@ -289,7 +289,7 @@
 		} else {
 			mySQLConnection = [[MCPConnection alloc] initToHost:[self host]
 														withLogin:[self user]
-														usingPort:([[self port] length]?[[self port] intValue]:3306)];
+														usingPort:([[self port] length]?[[self port] integerValue]:3306)];
 		}
 	}
 
@@ -305,9 +305,9 @@
 	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:SPConsoleEnableLogging]];
 
 	// Set options from preferences
-	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] intValue]];
+	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] integerValue]];
 	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:SPUseKeepAlive] boolValue]];
-	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] floatValue]];
+	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] doubleValue]];
 
 	// Connect
 	[mySQLConnection connect];
@@ -345,7 +345,7 @@
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
 			} else {
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %i seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], [[prefs objectForKey:SPConnectionTimeoutValue] intValue], [mySQLConnection getLastErrorMessage]];
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], (long)[[prefs objectForKey:SPConnectionTimeoutValue] integerValue], [mySQLConnection getLastErrorMessage]];
 				[self failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
 			}
 			
@@ -419,7 +419,7 @@
 /**
  * Alert sheet callback method - invoked when an error sheet is closed.
  */
-- (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
 	[sheet orderOut:self];
 	
@@ -470,7 +470,7 @@
 
 	// Restore the toolbar icons
 	NSArray *toolbarItems = [[documentWindow toolbar] items];
-	for (int i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
+	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 
 	// Set keychain id for saving SPF files
 	if([self valueForKeyPath:@"selectedFavorite.id"])
@@ -520,7 +520,7 @@
  */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	int selectedTabView = [tabView indexOfTabViewItem:tabViewItem];
+	NSInteger selectedTabView = [tabView indexOfTabViewItem:tabViewItem];
 
 	// Deselect any selected favorite for manual changes
 	if (!automaticFavoriteSelection) [favoritesTable deselectAll:self];
@@ -563,10 +563,10 @@
  * Control tab view resizing based on the supplied connection type,
  * with an option defining whether it should be animated or not.
  */
-- (void) resizeTabViewToConnectionType:(unsigned int)theType animating:(BOOL)animate
+- (void) resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate
 {
 	NSRect frameRect, targetResizeRect;
-	int additionalFormHeight = 55;
+	NSInteger additionalFormHeight = 55;
 
 	frameRect = [connectionResizeContainer frame];
 
@@ -617,7 +617,7 @@
 /**
  * Alert sheet callback method - invoked when the error sheet is closed.
  */
-- (void)localhostErrorSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)localhostErrorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
 	[sheet orderOut:self];
 	if (returnCode == NSAlertAlternateReturn) {
@@ -665,7 +665,7 @@
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	
 	// Update key-value properties from the selected favourite, using empty strings where not found
-	[self setType:([self valueForKeyPath:@"selectedFavorite.type"] ? [[self valueForKeyPath:@"selectedFavorite.type"] intValue] : SPTCPIPConnection)];
+	[self setType:([self valueForKeyPath:@"selectedFavorite.type"] ? [[self valueForKeyPath:@"selectedFavorite.type"] integerValue] : SPTCPIPConnection)];
 	[self setName:([self valueForKeyPath:@"selectedFavorite.name"] ? [self valueForKeyPath:@"selectedFavorite.name"] : @"")];
 	[self setHost:([self valueForKeyPath:@"selectedFavorite.host"] ? [self valueForKeyPath:@"selectedFavorite.host"] : @"")];
 	[self setSocket:([self valueForKeyPath:@"selectedFavorite.socket"] ? [self valueForKeyPath:@"selectedFavorite.socket"] : @"")];
@@ -716,7 +716,7 @@
 - (IBAction) addFavorite:(id)sender
 {
 	NSString *thePassword, *theSSHPassword;
-	NSNumber *favoriteid = [NSNumber numberWithInt:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", (([self type] == SPSocketConnection)?@"localhost":[self host])];
 	if (![[self name] length] && [self database] && ![[self database] isEqualToString:@""])
 		favoriteName = [NSString stringWithFormat:@"%@ %@", [self database], favoriteName];
@@ -738,7 +738,7 @@
 	
 	// Construct the favorite details - cannot use only dictionaryWithObjectsAndKeys for possible nil values.
 	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithInt:[self type]], @"type",
+										[NSNumber numberWithInteger:[self type]], @"type",
 										favoriteName, @"name",
 										favoriteid, @"id",
 										nil];
@@ -769,7 +769,7 @@
 	}
 	if (thePassword && ![thePassword isEqualToString:@""]) {
 		[keychain addPassword:thePassword
-					  forName:[keychain nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
+					  forName:[keychain nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%lld", [favoriteid longLongValue]]]
 					  account:[keychain accountForUser:[self user] host:(([self type] == SPSocketConnection)?@"localhost":[self host]) database:[self database]]];
 	}
 
@@ -780,7 +780,7 @@
 	}
 	if (theSSHPassword && ![theSSHPassword isEqualToString:@""]) {
 		[keychain addPassword:theSSHPassword
-					  forName:[keychain nameForSSHForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%i", [favoriteid intValue]]]
+					  forName:[keychain nameForSSHForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%lld", [favoriteid longLongValue]]]
 					  account:[keychain accountForSSHUser:[self sshUser] sshHost:[self sshHost]]];
 	}
 
@@ -809,7 +809,7 @@
 /**
  * Returns the number of favorites to display
  */
-- (int) numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger) numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [favorites count];
 }
@@ -817,7 +817,7 @@
 /**
  * Returns the favorite names to be displayed in the table
  */
-- (id) tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id) tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
 }
@@ -838,7 +838,7 @@
 /**
  * Display the title row
  */
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
 {
 	return (rowIndex == 0);	
 }
@@ -846,7 +846,7 @@
 /**
  * Don't allow the title row to be selected
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
 	return (rowIndex != 0);
 }
@@ -854,7 +854,7 @@
 /**
  * Set the title row to display with extra height
  */
-- (float)tableView:(NSTableView *)tableView heightOfRow:(int)row
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	return (row == 0) ? 25 : 17;
 }
@@ -862,7 +862,7 @@
 /**
  * Control the display of rows within the favorites table
  */
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];			
 	if (rowIndex == 0) {
@@ -891,7 +891,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 445);
 }
@@ -899,7 +899,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 80);
 }

@@ -38,8 +38,8 @@
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
 #import "SPEditorTokens.h"
-extern int yylex();
-extern int yyuoffset, yyuleng;
+extern NSInteger yylex();
+extern NSInteger yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
@@ -104,7 +104,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	
 }
-- (void) setConnection:(MCPConnection *)theConnection withVersion:(int)majorVersion
+- (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion
 {
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;
@@ -179,7 +179,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Remove current word from list
 			[uniqueArray removeObject:currentWord];
 
-			int reverseSort = NO;
+			NSInteger reverseSort = NO;
 			NSArray *sortedArray = [[[uniqueArray mutableCopy] autorelease] sortedArrayUsingFunction:alphabeticSort context:&reverseSort];
 			for(id w in sortedArray)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
@@ -265,7 +265,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Returns the associated line number for a character position inside of the CMTextView
  */
-- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex
+- (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex
 {
 	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
 }
@@ -284,7 +284,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue
 {
-	unsigned int caretPosition = [self selectedRange].location;
+	NSUInteger caretPosition = [self selectedRange].location;
 
 	// Perform bounds checking
 	if (caretPosition >= [[self string] length]) return NO;
@@ -302,7 +302,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (BOOL) isCaretAdjacentToAlphanumCharWithInsertionOf:(unichar)aChar
 {
-	unsigned int caretPosition = [self selectedRange].location;
+	NSUInteger caretPosition = [self selectedRange].location;
 	NSCharacterSet *alphanum = [NSCharacterSet alphanumericCharacterSet];
 	BOOL leftIsAlphanum = NO;
 	BOOL rightIsAlphanum = NO;
@@ -328,7 +328,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (BOOL) areAdjacentCharsLinked
 {
-	unsigned int caretPosition = [self selectedRange].location;
+	NSUInteger caretPosition = [self selectedRange].location;
 	unichar leftChar, matchingChar;
 
 	// Perform bounds checking
@@ -402,7 +402,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Selects the line lineNumber relatively to a selection (if given) and scrolls to it
  */
-- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines
+- (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines
 {
 	NSRange selRange;
 	NSArray *lineRanges;
@@ -413,8 +413,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if(ignLeadingNewLines) // ignore leading empty lines
 	{
-		int arrayCount = [lineRanges count];
-		int i;
+		NSInteger arrayCount = [lineRanges count];
+		NSInteger i;
 		for (i = 0; i < arrayCount; i++) {
 			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
 				break;
@@ -451,7 +451,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Start autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] floatValue]];
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	
 }
 
@@ -466,7 +466,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 									selector:@selector(autoHelp) 
 									object:nil];
 		[self performSelector:@selector(autoHelp) withObject:nil 
-			afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] floatValue]];
+			afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
@@ -702,7 +702,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
 		NSRange currentLineRange;
-		int lineCursorLocation;
+		NSInteger lineCursorLocation;
 
 		// Extract the current line based on the text caret or selection start position
 		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
@@ -747,7 +747,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSRange currentLineRange;
 	NSArray *lineRanges;
 	NSString *tabString = @"\t";
-	int i, indentedLinesLength = 0;
+	NSInteger i, indentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound) return NO;
 
@@ -800,7 +800,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
 	NSArray *lineRanges;
-	int i, unindentedLines = 0, unindentedLinesLength = 0;
+	NSInteger i, unindentedLines = 0, unindentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound) return NO;
 
@@ -861,7 +861,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Handle autocompletion, returning a list of suggested completions for the supplied character range.
  */
-- (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index
+- (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index
 {
 
 	if (!charRange.length) return nil;
@@ -881,12 +881,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
 
 	NSString *partialString    = [[self string] substringWithRange:charRange];
-	unsigned int partialLength = [partialString length];
+	NSUInteger partialLength = [partialString length];
 
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %d", partialString, partialLength];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %lu", partialString, (unsigned long)partialLength];
 	NSArray *matchingCompletions;
 
-	unsigned i, insindex;
+	NSUInteger i, insindex;
 	insindex = 0;
 
 
@@ -2014,7 +2014,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 	// Otherwise show Help if caret is not inside quotes
-	long cursorPosition = [self selectedRange].location;
+	NSUInteger cursorPosition = [self selectedRange].location;
 	if (cursorPosition >= [[self string] length]) cursorPosition--;
 	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
 		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
@@ -2055,10 +2055,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(!visibleRange.length) return;
 
 		// Take roughly the middle position in the current view port
-		int curPos = visibleRange.location+(int)(visibleRange.length/2);
+		NSInteger curPos = visibleRange.location+(NSInteger)(visibleRange.length/2);
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
-		int end = curPos + SP_SYNTAX_HILITE_BIAS;
+		NSInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
 		if (end > strlength ) {
 			end = strlength;
 		} else {
@@ -2070,7 +2070,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
-		int start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		NSInteger start = end - (SP_SYNTAX_HILITE_BIAS*2);
 		if (start > 0)
 			while(start>-1) {
 				if([selfstr characterAtIndex:start]=='\n')
@@ -2103,7 +2103,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		
 	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
 
-	unsigned long tokenEnd, token;
+	NSUInteger tokenEnd, token;
 	NSRange tokenRange;
 
 	// first remove the old colors and kQuote
@@ -2293,7 +2293,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
 	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
-		long stringSize = [self getRangeForCurrentWord].length;
+		NSUInteger stringSize = [self getRangeForCurrentWord].length;
 		return (stringSize || stringSize > 64);
 	}
 	// Enable Copy as RTF if something is selected
@@ -2365,7 +2365,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && [textStore editedMask] != 1)
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] floatValue]];
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
 
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2384,7 +2384,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Show only setable modes in the font panel
  */
-- (unsigned int)validModesForFontPanel:(NSFontPanel *)fontPanel
+- (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
    return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
 }
@@ -2425,7 +2425,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Set the new insertion point
 		NSPoint draggingLocation = [sender draggingLocation];
 		draggingLocation = [self convertPoint:draggingLocation fromView:nil];
-		unsigned int characterIndex = [self characterIndexOfPoint:draggingLocation];
+		NSUInteger characterIndex = [self characterIndexOfPoint:draggingLocation];
 		[self setSelectedRange:NSMakeRange(characterIndex,0)];
 
 		// Check if user pressed  ⌘ while dragging for inserting only the file path
@@ -2473,7 +2473,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Confirmation sheetDidEnd method
  */
-- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 
 	[[sheet window] orderOut:nil];
@@ -2485,11 +2485,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  * Convert a NSPoint, usually the mouse location, to
  * a character index of the text view.
  */
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint
+- (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint
 {
-	unsigned int glyphIndex;
+	NSUInteger glyphIndex;
 	NSLayoutManager *layoutManager = [self layoutManager];
-	float fraction;
+	CGFloat fraction;
 	NSRange range;
 
 	range = [layoutManager glyphRangeForTextContainer:[self textContainer]];

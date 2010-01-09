@@ -386,7 +386,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 240);
 }
@@ -394,7 +394,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 120);
 }
@@ -622,7 +622,7 @@
 	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
 	NSUInteger rowIndex = [draggedIndexes firstIndex];
 	while ( rowIndex != NSNotFound ) {
-		[draggedRows addObject:[NSNumber numberWithInt:rowIndex]];
+		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
 		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
 	}
 
@@ -633,7 +633,7 @@
 
 	for(i=0; i<[draggedRows count]; i++) {
 
-		NSInteger originalRow = [[draggedRows objectAtIndex:i] intValue];
+		NSInteger originalRow = [[draggedRows objectAtIndex:i] integerValue];
 
 		if(originalRow < destinationRow) destinationRow--;
 
@@ -669,7 +669,7 @@
 /**
  * Sheet did end method
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Is disabled - do we need that?
 	// if ([contextInfo isEqualToString:@"removeAllFavorites"]) {
@@ -704,7 +704,7 @@
 /**
  * Import panel did end method.
  */
-- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if (returnCode == NSOKButton) {
@@ -770,7 +770,7 @@
 /**
  * Save panel did end method.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if([contextInfo isEqualToString:@"saveQuery"]) {
@@ -793,7 +793,7 @@
 			NSMutableArray *favoriteData = [NSMutableArray array];
 
 	
-			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"query favorites" forKey:@"format"];
 			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
 
