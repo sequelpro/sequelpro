@@ -37,8 +37,8 @@
  */
  
 #import "SPEditorTokens.h"
-int utf8strlen(const char * _s);
-int yyuoffset, yyuleng;
+size_t utf8strlen(const char * _s);
+size_t yyuoffset, yyuleng;
 
 #define YY_NO_UNPUT
 
@@ -112,7 +112,7 @@ keywords	(X(OR|509|A)|S(MALLINT|SL|H(OW({s}(E(NGINE(S)?|RRORS)|M(ASTER|UTEX)|BIN
 
 #define ONEMASK ((size_t)(-1) / 0xFF)
 // adapted from http://www.daemonology.net/blog/2008-06-05-faster-utf8-strlen.html
-int utf8strlen(const char * _s)
+size_t utf8strlen(const char * _s)
 {
 	const char * s;
 	size_t count = 0;

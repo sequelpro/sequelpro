@@ -42,6 +42,7 @@
 	BOOL closeMe;
 	BOOL caseSensitive;
 	BOOL dictMode;
+	BOOL dbStructureMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
 	NSArray *words;
@@ -50,7 +51,7 @@
 	NSMutableCharacterSet* textualInputCharacters;
 }
 
-- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView dictMode:(BOOL)mode;
+- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView dictMode:(BOOL)mode dbMode:(BOOL)dbMode;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 

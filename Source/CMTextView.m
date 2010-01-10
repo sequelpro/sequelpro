@@ -230,6 +230,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([self getRangeForCurrentWord].length)
 		isDictMode = ([[[self textStorage] attribute:kQuote atIndex:[self getRangeForCurrentWord].location effectiveRange:nil] isEqualToString:kQuoteValue] );
 
+	BOOL dbStructureMode = ([[[self textStorage] attribute:kBTQuote atIndex:[self selectedRange].location-1 effectiveRange:nil] isEqualToString:kBTQuoteValue]) ? YES : NO;
+
 	// Refresh quote attributes
 	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
 	// [self insertText:@""];
@@ -246,7 +248,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caseSensitive:!caseInsensitive
 					charRange:[self getRangeForCurrentWord]
 					inView:self
-					dictMode:isDictMode];
+					dictMode:isDictMode
+					dbMode:dbStructureMode];
 
 	//Get the NSPoint of the first character of the current word
 	NSRange range = NSMakeRange([self getRangeForCurrentWord].location,0);

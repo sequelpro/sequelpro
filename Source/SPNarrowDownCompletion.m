@@ -124,19 +124,30 @@
 	[super dealloc];
 }
 
-- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView dictMode:(BOOL)mode
+- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView dictMode:(BOOL)mode dbMode:(BOOL)dbMode
 {
 	if(self = [self init])
 	{
 
-		if(aUserString && ![aUserString isEqualToString:@"`"])
+		BOOL filterStringIsBacktick = ([aUserString isEqualToString:@"`"]) ? YES : NO;
+
+		// Set filter string - if aUserString == ` user invoked it via `|` ie show all db/tables/fields etc.
+		if(aUserString && !filterStringIsBacktick)
 			[mutablePrefix appendString:aUserString];
+
+		dbStructureMode = dbMode;
 
 		if(aStaticPrefix)
 			staticPrefix = [aStaticPrefix retain];
 
 		caseSensitive = isCaseSensitive;
+
 		theCharRange = initRange;
+		if(filterStringIsBacktick) {
+			theCharRange.length = 0;
+			theCharRange.location++;
+		}
+
 		theView = aView;
 		dictMode = mode;
 		
@@ -474,7 +485,9 @@
 
 		if([[self filterString] length] < [commonPrefix length])
 		{
-			[self insert_text:commonPrefix];
+			[theView setSelectedRange:theCharRange];
+			[theView insertText:commonPrefix];
+			
 			NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
 			[mutablePrefix appendString:toInsert];
 			theCharRange = NSMakeRange(theCharRange.location,[commonPrefix length]);
@@ -491,6 +504,8 @@
 {
 	[theView setSelectedRange:theCharRange];
 	[theView insertText:aString];
+	if(dbStructureMode)
+		[theView performSelector:@selector(moveRight:)];
 }
 
 - (void)completeAndInsertSnippet
@@ -505,6 +520,7 @@
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
 		if([[self filterString] length] < [candidateMatch length])
 			[self insert_text:candidateMatch];
+
 	}
 	closeMe = YES;
 }
