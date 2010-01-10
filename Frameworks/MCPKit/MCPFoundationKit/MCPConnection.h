@@ -105,6 +105,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	BOOL isMaxAllowedPacketEditable;
 	
 	NSString *serverVersionString;
+	NSDictionary *theDbStructure;
 	
 	NSTimer *keepAliveTimer;
 	pthread_t keepAliveThread;
@@ -115,6 +116,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	BOOL queryCancelUsedReconnect;
 	BOOL delegateQueryLogging;
 	BOOL delegateResponseToWillQueryString;
+	BOOL isQueryingDbStructure;
 	
 	// Pointers
 	IMP cStringPtr;
@@ -225,6 +227,8 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
+- (void)queryDbStructure;
+- (NSDictionary *)getDbStructure;
 
 // Server information
 - (NSString *)clientInfo;
@@ -254,5 +258,6 @@ void performThreadedKeepAlive(void *ptr);
 - (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding;
 - (NSString *)stringWithCString:(const char *)theCString;
 - (NSString *)stringWithText:(NSData *)theTextData;
+- (NSString *)stringWithUTF8CString:(const char *)theCString;
 
 @end

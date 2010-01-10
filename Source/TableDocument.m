@@ -680,6 +680,8 @@
 														window:tableWindow
 											  notificationName:@"Connected"];
 
+	// Query the structure of all databases in the background (mainly for completion)
+	[mySQLConnection performSelector:@selector(queryDbStructure) withObject:nil afterDelay:0.1];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];

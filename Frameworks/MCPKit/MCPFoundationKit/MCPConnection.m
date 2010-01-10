@@ -109,6 +109,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		useKeepAlive      = YES; 
 		keepAliveInterval = 60;  
 		
+		theDbStructure = nil;
+		isQueryingDbStructure = NO;
+
 		connectionThreadId     = 0;
 		maxAllowedPacketSize   = -1;
 		lastQueryExecutionTime = 0;
@@ -376,6 +379,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	if (serverVersionString != nil) {
 		[serverVersionString release];
 		serverVersionString = nil;
+	}
+	
+	if (theDbStructure != nil) {
+		[theDbStructure release];
+		theDbStructure = nil;
 	}
 	
 	[self stopKeepAliveTimer];
@@ -1797,6 +1805,123 @@ void performThreadedKeepAlive(void *ptr)
 	return theResult;
 }
 
+/**
+ * Updates the dict containing the structure of all available databases (mainly for completion)
+ * executed on a new connection.
+ */
+- (void)queryDbStructure
+{
+
+	return;
+
+	if (!isQueryingDbStructure && [self serverMajorVersion] >= 5) {
+
+		MYSQL *structConnection = mysql_init(NULL);
+		if (structConnection) {
+			const char *theLogin = [self cStringFromString:connectionLogin];
+			const char *theHost;
+			const char *thePass;
+			const char *theSocket;
+			void *connectionSetupStatus;
+
+			isQueryingDbStructure = YES;
+
+			mysql_options(structConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+
+			// Set up the host, socket and password as per the connect method
+			if (!connectionHost || ![connectionHost length]) {
+				theHost = NULL;
+			} else {
+				theHost = [self cStringFromString:connectionHost];
+			}
+			if (connectionSocket == nil || ![connectionSocket length]) {
+				theSocket = kMCPConnectionDefaultSocket;
+			} else {
+				theSocket = [self cStringFromString:connectionSocket];
+			}
+			if (!connectionPassword) {
+				if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+					thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+				}
+			} else {
+				thePass = [self cStringFromString:connectionPassword];
+			}
+			
+			// Connect
+			connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+			thePass = NULL;
+			if (connectionSetupStatus) {
+				MYSQL_RES *theResult;
+				MYSQL_ROW row;
+
+				NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
+
+				// Set connection to UTF-8 since the information_schema is encoded in UTF-8
+				NSString *setNameString = @"SET NAMES 'utf8'";
+				NSData *encodedSetNameData = NSStringDataUsingLossyEncoding(setNameString, theConnectionEncoding, 1);
+				const char *setNameCString = [encodedSetNameData bytes];
+				unsigned long setNameCStringLength = [encodedSetNameData length];
+				if (mysql_real_query(structConnection, setNameCString, setNameCStringLength) != 0) {
+					isQueryingDbStructure = NO;
+					return;
+				}
+
+				// Query the desired data
+				NSString *queryDbString = @"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset` FROM `information_schema`.`COLUMNS`";
+				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
+				const char *queryCString = [encodedQueryData bytes];
+				unsigned long queryCStringLength = [encodedQueryData length];
+
+				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
+					theResult = mysql_use_result(structConnection);
+					NSMutableDictionary *structure = [NSMutableDictionary dictionary];
+
+					while(row = mysql_fetch_row(theResult)) {
+						NSString *db = [self stringWithUTF8CString:row[0]];
+						NSString *table = [self stringWithUTF8CString:row[1]];
+						NSString *field = [self stringWithUTF8CString:row[2]];
+						NSString *type = [self stringWithUTF8CString:row[3]];
+						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
+
+						if(![structure valueForKey:db])
+							[structure setObject:[NSMutableDictionary dictionary] forKey:db];
+
+						if(![[structure valueForKey:db] valueForKey:table])
+							[[structure valueForKey:db] setObject:[NSMutableDictionary dictionary] forKey:table];
+
+						[[[structure valueForKey:db] valueForKey:table] setObject:[NSArray arrayWithObjects:type,charset,nil] forKey:field];
+
+					}
+
+					mysql_free_result(theResult);
+					mysql_close(structConnection);
+					if(theDbStructure != nil) {
+						[theDbStructure release];
+						theDbStructure = nil;
+					}
+
+					theDbStructure = [[NSDictionary dictionaryWithDictionary:structure] retain];
+					isQueryingDbStructure = NO;
+					return;
+
+				}
+				mysql_close(structConnection);
+				isQueryingDbStructure = NO;
+			}
+		}
+	}
+
+}
+
+
+/**
+ * Returns a dict containing the structure of all available databases (mainly for completion).
+ */
+- (NSDictionary *)getDbStructure
+{
+	return [theDbStructure retain];
+}
+
 #pragma mark -
 #pragma mark Server information
 
@@ -2145,6 +2270,26 @@ void performThreadedKeepAlive(void *ptr)
 	
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
 	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
+}
+
+/**
+ * Returns a NSString from a C style string encoded with the character set of theMCPConnection.
+ */
+- (NSString *)stringWithUTF8CString:(const char *)theCString
+{
+	NSData	 *theData;
+	NSString *theString;
+	
+	if (theCString == NULL) return @"";
+	
+	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
+	theString = [[NSString alloc] initWithData:theData encoding:NSUTF8StringEncoding];
 	
 	if (theString) {
 		[theString autorelease];

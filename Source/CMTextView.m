@@ -142,6 +142,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if([mySQLConnection isConnected])
 	{
+
+		// NSLog(@"struct:\n %@", [mySQLConnection getDbStructure]);
+
 		// Add table names to completions list
 		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];

@@ -86,6 +86,9 @@
 		// Notify listeners that a query has started
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
+		// Query the structure of all databases in the background (mainly for completion)
+		[mySQLConnection performSelector:@selector(queryDbStructure) withObject:nil afterDelay:0.1];
+
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
 		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
@@ -105,7 +108,7 @@
 				} else {
 					[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
 				}
-			}		
+			}
 		}
 		
 		// Reorder the tables in alphabetical order
