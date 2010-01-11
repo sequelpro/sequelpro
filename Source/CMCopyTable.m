@@ -180,6 +180,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	NSArray *columns         = [self tableColumns];
 	NSUInteger numColumns    = [columns count];
+	id dataSource            = [self dataSource];
 
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
@@ -222,6 +223,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	}
 
 	NSUInteger rowIndex = [selectedRows firstIndex];
+	NSTableColumn *col = nil;
 
 	while ( rowIndex != NSNotFound )
 	{ 
@@ -230,7 +232,11 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]];
+			// rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]];
+			col = NSArrayObjectAtIndex(columns, c);
+			rowData = [dataSource tableView:self 
+				  objectValueForTableColumn:col 
+										row:rowIndex ];
 
 			// Check for NULL value
 			if([rowData isNSNull]) {
