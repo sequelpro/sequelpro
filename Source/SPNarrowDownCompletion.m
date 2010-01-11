@@ -222,13 +222,13 @@
 	NSTableColumn *column2 = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
 	[column2 setEditable:NO];
 	// [[column2 dataCell] setFont:[NSFont systemFontOfSize:11]];
-	[[column2 dataCell] setTextColor:[NSColor grayColor]];
+	[[column2 dataCell] setTextColor:[NSColor darkGrayColor]];
 	[theTableView addTableColumn:column2];
 	[column2 setWidth:120];
 	NSTableColumn *column3 = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
 	[column3 setEditable:NO];
 	// [[column3 dataCell] setFont:[NSFont systemFontOfSize:11]];
-	[[column3 dataCell] setTextColor:[NSColor grayColor]];
+	[[column3 dataCell] setTextColor:[NSColor darkGrayColor]];
 	[theTableView addTableColumn:column3];
 	[column3 setWidth:130];
 
@@ -261,8 +261,10 @@
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
+		[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
 		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"])?[[filtered objectAtIndex:rowIndex] objectForKey:@"type"]:@"";
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+		[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
 		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"])?[[filtered objectAtIndex:rowIndex] objectForKey:@"path"]:@"";
 	}
 	return [filtered objectAtIndex:rowIndex];

@@ -1812,7 +1812,7 @@ void performThreadedKeepAlive(void *ptr)
 - (void)queryDbStructure
 {
 
-	return;
+	// return;
 
 	if (!isQueryingDbStructure && [self serverMajorVersion] >= 5) {
 
@@ -1915,7 +1915,6 @@ void performThreadedKeepAlive(void *ptr)
 					theDbStructure = [[NSDictionary dictionaryWithDictionary:structure] retain];
 					isQueryingDbStructure = NO;
 					return;
-
 				}
 				mysql_close(structConnection);
 				isQueryingDbStructure = NO;

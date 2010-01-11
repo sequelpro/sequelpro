@@ -180,7 +180,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(dbs != nil && [dbs count]) {
 			NSArray *allDbs = [dbs allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSArray *sortedDbs = [allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			NSMutableArray *sortedDbs = [NSMutableArray array];
+			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
+			NSString *currentDb = nil;
+			// Put current selected db at the top
+			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil) {
+				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+				[sortedDbs removeObject:currentDb];
+				[sortedDbs insertObject:currentDb atIndex:0];
+			}
+			// Put information_schema and mysql db at the end
+			if(currentDb && ![currentDb isEqualToString:@"mysql"]) {
+				[sortedDbs removeObject:@"mysql"];
+				[sortedDbs addObject:@"mysql"];
+			}
+			if(currentDb && ![currentDb isEqualToString:@"information_schema"]) {
+				[sortedDbs removeObject:@"information_schema"];
+				[sortedDbs addObject:@"information_schema"];
+			}
 			for(id db in sortedDbs) {
 				NSArray *allTables = [[dbs objectForKey:db] allKeys];
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", nil]];
@@ -217,7 +234,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 		} else {
-			// [possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"updating data…", @"updating table data for completion in progress message"), @"path", nil]];
+			// Fallback for MySQL < 5 and if the data gathering is slow
+			if(mySQLmajorVersion > 4)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"updating data…", @"updating table data for completion in progress message"), @"path", nil]];
 
 			// Add all database names to completions list
 			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])

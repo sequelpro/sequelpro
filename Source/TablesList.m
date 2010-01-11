@@ -1064,6 +1064,11 @@
 	return [tableDocumentInstance allDatabaseNames];
 }
 
+- (NSString *)selectedDatabase
+{
+	return [tableDocumentInstance database];
+}
+
 /**
  * Returns an array of all available database names
  */
