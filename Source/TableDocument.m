@@ -681,7 +681,7 @@
 											  notificationName:@"Connected"];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[mySQLConnection performSelector:@selector(queryDbStructure) withObject:nil afterDelay:0.1];
+	// [mySQLConnection performSelector:@selector(queryDbStructure) withObject:nil afterDelay:2];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
@@ -914,10 +914,11 @@
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 
 	if (allDatabases) [allDatabases release];
+	if (allSystemDatabases) [allSystemDatabases release];
 	
 	allDatabases = [[NSMutableArray alloc] initWithCapacity:[queryResult numOfRows]];
 
-	NSMutableArray *systemDatabases = [NSMutableArray array];
+	allSystemDatabases = [[NSMutableArray alloc] initWithCapacity:2];
 	
 	for (NSInteger i = 0 ; i < [queryResult numOfRows] ; i++)
 	{
@@ -925,7 +926,7 @@
 		
 		// If the database is either information_schema or mysql then it is classed as a system table
 		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"]) {
-			[systemDatabases addObject:database];
+			[allSystemDatabases addObject:database];
 		}
 		else {
 			[allDatabases addObject:database];
@@ -933,13 +934,13 @@
 	}
 
 	// Add system databases
-	for (NSString *db in systemDatabases) 
+	for (NSString *db in allSystemDatabases) 
 	{
 		[chooseDatabaseButton addItemWithTitle:db];
 	}
 	
 	// Add a separator between the system and user databases
-	if ([systemDatabases count] > 0) {
+	if ([allSystemDatabases count] > 0) {
 		[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 	}
 
@@ -1112,6 +1113,14 @@
 - (NSArray *)allDatabaseNames
 {
 	return allDatabases;
+}
+
+/**
+ * Returns an array of all available system database names
+ */
+- (NSArray *)allSystemDatabaseNames
+{
+	return allSystemDatabases;
 }
 
 /**
@@ -3599,6 +3608,7 @@
 {
 	[_encoding release];
 	[allDatabases release];
+	[allSystemDatabases release];
 	[printWebView release];
 	
 	if (connectionController) [connectionController release];

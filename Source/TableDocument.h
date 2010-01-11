@@ -147,6 +147,7 @@
 	WebView *printWebView;
 	
 	NSMutableArray *allDatabases;
+	NSMutableArray *allSystemDatabases;
 	
 	NSString *queryEditorInitString;
 	
@@ -180,6 +181,7 @@
 - (IBAction)showServerProcesses:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
+- (NSArray *)allSystemDatabaseNames;
 
 // Task progress and notification methods
 - (void) startTaskWithDescription:(NSString *)description;

@@ -98,7 +98,7 @@
 // =============================
 - (id)init
 {
-	if(self = [super initWithContentRect:NSZeroRect styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+	if(self = [super initWithContentRect:NSMakeRect(0,0,450,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
 	{
 		mutablePrefix = [NSMutableString new];
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
@@ -193,24 +193,44 @@
 	[self setLevel:NSStatusWindowLevel];
 	[self setHidesOnDeactivate:YES];
 	[self setHasShadow:YES];
+	[self setAlphaValue:0.9];
 
 	NSScrollView* scrollView = [[[NSScrollView alloc] initWithFrame:NSZeroRect] autorelease];
-	[scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	// [scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	[scrollView setAutohidesScrollers:YES];
 	[scrollView setHasVerticalScroller:YES];
+	[scrollView setHasHorizontalScroller:NO];
 	[[scrollView verticalScroller] setControlSize:NSSmallControlSize];
+	[[scrollView horizontalScroller] setControlSize:NSSmallControlSize];
 
 	theTableView = [[[NSTableView alloc] initWithFrame:NSZeroRect] autorelease];
 	[theTableView setFocusRingType:NSFocusRingTypeNone];
 	[theTableView setAllowsEmptySelection:NO];
 	[theTableView setHeaderView:nil];
+	// [theTableView setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleSourceList];
 
-	NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"foo"] autorelease];
-	//
-	[column setDataCell:[[ImageAndTextCell new] autorelease]];
-	[column setEditable:NO];
-	[theTableView addTableColumn:column];
-	[column setWidth:[theTableView bounds].size.width];
+	NSTableColumn *column0 = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
+	[column0 setDataCell:[[ImageAndTextCell new] autorelease]];
+	[column0 setEditable:NO];
+	[theTableView addTableColumn:column0];
+	[column0 setWidth:20];
+	NSTableColumn *column1 = [[[NSTableColumn alloc] initWithIdentifier:@"name"] autorelease];
+	[column1 setEditable:NO];
+	// [[column1 dataCell] setFont:[NSFont systemFontOfSize:12]];
+	[theTableView addTableColumn:column1];
+	[column1 setWidth:180];
+	NSTableColumn *column2 = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
+	[column2 setEditable:NO];
+	// [[column2 dataCell] setFont:[NSFont systemFontOfSize:11]];
+	[[column2 dataCell] setTextColor:[NSColor grayColor]];
+	[theTableView addTableColumn:column2];
+	[column2 setWidth:120];
+	NSTableColumn *column3 = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
+	[column3 setEditable:NO];
+	// [[column3 dataCell] setFont:[NSFont systemFontOfSize:11]];
+	[[column3 dataCell] setTextColor:[NSColor grayColor]];
+	[theTableView addTableColumn:column3];
+	[column3 setWidth:130];
 
 	[theTableView setDataSource:self];
 	[scrollView setDocumentView:theTableView];
@@ -230,15 +250,22 @@
 {
 	NSImage* image = nil;
 	NSString* imageName = nil;
-	if(!dictMode) {
-		imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
-		if(imageName)
-			image = [NSImage imageNamed:imageName];
-		[[aTableColumn dataCell] setImage:image];
+	if([[aTableColumn identifier] isEqualToString:@"image"]) {
+		if(!dictMode) {
+			imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+			if(imageName)
+				image = [NSImage imageNamed:imageName];
+			[[aTableColumn dataCell] setImage:image];
+			return @"";
+		}
+	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
+		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"])?[[filtered objectAtIndex:rowIndex] objectForKey:@"type"]:@"";
+	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"])?[[filtered objectAtIndex:rowIndex] objectForKey:@"path"]:@"";
 	}
 	return [filtered objectAtIndex:rowIndex];
-
 }
 
 // ====================
@@ -246,7 +273,7 @@
 // ====================
 - (void)filter
 {
-	NSRect mainScreen = [self rectOfMainScreen];
+	// NSRect mainScreen = [self rectOfMainScreen];
 
 	NSArray* newFiltered;
 	if([mutablePrefix length] > 0)
@@ -274,46 +301,47 @@
 	NSInteger displayedRows = [newFiltered count] < SP_NARROWDOWNLIST_MAX_ROWS ? [newFiltered count] : SP_NARROWDOWNLIST_MAX_ROWS;
 	CGFloat newHeight   = ([theTableView rowHeight] + [theTableView intercellSpacing].height) * displayedRows;
 	
-	CGFloat maxLen = 1;
-	NSString* item;
-	NSInteger i;
-	BOOL spaceInSuggestion = NO;
-	[textualInputCharacters removeCharactersInString:@" "];
-	CGFloat maxWidth = [self frame].size.width;
-	if([newFiltered count]>0)
-	{
-		for(i=0; i<[newFiltered count]; i++)
-		{
-			if(dictMode)
-				item = NSArrayObjectAtIndex(newFiltered, i);
-			else
-				item = [NSArrayObjectAtIndex(newFiltered, i) objectForKey:@"display"];
-			// If space in suggestion add space to allowed input chars
-			if(!spaceInSuggestion && [item rangeOfString:@" "].length) {
-				[textualInputCharacters addCharactersInString:@" "];
-				spaceInSuggestion = YES;
-			}
-
-			if([item length]>maxLen)
-				maxLen = [item length];
-		}
-		maxWidth = maxLen*16;
-		maxWidth = (maxWidth>340) ? 340 : maxWidth;
-	}
-	if(caretPos.y>=0 && (isAbove || caretPos.y<newHeight))
-	{
-		isAbove = YES;
-		old.y = caretPos.y + (newHeight + [tableFont pointSize]*1.5);
-	}
-	if(caretPos.y<0 && (isAbove || (mainScreen.size.height-newHeight)<(caretPos.y*-1)))
-	{
-		old.y = caretPos.y + (newHeight + [tableFont pointSize]*1.5);
-	}
+	// CGFloat maxLen = 1;
+	// NSString* item;
+	// NSInteger i;
+	// BOOL spaceInSuggestion = NO;
+	// [textualInputCharacters removeCharactersInString:@" "];
+	// CGFloat maxWidth = [self frame].size.width;
+	// if([newFiltered count]>0)
+	// {
+	// 	for(i=0; i<[newFiltered count]; i++)
+	// 	{
+	// 		if(dictMode)
+	// 			item = NSArrayObjectAtIndex(newFiltered, i);
+	// 		else
+	// 			item = [NSArrayObjectAtIndex(newFiltered, i) objectForKey:@"display"];
+	// 		// If space in suggestion add space to allowed input chars
+	// 		if(!spaceInSuggestion && [item rangeOfString:@" "].length) {
+	// 			[textualInputCharacters addCharactersInString:@" "];
+	// 			spaceInSuggestion = YES;
+	// 		}
+	// 
+	// 		if([item length]>maxLen)
+	// 			maxLen = [item length];
+	// 	}
+	// 	maxWidth = maxLen*16;
+	// 	maxWidth = (maxWidth>340) ? 340 : maxWidth;
+	// 	maxWidth = (maxWidth<20) ? 20 : maxWidth;
+	// }
+	// if(caretPos.y>=0 && (isAbove || caretPos.y<newHeight))
+	// {
+	// 	isAbove = YES;
+	// 	old.y = caretPos.y + (newHeight + [tableFont pointSize]*1.5);
+	// }
+	// if(caretPos.y<0 && (isAbove || (mainScreen.size.height-newHeight)<(caretPos.y*-1)))
+	// {
+	// 	old.y = caretPos.y + (newHeight + [tableFont pointSize]*1.5);
+	// }
 	
 	// newHeight is currently the new height for theTableView, but we need to resize the whole window
 	// so here we use the difference in height to find the new height for the window
 	// newHeight = [[self contentView] frame].size.height + (newHeight - [theTableView frame].size.height);
-	[self setFrame:NSMakeRect(old.x, old.y-newHeight, maxWidth, newHeight) display:YES];
+	[self setFrame:NSMakeRect(old.x, old.y-newHeight, 450, newHeight) display:YES];
 	if (filtered) [filtered release];
 	filtered = [newFiltered retain];
 	[theTableView reloadData];

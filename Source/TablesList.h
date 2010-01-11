@@ -139,6 +139,7 @@ enum sp_table_types
 - (NSArray *)allFunctionNames;
 - (NSArray *)allProcedureNames;
 - (NSArray *)allDatabaseNames;
+- (NSArray *)allSystemDatabaseNames;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

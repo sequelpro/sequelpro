@@ -124,7 +124,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  * NSDic key "display" := the displayed and to be inserted word
  * NSDic key "image" := an image to be shown left from "display" (optional)
  *
- * [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"insert", @"func-small", @"image", nil]
+ * [NSDictionary dictionaryWithObjectsAndKeys:@"foo", @"display", @"`foo`", @"match", @"func-small", @"image", nil]
  */
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode
 {
@@ -140,42 +140,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
 
-	if([mySQLConnection isConnected])
-	{
-
-		// NSLog(@"struct:\n %@", [mySQLConnection getDbStructure]);
-
-		// Add table names to completions list
-		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];
-
-		// Add view names to completions list
-		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", nil]];
-
-		// Add field names to completions list for currently selected table
-		if ([[[self window] delegate] table] != nil)
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"dummy-small", @"image", nil]];
-
-
-		// Add all database names to completions list
-		for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
-			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
-
-		// Add proc/func only for MySQL version 5 or higher
-		if(mySQLmajorVersion > 4) {
-			// Add all procedures to completions list for currently selected table
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", nil]];
-
-			// Add all function to completions list for currently selected table
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", nil]];
-		}
-		
-	}
-	
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if([[self string] length] && ![[[self textStorage] attribute:kBTQuote atIndex:[self selectedRange].location-1 effectiveRange:nil] isEqualToString:kBTQuoteValue] )
 	{
@@ -209,9 +173,90 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	}
 
+	if([mySQLConnection isConnected])
+	{
+		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+		if(dbs != nil && [dbs count]) {
+			NSArray *allDbs = [dbs allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedDbs = [allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			for(id db in sortedDbs) {
+				NSArray *allTables = [[dbs objectForKey:db] allKeys];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", nil]];
+				NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+				for(id table in sortedTables) {
+					NSDictionary * theTable = [[dbs objectForKey:db] objectForKey:table];
+					NSArray *allFields = [theTable allKeys];
+					NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+					BOOL breakFlag = NO;
+					switch(structtype) {
+						case 0:
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", nil]];
+						break;
+						case 1:
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", nil]];
+						break;
+						case 2:
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", nil]];
+						breakFlag = YES;
+						break;
+						case 3:
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", nil]];
+						breakFlag = YES;
+						break;
+					}
+					if(!breakFlag) {
+						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+						for(id field in sortedFields) {
+							if(![field hasPrefix:@"  "]) {
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:field, @"display", @"field-small-square", @"image", [NSString stringWithFormat:@"%@⇠%@",table,db], @"path", [theTable objectForKey:field], @"type", nil]];
+							}
+						}
+					}
+				}
+			}
+		} else {
+			// [possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"updating data…", @"updating table data for completion in progress message"), @"path", nil]];
+
+			// Add all database names to completions list
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
+
+			// Add all system database names to completions list
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allSystemDatabaseNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
+
+			// Add table names to completions list
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];
+
+			// Add view names to completions list
+			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", nil]];
+
+			// Add field names to completions list for currently selected table
+			if ([[[self window] delegate] table] != nil)
+				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"field-small-square", @"image", nil]];
+
+			// Add proc/func only for MySQL version 5 or higher
+			if(mySQLmajorVersion > 4) {
+				// Add all procedures to completions list for currently selected table
+				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"])
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", nil]];
+
+				// Add all function to completions list for currently selected table
+				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"])
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", nil]];
+			}
+		}
+	}
+
 	// Make suggestions unique
+	BOOL avoidUnique = ([currentWord isEqualToString:@"`"]) ? YES :NO;
 	for(id suggestion in possibleCompletions)
-		if(![compl containsObject:suggestion])
+		if(avoidUnique || ![compl containsObject:suggestion])
 			[compl addObject:suggestion];
 
 	[possibleCompletions release];
