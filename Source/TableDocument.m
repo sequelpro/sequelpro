@@ -232,6 +232,7 @@
 	[taskProgressWindow setOpaque:NO];
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
 	[taskProgressWindow setAlphaValue:0.0];
+	[taskProgressWindow orderFront:self];
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
 	[taskProgressWindow release];
 	[taskProgressWindow setContentView:taskProgressLayer];
