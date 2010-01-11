@@ -1732,7 +1732,9 @@
 	// Start the table filter list collapsed
 	if ([tableListFilterSplitView collapsibleSubview]) {
 		[tableListFilterSplitView setValue:[NSNumber numberWithFloat:[tableListFilterSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 0)];
+		// Set search bar view to the height of 1 instead of 0 to ensure that the view will be visible
+		// after opening a next connection window which has more than 20 tables
+		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 1)];
 		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
 	}
 
