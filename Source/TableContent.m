@@ -881,7 +881,7 @@
 	NSMutableString *arg = [[NSMutableString alloc] init];
 	[arg setString:argument];
 
-	[arg replaceOccurrencesOfRegex:@"(\\\\)(?![nrt])" withString:@"\\\\\\\\\\\\\\\\"];
+	[arg replaceOccurrencesOfRegex:@"(\\\\)(?![nrt_%])" withString:@"\\\\\\\\\\\\\\\\"];
 	[arg flushCachedRegexData];
 	[arg replaceOccurrencesOfRegex:@"(\\\\)(?=[nrt])" withString:@"\\\\\\"];
 	[arg flushCachedRegexData];
@@ -893,10 +893,10 @@
 		[arg replaceOccurrencesOfRegex:[NSString stringWithFormat:@"(%@)", quoteSign] withString:@"\\\\$1"];
 		[arg flushCachedRegexData];
 	}
-	if([clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"]) {
-		[arg replaceOccurrencesOfRegex:@"([_%])" withString:@"\\\\$1"];
-		[arg flushCachedRegexData];
-	}
+	// if([clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"]) {
+	// 	[arg replaceOccurrencesOfRegex:@"([_%])" withString:@"\\\\$1"];
+	// 	[arg flushCachedRegexData];
+	// }
 	return [arg autorelease];
 }
 
@@ -1236,6 +1236,7 @@
 
 	[tableContentView reloadData];
 	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView numberOfRows]-1] byExtendingSelection:NO];
+	[tableContentView scrollRowToVisible:[tableContentView selectedRow]];
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableContentView selectedRow];
