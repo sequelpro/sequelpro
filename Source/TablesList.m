@@ -87,7 +87,7 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[mySQLConnection performSelector:@selector(queryDbStructure) withObject:nil afterDelay:0.5];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
 
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
