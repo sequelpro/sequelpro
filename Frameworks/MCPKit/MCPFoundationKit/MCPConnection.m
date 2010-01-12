@@ -1811,8 +1811,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (void)queryDbStructure
 {
-
-	// return;
+	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 
 	if (!isQueryingDbStructure && [self serverMajorVersion] >= 5) {
 
@@ -1863,6 +1862,7 @@ void performThreadedKeepAlive(void *ptr)
 				unsigned long setNameCStringLength = [encodedSetNameData length];
 				if (mysql_real_query(structConnection, setNameCString, setNameCStringLength) != 0) {
 					isQueryingDbStructure = NO;
+					[queryPool release];
 					return;
 				}
 
@@ -1914,6 +1914,7 @@ void performThreadedKeepAlive(void *ptr)
 
 					theDbStructure = [[NSDictionary dictionaryWithDictionary:structure] retain];
 					isQueryingDbStructure = NO;
+					[queryPool release];
 					return;
 				}
 				mysql_close(structConnection);
@@ -1922,6 +1923,7 @@ void performThreadedKeepAlive(void *ptr)
 		}
 	}
 
+	[queryPool release];
 }
 
 

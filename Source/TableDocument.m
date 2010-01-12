@@ -682,7 +682,7 @@
 											  notificationName:@"Connected"];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[mySQLConnection performSelector:@selector(queryDbStructure) withObject:nil afterDelay:0.5];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
