@@ -1592,42 +1592,7 @@
 				[metaString appendString:@"UNLOCK TABLES;\n"];
 				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 			
-				queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", [tableName tickQuotedString]]];
-				[queryResult setReturnDataAsStrings:YES];
-				if ( [queryResult numOfRows] ) {
-					[metaString setString:@"\n"];
-					[metaString appendString:@"DELIMITER ;;\n"];
-					
-					for (int t=0; t<[queryResult numOfRows]; t++) {
-						NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-						
-						
-						//Definer is user@host but we need to escape it to `user`@`host`
-						NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-						NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-													[[triggersDefiner objectAtIndex:0] backtickQuotedString],
-													[[triggersDefiner objectAtIndex:1] backtickQuotedString]
-													];
-						
-						[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", [triggers objectForKey:@"sql_mode"]]];
-						[metaString appendString:@"/*!50003 CREATE */ "];
-						[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", escapedDefiner]];
-						[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
-												  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
-												  [triggers objectForKey:@"Timing"],
-												  [triggers objectForKey:@"Event"],
-												  [[triggers objectForKey:@"Table"] backtickQuotedString],
-												  [triggers objectForKey:@"Statement"]
-												  ]];
-						[triggers release];
-					}
-					
-					[metaString appendString:@"DELIMITER ;\n"];
-					[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
-					[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-				}				
-				
-				// Drain the autorelease pool
+								// Drain the autorelease pool
 				[exportAutoReleasePool drain];
 			}
 						
@@ -1641,6 +1606,51 @@
 
 			// Release the result set
 			[streamingResult release];
+			
+			
+			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", [tableName tickQuotedString]]];
+			[queryResult setReturnDataAsStrings:YES];
+			if ( [queryResult numOfRows] ) {
+				[metaString setString:@"\n"];
+				[metaString appendString:@"DELIMITER ;;\n"];
+				
+				for (int t=0; t<[queryResult numOfRows]; t++) {
+					NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+					
+					
+					//Definer is user@host but we need to escape it to `user`@`host`
+					NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
+					NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
+												[[triggersDefiner objectAtIndex:0] backtickQuotedString],
+												[[triggersDefiner objectAtIndex:1] backtickQuotedString]
+												];
+					
+					[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", [triggers objectForKey:@"sql_mode"]]];
+					[metaString appendString:@"/*!50003 CREATE */ "];
+					[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", escapedDefiner]];
+					[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
+											  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
+											  [triggers objectForKey:@"Timing"],
+											  [triggers objectForKey:@"Event"],
+											  [[triggers objectForKey:@"Table"] backtickQuotedString],
+											  [triggers objectForKey:@"Statement"]
+											  ]];
+					[triggers release];
+				}
+				
+				[metaString appendString:@"DELIMITER ;\n"];
+				[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
+				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+			}
+			
+			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+				if ( [addErrorsSwitch state] == NSOnState ) {
+					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
+										   dataUsingEncoding:NSUTF8StringEncoding]];
+				}
+			}
+			
 		}
 
 		// Add an additional separator between tables
