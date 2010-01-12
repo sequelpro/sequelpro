@@ -148,6 +148,7 @@ static char base64encodingTable[64] = {
 
 - (NSData*)dataDecryptedWithPassword:(NSString*)password
 {
+	
 	// Create the key from the password hash
 	unsigned char passwordDigest[20];
 	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
@@ -169,15 +170,15 @@ static char base64encodingTable[64] = {
 	AES_cbc_encrypt([self bytes] + 16, decryptedBytes, encryptedLength, &aesKey, iv, AES_DECRYPT);
 	
 	// If decryption was successful, these blocks will be zeroed
-	if ( *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 4)) ||
-		 *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
-		 *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 2)) )
+	if ( *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 4)) ||
+		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
+		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 2)) )
 	{
 		return nil;
 	}
 	
 	// Get the size of the data from the last 32-bit chunk
-	NSInteger bigIntDataLength = *((NSUInteger*)decryptedBytes + ((encryptedLength / 4) - 1));
+	NSInteger bigIntDataLength = *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 1));
 	NSInteger dataLength = NSSwapBigIntToHost(bigIntDataLength);
 	
 	return [NSData dataWithBytesNoCopy:decryptedBytes length:dataLength];
