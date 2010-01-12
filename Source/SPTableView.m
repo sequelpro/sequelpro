@@ -25,6 +25,7 @@
 #import "SPTableView.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPArrayAdditions.h"
+#import "TableDocument.h"
 #import "SPConstants.h"
 
 @implementation SPTableView
@@ -35,6 +36,11 @@
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
+
+	// If TableDocument is performing a task suppress any context menu
+	if([[[self window] delegate] isWorking])
+		return nil;
+
 	// If more than one row is selected only returns the default contextual menu
 	if([self numberOfSelectedRows] > 1)
 		return [self menu];
