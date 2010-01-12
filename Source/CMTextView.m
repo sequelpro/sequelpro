@@ -86,12 +86,46 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	startListeningToBoundChanges = NO;
-	
+
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
 	[scrollView setHasHorizontalRuler:NO];
 	[scrollView setHasVerticalRuler:YES];
 	[scrollView setRulersVisible:YES];
+
+	// Re-define 34 tab stops for a better editing
+	NSFont *tvFont = [self font];
+	float firstColumnInch = 0.5, otherColumnInch = 0.5, pntPerInch = 72.0;
+	NSInteger i;
+	NSTextTab *aTab;
+	NSMutableArray *myArrayOfTabs;
+	NSMutableParagraphStyle *paragraphStyle;
+	myArrayOfTabs = [NSMutableArray arrayWithCapacity:34];
+	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:firstColumnInch*pntPerInch];
+	[myArrayOfTabs addObject:aTab];
+	[aTab release];
+	for(i=1; i<34; i++) {
+		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:(firstColumnInch*pntPerInch) + ((float)i * otherColumnInch * pntPerInch)];
+		[myArrayOfTabs addObject:aTab];
+		[aTab release];
+	}
+	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+	[paragraphStyle setTabStops:myArrayOfTabs];
+	// Soft wrapped lines are indented slightly
+	[paragraphStyle setHeadIndent:4.0];
+
+	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
+	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+
+	NSRange range = NSMakeRange(0, [[self textStorage] length]);
+	if ([self shouldChangeTextInRange:range replacementString:nil]) {
+		[[self textStorage] setAttributes:textAttributes range: range];
+		[self didChangeText];
+	}
+	[self setTypingAttributes:textAttributes];
+	[self setDefaultParagraphStyle:paragraphStyle];
+	[paragraphStyle release];
+	[self setFont:tvFont];
 	
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
@@ -102,8 +136,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
 
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	
+
 }
+
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion
 {
 	mySQLConnection = theConnection;
