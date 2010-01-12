@@ -345,7 +345,7 @@
 		if (![currentComment isEqualToString:newComment]) {
 			
 			// Alter table's comment
-			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COMMENT = '%@'", [selectedTable backtickQuotedString], newComment]];
+			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COMMENT = '%@'", [selectedTable backtickQuotedString], [connection prepareString:newComment]]];
 			
 			if ([connection getLastErrorID] == 0) {
 				// Reload the table's data
