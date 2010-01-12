@@ -1007,9 +1007,29 @@
  */
 - (IBAction)filterTable:(id)sender
 {
+	NSString *taskString;
+
 	if ([tableDocumentInstance isWorking]) return;
 	[self setPaginationViewVisibility:FALSE];
-	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Filtering table...", @"Filtering table task description")];
+
+	// Select the correct pagination value
+	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
+		contentPage = 1;
+	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
+		contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+	else
+		contentPage = [paginationPageField integerValue];
+
+	if ([self tableFilterString]) {
+		taskString = NSLocalizedString(@"Filtering table...", @"Filtering table task description");
+	} else if (contentPage == 1) {
+		taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTable];
+	} else {
+		taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading page %lu...", @"Loading table page task string"), (unsigned long)contentPage];
+	}
+
+	[tableDocumentInstance startTaskWithDescription:taskString];
+
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(filterTableTask) toTarget:self withObject:nil];
 	} else {
@@ -1025,14 +1045,6 @@
 
 	// Update history
 	[spHistoryControllerInstance updateHistoryEntries];
-
-	// Select the correct pagination value
-	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
-		contentPage = 1;
-	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
-		contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
-	else
-		contentPage = [paginationPageField integerValue];
 
 	// Reset and reload data using the new filter settings
 	previousTableRowsCount = 0;
@@ -2518,6 +2530,9 @@
 					maxNumRows = foundMaxRows;
 					maxNumRowsIsEstimate = NO;
 				}
+			} else if (!isInterruptedLoad && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
+				maxNumRows = foundMaxRows;
+				maxNumRowsIsEstimate = NO;
 			}
 		} else if (tableRowsCount > maxNumRows) {
 			maxNumRows = tableRowsCount;
