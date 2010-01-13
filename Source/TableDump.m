@@ -228,7 +228,9 @@
 			return;
 			break;
 	}
-	
+
+	[savePanel setDelegate:self];
+
 	// Open the savePanel
 	[savePanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
 								 file:file modalForWindow:tableWindow modalDelegate:self
