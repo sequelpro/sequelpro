@@ -124,7 +124,11 @@
 	[super dealloc];
 }
 
-- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive charRange:(NSRange)initRange inView:(id)aView dictMode:(BOOL)mode dbMode:(BOOL)dbMode
+- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
+	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
+	charRange:(NSRange)initRange inView:(id)aView 
+	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode
+	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName
 {
 	if(self = [self init])
 	{
@@ -135,7 +139,9 @@
 		if(aUserString && !filterStringIsBacktick)
 			[mutablePrefix appendString:aUserString];
 
-		dbStructureMode = dbMode;
+		dbStructureMode = theDbMode;
+		
+		backtickMode = theBackTickMode;
 
 		if(aStaticPrefix)
 			staticPrefix = [aStaticPrefix retain];
@@ -150,7 +156,7 @@
 
 		theView = aView;
 		dictMode = mode;
-		
+
 		if(!dictMode) {
 			suggestions = [someSuggestions retain];
 			words = nil;
@@ -256,16 +262,24 @@
 			if(imageName)
 				image = [NSImage imageNamed:imageName];
 			[[aTableColumn dataCell] setImage:image];
-			return @"";
 		}
+		return @"";
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+		return (dictMode) ? [filtered objectAtIndex:rowIndex] : [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
-		[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"])?[[filtered objectAtIndex:rowIndex] objectForKey:@"type"]:@"";
+		if(dictMode) {
+			return @"";
+		} else {
+			[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
+			return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
+		}
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
-		[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"])?[[filtered objectAtIndex:rowIndex] objectForKey:@"path"]:@"";
+		if(dictMode) {
+			return @"";
+		} else {
+			[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
+			return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"path"] : @"";
+		}
 	}
 	return [filtered objectAtIndex:rowIndex];
 }
@@ -534,7 +548,8 @@
 {
 	[theView setSelectedRange:theCharRange];
 	[theView insertText:aString];
-	if(dbStructureMode)
+	// If completion was invoked inside backticks move caret out of the backticks
+	if(backtickMode)
 		[theView performSelector:@selector(moveRight:)];
 }
 
