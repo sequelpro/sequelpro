@@ -1130,8 +1130,15 @@
  * if contextInfo == removeDatabase -> Remove the selected database
  * if contextInfo == addDatabase    -> Add a new database
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
 	// Remove the current database
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
 		if (returnCode == NSAlertDefaultReturn) {

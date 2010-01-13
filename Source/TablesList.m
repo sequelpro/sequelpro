@@ -510,6 +510,8 @@
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
 
 	if ([contextInfo isEqualToString:@"addRow"]) {
 		alertSheetOpened = NO;
@@ -1886,9 +1888,24 @@
 		
 		// Couldn't truncate table
 		if (![[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error truncating table", @"error truncating table message"), 
-							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]);
+			// NSBeginAlertSheet(NSLocalizedString(@"Error truncating table", @"error truncating table message"), 
+			// 				  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil,
+			// 				  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]);
+
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error truncating table", @"error truncating table message") 
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											   otherButton:nil 
+								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), 
+									[filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			// NSArray *buttons = [alert buttons];
+			// // Change the alert's cancel button to have the key equivalent of return
+			// [[buttons objectAtIndex:0] setKeyEquivalent:@"t"];
+			// [[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			// [[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+			[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
 		}
 		
 		// Get next index (beginning from the end)

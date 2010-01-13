@@ -274,6 +274,13 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
 	if (returnCode == NSAlertDefaultReturn) {
 		NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
 		

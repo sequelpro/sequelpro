@@ -872,10 +872,13 @@ fetches the result as an array with a dictionary for each row in it
  * if contextInfo == addIndex: adds and index to the mysql-db if user hits ok
  * if contextInfo == cannotremovefield: do nothing
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{	
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
 	// Order out current sheet to suppress overlapping of sheets
-	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
 	
 	if ([contextInfo isEqualToString:@"addrow"]) {
 		

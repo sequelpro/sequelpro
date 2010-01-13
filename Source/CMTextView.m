@@ -216,6 +216,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSString *currentDb = nil;
 			NSString *currentTable = nil;
+
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
 				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
@@ -257,12 +258,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			for(id db in sortedDbs) {
 				NSArray *allTables = [[dbs objectForKey:db] allKeys];
-				NSArray *sortedTables;
+				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
-					sortedTables = [NSArray arrayWithObject:aTableName];
+					[sortedTables addObject:aTableName];
 				} else {
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", nil]];
-				 	sortedTables= [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
+					// if(aDbName == nil && aTableName) {
+						if([sortedTables count] > 1 && [sortedTables containsObject:currentTable]) {
+							[sortedTables removeObject:currentTable];
+							[sortedTables insertObject:currentTable atIndex:0];
+						}
+					// }
 				}
 				for(id table in sortedTables) {
 					NSDictionary * theTable = [[dbs objectForKey:db] objectForKey:table];
