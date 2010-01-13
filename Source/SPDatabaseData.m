@@ -259,7 +259,7 @@ const CHAR_SETS charsets[] =
  */ 
 - (NSArray *)getDatabaseCollationsForEncoding:(NSString *)encoding
 {
-	if ((characterSetEncoding == nil) || (![characterSetEncoding isEqualToString:encoding]) || ([characterSetCollations count] == 0)) {
+	if (encoding && ((characterSetEncoding == nil) || (![characterSetEncoding isEqualToString:encoding]) || ([characterSetCollations count] == 0))) {
 		
 		[characterSetEncoding release];
 		[characterSetCollations removeAllObjects];
