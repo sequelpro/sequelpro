@@ -221,7 +221,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
 				currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
 
-			if(aTableName == nil && aDbName == nil) {
+			if(aTableName == nil && aDbName == nil && [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]) {
 				// Put current selected db at the top
 				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
 				[sortedDbs removeObject:currentDb];
@@ -360,10 +360,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* currentWord   = [[self string] substringWithRange:completionRange];
 	NSString* prefix        = @"";
 	NSString* allow         = @"_. "; // additional chars which not close the popup
+	NSString *currentDb     = nil;
 
 	BOOL dbBrowseMode = NO;
 	BOOL backtickMode = NO;
 	BOOL caseInsensitive = YES;
+
+	if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+		currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+	else
+		currentDb = @"";
 
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
@@ -374,6 +380,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 
 	if(!isDictMode) {
+
 		// Check if user wants to insert a db/table/field name
 		// currentWord == ` : user invoked completion via `|`
 		dbBrowseMode = ([currentWord isEqualToString:@"`"]) ? YES : NO;
@@ -537,7 +544,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					dbMode:dbBrowseMode
 					backtickMode:backtickMode
 					withDbName:dbName
-					withTableName:tableName];
+					withTableName:tableName
+					selectedDb:currentDb];
 
 	//Get the NSPoint of the first character of the current word
 	NSRange range = NSMakeRange(completionRange.location,0);

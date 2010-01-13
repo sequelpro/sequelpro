@@ -128,7 +128,7 @@
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
 	charRange:(NSRange)initRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode
-	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName
+	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb
 {
 	if(self = [self init])
 	{
@@ -149,10 +149,13 @@
 		caseSensitive = isCaseSensitive;
 
 		theCharRange = initRange;
+
 		if(filterStringIsBacktick) {
 			theCharRange.length = 0;
 			theCharRange.location++;
 		}
+
+		theInitRange = theCharRange;
 
 		theView = aView;
 		dictMode = mode;
@@ -161,6 +164,8 @@
 			suggestions = [someSuggestions retain];
 			words = nil;
 		}
+
+		currentDb = selectedDb;
 
 		if(someAdditionalWordCharacters)
 			[textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
@@ -563,8 +568,35 @@
 	} else {
 		NSMutableDictionary* selectedItem = [[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease];
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
-		if([[self filterString] length] < [candidateMatch length])
-			[self insert_text:candidateMatch];
+		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask)) {
+			NSArray *path = [NSArray arrayWithArray:[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"]];
+			if([path count]) {
+				NSMutableString *p = [NSMutableString string];
+				NSEnumerator *enumerator = [path reverseObjectEnumerator];
+				if(backtickMode)
+					for (id element in enumerator) {
+						if(![element isEqualToString:currentDb]) {
+							[p appendString:element];
+							[p appendString:@"`.`"];
+						}
+				    }
+				else
+					for (id element in enumerator) {
+						if(![element isEqualToString:currentDb]) {
+							[p appendString:element];
+							[p appendString:@"."];
+						}
+				    }
+				[p appendString:candidateMatch];
+				[self insert_text:p];
+			} else {
+				if([[self filterString] length] < [candidateMatch length])
+					[self insert_text:candidateMatch];
+			}
+		} else {
+			if([[self filterString] length] < [candidateMatch length])
+				[self insert_text:candidateMatch];
+		}
 
 	}
 	closeMe = YES;

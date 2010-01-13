@@ -35,6 +35,7 @@
 	NSArray* suggestions;
 	NSMutableString* mutablePrefix;
 	NSString* staticPrefix;
+	NSString* currentDb;
 	NSArray* filtered;
 	NSTableView* theTableView;
 	NSPoint caretPos;
@@ -46,6 +47,7 @@
 	BOOL backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
+	NSRange theInitRange;
 	NSArray *words;
 	id theView;
 	
@@ -56,7 +58,7 @@
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
 	charRange:(NSRange)initRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode 
-	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName;
+	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 
