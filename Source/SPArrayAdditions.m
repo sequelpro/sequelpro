@@ -31,7 +31,7 @@
  * This method quotes all elements with backticks and then joins them with
  * commas. Use it for field lists as in "SELECT (...) FROM somewhere"
  */
-- (NSString *)componentsJoinedAndBacktickQuoted;
+- (NSString *)componentsJoinedAndBacktickQuoted
 {
 	NSMutableString *result = [NSMutableString string];
 	[result setString:@""];
@@ -57,6 +57,21 @@
 			[result appendString:@", "];
 
 		[result appendString:component];
+	}
+	return result;
+}
+
+- (NSString *)componentsJoinedByPeriodAndBacktickQuoted
+{
+	NSMutableString *result = [NSMutableString string];
+	[result setString:@""];
+	
+	for (NSString *component in self)
+	{
+		if ([result length])
+			[result appendString: @"."];
+
+		[result appendString:[component backtickQuotedString]];
 	}
 	return result;
 }

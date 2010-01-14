@@ -38,6 +38,7 @@ static inline void NSMutableArrayReplaceObject(NSArray* self, CFIndex idx, id an
 
 - (NSString *)componentsJoinedAndBacktickQuoted;
 - (NSString *)componentsJoinedByCommas;
+- (NSString *)componentsJoinedByPeriodAndBacktickQuoted;
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end
