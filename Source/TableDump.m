@@ -1660,69 +1660,76 @@
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW PROCEDURE STATUS WHERE `Db` = %@ */;", 
-												[[tableDocumentInstance database] tickQuotedString]]];
-	[queryResult setReturnDataAsStrings:YES];
-	if ( [queryResult numOfRows] ) {
-		[metaString setString:@"\n"];
-		[metaString appendString:@"--\n"];
-		[metaString appendString:[NSString stringWithFormat:@"-- Dumping routines for database %@\n", 
-								  [[tableDocumentInstance database] tickQuotedString]]];
-		[metaString appendString:@"--\n"];
-		[metaString appendString:@"DELIMITER ;;\n"];
-		
-		for (int t=0; t<[queryResult numOfRows]; t++) {
-			NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-			NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
+	for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) {	
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */;",
+													procedureType,
+													[[tableDocumentInstance database] tickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
+		if ( [queryResult numOfRows] ) {
+			[metaString setString:@"\n"];
+			[metaString appendString:@"--\n"];
+			[metaString appendString:[NSString stringWithFormat:@"-- Dumping routines (%@) for database %@\n",
+									  procedureType,
+									  [[tableDocumentInstance database] tickQuotedString]]];
+			[metaString appendString:@"--\n"];
+			[metaString appendString:@"DELIMITER ;;\n"];
 			
-			[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP PROCEDURE IF EXISTS %@ */;;\n", 
-									  [procedureName backtickQuotedString]]];
+			for (int t=0; t<[queryResult numOfRows]; t++) {
+				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
+				
+				[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", 
+										  procedureType,
+										  [procedureName backtickQuotedString]]];
+				
+				//Definer is user@host but we need to escape it to `user`@`host`
+				NSArray *procedureDefiner = [[proceduresList objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
+				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
+											[[procedureDefiner objectAtIndex:0] backtickQuotedString],
+											[[procedureDefiner objectAtIndex:1] backtickQuotedString]
+											];
+				
+				MCPResult *createProcedureResult;
+				createProcedureResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", 
+																	  procedureType,
+																	  [procedureName backtickQuotedString]]];
+				[createProcedureResult setReturnDataAsStrings:YES];
+				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
+				
+				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", 
+										  [procedureInfo objectForKey:@"sql_mode"]]];
+				
+				NSString *createProcedure = [procedureInfo objectForKey:[NSString stringWithFormat:@"Create %@", [procedureType capitalizedString]]];			
+				NSRange procedureRange = [createProcedure rangeOfString:procedureType options:NSCaseInsensitiveSearch];
+				NSString *procedureBody = [createProcedure substringFromIndex:procedureRange.location];
+				
+				// /*!50003 CREATE*/ /*!50020 DEFINER=`sequelpro`@`%`*/ /*!50003 PROCEDURE `p`()
+				// 													  BEGIN
+				// 													  /* This procedure does nothing */
+				// END */;;
+				//Build the CREATE PROCEDURE string to include MySQL Version limiters
+				[metaString appendString:[NSString stringWithFormat:@"/*!50003 CREATE*/ /*!50020 DEFINER=%@*/ /*!50003 %@ */;;\n",
+										  escapedDefiner,
+										  procedureBody]];
+							
+				[procedureInfo release];
+				[proceduresList release];
+				
+				[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;;\n"];
+			}
 			
-			//Definer is user@host but we need to escape it to `user`@`host`
-			NSArray *procedureDefiner = [[proceduresList objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-			NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-										[[procedureDefiner objectAtIndex:0] backtickQuotedString],
-										[[procedureDefiner objectAtIndex:1] backtickQuotedString]
-										];
-			
-			MCPResult *createProcedureResult;
-			createProcedureResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE PROCEDURE %@ */;;", 
-														[procedureName backtickQuotedString]]];
-			[createProcedureResult setReturnDataAsStrings:YES];
-			NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
-			
-			[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", 
-									  [procedureInfo objectForKey:@"sql_mode"]]];
-			
-			NSString *createProcedure = [procedureInfo objectForKey:@"Create Procedure"];			
-			NSRange procedureRange = [createProcedure rangeOfString:@"procedure" options:NSCaseInsensitiveSearch];
-			NSString *procedureBody = [createProcedure substringFromIndex:procedureRange.location];
-			
-			// /*!50003 CREATE*/ /*!50020 DEFINER=`sequelpro`@`%`*/ /*!50003 PROCEDURE `p`()
-			// 													  BEGIN
-			// 													  /* This procedure does nothing */
-			// END */;;
-			//Build the CREATE PROCEDURE string to include MySQL Version limiters
-			[metaString appendString:[NSString stringWithFormat:@"/*!50003 CREATE*/ /*!50020 DEFINER=%@*/ /*!50003 %@ */;;\n",
-									  escapedDefiner,
-									  procedureBody]];
-						
-			[procedureInfo release];
-			[proceduresList release];
-			
-			[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;;\n"];
+			[metaString appendString:@"DELIMITER ;\n"];
+			[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 		
-		[metaString appendString:@"DELIMITER ;\n"];
-		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-	}
-	
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-		if ( [addErrorsSwitch state] == NSOnState ) {
-			[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-								   dataUsingEncoding:NSUTF8StringEncoding]];
+		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+			if ( [addErrorsSwitch state] == NSOnState ) {
+				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
+									   dataUsingEncoding:NSUTF8StringEncoding]];
+			}
 		}
+		
 	}
 
 	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
