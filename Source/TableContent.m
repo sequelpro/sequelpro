@@ -2103,7 +2103,7 @@
 				NSInteger numberOfRows = 0;
 				// Get the number of rows in the table
 				MCPResult *r;
-				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [selectedTable backtickQuotedString]]];
+				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]];
 				if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 					NSArray *a = [r fetchRowAsArray];
 					if([a count])
