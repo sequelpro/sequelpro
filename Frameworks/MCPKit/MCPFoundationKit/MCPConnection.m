@@ -1883,6 +1883,9 @@ void performThreadedKeepAlive(void *ptr)
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
 					theResult = mysql_use_result(structConnection);
 					NSMutableDictionary *structure = [NSMutableDictionary dictionary];
+					NSMutableSet *namesSet = [[NSMutableSet alloc] initWithCapacity:20];
+					NSMutableArray *allDbNames = [NSMutableArray array];
+					NSMutableArray *allTableNames = [NSMutableArray array];
 
 					while(row = mysql_fetch_row(theResult)) {
 						NSString *db = [self stringWithUTF8CString:row[0]];
@@ -1891,6 +1894,11 @@ void performThreadedKeepAlive(void *ptr)
 						NSString *type = [self stringWithUTF8CString:row[3]];
 						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
 						NSString *structtype = [self stringWithUTF8CString:row[5]];
+
+						[namesSet addObject:[db lowercaseString]];
+						[namesSet addObject:[table lowercaseString]];
+						[allDbNames addObject:[db lowercaseString]];
+						[allTableNames addObject:[table lowercaseString]];
 
 						if(![structure valueForKey:db]) {
 							[structure setObject:[NSMutableDictionary dictionary] forKey:db];
@@ -1907,12 +1915,31 @@ void performThreadedKeepAlive(void *ptr)
 
 					mysql_free_result(theResult);
 					mysql_close(structConnection);
+
 					if(theDbStructure != nil) {
 						[theDbStructure release];
 						theDbStructure = nil;
 					}
-
 					theDbStructure = [[NSDictionary dictionaryWithDictionary:structure] retain];
+
+					NSMutableDictionary *uniqueIdentifier = [NSMutableDictionary dictionary];
+					for(id name in namesSet) {
+						if([allDbNames containsObject:name] && [allTableNames containsObject:name]) {
+							;
+						} else {
+							if([allDbNames containsObject:name])
+								[uniqueIdentifier setObject:[NSNumber numberWithInteger:1] forKey:name];
+							else
+								[uniqueIdentifier setObject:[NSNumber numberWithInteger:2] forKey:name];
+						}
+					}
+					[namesSet release];
+					if(uniqueDbIdentifier != nil) {
+						[uniqueDbIdentifier release];
+						uniqueDbIdentifier = nil;
+					}
+					uniqueDbIdentifier = [[NSDictionary dictionaryWithDictionary:uniqueIdentifier] retain];
+
 					isQueryingDbStructure = NO;
 					[queryPool release];
 					return;
@@ -1926,6 +1953,18 @@ void performThreadedKeepAlive(void *ptr)
 	[queryPool release];
 }
 
+/**
+ * Returns 1 for db and 2 for table name if table name is not a db name and versa visa.
+ * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
+ * a db name or a table name.
+ */
+- (NSInteger)getUniqueDbIndentifierFor:(NSString*)term
+{
+	if([uniqueDbIdentifier objectForKey:term])
+		return [[uniqueDbIdentifier objectForKey:term] integerValue];
+	else
+		return 0;
+}
 
 /**
  * Returns a dict containing the structure of all available databases (mainly for completion).
