@@ -450,9 +450,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if([[self string] length] > parseRange.location+parseRange.length) {
 				if([[self string] characterAtIndex:parseRange.location+parseRange.length] == '`') {
 					backtickMode+=2;
-					NSLog(@"a %@", NSStringFromRange(parseRange));
 					parseRange.length++; // adjust parse string for right `
-					NSLog(@"b %@", NSStringFromRange(parseRange));
 				}
 			}
 
@@ -470,6 +468,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			} else {
 				filter = [[parsedString stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
 			}
+			if(![filter length])
+				completionRange = NSMakeRange(parseRange.location+parseRange.length,0);
 		} else {
 			filter = [NSString stringWithString:currentWord];
 		}

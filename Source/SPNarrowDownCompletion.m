@@ -572,25 +572,26 @@
 	} else {
 		NSMutableDictionary* selectedItem = [[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease];
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
-		if([[selectedItem objectForKey:@"path"] length] && [[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask)) {
-			NSString *path = [NSString stringWithFormat:@"%@.%@", 
-				[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
-				[candidateMatch backtickQuotedString]];
+		if( [[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask)) {
+			if([[selectedItem objectForKey:@"path"] length]) {
+				NSString *path = [NSString stringWithFormat:@"%@.%@", 
+					[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
+					[candidateMatch backtickQuotedString]];
 
-			// Check if path's db name is the current selected db name
-			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
-			theCharRange = theParseRange;
-			backtickMode = 0; // suppress move the caret one step rightwards
-			if(path && [path length] && r.length)
-				[self insert_text:[path substringFromIndex:r.length+1]];
-			else
-				[self insert_text:path];
-
+				// Check if path's db name is the current selected db name
+				NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
+				theCharRange = theParseRange;
+				backtickMode = 0; // suppress move the caret one step rightwards
+				if(path && [path length] && r.length) {
+					[self insert_text:[path substringFromIndex:r.length+1]];
+				} else {
+					[self insert_text:path];
+				}
+			}
 		} else {
 			if([[self filterString] length] < [candidateMatch length])
 				[self insert_text:candidateMatch];
 		}
-
 	}
 	closeMe = YES;
 }
