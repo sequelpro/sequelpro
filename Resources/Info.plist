@@ -65,6 +65,15 @@
 	<string></string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
+	<key>LSMinimumSystemVersionByArchitecture</key>
+	<dict>
+		<key>i386</key>
+		<string>10.5.0</string>
+		<key>x86_64</key>
+		<string>10.6.0</string>
+		<key>ppc</key>
+		<string>10.5.0</string>
+	</dict>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
