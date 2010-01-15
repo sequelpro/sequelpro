@@ -134,7 +134,10 @@
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:YES];
-	[panel setResolvesAliases:YES];
+	// TODO: it seems that setting setResolvesAliases to YES causes some
+	// problems in dragging files to the panel and changing to directory could crash SP
+	// ask Hans for details
+	// [panel setResolvesAliases:YES];
 
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
 	if(![[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding]) {

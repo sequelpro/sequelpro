@@ -318,7 +318,7 @@
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	[panel setResolvesAliases:YES];
+	// [panel setResolvesAliases:YES];
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
