@@ -30,6 +30,7 @@
 
 #import "SPNarrowDownCompletion.h"
 #import "SPArrayAdditions.h"
+#import "SPStringAdditions.h"
 #import "ImageAndTextCell.h"
 #import "SPConstants.h"
 #include <tgmath.h>
@@ -126,9 +127,9 @@
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
-	charRange:(NSRange)initRange inView:(id)aView 
+	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode
-	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb
+	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb
 {
 	if(self = [self init])
 	{
@@ -155,7 +156,7 @@
 			theCharRange.location++;
 		}
 
-		theInitRange = theCharRange;
+		theParseRange = parseRange;
 
 		theView = aView;
 		dictMode = mode;
@@ -428,6 +429,7 @@
 				[NSApp sendEvent: event];
 				[mutablePrefix appendString:[event characters]];
 				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length+[[event characters] length]);
+				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length+[[event characters] length]);
 				[self filter];
 			}
 			else if((flags & NSControlKeyMask) || (flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
@@ -451,6 +453,7 @@
 
 				[mutablePrefix deleteCharactersInRange:NSMakeRange([mutablePrefix length]-1, 1)];
 				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length-1);
+				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length-1);
 				[self filter];
 			}
 			else if(key == NSTabCharacter)
@@ -474,6 +477,7 @@
 				[NSApp sendEvent:event];
 				[mutablePrefix appendString:[event characters]];
 				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length+1);
+				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length+1);
 				[self filter];
 			}
 			else
@@ -568,31 +572,20 @@
 	} else {
 		NSMutableDictionary* selectedItem = [[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease];
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
-		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask)) {
-			NSArray *path = [NSArray arrayWithArray:[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"]];
-			if([path count]) {
-				NSMutableString *p = [NSMutableString string];
-				NSEnumerator *enumerator = [path reverseObjectEnumerator];
-				if(backtickMode)
-					for (id element in enumerator) {
-						if(![element isEqualToString:currentDb]) {
-							[p appendString:element];
-							[p appendString:@"`.`"];
-						}
-				    }
-				else
-					for (id element in enumerator) {
-						if(![element isEqualToString:currentDb]) {
-							[p appendString:element];
-							[p appendString:@"."];
-						}
-				    }
-				[p appendString:candidateMatch];
-				[self insert_text:p];
-			} else {
-				if([[self filterString] length] < [candidateMatch length])
-					[self insert_text:candidateMatch];
-			}
+		if([[selectedItem objectForKey:@"path"] length] && [[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask)) {
+			NSString *path = [NSString stringWithFormat:@"%@.%@", 
+				[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
+				[candidateMatch backtickQuotedString]];
+
+			// Check if path's db name is the current selected db name
+			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
+			theCharRange = theParseRange;
+			backtickMode = 0; // suppress move the caret one step rightwards
+			if(path && [path length] && r.length)
+				[self insert_text:[path substringFromIndex:r.length+1]];
+			else
+				[self insert_text:path];
+
 		} else {
 			if([[self filterString] length] < [candidateMatch length])
 				[self insert_text:candidateMatch];

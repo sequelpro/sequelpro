@@ -44,10 +44,10 @@
 	BOOL caseSensitive;
 	BOOL dictMode;
 	BOOL dbStructureMode;
-	BOOL backtickMode;
+	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
-	NSRange theInitRange;
+	NSRange theParseRange;
 	NSArray *words;
 	id theView;
 	
@@ -56,9 +56,9 @@
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
-	charRange:(NSRange)initRange inView:(id)aView 
+	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode 
-	backtickMode:(BOOL)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb;
+	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 

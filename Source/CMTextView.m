@@ -262,7 +262,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				if(aTableNameExists) {
 					[sortedTables addObject:aTableName];
 				} else {
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
 					// if(aDbName == nil && aTableName) {
 						if([sortedTables count] > 1 && [sortedTables containsObject:currentTable]) {
@@ -279,17 +279,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					if(!aTableNameExists)
 						switch(structtype) {
 							case 0:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", @"", @"isRef", nil]];
 							break;
 							case 1:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", @"", @"isRef", nil]];
 							break;
 							case 2:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 							case 3:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 						}
@@ -297,7 +297,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
-								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:field, @"display", @"field-small-square", @"image", [NSString stringWithFormat:@"%@⇠%@",table,db], @"path", [theTable objectForKey:field], @"type", nil]];
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:field, @"display", @"field-small-square", @"image", [NSString stringWithFormat:@"%@⇠%@",table,db], @"path", [theTable objectForKey:field], @"type", @"", @"isRef", nil]];
 							}
 						}
 					}
@@ -310,34 +310,34 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			// Add all database names to completions list
 			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 
 			// Add all system database names to completions list
 			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allSystemDatabaseNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 
 			// Add table names to completions list
 			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
 
 			// Add view names to completions list
 			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", nil]];
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", @"", @"isRef", nil]];
 
 			// Add field names to completions list for currently selected table
 			if ([[[self window] delegate] table] != nil)
 				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"field-small-square", @"image", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];
 
 			// Add proc/func only for MySQL version 5 or higher
 			if(mySQLmajorVersion > 4) {
 				// Add all procedures to completions list for currently selected table
 				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"])
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", @"", @"isRef", nil]];
 
 				// Add all function to completions list for currently selected table
 				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"])
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", @"", @"isRef", nil]];
 			}
 		}
 	}
@@ -364,19 +364,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* dbName        = nil;
 	NSString* tableName     = nil;
 	NSRange completionRange = [self getRangeForCurrentWord];
+	NSRange parseRange      = completionRange;
 	NSString* currentWord   = [[self string] substringWithRange:completionRange];
 	NSString* prefix        = @"";
 	NSString* allow         = @"_. "; // additional chars which not close the popup
 	NSString *currentDb     = nil;
 
 	BOOL dbBrowseMode = NO;
-	BOOL backtickMode = NO;
+	NSInteger backtickMode = 0; // 0 none, 1 rigth only, 2 left only, 3 both
 	BOOL caseInsensitive = YES;
 
-	if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-		currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
-	else
-		currentDb = @"";
+	currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+	if(!currentDb) currentDb = @"";
 
 	// Check if the caret is inside quotes "" or ''; if so 
 	// return the normal word suggestion due to the spelling's settings
@@ -388,153 +387,91 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if(!isDictMode) {
 
-		// Check if user wants to insert a db/table/field name
-		// currentWord == ` : user invoked completion via `|`
-		dbBrowseMode = ([currentWord isEqualToString:@"`"]) ? YES : NO;
+		NSInteger caretPos = [self selectedRange].location;
+		BOOL caretIsInsideBackticks = NO;
+
 		// Is the caret inside backticks
-		dbBrowseMode = ([[[self textStorage] attribute:kBTQuote atIndex:[self selectedRange].location-1 effectiveRange:nil] isEqualToString:kBTQuoteValue]) ? YES : dbBrowseMode;
-		backtickMode = dbBrowseMode;
-
-		// Refresh quote attributes
-		[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0, [[self string] length])];
-
-		if([currentWord hasSuffix:@"."]) {
-			dbBrowseMode = YES;
-			filter = @"";
-			completionRange = NSMakeRange(completionRange.location+completionRange.length,0);
-		} else {
-			filter = [NSString stringWithString:currentWord];
+		// Do not using attribute:atIndex: since it could return wrong results due to editing.
+		// This approach counts the number of ` up to the beginning of the current line from caret position
+		NSRange lineHeadRange = [[self string] lineRangeForRange:NSMakeRange(caretPos, 0)];
+		NSString *lineHead = [[self string] substringWithRange:NSMakeRange(lineHeadRange.location, caretPos - lineHeadRange.location)];
+		for(NSInteger i=0; i<[lineHead length]; i++)
+			if([lineHead characterAtIndex:i]=='`') caretIsInsideBackticks = !caretIsInsideBackticks;
+			
+		NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+		NSInteger start = caretPos;
+		NSInteger backticksCounter = (caretIsInsideBackticks) ? 1 : 0;
+		NSInteger pointCounter = 0;
+		NSInteger firstPoint   = 0;
+		NSInteger secondPoint  = 0;
+		BOOL doParsing = YES;
+		unichar currentCharacter;
+		while(start > 0 && doParsing) {
+			currentCharacter = [[self string] characterAtIndex:--start];
+			if(!(backticksCounter%2) && [whiteSpaceCharSet characterIsMember:currentCharacter]) {
+				start++;
+				break;
+			}
+			if(currentCharacter == '.' && !(backticksCounter%2)) {
+				pointCounter++;
+				switch(pointCounter) {
+					case 1:
+					firstPoint = start;
+					break;
+					case 2:
+					secondPoint = start;
+					break;
+					default:
+					doParsing = NO;
+					start++;
+				}
+			}
+			if(doParsing && currentCharacter == '`') {
+				backticksCounter++;
+				if(!(backticksCounter%2) && start > 0) {
+					currentCharacter = [[self string] characterAtIndex:start-1];
+					if(currentCharacter != '`' && currentCharacter != '.') break;
+					if(currentCharacter == '`') { // ignore `` 
+						backticksCounter++;
+						start-=2;
+					}
+				}
+			}
 		}
 
+		dbBrowseMode = (pointCounter || backticksCounter);
+		
+		if(dbBrowseMode) {
+			parseRange = NSMakeRange(start, caretPos-start);
+			NSString *parsedString = [[self string] substringWithRange:parseRange];
 
-		NSInteger caretPos = completionRange.location + completionRange.length;
-		NSInteger start = caretPos;
-		BOOL breakParsing = YES;
-
-		// Parse string left from currentWord …
-		if(start > 1) {
-			// … for possible db/table/field completion
-			// table.foo| or `table`.foo| or `table`.`foo|` to set filter to "foo"
-			start--;
-			BOOL insideBackticks = backtickMode;
-			unichar currentCharacter;
-			NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-			BOOL runFlag = YES;
-			while(start >= 0 && runFlag) {
-				currentCharacter = [[self string] characterAtIndex:start];
-				if([whiteSpaceCharSet characterIsMember:currentCharacter] && !insideBackticks) {
-					breakParsing = YES;
-					break;
-				}
-				switch(currentCharacter) {
-					case '`':
-					insideBackticks = !insideBackticks;
-					break;
-					case '.':
-					if(!insideBackticks) {
-						start++;
-						NSInteger offset = (backtickMode) ? 1 : 0;
-						completionRange = NSMakeRange(start+offset,caretPos-start-offset);
-						filter = [[self string] substringWithRange:completionRange];
-						caretPos = start;
-						runFlag = NO;
-						dbBrowseMode = YES;
-						breakParsing = NO;
-					}
-					break;
-				}
-				if(start == 0) {
-					breakParsing = YES;
-					break;
-				}
-				start--;
-			}
-
-			// … go further and look for a table name
-			if(!breakParsing && start > 0) {
-				start--;
-				caretPos--;
-				runFlag = YES;
-				breakParsing = YES;
-				insideBackticks = NO;
-				while(runFlag) {
-					currentCharacter = [[self string] characterAtIndex:start];
-					if(start == 0 || ([whiteSpaceCharSet characterIsMember:currentCharacter] && !insideBackticks)) {
-						if(start > 0) start++;
-						tableName = [[[self string] substringWithRange:NSMakeRange(start,caretPos-start)] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
-						caretPos = start;
-						runFlag = NO;
-						breakParsing = !(start == 0);
-						break;
-					}
-					switch(currentCharacter) {
-						case '`':
-						insideBackticks = !insideBackticks;
-						break;
-						case '.':
-						if(!insideBackticks) {
-							start++;
-							tableName = [[[self string] substringWithRange:NSMakeRange(start,caretPos-start)] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
-							caretPos = start;
-							runFlag = NO;
-							breakParsing = NO;
-						}
-						break;
-					}
-					if(start == 0) {
-						breakParsing = YES;
-						break;
-					}
-					if(start == 0) {
-						breakParsing = YES;
-						break;
-					}
-					start--;
+			// Check if parsed string is wrapped by ``
+			if([parsedString hasPrefix:@"`"]) backtickMode+=1;
+			if([[self string] length] > parseRange.location+parseRange.length) {
+				if([[self string] characterAtIndex:parseRange.location+parseRange.length] == '`') {
+					backtickMode+=2;
+					NSLog(@"a %@", NSStringFromRange(parseRange));
+					parseRange.length++; // adjust parse string for right `
+					NSLog(@"b %@", NSStringFromRange(parseRange));
 				}
 			}
 
-			// … go further and look for a db name
-			if(!breakParsing && start > 0) {
-				start--;
-				caretPos--;
-				runFlag = YES;
-				breakParsing = YES;
-				insideBackticks = NO;
-				while(runFlag) {
-					currentCharacter = [[self string] characterAtIndex:start];
-					if(start == 0 || ([whiteSpaceCharSet characterIsMember:currentCharacter] && !insideBackticks)) {
-						if(start > 0) start++;
-						dbName = [[[self string] substringWithRange:NSMakeRange(start,caretPos-start)] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
-						caretPos = start;
-						runFlag = NO;
-						breakParsing = !(start == 0);
-						break;
-					}
-					switch(currentCharacter) {
-						case '`':
-						insideBackticks = !insideBackticks;
-						break;
-						case '.':
-						if(!insideBackticks) {
-							start++;
-							dbName = [[[self string] substringWithRange:NSMakeRange(start,caretPos-start)] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
-							caretPos = start;
-							runFlag = NO;
-							breakParsing = NO;
-						}
-						break;
-					}
-					if(start == 0) {
-						breakParsing = YES;
-						break;
-					}
-					if(start == 0) {
-						breakParsing = YES;
-						break;
-					}
-					start--;
-				}
+			// Normalize point positions
+			firstPoint-=start;
+			secondPoint-=start;
+
+			if(secondPoint>0) {
+				dbName = [[[parsedString substringWithRange:NSMakeRange(0, secondPoint)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
+				tableName = [[[parsedString substringWithRange:NSMakeRange(secondPoint+1,firstPoint-secondPoint-1)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
+				filter = [[[parsedString substringWithRange:NSMakeRange(firstPoint+1,[parsedString length]-firstPoint-1)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
+			} else if(firstPoint>0) {
+				tableName = [[[parsedString substringWithRange:NSMakeRange(0, firstPoint)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
+				filter = [[[parsedString substringWithRange:NSMakeRange(firstPoint+1,[parsedString length]-firstPoint-1)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
+			} else {
+				filter = [[parsedString stringByReplacingOccurrencesOfString:@"``" withString:@"`"] stringByReplacingOccurrencesOfRegex:@"^`|`$" withString:@""];
 			}
+		} else {
+			filter = [NSString stringWithString:currentWord];
 		}
 	} else {
 		filter = [NSString stringWithString:currentWord];
@@ -546,6 +483,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					additionalWordCharacters:allow 
 					caseSensitive:!caseInsensitive
 					charRange:completionRange
+					parseRange:parseRange
 					inView:self
 					dictMode:isDictMode
 					dbMode:dbBrowseMode
@@ -553,24 +491,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					withDbName:dbName
 					withTableName:tableName
 					selectedDb:currentDb];
-
+	
 	//Get the NSPoint of the first character of the current word
 	NSRange range = NSMakeRange(completionRange.location,0);
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:range actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-
+	
 	// TODO: check if needed
 	// if(filter)
 	// 	pos.x -= [filter sizeWithAttributes:[NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName]].width;
 	
 	// Adjust list location to be under the current word or insertion point
 	pos.y -= [[self font] pointSize]*1.25;
-
+	
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-
+	
 }
 
 
