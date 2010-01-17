@@ -48,6 +48,7 @@
 #import "SPContentFilterManager.h"
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
+#import "SPDataStorage.h"
 #import "TableDocument.h"
 
 @implementation TableContent
@@ -62,7 +63,7 @@
 		isWorking = NO;
 		pthread_mutex_init(&tableValuesLock, NULL);
 
-		tableValues      = [[NSMutableArray alloc] init];
+		tableValues      = [[SPDataStorage alloc] init];
 		tableRowsCount = 0;
 		previousTableRowsCount = 0;
 		dataColumns    = [[NSMutableArray alloc] init];
@@ -221,7 +222,7 @@
 	[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
+	[tableContentView setTableInstance:self withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -523,12 +524,12 @@
  */
 - (void) clearTableValues
 {
-	NSMutableArray *tableValuesTransition;
+	SPDataStorage *tableValuesTransition;
 
 	tableValuesTransition = tableValues;
 	pthread_mutex_lock(&tableValuesLock);
 	tableRowsCount = 0;
-	tableValues = [[NSMutableArray alloc] init];
+	tableValues = [[SPDataStorage alloc] init];
 	pthread_mutex_unlock(&tableValuesLock);
 	[tableValuesTransition release];
 }
@@ -604,9 +605,11 @@
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
+	NSDate *startDate = [NSDate date];
 	streamingResult = [mySQLConnection streamingQueryString:queryString];
 	[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
 	[streamingResult release];
+	NSLog(@"New took %f sec", [[NSDate date] timeIntervalSinceDate:startDate]);
 
 	// If the result is empty, and a late page is selected, reset the page
 	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
@@ -654,10 +657,12 @@
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount
 {
 	NSArray *tempRow;
-	NSMutableArray *newRow;
-	NSMutableArray *columnBlobStatuses = [[NSMutableArray alloc] init];
 	NSUInteger i;
 	NSUInteger dataColumnsCount = [dataColumns count];
+	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));;
+
+	// Set the column count on the data store
+	[tableValues setColumnCount:dataColumnsCount];
 	
 	CGFloat relativeTargetRowCount = 100.0/targetRowCount;
 	NSUInteger nextTableDisplayBoundary = 50;
@@ -671,7 +676,7 @@
 
 	// Build up an array of which columns are blobs for faster iteration
 	for ( i = 0; i < dataColumnsCount ; i++ ) {
-		[columnBlobStatuses addObject:[NSNumber numberWithBool:[tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] ]]];
+		columnBlobStatuses[i] = [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]];
 	}
 
 	// Set up an autorelease pool for row processing
@@ -682,17 +687,16 @@
 		pthread_mutex_lock(&tableValuesLock);
 
 		if (rowsProcessed < previousTableRowsCount) {
-			NSMutableArrayReplaceObject(tableValues, rowsProcessed, [NSMutableArray arrayWithArray:tempRow]);
+			SPDataStorageReplaceRow(tableValues, rowsProcessed, tempRow);
 		} else {
-			NSMutableArrayAddObject(tableValues, [NSMutableArray arrayWithArray:tempRow]);
+			SPDataStorageAddRow(tableValues, tempRow);
 		}
 
 		// Alter the values for hidden blob and text fields if appropriate
 		if ( prefsLoadBlobsAsNeeded ) {
-			newRow = NSArrayObjectAtIndex(tableValues, rowsProcessed);
 			for ( i = 0 ; i < dataColumnsCount ; i++ ) {
-				if ( [NSArrayObjectAtIndex(columnBlobStatuses, i) boolValue] ) {
-					NSMutableArrayReplaceObject(newRow, i, [SPNotLoaded notLoaded]);
+				if (columnBlobStatuses[i]) {
+					SPDataStorageReplaceObjectAtRowAndColumn(tableValues, rowsProcessed, i, [SPNotLoaded notLoaded]);
 				}
 			}
 		}
@@ -732,7 +736,7 @@
 	// If the reloaded table is shorter than the previous table, remove the extra values from the storage
 	if (tableRowsCount < [tableValues count]) {
 		pthread_mutex_lock(&tableValuesLock);
-		[tableValues removeObjectsInRange:NSMakeRange(tableRowsCount, [tableValues count] - tableRowsCount)];
+		[tableValues removeRowsInRange:NSMakeRange(tableRowsCount, [tableValues count] - tableRowsCount)];
 		pthread_mutex_unlock(&tableValuesLock);
 	}
 
@@ -743,8 +747,8 @@
 	// Clean up the autorelease pool and reset the progress indicator
 	[dataLoadingPool drain];
 	[dataLoadingIndicator setIndeterminate:YES];
-	
-	[columnBlobStatuses release];
+
+	free(columnBlobStatuses);
 }
 
 /**
@@ -1243,7 +1247,7 @@
 			[newRow addObject:[column objectForKey:@"default"]];
 		}
 	}
-	[tableValues addObject:newRow];
+	[tableValues addRowWithContents:newRow];
 	tableRowsCount++;
 
 	[tableContentView reloadData];
@@ -1278,8 +1282,8 @@
 	}
 	
 	//copy row
-	tempRow = [NSMutableArray arrayWithArray:[tableValues objectAtIndex:[tableContentView selectedRow]]];
-	[tableValues insertObject:tempRow atIndex:[tableContentView selectedRow]+1];
+	tempRow = [tableValues rowContentsAtIndex:[tableContentView selectedRow]];
+	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
 	tableRowsCount++;
 	
 	//if we don't show blobs, read data for this duplicate column from db
@@ -1396,7 +1400,7 @@
 		[tempRow removeAllObjects];
 		enumerator = [tableColumns objectEnumerator];
 		while ( (tableColumn = [enumerator nextObject]) ) {
-			id o = [NSArrayObjectAtIndex(tableValues, i) objectAtIndex:[[tableColumn identifier] integerValue]];
+			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, [[tableColumn identifier] integerValue]);
 			if([o isNSNull])
 				[tempRow addObject:@"NULL"];
 			else if ([o isSPNotLoaded])
@@ -1496,7 +1500,7 @@
 	// Save existing scroll position and details
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	NSString *targetFilterValue = [[tableValues objectAtIndex:[theArrowCell getClickedRow]] objectAtIndex:dataColumnIndex];
+	NSString *targetFilterValue = [tableValues cellDataAtRow:[theArrowCell getClickedRow] column:dataColumnIndex];
 
 	// If the link is within the current table, apply filter settings manually
 	if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
@@ -1697,7 +1701,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
-	if (!isEditingNewRow && [oldRow isEqualToArray:[tableValues objectAtIndex:currentlyEditingRow]]) {
+	if (!isEditingNewRow && [oldRow isEqualToArray:[tableValues rowContentsAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -1705,9 +1709,10 @@
 	}
 
 	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
+
 	// Get the field values
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
-		rowObject = [NSArrayObjectAtIndex(tableValues, currentlyEditingRow) objectAtIndex:i];
+		rowObject = [tableValues cellDataAtRow:currentlyEditingRow column:i];
 
 		// Add not loaded placeholders directly for easy comparison when added
 		if (prefsLoadBlobsAsNeeded && !isEditingNewRow && [rowObject isSPNotLoaded])
@@ -1809,7 +1814,7 @@
 		} else {
 			NSBeep();
 		}
-		[tableValues replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableArray arrayWithArray:oldRow]];
+		[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
@@ -1831,7 +1836,7 @@
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [dataColumns count] ; i++ ) {
 					if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"autoincrement"] integerValue]) {
-						[[tableValues objectAtIndex:currentlyEditingRow] replaceObjectAtIndex:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
+						[tableValues replaceObjectInRow:currentlyEditingRow column:i withObject:[[NSNumber numberWithLong:[mySQLConnection insertId]] description]];
 					}
 				}
 			}
@@ -1948,7 +1953,7 @@
 
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
-			tempValue = [NSArrayObjectAtIndex(tableValues, row) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
+			tempValue = [tableValues cellDataAtRow:row column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 
 		// Otherwise use the oldRow
 		} else {
@@ -2032,7 +2037,6 @@
  */
 {
 
-	NSMutableArray *tempResult = [NSMutableArray array];
 	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
 	NSString *wherePart;
 	NSInteger i, errors;
@@ -2051,12 +2055,11 @@
 			[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 		} else {
 			if ( !isEditingNewRow ) {
-				[tableValues replaceObjectAtIndex:[tableContentView selectedRow]
-										  withObject:[NSMutableArray arrayWithArray:oldRow]];
+				[tableValues replaceRowAtIndex:[tableContentView selectedRow] withRowContents:oldRow];
 				isEditingRow = NO;
 			} else {
 				tableRowsCount--;
-				[tableValues removeObjectAtIndex:[tableContentView selectedRow]];
+				[tableValues removeRowAtIndex:[tableContentView selectedRow]];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
@@ -2154,7 +2157,7 @@
 
 				while (index != NSNotFound) {
 
-					id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
+					id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
 
 					if([keyValue isKindOfClass:[NSData class]])
 						[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
@@ -2199,9 +2202,8 @@
 					// Build the AND clause of PRIMARY KEYS
 					[deleteQuery appendString:@"("];
 					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
-						
-						
-						id keyValue = [NSArrayObjectAtIndex(tableValues, index) objectAtIndex:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
+
+						id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
 						
 						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
 						if ([keyValue isKindOfClass:[NSData class]]) {
@@ -2273,12 +2275,10 @@
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			} else {
-				for ( i = 0 ; i < tableRowsCount ; i++ ) {
-					if ( ![selectedRows containsIndex:i] )
-						[tempResult addObject:NSArrayObjectAtIndex(tableValues, i)];
+				for ( i = tableRowsCount - 1 ; i >= 0 ; i-- ) {
+					if ([selectedRows containsIndex:i]) [tableValues removeRowAtIndex:i];
 				}
-				tableRowsCount = [tempResult count];
-				[tableValues setArray:tempResult];
+				tableRowsCount = [tableValues count];
 				[tableContentView reloadData];
 			}
 			[tableContentView deselectAll:self];
@@ -2576,7 +2576,7 @@
 	// possible exceptions (eg for reloading tables etc.)
 	id theValue;
 	@try{
-		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, row), [[aTableColumn identifier] integerValue]);
+		theValue = [tableValues cellDataAtRow:row column:[[aTableColumn identifier] integerValue]];
 	}
 	@catch(id ae) {
 		return nil;
@@ -2613,17 +2613,14 @@
 	// cases.
 	if (isWorking) {
 		pthread_mutex_lock(&tableValuesLock);
-		if (rowIndex < tableRowsCount) {
-			NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
-			if (columnIndex < [rowData count]) {
-				theValue = NSArrayObjectAtIndex(rowData, columnIndex);
-			}
+		if (rowIndex < tableRowsCount && columnIndex < [tableValues columnCount]) {
+			theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 		}
 		pthread_mutex_unlock(&tableValuesLock);
 
 		if (!theValue) return @"...";
 	} else {
-		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), columnIndex);
+		theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 	}
 
 	if ([theValue isNSNull])
@@ -2653,11 +2650,8 @@
 	// rows or columns may be requested.  Use gray to indicate loading in these cases.
 	if (isWorking) {
 		pthread_mutex_lock(&tableValuesLock);
-		if (rowIndex < tableRowsCount) {
-			NSMutableArray *rowData = NSArrayObjectAtIndex(tableValues, rowIndex);
-			if (columnIndex < [rowData count]) {
-				theValue = NSArrayObjectAtIndex(rowData, columnIndex);
-			}
+		if (rowIndex < tableRowsCount && columnIndex < [tableValues columnCount]) {
+			theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 		}
 		pthread_mutex_unlock(&tableValuesLock);
 
@@ -2666,12 +2660,12 @@
 			return;
 		}
 	} else {
-		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), columnIndex);
+		theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 	}
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
-	if ( [aTableView editedColumn] == [[aTableColumn identifier] integerValue] && [aTableView editedRow] == rowIndex) {
+	if ( [aTableView editedColumn] == columnIndex && [aTableView editedRow] == rowIndex) {
 		[cell setTextColor:[NSColor blackColor]];
 		return;
 	}
@@ -2691,7 +2685,7 @@
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
-		[oldRow setArray:NSArrayObjectAtIndex(tableValues, rowIndex)];
+		[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
@@ -2704,9 +2698,9 @@
 		if ([anObject isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue])
 			anObject = [NSNull null];
 
-		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] integerValue] withObject:anObject];
+		[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:anObject];
 	} else {
-		[NSArrayObjectAtIndex(tableValues, rowIndex) replaceObjectAtIndex:[[aTableColumn identifier] integerValue] withObject:@""];
+		[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:@""];
 	}
 }
 
@@ -2855,7 +2849,7 @@
 	if ([wherePart length] == 0) return NO;
 
 	// If the selected cell hasn't been loaded, load it.
-	if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tableValues, rowIndex), [[aTableColumn identifier] integerValue]) isSPNotLoaded]) {
+	if ([[tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]] isSPNotLoaded]) {
 
 		// Only get the data for the selected column, not all of them
 		NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
@@ -2868,7 +2862,7 @@
 		}
 
 		NSArray *tempRow = [tempResult fetchRowAsArray];
-		[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
+		[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
 		[tableContentView reloadData];
 	}
 	
@@ -2881,7 +2875,7 @@
 		
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
 		
-		id cellValue = [[tableValues objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] integerValue]];
+		id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 		
 		id editData = [[fieldEditor editWithObject:cellValue
@@ -2893,7 +2887,7 @@
 
 		if (editData) {
 			if (!isEditingRow) {
-				[oldRow setArray:[tableValues objectAtIndex:rowIndex]];
+				[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
 			}
@@ -2905,7 +2899,7 @@
 				[editData release];
 				editData = [[NSNull null] retain];
 			}
-			[[tableValues objectAtIndex:rowIndex] replaceObjectAtIndex:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
+			[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
 		}
 
 		[fieldEditor release];
@@ -3079,12 +3073,12 @@
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
 			isEditingRow = NO;
-			[tableValues replaceObjectAtIndex:row withObject:[NSMutableArray arrayWithArray:oldRow]];
+			[tableValues replaceRowAtIndex:row withRowContents:oldRow];
 		} else if ( isEditingNewRow ) {
 			isEditingRow = NO;
 			isEditingNewRow = NO;
 			tableRowsCount--;
-			[tableValues removeObjectAtIndex:row];
+			[tableValues removeRowAtIndex:row];
 			[tableContentView reloadData];
 		}
 		currentlyEditingRow = -1;

@@ -36,7 +36,6 @@
 @interface CMCopyTable : SPTableView 
 {
 	id tableInstance;				// the table content view instance
-	id tableData;					// the actual table data source
 	id mySQLConnection;				// current MySQL connection
 	NSArray* columnDefinitions;		// array of NSDictionary containing info about columns
 	NSString* selectedTable;		// the name of the current selected table
@@ -103,7 +102,7 @@
 /*
  * Set all necessary data from the table content view.
  */
-- (void)setTableInstance:(id)anInstance withTableData:(id)theTableData withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection;
+- (void)setTableInstance:(id)anInstance withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection;
 
 @end
 

@@ -49,7 +49,7 @@
 #define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
-@class SPQueryFavoriteManager;
+@class SPQueryFavoriteManager, SPDataStorage;
 
 @interface CustomQuery : NSObject 
 {
@@ -128,9 +128,9 @@
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
 
-	NSMutableArray *fullResult;
-	pthread_mutex_t fullResultLock;
-	NSInteger fullResultCount;
+	SPDataStorage *resultData;
+	pthread_mutex_t resultDataLock;
+	NSInteger resultDataCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 	NSInteger editedRow;

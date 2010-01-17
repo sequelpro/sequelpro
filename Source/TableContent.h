@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo;
+@class CMCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage;
 
 @interface TableContent : NSObject 
 {	
@@ -72,7 +72,8 @@
 	pthread_mutex_t tableValuesLock;
 
 	NSString *selectedTable, *usedQuery;
-	NSMutableArray *tableValues, *dataColumns, *keys, *oldRow;
+	SPDataStorage *tableValues;
+	NSMutableArray *dataColumns, *keys, *oldRow;
 	NSUInteger tableRowsCount, previousTableRowsCount;
 	NSString *compareType;
 	NSNumber *sortCol;

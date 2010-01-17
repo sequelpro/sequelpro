@@ -41,6 +41,7 @@
 #import "SPQueryController.h"
 #import "SPConstants.h"
 #import "SPEncodingPopupAccessory.h"
+#import "SPDataStorage.h"
 
 @implementation CustomQuery
 
@@ -779,7 +780,7 @@
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	
 	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( !fullResultCount ) {
+	if ( !resultDataCount ) {
 		[customQueryView reloadData];
 		if (streamingResult) [streamingResult release];
 
@@ -831,7 +832,7 @@
 	}
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withTableData:fullResult withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+	[customQueryView setTableInstance:self withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 	
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -864,11 +865,14 @@
 	BOOL tableViewRedrawn = NO;
 
 	// Remove all items from the table
-	fullResultCount = 0;
+	resultDataCount = 0;
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
-	pthread_mutex_lock(&fullResultLock);
-	[fullResult removeAllObjects];
-	pthread_mutex_unlock(&fullResultLock);
+	pthread_mutex_lock(&resultDataLock);
+	[resultData removeAllRows];
+	pthread_mutex_unlock(&resultDataLock);
+
+	// Set the column count on the data store
+	[resultData setColumnCount:[theResult numOfFields]];
 
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
@@ -876,10 +880,10 @@
 	// Loop through the result rows as they become available
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 
-		pthread_mutex_lock(&fullResultLock);
-		NSMutableArrayAddObject(fullResult, [NSMutableArray arrayWithArray:tempRow]);
-		fullResultCount++;
-		pthread_mutex_unlock(&fullResultLock);
+		pthread_mutex_lock(&resultDataLock);
+		SPDataStorageAddRow(resultData, tempRow);
+		resultDataCount++;
+		pthread_mutex_unlock(&resultDataLock);
 
 		// Update the count of rows processed
 		rowsProcessed++;
@@ -1334,7 +1338,7 @@
 	[fieldIDQueryStr setString:@"WHERE ("];
 
 	// --- Build WHERE clause ---
-	dataRow = [fullResult objectAtIndex:rowIndex];
+	dataRow = [resultData rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
@@ -1394,7 +1398,7 @@
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if (aTableView == customQueryView) {
-		return (fullResult == nil) ? 0 : fullResultCount;
+		return (resultData == nil) ? 0 : resultDataCount;
 	} 
 	else {
 		return 0;
@@ -1417,21 +1421,18 @@
 			// locks must be used to avoid crashes, and indexes higher than the available
 			// rows or columns may be requested.  Use gray to show loading in these cases.
 			if (isWorking) {
-				pthread_mutex_lock(&fullResultLock);
-				if (rowIndex < fullResultCount) {
-					NSMutableArray *rowData = NSArrayObjectAtIndex(fullResult, rowIndex);
-					if (columnIndex < [rowData count]) {
-						theValue = NSArrayObjectAtIndex(rowData, columnIndex);
-					}
+				pthread_mutex_lock(&resultDataLock);
+				if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+					theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 				}
-				pthread_mutex_unlock(&fullResultLock);
+				pthread_mutex_unlock(&resultDataLock);
 
 				if (!theValue) {
 					[cell setTextColor:[NSColor lightGrayColor]];
 					return;
 				}
 			} else {
-				theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), columnIndex);
+				theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 			}
 			
 			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
@@ -1453,18 +1454,15 @@
 		// rows or columns may be requested.  Return "..." to indicate loading in these
 		// cases.
 		if (isWorking) {
-			pthread_mutex_lock(&fullResultLock);
-			if (rowIndex < fullResultCount) {
-				NSMutableArray *rowData = NSArrayObjectAtIndex(fullResult, rowIndex);
-				if (columnIndex < [rowData count]) {
-					theValue = NSArrayObjectAtIndex(rowData, columnIndex);
-				}
+			pthread_mutex_lock(&resultDataLock);
+			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+				theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 			}
-			pthread_mutex_unlock(&fullResultLock);
+			pthread_mutex_unlock(&resultDataLock);
 
 			if (!theValue) return @"...";
 		} else {
-			theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, rowIndex), columnIndex);
+			theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 		}
 		
 		if ([theValue isKindOfClass:[NSData class]])
@@ -1791,7 +1789,7 @@
 	// possible exceptions (eg for reloading tables etc.)
 	id theValue;
 	@try{
-		theValue = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fullResult, row), [[aTableColumn identifier] integerValue]);
+		theValue = SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]);
 	}
 	@catch(id ae) {
 		return nil;
@@ -1891,7 +1889,7 @@
 		 && [columnDefinition valueForKey:@"char_length"])
 			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
 
-		id originalData = [[fullResult objectAtIndex:rowIndex] objectAtIndex:[[aTableColumn identifier] integerValue]];
+		id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 		if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
 
 		id editData = [[fieldEditor editWithObject:originalData
@@ -2976,8 +2974,8 @@
 		[[helpWebView backForwardList] setCapacity:20];
 		
 		// init tableView's data source
-		fullResultCount = 0;
-		fullResult = [[NSMutableArray alloc] init];
+		resultDataCount = 0;
+		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
@@ -3083,7 +3081,7 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	[usedQuery release];
-	[fullResult release];
+	[resultData release];
 	[favoritesManager release];
 	
 	if (helpHTMLTemplate) [helpHTMLTemplate release];

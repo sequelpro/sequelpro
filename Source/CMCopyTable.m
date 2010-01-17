@@ -232,7 +232,6 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			// rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]];
 			col = NSArrayObjectAtIndex(columns, c);
 			rowData = [dataSource tableView:self 
 				  objectValueForTableColumn:col 
@@ -417,10 +416,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 /*
  * Init self with data coming from the table content view. Mainly used for copying data properly.
  */
-- (void)setTableInstance:(id)anInstance withTableData:(id)theTableData withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
+- (void)setTableInstance:(id)anInstance withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
 {
 	selectedTable     = aTableName;
-	tableData         = theTableData;
 	mySQLConnection   = aMySqlConnection;
 	tableInstance     = anInstance;
 	
