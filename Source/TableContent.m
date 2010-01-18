@@ -605,11 +605,9 @@
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
-	NSDate *startDate = [NSDate date];
 	streamingResult = [mySQLConnection streamingQueryString:queryString];
 	[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
 	[streamingResult release];
-	NSLog(@"New took %f sec", [[NSDate date] timeIntervalSinceDate:startDate]);
 
 	// If the result is empty, and a late page is selected, reset the page
 	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
