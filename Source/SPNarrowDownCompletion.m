@@ -99,13 +99,16 @@
 // =============================
 - (id)init
 {
-	if(self = [super initWithContentRect:NSMakeRect(0,0,450,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+
+	maxWindowWidth = 450;
+
+	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
 	{
 		mutablePrefix = [NSMutableString new];
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
 		caseSensitive = YES;
 		filtered = nil;
-		
+
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
 	}
@@ -134,10 +137,8 @@
 	if(self = [self init])
 	{
 
-		BOOL filterStringIsBacktick = ([aUserString isEqualToString:@"`"]) ? YES : NO;
-
-		// Set filter string - if aUserString == ` user invoked it via `|` ie show all db/tables/fields etc.
-		if(aUserString && !filterStringIsBacktick)
+		// Set filter string 
+		if(aUserString)
 			[mutablePrefix appendString:aUserString];
 
 		dbStructureMode = theDbMode;
@@ -150,23 +151,21 @@
 		caseSensitive = isCaseSensitive;
 
 		theCharRange = initRange;
-
-		if(filterStringIsBacktick) {
-			theCharRange.length = 0;
-			theCharRange.location++;
-		}
+		noFilterString = ([aUserString length]) ? NO : YES;
 
 		theParseRange = parseRange;
 
 		theView = aView;
 		dictMode = mode;
 
-		if(!dictMode) {
-			suggestions = [someSuggestions retain];
-			words = nil;
-		}
+		suggestions = [someSuggestions retain];
+
+		[[theTableView tableColumnWithIdentifier:@"image"] setWidth:((dictMode) ? 0 : 20)];
+		[[theTableView tableColumnWithIdentifier:@"name"] setWidth:((dictMode) ? 440 : 180)];
 
 		currentDb = selectedDb;
+
+		theDbName = dbName;
 
 		if(someAdditionalWordCharacters)
 			[textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
@@ -178,24 +177,25 @@
 - (void)setCaretPos:(NSPoint)aPos
 {
 	caretPos = aPos;
-	isAbove = NO;
-	
+
 	NSRect mainScreen = [self rectOfMainScreen];
-	
+
 	NSInteger offx = (caretPos.x/mainScreen.size.width) + 1;
+
 	if((caretPos.x + [self frame].size.width) > (mainScreen.size.width*offx))
-		caretPos.x = caretPos.x - [self frame].size.width;
-	
-	if(caretPos.y>=0 && caretPos.y<[self frame].size.height)
+		caretPos.x = (mainScreen.size.width*offx) - [self frame].size.width - 5;
+
+	if(caretPos.y >= 0 && caretPos.y < [self frame].size.height)
 	{
-		caretPos.y = caretPos.y + ([self frame].size.height + [tableFont pointSize]*1.5);
+		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5);
 		isAbove = YES;
 	}
-	if(caretPos.y<0 && (mainScreen.size.height-[self frame].size.height)<(caretPos.y*-1))
+	if(caretPos.y < 0 && (mainScreen.size.height-[self frame].size.height) < (caretPos.y*-1))
 	{
-		caretPos.y = caretPos.y + ([self frame].size.height + [tableFont pointSize]*1.5);
+		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5);
 		isAbove = YES;
 	}
+
 	[self setFrameTopLeftPoint:caretPos];
 }
 
@@ -208,7 +208,7 @@
 	[self setAlphaValue:0.9];
 
 	NSScrollView* scrollView = [[[NSScrollView alloc] initWithFrame:NSZeroRect] autorelease];
-	// [scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	[scrollView setAutohidesScrollers:YES];
 	[scrollView setHasVerticalScroller:YES];
 	[scrollView setHasHorizontalScroller:NO];
@@ -219,30 +219,31 @@
 	[theTableView setFocusRingType:NSFocusRingTypeNone];
 	[theTableView setAllowsEmptySelection:NO];
 	[theTableView setHeaderView:nil];
-	// [theTableView setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleSourceList];
+	[theTableView setDelegate:self];
 
 	NSTableColumn *column0 = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
 	[column0 setDataCell:[[ImageAndTextCell new] autorelease]];
 	[column0 setEditable:NO];
 	[theTableView addTableColumn:column0];
+	[column0 setMinWidth:0];
 	[column0 setWidth:20];
+
 	NSTableColumn *column1 = [[[NSTableColumn alloc] initWithIdentifier:@"name"] autorelease];
 	[column1 setEditable:NO];
-	// [[column1 dataCell] setFont:[NSFont systemFontOfSize:12]];
 	[theTableView addTableColumn:column1];
-	[column1 setWidth:180];
+	[column1 setWidth:170];
+
 	NSTableColumn *column2 = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
 	[column2 setEditable:NO];
-	// [[column2 dataCell] setFont:[NSFont systemFontOfSize:11]];
 	[[column2 dataCell] setTextColor:[NSColor darkGrayColor]];
 	[theTableView addTableColumn:column2];
-	[column2 setWidth:120];
+	[column2 setWidth:145];
+
 	NSTableColumn *column3 = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
 	[column3 setEditable:NO];
-	// [[column3 dataCell] setFont:[NSFont systemFontOfSize:11]];
 	[[column3 dataCell] setTextColor:[NSColor darkGrayColor]];
 	[theTableView addTableColumn:column3];
-	[column3 setWidth:130];
+	[column3 setWidth:95];
 
 	[theTableView setDataSource:self];
 	[scrollView setDocumentView:theTableView];
@@ -258,10 +259,43 @@
 	return [filtered count];
 }
 
+// ------- nstokenfield delegates -- does not work for menus due to the click event does not reach it -- why???
+// - (NSMenu *)tokenFieldCell:(NSTokenFieldCell *)tokenFieldCell menuForRepresentedObject:(id)representedObject
+// {
+// 	NSMenu *tokenMenu = [[[NSMenu alloc] init] autorelease];
+// 
+// 	if (!representedObject)
+// 		return nil;
+// 
+// 	NSMenuItem *artistItem = [[[NSMenuItem alloc] init] autorelease];
+// 	[artistItem setTitle:@"aaa"];
+// 	[tokenMenu addItem:artistItem];
+// 
+// 	NSMenuItem *albumItem = [[[NSMenuItem alloc] init] autorelease];
+// 	[albumItem setTitle:@"ksajdhkjas"];
+// 	[tokenMenu addItem:albumItem];
+// 
+// 
+// 		// NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:@"Show Album Art" action:@selector(showAlbumArt:) keyEquivalent:@""] autorelease];
+// 		// [mItem setTarget:self];
+// 		// [mItem setRepresentedObject:representedObject];
+// 		// [tokenMenu addItem:mItem];
+// 
+// 	return tokenMenu;
+// }
+// - (BOOL)tokenFieldCell:(NSTokenFieldCell *)tokenFieldCell hasMenuForRepresentedObject:(id)representedObject
+// {
+// 	return YES;
+// }
+// - (NSString *)tokenFieldCell:(NSTokenFieldCell *)tokenFieldCell displayStringForRepresentedObject:(id)representedObject
+// {
+// 	return representedObject;
+// }
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;
 	NSString* imageName = nil;
+
 	if([[aTableColumn identifier] isEqualToString:@"image"]) {
 		if(!dictMode) {
 			imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
@@ -270,21 +304,48 @@
 			[[aTableColumn dataCell] setImage:image];
 		}
 		return @"";
+
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		return (dictMode) ? [filtered objectAtIndex:rowIndex] : [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
 		if(dictMode) {
 			return @"";
 		} else {
-			[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-			return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
+			// [[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
+			// return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
+			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""] autorelease];
+			[b setEditable:NO];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setDelegate:self];
+			return b;
 		}
+
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
 		if(dictMode) {
 			return @"";
 		} else {
-			[[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-			return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"path"] : @"";
+			// [[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
+			// return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"path"] : @"";
+			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
+				NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+				[b setPullsDown:NO];
+				[b setAltersStateOfSelectedItem:NO];
+				[b setControlSize:NSMiniControlSize];
+				NSMenu *m = [[NSMenu alloc] init];
+				for(id p in [[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:@"⇠"])
+					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
+				[b setMenu:m];
+				[m release];
+				[b setPreferredEdge:NSMinXEdge];
+				[b setArrowPosition:([m numberOfItems]>1) ? NSPopUpArrowAtCenter : NSPopUpNoArrow];
+				[b setFont:[NSFont systemFontOfSize:11]];
+				[b setBordered:NO];
+				[aTableColumn setDataCell:b];
+			} else {
+				[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
+			}
+			return @"";
 		}
 	}
 	return [filtered objectAtIndex:rowIndex];
@@ -295,77 +356,49 @@
 // ====================
 - (void)filter
 {
-	// NSRect mainScreen = [self rectOfMainScreen];
 
-	NSArray* newFiltered;
+	NSMutableArray* newFiltered = [[NSMutableArray alloc] initWithCapacity:5];
 	if([mutablePrefix length] > 0)
 	{
-		if(dictMode) {
-			newFiltered = [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0];
-		} else {
-			NSPredicate* predicate;
-			if(caseSensitive)
-				predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
-			else
-				predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
-			newFiltered = [suggestions filteredArrayUsingPredicate:predicate];
-		}
+		NSPredicate* predicate;
+		if(caseSensitive)
+			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
+		else
+			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
+		[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
+		if(dictMode)
+			for(id w in [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0])
+				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", nil]];
 	}
 	else
 	{
-		if(dictMode)
-			newFiltered = nil;
-		else
-			newFiltered = suggestions;
+		if(!dictMode)
+			[newFiltered addObjectsFromArray:suggestions];
 	}
+
+	if(![newFiltered count])
+		[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
+
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
-	
+
 	NSInteger displayedRows = [newFiltered count] < SP_NARROWDOWNLIST_MAX_ROWS ? [newFiltered count] : SP_NARROWDOWNLIST_MAX_ROWS;
-	CGFloat newHeight   = ([theTableView rowHeight] + [theTableView intercellSpacing].height) * displayedRows;
-	
-	// CGFloat maxLen = 1;
-	// NSString* item;
-	// NSInteger i;
-	// BOOL spaceInSuggestion = NO;
-	// [textualInputCharacters removeCharactersInString:@" "];
-	// CGFloat maxWidth = [self frame].size.width;
-	// if([newFiltered count]>0)
-	// {
-	// 	for(i=0; i<[newFiltered count]; i++)
-	// 	{
-	// 		if(dictMode)
-	// 			item = NSArrayObjectAtIndex(newFiltered, i);
-	// 		else
-	// 			item = [NSArrayObjectAtIndex(newFiltered, i) objectForKey:@"display"];
-	// 		// If space in suggestion add space to allowed input chars
-	// 		if(!spaceInSuggestion && [item rangeOfString:@" "].length) {
-	// 			[textualInputCharacters addCharactersInString:@" "];
-	// 			spaceInSuggestion = YES;
-	// 		}
-	// 
-	// 		if([item length]>maxLen)
-	// 			maxLen = [item length];
-	// 	}
-	// 	maxWidth = maxLen*16;
-	// 	maxWidth = (maxWidth>340) ? 340 : maxWidth;
-	// 	maxWidth = (maxWidth<20) ? 20 : maxWidth;
-	// }
-	// if(caretPos.y>=0 && (isAbove || caretPos.y<newHeight))
-	// {
-	// 	isAbove = YES;
-	// 	old.y = caretPos.y + (newHeight + [tableFont pointSize]*1.5);
-	// }
-	// if(caretPos.y<0 && (isAbove || (mainScreen.size.height-newHeight)<(caretPos.y*-1)))
-	// {
-	// 	old.y = caretPos.y + (newHeight + [tableFont pointSize]*1.5);
-	// }
-	
+	CGFloat newHeight   = ([theTableView rowHeight] + [theTableView intercellSpacing].height) * ((displayedRows) ? displayedRows : 1);
+
+	if(caretPos.y >= 0 && (isAbove || caretPos.y < newHeight))
+	{
+		isAbove = YES;
+		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5);
+	}
+	if(caretPos.y < 0 && (isAbove || ([self rectOfMainScreen].size.height-newHeight) < (caretPos.y*-1)))
+		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5);
+
 	// newHeight is currently the new height for theTableView, but we need to resize the whole window
 	// so here we use the difference in height to find the new height for the window
-	// newHeight = [[self contentView] frame].size.height + (newHeight - [theTableView frame].size.height);
-	[self setFrame:NSMakeRect(old.x, old.y-newHeight, 450, newHeight) display:YES];
+	[self setFrame:NSMakeRect(old.x, old.y-newHeight, maxWindowWidth, newHeight) display:YES];
+
 	if (filtered) [filtered release];
 	filtered = [newFiltered retain];
+	[newFiltered release];
 	[theTableView reloadData];
 }
 
@@ -498,6 +531,7 @@
 		}
 	}
 	[self close];
+	usleep(70); // tiny delay to suppress while continously pressing of ESC overlapping
 }
 
 // ==================
@@ -511,10 +545,7 @@
 
 	id cur = [filtered objectAtIndex:row];
 	NSString* curMatch;
-	if(dictMode)
-		curMatch = [NSString stringWithString:cur];
-	else
-		curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
+	curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
 	if([[self filterString] length] + 1 < [curMatch length])
 	{
 		NSString* prefix = [curMatch substringToIndex:[[self filterString] length] + 1];
@@ -523,10 +554,7 @@
 		{
 			id candidate = [filtered objectAtIndex:i];
 			NSString* candidateMatch;
-			if(dictMode)
-				candidateMatch = [filtered objectAtIndex:i];
-			else
-				candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
+			candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
 			if([candidateMatch hasPrefix:prefix])
 				[candidates addObject:candidateMatch];
 		}
@@ -557,7 +585,7 @@
 {
 	[theView setSelectedRange:theCharRange];
 	[theView insertText:aString];
-	// If completion was invoked inside backticks move caret out of the backticks
+	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode)
 		[theView performSelector:@selector(moveRight:)];
 }
@@ -567,30 +595,42 @@
 	if([theTableView selectedRow] == -1)
 		return;
 
-	if(dictMode){
-		[self insert_text:[[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease]];
-	} else {
-		NSMutableDictionary* selectedItem = [[[filtered objectAtIndex:[theTableView selectedRow]] mutableCopy] autorelease];
-		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
-		if( [[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask)) {
-			if([[selectedItem objectForKey:@"path"] length]) {
-				NSString *path = [NSString stringWithFormat:@"%@.%@", 
-					[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
-					[candidateMatch backtickQuotedString]];
+	NSDictionary* selectedItem = [filtered objectAtIndex:[theTableView selectedRow]];
 
-				// Check if path's db name is the current selected db name
-				NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
-				theCharRange = theParseRange;
-				backtickMode = 0; // suppress move the caret one step rightwards
-				if(path && [path length] && r.length) {
-					[self insert_text:[path substringFromIndex:r.length+1]];
-				} else {
-					[self insert_text:path];
-				}
+	if([selectedItem objectForKey:@"noCompletion"]) {
+		return;
+	}
+
+	if(dictMode){
+		[self insert_text:[selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"]];
+	} else {
+		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
+		if([selectedItem objectForKey:@"isRef"] 
+				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
+				&& [[selectedItem objectForKey:@"path"] length]) {
+			NSString *path = [NSString stringWithFormat:@"%@.%@", 
+				[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
+				[candidateMatch backtickQuotedString]];
+
+			// Check if path's db name is the current selected db name
+			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
+			theCharRange = theParseRange;
+			backtickMode = 0; // suppress move the caret one step rightwards
+			if(path && [path length] && r.length) {
+				[self insert_text:[path substringFromIndex:r.length+1]];
+			} else {
+				[self insert_text:path];
 			}
 		} else {
-			if([[self filterString] length] < [candidateMatch length])
-				[self insert_text:candidateMatch];
+			if([[self filterString] length] < [candidateMatch length]) {
+				// Is completion string a schema name for current connection
+				if([selectedItem objectForKey:@"isRef"]) {
+					backtickMode = 0; // suppress move the caret one step rightwards
+					[self insert_text:[candidateMatch backtickQuotedString]];
+				} else {
+					[self insert_text:candidateMatch];
+				}
+			}
 		}
 	}
 	closeMe = YES;

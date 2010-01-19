@@ -44,12 +44,15 @@
 	BOOL caseSensitive;
 	BOOL dictMode;
 	BOOL dbStructureMode;
+	BOOL noFilterString;
 	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
 	NSRange theParseRange;
-	NSArray *words;
+	NSString *theDbName;
 	id theView;
+	
+	NSInteger maxWindowWidth;
 	
 	NSMutableCharacterSet* textualInputCharacters;
 }

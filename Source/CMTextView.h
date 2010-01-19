@@ -69,7 +69,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
-- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
+// - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
 - (NSArray *) keywords;
 - (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
@@ -87,7 +87,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
-- (void) doCompletion;
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
 
