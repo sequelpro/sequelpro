@@ -206,7 +206,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(dbs != nil && [dbs count]) {
 			NSArray *allDbs = [dbs allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSMutableArray *sortedDbs = [NSMutableArray array];
+			NSMutableArray *sortedDbs = [[NSMutableArray array] autorelease];
 			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
 
 			NSString *currentDb = nil;
@@ -309,6 +309,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					}
 				}
 			}
+			if(desc) [desc release];
 		} else {
 			// Fallback for MySQL < 5 and if the data gathering is in progress
 			if(mySQLmajorVersion > 4)
@@ -364,7 +365,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	// No completion for a selection (yet?) and if caret positiopn == 0
-	if ([self selectedRange].length > 0 || ![self selectedRange].location) return;
+	if([self selectedRange].length > 0 || ![self selectedRange].location) return;
+
+	NSInteger caretPos = [self selectedRange].location;
+
+	// Check if caret is located after a ` - if so move caret inside
+	if([[self string] characterAtIndex:caretPos-1] == '`') {
+		if([[self string] length] > caretPos && [[self string] characterAtIndex:caretPos] == '`') {
+			;
+		} else {
+			caretPos--;
+			[self setSelectedRange:NSMakeRange(caretPos, 0)];
+		}
+	}
 
 	NSString* filter;
 	NSString* dbName        = nil;
@@ -395,7 +408,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		else
 			currentDb = @"";
 		
-		NSInteger caretPos = [self selectedRange].location;
 		BOOL caretIsInsideBackticks = NO;
 
 		// Is the caret inside backticks
@@ -445,7 +457,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					if(currentCharacter != '`' && currentCharacter != '.') break;
 					if(currentCharacter == '`') { // ignore `` 
 						backticksCounter++;
-						start-=2;
+						start--;
 					}
 				}
 			}
@@ -542,7 +554,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-	
+	[completionPopUp insertCommonPrefix];
+
 }
 
 

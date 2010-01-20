@@ -259,38 +259,6 @@
 	return [filtered count];
 }
 
-// ------- nstokenfield delegates -- does not work for menus due to the click event does not reach it -- why???
-// - (NSMenu *)tokenFieldCell:(NSTokenFieldCell *)tokenFieldCell menuForRepresentedObject:(id)representedObject
-// {
-// 	NSMenu *tokenMenu = [[[NSMenu alloc] init] autorelease];
-// 
-// 	if (!representedObject)
-// 		return nil;
-// 
-// 	NSMenuItem *artistItem = [[[NSMenuItem alloc] init] autorelease];
-// 	[artistItem setTitle:@"aaa"];
-// 	[tokenMenu addItem:artistItem];
-// 
-// 	NSMenuItem *albumItem = [[[NSMenuItem alloc] init] autorelease];
-// 	[albumItem setTitle:@"ksajdhkjas"];
-// 	[tokenMenu addItem:albumItem];
-// 
-// 
-// 		// NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:@"Show Album Art" action:@selector(showAlbumArt:) keyEquivalent:@""] autorelease];
-// 		// [mItem setTarget:self];
-// 		// [mItem setRepresentedObject:representedObject];
-// 		// [tokenMenu addItem:mItem];
-// 
-// 	return tokenMenu;
-// }
-// - (BOOL)tokenFieldCell:(NSTokenFieldCell *)tokenFieldCell hasMenuForRepresentedObject:(id)representedObject
-// {
-// 	return YES;
-// }
-// - (NSString *)tokenFieldCell:(NSTokenFieldCell *)tokenFieldCell displayStringForRepresentedObject:(id)representedObject
-// {
-// 	return representedObject;
-// }
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;
@@ -351,6 +319,20 @@
 	return [filtered objectAtIndex:rowIndex];
 }
 
+// ======================================================================================
+// = Check if at least one suggestion contains a “ ” - is so allow a “ ” to be typed in =
+// ======================================================================================
+- (void)checkSpaceForAllowedCharacter
+{
+	[textualInputCharacters removeCharactersInString:@" "];
+	for(id w in filtered){
+		if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length) {
+			[textualInputCharacters addCharactersInString:@" "];
+			break;
+		}
+	}
+}
+
 // ====================
 // = Filter the items =
 // ====================
@@ -366,9 +348,12 @@
 		else
 			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
 		[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
-		if(dictMode)
+		if(dictMode) {
 			for(id w in [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0])
 				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", nil]];
+		} else {
+			[self checkSpaceForAllowedCharacter];
+		}
 	}
 	else
 	{
@@ -489,22 +474,6 @@
 				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length-1);
 				[self filter];
 			}
-			else if(key == NSTabCharacter)
-			{
-				if([filtered count] == 0)
-				{
-					[NSApp sendEvent:event];
-					break;
-				}
-				else if([filtered count] == 1)
-				{
-					[self completeAndInsertSnippet];
-				}
-				else
-				{
-					[self insertCommonPrefix];
-				}
-			}
 			else if([textualInputCharacters characterIsMember:key])
 			{
 				[NSApp sendEvent:event];
@@ -512,6 +481,7 @@
 				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length+1);
 				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length+1);
 				[self filter];
+				[self insertCommonPrefix];
 			}
 			else
 			{
@@ -539,46 +509,39 @@
 // ==================
 - (void)insertCommonPrefix
 {
-	NSInteger row = [theTableView selectedRow];
-	if(row == -1)
+
+	if([theTableView selectedRow] == -1)
 		return;
 
-	id cur = [filtered objectAtIndex:row];
-	NSString* curMatch;
-	curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
-	if([[self filterString] length] + 1 < [curMatch length])
-	{
-		NSString* prefix = [curMatch substringToIndex:[[self filterString] length] + 1];
-		NSMutableArray* candidates = [NSMutableArray array];
-		for(NSInteger i = row; i < [filtered count]; ++i)
-		{
-			id candidate = [filtered objectAtIndex:i];
-			NSString* candidateMatch;
-			candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
-			if([candidateMatch hasPrefix:prefix])
-				[candidates addObject:candidateMatch];
-		}
+	id cur = [filtered objectAtIndex:0];
 
-		NSString* commonPrefix = curMatch;
+	if([cur objectForKey:@"noCompletion"]) return;
+
+	NSString* curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
+
+	if(![curMatch length]) return;
+
+	NSMutableArray* candidates = [NSMutableArray array];
+	NSMutableString *commonPrefix = [NSMutableString string];
+	[commonPrefix setString:curMatch];
+	for(id candidate in filtered) {
 		NSString* candidateMatch;
-		enumerate(candidates, candidateMatch)
-			commonPrefix = [commonPrefix commonPrefixWithString:candidateMatch options:NSLiteralSearch];
+		candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
+		NSString *tempPrefix = [candidateMatch commonPrefixWithString:commonPrefix options:NSCaseInsensitiveSearch];
+		// if(![tempPrefix length]) break;
+		if([commonPrefix length] > [tempPrefix length])
+			[commonPrefix setString:tempPrefix];
+	}
 
-		if([[self filterString] length] < [commonPrefix length])
-		{
-			[theView setSelectedRange:theCharRange];
-			[theView insertText:commonPrefix];
-			
-			NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
-			[mutablePrefix appendString:toInsert];
-			theCharRange = NSMakeRange(theCharRange.location,[commonPrefix length]);
-			[self filter];
-		}
-	}
-	else
-	{
-		[self completeAndInsertSnippet];
-	}
+	// if(![commonPrefix length]) return;
+
+	NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
+	[mutablePrefix appendString:toInsert];
+	theCharRange.length += [toInsert length];
+	theParseRange.length += [toInsert length];
+	[theView insertText:[toInsert lowercaseString]];
+	[self checkSpaceForAllowedCharacter];
+
 }
 
 - (void)insert_text:(NSString* )aString
@@ -592,14 +555,11 @@
 
 - (void)completeAndInsertSnippet
 {
-	if([theTableView selectedRow] == -1)
-		return;
+	if([theTableView selectedRow] == -1) return;
 
 	NSDictionary* selectedItem = [filtered objectAtIndex:[theTableView selectedRow]];
 
-	if([selectedItem objectForKey:@"noCompletion"]) {
-		return;
-	}
+	if([selectedItem objectForKey:@"noCompletion"]) return;
 
 	if(dictMode){
 		[self insert_text:[selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"]];
@@ -622,14 +582,12 @@
 				[self insert_text:path];
 			}
 		} else {
-			if([[self filterString] length] < [candidateMatch length]) {
-				// Is completion string a schema name for current connection
-				if([selectedItem objectForKey:@"isRef"]) {
-					backtickMode = 0; // suppress move the caret one step rightwards
-					[self insert_text:[candidateMatch backtickQuotedString]];
-				} else {
-					[self insert_text:candidateMatch];
-				}
+			// Is completion string a schema name for current connection
+			if([selectedItem objectForKey:@"isRef"]) {
+				backtickMode = 0; // suppress move the caret one step rightwards
+				[self insert_text:[candidateMatch backtickQuotedString]];
+			} else {
+				[self insert_text:candidateMatch];
 			}
 		}
 	}

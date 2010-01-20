@@ -64,5 +64,6 @@
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
+- (void)insertCommonPrefix;
 
 @end
