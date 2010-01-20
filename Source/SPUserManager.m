@@ -671,7 +671,7 @@
 										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
 			
 			// Create user in database
-			[self.mySqlConnection queryString:[NSString stringWithFormat:createStatement]];
+			[self.mySqlConnection queryString:createStatement];
 			
 			if ([self checkAndDisplayMySqlError]) {
 				[self grantPrivilegesToUser:user];
@@ -702,9 +702,9 @@
 			// in a try/catch check to avoid exceptions for unhandled privs
 			@try {
 				if ([[user valueForKey:key] boolValue] == TRUE) {
-					[grantPrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
+					[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				} else {
-					[revokePrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
+					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				}
 			}
 			@catch (NSException * e) {
@@ -718,7 +718,7 @@
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", grantStatement);
-			[self.mySqlConnection queryString:[NSString stringWithFormat:grantStatement]];
+			[self.mySqlConnection queryString:grantStatement];
 			[self checkAndDisplayMySqlError];
 		}
 		
@@ -730,7 +730,7 @@
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", revokeStatement);
-			[self.mySqlConnection queryString:[NSString stringWithFormat:revokeStatement]];
+			[self.mySqlConnection queryString:revokeStatement];
 			[self checkAndDisplayMySqlError];
 		}		
 	}

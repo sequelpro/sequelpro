@@ -29,6 +29,7 @@
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @interface SPTableRelations (PrivateAPI)
 
@@ -135,7 +136,7 @@
 		
 	// 0 indicates success
 	if (retCode) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
@@ -366,7 +367,7 @@
 				
 				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
 					
-					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	

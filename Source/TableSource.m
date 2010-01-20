@@ -31,6 +31,7 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @interface TableSource (PrivateAPI)
 
@@ -777,14 +778,14 @@ fetches the result as an array with a dictionary for each row in it
 		
 		// Problem: alert sheet doesn't respond to first click
 		if (isEditingNewRow) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
 							  NSLocalizedString(@"Edit row", @"Edit row button"), 
 							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@'.\n\nMySQL said: %@", @"error adding field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		} 
 		else {
-			NSBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"), 
 							  NSLocalizedString(@"Edit row", @"Edit row button"), 
 							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@'.\n\nMySQL said: %@", @"error changing field informative message"), 
@@ -802,7 +803,7 @@ fetches the result as an array with a dictionary for each row in it
 -(void)showErrorSheetWith:(id)error
 {
 	// error := first object is the title , second the message, only one button OK
-	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
 			nil, nil, tableWindow, self, nil, nil, nil,
 			[error objectAtIndex:1]);
 }
@@ -1228,7 +1229,7 @@ would result in a position change.
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
 	} else {
 		[tableDataInstance resetAllData];
@@ -1496,7 +1497,7 @@ would result in a position change.
 			[self loadTable:selectedTable];
 		}
 		else {
-			NSBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
 		}
 	}
@@ -1529,7 +1530,7 @@ would result in a position change.
 		
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			
-			NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), relationName, [mySQLConnection getLastErrorMessage]]);	
@@ -1588,7 +1589,7 @@ would result in a position change.
 		
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			
-			NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]]);	

@@ -37,6 +37,7 @@
 #import "NSMutableArray-MultipleSort.h"
 #import "NSNotificationAdditions.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @interface TablesList (PrivateAPI)
 
@@ -1221,7 +1222,7 @@
 	else if ([anObject isEqualToString:@""]) {
 		// Table has no name
 		alertSheetOpened = YES;
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Empty names are not allowed.", @"message of panel when no name is given for an item"));
 	} 
 	else {
@@ -1253,7 +1254,7 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
-					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 									  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving create syntax for '%@'.\n\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
 
@@ -1318,7 +1319,7 @@
 		else {
 			// Error while renaming
 			alertSheetOpened = YES;
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 							  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"),
 							  anObject, [mySQLConnection getLastErrorMessage]]);
@@ -1888,10 +1889,6 @@
 		
 		// Couldn't truncate table
 		if (![[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
-			// NSBeginAlertSheet(NSLocalizedString(@"Error truncating table", @"error truncating table message"), 
-			// 				  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil,
-			// 				  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]);
-
 			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error truncating table", @"error truncating table message") 
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
@@ -1973,7 +1970,7 @@
 		// Error while creating new table
 		alertSheetOpened = YES;
 		
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
 						   tableName, [mySQLConnection getLastErrorMessage]]);
@@ -1993,7 +1990,7 @@
 	NSString *tableType;
 	
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 		return;
 	}
 	
@@ -2029,7 +2026,7 @@
 
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 		
     } else {
@@ -2073,7 +2070,7 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
-					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
 				}
 				return;
@@ -2086,7 +2083,7 @@
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 			
@@ -2095,7 +2092,7 @@
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
@@ -2108,7 +2105,7 @@
 											  ]];
 				
                 if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-                    NSBeginAlertSheet(
+                    SPBeginAlertSheet(
 									  NSLocalizedString(@"Warning", @"warning"),
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil,
@@ -2170,7 +2167,7 @@
 		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[self tableName] backtickQuotedString], [[tableRenameField stringValue] backtickQuotedString]]];
 		
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while renaming table '%@'.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
 		}
@@ -2200,7 +2197,7 @@
 		// Check for errors, only displaying if the connection hasn't been terminated
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 			if ([mySQLConnection isConnected]) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 								  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving create syntax for '%@'.\n\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), [self tableName], [mySQLConnection getLastErrorMessage]]);
 			}
@@ -2235,7 +2232,7 @@
 			}
 		}
 		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [self tableName], [mySQLConnection getLastErrorMessage]]);
 		} else {
 			if (isTableListFiltered) {

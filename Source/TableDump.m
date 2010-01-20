@@ -37,6 +37,7 @@
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @implementation TableDump
 
@@ -282,7 +283,7 @@
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:exportFile] ) {
 		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:exportFile]
 			|| !(fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile]) ) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			[pool release];
 			return;
@@ -294,7 +295,7 @@
 		// Otherwise attempt to create a file
 	} else {
 		if ( ![[NSFileManager defaultManager] createFileAtPath:exportFile contents:[NSData data] attributes:nil] ) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			[pool release];
 			return;
@@ -304,7 +305,7 @@
 		fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile];
 		if ( !fileHandle ) {
 			[[NSFileManager defaultManager] removeFileAtPath:exportFile handler:nil];
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			[pool release];
 			return;
@@ -434,7 +435,7 @@
 
 	// Display error message on problems
 	if ( !progressCancelled && !success ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 	}
 
@@ -568,7 +569,7 @@
 	// Open a filehandle for the SQL file
 	sqlFileHandle = [NSFileHandle fileHandleForReadingAtPath:filename];
 	if (!sqlFileHandle) {
-		NSBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
+		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
 						  nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"SQL file open error", @"The SQL file you selected could not be found or read."));
@@ -608,7 +609,7 @@
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
 			[self closeAndStopProgressSheet];
-			NSBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
+			SPBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"SQL read error", @"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)"), (long)queriesPerformed, [exception reason]]);
@@ -656,7 +657,7 @@
 													  encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
 					if (!sqlString) {
 						[self closeAndStopProgressSheet];
-						NSBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
+						SPBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 										  NSLocalizedString(@"OK", @"OK button"),
 										  nil, nil, tableWindow, self, nil, nil, nil,
 										  [NSString stringWithFormat:NSLocalizedString(@"SQL encoding read error", @"An error occurred when reading the file, as it could not be read in either UTF-8 or %@.\n\nOnly %ld queries were executed."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)queriesPerformed]);
@@ -808,7 +809,7 @@
 	// Open a filehandle for the CSV file
 	csvFileHandle = [NSFileHandle fileHandleForReadingAtPath:filename];
 	if (!csvFileHandle) {
-		NSBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
+		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
 						  nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"CSV file open error", @"The CSV file you selected could not be found or read."));
@@ -866,7 +867,7 @@
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
 			[self closeAndStopProgressSheet];
-			NSBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
+			SPBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"CSV read error", @"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)"), (long)rowsImported, [exception reason]]);
@@ -906,7 +907,7 @@
 				csvString = [[NSString alloc] initWithData:[csvDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)] encoding:csvEncoding];
 				if (!csvString) {
 					[self closeAndStopProgressSheet];
-					NSBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
+					SPBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, tableWindow, self, nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"CSV encoding read error", @"An error occurred when reading the file, as it could not be read using %@.\n\nOnly %ld rows were imported."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)rowsImported]);
@@ -1126,7 +1127,7 @@
 	// Ensure data was provided, or alert than an import error occurred and return false.
 	if (![importData count]) {
 		[self closeAndStopProgressSheet];
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
@@ -1139,7 +1140,7 @@
 	// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
 	if ([[importData objectAtIndex:0] count] > 512) {
 		[self closeAndStopProgressSheet];
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
@@ -1157,7 +1158,7 @@
 	// If there's no tables to select, error
 	if (![[fieldMappingPopup itemArray] count]) {
 		[self closeAndStopProgressSheet];
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,

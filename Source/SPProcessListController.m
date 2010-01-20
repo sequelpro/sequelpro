@@ -29,6 +29,7 @@
 #import "SPArrayAdditions.h"
 #import "TableDocument.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @interface SPProcessListController (PrivateAPI)
 
@@ -447,7 +448,7 @@
 	
 	// Check for errors
 	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
 	}
 	
@@ -465,7 +466,7 @@
 	
 	// Check for errors
 	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
 	}
 	
