@@ -47,6 +47,7 @@
 	BOOL fuzzyMode;
 	BOOL noFilterString;
 	BOOL cursorMovedLeft;
+	BOOL commaInsertionMode;
 	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;

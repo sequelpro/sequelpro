@@ -304,7 +304,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
 								NSString *typ = [theTable objectForKey:field];
-								if(typ && [typ hasPrefix:@"set("] || [typ hasPrefix:@"enum("]) {
+								// Check if type definition contains a , if so replace the bracket content by … and add 
+								// the bracket content as "list" key to prevend the token field to split them by ,
+								if(typ && [typ rangeOfString:@","].length) {
 									NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
 									NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -541,7 +543,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			if(fuzzySearch) {
 				filter = [[NSString stringWithString:[[self string] substringWithRange:parseRange]] stringByReplacingOccurrencesOfString:@"`" withString:@""];
-				if([filter length]>15) return;
 				completionRange = parseRange;
 			}
 
@@ -814,10 +815,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53){ // ESC key for internal completion
-		// if(curFlags==(NSControlKeyMask))
-		// 	[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
-		// else
-		[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+		if(curFlags==(NSControlKeyMask))
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+		else
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
 		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
 		if(![self selectedRange].length && [self selectedRange].location)
 			[[self textStorage] removeAttribute:kSQLkeyword range:[self getRangeForCurrentWord]];

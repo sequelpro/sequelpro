@@ -33,6 +33,7 @@
 #import "SPStringAdditions.h"
 #import "ImageAndTextCell.h"
 #import "SPConstants.h"
+#import "RegexKitLite.h"
 #include <tgmath.h>
 
 @interface NSTableView (MovingSelectedRow)
@@ -151,6 +152,7 @@
 		dbStructureMode = theDbMode;
 		cursorMovedLeft = caretMovedLeft;
 		backtickMode = theBackTickMode;
+		commaInsertionMode = NO;
 
 		if(aStaticPrefix)
 			staticPrefix = [aStaticPrefix retain];
@@ -299,6 +301,9 @@
 				[b setAltersStateOfSelectedItem:NO];
 				[b setControlSize:NSMiniControlSize];
 				NSMenu *m = [[NSMenu alloc] init];
+				NSMenuItem *aMenuItem = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Type Declaration:", @"type declaration header") action:NULL keyEquivalent:@""] autorelease];
+				[aMenuItem setEnabled:NO];
+				[m addItem:aMenuItem];
 				[m addItemWithTitle:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"] action:NULL keyEquivalent:@""];
 				[b setMenu:m];
 				[m release];
@@ -385,38 +390,45 @@
 				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", nil]];
 		} else {
 			@try{
-			NSPredicate* predicate;
-			if(fuzzyMode) {
-				NSMutableString *fuzzyRegexp = [[NSMutableString alloc] initWithCapacity:3];
-				[fuzzyRegexp setString:@".*"];
-				NSInteger i;
-				unichar c;
-				for(i=0; i<[[self filterString] length]; i++) {
-					if(i>20) break;
-					c = [[self filterString] characterAtIndex:i];
-					if(c != '`') {
-						if(c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
-							[fuzzyRegexp appendString:[NSString stringWithFormat:@"\\%c.*",c]];
-						else
-							[fuzzyRegexp appendString:[NSString stringWithFormat:@"%c.*",c]];
+				if(fuzzyMode) { // eg filter = "inf" this regexp search will be performed: (?i).*?i.*?n.*?f
+
+					NSMutableString *fuzzyRegexp = [[NSMutableString alloc] initWithCapacity:3];
+					NSInteger i;
+					unichar c;
+
+					if(!caseSensitive)
+						[fuzzyRegexp setString:@"(?i)"];
+
+					for(i=0; i<[[self filterString] length]; i++) {
+						c = [[self filterString] characterAtIndex:i];
+						if(c != '`') {
+							if(c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
+								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?\\%c",c]];
+							else
+								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%c",c]];
+						}
 					}
+
+					for(id s in suggestions)
+						if([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"isRef"] isMatchedByRegex:fuzzyRegexp])
+							[newFiltered addObject:s];
+
+
+					[fuzzyRegexp release];
+
+				} else {
+					NSPredicate* predicate;
+					if(caseSensitive)
+						predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
+					else
+						predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
+					[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
 				}
-				// NSLog(@"re %@", fuzzyRegexp);
-				if(caseSensitive)
-					predicate = [NSPredicate predicateWithFormat:@"display MATCHES %@ OR isRef MATCHES %@", fuzzyRegexp, fuzzyRegexp];
-				else
-					predicate = [NSPredicate predicateWithFormat:@"display MATCHES[c] %@ OR isRef MATCHES[c] %@", fuzzyRegexp, fuzzyRegexp];
-				[fuzzyRegexp release];
-			} else {
-				if(caseSensitive)
-					predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
-				else
-					predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
-			}
-			[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
 			}
 			@catch(id ae) {
+				if(newFiltered) [newFiltered release];
 				NSLog(@"%@", @"Couldn't filter suggestion due to internal regexp error");
+				closeMe = YES;
 			}
 			
 		}
@@ -513,19 +525,29 @@
 			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0)
 			{
 				[NSApp sendEvent: event];
+
+				if(commaInsertionMode)
+					break;
+
 				[mutablePrefix appendString:[event characters]];
 				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length+[[event characters] length]);
 				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length+[[event characters] length]);
 				[self filter];
 			}
-			else if((flags & NSControlKeyMask) || (flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
+			else if((flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
 			{
 				[NSApp sendEvent:event];
 				break;
 			}
 			else if([event keyCode] == 53) // escape
 			{
-				break;
+				if(flags & NSControlKeyMask) {
+					fuzzyMode = YES;
+					[theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
+					[self filter];
+				} else {
+					break;
+				}
 			}
 			else if(key == NSCarriageReturnCharacter || key == NSTabCharacter)
 			{
@@ -534,20 +556,24 @@
 			else if(key == NSBackspaceCharacter || key == NSDeleteCharacter)
 			{
 				[NSApp sendEvent:event];
-				if([mutablePrefix length] == 0)
+				if([mutablePrefix length] == 0 || commaInsertionMode)
 					break;
 
 				[mutablePrefix deleteCharactersInRange:NSMakeRange([mutablePrefix length]-1, 1)];
-				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length-1);
-				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length-1);
+				theCharRange.length--;
+				theParseRange.length--;
 				[self filter];
 			}
 			else if([textualInputCharacters characterIsMember:key])
 			{
 				[NSApp sendEvent:event];
+
+				if(commaInsertionMode)
+					break;
+
 				[mutablePrefix appendString:[event characters]];
-				theCharRange = NSMakeRange(theCharRange.location, theCharRange.length+1);
-				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length+1);
+				theCharRange.length++;
+				theParseRange.length++;
 				[self filter];
 				[self insertCommonPrefix];
 			}
@@ -663,7 +689,17 @@
 			}
 		}
 	}
-	closeMe = YES;
+	
+	// Pressing CTRL while inserting an item the suggestion list keeps open
+	// to allow to add more field/table names comma separated
+	if([selectedItem objectForKey:@"isRef"] && [[NSApp currentEvent] modifierFlags] & (NSControlKeyMask)) {
+		[theView insertText:@", "];
+		theCharRange = [theView selectedRange];
+		theParseRange = [theView selectedRange];
+		commaInsertionMode = YES;
+	} else {
+		closeMe = YES;
+	}
 }
 
 @end
