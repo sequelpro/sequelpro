@@ -823,6 +823,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53){ // ESC key for internal completion
+		[self breakUndoCoalescing];
 		if(curFlags==(NSControlKeyMask))
 			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
 		else
