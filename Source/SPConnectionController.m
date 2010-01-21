@@ -204,6 +204,9 @@
 	if (delegate && [delegate respondsToSelector:@selector(connectionControllerInitiatingConnection:)]) {
 		[delegate connectionControllerInitiatingConnection:self];
 	}
+	
+	// Trim whitespace and newlines from the host field before attempting to connect
+	[self setHost:[[self host] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 
 	// Initiate the SSH connection process for tunnels
 	if ([self type] == SPSSHTunnelConnection) {
@@ -224,6 +227,9 @@
 {
 	[progressIndicatorText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
 	[progressIndicatorText display];
+	
+	// Trim whitespace and newlines from the SSH host field before attempting to connect
+	[self setSshHost:[[self sshHost] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 
 	// Set up the tunnel details
 	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:([[self sshPort] length]?[[self sshPort] integerValue]:22) login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] integerValue]:3306) onHost:[self host]];
