@@ -268,7 +268,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the range is out of bounds
-	if (rangeToRemove.location + rangeToRemove.length >= numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (rangeToRemove.location + rangeToRemove.length > numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
 
 	// Free rows in the range
 	NSUInteger i, j = numColumns;
