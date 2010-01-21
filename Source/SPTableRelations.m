@@ -115,9 +115,9 @@
 	
 	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD FOREIGN KEY (%@) REFERENCES %@ (%@)", 
 												[thisTable backtickQuotedString],
-												thisColumn,
+												[thisColumn backtickQuotedString],
 												[thatTable backtickQuotedString],
-												thatColumn];
+												[thatColumn backtickQuotedString]];
 	
 	// If required add ON DELETE
 	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
@@ -176,7 +176,7 @@
 	[refTablePopUpButton removeAllItems];
 	
 	// Get all InnoDB tables in the current database
-	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = '%@'", [tableDocumentInstance database]]];
+	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
 	
 	[result dataSeek:0];
 	
