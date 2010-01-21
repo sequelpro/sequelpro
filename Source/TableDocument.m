@@ -1143,12 +1143,20 @@
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		}
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _addDatabase];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		} else {
 			// reset chooseDatabaseButton
 			if([[self database] length])

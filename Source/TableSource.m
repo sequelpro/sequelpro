@@ -771,6 +771,9 @@ fetches the result as an array with a dictionary for each row in it
 		// Mark the content table for refresh
 		[tablesListInstance setContentRequiresReload:YES];
 
+		// Query the structure of all databases in the background (mainly for completion)
+		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		return YES;
 	} 
 	else {

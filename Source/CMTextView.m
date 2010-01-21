@@ -204,7 +204,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
 		if(dbs != nil && [dbs count]) {
-			NSArray *allDbs = [dbs allKeys];
+			NSMutableArray *allDbs = [[NSMutableArray array] autorelease];
+			[allDbs addObjectsFromArray:[dbs allKeys]];
+
+			// Add database names having no tables since they don't appear in the information_schema
+			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"] != nil)
+				for(id db in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
+					if(![allDbs containsObject:db])
+						[allDbs addObject:db];
+
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [[NSMutableArray array] autorelease];
 			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];

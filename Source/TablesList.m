@@ -1315,7 +1315,10 @@
 			// Set window title
 			[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
-		} 
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
+		}
 		else {
 			// Error while renaming
 			alertSheetOpened = YES;
@@ -1871,6 +1874,10 @@
 	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
 	[tablesListView deselectAll:self];
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 }
 
 /**
@@ -1965,6 +1972,10 @@
 		[self updateFilter:self];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+
+		// Query the structure of all databases in the background (mainly for completion)
+		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 	} 
 	else {
 		// Error while creating new table
@@ -2154,6 +2165,10 @@
 			[self updateFilter:self];
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		}
 	}
 }
@@ -2181,6 +2196,10 @@
 			selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
 			[tablesListView reloadData];
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 			return;
 		}
 	} else {
@@ -2243,12 +2262,17 @@
 			selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
 			[tablesListView reloadData];
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 			return;
 		}
 	}
 	
 	// Set window title
 	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+
 }
 
 /*
