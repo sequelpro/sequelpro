@@ -131,8 +131,9 @@
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
-	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode
-	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb
+	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode fuzzySearch:(BOOL)fuzzySearch
+	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft
 {
 	if(self = [self init])
 	{
@@ -141,8 +142,14 @@
 		if(aUserString)
 			[mutablePrefix appendString:aUserString];
 
+		fuzzyMode = fuzzySearch;
+		if(fuzzyMode)
+			[theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
+		else
+			[theTableView setBackgroundColor:[NSColor whiteColor]];
+
 		dbStructureMode = theDbMode;
-		
+		cursorMovedLeft = caretMovedLeft;
 		backtickMode = theBackTickMode;
 
 		if(aStaticPrefix)
@@ -202,7 +209,7 @@
 - (void)setupInterface
 {
 	[self setReleasedWhenClosed:YES];
-	[self setLevel:NSStatusWindowLevel];
+	[self setLevel:NSNormalWindowLevel];
 	[self setHidesOnDeactivate:YES];
 	[self setHasShadow:YES];
 	[self setAlphaValue:0.9];
@@ -233,17 +240,21 @@
 	[theTableView addTableColumn:column1];
 	[column1 setWidth:170];
 
-	NSTableColumn *column2 = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
-	[column2 setEditable:NO];
-	[[column2 dataCell] setTextColor:[NSColor darkGrayColor]];
-	[theTableView addTableColumn:column2];
-	[column2 setWidth:145];
-
-	NSTableColumn *column3 = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
+	NSTableColumn *column3 = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
 	[column3 setEditable:NO];
-	[[column3 dataCell] setTextColor:[NSColor darkGrayColor]];
 	[theTableView addTableColumn:column3];
-	[column3 setWidth:95];
+	[column3 setWidth:139];
+
+	NSTableColumn *column2 = [[[NSTableColumn alloc] initWithIdentifier:@"list"] autorelease];
+	[column2 setEditable:NO];
+	[theTableView addTableColumn:column2];
+	[column0 setMinWidth:0];
+	[column2 setWidth:6];
+
+	NSTableColumn *column4 = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
+	[column4 setEditable:NO];
+	[theTableView addTableColumn:column4];
+	[column4 setWidth:95];
 
 	[theTableView setDataSource:self];
 	[scrollView setDocumentView:theTableView];
@@ -274,7 +285,33 @@
 		return @"";
 
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		// NSTextFieldCell *b = [[[NSTextFieldCell new] initTextCell:[[filtered objectAtIndex:rowIndex] objectForKey:@"display"]] autorelease];
+		[[aTableColumn dataCell] setFont:[NSFont systemFontOfSize:12]];
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+
+	} else if ([[aTableColumn identifier] isEqualToString:@"list"]) {
+		if(dictMode) {
+			return @"";
+		} else {
+			if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
+				NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+				[b setPullsDown:NO];
+				[b setAltersStateOfSelectedItem:NO];
+				[b setControlSize:NSMiniControlSize];
+				NSMenu *m = [[NSMenu alloc] init];
+				[m addItemWithTitle:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"] action:NULL keyEquivalent:@""];
+				[b setMenu:m];
+				[m release];
+				[b setPreferredEdge:NSMinXEdge];
+				[b setArrowPosition:NSPopUpArrowAtCenter];
+				[b setFont:[NSFont systemFontOfSize:11]];
+				[b setBordered:NO];
+				[aTableColumn setDataCell:b];
+			} else {
+				[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
+			}
+			return @"";
+		}
 
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
 		if(dictMode) {
@@ -284,6 +321,7 @@
 			// return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
 			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""] autorelease];
 			[b setEditable:NO];
+			[b setAlignment:NSRightTextAlignment];
 			[b setFont:[NSFont systemFontOfSize:11]];
 			[b setDelegate:self];
 			return b;
@@ -342,17 +380,45 @@
 	NSMutableArray* newFiltered = [[NSMutableArray alloc] initWithCapacity:5];
 	if([mutablePrefix length] > 0)
 	{
-		NSPredicate* predicate;
-		if(caseSensitive)
-			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
-		else
-			predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
-		[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
 		if(dictMode) {
 			for(id w in [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0])
 				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", nil]];
 		} else {
-			[self checkSpaceForAllowedCharacter];
+			@try{
+			NSPredicate* predicate;
+			if(fuzzyMode) {
+				NSMutableString *fuzzyRegexp = [[NSMutableString alloc] initWithCapacity:3];
+				[fuzzyRegexp setString:@".*"];
+				NSInteger i;
+				unichar c;
+				for(i=0; i<[[self filterString] length]; i++) {
+					if(i>20) break;
+					c = [[self filterString] characterAtIndex:i];
+					if(c != '`') {
+						if(c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
+							[fuzzyRegexp appendString:[NSString stringWithFormat:@"\\%c.*",c]];
+						else
+							[fuzzyRegexp appendString:[NSString stringWithFormat:@"%c.*",c]];
+					}
+				}
+				// NSLog(@"re %@", fuzzyRegexp);
+				if(caseSensitive)
+					predicate = [NSPredicate predicateWithFormat:@"display MATCHES %@ OR isRef MATCHES %@", fuzzyRegexp, fuzzyRegexp];
+				else
+					predicate = [NSPredicate predicateWithFormat:@"display MATCHES[c] %@ OR isRef MATCHES[c] %@", fuzzyRegexp, fuzzyRegexp];
+				[fuzzyRegexp release];
+			} else {
+				if(caseSensitive)
+					predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
+				else
+					predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
+			}
+			[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
+			}
+			@catch(id ae) {
+				NSLog(@"%@", @"Couldn't filter suggestion due to internal regexp error");
+			}
+			
 		}
 	}
 	else
@@ -384,6 +450,8 @@
 	if (filtered) [filtered release];
 	filtered = [newFiltered retain];
 	[newFiltered release];
+	if(!dictMode)
+		[self checkSpaceForAllowedCharacter];
 	[theTableView reloadData];
 }
 
@@ -459,7 +527,7 @@
 			{
 				break;
 			}
-			else if(key == NSCarriageReturnCharacter)
+			else if(key == NSCarriageReturnCharacter || key == NSTabCharacter)
 			{
 				[self completeAndInsertSnippet];
 			}
@@ -491,15 +559,20 @@
 		}
 		else if(t == NSRightMouseDown || t == NSLeftMouseDown)
 		{
-			[NSApp sendEvent:event];
-			if(!NSPointInRect([NSEvent mouseLocation], [self frame]))
-				break;
+			if(([event clickCount] == 2)) {
+				[self completeAndInsertSnippet];
+			} else {
+				[NSApp sendEvent:event];
+				if(!NSPointInRect([NSEvent mouseLocation], [self frame]))
+					break;
+			}
 		}
 		else
 		{
 			[NSApp sendEvent:event];
 		}
 	}
+	if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 	[self close];
 	usleep(70); // tiny delay to suppress while continously pressing of ESC overlapping
 }
@@ -510,7 +583,7 @@
 - (void)insertCommonPrefix
 {
 
-	if([theTableView selectedRow] == -1)
+	if([theTableView selectedRow] == -1 || fuzzyMode)
 		return;
 
 	id cur = [filtered objectAtIndex:0];
@@ -521,7 +594,6 @@
 
 	if(![curMatch length]) return;
 
-	NSMutableArray* candidates = [NSMutableArray array];
 	NSMutableString *commonPrefix = [NSMutableString string];
 	[commonPrefix setString:curMatch];
 	for(id candidate in filtered) {

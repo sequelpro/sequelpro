@@ -87,7 +87,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode;
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
 

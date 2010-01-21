@@ -270,7 +270,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				if(aTableNameExists) {
 					[sortedTables addObject:aTableName];
 				} else {
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", db, @"isRef", nil]];
 					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
 					if([sortedTables count] > 1 && [sortedTables containsObject:currentTable]) {
 						[sortedTables removeObject:currentTable];
@@ -285,17 +285,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					if(!aTableNameExists)
 						switch(structtype) {
 							case 0:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", @"", @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
 							break;
 							case 1:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", @"", @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
 							break;
 							case 2:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
 							breakFlag = YES;
 							break;
 							case 3:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
 							breakFlag = YES;
 							break;
 						}
@@ -303,7 +303,27 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
-								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:field, @"display", @"field-small-square", @"image", [NSString stringWithFormat:@"%@⇠%@",table,db], @"path", [theTable objectForKey:field], @"type", @"", @"isRef", nil]];
+								NSString *typ = [theTable objectForKey:field];
+								if(typ && [typ hasPrefix:@"set("] || [typ hasPrefix:@"enum("]) {
+									NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
+									NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
+									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+										field, @"display", 
+										@"field-small-square", @"image", 
+										[NSString stringWithFormat:@"%@⇠%@",table,db], @"path", 
+										t, @"type", 
+										lst, @"list", 
+										[NSString stringWithFormat:@"%@.%@.%@",db,table,field], @"isRef", 
+										nil]];
+								} else {
+									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+										field, @"display", 
+										@"field-small-square", @"image", 
+										[NSString stringWithFormat:@"%@⇠%@",table,db], @"path", 
+										typ, @"type", 
+										[NSString stringWithFormat:@"%@.%@.%@",db,table,field], @"isRef", 
+										nil]];
+								}
 							}
 						}
 					}
@@ -361,13 +381,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch
 {
 
 	// No completion for a selection (yet?) and if caret positiopn == 0
 	if([self selectedRange].length > 0 || ![self selectedRange].location) return;
 
 	NSInteger caretPos = [self selectedRange].location;
+	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
 	if([[self string] characterAtIndex:caretPos-1] == '`') {
@@ -375,6 +396,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			;
 		} else {
 			caretPos--;
+			caretMovedLeft = YES;
 			[self setSelectedRange:NSMakeRange(caretPos, 0)];
 		}
 	}
@@ -517,6 +539,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				tableName = [tableName substringFromIndex:2];
 			}
 
+			if(fuzzySearch) {
+				filter = [[NSString stringWithString:[[self string] substringWithRange:parseRange]] stringByReplacingOccurrencesOfString:@"`" withString:@""];
+				if([filter length]>15) return;
+				completionRange = parseRange;
+			}
+
 		} else {
 			filter = [NSString stringWithString:currentWord];
 		}
@@ -534,10 +562,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					inView:self
 					dictMode:isDictMode
 					dbMode:dbBrowseMode
+					fuzzySearch:fuzzySearch
 					backtickMode:backtickMode
 					withDbName:dbName
 					withTableName:tableName
-					selectedDb:currentDb];
+					selectedDb:currentDb
+					caretMovedLeft:caretMovedLeft];
 	
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
@@ -784,14 +814,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53){ // ESC key for internal completion
-		[self doCompletionByUsingSpellChecker:NO];
+		// if(curFlags==(NSControlKeyMask))
+		// 	[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+		// else
+		[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
 		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
 		if(![self selectedRange].length && [self selectedRange].location)
 			[[self textStorage] removeAttribute:kSQLkeyword range:[self getRangeForCurrentWord]];
 		return;
 	}
 	if (insertedCharacter == NSF5FunctionKey){ // F5 for completion based on spell checker
-		[self doCompletionByUsingSpellChecker:YES];
+		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
 		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
 		if(![self selectedRange].length && [self selectedRange].location)
 			[[self textStorage] removeAttribute:kSQLkeyword range:[self getRangeForCurrentWord]];

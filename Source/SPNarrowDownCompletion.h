@@ -44,12 +44,15 @@
 	BOOL caseSensitive;
 	BOOL dictMode;
 	BOOL dbStructureMode;
+	BOOL fuzzyMode;
 	BOOL noFilterString;
+	BOOL cursorMovedLeft;
 	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
 	NSRange theParseRange;
 	NSString *theDbName;
+
 	id theView;
 	
 	NSInteger maxWindowWidth;
@@ -60,8 +63,9 @@
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
-	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode 
-	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName selectedDb:(NSString*)selectedDb;
+	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode fuzzySearch:(BOOL)fuzzySearch 
+	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertCommonPrefix;
