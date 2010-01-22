@@ -169,13 +169,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
-		// Only parse for words if text size is less than 6MB
-		if([[self string] length] && [[self string] length]<6000000)
+		// Only parse for words if text size is less than 60kB
+		if([[self string] length] && [[self string] length]<60000)
 		{
-			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@."];
-
 			NSMutableArray *uniqueArray = [NSMutableArray array];
-			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
+			[uniqueArray addObjectsFromArray:[NSSet setWithArray:[[self string] componentsMatchedByRegex:@"\\w+"]]];
 
 			// Remove current word from list
 			[uniqueArray removeObject:currentWord];
@@ -397,6 +395,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// No completion for a selection (yet?) and if caret positiopn == 0
 	if([self selectedRange].length > 0 || ![self selectedRange].location) return;
 
+	[self breakUndoCoalescing];
+
 	NSInteger caretPos = [self selectedRange].location;
 	BOOL caretMovedLeft = NO;
 
@@ -430,6 +430,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL dbBrowseMode = NO;
 	NSInteger backtickMode = 0; // 0 none, 1 rigth only, 2 left only, 3 both
 	BOOL caseInsensitive = YES;
+
+	// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
+	if(![self selectedRange].length && [self selectedRange].location)
+		[[self textStorage] removeAttribute:kSQLkeyword range:completionRange];
+
 
 	if(!isDictMode) {
 
@@ -822,22 +827,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if ([theEvent keyCode] == 53){ // ESC key for internal completion
-		[self breakUndoCoalescing];
+	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
 		if(curFlags==(NSControlKeyMask))
 			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
 		else
 			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
-		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
-		if(![self selectedRange].length && [self selectedRange].location)
-			[[self textStorage] removeAttribute:kSQLkeyword range:[self getRangeForCurrentWord]];
 		return;
 	}
 	if (insertedCharacter == NSF5FunctionKey){ // F5 for completion based on spell checker
 		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
-		// Remove that attribute to suppress auto-uppercasing of certain keyword combinations
-		if(![self selectedRange].length && [self selectedRange].location)
-			[[self textStorage] removeAttribute:kSQLkeyword range:[self getRangeForCurrentWord]];
 		return;
 	}
 

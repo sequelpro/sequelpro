@@ -283,7 +283,10 @@
 	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
-		[textView complete:self];
+		if([[NSApp currentEvent] modifierFlags] & (NSControlKeyMask))
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+		else
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
 	}
 
 	// "Editor font..." menu item to bring up the font panel
