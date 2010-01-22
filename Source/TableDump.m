@@ -2128,18 +2128,16 @@
 													  options:NSLiteralSearch
 														range:NSMakeRange(0, [csvCellString length])];
 				}
-				
-				// Escape occurrences of the line end character
-				[csvCellString replaceOccurrencesOfString:lineEndString
-											   withString:escapedLineEndString
-												  options:NSLiteralSearch
-													range:NSMakeRange(0, [csvCellString length])];
 
 				// If the string isn't quoted or otherwise enclosed, escape occurrences of the
-				// field separators
+				// field separators and line end character
 				if ( quoteFieldSeparators || csvCellIsNumeric ) {
 					[csvCellString replaceOccurrencesOfString:fieldSeparatorString
 												   withString:escapedFieldSeparatorString
+													  options:NSLiteralSearch
+														range:NSMakeRange(0, [csvCellString length])];
+					[csvCellString replaceOccurrencesOfString:lineEndString
+												   withString:escapedLineEndString
 													  options:NSLiteralSearch
 														range:NSMakeRange(0, [csvCellString length])];
 				}
