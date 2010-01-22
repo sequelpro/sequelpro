@@ -442,10 +442,12 @@
 			[firstTableDocument makeWindowControllers];
 			[firstTableDocument showWindows];
 		}
+		
+		return NO;
 	}
 	
 	// Return NO to the automatic opening
-	return NO;
+	return YES;
 }
 
 /**
