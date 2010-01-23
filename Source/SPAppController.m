@@ -446,7 +446,7 @@
 		return NO;
 	}
 	
-	// Return NO to the automatic opening
+	// Return YES to the automatic opening
 	return YES;
 }
 
