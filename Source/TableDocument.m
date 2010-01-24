@@ -2236,6 +2236,7 @@
 - (void)closeConnection
 {
 	[mySQLConnection disconnect];
+	_isConnected = NO;
 
 	// Disconnected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
@@ -3425,7 +3426,7 @@
 - (void)windowWillClose:(NSNotification *)aNotification
 {
 	[mySQLConnection setDelegate:nil];
-	if ([mySQLConnection isConnected]) [self closeConnection];
+	if (_isConnected) [self closeConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -3436,22 +3437,26 @@
  */
 - (BOOL)windowShouldClose:(id)sender
 {
-	if (_isWorkingLevel) {
-		return NO;
-	} else if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
-		return NO;
-	} else {
 
-		if(!_isConnected) return YES;
+	// If no connection is available, always return YES.  Covers initial setup and disconnections.
+	if(!_isConnected) return YES;
 
-		// Auto-save spf file based connection
-		if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
-			BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
-			if(isSaved)
-				[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
-			return isSaved;
-		}
+	// If tasks are active, return NO to allow tasks to complete
+	if (_isWorkingLevel) return NO;
+
+	// If the table list considers itself to be working, return NO. This catches open alerts, and
+	// edits in progress in various views.
+	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) return NO;
+
+	// Auto-save spf file based connection and return whether the save was successful
+	if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
+		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
+		if(isSaved)
+			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
+		return isSaved;
 	}
+
+	// Return YES by default
 	return YES;
 }
 

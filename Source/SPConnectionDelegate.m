@@ -118,11 +118,25 @@
 	
 	// If 'disconnect' was selected, trigger a window close.
 	if (connectionErrorCode == MCPConnectionCheckDisconnect) {
-		[self windowWillClose:nil];
-		[tableWindow performSelector:@selector(close) withObject:nil afterDelay:0.0];
+		[self performSelectorOnMainThread:@selector(closeConnection) withObject:nil waitUntilDone:YES];
 	}
 	
 	return connectionErrorCode;
+}
+
+/**
+ * Close the connection - should be performed on the main thread.
+ * First hides the window to give code a little bit of time to clean
+ * everything up before it's all deallocated as a result of the close.
+ * Also sets alpha to fully transparent so accidental dialogs are hidden!
+ */
+- (void) closeConnection
+{
+		_isConnected = NO;
+		[self windowWillClose:nil];
+		[tableWindow orderOut:self];
+		[tableWindow setAlphaValue:0.0];
+		[tableWindow performSelector:@selector(close) withObject:nil afterDelay:1.0];
 }
 
 @end

@@ -616,6 +616,7 @@
  */
 - (void)updateSelectionWithTaskString:(NSString *)taskString
 {
+	if (![mySQLConnection isConnected]) return;
 
 	// If there is a multiple or blank selection, clear all views directly.
 	if ( [tablesListView numberOfSelectedRows] != 1 || ![(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
@@ -644,7 +645,7 @@
 }
 
 - (void) updateSelectionTask
-{	
+{
 	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
 	NSString *tableEncoding = nil;
 

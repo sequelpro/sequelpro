@@ -607,8 +607,10 @@
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
 	streamingResult = [mySQLConnection streamingQueryString:queryString];
-	[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
-	[streamingResult release];
+	if (streamingResult) {
+		[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
+		[streamingResult release];
+	}
 
 	// If the result is empty, and a late page is selected, reset the page
 	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
@@ -616,8 +618,10 @@
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
 		streamingResult = [mySQLConnection streamingQueryString:queryString];
-		[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
-		[streamingResult release];
+		if (streamingResult) {
+			[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
+			[streamingResult release];
+		}
 	}
 
 	if ([mySQLConnection queryCancelled] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])

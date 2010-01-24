@@ -341,6 +341,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	mConnected = YES;
 	connectionStartTime = mach_absolute_time();
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
 	[self timeZone]; // Getting the timezone used by the server.
 	
@@ -536,8 +537,12 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 				
 				return [self checkConnection];
 				
-			// 'Disconnect' has been selected. Close the parent window, which will handle disconnections, and return false.
+			// 'Disconnect' has been selected. The parent window should already have
+			// triggered UI-specific actions, and may have disconnected already; if
+			// not, disconnect, and clean up.
 			case MCPConnectionCheckDisconnect:
+				if (mConnected) [self disconnect];
+				[self setLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
 				return NO;
 				
 			// 'Retry' has been selected - return a recursive call.
