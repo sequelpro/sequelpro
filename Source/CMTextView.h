@@ -59,6 +59,11 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	MCPConnection *mySQLConnection;
 	NSInteger mySQLmajorVersion;
 
+	NSInteger snippetControlArray[20][2];
+	NSInteger snippetControlCounter;
+	NSInteger currentSnippetIndex;
+	BOOL snippetWasJustInserted;
+
 }
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
@@ -90,6 +95,9 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
+
+- (BOOL)checkForCaretInsideSnippet;
+- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
 
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;

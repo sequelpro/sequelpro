@@ -29,6 +29,7 @@
 #import "SPQueryController.h"
 #import "SPConstants.h"
 #import "SPConnectionController.h"
+#import "RegexKitLite.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -415,9 +416,15 @@
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(![[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
 
-	return [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		if(![[favorites objectAtIndex:rowIndex] objectForKey:@"name"]) return @"";
+		return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	} else if([[aTableColumn identifier] isEqualToString:@"tabtrigger"]) {
+		if(![[favorites objectAtIndex:rowIndex] objectForKey:@"tabtrigger"] || ![(NSString*)[[favorites objectAtIndex:rowIndex] objectForKey:@"tabtrigger"] length]) return @"";
+		return [NSString stringWithFormat:@"%@⇥", [[favorites objectAtIndex:rowIndex] objectForKey:@"tabtrigger"]];
+	}
+	return @"";
 }
 
 /*
@@ -511,7 +518,7 @@
 }
 
 /*
- * Changes in the name text field will be saved in data source directly
+ * Changes in the name/tabtrigger text field will be saved in data source directly
  * to update the table view accordingly
  */
 - (void)controlTextDidChange:(NSNotification *)notification
@@ -524,6 +531,13 @@
 
 	if(object == favoriteNameTextField) {
 		[[favorites objectAtIndex:[favoritesTableView selectedRow]] setObject:[favoriteNameTextField stringValue] forKey:@"name"];
+		[favoritesTableView reloadData];
+	} 
+	else if(object == favoriteTabTriggerTextField){
+		//Validate trigger - it only may contain alphnumeric characters
+		NSString *tabTrigger = [NSString stringWithString:[[favoriteTabTriggerTextField stringValue] stringByReplacingOccurrencesOfRegex:@"[^\\w0-9]" withString:@""]];
+		[favoriteTabTriggerTextField setStringValue:tabTrigger];
+		[[favorites objectAtIndex:[favoritesTableView selectedRow]] setObject:tabTrigger forKey:@"tabtrigger"];
 		[favoritesTableView reloadData];
 	}
 

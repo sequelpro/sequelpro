@@ -215,7 +215,7 @@
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
 		// The actual query strings have been already stored as tooltip
-		[textView insertText:[[queryFavoritesButton selectedItem] toolTip]];
+		[textView insertFavoriteAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:[textView selectedRange]];
 	}
 }
 
@@ -2020,6 +2020,7 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
+	[textView checkForCaretInsideSnippet];
 	// Remove all background color attributes used by highlighting the current query
 	if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
 		// Remove only the background attribute for the current range if still valid
@@ -2701,8 +2702,17 @@
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
 	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:[tableDocumentInstance fileURL]]) {
-		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
+		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
+		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+		[paraStyle setTabStops:[NSArray array]];
+		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0] autorelease]];
+		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
+		NSAttributedString *titleString = [[[NSAttributedString alloc]
+			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+			    attributes:attributes] autorelease];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		[item setAttributedTitle:titleString];
 		[item setIndentationLevel:1];
 		[menu addItem:item];
 		[item release];
@@ -2717,8 +2727,16 @@
 	[headerMenuItem release];
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
-		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[favorite objectForKey:@"name"]] action:NULL keyEquivalent:@""];
+		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+		[paraStyle setTabStops:[NSArray array]];
+		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0] autorelease]];
+		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
+		NSAttributedString *titleString = [[[NSAttributedString alloc]
+			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+			    attributes:attributes] autorelease];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		[item setAttributedTitle:titleString];
 		[item setIndentationLevel:1];
 		[menu addItem:item];
 		[item release];

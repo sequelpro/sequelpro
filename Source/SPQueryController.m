@@ -664,8 +664,10 @@ static SPQueryController *sharedQueryController = nil;
 	
 	if(includeGlobals && [prefs objectForKey:SPQueryFavorites]) {
 		for(id fav in [prefs objectForKey:SPQueryFavorites]) {
-			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger])
+			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger]) {
 				[result addObject:fav];
+				break;
+			}
 		}
 	}
 	

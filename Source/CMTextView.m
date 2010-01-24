@@ -30,6 +30,7 @@
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
 #import "SPConstants.h"
+#import "SPQueryController.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -86,6 +87,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	startListeningToBoundChanges = NO;
+	snippetControlCounter = -1;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -796,6 +798,74 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 }
 
+- (void)selectCurrentSnippet
+{
+	if(snippetControlCounter > -1)
+		[self setSelectedRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+}
+
+- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
+{
+
+	if(theSnippet == nil || ![theSnippet length]) return;
+
+	NSMutableString *snip = [[NSMutableString string] autorelease];
+	// NSString *re = @"(?<!\\\\)\\$\\{([^\\{\\}]*)\\}";
+	[snip setString:theSnippet];
+
+	snippetControlCounter = -1;
+	// while([snip isMatchedByRegex:re]) {
+	// 	snippetControlCounter++;
+	// 	NSRange hintRange = [snip rangeOfRegex:re capture:1L];
+	// 	NSRange snipRange = [snip rangeOfRegex:re capture:0L];
+	// 	[snip replaceCharactersInRange:snipRange withString:[snip substringWithRange:hintRange]];
+	// 	snippetControlArray[snippetControlCounter][0] = snipRange.location + targetRange.location;
+	// 	snippetControlArray[snippetControlCounter][1] = snipRange.length-3;
+	// }
+	// 
+	// if(snippetControlCounter > -1) {
+	// 	// Store the end for eventually tab out
+	// 	snippetControlCounter++;
+	// 	snippetControlArray[snippetControlCounter][0] = targetRange.location + [snip length];
+	// 	snippetControlArray[snippetControlCounter][1] = 0;
+	// }
+
+	[self breakUndoCoalescing];
+	[self setSelectedRange:targetRange];
+	snippetWasJustInserted = YES;
+	[self insertText:snip];
+
+	currentSnippetIndex = 0;
+	if(snippetControlCounter > -1)
+		[self selectCurrentSnippet];
+
+	snippetWasJustInserted = NO;
+}
+
+- (BOOL)checkForCaretInsideSnippet
+{
+
+	if(snippetControlCounter < 0 || currentSnippetIndex == snippetControlCounter) {
+		snippetControlCounter = -1;
+		return NO;
+	}
+
+	BOOL isCaretInsideASnippet = NO;
+	NSInteger caretPos = [self selectedRange].location;
+	NSInteger i;
+
+	for(i=0; i<snippetControlCounter; i++) {
+		if(caretPos >= snippetControlArray[i][0]
+			&& caretPos <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+
+			isCaretInsideASnippet = YES;
+			break;
+		}
+	}
+	// if(!isCaretInsideASnippet)
+	// 	snippetControlCounter = -1;
+	return isCaretInsideASnippet;
+}
 /*
  * Handle some keyDown events in order to provide autopairing functionality (if enabled).
  */
@@ -837,6 +907,45 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if (insertedCharacter == NSF5FunctionKey){ // F5 for completion based on spell checker
 		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
 		return;
+	}
+
+	// Check for {SHIFT}TAB to insert favorites via TAB-trigger if CMTextView belongs to CustomQuery
+	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[CustomQuery class]]){
+		NSRange targetRange = [self getRangeForCurrentWord];
+		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
+
+		// Is TAB trigger active change selection according to {SHIFT}TAB
+		if(snippetControlCounter > -1 && [self checkForCaretInsideSnippet]){
+			if(curFlags==(NSShiftKeyMask)) {
+				currentSnippetIndex--;
+				if(currentSnippetIndex < 0) {
+					snippetControlCounter = -1;
+				} else {
+					[self selectCurrentSnippet];
+					return;
+				}
+			} else {
+				currentSnippetIndex++;
+				if(currentSnippetIndex > snippetControlCounter) {
+					snippetControlCounter = -1;
+				} else if(currentSnippetIndex == snippetControlCounter) {
+					[self selectCurrentSnippet];
+					snippetControlCounter = -1;
+					return;
+				} else {
+					[self selectCurrentSnippet];
+					return;
+				}
+			}
+		}
+		// Check if tab-trigger is defined; if so insert it
+		if(snippetControlCounter < 0 && [[[self window] delegate] fileURL]) {
+			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[[[self window] delegate] fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
+			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
+				[self insertFavoriteAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
+				return;
+			}
+		}
 	}
 
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
@@ -2719,9 +2828,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	//make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
+	NSInteger editedMask = [textStore editedMask];
+
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
-	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && [textStore editedMask] != 1)
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
+	}
 
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2729,8 +2841,40 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 								object:nil];
 
 	// Do syntax highlighting only if the user really changed the text
-	if([textStore editedMask] != 1){
+	if(editedMask != 1) {
+
+		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
+			NSInteger editStartPosition = [textStore editedRange].location;
+			NSInteger changeInLength = [textStore changeInLength];
+			NSInteger i;
+			BOOL isCaretInsideASnippet = NO;
+			for(i=0; i<=snippetControlCounter; i++) {
+				if(editStartPosition >= snippetControlArray[i][0]
+					&& editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+
+					if(i!=snippetControlCounter)
+						isCaretInsideASnippet = YES;
+					snippetControlArray[i][1] += changeInLength;
+					if(snippetControlArray[i][1] < 0) {
+						snippetControlCounter = -1;
+						break;
+					}
+				// Adjust start position of snippets after caret position
+				} else if(editStartPosition < snippetControlArray[i][0]) {
+					snippetControlArray[i][0] += changeInLength;
+					if(snippetControlArray[i][1] < 0) {
+						snippetControlCounter = -1;
+						break;
+					}
+				}
+			}
+			if(!isCaretInsideASnippet)
+				snippetControlCounter = -1;
+
+		}
+
 		[self doSyntaxHighlighting];
+
 	}
 
 	startListeningToBoundChanges = YES;
