@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1"/>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -65,7 +65,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSBox" id="594420157">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">10</int>
+							<int key="NSvFlags">4106</int>
 							<string key="NSFrame">{{0, 358}, {500, 5}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<string key="NSOffsets">{0, 0}</string>
@@ -104,7 +104,7 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="BWCustomView" id="1030932325">
 									<reference key="NSNextResponder" ref="588484039"/>
-									<int key="NSvFlags">274</int>
+									<int key="NSvFlags">272</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="BWAnchoredButtonBar" id="12172024">
@@ -335,13 +335,13 @@
 														<object class="NSTableView" id="522643855">
 															<reference key="NSNextResponder" ref="106335880"/>
 															<int key="NSvFlags">4370</int>
-															<string key="NSFrameSize">{210, 322}</string>
+															<string key="NSFrameSize">{211, 322}</string>
 															<reference key="NSSuperview" ref="106335880"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSTableHeaderView" key="NSHeaderView" id="724842455">
 																<reference key="NSNextResponder" ref="642947098"/>
 																<int key="NSvFlags">4352</int>
-																<string key="NSFrameSize">{210, 17}</string>
+																<string key="NSFrameSize">{211, 17}</string>
 																<reference key="NSSuperview" ref="642947098"/>
 																<reference key="NSTableView" ref="522643855"/>
 															</object>
@@ -356,8 +356,8 @@
 																<object class="NSTableColumn" id="901293108">
 																	<string key="NSIdentifier">name</string>
 																	<double key="NSWidth">153</double>
-																	<double key="NSMinWidth">40</double>
-																	<double key="NSMaxWidth">1000</double>
+																	<double key="NSMinWidth">20</double>
+																	<double key="NSMaxWidth">2000</double>
 																	<object class="NSTableHeaderCell" key="NSHeaderCell">
 																		<int key="NSCellFlags">75628096</int>
 																		<int key="NSCellFlags2">2048</int>
@@ -410,12 +410,12 @@
 																</object>
 																<object class="NSTableColumn" id="724452944">
 																	<string key="NSIdentifier">tabtrigger</string>
-																	<double key="NSWidth">51</double>
+																	<double key="NSWidth">52</double>
 																	<double key="NSMinWidth">20</double>
-																	<double key="NSMaxWidth">3.4028234663852886e+38</double>
+																	<double key="NSMaxWidth">2000</double>
 																	<object class="NSTableHeaderCell" key="NSHeaderCell">
 																		<int key="NSCellFlags">75628096</int>
-																		<int key="NSCellFlags2">67110912</int>
+																		<int key="NSCellFlags2">2048</int>
 																		<string key="NSContents"/>
 																		<reference key="NSSupport" ref="26"/>
 																		<object class="NSColor" key="NSBackgroundColor">
@@ -495,6 +495,7 @@
 													<int key="NSvFlags">-2147483392</int>
 													<string key="NSFrame">{{-100, -100}, {311, 15}}</string>
 													<reference key="NSSuperview" ref="205303038"/>
+													<bool key="NSEnabled">YES</bool>
 													<int key="NSsFlags">1</int>
 													<reference key="NSTarget" ref="205303038"/>
 													<string key="NSAction">_doScroller:</string>
@@ -516,10 +517,10 @@
 												</object>
 												<reference ref="299150059"/>
 											</object>
-											<string key="NSFrame">{{-0.5, 22}, {210, 339}}</string>
+											<string key="NSFrame">{{0, 22}, {210, 339}}</string>
 											<reference key="NSSuperview" ref="1030932325"/>
 											<reference key="NSNextKeyView" ref="106335880"/>
-											<int key="NSsFlags">528</int>
+											<int key="NSsFlags">656</int>
 											<reference key="NSVScroller" ref="322405876"/>
 											<reference key="NSHScroller" ref="336819166"/>
 											<reference key="NSContentView" ref="106335880"/>
@@ -534,7 +535,7 @@
 								</object>
 								<object class="BWCustomView" id="954707656">
 									<reference key="NSNextResponder" ref="588484039"/>
-									<int key="NSvFlags">274</int>
+									<int key="NSvFlags">4370</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSTextField" id="92903832">
@@ -843,9 +844,15 @@
 							</object>
 							<object class="NSMutableDictionary" key="BWSVMaxValues">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference key="dict.sortedKeys" ref="0"/>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="1"/>
+								</object>
 								<object class="NSMutableArray" key="dict.values">
 									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="2000"/>
+									<integer value="2000"/>
 								</object>
 							</object>
 							<object class="NSMutableDictionary" key="BWSVMinUnits">
@@ -1824,9 +1831,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{113, 119}, {500, 371}}</string>
+					<string>{{220, 485}, {500, 371}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{113, 119}, {500, 371}}</string>
+					<string>{{220, 485}, {500, 371}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
