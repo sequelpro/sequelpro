@@ -394,16 +394,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch
 {
 
-	// No completion for a selection (yet?) and if caret positiopn == 0
-	if([self selectedRange].length > 0 || ![self selectedRange].location) return;
-
 	[self breakUndoCoalescing];
 
-	NSInteger caretPos = [self selectedRange].location;
+	NSInteger caretPos = NSMaxRange([self selectedRange]);
+	// [self setSelectedRange:NSMakeRange(caretPos, 0)];
 	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
-	if([[self string] characterAtIndex:caretPos-1] == '`') {
+	if([[self string] length] && [[self string] characterAtIndex:caretPos-1] == '`') {
 		if([[self string] length] > caretPos && [[self string] characterAtIndex:caretPos] == '`') {
 			;
 		} else {
@@ -437,6 +435,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(![self selectedRange].length && [self selectedRange].location)
 		[[self textStorage] removeAttribute:kSQLkeyword range:completionRange];
 
+	[self setSelectedRange:NSMakeRange(caretPos, 0)];
 
 	if(!isDictMode) {
 
@@ -578,6 +577,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					inView:self
 					dictMode:isDictMode
 					dbMode:dbBrowseMode
+					tabTriggerMode:((snippetControlCounter > -1) ? YES : NO)
 					fuzzySearch:fuzzySearch
 					backtickMode:backtickMode
 					withDbName:dbName
@@ -800,52 +800,119 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void)selectCurrentSnippet
 {
-	if(snippetControlCounter > -1)
-		[self setSelectedRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+	if( snippetControlCounter  > -1 
+		&& currentSnippetIndex >= 0 
+		&& currentSnippetIndex <= snippetControlMax
+		)
+	{
+		if(currentSnippetIndex == snippetControlMax) {
+			[self setSelectedRange:NSMakeRange(snippetControlArray[snippetControlMax][0] + snippetControlArray[snippetControlMax][1], 0)];
+			snippetControlCounter = -1;
+			currentSnippetIndex = -1;
+			snippetControlMax = -1;
+			return;
+		}
+		while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20) {
+			currentSnippetIndex++;
+		}
+		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20)
+			[self setSelectedRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+		else
+			snippetControlCounter = -1;
+	} else {
+		snippetControlCounter = -1;
+	}
 }
 
 - (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
+	NSInteger i;
+	for(i=0; i<20; i++) {
+		snippetControlArray[i][0] = -1;
+		snippetControlArray[i][1] = -1;
+		snippetControlArray[i][2] = -1;
+	}
 
 	if(theSnippet == nil || ![theSnippet length]) return;
 
-	NSMutableString *snip = [[NSMutableString string] autorelease];
-	// NSString *re = @"(?<!\\\\)\\$\\{([^\\{\\}]*)\\}";
-	[snip setString:theSnippet];
+	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
+	@try{
+		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
+		targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
+		[snip setString:theSnippet];
+		if(snip == nil || ![snip length]) return;
 
-	snippetControlCounter = -1;
-	// while([snip isMatchedByRegex:re]) {
-	// 	snippetControlCounter++;
-	// 	NSRange hintRange = [snip rangeOfRegex:re capture:1L];
-	// 	NSRange snipRange = [snip rangeOfRegex:re capture:0L];
-	// 	[snip replaceCharactersInRange:snipRange withString:[snip substringWithRange:hintRange]];
-	// 	snippetControlArray[snippetControlCounter][0] = snipRange.location + targetRange.location;
-	// 	snippetControlArray[snippetControlCounter][1] = snipRange.length-3;
-	// }
-	// 
-	// if(snippetControlCounter > -1) {
-	// 	// Store the end for eventually tab out
-	// 	snippetControlCounter++;
-	// 	snippetControlArray[snippetControlCounter][0] = targetRange.location + [snip length];
-	// 	snippetControlArray[snippetControlCounter][1] = 0;
-	// }
+		// Replace `${x:…}` by ${x:`…`} for convience 
+		[snip replaceOccurrencesOfRegex:@"`\\$\\{(1?\\d):([^\\{\\}]*)\\}`" withString:@"${$1:`$2`}"];
+		[snip flushCachedRegexData];
 
-	[self breakUndoCoalescing];
-	[self setSelectedRange:targetRange];
-	snippetWasJustInserted = YES;
-	[self insertText:snip];
+		snippetControlCounter = -1;
+		snippetControlMax = -1;
+		while([snip isMatchedByRegex:re]) {
+			[snip flushCachedRegexData];
+			snippetControlCounter++;
+			NSRange snipRange = [snip rangeOfRegex:re capture:0L];
+			NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:re capture:1L]] intValue];
+			NSRange hintRange = [snip rangeOfRegex:re capture:2L];
 
-	currentSnippetIndex = 0;
-	if(snippetControlCounter > -1)
-		[self selectCurrentSnippet];
+			if(snipCnt>18 || snipCnt<0) {
+				NSLog(@"Only snippets in the range of 0…18 allowed.");
+				NSBeep();
+				snippetControlCounter = -1;
+				break;
+			}
 
-	snippetWasJustInserted = NO;
+			if(snipCnt>snippetControlMax)
+				snippetControlMax = snipCnt;
+
+			[snip replaceCharactersInRange:snipRange withString:[snip substringWithRange:hintRange]];
+			[snip flushCachedRegexData];
+			snippetControlArray[snipCnt][0] = snipRange.location + targetRange.location;
+			snippetControlArray[snipCnt][1] = snipRange.length-4-((snipCnt>9)?2:1);
+			snippetControlArray[snipCnt][2] = 0;
+			// Adjust nested snippets
+			for(i=0; i<snipCnt; i++) {
+				if(snippetControlArray[i][0] > -1
+					&& snippetControlArray[i][0] >= snippetControlArray[snipCnt][0]
+					&& snippetControlArray[i][1] <= snippetControlArray[snipCnt][1]
+					) {
+						snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1);
+						snippetControlArray[i][1] += 3+((snipCnt>9)?2:1);
+				}
+			}
+		}
+	
+		if(snippetControlCounter > -1) {
+			// Store the end for eventually tab out
+			snippetControlMax++;
+			snippetControlArray[snippetControlMax][0] = targetRange.location + [snip length];
+			snippetControlArray[snippetControlMax][1] = 0;
+			snippetControlArray[snippetControlMax][2] = 0;
+		}
+
+		[self breakUndoCoalescing];
+		[self setSelectedRange:targetRange];
+		snippetWasJustInserted = YES;
+		[self insertText:snip];
+
+		currentSnippetIndex = 0;
+		if(snippetControlCounter > -1)
+			[self selectCurrentSnippet];
+
+		snippetWasJustInserted = NO;
+	}
+	@catch(id ae) {
+		NSLog(@"Snippet Error: %@", [ae description]);
+		snippetControlCounter = -1;
+		snippetWasJustInserted = NO;
+	}
+	if(snip)[snip release];
 }
 
 - (BOOL)checkForCaretInsideSnippet
 {
 
-	if(snippetControlCounter < 0 || currentSnippetIndex == snippetControlCounter) {
+	if(snippetControlCounter < 0 || currentSnippetIndex == snippetControlMax) {
 		snippetControlCounter = -1;
 		return NO;
 	}
@@ -854,8 +921,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSInteger caretPos = [self selectedRange].location;
 	NSInteger i;
 
-	for(i=0; i<snippetControlCounter; i++) {
-		if(caretPos >= snippetControlArray[i][0]
+	for(i=0; i<snippetControlMax; i++) {
+		if(snippetControlArray[i][0] != -1 
+			&& caretPos >= snippetControlArray[i][0]
 			&& caretPos <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
 
 			isCaretInsideASnippet = YES;
@@ -915,9 +983,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
 
 		// Is TAB trigger active change selection according to {SHIFT}TAB
-		if(snippetControlCounter > -1 && [self checkForCaretInsideSnippet]){
+		if([self checkForCaretInsideSnippet] && snippetControlCounter > -1){
 			if(curFlags==(NSShiftKeyMask)) {
+
 				currentSnippetIndex--;
+
+				while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex > -2)
+					currentSnippetIndex--;
+
 				if(currentSnippetIndex < 0) {
 					snippetControlCounter = -1;
 				} else {
@@ -925,10 +998,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					return;
 				}
 			} else {
+
 				currentSnippetIndex++;
-				if(currentSnippetIndex > snippetControlCounter) {
+
+				while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
+					currentSnippetIndex++;
+
+				if(currentSnippetIndex > snippetControlMax) {
 					snippetControlCounter = -1;
-				} else if(currentSnippetIndex == snippetControlCounter) {
+				} else if(currentSnippetIndex == snippetControlMax) {
 					[self selectCurrentSnippet];
 					snippetControlCounter = -1;
 					return;
@@ -2846,13 +2924,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
 			NSInteger editStartPosition = [textStore editedRange].location;
 			NSInteger changeInLength = [textStore changeInLength];
-			NSInteger i;
+			NSInteger i, j, k;
 			BOOL isCaretInsideASnippet = NO;
-			for(i=0; i<=snippetControlCounter; i++) {
-				if(editStartPosition >= snippetControlArray[i][0]
+			for(i=0; i<=snippetControlMax; i++) {
+				if(snippetControlArray[i][0] > -1
+					&& editStartPosition >= snippetControlArray[i][0]
 					&& editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
 
-					if(i!=snippetControlCounter)
+					if(i!=snippetControlMax)
 						isCaretInsideASnippet = YES;
 					snippetControlArray[i][1] += changeInLength;
 					if(snippetControlArray[i][1] < 0) {
@@ -2860,7 +2939,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						break;
 					}
 				// Adjust start position of snippets after caret position
-				} else if(editStartPosition < snippetControlArray[i][0]) {
+				} else if(snippetControlArray[i][0] > -1 && editStartPosition < snippetControlArray[i][0]) {
 					snippetControlArray[i][0] += changeInLength;
 					if(snippetControlArray[i][1] < 0) {
 						snippetControlCounter = -1;
@@ -2868,6 +2947,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					}
 				}
 			}
+			// If current snippet contains nested snippets then
+			// delete nested snippet definitions
+			// if(snippetControlArray[currentSnippetIndex][0] > -1 && currentSnippetIndex != snippetControlMax)
+			// 	for(j=0; j<snippetControlMax; j++) {
+			// 		if(snippetControlArray[j][0] > -1
+			// 			&& currentSnippetIndex != j
+			// 			&& snippetControlArray[j][0] >= snippetControlArray[currentSnippetIndex][0]
+			// 			&& snippetControlArray[j][0] <= snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1]
+			// 			&& snippetControlArray[j][0] + snippetControlArray[j][1] >= snippetControlArray[currentSnippetIndex][0]
+			// 			&& snippetControlArray[j][0] + snippetControlArray[j][1] <= snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1]
+			// 			) {
+			// 				NSLog(@"%ld-%ld", currentSnippetIndex,j);
+			// 				snippetControlArray[j][0] = -1;
+			// 				snippetControlArray[j][1] = -1;
+			// 				snippetControlArray[j][2] = -1;
+			// 		}
+			// 	}
 			if(!isCaretInsideASnippet)
 				snippetControlCounter = -1;
 

@@ -132,7 +132,7 @@
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
-	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode fuzzySearch:(BOOL)fuzzySearch
+	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft
 {
@@ -153,6 +153,7 @@
 		cursorMovedLeft = caretMovedLeft;
 		backtickMode = theBackTickMode;
 		commaInsertionMode = NO;
+		triggerMode = tabTriggerMode;
 
 		if(aStaticPrefix)
 			staticPrefix = [aStaticPrefix retain];
@@ -546,6 +547,7 @@
 					[theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
 					[self filter];
 				} else {
+					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					break;
 				}
 			}
@@ -580,6 +582,7 @@
 			else
 			{
 				[NSApp sendEvent:event];
+				if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 				break;
 			}
 		}
@@ -589,8 +592,10 @@
 				[self completeAndInsertSnippet];
 			} else {
 				[NSApp sendEvent:event];
-				if(!NSPointInRect([NSEvent mouseLocation], [self frame]))
+				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
+					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					break;
+				}
 			}
 		}
 		else
@@ -598,7 +603,6 @@
 			[NSApp sendEvent:event];
 		}
 	}
-	if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 	[self close];
 	usleep(70); // tiny delay to suppress while continously pressing of ESC overlapping
 }
@@ -647,7 +651,7 @@
 	[theView setSelectedRange:theCharRange];
 	[theView insertText:aString];
 	// If completion string contains backticks move caret out of the backticks
-	if(backtickMode)
+	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
 }
 

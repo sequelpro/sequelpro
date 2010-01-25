@@ -59,8 +59,9 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	MCPConnection *mySQLConnection;
 	NSInteger mySQLmajorVersion;
 
-	NSInteger snippetControlArray[20][2];
+	NSInteger snippetControlArray[20][3];
 	NSInteger snippetControlCounter;
+	NSInteger snippetControlMax;
 	NSInteger currentSnippetIndex;
 	BOOL snippetWasJustInserted;
 
