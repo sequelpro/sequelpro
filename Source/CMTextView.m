@@ -74,6 +74,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 @implementation CMTextView
 
+/*
+ * Sort function (mainly used to sort the words in the textView)
+ */
+NSInteger alphabeticSort(id string1, id string2, void *reverse)
+{
+	return [string1 localizedCaseInsensitiveCompare:string2];
+}
+
 - (void) awakeFromNib
 {
 	// Set self as delegate for the textView's textStorage to enable syntax highlighting,
@@ -145,14 +153,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;
-}
-
-/*
- * Sort function (mainly used to sort the words in the textView)
- */
-NSInteger alphabeticSort(id string1, id string2, void *reverse)
-{
-	return [string1 localizedCaseInsensitiveCompare:string2];
 }
 
 /*
@@ -613,15 +613,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
 }
 
-
-/*
- * Search for the current selection or current word in the MySQL Help 
- */
-- (IBAction) showMySQLHelpForCurrentWord:(id)sender
-{	
-	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
-}
-
 /*
  * Checks if the char after the current caret position/selection matches a supplied attribute
  */
@@ -695,6 +686,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	return NO;
+}
+
+#pragma mark -
+#pragma mark user actions
+
+/*
+ * Search for the current selection or current word in the MySQL Help 
+ */
+- (IBAction) showMySQLHelpForCurrentWord:(id)sender
+{	
+	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
 }
 
 /*
@@ -779,6 +781,329 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Shifts the selection, if any, rightwards by indenting any selected lines with one tab.
+ * If the caret is within a line, the selection is not changed after the index; if the selection
+ * has length, all lines crossed by the length are indented and fully selected.
+ * Returns whether or not an indentation was performed.
+ */
+- (BOOL) shiftSelectionRight
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSRange currentLineRange;
+	NSArray *lineRanges;
+	NSString *tabString = @"\t";
+	NSInteger i, indentedLinesLength = 0;
+
+	if ([self selectedRange].location == NSNotFound) return NO;
+
+	// Indent the currently selected line if the caret is within a single line
+	if ([self selectedRange].length == 0) {
+		NSRange currentLineRange;
+
+		// Extract the current line range based on the text caret
+		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+
+		// Register the indent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:tabString];
+
+		// Insert the new tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:tabString];
+
+		return YES;
+	}
+
+	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
+	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
+
+	// Loop through the ranges, storing a count of the overall length.
+	for (i = 0; i < [lineRanges count]; i++) {
+		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
+		indentedLinesLength += currentLineRange.length + 1;
+
+		// Register the indent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location+i, 0) replacementString:tabString];
+
+		// Insert the new tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location+i, 0) withString:tabString];
+	}
+
+	// Select the entirety of the new range
+	[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, indentedLinesLength)];
+
+	return YES;
+}
+
+
+/*
+ * Shifts the selection, if any, leftwards by un-indenting any selected lines by one tab if possible.
+ * If the caret is within a line, the selection is not changed after the undent; if the selection has
+ * length, all lines crossed by the length are un-indented and fully selected.
+ * Returns whether or not an indentation was performed.
+ */
+- (BOOL) shiftSelectionLeft
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSRange currentLineRange;
+	NSArray *lineRanges;
+	NSInteger i, unindentedLines = 0, unindentedLinesLength = 0;
+
+	if ([self selectedRange].location == NSNotFound) return NO;
+
+	// Undent the currently selected line if the caret is within a single line
+	if ([self selectedRange].length == 0) {
+		NSRange currentLineRange;
+
+		// Extract the current line range based on the text caret
+		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+
+		// Ensure that the line has length and that the first character is a tab
+		if (currentLineRange.length < 1
+			|| [textViewString characterAtIndex:currentLineRange.location] != '\t')
+			return NO;
+
+		// Register the undent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 1) replacementString:@""];
+
+		// Remove the tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 1) withString:@""];
+
+		return YES;
+	}
+
+	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
+	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
+
+	// Loop through the ranges, storing a count of the total lines changed and the new length.
+	for (i = 0; i < [lineRanges count]; i++) {
+		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
+		unindentedLinesLength += currentLineRange.length;
+		
+		// Ensure that the line has length and that the first character is a tab
+		if (currentLineRange.length < 1
+			|| [textViewString characterAtIndex:currentLineRange.location-unindentedLines] != '\t')
+			continue;
+
+		// Register the undent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) replacementString:@""];
+
+		// Remove the tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) withString:@""];
+		
+		// As a line has been unindented, modify counts and lengths
+		unindentedLines++;
+		unindentedLinesLength--;
+	}
+
+	// If a change was made, select the entirety of the new range and return success
+	if (unindentedLines) {
+		[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, unindentedLinesLength)];
+		return YES;
+	}
+
+	return NO;
+}
+
+#pragma mark -
+#pragma mark snippet handler
+
+/*
+ * Reset snippet controller variables to end a snippet session
+ */
+- (void)endSnippetSession
+{
+	snippetControlCounter = -1;
+	currentSnippetIndex   = -1;
+	snippetControlMax     = -1;
+	snippetWasJustInserted = NO;
+}
+
+/*
+ * Selects the current snippet defined by “currentSnippetIndex”
+ */
+- (void)selectCurrentSnippet
+{
+	if( snippetControlCounter  > -1 
+		&& currentSnippetIndex >= 0 
+		&& currentSnippetIndex <= snippetControlMax
+		)
+	{
+		// Place the caret at the end of the query favorite snippet
+		// and finish snippet editing
+		if(currentSnippetIndex == snippetControlMax) {
+			[self setSelectedRange:NSMakeRange(snippetControlArray[snippetControlMax][0] + snippetControlArray[snippetControlMax][1], 0)];
+			[self endSnippetSession];
+			return;
+		}
+
+		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20) {
+			if(snippetControlArray[currentSnippetIndex][2] == 0) {
+				[self setSelectedRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+			}
+		} else { // for safety reasons
+			[self endSnippetSession];
+		}
+	} else { // for safety reasons
+		[self endSnippetSession];
+	}
+}
+
+/*
+ * Inserts a chosen query favorite and initialze a snippet session if user defined any
+ */
+- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
+{
+
+	NSInteger i;
+
+	// reset snippet array
+	for(i=0; i<20; i++) {
+		snippetControlArray[i][0] = -1; // snippet location
+		snippetControlArray[i][1] = -1; // snippet length
+		snippetControlArray[i][2] = -1; // snippet task : -1 not valid, 0 select snippet
+	}
+
+	if(theSnippet == nil || ![theSnippet length]) return;
+
+	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
+	@try{
+		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
+
+		targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
+		[snip setString:theSnippet];
+
+		if(snip == nil || ![snip length]) return;
+
+		// Replace `${x:…}` by ${x:`…`} for convience 
+		[snip replaceOccurrencesOfRegex:@"`\\$\\{(1?\\d):([^\\{\\}]*)\\}`" withString:@"${$1:`$2`}"];
+		[snip flushCachedRegexData];
+
+		snippetControlCounter = -1;
+		snippetControlMax     = -1;
+		currentSnippetIndex   = -1;
+
+		while([snip isMatchedByRegex:re]) {
+			[snip flushCachedRegexData];
+			snippetControlCounter++;
+			NSRange snipRange = [snip rangeOfRegex:re capture:0L];
+			NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:re capture:1L]] intValue];
+			NSRange hintRange = [snip rangeOfRegex:re capture:2L];
+
+			// Check for snippet number 19 (to simplify regexp)
+			if(snipCnt>18 || snipCnt<0) {
+				NSLog(@"Only snippets in the range of 0…18 allowed.");
+				[self endSnippetSession];
+				break;
+			}
+
+			// Remember the maximal snippet number defined by user
+			if(snipCnt>snippetControlMax)
+				snippetControlMax = snipCnt;
+
+			[snip replaceCharactersInRange:snipRange withString:[snip substringWithRange:hintRange]];
+			[snip flushCachedRegexData];
+
+			// Store found snippet range
+			snippetControlArray[snipCnt][0] = snipRange.location + targetRange.location;
+			snippetControlArray[snipCnt][1] = snipRange.length-4-((snipCnt>9)?2:1);
+			snippetControlArray[snipCnt][2] = 0;
+
+			// Adjust successive snippets
+			for(i=0; i<20; i++)
+				if(snippetControlArray[i][0] > -1 && i != snipCnt && snippetControlArray[i][0] > snippetControlArray[snipCnt][0])
+					snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1); // 3 := length(${:)
+
+		}
+	
+		if(snippetControlCounter > -1) {
+			// Store the end for tab out
+			snippetControlMax++;
+			snippetControlArray[snippetControlMax][0] = targetRange.location + [snip length];
+			snippetControlArray[snippetControlMax][1] = 0;
+			snippetControlArray[snippetControlMax][2] = 0;
+		}
+
+		// Registering for undo
+		[self breakUndoCoalescing];
+
+		// Insert favorite query as snippet if any
+		[self setSelectedRange:targetRange];
+
+		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
+		snippetWasJustInserted = YES;
+		[self insertText:snip];
+
+		// Any snippets defined?
+		if(snippetControlCounter > -1) {
+			// Find and select first defined snippet
+			currentSnippetIndex = 0;
+			// Look for next defined snippet since snippet numbers must not serial like 1, 5, and 12 e.g.
+			while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
+				currentSnippetIndex++;
+			[self selectCurrentSnippet];
+		}
+
+		snippetWasJustInserted = NO;
+	}
+	@catch(id ae) { // For safety reasons catch exceptions
+		NSLog(@"Snippet Error: %@", [ae description]);
+		[self endSnippetSession];
+		snippetWasJustInserted = NO;
+	}
+
+	if(snip)[snip release];
+
+}
+
+/*
+ * Checks whether the current caret position in inside of a defined snippet range
+ */
+- (BOOL)checkForCaretInsideSnippet
+{
+
+	if(snippetWasJustInserted) return YES;
+
+	BOOL isCaretInsideASnippet = NO;
+
+	if(snippetControlCounter < 0 || currentSnippetIndex == snippetControlMax) {
+		[self endSnippetSession];
+		return NO;
+	}
+
+	NSInteger caretPos = [self selectedRange].location;
+	NSInteger i, j;
+	NSInteger foundSnippetIndices[20]; // array to hold nested snippets
+
+	j = -1;
+
+	// Go through all snippet ranges and check whether the caret is inside of the
+	// current snippet range. Remember matches 
+	// in foundSnippetIndices array to test for nested snippets.
+	for(i=0; i<=snippetControlMax; i++) {
+		j++;
+		foundSnippetIndices[j] = 0;
+		if(snippetControlArray[i][0] != -1 
+			&& caretPos >= snippetControlArray[i][0]
+			&& caretPos <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+
+			foundSnippetIndices[j] = 1;
+			if(i == currentSnippetIndex) {
+				isCaretInsideASnippet = YES;
+				break;
+			}
+		}
+	}
+	if(!isCaretInsideASnippet && foundSnippetIndices[currentSnippetIndex] == 1) {
+		isCaretInsideASnippet = YES;
+	}
+
+	return isCaretInsideASnippet;
+
+}
+
+#pragma mark -
+#pragma mark event management
+
+/*
  * Used for autoHelp update if the user changed the caret position by using the mouse.
  */
 - (void) mouseDown:(NSEvent *)theEvent
@@ -798,142 +1123,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 }
 
-- (void)selectCurrentSnippet
-{
-	if( snippetControlCounter  > -1 
-		&& currentSnippetIndex >= 0 
-		&& currentSnippetIndex <= snippetControlMax
-		)
-	{
-		if(currentSnippetIndex == snippetControlMax) {
-			[self setSelectedRange:NSMakeRange(snippetControlArray[snippetControlMax][0] + snippetControlArray[snippetControlMax][1], 0)];
-			snippetControlCounter = -1;
-			currentSnippetIndex = -1;
-			snippetControlMax = -1;
-			return;
-		}
-		while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20) {
-			currentSnippetIndex++;
-		}
-		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20)
-			[self setSelectedRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
-		else
-			snippetControlCounter = -1;
-	} else {
-		snippetControlCounter = -1;
-	}
-}
-
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
-{
-	NSInteger i;
-	for(i=0; i<20; i++) {
-		snippetControlArray[i][0] = -1;
-		snippetControlArray[i][1] = -1;
-		snippetControlArray[i][2] = -1;
-	}
-
-	if(theSnippet == nil || ![theSnippet length]) return;
-
-	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
-	@try{
-		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
-		targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
-		[snip setString:theSnippet];
-		if(snip == nil || ![snip length]) return;
-
-		// Replace `${x:…}` by ${x:`…`} for convience 
-		[snip replaceOccurrencesOfRegex:@"`\\$\\{(1?\\d):([^\\{\\}]*)\\}`" withString:@"${$1:`$2`}"];
-		[snip flushCachedRegexData];
-
-		snippetControlCounter = -1;
-		snippetControlMax = -1;
-		while([snip isMatchedByRegex:re]) {
-			[snip flushCachedRegexData];
-			snippetControlCounter++;
-			NSRange snipRange = [snip rangeOfRegex:re capture:0L];
-			NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:re capture:1L]] intValue];
-			NSRange hintRange = [snip rangeOfRegex:re capture:2L];
-
-			if(snipCnt>18 || snipCnt<0) {
-				NSLog(@"Only snippets in the range of 0…18 allowed.");
-				NSBeep();
-				snippetControlCounter = -1;
-				break;
-			}
-
-			if(snipCnt>snippetControlMax)
-				snippetControlMax = snipCnt;
-
-			[snip replaceCharactersInRange:snipRange withString:[snip substringWithRange:hintRange]];
-			[snip flushCachedRegexData];
-			snippetControlArray[snipCnt][0] = snipRange.location + targetRange.location;
-			snippetControlArray[snipCnt][1] = snipRange.length-4-((snipCnt>9)?2:1);
-			snippetControlArray[snipCnt][2] = 0;
-			// Adjust nested snippets
-			for(i=0; i<snipCnt; i++) {
-				if(snippetControlArray[i][0] > -1
-					&& snippetControlArray[i][0] >= snippetControlArray[snipCnt][0]
-					&& snippetControlArray[i][1] <= snippetControlArray[snipCnt][1]
-					) {
-						snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1);
-						snippetControlArray[i][1] += 3+((snipCnt>9)?2:1);
-				}
-			}
-		}
-	
-		if(snippetControlCounter > -1) {
-			// Store the end for eventually tab out
-			snippetControlMax++;
-			snippetControlArray[snippetControlMax][0] = targetRange.location + [snip length];
-			snippetControlArray[snippetControlMax][1] = 0;
-			snippetControlArray[snippetControlMax][2] = 0;
-		}
-
-		[self breakUndoCoalescing];
-		[self setSelectedRange:targetRange];
-		snippetWasJustInserted = YES;
-		[self insertText:snip];
-
-		currentSnippetIndex = 0;
-		if(snippetControlCounter > -1)
-			[self selectCurrentSnippet];
-
-		snippetWasJustInserted = NO;
-	}
-	@catch(id ae) {
-		NSLog(@"Snippet Error: %@", [ae description]);
-		snippetControlCounter = -1;
-		snippetWasJustInserted = NO;
-	}
-	if(snip)[snip release];
-}
-
-- (BOOL)checkForCaretInsideSnippet
-{
-
-	if(snippetControlCounter < 0 || currentSnippetIndex == snippetControlMax) {
-		snippetControlCounter = -1;
-		return NO;
-	}
-
-	BOOL isCaretInsideASnippet = NO;
-	NSInteger caretPos = [self selectedRange].location;
-	NSInteger i;
-
-	for(i=0; i<snippetControlMax; i++) {
-		if(snippetControlArray[i][0] != -1 
-			&& caretPos >= snippetControlArray[i][0]
-			&& caretPos <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
-
-			isCaretInsideASnippet = YES;
-			break;
-		}
-	}
-	// if(!isCaretInsideASnippet)
-	// 	snippetControlCounter = -1;
-	return isCaretInsideASnippet;
-}
 /*
  * Handle some keyDown events in order to provide autopairing functionality (if enabled).
  */
@@ -977,46 +1166,51 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
-	// Check for {SHIFT}TAB to insert favorites via TAB-trigger if CMTextView belongs to CustomQuery
+	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if CMTextView belongs to CustomQuery
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[CustomQuery class]]){
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
 
 		// Is TAB trigger active change selection according to {SHIFT}TAB
 		if([self checkForCaretInsideSnippet] && snippetControlCounter > -1){
-			if(curFlags==(NSShiftKeyMask)) {
+
+			if(curFlags==(NSShiftKeyMask)) { // select previous snippet
 
 				currentSnippetIndex--;
 
+				// Look for previous defined snippet since snippet numbers must not serial like 1, 5, and 12 e.g.
 				while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex > -2)
 					currentSnippetIndex--;
 
 				if(currentSnippetIndex < 0) {
-					snippetControlCounter = -1;
-				} else {
-					[self selectCurrentSnippet];
-					return;
+					currentSnippetIndex++;
+					NSBeep();
 				}
-			} else {
+
+				[self selectCurrentSnippet];
+				return;
+
+			} else { // select next snippet
 
 				currentSnippetIndex++;
 
+				// Look for next defined snippet since snippet numbers must not serial like 1, 5, and 12 e.g.
 				while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
 					currentSnippetIndex++;
 
-				if(currentSnippetIndex > snippetControlMax) {
-					snippetControlCounter = -1;
-				} else if(currentSnippetIndex == snippetControlMax) {
-					[self selectCurrentSnippet];
-					snippetControlCounter = -1;
-					return;
+				if(currentSnippetIndex > snippetControlMax) { // for safety reasons
+					[self endSnippetSession];
 				} else {
 					[self selectCurrentSnippet];
 					return;
 				}
 			}
+
+			[self endSnippetSession];
+
 		}
-		// Check if tab-trigger is defined; if so insert it
+
+		// Check if tab trigger is defined; if so insert it, otherwise pass through event
 		if(snippetControlCounter < 0 && [[[self window] delegate] fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[[[self window] delegate] fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
@@ -1257,130 +1451,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 	[super doCommandBySelector:aSelector];
-}
-
-
-/*
- * Shifts the selection, if any, rightwards by indenting any selected lines with one tab.
- * If the caret is within a line, the selection is not changed after the index; if the selection
- * has length, all lines crossed by the length are indented and fully selected.
- * Returns whether or not an indentation was performed.
- */
-- (BOOL) shiftSelectionRight
-{
-	NSString *textViewString = [[self textStorage] string];
-	NSRange currentLineRange;
-	NSArray *lineRanges;
-	NSString *tabString = @"\t";
-	NSInteger i, indentedLinesLength = 0;
-
-	if ([self selectedRange].location == NSNotFound) return NO;
-
-	// Indent the currently selected line if the caret is within a single line
-	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
-
-		// Extract the current line range based on the text caret
-		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
-
-		// Register the indent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:tabString];
-
-		// Insert the new tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:tabString];
-
-		return YES;
-	}
-
-	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
-	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
-
-	// Loop through the ranges, storing a count of the overall length.
-	for (i = 0; i < [lineRanges count]; i++) {
-		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
-		indentedLinesLength += currentLineRange.length + 1;
-
-		// Register the indent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location+i, 0) replacementString:tabString];
-
-		// Insert the new tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location+i, 0) withString:tabString];
-	}
-
-	// Select the entirety of the new range
-	[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, indentedLinesLength)];
-
-	return YES;
-}
-
-
-/*
- * Shifts the selection, if any, leftwards by un-indenting any selected lines by one tab if possible.
- * If the caret is within a line, the selection is not changed after the undent; if the selection has
- * length, all lines crossed by the length are un-indented and fully selected.
- * Returns whether or not an indentation was performed.
- */
-- (BOOL) shiftSelectionLeft
-{
-	NSString *textViewString = [[self textStorage] string];
-	NSRange currentLineRange;
-	NSArray *lineRanges;
-	NSInteger i, unindentedLines = 0, unindentedLinesLength = 0;
-
-	if ([self selectedRange].location == NSNotFound) return NO;
-
-	// Undent the currently selected line if the caret is within a single line
-	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
-
-		// Extract the current line range based on the text caret
-		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
-
-		// Ensure that the line has length and that the first character is a tab
-		if (currentLineRange.length < 1
-			|| [textViewString characterAtIndex:currentLineRange.location] != '\t')
-			return NO;
-
-		// Register the undent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 1) replacementString:@""];
-
-		// Remove the tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 1) withString:@""];
-
-		return YES;
-	}
-
-	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
-	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
-
-	// Loop through the ranges, storing a count of the total lines changed and the new length.
-	for (i = 0; i < [lineRanges count]; i++) {
-		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
-		unindentedLinesLength += currentLineRange.length;
-		
-		// Ensure that the line has length and that the first character is a tab
-		if (currentLineRange.length < 1
-			|| [textViewString characterAtIndex:currentLineRange.location-unindentedLines] != '\t')
-			continue;
-
-		// Register the undent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) replacementString:@""];
-
-		// Remove the tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) withString:@""];
-		
-		// As a line has been unindented, modify counts and lengths
-		unindentedLines++;
-		unindentedLinesLength--;
-	}
-
-	// If a change was made, select the entirety of the new range and return success
-	if (unindentedLines) {
-		[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, unindentedLinesLength)];
-		return YES;
-	}
-
-	return NO;
 }
 
 /*
@@ -2896,14 +2966,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
- *  Performs syntax highlighting after a text change.
+ *  Performs syntax highlighting, re-init autohelp, and re-calculation of snippets after a text change
  */
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
 {
 
 	NSTextStorage *textStore = [notification object];
 
-	//make sure that the notification is from the correct textStorage object
+	// Make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
 	NSInteger editedMask = [textStore editedMask];
@@ -2913,60 +2983,63 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
 	}
 
+	// Cancel calling doSyntaxHighlighting for large text
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doSyntaxHighlighting) 
 								object:nil];
 
-	// Do syntax highlighting only if the user really changed the text
+	// Do syntax highlighting/re-calculate snippet ranges only if the user really changed the text
 	if(editedMask != 1) {
 
+		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
-			NSInteger editStartPosition = [textStore editedRange].location;
-			NSInteger changeInLength = [textStore changeInLength];
-			NSInteger i, j, k;
-			BOOL isCaretInsideASnippet = NO;
-			for(i=0; i<=snippetControlMax; i++) {
-				if(snippetControlArray[i][0] > -1
-					&& editStartPosition >= snippetControlArray[i][0]
-					&& editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+			
+			if([self checkForCaretInsideSnippet]) {
 
-					if(i!=snippetControlMax)
-						isCaretInsideASnippet = YES;
-					snippetControlArray[i][1] += changeInLength;
-					if(snippetControlArray[i][1] < 0) {
-						snippetControlCounter = -1;
-						break;
-					}
-				// Adjust start position of snippets after caret position
-				} else if(snippetControlArray[i][0] > -1 && editStartPosition < snippetControlArray[i][0]) {
-					snippetControlArray[i][0] += changeInLength;
-					if(snippetControlArray[i][1] < 0) {
-						snippetControlCounter = -1;
-						break;
+				NSInteger editStartPosition = [textStore editedRange].location;
+				NSInteger changeInLength = [textStore changeInLength];
+				NSInteger i;
+
+				// Remove any fully nested snippets relative to the current snippet which is was edited
+				if(snippetControlArray[i][0] > -1 && i != snippetControlMax) {
+					NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+					NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+					for(i=0; i<snippetControlMax; i++) {
+						if(snippetControlArray[i][0] > -1
+							&& i != currentSnippetIndex
+							&& snippetControlArray[i][0] >= currentSnippetLocation
+							&& snippetControlArray[i][0] <= currentSnippetMaxRange
+							&& snippetControlArray[i][0] + snippetControlArray[i][1] >= currentSnippetLocation
+							&& snippetControlArray[i][0] + snippetControlArray[i][1] <= currentSnippetMaxRange
+							) {
+								snippetControlArray[i][0] = -1;
+								snippetControlArray[i][1] = -1;
+								snippetControlArray[i][2] = -1;
+						}
 					}
 				}
-			}
-			// If current snippet contains nested snippets then
-			// delete nested snippet definitions
-			// if(snippetControlArray[currentSnippetIndex][0] > -1 && currentSnippetIndex != snippetControlMax)
-			// 	for(j=0; j<snippetControlMax; j++) {
-			// 		if(snippetControlArray[j][0] > -1
-			// 			&& currentSnippetIndex != j
-			// 			&& snippetControlArray[j][0] >= snippetControlArray[currentSnippetIndex][0]
-			// 			&& snippetControlArray[j][0] <= snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1]
-			// 			&& snippetControlArray[j][0] + snippetControlArray[j][1] >= snippetControlArray[currentSnippetIndex][0]
-			// 			&& snippetControlArray[j][0] + snippetControlArray[j][1] <= snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1]
-			// 			) {
-			// 				NSLog(@"%ld-%ld", currentSnippetIndex,j);
-			// 				snippetControlArray[j][0] = -1;
-			// 				snippetControlArray[j][1] = -1;
-			// 				snippetControlArray[j][2] = -1;
-			// 		}
-			// 	}
-			if(!isCaretInsideASnippet)
-				snippetControlCounter = -1;
 
+				// Adjust length change to current snippet
+				snippetControlArray[currentSnippetIndex][1] += changeInLength;
+				// If length < 0 break snippet input
+				if(snippetControlArray[currentSnippetIndex][1] < 0) {
+					[self endSnippetSession];
+				} else {
+					// Adjust start position of snippets after caret position
+					for(i=0; i<=snippetControlMax; i++) {
+						if(snippetControlArray[i][0] > -1 && i != currentSnippetIndex) {
+							if(editStartPosition <= snippetControlArray[i][0]) {
+								snippetControlArray[i][0] += changeInLength;
+							} else if(editStartPosition >= snippetControlArray[i][0] && editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+								snippetControlArray[i][1] += changeInLength;
+							}
+						}
+					}
+				}
+			} else {
+				[self endSnippetSession];
+			}
 		}
 
 		[self doSyntaxHighlighting];
