@@ -1183,7 +1183,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					currentSnippetIndex--;
 
 				if(currentSnippetIndex < 0) {
-					currentSnippetIndex++;
+					currentSnippetIndex = 0;
+					while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
+						currentSnippetIndex++;
 					NSBeep();
 				}
 
