@@ -629,9 +629,9 @@
 		} else {
 			// Check if table/db list needs an update
 			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
-			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)(?<!show\\s+)\\b(create|alter|drop|rename)\\b\\s+."])
+			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
 				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
+			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
 				databaseWasChanged = YES;
 		}
 		// If the query was cancelled, end all queries.
@@ -649,6 +649,7 @@
 
 		// Reload table list
 		[[[tableWindow delegate] valueForKeyPath:@"tablesListInstance"] updateTables:self];
+
 	}
 	
 	if(usedQuery)
