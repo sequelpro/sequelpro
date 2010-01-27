@@ -118,7 +118,7 @@
 	
 	// If 'disconnect' was selected, trigger a window close.
 	if (connectionErrorCode == MCPConnectionCheckDisconnect) {
-		[self performSelectorOnMainThread:@selector(closeConnection) withObject:nil waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(closeDocumentWindowAndDisconnect:) withObject:nil waitUntilDone:YES];
 	}
 	
 	return connectionErrorCode;
@@ -130,7 +130,7 @@
  * everything up before it's all deallocated as a result of the close.
  * Also sets alpha to fully transparent so accidental dialogs are hidden!
  */
-- (void) closeConnection
+- (void) closeDocumentWindowAndDisconnect
 {
 		_isConnected = NO;
 		[self windowWillClose:nil];

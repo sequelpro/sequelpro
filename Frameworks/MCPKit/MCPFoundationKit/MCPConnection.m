@@ -103,6 +103,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryExecutedAtTime = CGFLOAT_MAX;
 		queryCancelled = NO;
 		queryCancelUsedReconnect = NO;
+		serverVersionString = nil;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -372,20 +373,13 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	mConnected = NO;
-	
+
 	if (connectionProxy) {
 		[connectionProxy disconnect];
 	}
 	
-	if (serverVersionString != nil) {
-		[serverVersionString release];
-		serverVersionString = nil;
-	}
-	
-	if (theDbStructure != nil) {
-		[theDbStructure release];
-		theDbStructure = nil;
-	}
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
 	
 	[self stopKeepAliveTimer];
 }
@@ -2382,12 +2376,25 @@ void performThreadedKeepAlive(void *ptr)
 {
 	delegate = nil;
 
+	// Release the query lock, after unlocking it
+	[queryLock tryLock];
+	[queryLock unlock];
+	[queryLock release];
+
+	// Clean up connections if necessary
+	if (mConnected) [self disconnect];
+	if (connectionProxy) {
+		[connectionProxy setConnectionStateChangeSelector:NULL delegate:nil];
+		[connectionProxy disconnect];
+	}
+
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];
 	if (connectionSocket) [connectionSocket release];
 	if (connectionPassword) [connectionPassword release];
-	[queryLock release];
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
 	
 	[super dealloc];
 }

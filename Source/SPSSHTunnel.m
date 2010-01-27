@@ -59,7 +59,7 @@
 	// Set up a connection for use by the tunnel process
 	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
-	tunnelConnection = [[NSConnection defaultConnection] retain];
+	tunnelConnection = [NSConnection new];
 	[tunnelConnection runInNewThread];
 	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
 	[tunnelConnection setRootObject:self];
@@ -593,6 +593,7 @@
 	[remoteHost release];
 	[tunnelConnectionName release];
 	[tunnelConnectionVerifyHash release];
+	[tunnelConnection invalidate];
 	[tunnelConnection release];
 	[debugMessages release];
 	if (password) [password release];
