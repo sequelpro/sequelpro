@@ -103,4 +103,6 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 
+- (BOOL)isSnippetMode;
+
 @end

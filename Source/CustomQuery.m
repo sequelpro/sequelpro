@@ -2046,7 +2046,7 @@
 
 	// Highlight by setting a background color the current query
 	// if nothing is selected
-	if(qRange.length && !currentSelection.length) {
+	if(qRange.length && !currentSelection.length && ![textView isSnippetMode]) {
 		if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
 			[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
 					  value: [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]
