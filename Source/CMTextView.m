@@ -1092,8 +1092,33 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			}
 		}
 	}
+	// If caret is not inside the current snippet range check if caret is inside of
+	// another defined snippet; if so set currentSnippetIndex to it (this allows to use the
+	// mouse to activate another snippet). If the caret is inside of overlapped snippets (nested)
+	// then select this snippet which has the smallest length.
 	if(!isCaretInsideASnippet && foundSnippetIndices[currentSnippetIndex] == 1) {
 		isCaretInsideASnippet = YES;
+	} else {
+		NSInteger index = -1;
+		NSInteger smallestLength = -1;
+		for(i=0; i<snippetControlMax; i++) {
+			if(foundSnippetIndices[i] == 1) {
+				if(index == -1) {
+					index = i;
+					smallestLength = snippetControlArray[i][1];
+				} else {
+					if(smallestLength > snippetControlArray[i][1]) {
+						index = i;
+						smallestLength = snippetControlArray[i][1];
+					}
+				}
+			}
+		}
+		// Reset the active snippet
+		if(index > -1 && smallestLength > -1) {
+			currentSnippetIndex = index;
+			isCaretInsideASnippet = YES;
+		}
 	}
 
 	return isCaretInsideASnippet;
@@ -2838,6 +2863,29 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 
+- (void)drawRect:(NSRect)rect {
+
+	[super drawRect:rect];
+
+	// Highlight snippets coming from the Query Favorite text macro
+	if(snippetControlCounter > -1) {
+		NSInteger i;
+		[[NSColor colorWithCalibratedRed:0.0 green:0.5 blue:0.0 alpha:0.1] setFill];
+		for(i=0; i<snippetControlMax; i++) {
+			if(snippetControlArray[i][0] > -1) {
+				NSRange glRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) actualCharacterRange:NULL];
+				if(glRange.length) {
+					NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glRange inTextContainer:[self textContainer]];
+					boundingRect = NSInsetRect(boundingRect, 0, 2);
+					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:4 yRadius:15];
+					[aBezierPath fill];
+				}
+			}
+		}
+	}
+}
+
+
 #pragma mark -
 #pragma mark context menu
 
@@ -2996,7 +3044,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
-			
+
 			if([self checkForCaretInsideSnippet]) {
 
 				NSInteger editStartPosition = [textStore editedRange].location;
