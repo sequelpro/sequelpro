@@ -2882,13 +2882,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				NSRange glRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) actualCharacterRange:NULL];
 				if(glRange.length) {
 					NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glRange inTextContainer:[self textContainer]];
-					boundingRect = NSInsetRect(boundingRect, -4, -1);
-					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:5 yRadius:10];
-					[[NSColor colorWithCalibratedRed:1.0 green:1. blue:0.0 alpha:0.4] setFill];
+					boundingRect = NSInsetRect(boundingRect, -4, 0.2);
+					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
+					if(i == currentSnippetIndex)
+						[[NSColor colorWithCalibratedRed:1.0 green:0.3 blue:0.0 alpha:0.7] setFill];
+					else
+						[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
 					[aBezierPath fill];
 					boundingRect = NSInsetRect(boundingRect, 2, 2);
-					aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:5 yRadius:10];
-					[[NSColor colorWithCalibratedRed:1.0 green:1. blue:1.0 alpha:0.8] setFill];
+					aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
+					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
 					[aBezierPath fill];
 				}
 			}
@@ -3065,20 +3068,22 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				NSInteger i;
 
 				// Remove any fully nested snippets relative to the current snippet which was edited
-				if(snippetControlArray[i][0] > -1 && i != snippetControlMax) {
-					NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-					NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
-					for(i=0; i<snippetControlMax; i++) {
-						if(snippetControlArray[i][0] > -1
-							&& i != currentSnippetIndex
-							&& snippetControlArray[i][0] >= currentSnippetLocation
-							&& snippetControlArray[i][0] <= currentSnippetMaxRange
-							&& snippetControlArray[i][0] + snippetControlArray[i][1] >= currentSnippetLocation
-							&& snippetControlArray[i][0] + snippetControlArray[i][1] <= currentSnippetMaxRange
-							) {
-								snippetControlArray[i][0] = -1;
-								snippetControlArray[i][1] = -1;
-								snippetControlArray[i][2] = -1;
+				for(i=0; i<snippetControlMax; i++) {
+					if(snippetControlArray[i][0] > -1 && i != snippetControlMax) {
+						NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+						NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+						for(i=0; i<snippetControlMax; i++) {
+							if(snippetControlArray[i][0] > -1
+								&& i != currentSnippetIndex
+								&& snippetControlArray[i][0] >= currentSnippetLocation
+								&& snippetControlArray[i][0] <= currentSnippetMaxRange
+								&& snippetControlArray[i][0] + snippetControlArray[i][1] >= currentSnippetLocation
+								&& snippetControlArray[i][0] + snippetControlArray[i][1] <= currentSnippetMaxRange
+								) {
+									snippetControlArray[i][0] = -1;
+									snippetControlArray[i][1] = -1;
+									snippetControlArray[i][2] = -1;
+							}
 						}
 					}
 				}
