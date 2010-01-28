@@ -691,9 +691,13 @@
 	if ( [mySQLConnection queryCancelled] || ([errors length] && !queryIsTableSorter)) {
 		// set the error text
 		[errorText setStringValue:errors];
-		// select the line x of the first error if error message contains "at line x"
-		NSRange errorLineNumberRange = [errors rangeOfRegex:@"(?<!key )([0-9]+)$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
-		if(errorLineNumberRange.length) // if a line number was found
+
+		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
+		// by capturing the last number of the error string
+		NSRange errorLineNumberRange = [errors rangeOfRegex:@"([0-9]+)[^0-9]*$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1L error:nil];
+
+		// if error ID 1064 and a line number was found
+		if([mySQLConnection getLastErrorID] == 1064 && errorLineNumberRange.length)
 		{
 			// Get the line number
 			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] integerValue];
@@ -701,7 +705,7 @@
 			[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 
 			// Check for near message
-			NSRange errorNearMessageRange = [errors rangeOfRegex:@" '(+*?)' " options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1 error:nil];
+			NSRange errorNearMessageRange = [errors rangeOfRegex:@"[( ]'(.+)'[ -]" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1L error:nil];
 			if(errorNearMessageRange.length) // if a "near message" was found
 			{
 				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
@@ -712,7 +716,6 @@
 				textNearMessageRange = NSMakeRange(textNearMessageRange.location+queryStartPosition, textNearMessageRange.length);
 				// Select the near message and scroll to it
 				[textView setSelectedRange:textNearMessageRange];
-				[textView scrollRangeToVisible:textNearMessageRange];
 			}
 		} else { // Select first erroneous query entirely
 			
@@ -727,8 +730,8 @@
 				// select the query for which the first error was detected
 				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
 				[textView setSelectedRange:queryRange];
+				[textView scrollRangeToVisible:queryRange];
 			}
-
 		}
 		
 	} else if ( [errors length] && queryIsTableSorter ) {
@@ -1071,9 +1074,11 @@
 	
 	[queries release];
 	
-	// Remove all leading white spaces
+	// Remove all leading and trailing white spaces
 	NSInteger offset = [theQueryString rangeOfRegex:@"^(\\s*)"].length;
 	theQueryRange.location += offset;
+	theQueryRange.length -= offset;
+	offset = [theQueryString rangeOfRegex:@"(\\s*)$"].length;
 	theQueryRange.length -= offset;
 	return theQueryRange;
 }

@@ -760,9 +760,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			lineNumber++;
 		}
 	}
-	
+
 	// Safety-check the line number
 	if (lineNumber > [lineRanges count]) lineNumber = [lineRanges count];
+	if (lineNumber < 1) lineNumber = 1;
 
 	// Grab the range to select
 	selRange = NSRangeFromString([lineRanges objectAtIndex:lineNumber-1]);
