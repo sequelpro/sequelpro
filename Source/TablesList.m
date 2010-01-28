@@ -45,10 +45,9 @@
 - (void)truncateTable;
 - (void)addTable;
 - (void)copyTable;
-- (void)renameTable;
-- (void)renameTableFrom:(NSString *)oldTableName To:(NSString *)newTableName;
-- (BOOL)isTableNameValid:(NSString *)tableName;
-- (BOOL)isTableNameValid:(NSString *)tableName ignoringSelectedTable:(BOOL)ignoreSelectedTable;
+- (void)renameTableOfType: (enum sp_table_types)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType;
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
 @end
 
@@ -417,7 +416,7 @@
 }
 
 /**
- * Renames the currently selected table.
+ * This action starts editing the table name in the table list
  */
 - (IBAction)renameTable:(id)sender
 {
@@ -426,7 +425,15 @@
 	}
 	
 	[tableWindow endEditingFor:nil];
-	[tableRenameField setStringValue:[self tableName]];
+	
+    if ([tablesListView numberOfSelectedRows] != 1) return;
+    if (![[self tableName] length]) return;
+    
+    [tablesListView editColumn:0 row:[tablesListView selectedRow] withEvent:nil select:YES];
+    
+    /*
+    
+    [tableRenameField setStringValue:[self tableName]];
 	[renameTableButton setEnabled:NO];
 	
 	NSString *tableType;
@@ -448,11 +455,13 @@
 	
 	[tableRenameText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename %@ '%@' to:",@"rename item name to:"), tableType, [self tableName]]];
 	
+    
 	[NSApp beginSheet:tableRenameSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"renameTable"];
+    */
 }
 
 /**
@@ -539,11 +548,6 @@
 			[self copyTable];
 		}
 	}
-	else if ([contextInfo isEqualToString:@"renameTable"]) {
-		if (returnCode == NSOKButton) {
-			[self renameTable];
-		}
-	}
 }
 
 #pragma mark -
@@ -572,21 +576,15 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-
 	id object = [notification object];
 
 	if (object == tableNameField) {
-		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue]]];
+		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue] forType: SP_TABLETYPE_TABLE]];
 	}
 
 	else if (object == copyTableNameField) {
-		[copyTableButton setEnabled:[self isTableNameValid:[copyTableNameField stringValue]]];
+		[copyTableButton setEnabled:[self isTableNameValid:[copyTableNameField stringValue] forType:[self tableType]]];
 	}
-
-	else if (object == tableRenameField) {
-		[renameTableButton setEnabled:[self isTableNameValid:[tableRenameField stringValue] ignoringSelectedTable:YES]];
-	}
-
 }
 
 /*
@@ -601,10 +599,7 @@
 	if([[[notification userInfo] objectForKey:@"NSTextMovement"] integerValue] != 0)
 		return;
 
-	if (object == tableRenameField) {
-		[renameTableButton performClick:object];
-	}
-	else if (object == tableNameField) {
+	if (object == tableNameField) {
 		[addTableButton performClick:object];
 	}
 	else if (object == copyTableNameField) {
@@ -1219,67 +1214,76 @@
  */
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if ([selectedTableName isEqualToString:anObject]) {
+	//first trim whitespace whitespace
+    NSString *newTableName = [anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    
+    if ([selectedTableName isEqualToString:newTableName]) {
 		// No changes in table name
         return;
 	}
     
-	if ([anObject isEqualToString:@""]) {
-		// Table has no name
-		alertSheetOpened = YES;
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Empty names are not allowed.", @"message of panel when no name is given for an item"));
+	if ([newTableName isEqualToString:@""]) {
+        // empty table names are not allowed
+        // don't annoy the user about it, just ignore this
+        // this is also how the MacOS Finder handles renaming files
         return;
-    } 
+    }
+    
+    if (![self isTableNameValid:newTableName forType:selectedTableType ignoringSelectedTable:YES]) {
+		// Table has invalid name
+        // Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil,
+                          [NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
+        return;
+    }
+    
     @try {
-        [self renameTableFrom:[self tableName] To:anObject];
+        // first: update the database
+        [self renameTableOfType:selectedTableType from:selectedTableName to:newTableName];
         
-        // Renamed with success
+        // second: update the table list
         if (isTableListFiltered) {
             NSInteger unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:rowIndex]];
-            [tables replaceObjectAtIndex:unfilteredIndex withObject:anObject];
+            [tables replaceObjectAtIndex:unfilteredIndex withObject:newTableName];
         }
-        [filteredTables replaceObjectAtIndex:rowIndex withObject:anObject];
+        [filteredTables replaceObjectAtIndex:rowIndex withObject:newTableName];
         if (selectedTableName) [selectedTableName release];
-        selectedTableName = [[NSString alloc] initWithString:anObject];
+        selectedTableName = [[NSString alloc] initWithString:newTableName];
         
-        if(selectedTableType == SP_TABLETYPE_FUNC || selectedTableType == SP_TABLETYPE_PROC)
-            return;
-        NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
-        
-        if (selectedIndex == 0) {
-            [tableSourceInstance loadTable:anObject];
-            structureLoaded = YES;
-            contentLoaded = NO;
-            statusLoaded = NO;
-        } 
-        else if (selectedIndex == 1) {
-            [tableContentInstance loadTable:anObject];
-            structureLoaded = NO;
-            contentLoaded = YES;
-            statusLoaded = NO;
-        } 
-        else if (selectedIndex == 3) {
-            [extendedTableInfoInstance loadTable:anObject];
-            structureLoaded = NO;
-            contentLoaded = NO;
-            statusLoaded = YES;
-        } 
-        else {
-            statusLoaded = NO;
-            structureLoaded = NO;
-            contentLoaded = NO;
+        // if the 'table' is a view or a table, reload the currently selected view 
+        if (selectedTableType == SP_TABLETYPE_TABLE || selectedTableType == SP_TABLETYPE_VIEW)
+        {
+            switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
+                case 0:
+                    [tableSourceInstance loadTable:newTableName];
+                    structureLoaded = YES;
+                    contentLoaded = statusLoaded = NO;
+                    break;
+                case 1:
+                    [tableContentInstance loadTable:newTableName];
+                    contentLoaded = YES;
+                    structureLoaded = statusLoaded = NO;
+                    break;
+                case 3:
+                    [extendedTableInfoInstance loadTable:newTableName];
+                    statusLoaded = YES;
+                    structureLoaded = contentLoaded = NO;
+                    break;
+                default:
+                    statusLoaded = structureLoaded = contentLoaded = NO;
+            }
         }
-        
-        // Set window title
-        [tableWindow setTitle:[tableDocumentInstance displaySPName]];
-
-        // Query the structure of all databases in the background (mainly for completion)
-        [NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
     }
     @catch (NSException * myException) {
-        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, myException.reason);
+        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [myException reason]);
     }
+    
+    // Set window title to reflect the new table name
+    [tableWindow setTitle:[tableDocumentInstance displaySPName]];
+    
+    // Query the structure of all databases in the background (mainly for completion)
+    [NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
 }
 
 #pragma mark -
@@ -2125,43 +2129,12 @@
 	}
 }
 
-/**
- * Renames the currently selected object (table, view, procedure, function, etc.).
- */
-- (void)renameTable
-{
-    // if the table name didn't change, do nothing
-    if ([[tableRenameField stringValue] isEqualToString:[self tableName]]) return;
-        
-    @try {
-        [self renameTableFrom:[self tableName] To:[tableRenameField stringValue]];
-        
-        //rename the table in our list and reload the table view's data
-        if (isTableListFiltered) {
-            [tables replaceObjectAtIndex:[tables indexOfObject:[self tableName]] withObject:[tableRenameField stringValue]];
-        }
-        [filteredTables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
-        if (selectedTableName) [selectedTableName release];
-        selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
-        [tablesListView reloadData];
-        [self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
-   
-        // Query the structure of all databases in the background (mainly for completion)
-        [NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
-    }
-    @catch (NSException * myException) {
-        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, myException.reason);
-    }
-    
-    // Set window title
-    [tableWindow setTitle:[tableDocumentInstance displaySPName]];
-}
-
 /*
  * Renames a table, view, procedure or function. Also handles only changes in case!
+ * This function ONLY changes the database. It does NOT refresh the views etc.
  * CAREFUL: This function raises an exception if renaming fails, and does not show an error message.
  */
-- (void)renameTableFrom:(NSString *)oldTableName To:(NSString *)newTableName;
+- (void)renameTableOfType: (enum sp_table_types)tableType from:(NSString *)oldTableName to:(NSString *)newTableName
 {
     // check if the name really changed
     if ([oldTableName isEqualToString:newTableName]) return;
@@ -2175,20 +2148,20 @@
         int tempNumber;
         for(tempNumber=2; tempNumber<100; tempNumber++) {
             tempTableName = [NSString stringWithFormat:@"%@-%d",selectedTableName,tempNumber];
-            if ([self isTableNameValid:tempTableName]) break;
+            if ([self isTableNameValid:tempTableName forType:tableType]) break;
         }
         if (tempNumber==100) {
             // we couldn't find a temporary name
             [NSException raise:@"No Tempname found" format:NSLocalizedString(@"An error occured while renaming '%@'. No temporary name could be found. Please try renaming to something else first.", @"rename table error - no temporary name found"), oldTableName];
         }
         
-        [self renameTableFrom:oldTableName To:tempTableName];
-        [self renameTableFrom:tempTableName To:newTableName];
+        [self renameTableOfType:tableType from:oldTableName to:tempTableName];
+        [self renameTableOfType:tableType from:tempTableName to:newTableName];
         return;
     }
     
     //check if we are trying to rename a TABLE or a VIEW
-    if (selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
+    if (tableType == SP_TABLETYPE_VIEW || tableType == SP_TABLETYPE_TABLE) {
         // we can use the rename table statement
         [mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [oldTableName backtickQuotedString], [newTableName backtickQuotedString]]];
         // check for errors
@@ -2199,17 +2172,17 @@
     }
     
     //check if we are trying to rename a PROCEDURE or a FUNCTION
-    if (selectedTableType == SP_TABLETYPE_PROC || selectedTableType == SP_TABLETYPE_FUNC) {
+    if (tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC) {
         // procedures and functions can only be renamed if one creates a new one and deletes the old one
         
         // first get the create syntax
-        NSString *tableType;
-        switch (selectedTableType){
-            case SP_TABLETYPE_PROC: tableType = @"PROCEDURE"; break;
-            case SP_TABLETYPE_FUNC: tableType = @"FUNCTION"; break;
+        NSString *stringTableType;
+        switch (tableType){
+            case SP_TABLETYPE_PROC: stringTableType = @"PROCEDURE"; break;
+            case SP_TABLETYPE_FUNC: stringTableType = @"FUNCTION"; break;
         }
         
-        MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", tableType, [oldTableName backtickQuotedString] ] ];
+        MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
         if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't retrieve the syntax for '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't retrieve syntax"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
@@ -2217,14 +2190,18 @@
         NSString *oldCreateSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
 
         // replace the old name with the new name
-        NSString *newCreateSyntax = [oldCreateSyntax stringByReplacingCharactersInRange:[oldCreateSyntax rangeOfString: [NSString stringWithFormat:@"%@ %@", tableType, [oldTableName backtickQuotedString] ] ]
-                                                                             withString:[NSString stringWithFormat:@"%@ %@", tableType, [newTableName backtickQuotedString] ] ];
+        NSRange rangeOfProcedureName = [oldCreateSyntax rangeOfString: [NSString stringWithFormat:@"%@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
+        if (rangeOfProcedureName.length == 0) {
+            [NSException raise:@"Unknown Syntax" format:NSLocalizedString(@"An error occured while renaming. The CREATE syntax of '%@' could not be parsed.", @"rename error - invalid create syntax"), oldTableName];
+        }
+        NSString *newCreateSyntax = [oldCreateSyntax stringByReplacingCharactersInRange: rangeOfProcedureName
+                                                                             withString: [NSString stringWithFormat:@"%@ %@", stringTableType, [newTableName backtickQuotedString] ] ];
         [mySQLConnection queryString: newCreateSyntax];
         if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't recreate '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't recreate procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         
-        [mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [oldTableName backtickQuotedString]]];
+        [mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", stringTableType, [oldTableName backtickQuotedString]]];
         if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't remove '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't remove old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
@@ -2240,11 +2217,12 @@
  * Check tableName for length and if the tableName doesn't match
  * against current database table/view names (case-insensitive).
  */
-- (BOOL)isTableNameValid:(NSString *)tableName
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType
 {
-    return [self isTableNameValid:tableName ignoringSelectedTable:NO];
+    return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
 }
-- (BOOL)isTableNameValid:(NSString *)tableName ignoringSelectedTable:(BOOL)ignoreSelectedTable
+
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
 {
 	BOOL isValid = YES;
 
@@ -2259,7 +2237,25 @@
 	if([fieldStr length] == 0) return NO;
     
     
-    for(id table in [self allTableAndViewNames]) {
+    NSArray *similarTables;
+    switch (tableType) {
+        case SP_TABLETYPE_VIEW:
+        case SP_TABLETYPE_TABLE:
+            similarTables = [self allTableAndViewNames];
+            break;
+        case SP_TABLETYPE_PROC:
+            similarTables = [self allProcedureNames];
+            break;
+        case SP_TABLETYPE_FUNC:
+            similarTables = [self allFunctionNames];
+            break;
+        default:
+            // if some other table type is given, just return yes
+            // better a mysql error than not being able to change something at all
+            return YES;
+    }
+    
+    for(id table in similarTables) {
         //compare case insensitive here
         if([lowercaseFieldStr isEqualToString:[table lowercaseString]]) {
             if (ignoreSelectedTable) {

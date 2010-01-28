@@ -73,10 +73,6 @@ enum sp_table_types
 	IBOutlet id toolbarActionsButton;
 	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
-	IBOutlet id tableRenameSheet;
-	IBOutlet id tableRenameField;
-	IBOutlet id tableRenameText;
-	IBOutlet id renameTableButton;
 	IBOutlet id truncateTableButton;
 	IBOutlet id truncateTableContextButton;
 	IBOutlet NSSplitView *tableListSplitView;
