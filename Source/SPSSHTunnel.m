@@ -469,9 +469,24 @@
  */
 - (BOOL) getResponseForQuestion:(NSString *)theQuestion
 {
+    // prepare the condition
+    [answerAvailableCondition lock];
+    isAnswerAvailable = NO;
+    
+    // request an answer on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetResponseForQuestion:) withObject:theQuestion waitUntilDone:YES];
 	
-	return requestedResponse;
+    // wait until an answer is available
+    while (!isAnswerAvailable) [answerAvailableCondition wait];
+    
+    // save the answer
+    BOOL response = requestedResponse;
+    
+    //unlock condition
+    [answerAvailableCondition unlock];
+    
+    //return the answer
+	return response;
 }
 - (void) workerGetResponseForQuestion:(NSString *)theQuestion
 {	
@@ -479,29 +494,28 @@
 	NSSize questionTextSize;
 	NSRect windowFrameRect;
 
-	// Ask how to proceed, sizing the window appropriately to fit the question
+	// set up the question window
 	[sshQuestionText setStringValue:theQuestion];
 	questionTextSize = [[sshQuestionText cell] cellSizeForBounds:NSMakeRect(0, 0, [sshQuestionText bounds].size.width, 500)];
 	windowFrameRect = [sshQuestionDialog frame];
 	windowFrameRect.size.height = ((questionTextSize.height < 100)?100:questionTextSize.height) + 70 + ([sshPasswordDialog isSheet]?0:22);
 	[sshQuestionDialog setFrame:windowFrameRect display:NO];
+    
+    //show the question window
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	NSInteger sshQueryResponseCode = [NSApp runModalForWindow:sshQuestionDialog];
-	[NSApp endSheet:sshQuestionDialog];
+}
+/*
+ * Ends an existing modal session
+ */
+- (IBAction) closeSSHQuestionSheet:(id)sender
+{
+    [answerAvailableCondition lock];
+    requestedResponse = [sender tag]==1 ? YES : NO;
+    [NSApp endSheet:sshQuestionDialog];
 	[sshQuestionDialog orderOut:nil];
-
-	switch (sshQueryResponseCode) {
-
-		// Yes
-		case 1:
-			requestedResponse = YES;
-			return;
-
-		// No
-		default:
-			requestedResponse = NO;
-			return;
-	}
+    isAnswerAvailable = YES;
+    [answerAvailableCondition signal];
+    [answerAvailableCondition unlock];
 }
 
 /*
@@ -512,30 +526,44 @@
 {
 	if (![theHash isEqualToString:tunnelConnectionVerifyHash]) return nil;
 
-	NSString *thePassword;
-	
+    // prepare the condition
+    [answerAvailableCondition lock];
+    isAnswerAvailable = NO;
+    
+    // request password on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetPasswordForQuery:) withObject:theQuery waitUntilDone:YES];
 
-	if (!requestedPassphrase) return nil;
-	thePassword = [NSString stringWithString:requestedPassphrase];
-	[requestedPassphrase release], requestedPassphrase = nil;
+    // wait until an answer is available
+    while (!isAnswerAvailable) [answerAvailableCondition wait];
+
+    // save the answer
+	NSString *thePassword = nil;
+    if (requestedPassphrase) {
+        thePassword = [NSString stringWithString:requestedPassphrase];
+        [requestedPassphrase release], requestedPassphrase = nil;
+    }
+    
+    //unlock condition
+    [answerAvailableCondition unlock];
+    
+    //return the answer
 	return thePassword;
 }
 - (void) workerGetPasswordForQuery:(NSString *)theQuery
 {
 	NSSize queryTextSize;
 	NSRect windowFrameRect;
-	NSString *thePassword;
-	SPKeychain *keychain;
 
 	// Work out whether a passphrase is being requested, extracting the key name
 	NSString *keyName = [theQuery stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
 	if (keyName) {
 		[sshPasswordText setStringValue:[NSString stringWithFormat:@"Enter your password for the SSH key\n\"%@\"", keyName]];
 		[sshPasswordKeychainCheckbox setHidden:NO];
+        currentKeyName = [keyName retain];
 	} else {
 		[sshPasswordText setStringValue:theQuery];
-		[sshPasswordKeychainCheckbox setHidden:YES];	
+		[sshPasswordKeychainCheckbox setHidden:YES];
+        currentKeyName = nil;
 	}
 
 	// Request the password, sizing the window appropriately to fit the query
@@ -544,44 +572,43 @@
 	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	NSInteger sshQueryResponseCode = [NSApp runModalForWindow:sshPasswordDialog];
-	[NSApp endSheet:sshPasswordDialog];
-	[sshPasswordDialog orderOut:nil];
-
-	switch (sshQueryResponseCode) {
-
-		// OK
-		case 1:
-			thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
-			[sshPasswordField setStringValue:@""];
-			if ([delegate respondsToSelector:@selector(setUndoManager:)] && [delegate undoManager]) {
-				[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
-			} else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
-				[[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];			
-			}
-			requestedPassphrase = [[NSString alloc] initWithString:thePassword];
-			
-			// Add to keychain if appropriate
-			if (keyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
-				keychain = [[SPKeychain alloc] init];
-				[keychain addPassword:thePassword forName:@"SSH" account:keyName withLabel:[NSString stringWithFormat:@"SSH: %@", keyName]];
-				[keychain release];
-			}
-			return;
-
-		// Cancel
-		default:
-			return;
-	}
 }
  
 /*
  * Ends an existing modal session
  */
-- (IBAction) closeSheet:(id)sender
+- (IBAction) closeSSHPasswordSheet:(id)sender
 {
-	[NSApp stopModalWithCode:[sender tag]];
+    [answerAvailableCondition lock];
+    requestedResponse = [sender tag]==1 ? YES : NO;
+	[NSApp endSheet:sshPasswordDialog];
+	[sshPasswordDialog orderOut:nil];
+    
+    if (requestedResponse) {
+        NSString *thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
+        [sshPasswordField setStringValue:@""];
+        if ([delegate respondsToSelector:@selector(setUndoManager:)] && [delegate undoManager]) {
+            [[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+        } else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
+            [[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];			
+        }
+        requestedPassphrase = [[NSString alloc] initWithString:thePassword];
+        
+        // Add to keychain if appropriate
+        if (currentKeyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
+            SPKeychain *keychain = [[SPKeychain alloc] init];
+            [keychain addPassword:thePassword forName:@"SSH" account:currentKeyName withLabel:[NSString stringWithFormat:@"SSH: %@", currentKeyName]];
+            [keychain release];
+            [currentKeyName release];
+            currentKeyName = nil;
+        }
+    }
+    
+    isAnswerAvailable = YES;
+    [answerAvailableCondition signal];
+    [answerAvailableCondition unlock];
 }
+
 
 - (void)dealloc
 {
