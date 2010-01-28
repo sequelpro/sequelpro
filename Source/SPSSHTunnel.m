@@ -476,7 +476,7 @@
     // request an answer on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetResponseForQuestion:) withObject:theQuestion waitUntilDone:YES];
 	
-    // wait until an answer is available
+    // wait for the signal in closeSSHQuestionSheet:
     while (!isAnswerAvailable) [answerAvailableCondition wait];
     
     // save the answer
@@ -533,7 +533,7 @@
     // request password on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetPasswordForQuery:) withObject:theQuery waitUntilDone:YES];
 
-    // wait until an answer is available
+    // wait for the signal in closeSSHPasswordSheet:
     while (!isAnswerAvailable) [answerAvailableCondition wait];
 
     // save the answer
