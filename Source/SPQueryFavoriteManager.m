@@ -535,7 +535,7 @@
 	} 
 	else if(object == favoriteTabTriggerTextField){
 		//Validate trigger - it only may contain alphnumeric characters
-		NSString *tabTrigger = [NSString stringWithString:[[favoriteTabTriggerTextField stringValue] stringByReplacingOccurrencesOfRegex:@"[^\\w0-9]" withString:@""]];
+		NSString *tabTrigger = [NSString stringWithString:[[favoriteTabTriggerTextField stringValue] stringByReplacingOccurrencesOfRegex:@"(?i)[^[:L:]0-9]+" withString:@""]];
 		[favoriteTabTriggerTextField setStringValue:tabTrigger];
 		[[favorites objectAtIndex:[favoritesTableView selectedRow]] setObject:tabTrigger forKey:@"tabtrigger"];
 		[favoritesTableView reloadData];
