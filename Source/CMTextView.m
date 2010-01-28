@@ -571,7 +571,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					inView:self
 					dictMode:isDictMode
 					dbMode:dbBrowseMode
-					tabTriggerMode:((snippetControlCounter > -1) ? YES : NO)
+					tabTriggerMode:[self isSnippetMode]
 					fuzzySearch:fuzzySearch
 					backtickMode:backtickMode
 					withDbName:dbName
@@ -994,13 +994,50 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(snipCnt>snippetControlMax)
 				snippetControlMax = snipCnt;
 
-			[snip replaceCharactersInRange:snipRange withString:[snip substringWithRange:hintRange]];
+			// Replace internal variables
+			NSMutableString *theHintString = [[NSMutableString alloc] initWithCapacity:hintRange.length];
+			[theHintString setString:[snip substringWithRange:hintRange]];
+			if([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_"]) {
+				NSRange r;
+				NSString *currentTable = nil;
+				if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
+					currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+				NSString *currentDb = nil;
+				if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+					currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+
+				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLE"]) {
+					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLE"];
+					if(r.length) {
+						if(currentTable && [currentTable length])
+							[theHintString replaceCharactersInRange:r withString:[currentTable backtickQuotedString]];
+						else
+							[theHintString replaceCharactersInRange:r withString:@"<table>"];
+					}
+					[theHintString flushCachedRegexData];
+				}
+
+				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_DATABASE"]) {
+					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_DATABASE"];
+					if(r.length) {
+						if(currentDb && [currentDb length])
+							[theHintString replaceCharactersInRange:r withString:[currentDb backtickQuotedString]];
+						else
+							[theHintString replaceCharactersInRange:r withString:@"<database>"];
+					}
+					[theHintString flushCachedRegexData];
+				}
+			}
+
+			[snip replaceCharactersInRange:snipRange withString:theHintString];
 			[snip flushCachedRegexData];
 
 			// Store found snippet range
 			snippetControlArray[snipCnt][0] = snipRange.location + targetRange.location;
-			snippetControlArray[snipCnt][1] = snipRange.length-4-((snipCnt>9)?2:1);
+			snippetControlArray[snipCnt][1] = [theHintString length];
 			snippetControlArray[snipCnt][2] = 0;
+
+			[theHintString release];
 
 			// Adjust successive snippets
 			for(i=0; i<20; i++)
@@ -1063,6 +1100,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self endSnippetSession];
 		return NO;
 	}
+
+	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
 
 	NSInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
@@ -2880,11 +2919,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					boundingRect = NSInsetRect(boundingRect, -4, 0.2);
 					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
 					if(i == currentSnippetIndex)
-						[[NSColor colorWithCalibratedRed:1.0 green:0.3 blue:0.0 alpha:0.7] setFill];
+						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.7] setFill];
 					else
 						[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
 					[aBezierPath fill];
-					boundingRect = NSInsetRect(boundingRect, 2, 2);
+					boundingRect = NSInsetRect(boundingRect, 1.3, 1.3);
 					aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
 					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
 					[aBezierPath fill];
