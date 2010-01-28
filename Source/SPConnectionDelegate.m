@@ -111,7 +111,7 @@
 - (MCPConnectionCheck)connectionLost:(id)connection
 {
 	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	NSLog(@"Connection error on main thread? %d", [[NSThread currentThread] isMainThread] );
+
     NSInteger connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
 	
 	[NSApp endSheet:connectionErrorDialog];
@@ -119,7 +119,7 @@
 	
 	// If 'disconnect' was selected, trigger a window close.
 	if (connectionErrorCode == MCPConnectionCheckDisconnect) {
-		[self performSelectorOnMainThread:@selector(closeDocumentWindowAndDisconnect:) withObject:nil waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(closeDocumentWindowAndDisconnect) withObject:nil waitUntilDone:YES];
 	}
 	
 	return connectionErrorCode;
@@ -131,7 +131,7 @@
  * everything up before it's all deallocated as a result of the close.
  * Also sets alpha to fully transparent so accidental dialogs are hidden!
  */
-- (void) closeDocumentWindowAndDisconnect:(id)anObject
+- (void) closeDocumentWindowAndDisconnect
 {
 		_isConnected = NO;
 		[self windowWillClose:nil];
