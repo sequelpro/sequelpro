@@ -171,18 +171,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
-		// Only parse for words if text size is less than 60kB
-		if([[self string] length] && [[self string] length]<60000)
+		// Only parse for words if text size is less than 6MB
+		if([[self string] length] && [[self string] length]<6000000)
 		{
-			NSMutableArray *uniqueArray = [NSMutableArray array];
-			[uniqueArray addObjectsFromArray:[NSSet setWithArray:[[self string] componentsMatchedByRegex:@"\\w+"]]];
+			NSMutableSet *uniqueArray = [NSMutableSet setWithCapacity:5];
 
+			for(id w in [[self textStorage] words])
+				[uniqueArray addObject:[w string]];
 			// Remove current word from list
+
 			[uniqueArray removeObject:currentWord];
 
 			NSInteger reverseSort = NO;
-			NSArray *sortedArray = [[[uniqueArray mutableCopy] autorelease] sortedArrayUsingFunction:alphabeticSort context:&reverseSort];
-			for(id w in sortedArray)
+
+			for(id w in [[uniqueArray allObjects] sortedArrayUsingFunction:alphabeticSort context:&reverseSort])
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
 
 		}
@@ -379,15 +381,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 	}
 
-	// Make suggestions unique
-	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-	for(id suggestion in possibleCompletions)
-		if(![compl containsObject:suggestion])
-			[compl addObject:suggestion];
-	
-	[possibleCompletions release];
-
-	return [compl autorelease];
+	return [possibleCompletions autorelease];
 
 }
 
