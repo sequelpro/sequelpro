@@ -702,11 +702,10 @@
 			// Get the line number
 			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] integerValue];
 			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:[self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition].location] - 1;
-			[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 
 			// Check for near message
 			NSRange errorNearMessageRange = [errors rangeOfRegex:@"[( ]'(.+)'[ -]" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1L error:nil];
-			if(errorNearMessageRange.length > 2) // if a "near message" was found
+			if(errorNearMessageRange.length) // if a "near message" was found
 			{
 				NSUInteger bufferLength = [[textView string] length];
 
@@ -728,6 +727,8 @@
 					[textView setSelectedRange:textNearMessageRange];
 					[textView scrollRangeToVisible:textNearMessageRange];
 				}
+			} else {
+				[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 			}
 		} else { // Select first erroneous query entirely
 			
@@ -746,7 +747,7 @@
 				[textView scrollRangeToVisible:queryRange];
 			}
 		}
-		
+
 	} else if ( [errors length] && queryIsTableSorter ) {
 		[errorText setStringValue:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
 		NSBeep();

@@ -935,7 +935,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20) {
 			if(snippetControlArray[currentSnippetIndex][2] == 0) {
-				[self setSelectedRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
+				NSRange r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
+				if(r1.location == r2.location && r1.length == r2.length)
+					[self setSelectedRange:r2];
+				else
+					[self endSnippetSession];
 			}
 		} else { // for safety reasons
 			[self endSnippetSession];
@@ -1103,8 +1108,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self endSnippetSession];
 		return NO;
 	}
-
-	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
 
 	NSInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
@@ -2916,20 +2919,27 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSInteger i;
 		for(i=0; i<snippetControlMax; i++) {
 			if(snippetControlArray[i][0] > -1) {
-				NSRange glRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) actualCharacterRange:NULL];
-				NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glRange inTextContainer:[self textContainer]];
-				if(!glRange.length) boundingRect.size.width = 1;
-				boundingRect = NSInsetRect(boundingRect, -4, 0.2);
-				NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
-				if(i == currentSnippetIndex)
-					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.7] setFill];
-				else
-					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
-				[aBezierPath fill];
-				boundingRect = NSInsetRect(boundingRect, 1.3, 1.3);
-				aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
-				[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
-				[aBezierPath fill];
+				NSUInteger rectCount;
+				NSRange snippetRange = NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]);
+				NSRectArray snippetRects = [[self layoutManager] rectArrayForCharacterRange: snippetRange
+					withinSelectedCharacterRange: snippetRange
+								 inTextContainer: [self textContainer]
+									   rectCount: &rectCount ];
+				for (NSUInteger j=0; j<rectCount; j++)
+				{
+					NSRect snippetRect = snippetRects[j];
+					snippetRect = NSInsetRect(snippetRect, -4, 0.2);
+					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:snippetRect xRadius:6 yRadius:10];
+					if(i == currentSnippetIndex)
+						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.7] setFill];
+					else
+						[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
+					[aBezierPath fill];
+					snippetRect = NSInsetRect(snippetRect, 1.3, 1.3);
+					aBezierPath = [NSBezierPath bezierPathWithRoundedRect:snippetRect xRadius:6 yRadius:10];
+					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
+					[aBezierPath fill];
+				}
 			}
 		}
 	}
