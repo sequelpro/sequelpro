@@ -922,6 +922,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		&& currentSnippetIndex <= snippetControlMax
 		)
 	{
+
+		[self breakUndoCoalescing];
+
 		// Place the caret at the end of the query favorite snippet
 		// and finish snippet editing
 		if(currentSnippetIndex == snippetControlMax) {

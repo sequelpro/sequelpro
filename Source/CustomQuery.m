@@ -701,21 +701,33 @@
 		{
 			// Get the line number
 			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] integerValue];
-			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:queryTextViewStartPosition] - 1;
+			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:[self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition].location] - 1;
 			[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 
 			// Check for near message
 			NSRange errorNearMessageRange = [errors rangeOfRegex:@"[( ]'(.+)'[ -]" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1L error:nil];
-			if(errorNearMessageRange.length) // if a "near message" was found
+			if(errorNearMessageRange.length > 2) // if a "near message" was found
 			{
+				NSUInteger bufferLength = [[textView string] length];
+
+				NSRange bufferRange = NSMakeRange(0, bufferLength);
+
 				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
-				NSRange theRange = NSMakeRange(queryStartPosition, [[textView string] length]-queryStartPosition);
+				NSRange theRange = NSMakeRange(queryStartPosition, bufferLength-queryStartPosition);
+				theRange = NSIntersectionRange(bufferRange, theRange);
+
 				// Get the range in textView of the near message
 				NSRange textNearMessageRange = [[[textView string] substringWithRange:theRange] rangeOfString:[errors substringWithRange:errorNearMessageRange] options:NSLiteralSearch];
+
 				// Correct the near message range relative to queryStartPosition
 				textNearMessageRange = NSMakeRange(textNearMessageRange.location+queryStartPosition, textNearMessageRange.length);
+				textNearMessageRange = NSIntersectionRange(bufferRange, textNearMessageRange);
+
 				// Select the near message and scroll to it
-				[textView setSelectedRange:textNearMessageRange];
+				if(textNearMessageRange.length > 0) {
+					[textView setSelectedRange:textNearMessageRange];
+					[textView scrollRangeToVisible:textNearMessageRange];
+				}
 			}
 		} else { // Select first erroneous query entirely
 			
@@ -729,6 +741,7 @@
 			} else {
 				// select the query for which the first error was detected
 				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
+				queryRange = NSIntersectionRange(NSMakeRange(0, [[textView string] length]), queryRange);
 				[textView setSelectedRange:queryRange];
 				[textView scrollRangeToVisible:queryRange];
 			}
