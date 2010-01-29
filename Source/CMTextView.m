@@ -167,7 +167,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
-
+	if(currentWord == nil) currentWord = [NSString stringWithString:@""];
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
@@ -1120,10 +1120,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			&& caretPos <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
 
 			foundSnippetIndices[j] = 1;
-			if(i == currentSnippetIndex) {
+			if(i == currentSnippetIndex)
 				isCaretInsideASnippet = YES;
-				break;
-			}
+
 		}
 	}
 	// If caret is not inside the current snippet range check if caret is inside of
@@ -1132,7 +1131,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// then select this snippet which has the smallest length.
 	if(!isCaretInsideASnippet && foundSnippetIndices[currentSnippetIndex] == 1) {
 		isCaretInsideASnippet = YES;
-	} else {
+	} else if(![self selectedRange].length) {
 		NSInteger index = -1;
 		NSInteger smallestLength = -1;
 		for(i=0; i<snippetControlMax; i++) {
@@ -1153,8 +1152,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			currentSnippetIndex = index;
 			isCaretInsideASnippet = YES;
 		}
+		// if that fails start to finish the snippet session
+		if(!isCaretInsideASnippet) snippetControlCounter = -1;
 	}
-
 	return isCaretInsideASnippet;
 
 }
@@ -1240,7 +1240,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
 
 		// Is TAB trigger active change selection according to {SHIFT}TAB
-		if([self checkForCaretInsideSnippet] && snippetControlCounter > -1){
+		if(snippetControlCounter > -1){
 
 			if(curFlags==(NSShiftKeyMask)) { // select previous snippet
 
@@ -2914,20 +2914,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for(i=0; i<snippetControlMax; i++) {
 			if(snippetControlArray[i][0] > -1) {
 				NSRange glRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) actualCharacterRange:NULL];
-				if(glRange.length) {
-					NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glRange inTextContainer:[self textContainer]];
-					boundingRect = NSInsetRect(boundingRect, -4, 0.2);
-					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
-					if(i == currentSnippetIndex)
-						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.7] setFill];
-					else
-						[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
-					[aBezierPath fill];
-					boundingRect = NSInsetRect(boundingRect, 1.3, 1.3);
-					aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
-					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
-					[aBezierPath fill];
-				}
+				NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glRange inTextContainer:[self textContainer]];
+				if(!glRange.length) boundingRect.size.width = 1;
+				boundingRect = NSInsetRect(boundingRect, -4, 0.2);
+				NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
+				if(i == currentSnippetIndex)
+					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.7] setFill];
+				else
+					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
+				[aBezierPath fill];
+				boundingRect = NSInsetRect(boundingRect, 1.3, 1.3);
+				aBezierPath = [NSBezierPath bezierPathWithRoundedRect:boundingRect xRadius:6 yRadius:10];
+				[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
+				[aBezierPath fill];
 			}
 		}
 	}
@@ -3094,53 +3093,45 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
-
 			if([self checkForCaretInsideSnippet]) {
-
-				NSInteger editStartPosition = [textStore editedRange].location;
-				NSInteger changeInLength = [textStore changeInLength];
-				NSInteger i;
-
-				// Remove any fully nested snippets relative to the current snippet which was edited
-				for(i=0; i<snippetControlMax; i++) {
-					if(snippetControlArray[i][0] > -1 && i != snippetControlMax) {
-						NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-						NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
-						for(i=0; i<snippetControlMax; i++) {
-							if(snippetControlArray[i][0] > -1
-								&& i != currentSnippetIndex
-								&& snippetControlArray[i][0] >= currentSnippetLocation
-								&& snippetControlArray[i][0] <= currentSnippetMaxRange
-								&& snippetControlArray[i][0] + snippetControlArray[i][1] >= currentSnippetLocation
-								&& snippetControlArray[i][0] + snippetControlArray[i][1] <= currentSnippetMaxRange
-								) {
-									snippetControlArray[i][0] = -1;
-									snippetControlArray[i][1] = -1;
-									snippetControlArray[i][2] = -1;
-							}
-						}
-					}
+			// Remove any fully nested snippets relative to the current snippet which was edited
+			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+			NSInteger i;
+			for(i=0; i<snippetControlMax; i++) {
+				if(snippetControlArray[i][0] > -1
+					&& i != currentSnippetIndex
+					&& snippetControlArray[i][0] >= currentSnippetLocation
+					&& snippetControlArray[i][0] <= currentSnippetMaxRange
+					&& snippetControlArray[i][0] + snippetControlArray[i][1] >= currentSnippetLocation
+					&& snippetControlArray[i][0] + snippetControlArray[i][1] <= currentSnippetMaxRange
+					) {
+						snippetControlArray[i][0] = -1;
+						snippetControlArray[i][1] = -1;
+						snippetControlArray[i][2] = -1;
 				}
+			}
 
-				// Adjust length change to current snippet
-				snippetControlArray[currentSnippetIndex][1] += changeInLength;
-				// If length < 0 break snippet input
-				if(snippetControlArray[currentSnippetIndex][1] < 0) {
-					[self endSnippetSession];
-				} else {
-					// Adjust start position of snippets after caret position
-					for(i=0; i<=snippetControlMax; i++) {
-						if(snippetControlArray[i][0] > -1 && i != currentSnippetIndex) {
-							if(editStartPosition <= snippetControlArray[i][0]) {
-								snippetControlArray[i][0] += changeInLength;
-							} else if(editStartPosition >= snippetControlArray[i][0] && editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
-								snippetControlArray[i][1] += changeInLength;
-							}
-						}
-					}
-				}
-			} else {
+			NSInteger editStartPosition = [textStore editedRange].location;
+			NSInteger changeInLength = [textStore changeInLength];
+
+			// Adjust length change to current snippet
+			snippetControlArray[currentSnippetIndex][1] += changeInLength;
+			// If length < 0 break snippet input
+			if(snippetControlArray[currentSnippetIndex][1] < 0) {
 				[self endSnippetSession];
+			} else {
+				// Adjust start position of snippets after caret position
+				for(i=0; i<=snippetControlMax; i++) {
+					if(snippetControlArray[i][0] > -1 && i != currentSnippetIndex) {
+						if(editStartPosition < snippetControlArray[i][0]) {
+							snippetControlArray[i][0] += changeInLength;
+						} else if(editStartPosition >= snippetControlArray[i][0] && editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+							snippetControlArray[i][1] += changeInLength;
+						}
+					}
+				}
+			}
 			}
 		}
 

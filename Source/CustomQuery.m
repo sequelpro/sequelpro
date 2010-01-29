@@ -2016,6 +2016,14 @@
 #pragma mark -
 #pragma mark TextView notifications
 
+- (NSRange)textView:(NSTextView *)aTextView willChangeSelectionFromCharacterRange:(NSRange)oldSelectedCharRange toCharacterRange:(NSRange)newSelectedCharRange
+{
+	// Check if snippet session is still valid
+	if(!newSelectedCharRange.length && [textView isSnippetMode]) [textView checkForCaretInsideSnippet];
+
+	return newSelectedCharRange;
+}
+
 /*
  * A notification posted when the selection changes within the text view;
  * used to control the run-currentrun-selection button state and action.
@@ -2026,7 +2034,6 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	[textView checkForCaretInsideSnippet];
 	// Remove all background color attributes used by highlighting the current query
 	if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
 		// Remove only the background attribute for the current range if still valid
