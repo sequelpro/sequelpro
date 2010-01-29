@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindowAdditions.h"
+#import "TableDocument.h"
 
 @implementation NSWindow (SPWindowAdditions)
 
@@ -73,6 +74,20 @@
 	frame.size.width  = viewSize.width; 
 	
 	[self setFrame:frame display:YES animate:YES];
+}
+
+// -------------------------------------------------------------------------------
+// Three finger multi-touch right/left swipe event to go back/forward in table history.
+// -------------------------------------------------------------------------------
+- (void)swipeWithEvent:(NSEvent *)anEvent
+{
+	if([[self delegate] isKindOfClass:[TableDocument class]] 
+		&& [[self delegate] valueForKeyPath:@"spHistoryControllerInstance"]
+		&& ![[self delegate] isWorking])
+		if([anEvent deltaX] == -1.0f)
+			[[[self delegate] valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
+		else if([anEvent deltaX] == 1.0f)
+			[[[self delegate] valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goBackInHistory"];
 }
 
 @end
