@@ -607,13 +607,25 @@
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
 	streamingResult = [mySQLConnection streamingQueryString:queryString];
-	if (streamingResult) {
+
+	// Ensure the number of columns are unchanged; if the column count has changed, abort the load
+	// and queue a full table reload.
+	BOOL fullTableReloadRequired = NO;
+	if (streamingResult && [dataColumns count] != [streamingResult numOfFields]) {
+		[tableDocumentInstance disableTaskCancellation];
+		[mySQLConnection cancelCurrentQuery];
+		[streamingResult cancelResultLoad];
+		fullTableReloadRequired = YES;
+	}
+
+	// Process the result into the data store
+	if (!fullTableReloadRequired && streamingResult) {
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
 		[streamingResult release];
 	}
 
 	// If the result is empty, and a late page is selected, reset the page
-	if ([prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
+	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		contentPage = 1;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
@@ -652,6 +664,9 @@
 
 	// Notify listenters that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+
+	// Trigger a full reload if required
+	if (fullTableReloadRequired) [self reloadTable:self];
 }
 
 /*
@@ -662,7 +677,7 @@
 	NSArray *tempRow;
 	NSUInteger i;
 	NSUInteger dataColumnsCount = [dataColumns count];
-	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));;
+	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
 
 	// Set the column count on the data store
 	[tableValues setColumnCount:dataColumnsCount];
