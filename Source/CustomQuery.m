@@ -1805,7 +1805,7 @@
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(SPTextAndLinkCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
 
-	if([[aCell stringValue] length] < 2) return nil;
+	if([[aCell stringValue] length] < 2 || [tableDocumentInstance isWorking]) return nil;
 
 	NSImage *image;
 
