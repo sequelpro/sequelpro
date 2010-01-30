@@ -86,6 +86,13 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 @synthesize queryHiliteColor;
 @synthesize queryEditorBackgroundColor;
+@synthesize commentColor;
+@synthesize quoteColor;
+@synthesize keywordColor;
+@synthesize backtickColor;
+@synthesize numericColor;
+@synthesize variableColor;
+@synthesize otherTextColor;
 @synthesize queryRange;
 @synthesize shouldHiliteQuery;
 
@@ -166,6 +173,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryHighlightCurrentQuery options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorCommentColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorQuoteColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorSQLKeywordColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBacktickColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorNumericColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorVariableColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTextColor options:NSKeyValueObservingOptionNew context:NULL];
 
 }
 
@@ -189,6 +203,35 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	} else if ([keyPath isEqualToString:SPCustomQueryHighlightCurrentQuery]) {
 		[self setShouldHiliteQuery:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
 		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorCommentColor]) {
+		[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorQuoteColor]) {
+		[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorSQLKeywordColor]) {
+		[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorBacktickColor]) {
+		[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorNumericColor]) {
+		[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorVariableColor]) {
+		[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorTextColor]) {
+		[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setTextColor:[self otherTextColor]];
+		if([[self string] length]<100000)
+			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	}
 }
 
@@ -2816,17 +2859,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// process syntax highlighting for the entire text view buffer
 		textRange = NSMakeRange(0,strlength);
 	}
-	
+
 	NSColor *tokenColor;
-	
-	NSColor *commentColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]] retain];
-	NSColor *quoteColor     = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]] retain];
-	NSColor *keywordColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]] retain];
-	NSColor *backtickColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]] retain];
-	NSColor *numericColor   = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]] retain];
-	NSColor *variableColor  = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]] retain];
-	NSColor *textColor      = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]] retain];
-		
+
 	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
 
 	NSUInteger tokenEnd, token;
@@ -2874,7 +2909,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			    continue;
 			    break;
 			default:
-			    tokenColor = textColor;
+			    tokenColor = otherTextColor;
 				allowToCheckForUpperCase = NO;
 		}
 
@@ -2938,20 +2973,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	}
 	
-	[commentColor release];
-	[quoteColor release];
-	[keywordColor release];
-	[backtickColor release];
-	[numericColor release];
-	[variableColor release];
-	[textColor release];
-
 }
 
 - (void)drawRect:(NSRect)rect {
 
 	// Draw textview's background since due to the snippet highlighting we're responsible for it.
-	[[[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]] retain] setFill];
 	[[self queryEditorBackgroundColor] setFill];
 	NSRectFill(rect);
 
@@ -2959,6 +2985,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// and if nothing is selected in the text view
 	if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
 		NSUInteger rectCount;
+		[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
 		NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
 													 withinSelectedCharacterRange: [self queryRange]
 																  inTextContainer: [self textContainer]
@@ -2990,67 +3017,67 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange
 {
-    // parameters for snippet highlighting
-    CGFloat kappa = 0.5522847498; // magic number from http://www.whizkidtech.redprince.net/bezier/circle/
-    CGFloat radius = 6;
-    CGFloat horzInset = -3;
-    CGFloat vertInset = 0.3;
-    BOOL connectDisconnectedPartsWithLine = NO;
+	// parameters for snippet highlighting
+	CGFloat kappa = 0.5522847498; // magic number from http://www.whizkidtech.redprince.net/bezier/circle/
+	CGFloat radius = 6;
+	CGFloat horzInset = -3;
+	CGFloat vertInset = 0.3;
+	BOOL connectDisconnectedPartsWithLine = NO;
 
-    NSBezierPath *funkyPath = [NSBezierPath bezierPath];
-    NSUInteger rectCount;
-    NSRectArray rects = [[self layoutManager] rectArrayForCharacterRange: aRange
-                                                   withinSelectedCharacterRange: aRange
-                                                                inTextContainer: [self textContainer]
-                                                                      rectCount: &rectCount ];
-    if (rectCount>2 || (rectCount>1 && (SPRectRight(rects[1]) >= SPRectLeft(rects[0]) || connectDisconnectedPartsWithLine))) {
-        // highlight complicated multiline snippet
-        NSRect lineRects[4];
-        lineRects[0] = rects[0];
-        lineRects[1] = rects[1];
-        lineRects[2] = rects[rectCount-2];
-        lineRects[3] = rects[rectCount-1];
-        for(int j=0;j<4;j++) lineRects[j] = NSInsetRect(lineRects[j], horzInset, vertInset);
-        NSPoint vertices[8];
-        vertices[0] = NSMakePoint( SPRectLeft(lineRects[0]),  SPRectTop(lineRects[0])    ); // point a
-        vertices[1] = NSMakePoint( SPRectRight(lineRects[0]), SPRectTop(lineRects[0])    ); // point b
-        vertices[2] = NSMakePoint( SPRectRight(lineRects[2]), SPRectBottom(lineRects[2]) ); // point c
-        vertices[3] = NSMakePoint( SPRectRight(lineRects[3]), SPRectBottom(lineRects[2]) ); // point d
-        vertices[4] = NSMakePoint( SPRectRight(lineRects[3]), SPRectBottom(lineRects[3]) ); // point e
-        vertices[5] = NSMakePoint( SPRectLeft(lineRects[3]),  SPRectBottom(lineRects[3]) ); // point f
-        vertices[6] = NSMakePoint( SPRectLeft(lineRects[1]),  SPRectTop(lineRects[1])    ); // point g
-        vertices[7] = NSMakePoint( SPRectLeft(lineRects[0]),  SPRectTop(lineRects[1])    ); // point h
-        
-        for (NSUInteger j=0; j<8; j++) {
-            NSPoint curr = vertices[j];
-            NSPoint prev = vertices[(j+8-1)%8];
-            NSPoint next = vertices[(j+1)%8];
-            
-            CGFloat s = radius/SPPointDistance(prev, curr);
-            if (s>0.5) s = 0.5;
-            CGFloat t = radius/SPPointDistance(curr, next);
-            if (t>0.5) t = 0.5;
-            
-            NSPoint a = SPPointOnLine(curr, prev, 0.5);
-            NSPoint b = SPPointOnLine(curr, prev, s);
-            NSPoint c = curr;
-            NSPoint d = SPPointOnLine(curr, next, t);
-            NSPoint e = SPPointOnLine(curr, next, 0.5);
-            
-            if (j==0) [funkyPath moveToPoint:a];
-            [funkyPath lineToPoint: b];
-            [funkyPath curveToPoint:d controlPoint1:SPPointOnLine(b, c, kappa) controlPoint2:SPPointOnLine(d, c, kappa)];
-            [funkyPath lineToPoint: e];
-        }
-    } else {
-        //highlight disconnected snippet parts (or single line snippet)
-        for (NSUInteger j=0; j<rectCount; j++) {
-            NSRect rect = rects[j];
-            rect = NSInsetRect(rect, horzInset, vertInset);
-            [funkyPath appendBezierPathWithRoundedRect:rect xRadius:radius yRadius:radius];
-        }
-    }
-    return funkyPath;
+	NSBezierPath *funkyPath = [NSBezierPath bezierPath];
+	NSUInteger rectCount;
+	NSRectArray rects = [[self layoutManager] rectArrayForCharacterRange: aRange
+											withinSelectedCharacterRange: aRange
+														 inTextContainer: [self textContainer]
+															   rectCount: &rectCount ];
+	if (rectCount>2 || (rectCount>1 && (SPRectRight(rects[1]) >= SPRectLeft(rects[0]) || connectDisconnectedPartsWithLine))) {
+		// highlight complicated multiline snippet
+		NSRect lineRects[4];
+		lineRects[0] = rects[0];
+		lineRects[1] = rects[1];
+		lineRects[2] = rects[rectCount-2];
+		lineRects[3] = rects[rectCount-1];
+		for(int j=0;j<4;j++) lineRects[j] = NSInsetRect(lineRects[j], horzInset, vertInset);
+		NSPoint vertices[8];
+		vertices[0] = NSMakePoint( SPRectLeft(lineRects[0]),  SPRectTop(lineRects[0])    ); // point a
+		vertices[1] = NSMakePoint( SPRectRight(lineRects[0]), SPRectTop(lineRects[0])    ); // point b
+		vertices[2] = NSMakePoint( SPRectRight(lineRects[2]), SPRectBottom(lineRects[2]) ); // point c
+		vertices[3] = NSMakePoint( SPRectRight(lineRects[3]), SPRectBottom(lineRects[2]) ); // point d
+		vertices[4] = NSMakePoint( SPRectRight(lineRects[3]), SPRectBottom(lineRects[3]) ); // point e
+		vertices[5] = NSMakePoint( SPRectLeft(lineRects[3]),  SPRectBottom(lineRects[3]) ); // point f
+		vertices[6] = NSMakePoint( SPRectLeft(lineRects[1]),  SPRectTop(lineRects[1])    ); // point g
+		vertices[7] = NSMakePoint( SPRectLeft(lineRects[0]),  SPRectTop(lineRects[1])    ); // point h
+
+		for (NSUInteger j=0; j<8; j++) {
+			NSPoint curr = vertices[j];
+			NSPoint prev = vertices[(j+8-1)%8];
+			NSPoint next = vertices[(j+1)%8];
+
+			CGFloat s = radius/SPPointDistance(prev, curr);
+			if (s>0.5) s = 0.5;
+			CGFloat t = radius/SPPointDistance(curr, next);
+			if (t>0.5) t = 0.5;
+
+			NSPoint a = SPPointOnLine(curr, prev, 0.5);
+			NSPoint b = SPPointOnLine(curr, prev, s);
+			NSPoint c = curr;
+			NSPoint d = SPPointOnLine(curr, next, t);
+			NSPoint e = SPPointOnLine(curr, next, 0.5);
+
+			if (j==0) [funkyPath moveToPoint:a];
+			[funkyPath lineToPoint: b];
+			[funkyPath curveToPoint:d controlPoint1:SPPointOnLine(b, c, kappa) controlPoint2:SPPointOnLine(d, c, kappa)];
+			[funkyPath lineToPoint: e];
+		}
+	} else {
+		//highlight disconnected snippet parts (or single line snippet)
+		for (NSUInteger j=0; j<rectCount; j++) {
+			NSRect rect = rects[j];
+			rect = NSInsetRect(rect, horzInset, vertInset);
+			[funkyPath appendBezierPathWithRoundedRect:rect xRadius:radius yRadius:radius];
+		}
+	}
+	return funkyPath;
 }
 
 
@@ -3148,21 +3175,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 #pragma mark -
 #pragma mark delegates
-
-/*
- * Update colors by setting them in the Preference pane.
- */
-- (void)changeColor:(id)sender
-{
-	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
-	// Remember the old selected range
-	NSRange oldRange = [self selectedRange];
-	// Invoke syntax highlighting
-	[self setSelectedRange:NSMakeRange(oldRange.location,0)];
-	[self insertText:@""];
-	// Reset old selected range
-	[self setSelectedRange:oldRange];
-}
 
 /*
  * Scrollview delegate after the textView's view port was changed.
@@ -3468,6 +3480,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[lineNumberView release];
 	if(queryHiliteColor) [queryHiliteColor release];
 	if(queryEditorBackgroundColor) [queryEditorBackgroundColor release];
+	if(commentColor) [commentColor release];
+	if(quoteColor) [quoteColor release];
+	if(keywordColor) [keywordColor release];
+	if(backtickColor) [backtickColor release];
+	if(numericColor) [numericColor release];
+	if(variableColor) [variableColor release];
+	if(otherTextColor) [otherTextColor release];
 	[super dealloc];
 }
 

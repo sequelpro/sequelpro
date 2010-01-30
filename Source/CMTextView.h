@@ -68,6 +68,13 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 
 	NSColor *queryHiliteColor;
 	NSColor *queryEditorBackgroundColor;
+	NSColor *commentColor;
+	NSColor *quoteColor;
+	NSColor *keywordColor;
+	NSColor *backtickColor;
+	NSColor *numericColor;
+	NSColor *variableColor;
+	NSColor *otherTextColor;
 	NSRange queryRange;
 	BOOL shouldHiliteQuery;
 
@@ -75,6 +82,13 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 
 @property(retain) NSColor* queryHiliteColor;
 @property(retain) NSColor* queryEditorBackgroundColor;
+@property(retain) NSColor* commentColor;
+@property(retain) NSColor* quoteColor;
+@property(retain) NSColor* keywordColor;
+@property(retain) NSColor* backtickColor;
+@property(retain) NSColor* numericColor;
+@property(retain) NSColor* variableColor;
+@property(retain) NSColor* otherTextColor;
 @property(assign) NSRange queryRange;
 @property(assign) BOOL shouldHiliteQuery;
 

@@ -1281,6 +1281,16 @@
 
 	[textView setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	[textView setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+
+	[textView setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
+	[textView setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
+	[textView setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
+	[textView setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]]];
+	[textView setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
+	[textView setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
+	[textView setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+	[textView setTextColor:[textView otherTextColor]];
+
 	[textView setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
 
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
