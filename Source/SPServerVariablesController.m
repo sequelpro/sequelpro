@@ -236,7 +236,7 @@
 /**
  * Table view delegate method. Returns the number of rows in the table veiw.
  */
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [variablesFiltered count];
 }
@@ -289,6 +289,7 @@
 	
 	// Get processes
 	MCPResult *serverVariables = [connection queryString:@"SHOW VARIABLES"];
+	[serverVariables setReturnDataAsStrings:YES];
 	
 	if ([serverVariables numOfRows]) [serverVariables dataSeek:0];
 	
@@ -343,7 +344,7 @@
 	[variablesTableView reloadData];
 	
 	[variablesCountTextField setHidden:NO];
-	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%d of %d", "filtered item count"), [variablesFiltered count], [variables count]]];
+	[variablesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%lu of %lu", "filtered item count"), (unsigned long)[variablesFiltered count], (unsigned long)[variables count]]];
 	
 	if ([variablesFiltered count] == 0) return;
 	

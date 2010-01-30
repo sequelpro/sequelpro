@@ -32,8 +32,8 @@
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
 
-int MENU_EDIT_COPY_WITH_COLUMN = 2001;
-int MENU_EDIT_COPY_AS_SQL      = 2002;
+NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2001;
+NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 @implementation CMCopyTable
 
@@ -71,7 +71,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 }
 
 //allow for drag-n-drop out of the application as a copy
-- (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
 	return NSDragOperationCopy;
 }
@@ -180,6 +180,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	NSArray *columns         = [self tableColumns];
 	NSUInteger numColumns    = [columns count];
+	id dataSource            = [self dataSource];
 
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
@@ -202,15 +203,15 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	for(id enumObj in columns)
 	{
 		[tbHeader addObject:[[enumObj headerCell] stringValue]];
-		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] intValue]] objectForKey:@"typegrouping"];
+		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] integerValue]] objectForKey:@"typegrouping"];
 		if([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
-			[types addObject:[NSNumber numberWithInt:0]]; // numeric
+			[types addObject:[NSNumber numberWithInteger:0]]; // numeric
 		else if([t isEqualToString:@"blobdata"])
-			[types addObject:[NSNumber numberWithInt:2]]; // blob data
+			[types addObject:[NSNumber numberWithInteger:2]]; // blob data
 		else if([t isEqualToString:@"textdata"])
-			[types addObject:[NSNumber numberWithInt:3]]; // long text data
+			[types addObject:[NSNumber numberWithInteger:3]]; // long text data
 		else
-			[types addObject:[NSNumber numberWithInt:1]]; // string (fallback coevally)
+			[types addObject:[NSNumber numberWithInteger:1]]; // string (fallback coevally)
 	}
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
@@ -222,6 +223,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 	}
 
 	NSUInteger rowIndex = [selectedRows firstIndex];
+	NSTableColumn *col = nil;
 
 	while ( rowIndex != NSNotFound )
 	{ 
@@ -230,7 +232,10 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			rowData = [[tableData objectAtIndex:rowIndex] objectAtIndex:[[columnMappings objectAtIndex:c] intValue]];
+			col = NSArrayObjectAtIndex(columns, c);
+			rowData = [dataSource tableView:self 
+				  objectValueForTableColumn:col 
+										row:rowIndex ];
 
 			// Check for NULL value
 			if([rowData isNSNull]) {
@@ -239,7 +244,7 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			}
 			else if ( rowData != nil ) {
 				// check column type and insert the data accordingly
-				switch([[types objectAtIndex:c] intValue]) {
+				switch([[types objectAtIndex:c] integerValue]) {
 					case 0: // numeric
 						[value appendString:[NSString stringWithFormat:@"%@, ", [rowData description]]];
 						break;
@@ -265,11 +270,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
 									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isNSNull])
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] isNSNull])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"X'%@', ", 
-									[mySQLConnection prepareBinaryData:[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]]]]];
+									[mySQLConnection prepareBinaryData:[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]]]]];
 						} else {
 							[value appendString:[NSString stringWithFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:rowData]]];
 						}
@@ -285,11 +290,11 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 							dbDataRow = [[mySQLConnection queryString:
 								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
 									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] isKindOfClass:[NSNull class]])
+							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] isKindOfClass:[NSNull class]])
 								[value appendString:@"NULL, "];
 							else
 								[value appendString:[NSString stringWithFormat:@"'%@', ", 
-									[mySQLConnection prepareString:[[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] intValue]] description]]]];
+									[mySQLConnection prepareString:[[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] description]]]];
 						} else {
 							[value appendString:[NSString stringWithFormat:@"'%@', ", 
 								[[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"] ] ];
@@ -348,79 +353,72 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 
 //get dragged rows a string of newline separated lines of tab separated fields
 //the value in each field is from the objects description method
-- (NSString *)draggedRowsAsTabString:(NSArray *)rows
+- (NSString *)draggedRowsAsTabString
 {
-	if ( [rows count] > 0 )
-	{
-		NSArray *columns = [self tableColumns];
-		NSUInteger numColumns = [columns count];
-		NSIndexSet *selectedRows = [self selectedRowIndexes];
-		id dataSource = [self dataSource];
-		
-		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
+	NSArray *columns = [self tableColumns];
+	NSUInteger numColumns = [columns count];
+	NSIndexSet *selectedRows = [self selectedRowIndexes];
+	id dataSource = [self dataSource];
+	
+	NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
 
-		NSUInteger c;
+	NSUInteger c;
 
-		id rowData = nil;
-		NSTableColumn *col = nil;
-		
-		NSUInteger rowIndex = [selectedRows firstIndex];
+	id rowData = nil;
+	NSTableColumn *col = nil;
+	
+	NSUInteger rowIndex = [selectedRows firstIndex];
 
-		while ( rowIndex != NSNotFound )
-		{ 
-			rowData = nil;
-			for ( c = 0; c < numColumns; c++)
-			{
-				col = [columns objectAtIndex:c];
-				rowData = [dataSource tableView:self 
-					  objectValueForTableColumn:col 
-											row:rowIndex ];
-				
-				if ( nil != rowData )
-				{
-					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
-					else if ([rowData isSPNotLoaded])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
-					else
-						[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
-				}
-				else
-				{
-					[result appendString:@"\t"];
-				}
-			} //end for each column
+	while ( rowIndex != NSNotFound )
+	{ 
+		rowData = nil;
+		for ( c = 0; c < numColumns; c++)
+		{
+			col = [columns objectAtIndex:c];
+			rowData = [dataSource tableView:self 
+				  objectValueForTableColumn:col 
+										row:rowIndex ];
 			
-			if ( [result length] )
+			if ( nil != rowData )
 			{
-				[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
+				if ([rowData isNSNull])
+					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
+				else if ([rowData isSPNotLoaded])
+					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
+				else
+					[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
 			}
-			[result appendString: [ NSString stringWithFormat:@"\n"]];
-
-			// next selected row
-			rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
-
-		} //end for each row
+			else
+			{
+				[result appendString:@"\t"];
+			}
+		} //end for each column
 		
 		if ( [result length] )
 		{
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
-		return result;
-	}
-	else
+		[result appendString: [ NSString stringWithFormat:@"\n"]];
+
+		// next selected row
+		rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
+
+	} //end for each row
+	
+	if ( [result length] )
 	{
-		return nil;
+		[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 	}
+
+	return result;
 }
 
 /*
  * Init self with data coming from the table content view. Mainly used for copying data properly.
  */
-- (void)setTableInstance:(id)anInstance withTableData:(id)theTableData withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
+- (void)setTableInstance:(id)anInstance withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
 {
 	selectedTable     = aTableName;
-	tableData         = theTableData;
 	mySQLConnection   = aMySqlConnection;
 	tableInstance     = anInstance;
 	
@@ -443,8 +441,23 @@ int MENU_EDIT_COPY_AS_SQL      = 2002;
 			}
 		}
 	}
+	if([[[[self delegate] class] description] isEqualToString:@"CustomQuery"]) {
+		id tableContentView = [[self delegate] valueForKeyPath:@"customQueryView"];
+		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 
-	[super keyDown:theEvent];		
+			// TODO: this works until the user presses OK in the Field Editor Sheet!!
+			// in the future we should store the new row data temporarily and then
+			// after editing the last column update the db field by field (ask HansJB)
+			NSInteger colNum = [[tableContentView tableColumns] count];
+			NSInteger i;
+			for(i=0; i<colNum; i++) {
+				[[self delegate] tableView:tableContentView shouldEditTableColumn:[[tableContentView tableColumns] objectAtIndex:i] row:[tableContentView selectedRow]];
+			}
+			return;
+		}
+	}
+
+	[super keyDown:theEvent];
 }
 
 @end

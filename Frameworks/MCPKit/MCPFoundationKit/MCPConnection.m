@@ -103,12 +103,16 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryExecutedAtTime = CGFLOAT_MAX;
 		queryCancelled = NO;
 		queryCancelUsedReconnect = NO;
+		serverVersionString = nil;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
 		useKeepAlive      = YES; 
 		keepAliveInterval = 60;  
 		
+		theDbStructure = nil;
+		isQueryingDbStructure = NO;
+
 		connectionThreadId     = 0;
 		maxAllowedPacketSize   = -1;
 		lastQueryExecutionTime = 0;
@@ -338,6 +342,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	mConnected = YES;
 	connectionStartTime = mach_absolute_time();
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
 	[self timeZone]; // Getting the timezone used by the server.
 	
@@ -368,15 +373,13 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	mConnected = NO;
-	
+
 	if (connectionProxy) {
 		[connectionProxy disconnect];
 	}
 	
-	if (serverVersionString != nil) {
-		[serverVersionString release];
-		serverVersionString = nil;
-	}
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
 	
 	[self stopKeepAliveTimer];
 }
@@ -528,8 +531,12 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 				
 				return [self checkConnection];
 				
-			// 'Disconnect' has been selected. Close the parent window, which will handle disconnections, and return false.
+			// 'Disconnect' has been selected. The parent window should already have
+			// triggered UI-specific actions, and may have disconnected already; if
+			// not, disconnect, and clean up.
 			case MCPConnectionCheckDisconnect:
+				if (mConnected) [self disconnect];
+				[self setLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
 				return NO;
 				
 			// 'Retry' has been selected - return a recursive call.
@@ -732,6 +739,24 @@ void performThreadedKeepAlive(void *ptr)
 
 #pragma mark -
 #pragma mark Server versions
+
+/**
+ * Return the server version string, or nil on failure.
+ */
+- (NSString *)serverVersionString
+{
+	if (mConnected) {
+		if (serverVersionString == nil) {
+			[self _getServerVersionString];
+		}
+
+		if (serverVersionString) {
+			return [NSString stringWithString:serverVersionString];
+		}
+	}
+
+	return nil;
+}
 
 /**
  * rReturn the server major version or -1 on fail
@@ -1744,6 +1769,7 @@ void performThreadedKeepAlive(void *ptr)
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@ LIKE '%@'", dbName, tablesName];
 		theResult = [self queryString:theQuery];
 	}
+	[theResult setReturnDataAsStrings:YES];
 	
 	return theResult;
 }
@@ -1773,8 +1799,178 @@ void performThreadedKeepAlive(void *ptr)
 		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@ LIKE '%@'", tableName, fieldsName];
 		theResult = [self queryString:theQuery];
 	}
-	
+	[theResult setReturnDataAsStrings:YES];
+
 	return theResult;
+}
+
+/**
+ * Updates the dict containing the structure of all available databases (mainly for completion)
+ * executed on a new connection.
+ */
+- (void)queryDbStructure
+{
+	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
+
+	if (!isQueryingDbStructure && [self serverMajorVersion] >= 5) {
+
+		MYSQL *structConnection = mysql_init(NULL);
+		if (structConnection) {
+			const char *theLogin = [self cStringFromString:connectionLogin];
+			const char *theHost;
+			const char *thePass;
+			const char *theSocket;
+			void *connectionSetupStatus;
+
+			isQueryingDbStructure = YES;
+
+			mysql_options(structConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+
+			// Set up the host, socket and password as per the connect method
+			if (!connectionHost || ![connectionHost length]) {
+				theHost = NULL;
+			} else {
+				theHost = [self cStringFromString:connectionHost];
+			}
+			if (connectionSocket == nil || ![connectionSocket length]) {
+				theSocket = kMCPConnectionDefaultSocket;
+			} else {
+				theSocket = [self cStringFromString:connectionSocket];
+			}
+			if (!connectionPassword) {
+				if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+					thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+				}
+			} else {
+				thePass = [self cStringFromString:connectionPassword];
+			}
+			
+			// Connect
+			connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+			thePass = NULL;
+			if (connectionSetupStatus) {
+				MYSQL_RES *theResult;
+				MYSQL_ROW row;
+
+				NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
+
+				// Set connection to UTF-8 since the information_schema is encoded in UTF-8
+				NSString *setNameString = @"SET NAMES 'utf8'";
+				NSData *encodedSetNameData = NSStringDataUsingLossyEncoding(setNameString, theConnectionEncoding, 1);
+				const char *setNameCString = [encodedSetNameData bytes];
+				unsigned long setNameCStringLength = [encodedSetNameData length];
+				if (mysql_real_query(structConnection, setNameCString, setNameCStringLength) != 0) {
+					isQueryingDbStructure = NO;
+					[queryPool release];
+					return;
+				}
+
+				// Query the desired data
+				NSString *queryDbString = @""
+				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype` FROM `information_schema`.`COLUMNS`"
+				@"UNION "
+				@"SELECT c.TABLE_SCHEMA AS `databases`, c.TABLE_NAME AS `tables`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `type`, c.CHARACTER_SET_NAME AS `charset`, '1' AS `structtype` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
+				@"UNION "
+				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '2' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
+				@"UNION "
+				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '3' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
+				@"ORDER BY `databases`,`tables`,`fields`";
+				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
+				const char *queryCString = [encodedQueryData bytes];
+				unsigned long queryCStringLength = [encodedQueryData length];
+
+				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
+					theResult = mysql_use_result(structConnection);
+					NSMutableDictionary *structure = [NSMutableDictionary dictionary];
+					NSMutableSet *namesSet = [[NSMutableSet alloc] initWithCapacity:20];
+					NSMutableArray *allDbNames = [NSMutableArray array];
+					NSMutableArray *allTableNames = [NSMutableArray array];
+
+					while(row = mysql_fetch_row(theResult)) {
+						NSString *db = [self stringWithUTF8CString:row[0]];
+						NSString *table = [self stringWithUTF8CString:row[1]];
+						NSString *field = [self stringWithUTF8CString:row[2]];
+						NSString *type = [self stringWithUTF8CString:row[3]];
+						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
+						NSString *structtype = [self stringWithUTF8CString:row[5]];
+
+						[namesSet addObject:[db lowercaseString]];
+						[namesSet addObject:[table lowercaseString]];
+						[allDbNames addObject:[db lowercaseString]];
+						[allTableNames addObject:[table lowercaseString]];
+
+						if(![structure valueForKey:db]) {
+							[structure setObject:[NSMutableDictionary dictionary] forKey:db];
+						}
+
+						if(![[structure valueForKey:db] valueForKey:table]) {
+							[[structure valueForKey:db] setObject:[NSMutableDictionary dictionary] forKey:table];
+						}
+
+						[[[structure valueForKey:db] valueForKey:table] setObject:[NSString stringWithFormat:@"%@ %@", type, charset] forKey:field];
+						[[[structure valueForKey:db] valueForKey:table] setObject:structtype forKey:@"  struct_type  "];
+
+					}
+
+					mysql_free_result(theResult);
+					mysql_close(structConnection);
+
+					if(theDbStructure != nil) {
+						[theDbStructure release];
+						theDbStructure = nil;
+					}
+					theDbStructure = [[NSDictionary dictionaryWithDictionary:structure] retain];
+
+					NSMutableDictionary *uniqueIdentifier = [NSMutableDictionary dictionary];
+					for(id name in namesSet) {
+						if([allDbNames containsObject:name] && [allTableNames containsObject:name]) {
+							;
+						} else {
+							if([allDbNames containsObject:name])
+								[uniqueIdentifier setObject:[NSNumber numberWithInteger:1] forKey:name];
+							else
+								[uniqueIdentifier setObject:[NSNumber numberWithInteger:2] forKey:name];
+						}
+					}
+					[namesSet release];
+					if(uniqueDbIdentifier != nil) {
+						[uniqueDbIdentifier release];
+						uniqueDbIdentifier = nil;
+					}
+					uniqueDbIdentifier = [[NSDictionary dictionaryWithDictionary:uniqueIdentifier] retain];
+
+					isQueryingDbStructure = NO;
+					[queryPool release];
+					return;
+				}
+				mysql_close(structConnection);
+				isQueryingDbStructure = NO;
+			}
+		}
+	}
+
+	[queryPool release];
+}
+
+/**
+ * Returns 1 for db and 2 for table name if table name is not a db name and versa visa.
+ * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
+ * a db name or a table name.
+ */
+- (NSInteger)getUniqueDbIndentifierFor:(NSString*)term
+{
+	if([uniqueDbIdentifier objectForKey:term])
+		return [[uniqueDbIdentifier objectForKey:term] integerValue];
+	else
+		return 0;
+}
+
+/**
+ * Returns a dict containing the structure of all available databases (mainly for completion).
+ */
+- (NSDictionary *)getDbStructure
+{
+	return theDbStructure;
 }
 
 #pragma mark -
@@ -1936,15 +2132,11 @@ void performThreadedKeepAlive(void *ptr)
 		NSArray		*theRow;
 		id			theTZName;
 		NSTimeZone	*theTZ;
-		
+
+		[theSessionTZ setReturnDataAsStrings:YES];
 		[theSessionTZ dataSeek:1ULL];
 		theRow = [theSessionTZ fetchRowAsArray];
 		theTZName = [theRow objectAtIndex:1];
-		
-		if ( [theTZName isKindOfClass:[NSData class]] ) {
-			// MySQL 4.1.14 returns the mysql variables as NSData
-			theTZName = [self stringWithText:theTZName];
-		}
 		
 		if ([theTZName isEqualToString:@"SYSTEM"]) {
 			[theSessionTZ dataSeek:0ULL];
@@ -1963,6 +2155,7 @@ void performThreadedKeepAlive(void *ptr)
 			// By default set the time zone to the local one..
 			// Try to get the name using the previously available variable:
 			theSessionTZ = [self queryString:@"SHOW VARIABLES LIKE 'timezone'"];
+			[theSessionTZ setReturnDataAsStrings:YES];
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
@@ -2003,6 +2196,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (0 == mysql_query(mConnection, queryString)) {
 		if (mysql_field_count(mConnection) != 0) {
 			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			[r setReturnDataAsStrings:YES];
 			NSArray *a = [r fetchRowAsArray];
 			[r autorelease];
 			if([a count]) {
@@ -2136,6 +2330,26 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
+ * Returns a NSString from a C style string encoded with the character set of theMCPConnection.
+ */
+- (NSString *)stringWithUTF8CString:(const char *)theCString
+{
+	NSData	 *theData;
+	NSString *theString;
+	
+	if (theCString == NULL) return @"";
+	
+	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
+	theString = [[NSString alloc] initWithData:theData encoding:NSUTF8StringEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
+}
+
+/**
  * Use the string encoding to convert the returned NSData to a string (for a Text field).
  */
 - (NSString *)stringWithText:(NSData *)theTextData
@@ -2162,12 +2376,25 @@ void performThreadedKeepAlive(void *ptr)
 {
 	delegate = nil;
 
+	// Release the query lock, after unlocking it
+	[queryLock tryLock];
+	[queryLock unlock];
+	[queryLock release];
+
+	// Clean up connections if necessary
+	if (mConnected) [self disconnect];
+	if (connectionProxy) {
+		[connectionProxy setConnectionStateChangeSelector:NULL delegate:nil];
+		[connectionProxy disconnect];
+	}
+
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];
 	if (connectionSocket) [connectionSocket release];
 	if (connectionPassword) [connectionPassword release];
-	[queryLock release];
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
 	
 	[super dealloc];
 }
@@ -2183,6 +2410,7 @@ void performThreadedKeepAlive(void *ptr)
 {
 	if (mConnected) {
 		MCPResult *theResult = [self queryString:@"SHOW VARIABLES LIKE 'version'"];
+		[theResult setReturnDataAsStrings:YES];
 		
 		if ([theResult numOfRows]) {
 			[theResult dataSeek:0];

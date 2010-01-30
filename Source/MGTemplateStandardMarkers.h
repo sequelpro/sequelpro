@@ -18,7 +18,7 @@
 }
 
 - (BOOL)currentBlock:(NSDictionary *)blockInfo matchesTopOfStack:(NSMutableArray *)stack;
-- (BOOL)argIsNumeric:(NSString *)arg intValue:(int *)val checkVariables:(BOOL)checkVars;
+- (BOOL)argIsNumeric:(NSString *)arg intValue:(NSInteger *)val checkVariables:(BOOL)checkVars;
 - (BOOL)argIsTrue:(NSString *)arg;
 
 @end

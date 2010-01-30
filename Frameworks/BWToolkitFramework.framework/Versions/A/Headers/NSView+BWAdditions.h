@@ -10,6 +10,9 @@
 
 @interface NSView (BWAdditions)
 
-- (void)bringToFront;
+- (void)bwBringToFront;
+
+// Returns animator proxy and calls setWantsLayer:NO on the view when the animation completes 
+- (id)bwAnimator;
 
 @end

@@ -62,23 +62,27 @@ enum spsshtunnel_password_modes
 	BOOL useHostFallback;
 	BOOL requestedResponse;
 	BOOL passwordInKeychain;
-	int sshPort;
-	int remotePort;
-	int localPort;
-	int localPortFallback;
-	int connectionState;
+	NSInteger sshPort;
+	NSInteger remotePort;
+	NSInteger localPort;
+	NSInteger localPortFallback;
+	NSInteger connectionState;
+    
+    BOOL isAnswerAvailable;
+    NSCondition *answerAvailableCondition;
+    NSString *currentKeyName;
 }
 
-- (id) initToHost:(NSString *) theHost port:(int) thePort login:(NSString *) theLogin tunnellingToPort:(int) targetPort onHost:(NSString *) targetHost;
+- (id) initToHost:(NSString *) theHost port:(NSInteger) thePort login:(NSString *) theLogin tunnellingToPort:(NSInteger) targetPort onHost:(NSString *) targetHost;
 - (BOOL) setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 - (BOOL) setPassword:(NSString *)thePassword;
-- (int) state;
+- (NSInteger) state;
 - (NSString *) lastError;
 - (NSString *) debugMessages;
-- (int) localPort;
-- (int) localPortFallback;
+- (NSInteger) localPort;
+- (NSInteger) localPortFallback;
 - (void) connect;
 - (void) launchTask:(id) dummy;
 - (void) disconnect;
@@ -88,6 +92,7 @@ enum spsshtunnel_password_modes
 - (void) workerGetResponseForQuestion:(NSString *)theQuestion;
 - (NSString *) getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash;
 - (void) workerGetPasswordForQuery:(NSString *)theQuery;
-- (IBAction) closeSheet:(id)sender;
+- (IBAction) closeSSHQuestionSheet:(id)sender;
+- (IBAction) closeSSHPasswordSheet:(id)sender;
 
 @end

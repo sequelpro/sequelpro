@@ -13,6 +13,7 @@
 	BOOL shadowIsBelow, hasShadow, hasGradient;
 	NSColor *shadowColor, *startingColor, *endingColor, *solidColor;
 	
+	NSShadow *shadow;
 	NSMutableDictionary *previousAttributes;
 }
 

@@ -102,7 +102,7 @@
 	NSMutableArray *fieldMappingTableColumnNames;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
-	int fieldMappingCurrentRow;
+	NSInteger fieldMappingCurrentRow;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 }
@@ -116,8 +116,8 @@
 
 // Export methods
 - (void)export;
-- (void)exportFile:(int)tag;
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
+- (void)exportFile:(NSInteger)tag;
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)exportBackgroundProcess:(NSDictionary *)exportAction;
 
 // Import methods
@@ -127,7 +127,7 @@
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
 - (IBAction)changeTable:(id)sender;
-- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
+- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData;
 - (void)setupFieldMappingArray;
 - (void)updateFieldMappingButtonCell;

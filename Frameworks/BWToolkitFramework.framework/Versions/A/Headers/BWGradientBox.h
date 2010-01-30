@@ -14,11 +14,11 @@
 	NSColor *topBorderColor, *bottomBorderColor;
 	float topInsetAlpha, bottomInsetAlpha;
 	
-	BOOL hasTopBorder, hasBottomBorder, hasGradient;
+	BOOL hasTopBorder, hasBottomBorder, hasGradient, hasFillColor;
 }
 
 @property (nonatomic, retain) NSColor *fillStartingColor, *fillEndingColor, *fillColor, *topBorderColor, *bottomBorderColor;
 @property float topInsetAlpha, bottomInsetAlpha;
-@property BOOL hasTopBorder, hasBottomBorder, hasGradient;
+@property BOOL hasTopBorder, hasBottomBorder, hasGradient, hasFillColor;
 
 @end

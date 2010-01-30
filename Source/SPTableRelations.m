@@ -29,6 +29,7 @@
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @interface SPTableRelations (PrivateAPI)
 
@@ -114,9 +115,9 @@
 	
 	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD FOREIGN KEY (%@) REFERENCES %@ (%@)", 
 												[thisTable backtickQuotedString],
-												thisColumn,
+												[thisColumn backtickQuotedString],
 												[thatTable backtickQuotedString],
-												thatColumn];
+												[thatColumn backtickQuotedString]];
 	
 	// If required add ON DELETE
 	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
@@ -131,11 +132,11 @@
 	// Execute query
 	[connection queryString:query];
 	
-	int retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
+	NSInteger retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
 		
 	// 0 indicates success
 	if (retCode) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
@@ -175,11 +176,11 @@
 	[refTablePopUpButton removeAllItems];
 	
 	// Get all InnoDB tables in the current database
-	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = '%@'", [tableDocumentInstance database]]];
+	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
 	
 	[result dataSeek:0];
 	
-	for (int i = 0; i < [result numOfRows]; i++)
+	for (NSInteger i = 0; i < [result numOfRows]; i++)
 	{		
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
@@ -265,12 +266,12 @@
 #pragma mark -
 #pragma mark Tableview datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [relationData count];
 }
 
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	return [[relationData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 }
@@ -290,7 +291,7 @@
  * Double-click action on table cells - for the time being, return
  * NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
@@ -346,7 +347,7 @@
 /**
  * NSAlert didEnd method.
  */
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if ([contextInfo isEqualToString:@"removeRelation"]) {
 		
@@ -355,7 +356,7 @@
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
 			
-			unsigned int row = [selectedSet lastIndex];
+			NSUInteger row = [selectedSet lastIndex];
 			
 			while (row != NSNotFound) 
 			{
@@ -366,7 +367,7 @@
 				
 				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
 					
-					NSBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	

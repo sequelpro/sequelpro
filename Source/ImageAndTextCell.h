@@ -45,7 +45,7 @@
 {
 @private
 	NSImage	*image;
-	int _indentationLevel;
+	NSInteger _indentationLevel;
 }
 
 - (void)setImage:(NSImage *)anImage;
@@ -54,7 +54,7 @@
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 - (NSSize)cellSize;
 
-- (void)setIndentationLevel:(int)level;
-- (int)IndentationLevel;
+- (void)setIndentationLevel:(NSInteger)level;
+- (NSInteger)IndentationLevel;
 
 @end

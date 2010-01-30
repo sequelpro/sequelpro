@@ -57,9 +57,40 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	NSUserDefaults *prefs;
 
 	MCPConnection *mySQLConnection;
-	int mySQLmajorVersion;
+	NSInteger mySQLmajorVersion;
+
+	NSInteger snippetControlArray[20][3];
+	NSInteger snippetControlCounter;
+	NSInteger snippetControlMax;
+	NSInteger currentSnippetIndex;
+	BOOL snippetWasJustInserted;
+
+
+	NSColor *queryHiliteColor;
+	NSColor *queryEditorBackgroundColor;
+	NSColor *commentColor;
+	NSColor *quoteColor;
+	NSColor *keywordColor;
+	NSColor *backtickColor;
+	NSColor *numericColor;
+	NSColor *variableColor;
+	NSColor *otherTextColor;
+	NSRange queryRange;
+	BOOL shouldHiliteQuery;
 
 }
+
+@property(retain) NSColor* queryHiliteColor;
+@property(retain) NSColor* queryEditorBackgroundColor;
+@property(retain) NSColor* commentColor;
+@property(retain) NSColor* quoteColor;
+@property(retain) NSColor* keywordColor;
+@property(retain) NSColor* backtickColor;
+@property(retain) NSColor* numericColor;
+@property(retain) NSColor* variableColor;
+@property(retain) NSColor* otherTextColor;
+@property(assign) NSRange queryRange;
+@property(assign) BOOL shouldHiliteQuery;
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
@@ -69,7 +100,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
-- (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(int *)index;
+// - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
 - (NSArray *) keywords;
 - (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
@@ -82,16 +113,22 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) autouppercaseKeywords;
 - (void) setAutohelp:(BOOL)enableAutohelp;
 - (BOOL) autohelp;
-- (void) selectLineNumber:(unsigned int)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
-- (unsigned int) getLineNumberForCharacterIndex:(unsigned int)anIndex;
+- (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
+- (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
-- (void) setConnection:(MCPConnection *)theConnection withVersion:(int)majorVersion;
-- (void) doCompletion;
-- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode;
+- (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange;
+- (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
+- (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
 
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (BOOL)checkForCaretInsideSnippet;
+- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
+
+- (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
+
+- (BOOL)isSnippetMode;
 
 @end

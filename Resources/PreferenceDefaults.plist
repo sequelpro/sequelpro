@@ -20,8 +20,10 @@
 	<false/>
 	<key>LoadBlobsAsNeeded</key>
 	<false/>
-	<key>FetchCorrectRowCount</key>
-	<true/>
+	<key>TableRowCountQueryLevel</key>
+	<integer>1</integer>
+	<key>TableRowCountCheapLookupSizeBoundary</key>
+	<integer>5242880</integer>
 	<key>NewFieldsAllowNulls</key>
 	<true/>
 	<key>LimitResults</key>

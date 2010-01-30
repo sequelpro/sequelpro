@@ -158,7 +158,7 @@
 			BOOL valid = NO;
 			NSString *startArg = [args objectAtIndex:0];
 			NSString *endArg = [args objectAtIndex:2];
-			int startIndex, endIndex;
+			NSInteger startIndex, endIndex;
 			if (isRange) {
 				// Check to see if either the arg itself is numeric, or it corresponds to a numeric variable.
 				valid = [self argIsNumeric:startArg intValue:&startIndex checkVariables:YES];
@@ -194,11 +194,11 @@
 				[forStack addObject:stackFrame];
 				
 				// Set up variables for the block.
-				int currentIndex = (reversed) ? endIndex : startIndex;
+				NSInteger currentIndex = (reversed) ? endIndex : startIndex;
 				NSMutableDictionary *loopVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-												 [NSNumber numberWithInt:startIndex], FOR_LOOP_START_INDEX, 
-												 [NSNumber numberWithInt:endIndex], FOR_LOOP_END_INDEX, 
-												 [NSNumber numberWithInt:currentIndex], FOR_LOOP_CURR_INDEX, 
+												 [NSNumber numberWithInteger:startIndex], FOR_LOOP_START_INDEX, 
+												 [NSNumber numberWithInteger:endIndex], FOR_LOOP_END_INDEX, 
+												 [NSNumber numberWithInteger:currentIndex], FOR_LOOP_CURR_INDEX, 
 												 [NSNumber numberWithBool:reversed], FOR_REVERSE, 
 												 nil];
 				NSMutableDictionary *blockVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -265,7 +265,7 @@
 			BOOL reversed = [[loopVars objectForKey:FOR_REVERSE] boolValue];
 			NSEnumerator *loopEnum = [frame objectForKey:FOR_STACK_ENUMERATOR];
 			NSObject *newEnumValue = nil;
-			int currentIndex = [[loopVars objectForKey:FOR_LOOP_CURR_INDEX] intValue];
+			NSInteger currentIndex = [[loopVars objectForKey:FOR_LOOP_CURR_INDEX] integerValue];
 			if (loopEnum) {
 				// Enumerator type.
 				newEnumValue = [loopEnum nextObject];
@@ -275,12 +275,12 @@
 			} else {
 				// Range type.
 				if (reversed) {
-					int minIndex = [[loopVars objectForKey:FOR_LOOP_START_INDEX] intValue];
+					NSInteger minIndex = [[loopVars objectForKey:FOR_LOOP_START_INDEX] integerValue];
 					if (currentIndex > minIndex) {
 						loop = YES;
 					}
 				} else {
-					int maxIndex = [[loopVars objectForKey:FOR_LOOP_END_INDEX] intValue];
+					NSInteger maxIndex = [[loopVars objectForKey:FOR_LOOP_END_INDEX] integerValue];
 					if (currentIndex < maxIndex) {
 						loop = YES;
 					}
@@ -297,7 +297,7 @@
 				} else {
 					currentIndex++;
 				}
-				[loopVars setObject:[NSNumber numberWithInt:currentIndex] forKey:FOR_LOOP_CURR_INDEX];
+				[loopVars setObject:[NSNumber numberWithInteger:currentIndex] forKey:FOR_LOOP_CURR_INDEX];
 				
 				// Set new val for enumVar if specified
 				NSMutableDictionary *newVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -359,7 +359,7 @@
 				NSString *secondArg = [args objectAtIndex:2];
 				BOOL firstTrue = [self argIsTrue:firstArg];
 				BOOL secondTrue = [self argIsTrue:secondArg];
-				int num1, num2;
+				NSInteger num1, num2;
 				BOOL firstNumeric, secondNumeric;
 				firstNumeric = [self argIsNumeric:firstArg intValue:&num1 checkVariables:YES];
 				secondNumeric = [self argIsNumeric:secondArg intValue:&num2 checkVariables:YES];
@@ -513,17 +513,17 @@
 			NSMutableDictionary *cycle = [cycles objectForKey:rangeKey];
 			if (cycle) {
 				NSArray *vals = [cycle objectForKey:CYCLE_VALUES];
-				int currIndex = [[cycle objectForKey:CYCLE_INDEX] intValue];
+				NSInteger currIndex = [[cycle objectForKey:CYCLE_INDEX] integerValue];
 				currIndex++;
 				if (currIndex >= [vals count]) {
 					currIndex = 0;
 				}
-				[cycle setObject:[NSNumber numberWithInt:currIndex] forKey:CYCLE_INDEX];
+				[cycle setObject:[NSNumber numberWithInteger:currIndex] forKey:CYCLE_INDEX];
 				return [vals objectAtIndex:currIndex];
 			} else {
 				// New cycle. Create and output appropriately.
 				cycle = [NSMutableDictionary dictionaryWithCapacity:2];
-				[cycle setObject:[NSNumber numberWithInt:0] forKey:CYCLE_INDEX];
+				[cycle setObject:[NSNumber numberWithInteger:0] forKey:CYCLE_INDEX];
 				[cycle setObject:args forKey:CYCLE_VALUES];
 				[cycles setObject:cycle forKey:rangeKey];
 				return [args objectAtIndex:0];
@@ -575,20 +575,20 @@
 }
 
 
-- (BOOL)argIsNumeric:(NSString *)arg intValue:(int *)val checkVariables:(BOOL)checkVars
+- (BOOL)argIsNumeric:(NSString *)arg intValue:(NSInteger *)val checkVariables:(BOOL)checkVars
 {
 	BOOL numeric = NO;
-	int value = 0;
+	NSInteger value = 0;
 	
 	if (arg && [arg length] > 0) {
-		if ([[arg substringToIndex:1] isEqualToString:@"0"] || [arg intValue] != 0) {
+		if ([[arg substringToIndex:1] isEqualToString:@"0"] || [arg integerValue] != 0) {
 			numeric = YES;
-			value = [arg intValue];
+			value = [arg integerValue];
 		} else if (checkVars) {
 			// Check to see if arg is a variable with an intValue.
 			NSObject *argObj = [engine resolveVariable:arg];
 			NSString *argStr = [NSString stringWithFormat:@"%@", argObj];
-			if (argObj && [argObj respondsToSelector:@selector(intValue)] && 
+			if (argObj && [argObj respondsToSelector:@selector(integerValue)] && 
 				[self argIsNumeric:argStr intValue:&value checkVariables:NO]) { // avoid recursion
 				numeric = YES;
 			}

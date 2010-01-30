@@ -68,10 +68,11 @@
                     return @"000000";
                 
                 const CGFloat *components = CGColorGetComponents(color);
+#warning 64BIT: Check formatting arguments
                 NSString *colorHex = [NSString stringWithFormat:@"%02x%02x%02x",
-                                      (int)(components[0] * 255),
-                                      (int)(components[1] * 255),
-                                      (int)(components[2] * 255)];
+                                      (NSInteger)(components[0] * 255),
+                                      (NSInteger)(components[1] * 255),
+                                      (NSInteger)(components[2] * 255)];
                 return colorHex;
 #else
 				NSColor *color = [(NSColor *)value colorUsingColorSpaceName:NSCalibratedRGBColorSpace];

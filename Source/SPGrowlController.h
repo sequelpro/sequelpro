@@ -50,7 +50,7 @@
 				 window:(NSWindow *)window
 	   notificationName:(NSString *)name 
 			   iconData:(NSData *)data 
-			   priority:(int)priority 
+			   priority:(NSInteger)priority 
 			   isSticky:(BOOL)sticky 
 		   clickContext:(id)clickContext;
 

@@ -175,7 +175,7 @@
 #pragma mark -
 #pragma mark Table view datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
 	return [tables count];
 }
@@ -248,7 +248,7 @@
 /**
  * Invoked when the user 
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Perform the export
 	if (returnCode == NSOKButton) {
@@ -261,7 +261,7 @@
 /**
  * Invoked when the user dismisses the save panel. Updates the selected directory is they clicked OK.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
 		[exportPathField setStringValue:[panel directory]];
@@ -404,7 +404,7 @@
 		// Update the progress text and reset the progress bar to indeterminate status
 		NSString *tableName = [exportTables objectAtIndex:i];
 						
-		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %d of %d (%@): fetching data...", @"text showing that app is fetching data for table dump"), (i + 1), tableCount, tableName]];
+		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %l (%@): fetching data...", @"text showing that app is fetching data for table dump"), (unsigned long)(i + 1), (unsigned long)tableCount, tableName]];
 		[exportProgressText displayIfNeeded];
 		
 		[exportProgressIndicator setIndeterminate:YES];
@@ -418,6 +418,7 @@
 		
 		// Determine whether this table is a table or a view via the create table command, and get the table details
 		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
 		
 		if ([queryResult numOfRows]) {
 			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
@@ -492,7 +493,7 @@
 		}
 		
 		// Update the progress text and set the progress bar back to determinate
-		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %d of %d (%@): Writing...", @"text showing that app is writing data for table export"), (i + 1), tableCount, tableName]];
+		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing...", @"text showing that app is writing data for table export"), (unsigned long)(i + 1), (unsigned long)tableCount, tableName]];
 		[exportProgressText displayIfNeeded];
 		
 		[exportProgressIndicator stopAnimation:self];

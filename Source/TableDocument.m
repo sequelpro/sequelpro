@@ -47,7 +47,6 @@
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
 #import "SPPrintAccessory.h"
-#import "QLPreviewPanel.h"
 #import "SPUserManager.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
@@ -233,7 +232,7 @@
 	[taskProgressWindow setOpaque:NO];
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
 	[taskProgressWindow setAlphaValue:0.0];
-	[taskProgressWindow orderWindow:NSWindowAbove relativeTo:[tableWindow windowNumber]];
+	[taskProgressWindow orderFront:self];
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
 	[taskProgressWindow release];
 	[taskProgressWindow setContentView:taskProgressLayer];
@@ -254,7 +253,7 @@
 	NSDictionary *connection = nil;
 	NSDictionary *spf = nil;
 
-	int connectionType;
+	NSInteger connectionType;
 
 	// Inform about the data source in the window title bar
 	[tableWindow setTitle:[self displaySPName]];
@@ -447,8 +446,8 @@
 	if([connection objectForKey:@"host"])
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if([connection objectForKey:@"port"])
-		[connectionController setPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"port"] intValue]]];
-	if([connection objectForKey:@"kcid"] && [[connection objectForKey:@"kcid"] length])
+		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
+	if([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length])
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
 
 	// Set password - if not in SPF file try to get it via the KeyChain
@@ -469,7 +468,7 @@
 		if([connection objectForKey:@"ssh_user"])
 			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
 		if([connection objectForKey:@"ssh_port"])
-			[connectionController setSshPort:[NSString stringWithFormat:@"%d", [[connection objectForKey:@"ssh_port"] intValue]]];
+			[connectionController setSshPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"ssh_port"] integerValue]]];
 
 		// Set ssh password - if not in SPF file try to get it via the KeyChain
 		if([connection objectForKey:@"ssh_password"])
@@ -541,7 +540,7 @@
 	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
 		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
 		NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-		unsigned int i;
+		NSUInteger i;
 		for(i=0; i<[items count]; i++)
 			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
 
@@ -552,7 +551,7 @@
 	if([spfSession objectForKey:@"contentSortCol"])
 		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
 	if([spfSession objectForKey:@"contentPageNumber"])
-		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] intValue]];
+		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
 	if([spfSession objectForKey:@"contentViewport"])
 		[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
 	if([spfSession objectForKey:@"contentFilter"])
@@ -560,7 +559,7 @@
 
 
 	// Select table
-	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInt:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
 
 	// Reset database view encoding if differs from default
 	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
@@ -627,9 +626,6 @@
 
 - (void) setConnection:(MCPConnection *)theConnection
 {
-	MCPResult *theResult;
-	id version;
-
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
 	
@@ -648,15 +644,7 @@
 	}
 
 	// Get the mysql version
-	theResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'version'"];
-	version = [[theResult fetchRowAsArray] objectAtIndex:1];
-	if (mySQLVersion) [mySQLVersion release], mySQLVersion = nil;
-	if ( [version isKindOfClass:[NSData class]] ) {
-		// starting with MySQL 4.1.14 the mysql variables are returned as nsdata
-		mySQLVersion = [[NSString alloc] initWithData:version encoding:[mySQLConnection encoding]];
-	} else {
-		mySQLVersion = [[NSString alloc] initWithString:version];
-	}
+	mySQLVersion = [[NSString alloc] initWithString:[mySQLConnection serverVersionString]];
 
 	// Update the selected database if appropriate
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
@@ -692,6 +680,8 @@
 														window:tableWindow
 											  notificationName:@"Connected"];
 
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
@@ -909,8 +899,7 @@
  */
 - (IBAction)setDatabases:(id)sender;
 {
-	if (!chooseDatabaseButton)
-		return;
+	if (!chooseDatabaseButton) return;
 
 	[chooseDatabaseButton removeAllItems];
 
@@ -922,23 +911,44 @@
 
 	MCPResult *queryResult = [mySQLConnection listDBs];
 
-	if ([queryResult numOfRows]) {
-		[queryResult dataSeek:0];
-	}
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 
-	// if([allDatabases count])
-	// 	[allDatabases removeAllObjects];
-
-	if(allDatabases)
-		[allDatabases release];
-
+	if (allDatabases) [allDatabases release];
+	if (allSystemDatabases) [allSystemDatabases release];
+	
 	allDatabases = [[NSMutableArray alloc] initWithCapacity:[queryResult numOfRows]];
 
-	for (int i = 0 ; i < [queryResult numOfRows] ; i++)
-		[allDatabases addObject:NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0)];
+	allSystemDatabases = [[NSMutableArray alloc] initWithCapacity:2];
+	
+	for (NSInteger i = 0 ; i < [queryResult numOfRows] ; i++)
+	{
+		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
+		
+		// If the database is either information_schema or mysql then it is classed as a system table
+		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"]) {
+			[allSystemDatabases addObject:database];
+		}
+		else {
+			[allDatabases addObject:database];
+		}
+	}
 
-	for (id db in allDatabases)
+	// Add system databases
+	for (NSString *db in allSystemDatabases) 
+	{
 		[chooseDatabaseButton addItemWithTitle:db];
+	}
+	
+	// Add a separator between the system and user databases
+	if ([allSystemDatabases count] > 0) {
+		[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
+	}
+
+	// Add user databases
+	for (NSString *db in allDatabases) 
+	{
+		[chooseDatabaseButton addItemWithTitle:db];
+	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
 }
@@ -986,7 +996,7 @@
 	// show error on connection failed
 	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
 		if ( [mySQLConnection isConnected] ) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
 			[self setDatabases:self];
 		}
 		[self endTask];
@@ -1049,7 +1059,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									  otherButton:nil 
-						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'. This operation cannot be undone.", @"delete database informative message"), [self database]]];
+						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]]];
 
 	NSArray *buttons = [alert buttons];
 
@@ -1106,25 +1116,55 @@
 }
 
 /**
+ * Returns an array of all available system database names
+ */
+- (NSArray *)allSystemDatabaseNames
+{
+	return allSystemDatabases;
+}
+
+/**
  * Alert sheet method. Invoked when an alert sheet is dismissed.
  *
  * if contextInfo == removeDatabase -> Remove the selected database
  * if contextInfo == addDatabase    -> Add a new database
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
 	// Remove the current database
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		}
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _addDatabase];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
+		} else {
+			// reset chooseDatabaseButton
+			if([[self database] length])
+				[chooseDatabaseButton selectItemWithTitle:[self database]];
+			else
+				[chooseDatabaseButton selectItemAtIndex:0];
 		}
 	}
+
 }
 
 /**
@@ -1134,7 +1174,7 @@
 -(void)showErrorSheetWith:(id)error
 {
 	// error := first object is the title , second the message, only one button OK
-	NSBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
 			nil, nil, tableWindow, self, nil, nil, nil,
 			[error objectAtIndex:1]);
 }
@@ -1151,8 +1191,8 @@
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-		int i;
-		int r = [theResult numOfRows];
+		NSInteger i;
+		NSInteger r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		for ( i = 0 ; i < r ; i++ ) {
 			dbName = NSArrayObjectAtIndex([theResult fetchRowAsArray], 0);
@@ -1220,7 +1260,7 @@
 /**
  * Set a query mode, used to control logging dependant on preferences
  */
-- (void) setQueryMode:(int)theQueryMode
+- (void) setQueryMode:(NSInteger)theQueryMode
 {
 	_queryMode = theQueryMode;
 }
@@ -1267,6 +1307,7 @@
 		[historyControl setEnabled:NO];
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
+		[mainToolbar validateVisibleItems];
 		
 		// Schedule appearance of the task window in the near future
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
@@ -1304,7 +1345,7 @@
  * Sets the task percentage progress - the first call to this automatically
  * switches the progress display to determinate.
  */
-- (void) setTaskPercentage:(float)taskPercentage
+- (void) setTaskPercentage:(CGFloat)taskPercentage
 {
 	if (taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = NO;
@@ -1538,7 +1579,7 @@
 {
 	NSEnumerator *dbEncodingMenuEn = [[selectEncodingMenu itemArray] objectEnumerator];
 	id menuItem;
-	int correctStateForMenuItem;
+	NSInteger correctStateForMenuItem;
 	while (menuItem = [dbEncodingMenuEn nextObject]) {
 		correctStateForMenuItem = [[menuItem title] isEqualToString:encoding] ? NSOnState : NSOffState;
 
@@ -1621,17 +1662,22 @@
  */
 - (NSString *)databaseEncoding
 {
+	MCPResult *charSetResult;
+	NSString *mysqlEncoding;
+
 	// MySQL > 4.0
-	id mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"] fetchRowAsDictionary] objectForKey:@"Value"];
+	charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"];
+	[charSetResult setReturnDataAsStrings:YES];
+	mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
 	_supportsEncoding = (mysqlEncoding != nil);
 
-	if ( [mysqlEncoding isKindOfClass:[NSData class]] ) { // MySQL 4.1.14 returns the mysql variables as nsdata
-		mysqlEncoding = [mySQLConnection stringWithText:mysqlEncoding];
-	}
-	if ( !mysqlEncoding ) { // mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
+	// mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
+	if ( !mysqlEncoding ) {
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
-	if ( !mysqlEncoding ) { // older version? -> set encoding to mysql default encoding latin1
+
+	// older version? -> set encoding to mysql default encoding latin1
+	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
 	}
@@ -1664,7 +1710,7 @@
 - (IBAction)showCreateTableSyntax:(id)sender
 {
 	//Create the query and get results
-	int colOffs = 1;
+	NSInteger colOffs = 1;
 	NSString *query = nil;
 	NSString *typeString = @"";
 
@@ -1690,6 +1736,7 @@
 	if (query == nil) return;
 
 	MCPResult *theResult = [mySQLConnection queryString:query];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1700,10 +1747,7 @@
 		return;
 	}
 
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-
-	if ([tableSyntax isKindOfClass:[NSData class]])
-		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
+	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
 
@@ -1727,7 +1771,7 @@
 {
 	// Create the query and get results
 	NSString *query = nil;
-	int colOffs = 1;
+	NSInteger colOffs = 1;
 
 	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
@@ -1748,6 +1792,7 @@
 		return;
 
 	MCPResult *theResult = [mySQLConnection queryString:query];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
@@ -1757,10 +1802,7 @@
 		return;
 	}
 
-	id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-
-	if ([tableSyntax isKindOfClass:[NSData class]])
-		tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
+	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -2169,10 +2211,10 @@
 
 	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		//flushed privileges without errors
-		NSBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
 																																					  [mySQLConnection getLastErrorMessage]]);
 	}
 }
@@ -2194,6 +2236,7 @@
 - (void)closeConnection
 {
 	[mySQLConnection disconnect];
+	_isConnected = NO;
 
 	// Disconnected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
@@ -2449,7 +2492,7 @@
 
 }
 
-- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 
 	if ( returnCode ) {
@@ -2608,7 +2651,7 @@
 
 	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 
-	[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+	[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 	[spfdata setObject:@"connection" forKey:@"format"];
 	[spfdata setObject:@"mysql" forKey:@"rdbms_type"];
 	[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
@@ -2642,7 +2685,7 @@
 		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
 		if([connectionController sshPort] && [[connectionController sshPort] length])
-			[connection setObject:[NSNumber numberWithInt:[[connectionController sshPort] intValue]] forKey:@"ssh_port"];
+			[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
 		break;
 		default:
 		aString = @"SPTCPIPConnection";
@@ -2659,7 +2702,7 @@
 	}
 
 	if([connectionController port] && [[connectionController port] length])
-		[connection setObject:[NSNumber numberWithInt:[[connectionController port] intValue]] forKey:@"port"];
+		[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
 
 	if([[self database] length])
 		[connection setObject:[self database] forKey:@"database"];
@@ -2699,18 +2742,18 @@
 		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-		[session setObject:[NSNumber numberWithInt:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
+		[session setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
 		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 		if([tableContentInstance filterSettings])
 			[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
 		if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
 			NSMutableArray *indices = [NSMutableArray array];
-			unsigned indexBuffer[[contentSelectedIndexSet count]];
-			unsigned limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-			unsigned idx;
+			NSUInteger indexBuffer[[contentSelectedIndexSet count]];
+			NSUInteger limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
+			NSUInteger idx;
 			for (idx = 0; idx < limit; idx++) {
-				[indices addObject:[NSNumber numberWithInt:indexBuffer[idx]]];
+				[indices addObject:[NSNumber numberWithInteger:indexBuffer[idx]]];
 			}
 			[session setObject:indices forKey:@"contentSelectedIndexSet"];
 		}
@@ -3051,7 +3094,7 @@
 /**
  * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if (returnCode == NSOKButton) {
 		if ([contextInfo isEqualToString:@"CreateSyntax"]) {
@@ -3337,8 +3380,8 @@
 	if ([identifier isEqualToString:SPMainToolbarClearConsole]) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
-	
-	if (![identifier isEqualToString:SPMainToolbarCustomQuery]) {
+
+	if (![identifier isEqualToString:SPMainToolbarCustomQuery] && ![identifier isEqualToString:SPMainToolbarUserManager]) {
 		return (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) || 
 				([tablesListInstance tableType] == SP_TABLETYPE_VIEW));
 	}
@@ -3383,7 +3426,7 @@
 - (void)windowWillClose:(NSNotification *)aNotification
 {
 	[mySQLConnection setDelegate:nil];
-	if ([mySQLConnection isConnected]) [self closeConnection];
+	if (_isConnected) [self closeConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -3394,22 +3437,26 @@
  */
 - (BOOL)windowShouldClose:(id)sender
 {
-	if (_isWorkingLevel) {
-		return NO;
-	} else if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) {
-		return NO;
-	} else {
 
-		if(!_isConnected) return YES;
+	// If no connection is available, always return YES.  Covers initial setup and disconnections.
+	if(!_isConnected) return YES;
 
-		// Auto-save spf file based connection
-		if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
-			BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
-			if(isSaved)
-				[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
-			return isSaved;
-		}
+	// If tasks are active, return NO to allow tasks to complete
+	if (_isWorkingLevel) return NO;
+
+	// If the table list considers itself to be working, return NO. This catches open alerts, and
+	// edits in progress in various views.
+	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) return NO;
+
+	// Auto-save spf file based connection and return whether the save was successful
+	if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
+		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
+		if(isSaved)
+			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
+		return isSaved;
 	}
+
+	// Return YES by default
 	return YES;
 }
 
@@ -3567,7 +3614,7 @@
 	[self updateChooseDatabaseToolbarItemWidth];
 }
 
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(int)dividerIndex
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {
 	if (sidebarGrabber != nil) {
 		return [sidebarGrabber convertRect:[sidebarGrabber bounds] toView:splitView];
@@ -3583,7 +3630,7 @@
 		return;
 
 	// grab the width of the left pane
-	float leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
+	CGFloat leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 
 	// subtract some pixels to allow for misc stuff
 	leftPaneWidth -= 12;
@@ -3608,6 +3655,7 @@
 {
 	[_encoding release];
 	[allDatabases release];
+	[allSystemDatabases release];
 	[printWebView release];
 	
 	if (connectionController) [connectionController release];
@@ -3639,7 +3687,7 @@
 	// This check is not necessary anymore as the add database button is now only enabled if the name field
 	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -3655,14 +3703,14 @@
 	
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		// An error occurred
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
 		
 		return;
 	}
 	
 	// Error while selecting the new database (is this even possible?)
 	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
 		
 		[self setDatabases:self];
 		

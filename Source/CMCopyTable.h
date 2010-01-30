@@ -36,7 +36,6 @@
 @interface CMCopyTable : SPTableView 
 {
 	id tableInstance;				// the table content view instance
-	id tableData;					// the actual table data source
 	id mySQLConnection;				// current MySQL connection
 	NSArray* columnDefinitions;		// array of NSDictionary containing info about columns
 	NSString* selectedTable;		// the name of the current selected table
@@ -70,7 +69,7 @@
 	@param	  isLocal who cares
 	@result	 Always calls for a copy type drag operation
 */
-- (unsigned int)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
+- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 /*!
 	@method	 selectedRowsAsTabStringWithHeaders
@@ -92,7 +91,7 @@
 	   returns something meaningful. 
 	@result	 The above described string, or nil if nothing selected
 */
-- (NSString *)draggedRowsAsTabString:(NSArray *)rows;
+- (NSString *)draggedRowsAsTabString;
 
 /*
  * Generate a string in form of INSERT INTO <table> VALUES () of 
@@ -103,9 +102,9 @@
 /*
  * Set all necessary data from the table content view.
  */
-- (void)setTableInstance:(id)anInstance withTableData:(id)theTableData withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection;
+- (void)setTableInstance:(id)anInstance withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection;
 
 @end
 
-extern int MENU_EDIT_COPY_WITH_COLUMN;
-extern int MENU_EDIT_COPY_AS_SQL;
+extern NSInteger MENU_EDIT_COPY_WITH_COLUMN;
+extern NSInteger MENU_EDIT_COPY_AS_SQL;

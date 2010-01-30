@@ -83,8 +83,8 @@
 {
 	NSMutableArray *csvRowArray;
 	NSMutableString *csvCellString = [NSMutableString string];
-	long startingParserPosition, nextQuoteDistance, nextFieldEndDistance, nextLineEndDistance;
-	int skipLength, j;
+	NSUInteger startingParserPosition, nextQuoteDistance, nextFieldEndDistance, nextLineEndDistance;
+	NSInteger skipLength, j;
 	BOOL fieldIsQuoted, isEscaped;
 	BOOL lineEndingEncountered = NO;
 
@@ -351,7 +351,7 @@
 /**
  * Return the parser position
  */
-- (long) parserPosition
+- (NSUInteger) parserPosition
 {
 	return parserPosition;
 }
@@ -360,7 +360,7 @@
  * Return the total length of CSV parsed so far - differs from the parser position in
  * streaming/trimming situations
  */
-- (long) totalLengthParsed
+- (NSUInteger) totalLengthParsed
 {
 	return totalLengthParsed;
 }
@@ -570,7 +570,7 @@
  * parser location. Returns NSNotFound if the string could not be found before the end
  * of the string.
  */
-- (long) _getDistanceToString:(NSString *)theString
+- (NSUInteger) _getDistanceToString:(NSString *)theString
 {
 	NSRange stringRange = [csvString rangeOfString:theString options:NSLiteralSearch range:NSMakeRange(parserPosition, csvStringLength - parserPosition)];
 
@@ -589,7 +589,7 @@
 {
 	if (!skipCharacterSet) return;
 
-	int i = 0;
+	NSInteger i = 0;
 	while (parserPosition + i < csvStringLength) {
 		if (![skipCharacterSet characterIsMember:[csvString characterAtIndex:parserPosition+i]]) break;
 		i++;

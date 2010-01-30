@@ -104,7 +104,7 @@
 			NSBeginAlertSheet(NSLocalizedString(@"Error adding password to Keychain", @"error adding password to keychain message"), 
 							  NSLocalizedString(@"OK", @"OK button"), 
 							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error adding password to keychain informative message"), status]);
+							  NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error adding password to keychain informative message"), status);
 		}
 	}
 }
@@ -199,7 +199,7 @@
 {
 	SecKeychainItemRef item;
 	SecKeychainSearchRef search = NULL;
-    int numberOfItemsFound = 0;
+    NSInteger numberOfItemsFound = 0;
 	SecKeychainAttributeList list;
 	SecKeychainAttribute attributes[2];
 
@@ -237,9 +237,10 @@
 {
 	NSString *keychainItemName;
 
-	keychainItemName = [NSString stringWithFormat:@"Sequel Pro : %@ (%i)",
+	// Look up the keychain name using long longs to support 64-bit > 32-bit keychain usage
+	keychainItemName = [NSString stringWithFormat:@"Sequel Pro : %@ (%lld)",
 							theName?theName:@"",
-							[theID intValue]];
+							[theID longLongValue]];
 
 	return keychainItemName;
 }
@@ -266,9 +267,10 @@
 {
 	NSString *sshKeychainItemName;
 
-	sshKeychainItemName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%i)",
+	// Look up the keychain name using long longs to support 64-bit > 32-bit keychain usage
+	sshKeychainItemName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%lld)",
 							theName?theName:@"",
-							[theID intValue]];
+							[theID longLongValue]];
 
 	return sshKeychainItemName;
 }

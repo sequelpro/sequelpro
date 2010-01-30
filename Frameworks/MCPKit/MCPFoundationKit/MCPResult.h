@@ -38,8 +38,9 @@
 	MYSQL_RES		 *mResult;		 /* The MYSQL_RES structure of the C API. */
 	NSArray			 *mNames;		 /* An NSArray holding the name of the columns. */
 	NSStringEncoding mEncoding;		 /* The encoding used by MySQL server, to ISO-1 default. */
-	NSUInteger	 mNumOfFields;	 /* The number of fields in the result. */
+	NSUInteger		 mNumOfFields;	 /* The number of fields in the result. */
 	NSTimeZone		 *mTimeZone;	 /* The time zone of the connection when the query was made. */
+	BOOL			 mReturnDataAsStrings;	/* Whether to return data types as strings */
 }
 
 // Initialization
@@ -70,6 +71,7 @@
 - (BOOL)isBlobForKey:(NSString *)key;
 
 // Conversion
+- (void) setReturnDataAsStrings:(BOOL)alwaysConvertData;
 - (NSString *)stringWithText:(NSData *)theTextData;
 - (const char *)cStringFromString:(NSString *)theString;
 - (NSString *)stringWithCString:(const char *)theCString;

@@ -47,7 +47,7 @@
 - (NSArray *) columns;
 - (NSDictionary *) columnWithName:(NSString *)colName;
 - (NSArray *) columnNames;
-- (NSDictionary *) columnAtIndex:(int)index;
+- (NSDictionary *) columnAtIndex:(NSInteger)index;
 - (NSArray *) getConstraints;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;

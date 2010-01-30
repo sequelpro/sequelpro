@@ -903,7 +903,7 @@ Finally, you can use setTarget:nil forRelation:... to 'delete' a previously esta
 		return 0;
 	}
 	theJoinArray = [iRelation joins];
-	theQuery = [[NSMutableString alloc] initWithFormat:@"SELECT COUNT(*) FROM %@ WHERE ", [[iRelation destination] externalName]];
+	theQuery = [[NSMutableString alloc] initWithFormat:@"SELECT COUNT(1) FROM %@ WHERE ", [[iRelation destination] externalName]];
 	for (i=0; [theJoinArray count] != i; ++i) {
 		MCPJoin			*theJoin = (MCPJoin *)[theJoinArray objectAtIndex:i];
 		if (i) {
@@ -914,7 +914,7 @@ Finally, you can use setTarget:nil forRelation:... to 'delete' a previously esta
 	theResult = [connection queryString:theQuery];
 	[theQuery release];
 	theRow = [theResult fetchRowAsDictionary];
-	return [(NSNumber *)[theRow objectForKey:@"COUNT(*)"] unsignedIntegerValue];
+	return [(NSNumber *)[theRow objectForKey:@"COUNT(1)"] unsignedIntegerValue];
 }
 
 - (NSUInteger) countTargetForRelationNamed:(NSString *) iRelationName

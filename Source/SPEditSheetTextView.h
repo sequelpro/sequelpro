@@ -29,7 +29,7 @@
 	BOOL textWasChanged;
 }
 
-- (unsigned int)characterIndexOfPoint:(NSPoint)aPoint;
+- (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 - (void)saveChangedFontInUserDefaults;
 

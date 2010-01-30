@@ -41,7 +41,7 @@ static inline const char* NSStringUTF8String(NSString* self) {
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(long long)byteSize;
-+ (NSString *)stringForTimeInterval:(float)timeInterval;
++ (NSString *)stringForTimeInterval:(CGFloat)timeInterval;
 
 - (NSString *)backtickQuotedString;
 - (NSString *)tickQuotedString;
@@ -49,10 +49,10 @@ static inline const char* NSStringUTF8String(NSString* self) {
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(unsigned) mask;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(NSUInteger) mask;
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
 
-- (float)levenshteinDistanceWithWord:(NSString *)stringB;
+- (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 	- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set;

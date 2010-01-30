@@ -32,7 +32,7 @@
 
 - (NSObject *)valueForVariable:(NSString *)var parent:(NSObject **)parent parentKey:(NSString **)parentKey;
 - (void)setValue:(NSObject *)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame;
-- (void)reportError:(NSString *)errorStr code:(int)code continuing:(BOOL)continuing;
+- (void)reportError:(NSString *)errorStr code:(NSInteger)code continuing:(BOOL)continuing;
 - (void)reportBlockBoundaryStarted:(BOOL)started;
 - (void)reportTemplateProcessingFinished;
 
@@ -174,7 +174,7 @@
 #pragma mark  Delegate
 
 
-- (void)reportError:(NSString *)errorStr code:(int)code continuing:(BOOL)continuing
+- (void)reportError:(NSString *)errorStr code:(NSInteger)code continuing:(BOOL)continuing
 {
 	if (delegate) {
 		NSString *errStr = NSLocalizedString(errorStr, nil);
@@ -286,11 +286,11 @@
 		}
 	} else {
 		// Try iterative checking for array indices.
-		int numKeys = [dotBits count];
+		NSInteger numKeys = [dotBits count];
 		if (numKeys > 1) { // otherwise no point in checking
 			NSObject *thisParent = currObj;
 			NSString *thisKey = nil;
-			for (int i = 0; i < numKeys; i++) {
+			for (NSInteger i = 0; i < numKeys; i++) {
 				thisKey = [dotBits objectAtIndex:i];
 				NSObject *newObj = nil;
 				@try {
@@ -306,7 +306,7 @@
 					NSString *digits;
 					BOOL scanned = [scanner scanCharactersFromSet:numbersSet intoString:&digits];
 					if (scanned && digits && [digits length] > 0) {
-						int index = [digits intValue];
+						NSInteger index = [digits integerValue];
 						if (index >= 0 && index < [((NSArray *)currObj) count]) {
 							newObj = [((NSArray *)currObj) objectAtIndex:index];
 						}
@@ -343,7 +343,7 @@
 	if (!inStackFrame && currValue && (currValue != newValue)) {
 		// Set new value appropriately.
 		if ([parent isKindOfClass:[NSMutableArray class]]) {
-			[(NSMutableArray *)parent replaceObjectAtIndex:[parentKey intValue] withObject:newValue];
+			[(NSMutableArray *)parent replaceObjectAtIndex:[parentKey integerValue] withObject:newValue];
 		} else {
 			// Try using setValue:forKey:
 			@try {
@@ -618,10 +618,10 @@ but current block was started by \"%@\" marker",
 			}
 			
 			// Check to see if there are open blocks left over.
-			int openBlocks = [_openBlocksStack count];
+			NSInteger openBlocks = [_openBlocksStack count];
 			if (openBlocks > 0) {
-				NSString *errMsg = [NSString stringWithFormat:@"Finished processing template, but %d %@ left open (%@).", 
-									openBlocks, 
+				NSString *errMsg = [NSString stringWithFormat:@"Finished processing template, but %ld %@ left open (%@).", 
+									(long)openBlocks, 
 									(openBlocks == 1) ? @"block was" : @"blocks were", 
 									[[_openBlocksStack valueForKeyPath:BLOCK_NAME_KEY] componentsJoinedByString:@", "]];
 				[self reportError:errMsg code:6 continuing:YES];

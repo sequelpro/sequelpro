@@ -204,12 +204,12 @@
 #pragma mark -
 #pragma mark TableView datasource methods
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [info count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	return [info objectAtIndex:rowIndex];
 }
@@ -220,19 +220,19 @@
 }
 
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
 	// row 1 and 6 should be editable - ie be able to rename the table and change the auto_increment value.
 	return NO;//(rowIndex == 1 || rowIndex == 6 );
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)row
+- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)row
 {
 	// This makes the top row (TABLE INFORMATION) have the diff styling
 	return (row == 0);
 }
 
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
 		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];

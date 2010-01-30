@@ -29,6 +29,7 @@
 #import "SPQueryController.h"
 #import "SPConstants.h"
 #import "SPConnectionController.h"
+#import "RegexKitLite.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -322,7 +323,7 @@
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	[panel setResolvesAliases:YES];
+	// [panel setResolvesAliases:YES];
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
@@ -386,7 +387,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 240);
 }
@@ -394,7 +395,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 120);
 }
@@ -415,9 +416,15 @@
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(![[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
 
-	return [[favorites objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		if(![[favorites objectAtIndex:rowIndex] objectForKey:@"name"]) return @"";
+		return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+	} else if([[aTableColumn identifier] isEqualToString:@"tabtrigger"]) {
+		if(![[favorites objectAtIndex:rowIndex] objectForKey:@"tabtrigger"] || ![(NSString*)[[favorites objectAtIndex:rowIndex] objectForKey:@"tabtrigger"] length]) return @"";
+		return [NSString stringWithFormat:@"%@⇥", [[favorites objectAtIndex:rowIndex] objectForKey:@"tabtrigger"]];
+	}
+	return @"";
 }
 
 /*
@@ -426,10 +433,12 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
-	if([[aTableColumn identifier] isEqualToString:@"name"] && [anObject length]) {
-		[[favorites objectAtIndex:rowIndex] setObject:[anObject description] forKey:@"name"];
-		// [[favorites objectAtIndex:rowIndex] setObject:[favoriteQueryTextView string] forKey:@"query"];
-		[favoriteNameTextField setStringValue:[anObject description]];
+	if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		if([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length]) {
+			[[favorites objectAtIndex:rowIndex] setObject:anObject forKey:@"name"];
+			// [[favorites objectAtIndex:rowIndex] setObject:[favoriteQueryTextView string] forKey:@"query"];
+			[favoriteNameTextField setStringValue:anObject];
+		}
 	}
 
 	[favoritesTableView reloadData];
@@ -509,7 +518,7 @@
 }
 
 /*
- * Changes in the name text field will be saved in data source directly
+ * Changes in the name/tabtrigger text field will be saved in data source directly
  * to update the table view accordingly
  */
 - (void)controlTextDidChange:(NSNotification *)notification
@@ -522,6 +531,13 @@
 
 	if(object == favoriteNameTextField) {
 		[[favorites objectAtIndex:[favoritesTableView selectedRow]] setObject:[favoriteNameTextField stringValue] forKey:@"name"];
+		[favoritesTableView reloadData];
+	} 
+	else if(object == favoriteTabTriggerTextField){
+		//Validate trigger - it only may contain alphnumeric characters
+		NSString *tabTrigger = [NSString stringWithString:[[favoriteTabTriggerTextField stringValue] stringByReplacingOccurrencesOfRegex:@"(?i)[^[:L:]0-9]+" withString:@""]];
+		[favoriteTabTriggerTextField setStringValue:tabTrigger];
+		[[favorites objectAtIndex:[favoritesTableView selectedRow]] setObject:tabTrigger forKey:@"tabtrigger"];
 		[favoritesTableView reloadData];
 	}
 
@@ -564,33 +580,27 @@
 /**
  * Return whether or not the supplied rows can be written.
  */
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
-	// Up to now only one row can be dragged
-	// if ([rows count] == 1) {
+	NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
+	NSInteger originalRow = [rows firstIndex];
 
-		NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
-		NSInteger originalRow = [[rows objectAtIndex:0] intValue];
+	if(originalRow < 1) return NO;
 
-		if(originalRow < 1) return NO;
+	// Do not drag headers
+	if([[favorites objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
 
-		// Do not drag headers
-		if([[favorites objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
+	[pboard declareTypes:pboardTypes owner:nil];
 
-		[pboard declareTypes:pboardTypes owner:nil];
+	NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
+	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
+	[archiver encodeObject:rows forKey:@"indexdata"];
+	[archiver finishEncoding];
+	[pboard setData:indexdata forType:SPFavoritesPasteboardDragType];
 
-		NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
-		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
-		[archiver encodeObject:rows forKey:@"indexdata"];
-		[archiver finishEncoding];
-		[pboard setData:indexdata forType:SPFavoritesPasteboardDragType];
+	return YES;
 
-		return YES;
-
-	// } 
-
-	// return NO;
 }
 
 /**
@@ -621,8 +631,16 @@
 	if(row < 1) return NO;
 
 	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPFavoritesPasteboardDragType]] autorelease];
-	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
+	NSIndexSet *draggedIndexes = [[NSIndexSet alloc] initWithIndexSet:(NSIndexSet *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
+
+	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
+	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
+	NSUInteger rowIndex = [draggedIndexes firstIndex];
+	while ( rowIndex != NSNotFound ) {
+		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
+		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
+	}
 
 	NSInteger destinationRow = row;
 	NSInteger offset = 0;
@@ -631,7 +649,7 @@
 
 	for(i=0; i<[draggedRows count]; i++) {
 
-		NSInteger originalRow = [[draggedRows objectAtIndex:i] intValue];
+		NSInteger originalRow = [[draggedRows objectAtIndex:i] integerValue];
 
 		if(originalRow < destinationRow) destinationRow--;
 
@@ -655,6 +673,8 @@
 
 	[favoritesTableView reloadData];
 	[favoritesArrayController rearrangeObjects];
+	[draggedIndexes release];
+	[draggedRows release];
 
 	return YES;
 }
@@ -665,7 +685,7 @@
 /**
  * Sheet did end method
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Is disabled - do we need that?
 	// if ([contextInfo isEqualToString:@"removeAllFavorites"]) {
@@ -700,7 +720,7 @@
 /**
  * Import panel did end method.
  */
-- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if (returnCode == NSOKButton) {
@@ -766,7 +786,7 @@
 /**
  * Save panel did end method.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if([contextInfo isEqualToString:@"saveQuery"]) {
@@ -789,7 +809,7 @@
 			NSMutableArray *favoriteData = [NSMutableArray array];
 
 	
-			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"query favorites" forKey:@"format"];
 			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
 

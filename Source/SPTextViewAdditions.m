@@ -40,13 +40,13 @@
 	if (curRange.length)
         return curRange;
 	
-	unsigned long curLocation = curRange.location;
+	NSUInteger curLocation = curRange.location;
 
 	[self moveWordLeft:self];
 	[self moveWordRightAndModifySelection:self];
 	
-	unsigned long newStartRange = [self selectedRange].location;
-	unsigned long newEndRange = newStartRange + [self selectedRange].length;
+	NSUInteger newStartRange = [self selectedRange].location;
+	NSUInteger newEndRange = newStartRange + [self selectedRange].length;
 	
 	// if current location does not intersect with found range
 	// then caret is at the begin of a word -> change strategy
@@ -60,7 +60,7 @@
 	}
 	
 	// how many space in front of the selection
-	int bias = [self selectedRange].length - [[[[self string] substringWithRange:[self selectedRange]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length];
+	NSInteger bias = [self selectedRange].length - [[[[self string] substringWithRange:[self selectedRange]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length];
 	[self setSelectedRange:NSMakeRange([self selectedRange].location+bias, [self selectedRange].length-bias)];
 	newStartRange += bias;
 	newEndRange -= bias;
@@ -101,17 +101,17 @@
  */
 - (IBAction)selectEnclosingBrackets:(id)sender
 {
-	long caretPosition = [self selectedRange].location;
-	long stringLength = [[self string] length];
+	NSUInteger caretPosition = [self selectedRange].location;
+	NSUInteger stringLength = [[self string] length];
 	unichar co, cc;
 	
 	if(caretPosition == 0 || caretPosition >= stringLength) return;
 
-	long pcnt = 0;
-	long bcnt = 0;
-	long scnt = 0;
+	NSInteger pcnt = 0;
+	NSInteger bcnt = 0;
+	NSInteger scnt = 0;
 
-	long i;
+	NSInteger i;
 
 	// look for the first non-balanced closing bracket
 	for(i=caretPosition; i<stringLength; i++) {
@@ -140,9 +140,9 @@
 		}
 	}
 	
-	long start = -1;
-	long end = -1;
-	long bracketCounter = 0;
+	NSInteger start = -1;
+	NSInteger end = -1;
+	NSInteger bracketCounter = 0;
 
 	if([[self string] characterAtIndex:caretPosition] == cc)
 		bracketCounter--;
@@ -372,11 +372,10 @@
 	
 	
 	// reverse string : TODO not yet combining diacritics safe!
-	if(workingRange.length > 1)
+	NSUInteger len = workingRange.length;
+	if (len > 1)
 	{
-		NSMutableString *reversedStr;
-		unsigned long len = workingRange.length;
-		reversedStr = [NSMutableString stringWithCapacity:len];
+		NSMutableString *reversedStr = [NSMutableString stringWithCapacity:len];
 		while (len > 0)
 			[reversedStr appendString:
 				[NSString stringWithFormat:@"%C", [[self string] characterAtIndex:--len+workingRange.location]]];
@@ -418,7 +417,7 @@
 - (void)makeTextSizeSmaller
 {
 	NSFont *aFont = [self font];
-	int newSize = ([aFont pointSize]-1 < 4) ? [aFont pointSize] : [aFont pointSize]-1;
+	NSInteger newSize = ([aFont pointSize]-1 < 4) ? [aFont pointSize] : [aFont pointSize]-1;
 	BOOL editableStatus = [self isEditable];
 	[self setEditable:YES];
 	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:newSize]];
