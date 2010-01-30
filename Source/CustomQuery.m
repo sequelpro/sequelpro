@@ -854,7 +854,7 @@
 	}
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+	[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 	
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];

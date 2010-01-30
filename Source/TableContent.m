@@ -223,7 +223,7 @@
 	[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInstance:self withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
+	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -531,6 +531,7 @@
 	pthread_mutex_lock(&tableValuesLock);
 	tableRowsCount = 0;
 	tableValues = [[SPDataStorage alloc] init];
+	[tableContentView setTableData:tableValues];
 	pthread_mutex_unlock(&tableValuesLock);
 	[tableValuesTransition release];
 }

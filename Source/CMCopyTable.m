@@ -31,6 +31,7 @@
 #import "CustomQuery.h"
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
+#import "SPDataStorage.h"
 
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2001;
 NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
@@ -39,8 +40,6 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 - (void)copy:(id)sender
 {
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	
 	NSString *tmp = nil;
 	
 	if([sender tag] == MENU_EDIT_COPY_AS_SQL) {
@@ -95,78 +94,68 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 //the value in each field is from the objects description method
 - (NSString *)selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders
 {
-	if ( [self numberOfSelectedRows] > 0 )
-	{
+	if ([self numberOfSelectedRows] == 0) return nil;
+	
+	NSIndexSet *selectedRows = [self selectedRowIndexes];
 
-		NSIndexSet *selectedRows = [self selectedRowIndexes];
+	NSArray *columns = [self tableColumns];
+	NSUInteger numColumns = [columns count];	
+	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 
-		NSArray *columns = [self tableColumns];
-		NSUInteger numColumns = [columns count];
-		id dataSource = [self dataSource];
-		
-		NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
-		
-		if(withHeaders) {
-			NSUInteger i;
-			for( i = 0; i < numColumns; i++ ){
-				[result appendString:[NSString stringWithFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]]];
-			}
-			[result appendString:[NSString stringWithFormat:@"\n"]];
+	// Add the table headers if requested to do so
+	if (withHeaders) {
+		NSUInteger i;
+		for( i = 0; i < numColumns; i++ ){
+			[result appendString:[NSString stringWithFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]]];
 		}
+		[result appendString:[NSString stringWithFormat:@"\n"]];
+	}
 
-		NSUInteger c;
+	NSUInteger c;
+	id cellData = nil;
 
-		id rowData = nil;
-		NSTableColumn *col = nil;
-		
-		NSUInteger rowIndex = [selectedRows firstIndex];
+	// Create an array of table column mappings for fast iteration
+	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	for ( c = 0; c < numColumns; c++) {
+		columnMappings[c] = [[[columns objectAtIndex:c] identifier] unsignedIntValue];
+	}
 
-		while ( rowIndex != NSNotFound )
-		{ 
-			rowData = nil;
-			for ( c = 0; c < numColumns; c++)
-			{
-				col = NSArrayObjectAtIndex(columns, c);
-				rowData = [dataSource tableView:self 
-					  objectValueForTableColumn:col 
-											row:rowIndex ];
-				
-				if ( nil != rowData )
-				{
-					if ([rowData isNSNull])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
-					else if ([rowData isSPNotLoaded])
-						[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
-					else
-						[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
-				}
-				else
-				{
-					[result appendString:@"\t"];
-				}
-			} //end for each column
+	// Loop through the rows, adding their descriptive contents
+	NSUInteger rowIndex = [selectedRows firstIndex];
+	while ( rowIndex != NSNotFound )
+	{ 
+		for ( c = 0; c < numColumns; c++) {
+			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 			
-			if ( [result length] )
-			{
-				[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
+			if (cellData) {
+				if ([cellData isNSNull])
+					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
+				else if ([cellData isSPNotLoaded])
+					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
+				else
+					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
+			} else {
+				[result appendString:@"\t"];
 			}
-			[result appendString: [ NSString stringWithFormat:@"\n"]];
-
-			// next selected row
-			rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
-
-		} //end for each row
+		}
 		
-		if ( [result length] )
-		{
+		if ([result length]){
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
-		return result;
+		[result appendString:[NSString stringWithFormat:@"\n"]];
+
+		// Select the next row index
+		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 	}
-	else
-	{
-		return nil;
+
+	// Remove the trailing line end
+	if ([result length]) {
+		[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 	}
+
+	free(columnMappings);
+
+	return result;
 }
 
 /* 
@@ -184,134 +173,121 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
-	NSArray *dbDataRow;
-	NSMutableArray *columnMappings;
 
-	id rowData = nil;
+	id cellData = nil;
 	
 	NSUInteger rowCounter = 0;
 	NSUInteger penultimateRowIndex = [selectedRows count];
 	NSUInteger c;
 	NSUInteger valueLength = 0;
 
-	NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
+	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 
-	// Create array of types according to the column order
-	NSMutableArray *types = [NSMutableArray arrayWithCapacity:numColumns];
 	// Create an array of table column names
 	NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
-	for(id enumObj in columns)
-	{
+	for (id enumObj in columns) {
 		[tbHeader addObject:[[enumObj headerCell] stringValue]];
-		NSString *t = [[columnDefinitions objectAtIndex:[[enumObj identifier] integerValue]] objectForKey:@"typegrouping"];
-		if([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
-			[types addObject:[NSNumber numberWithInteger:0]]; // numeric
-		else if([t isEqualToString:@"blobdata"])
-			[types addObject:[NSNumber numberWithInteger:2]]; // blob data
-		else if([t isEqualToString:@"textdata"])
-			[types addObject:[NSNumber numberWithInteger:3]]; // long text data
-		else
-			[types addObject:[NSNumber numberWithInteger:1]]; // string (fallback coevally)
 	}
+
+	// Create arrays of table column mappings and types for fast iteration
+	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	NSUInteger *columnTypes = malloc(numColumns * sizeof(NSUInteger));
+	for ( c = 0; c < numColumns; c++) {
+		columnMappings[c] = [[[columns objectAtIndex:c] identifier] unsignedIntValue];
+
+		NSString *t = [[columnDefinitions objectAtIndex:columnMappings[c]] objectForKey:@"typegrouping"];
+		
+		// Numeric data
+		if ([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
+			columnTypes[c] = 0;
+		
+		// Blob data or long text data
+		else if ([t isEqualToString:@"blobdata"] || [t isEqualToString:@"textdata"])
+			columnTypes[c] = 2;
+
+		// Default to strings
+		else
+			columnTypes[c] = 1;
+	}
+
+	// Begin the SQL string
 	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
-	
-	// Set up an array of table column mappings
-	columnMappings = [[NSMutableArray alloc] initWithCapacity:numColumns];
-	for ( c = 0; c < numColumns; c++ ) {
-		[columnMappings addObject:[[columns objectAtIndex:c] identifier]];
-	}
 
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSTableColumn *col = nil;
-
 	while ( rowIndex != NSNotFound )
-	{ 
+	{
 		[value appendString:@"\t("];
-		rowData = nil;
+		cellData = nil;
 		rowCounter++;
 		for ( c = 0; c < numColumns; c++ )
 		{
-			col = NSArrayObjectAtIndex(columns, c);
-			rowData = [dataSource tableView:self 
-				  objectValueForTableColumn:col 
-										row:rowIndex ];
+			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
+
+			// If the data is not loaded, attempt to fetch the value
+			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:[TableContent class]]) {
+
+				// Abort if no table name given, not table content, or if there are no indices on this table
+				if (!selectedTable || ![[self delegate] isKindOfClass:[TableContent class]] || ![[tableInstance argumentForRow:rowIndex] length]) {
+					NSBeep();
+					free(columnMappings);
+					free(columnTypes);
+					return nil;
+				}
+
+				// Use the argumentForRow to retrieve the missing information
+				// TODO - this could be preloaded for all selected rows rather than cell-by-cell
+				cellData = [mySQLConnection getFirstFieldFromQuery:
+							[NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@",
+								[[tbHeader objectAtIndex:columnMappings[c]] backtickQuotedString],
+								[selectedTable backtickQuotedString],
+								[tableInstance argumentForRow:rowIndex]]];
+			}
 
 			// Check for NULL value
-			if([rowData isNSNull]) {
+			if ([cellData isNSNull]) {
 				[value appendString:@"NULL, "];
 				continue;
-			}
-			else if ( rowData != nil ) {
-				// check column type and insert the data accordingly
-				switch([[types objectAtIndex:c] integerValue]) {
-					case 0: // numeric
-						[value appendString:[NSString stringWithFormat:@"%@, ", [rowData description]]];
+
+			} else if (cellData) {
+			
+				// Check column type and insert the data accordingly
+				switch(columnTypes[c]) {
+
+					// Convert numeric types to unquoted strings
+					case 0:
+						[value appendString:[NSString stringWithFormat:@"%@, ", [cellData description]]];
 						break;
-					case 1: // string
-						if ([rowData isKindOfClass:[NSData class]]) {
-							[value appendString:[NSString stringWithFormat:@"X'%@', ", 
-								[mySQLConnection prepareBinaryData:rowData]]];
+
+					// Quote string, text and blob types appropriately
+					case 1:
+					case 2:
+						if ([cellData isKindOfClass:[NSData class]]) {
+							[value appendString:[NSString stringWithFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:cellData]]];
 						} else {
-							[value appendString:[NSString stringWithFormat:@"'%@', ", 
-								[mySQLConnection prepareString:[rowData description]]]];
+							[value appendString:[NSString stringWithFormat:@"'%@', ", [mySQLConnection prepareString:[cellData description]]]];
 						}
 						break;
-					case 2: // blob
-						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [rowData isSPNotLoaded]) {
 
-							// Abort if there are no indices on this table or if there's no table name given.
-							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil) {
-								[columnMappings release];
-								return nil;
-							}
-
-							//if we have indexes, use argumentForRow
-							dbDataRow = [[mySQLConnection queryString:
-								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
-									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] isNSNull])
-								[value appendString:@"NULL, "];
-							else
-								[value appendString:[NSString stringWithFormat:@"X'%@', ", 
-									[mySQLConnection prepareBinaryData:[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]]]]];
-						} else {
-							[value appendString:[NSString stringWithFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:rowData]]];
-						}
-						break;
-					case 3: // long text data
-						if (![[self delegate] isKindOfClass:[CustomQuery class]] && [prefs boolForKey:SPLoadBlobsAsNeeded]) {
-
-							// Abort if there are no indices on this table or if there's no table name given.
-							if (![[tableInstance argumentForRow:rowIndex] length] || selectedTable == nil)
-								return nil;
-
-							//if we have indexes, use argumentForRow
-							dbDataRow = [[mySQLConnection queryString:
-								[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", 
-									[selectedTable backtickQuotedString], [tableInstance argumentForRow:rowIndex]]] fetchRowAsArray];
-							if([[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] isKindOfClass:[NSNull class]])
-								[value appendString:@"NULL, "];
-							else
-								[value appendString:[NSString stringWithFormat:@"'%@', ", 
-									[mySQLConnection prepareString:[[dbDataRow objectAtIndex:[[columnMappings objectAtIndex:c] integerValue]] description]]]];
-						} else {
-							[value appendString:[NSString stringWithFormat:@"'%@', ", 
-								[[rowData description] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"] ] ];
-						}
-						break;
+					// Unhandled cases - abort
 					default:
-						[columnMappings release];
+						NSBeep();
+						free(columnMappings);
+						free(columnTypes);
 						return nil;
 				}
+
+			// If nil is encountered, abort
+			} else {
+				NSBeep();
+				free(columnMappings);
+				free(columnTypes);
+				return nil;
 			}
-			else
-				// TODO is this necessary? or better to return nil?
-				[value appendString:@"'', "];
+		}
 
-		} //end for each column
-
-		// delete last ', '
+		// Remove the trailing ', ' from the query
 		if ( [value length] > 2 )
 			[value deleteCharactersInRange:NSMakeRange([value length]-2, 2)];
 
@@ -319,6 +295,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 		// Close this VALUES group and set up the next one if appropriate
 		if ( rowCounter != penultimateRowIndex ) {
+
 			// Add a new INSERT starter command every ~250k of data.
 			if ( valueLength > 250000 ) {
 				[result appendString:value];
@@ -329,23 +306,25 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 			} else {
 				[value appendString:@"),\n"];
 			}
+
 		} else {
 			[value appendString:@"),\n"];
 			[result appendString:value];
 		}
 
-		// next selected row
-		rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
+		// Get the next selected row index
+		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 
-	} //end for each row
+	}
 	
-	// delete last ",/n"
+	// Remove the trailing ",\n" from the query string
 	if ( [result length] > 3 )
 		[result deleteCharactersInRange:NSMakeRange([result length]-2, 2)];
 
 	[result appendString:@";\n"];
-	
-	[columnMappings release];
+
+	free(columnMappings);
+	free(columnTypes);
 	
 	return result;
 }
@@ -360,72 +339,77 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 	id dataSource = [self dataSource];
 	
-	NSMutableString *result = [NSMutableString stringWithCapacity:numColumns];
-
+	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 	NSUInteger c;
-
-	id rowData = nil;
-	NSTableColumn *col = nil;
+	id cellData = nil;
 	
-	NSUInteger rowIndex = [selectedRows firstIndex];
+	// Create an array of table column mappings for fast iteration
+	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	for ( c = 0; c < numColumns; c++) {
+		columnMappings[c] = [[[columns objectAtIndex:c] identifier] unsignedIntValue];
+	}
 
+	// Loop through the rows, adding their descriptive contents
+	NSUInteger rowIndex = [selectedRows firstIndex];
 	while ( rowIndex != NSNotFound )
 	{ 
-		rowData = nil;
-		for ( c = 0; c < numColumns; c++)
-		{
-			col = [columns objectAtIndex:c];
-			rowData = [dataSource tableView:self 
-				  objectValueForTableColumn:col 
-										row:rowIndex ];
+		for ( c = 0; c < numColumns; c++) {
+			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 			
-			if ( nil != rowData )
-			{
-				if ([rowData isNSNull])
+			if (cellData) {
+				if ([cellData isNSNull])
 					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
-				else if ([rowData isSPNotLoaded])
+				else if ([cellData isSPNotLoaded])
 					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
 				else
-					[result appendString:[NSString stringWithFormat:@"%@\t", [rowData description] ] ];
-			}
-			else
-			{
+					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
+			} else {
 				[result appendString:@"\t"];
 			}
-		} //end for each column
-		
-		if ( [result length] )
-		{
+		}
+
+		if ([result length]) {
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
-		[result appendString: [ NSString stringWithFormat:@"\n"]];
+		
+		[result appendString:[NSString stringWithFormat:@"\n"]];
 
-		// next selected row
-		rowIndex = [selectedRows indexGreaterThanIndex: rowIndex];
+		// Retrieve the next selected row index
+		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
+	}
 
-	} //end for each row
-	
-	if ( [result length] )
-	{
+	// Trim the trailing line ending
+	if ([result length]) {
 		[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 	}
+
+	free(columnMappings);
 
 	return result;
 }
 
-/*
+/**
  * Init self with data coming from the table content view. Mainly used for copying data properly.
  */
-- (void)setTableInstance:(id)anInstance withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
+- (void)setTableInstance:(id)anInstance withTableData:(SPDataStorage *)theTableStorage withColumns:(NSArray *)columnDefs withTableName:(NSString *)aTableName withConnection:(id)aMySqlConnection
 {
 	selectedTable     = aTableName;
 	mySQLConnection   = aMySqlConnection;
 	tableInstance     = anInstance;
+	tableStorage	  = theTableStorage;
 	
 	if (columnDefinitions) [columnDefinitions release];
-	
 	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
+
+/*
+ * Update the table storage location if necessary.
+ */
+- (void)setTableData:(SPDataStorage *)theTableStorage
+{
+	tableStorage = theTableStorage;
+}
+
 
 - (void)keyDown:(NSEvent *)theEvent
 {
@@ -458,6 +442,24 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	}
 
 	[super keyDown:theEvent];
+}
+
+#pragma mark -
+
+- (void) awakeFromNib
+{
+	columnDefinitions = nil;
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+
+	[super awakeFromNib];
+}
+
+- (void) dealloc
+{
+	if (columnDefinitions) [columnDefinitions release];
+	[prefs release];
+
+	[super dealloc];
 }
 
 @end
