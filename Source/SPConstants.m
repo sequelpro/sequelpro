@@ -64,6 +64,7 @@ NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
+NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";

@@ -62,6 +62,9 @@
 	NSDictionary *currentFavorite;
 
 	IBOutlet NSTextField *editorFontName;
+	IBOutlet NSTextField *globalResultTableFontName;
+
+	NSInteger fontChangeTarget;
 
 	NSToolbar *toolbar;
 	
@@ -89,6 +92,7 @@
 - (IBAction)saveFavorite:(id)sender;
 - (IBAction)updateDefaultFavorite:(id)sender;
 - (IBAction)showCustomQueryFontPanel:(id)sender;
+- (IBAction)showGlobalResultTableFontPanel:(id)sender;
 - (IBAction)setDefaultColors:(id)sender;
 
 // Toolbar item IBAction methods

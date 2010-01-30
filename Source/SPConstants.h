@@ -96,6 +96,7 @@ extern NSString *SPNewFieldsAllowNulls;
 extern NSString *SPLimitResults;
 extern NSString *SPLimitResultsValue;
 extern NSString *SPNullValue;
+extern NSString *SPGlobalResultTableFont;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;

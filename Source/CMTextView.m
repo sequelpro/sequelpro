@@ -169,6 +169,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
+	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
+	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
+	[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
+	[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
+	[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]]];
+	[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
+	[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
+	[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+	[self setTextColor:[self otherTextColor]];
+	[self setInsertionPointColor:[self otherTextColor]];
+	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
+
 	// Register observers for the when editor background colors preference changes
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
@@ -205,32 +218,32 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorCommentColor]) {
 		[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorQuoteColor]) {
 		[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorSQLKeywordColor]) {
 		[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorBacktickColor]) {
 		[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorNumericColor]) {
 		[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorVariableColor]) {
 		[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorTextColor]) {
 		[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setTextColor:[self otherTextColor]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	}
 }
@@ -2981,37 +2994,42 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[[self queryEditorBackgroundColor] setFill];
 	NSRectFill(rect);
 
-	// Highlightes the current query if set in the Pref and no snippet session
-	// and if nothing is selected in the text view
-	if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
-		NSUInteger rectCount;
-		[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
-		NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
-													 withinSelectedCharacterRange: [self queryRange]
-																  inTextContainer: [self textContainer]
-																		rectCount: &rectCount ];
-		[[self queryHiliteColor] setFill];
-		NSRectFillList(queryRects, rectCount);
-	}
+	if([[self delegate] isKindOfClass:[CustomQuery class]]) {
 
-	// Highlight snippets coming from the Query Favorite text macro
-	if(snippetControlCounter > -1) {
-		for(NSUInteger i=0; i<snippetControlMax; i++) {
-			if(snippetControlArray[i][0] > -1) {
-				// choose the colors for the snippet parts
-				if(i == currentSnippetIndex) {
-					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
-					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
-				} else {
-					[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
-					[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+		// Highlightes the current query if set in the Pref and no snippet session
+		// and if nothing is selected in the text view
+		if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
+			NSUInteger rectCount;
+			[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
+			NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
+														 withinSelectedCharacterRange: [self queryRange]
+																	  inTextContainer: [self textContainer]
+																			rectCount: &rectCount ];
+			[[self queryHiliteColor] setFill];
+			NSRectFillList(queryRects, rectCount);
+		}
+
+		// Highlight snippets coming from the Query Favorite text macro
+		if(snippetControlCounter > -1) {
+			for(NSUInteger i=0; i<snippetControlMax; i++) {
+				if(snippetControlArray[i][0] > -1) {
+					// choose the colors for the snippet parts
+					if(i == currentSnippetIndex) {
+						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
+						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
+					} else {
+						[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
+						[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+					}
+					NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
+					[snippetPath fill];
+					[snippetPath stroke];
 				}
-				NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
-				[snippetPath fill];
-				[snippetPath stroke];
 			}
 		}
+
 	}
+
 	[super drawRect:rect];
 }
 
@@ -3275,11 +3293,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
- * Show only setable modes in the font panel
+ * Set font panel's valid modes
  */
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }
 
 #pragma mark -
