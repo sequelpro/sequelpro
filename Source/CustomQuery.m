@@ -1273,22 +1273,16 @@
 	mySQLConnection = theConnection;
 	currentQueryRanges = nil;
 
-	hasBackgroundAttribute = NO;
-
 	// Set up the interface
-	// Bind backgroundColor
+
 	[textView setAllowsDocumentBackgroundColorChange:YES];
-	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-	[bindingOptions setObject:NSUnarchiveFromDataTransformerName
-		forKey:@"NSValueTransformerName"];
-	[textView bind: @"backgroundColor"
-		toObject: [NSUserDefaultsController sharedUserDefaultsController]
-		withKeyPath:@"values.CustomQueryEditorBackgroundColor"
-		options:bindingOptions];
-	[textView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 	[textView setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
 	[textView setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
-	
+
+	[textView setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
+	[textView setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+	[textView setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
+
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
 	[textView setContinuousSpellCheckingEnabled:NO];
 	[autoindentMenuItem setState:([prefs boolForKey:SPCustomQueryAutoIndent]?NSOnState:NSOffState)];
@@ -2048,44 +2042,20 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	// Remove all background color attributes used by highlighting the current query
-	if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
-		// Remove only the background attribute for the current range if still valid
-		NSRange textRange = NSMakeRange(0,[[textView string] length]);
-		NSRange r = NSIntersectionRange(currentQueryRange, textRange);
-		if(r.length)
-			[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:r];
-		else
-			[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:textRange];
-	} else {
-		// ensure that we do it only once
-		if(hasBackgroundAttribute) {
-			[[textView textStorage] removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0,[[textView string] length])];
-			hasBackgroundAttribute = NO;
-		}
-	}
-
 	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
 	NSUInteger caretPosition = currentSelection.location;
 	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
 
-	// Highlight by setting a background color the current query
-	// if nothing is selected
-	if(qRange.length && !currentSelection.length && ![textView isSnippetMode]) {
-		if([prefs boolForKey:SPCustomQueryHighlightCurrentQuery]) {
-			[[textView textStorage] addAttribute: NSBackgroundColorAttributeName
-					  value: [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]
-					  range: qRange ];
-			hasBackgroundAttribute = YES;
-		}
+	if(qRange.length)
 		currentQueryRange = qRange;
-		
-	} else {
+	else
 		currentQueryRange = NSMakeRange(0, 0);
-	}
 
-	// disable "Comment Current Query" meun item if no current query is selectable
+	[textView setQueryRange:qRange];
+	[textView setNeedsDisplay:YES];
+
+	// disable "Comment Current Query" menu item if no current query is selectable
 	[commentCurrentQueryMenuItem setEnabled:(currentQueryRange.length) ? YES : NO];
 
 	// If no text is selected, disable the button and action menu.
@@ -3026,8 +2996,9 @@
 		resultDataCount = 0;
 		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
-		
+
 		prefs = [NSUserDefaults standardUserDefaults];
+
 	}
 
 	return self;

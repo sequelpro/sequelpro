@@ -65,7 +65,18 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	NSInteger currentSnippetIndex;
 	BOOL snippetWasJustInserted;
 
+
+	NSColor *queryHiliteColor;
+	NSColor *queryEditorBackgroundColor;
+	NSRange queryRange;
+	BOOL shouldHiliteQuery;
+
 }
+
+@property(retain) NSColor* queryHiliteColor;
+@property(retain) NSColor* queryEditorBackgroundColor;
+@property(assign) NSRange queryRange;
+@property(assign) BOOL shouldHiliteQuery;
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
@@ -92,6 +103,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
+- (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;

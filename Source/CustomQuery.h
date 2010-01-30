@@ -117,7 +117,7 @@
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
 	NSRange oldThreadedQueryRange;
-	BOOL hasBackgroundAttribute;
+
 	BOOL selectionButtonCanBeEnabled;
 	NSString *mySQLversion;
 	NSTableColumn *sortColumn;

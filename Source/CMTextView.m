@@ -72,7 +72,22 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 
+// some helper functions for handling rectangles and points
+// needed in roundedBezierPathAroundRange:
+static inline CGFloat SPRectTop(NSRect rectangle) { return rectangle.origin.y; }
+static inline CGFloat SPRectBottom(NSRect rectangle) { return rectangle.origin.y+rectangle.size.height; }
+static inline CGFloat SPRectLeft(NSRect rectangle) { return rectangle.origin.x; }
+static inline CGFloat SPRectRight(NSRect rectangle) { return rectangle.origin.x+rectangle.size.width; }
+static inline CGFloat SPPointDistance(NSPoint a, NSPoint b) { return sqrt( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y) ); }
+static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NSMakePoint(a.x*(1.-t) + b.x*t, a.y*(1.-t) + b.y*t); }
+
+
 @implementation CMTextView
+
+@synthesize queryHiliteColor;
+@synthesize queryEditorBackgroundColor;
+@synthesize queryRange;
+@synthesize shouldHiliteQuery;
 
 /*
  * Sort function (mainly used to sort the words in the textView)
@@ -147,12 +162,34 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
+	// Register observers for the when editor background colors preference changes
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryHighlightCurrentQuery options:NSKeyValueObservingOptionNew context:NULL];
+
 }
 
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion
 {
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;
+}
+
+/**
+ * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
+		[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorHighlightQueryColor]) {
+		[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryHighlightCurrentQuery]) {
+		[self setShouldHiliteQuery:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
+		[self setNeedsDisplay:YES];
+	}
 }
 
 /*
@@ -2911,40 +2948,109 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-
 - (void)drawRect:(NSRect)rect {
+
+	// Draw textview's background since due to the snippet highlighting we're responsible for it.
+	[[[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]] retain] setFill];
+	[[self queryEditorBackgroundColor] setFill];
+	NSRectFill(rect);
+
+	// Highlightes the current query if set in the Pref and no snippet session
+	// and if nothing is selected in the text view
+	if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
+		NSUInteger rectCount;
+		NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
+													 withinSelectedCharacterRange: [self queryRange]
+																  inTextContainer: [self textContainer]
+																		rectCount: &rectCount ];
+		[[self queryHiliteColor] setFill];
+		NSRectFillList(queryRects, rectCount);
+	}
 
 	// Highlight snippets coming from the Query Favorite text macro
 	if(snippetControlCounter > -1) {
-		NSInteger i;
-		for(i=0; i<snippetControlMax; i++) {
+		for(NSUInteger i=0; i<snippetControlMax; i++) {
 			if(snippetControlArray[i][0] > -1) {
-				NSUInteger rectCount;
-				NSRange snippetRange = NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]);
-				NSRectArray snippetRects = [[self layoutManager] rectArrayForCharacterRange: snippetRange
-					withinSelectedCharacterRange: snippetRange
-								 inTextContainer: [self textContainer]
-									   rectCount: &rectCount ];
-				for (NSUInteger j=0; j<rectCount; j++)
-				{
-					NSRect snippetRect = snippetRects[j];
-					snippetRect = NSInsetRect(snippetRect, -4, 0.2);
-					NSBezierPath *aBezierPath = [NSBezierPath bezierPathWithRoundedRect:snippetRect xRadius:6 yRadius:10];
-					if(i == currentSnippetIndex)
-						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.7] setFill];
-					else
-						[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.0 alpha:0.4] setFill];
-					[aBezierPath fill];
-					snippetRect = NSInsetRect(snippetRect, 1.3, 1.3);
-					aBezierPath = [NSBezierPath bezierPathWithRoundedRect:snippetRect xRadius:6 yRadius:10];
-					[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:0.8] setFill];
-					[aBezierPath fill];
+				// choose the colors for the snippet parts
+				if(i == currentSnippetIndex) {
+					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
+					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
+				} else {
+					[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
+					[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
 				}
+				NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
+				[snippetPath fill];
+				[snippetPath stroke];
 			}
 		}
 	}
 	[super drawRect:rect];
+}
 
+- (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange
+{
+    // parameters for snippet highlighting
+    CGFloat kappa = 0.5522847498; // magic number from http://www.whizkidtech.redprince.net/bezier/circle/
+    CGFloat radius = 6;
+    CGFloat horzInset = -3;
+    CGFloat vertInset = 0.3;
+    BOOL connectDisconnectedPartsWithLine = NO;
+
+    NSBezierPath *funkyPath = [NSBezierPath bezierPath];
+    NSUInteger rectCount;
+    NSRectArray rects = [[self layoutManager] rectArrayForCharacterRange: aRange
+                                                   withinSelectedCharacterRange: aRange
+                                                                inTextContainer: [self textContainer]
+                                                                      rectCount: &rectCount ];
+    if (rectCount>2 || (rectCount>1 && (SPRectRight(rects[1]) >= SPRectLeft(rects[0]) || connectDisconnectedPartsWithLine))) {
+        // highlight complicated multiline snippet
+        NSRect lineRects[4];
+        lineRects[0] = rects[0];
+        lineRects[1] = rects[1];
+        lineRects[2] = rects[rectCount-2];
+        lineRects[3] = rects[rectCount-1];
+        for(int j=0;j<4;j++) lineRects[j] = NSInsetRect(lineRects[j], horzInset, vertInset);
+        NSPoint vertices[8];
+        vertices[0] = NSMakePoint( SPRectLeft(lineRects[0]),  SPRectTop(lineRects[0])    ); // point a
+        vertices[1] = NSMakePoint( SPRectRight(lineRects[0]), SPRectTop(lineRects[0])    ); // point b
+        vertices[2] = NSMakePoint( SPRectRight(lineRects[2]), SPRectBottom(lineRects[2]) ); // point c
+        vertices[3] = NSMakePoint( SPRectRight(lineRects[3]), SPRectBottom(lineRects[2]) ); // point d
+        vertices[4] = NSMakePoint( SPRectRight(lineRects[3]), SPRectBottom(lineRects[3]) ); // point e
+        vertices[5] = NSMakePoint( SPRectLeft(lineRects[3]),  SPRectBottom(lineRects[3]) ); // point f
+        vertices[6] = NSMakePoint( SPRectLeft(lineRects[1]),  SPRectTop(lineRects[1])    ); // point g
+        vertices[7] = NSMakePoint( SPRectLeft(lineRects[0]),  SPRectTop(lineRects[1])    ); // point h
+        
+        for (NSUInteger j=0; j<8; j++) {
+            NSPoint curr = vertices[j];
+            NSPoint prev = vertices[(j+8-1)%8];
+            NSPoint next = vertices[(j+1)%8];
+            
+            CGFloat s = radius/SPPointDistance(prev, curr);
+            if (s>0.5) s = 0.5;
+            CGFloat t = radius/SPPointDistance(curr, next);
+            if (t>0.5) t = 0.5;
+            
+            NSPoint a = SPPointOnLine(curr, prev, 0.5);
+            NSPoint b = SPPointOnLine(curr, prev, s);
+            NSPoint c = curr;
+            NSPoint d = SPPointOnLine(curr, next, t);
+            NSPoint e = SPPointOnLine(curr, next, 0.5);
+            
+            if (j==0) [funkyPath moveToPoint:a];
+            [funkyPath lineToPoint: b];
+            [funkyPath curveToPoint:d controlPoint1:SPPointOnLine(b, c, kappa) controlPoint2:SPPointOnLine(d, c, kappa)];
+            [funkyPath lineToPoint: e];
+        }
+    } else {
+        //highlight disconnected snippet parts (or single line snippet)
+        for (NSUInteger j=0; j<rectCount; j++) {
+            NSRect rect = rects[j];
+            rect = NSInsetRect(rect, horzInset, vertInset);
+            [funkyPath appendBezierPathWithRoundedRect:rect xRadius:radius yRadius:radius];
+        }
+    }
+    return funkyPath;
 }
 
 
@@ -3360,6 +3466,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[lineNumberView release];
+	if(queryHiliteColor) [queryHiliteColor release];
+	if(queryEditorBackgroundColor) [queryEditorBackgroundColor release];
 	[super dealloc];
 }
 
