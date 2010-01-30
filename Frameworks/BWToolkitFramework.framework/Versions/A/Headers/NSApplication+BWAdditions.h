@@ -10,6 +10,6 @@
 
 @interface NSApplication (BWAdditions) 
 
-+ (BOOL)isOnLeopard;
++ (BOOL)bwIsOnLeopard;
 
 @end
