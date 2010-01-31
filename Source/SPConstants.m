@@ -157,6 +157,7 @@ NSString *SPMainToolbarTableContent              = @"SwitchToTableContentToolbar
 NSString *SPMainToolbarCustomQuery               = @"SwitchToRunQueryToolbarItemIdentifier";
 NSString *SPMainToolbarTableInfo                 = @"SwitchToTableInfoToolbarItemIdentifier";
 NSString *SPMainToolbarTableRelations            = @"SwitchToTableRelationsToolbarItemIdentifier";
+NSString *SPMainToolbarTableTriggers             = @"SwitchToTableTriggersToolbarItemIdentifier";
 NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarItemIdentifier";
 
 // Preferences toolbar

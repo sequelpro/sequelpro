@@ -44,6 +44,7 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		triggers = [[NSMutableArray alloc] init];
 		
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
@@ -115,6 +116,11 @@
 - (NSArray *) getConstraints
 {
 	return constraints;
+}
+
+- (NSArray *) triggers
+{
+	return (NSArray *)triggers;
 }
 
 /*
@@ -558,6 +564,31 @@
 
 	[createTableParser release];
 	[fieldParser release];
+	
+	// Triggers
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
+											  [tableName tickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
+	
+	// Check for any errors, but only display them if a connection still exists
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+							   tableName, [mySQLConnection getLastErrorMessage]]);
+		}
+		
+		return nil;
+	}
+	
+	[triggers removeAllObjects];
+	if( [theResult numOfRows] ) {
+		for(int i=0; i<[theResult numOfRows]; i++){
+			[triggers addObject:[theResult fetchRowAsDictionary]];
+		}
+	}
+	
 
 	tableData = [NSMutableDictionary dictionary];
 	// this will be 'Table' or 'View'
@@ -565,6 +596,7 @@
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
+	[tableData setObject:[NSArray arrayWithArray:triggers] forKey:@"triggers"];
 
 	[encodingString release];
 	[tableColumns release];
@@ -1030,6 +1062,7 @@
 	[columns release];
 	[columnNames release];
 	[constraints release];
+	[triggers release];
 	[status release];
 	
 	if (tableEncoding) [tableEncoding release];

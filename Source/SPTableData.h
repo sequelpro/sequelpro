@@ -33,6 +33,7 @@
 	NSMutableArray *columns;
 	NSMutableArray *columnNames;
 	NSMutableArray *constraints;
+	NSMutableArray *triggers;
 	NSMutableDictionary *status;
 	
 	NSString *tableEncoding;
@@ -49,6 +50,7 @@
 - (NSArray *) columnNames;
 - (NSDictionary *) columnAtIndex:(NSInteger)index;
 - (NSArray *) getConstraints;
+- (NSArray *) triggers;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
 - (void)setStatusValue:(NSString *)value forKey:(NSString *)key;

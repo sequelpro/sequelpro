@@ -189,6 +189,7 @@ extern NSString *SPMainToolbarTableContent;
 extern NSString *SPMainToolbarCustomQuery;
 extern NSString *SPMainToolbarTableInfo;
 extern NSString *SPMainToolbarTableRelations;
+extern NSString *SPMainToolbarTableTriggers;
 extern NSString *SPMainToolbarUserManager;
 
 // Preferences toolbar

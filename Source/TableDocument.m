@@ -3077,6 +3077,30 @@
 	[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
 }
 
+- (IBAction)viewTriggers:(id)sender
+{
+	// Cancel the selection if currently editing structure/a field and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& ![tableSourceInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+		return;
+	}
+	
+	// Cancel the selection if currently editing a content row and unable to save
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+		&& ![tableContentInstance saveRowOnDeselect]) {
+		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+		return;
+	}
+	
+	
+	[tableTabView selectTabViewItemAtIndex:5];
+	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
+	[spHistoryControllerInstance updateHistoryEntries];
+	
+	//[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
+}
+
 
 /**
  * Adds the current database connection details to the user's favorites if it doesn't already exist.

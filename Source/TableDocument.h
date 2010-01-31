@@ -266,6 +266,7 @@
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
 - (IBAction)viewRelations:(id)sender;
+- (IBAction)viewTriggers:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
 
 // Titlebar methods

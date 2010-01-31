@@ -110,6 +110,7 @@
 		296DC8BC0F909194002A3258 /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */; };
 		296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
+		29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */ = {isa = PBXBuildFile; fileRef = 29FA88221114619E00D1AF3D /* SPTableTriggers.m */; };
 		380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */; };
 		380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */; };
 		384582BE0FB95C9100DDACB6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 384582BC0FB95C9100DDACB6 /* Localizable.strings */; };
@@ -484,6 +485,8 @@
 		29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = SPPrintAccessory.h; sourceTree = "<group>"; };
 		29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrintAccessory.m; sourceTree = "<group>"; wrapsLines = 1; };
 		29A1B7EA0FD12E55000B88E8 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/PrintAccessory.xib; sourceTree = "<group>"; };
+		29FA88211114619E00D1AF3D /* SPTableTriggers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTriggers.h; sourceTree = "<group>"; };
+		29FA88221114619E00D1AF3D /* SPTableTriggers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTriggers.m; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -812,6 +815,8 @@
 				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
 				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
 				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
+				29FA88211114619E00D1AF3D /* SPTableTriggers.h */,
+				29FA88221114619E00D1AF3D /* SPTableTriggers.m */,
 				17E6414E0EF01EF6001BC333 /* TableContent.h */,
 				17E6414F0EF01EF6001BC333 /* TableContent.m */,
 				17E641500EF01EF6001BC333 /* TableDocument.h */,
@@ -1796,6 +1801,7 @@
 				58C34F5310B86CAE00D37E14 /* NSNotificationAdditions.m in Sources */,
 				5870868410FA3E9C00D58E1C /* SPDataStorage.m in Sources */,
 				584095191107CB6600260CFD /* SPAlertSheets.m in Sources */,
+				29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
