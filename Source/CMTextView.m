@@ -481,6 +481,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch
 {
 
+	if(![self isEditable]) return;
+
 	[self breakUndoCoalescing];
 
 	NSInteger caretPos = NSMaxRange([self selectedRange]);
@@ -782,7 +784,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  * Search for the current selection or current word in the MySQL Help 
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
-{	
+{
 	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
 }
 
@@ -794,7 +796,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	// Only proceed if a selection is active
-	if ([self selectedRange].length == 0)
+	if ([self selectedRange].length == 0 || ![self isEditable])
 		return NO;
 
 	// Replace the current selection with the selected string wrapped in prefix and suffix
@@ -828,7 +830,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) selectCurrentQuery
 {
-	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] selectCurrentQuery];
+	if([self isEditable])
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] selectCurrentQuery];
 }
 
 /*
@@ -882,7 +885,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *tabString = @"\t";
 	NSInteger i, indentedLinesLength = 0;
 
-	if ([self selectedRange].location == NSNotFound) return NO;
+	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
 
 	// Indent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
@@ -1328,7 +1331,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
 		return;
 	}
-	if (insertedCharacter == NSF5FunctionKey){ // F5 for completion based on spell checker
+	if (insertedCharacter == NSF5FunctionKey && [self isEditable]){ // F5 for completion based on spell checker
 		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
 		return;
 	}
@@ -1409,12 +1412,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
+		if([charactersIgnMod isEqualToString:@"+"]  && [self isEditable]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
+		if([charactersIgnMod isEqualToString:@"-"] && [self isEditable]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
 			return;
@@ -1621,95 +1624,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	[super doCommandBySelector:aSelector];
 }
-
-/*
- * Handle autocompletion, returning a list of suggested completions for the supplied character range.
- */
-// - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index
-// {
-// 
-// 	if (!charRange.length) return nil;
-// 	
-// 	// Refresh quote attributes
-// 	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
-// 	[self insertText:@""];
-// 	
-// 	
-// 	// Check if the caret is inside quotes "" or ''; if so 
-// 	// return the normal word suggestion due to the spelling's settings
-// 	if([[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
-// 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
-// 
-// 
-// 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-// 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
-// 
-// 	NSString *partialString    = [[self string] substringWithRange:charRange];
-// 	NSUInteger partialLength = [partialString length];
-// 
-// 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %lu", partialString, (unsigned long)partialLength];
-// 	NSArray *matchingCompletions;
-// 
-// 	NSUInteger i, insindex;
-// 	insindex = 0;
-// 
-// 
-// 	if([mySQLConnection isConnected])
-// 	{
-// 
-// 		// Add all database names to completions list
-// 		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"]];
-// 
-// 		// Add table names to completions list
-// 		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableAndViewNames"]];
-// 
-// 		// Add field names to completions list for currently selected table
-// 		if ([[[self window] delegate] table] != nil)
-// 			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
-// 
-// 		// Add proc/func only for MySQL version 5 or higher
-// 		if(mySQLmajorVersion > 4) {
-// 			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"]];
-// 			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"]];
-// 		}
-// 
-// 	}
-// 	// If caret is not inside backticks add keywords and all words coming from the view.
-// 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
-// 	{
-// 		// Only parse for words if text size is less than 6MB
-// 		if([[self string] length]<6000000)
-// 		{
-// 			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
-// 			NSMutableArray *uniqueArray = [NSMutableArray array];
-// 			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
-// 			[possibleCompletions addObjectsFromArray:uniqueArray];
-// 		}
-// 
-// 		[possibleCompletions addObjectsFromArray:[self keywords]];
-// 		[possibleCompletions addObjectsFromArray:[self functions]];
-// 	}
-// 	
-// 	// Check for possible completions
-// 	matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
-// 
-// 	for (i = 0; i < [matchingCompletions count]; i++)
-// 	{
-// 		NSString* obj = NSArrayObjectAtIndex(matchingCompletions, i);
-// 		if(![compl containsObject:obj])
-// 			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
-// 				// Matches case --> Insert at beginning of completion list
-// 				[compl insertObject:obj atIndex:insindex++];
-// 			else
-// 				// Not matching case --> Insert at end of completion list
-// 				[compl addObject:obj];
-// 	}
-// 
-// 	[possibleCompletions release];
-// 
-// 	return [compl autorelease];
-// }
-
 
 /*
  * List of keywords for autocompletion. If you add a keyword here,

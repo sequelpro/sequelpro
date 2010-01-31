@@ -1820,7 +1820,14 @@
 	}
 
 	// Show the cell string value as tooltip (including line breaks and tabs)
-	[SPTooltip showWithObject:[aCell stringValue] atLocation:pos];
+	// by using the cell's font
+	[SPTooltip showWithObject:[aCell stringValue] 
+			atLocation:pos 
+				ofType:@"text" 
+		displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
+					[[aCell font] familyName], @"fontname", 
+					[NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize", 
+					nil]];
 
 	return nil;
 }
