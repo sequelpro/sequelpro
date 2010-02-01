@@ -1425,12 +1425,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"]  && [self isEditable]) // increase text size by 1; ⌘+ and numpad +
+		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"-"] && [self isEditable]) // decrease text size by 1; ⌘- and numpad -
+		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
 			return;
