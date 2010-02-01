@@ -451,7 +451,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	columnDefinitions = nil;
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
-	[super awakeFromNib];
+	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)]) {
+		[super awakeFromNib] ;
+	}
 }
 
 - (void) dealloc
