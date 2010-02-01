@@ -25,6 +25,7 @@
 #import "SPTableView.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPArrayAdditions.h"
+#import "TableDocument.h"
 #import "SPConstants.h"
 
 @implementation SPTableView
@@ -35,17 +36,22 @@
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
+
+	// If TableDocument is performing a task suppress any context menu
+	if([[[self window] delegate] isWorking])
+		return nil;
+
 	// If more than one row is selected only returns the default contextual menu
 	if([self numberOfSelectedRows] > 1)
 		return [self menu];
 	
 	// Right-click at a row will select that row before ordering out the context menu
-	int row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
+	NSInteger row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
 	if(row >= 0 && row < [self numberOfRows]) {
 		
 		// Check for TablesList if right-click on header, then suppress context menu
 		if([[[[self delegate] class] description] isEqualToString:@"TablesList"]) {
-			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) intValue] == -1)
+			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) integerValue] == -1)
 				return nil;
 		}
 		if([[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {
@@ -89,6 +95,17 @@
 	
 	[super keyDown:theEvent];
 
+}
+
+- (void)setFont:(NSFont *)font;
+{
+	NSArray *tableColumns;
+	NSUInteger columnIndex;
+
+	tableColumns = [self tableColumns];
+	columnIndex = [tableColumns count];
+	while (columnIndex--)
+		[[(NSTableColumn *)[tableColumns objectAtIndex:columnIndex] dataCell] setFont:font];
 }
 
 @end

@@ -55,8 +55,8 @@
 @private
 	NSMutableArray *_openBlocksStack;
 	NSMutableDictionary *_globals;
-	int _outputDisabledCount;
-	int _templateLength;
+	NSInteger _outputDisabledCount;
+	NSInteger _templateLength;
 	NSMutableDictionary *_filters;
 	NSMutableDictionary *_markers;
 	NSMutableDictionary *_templateVariables;

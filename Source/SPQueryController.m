@@ -116,7 +116,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (id)retain { return self; }
 
-- (unsigned)retainCount { return UINT_MAX; }
+- (NSUInteger)retainCount { return NSUIntegerMax; }
 
 - (id)autorelease { return self; }
 
@@ -313,10 +313,10 @@ static SPQueryController *sharedQueryController = nil;
 /**
  * Called when the NSSavePanel sheet ends. Writes the console's current content to the selected file if required.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton intValue] connections:[includeConnectionButton intValue]] writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton integerValue] connections:[includeConnectionButton integerValue]] writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 	}
 }
 
@@ -326,7 +326,7 @@ static SPQueryController *sharedQueryController = nil;
 /**
  * Table view delegate method. Returns the number of rows in the table veiw.
  */
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [messagesVisibleSet count];
 }
@@ -468,7 +468,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	// Register a new untiled document and return its URL
 	if(fileURL == nil) {
-		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %d", untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:@"Untitled %ld", (unsigned long)untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 		untitledDocumentCounter++;
 		
 		if(![favoritesContainer objectForKey:[new absoluteString]]) {
@@ -594,7 +594,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
-	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] intValue];
+	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
 
 	// Save each history item due to its document source
 	if([historyContainer objectForKey:[fileURL absoluteString]]) {
@@ -664,8 +664,10 @@ static SPQueryController *sharedQueryController = nil;
 	
 	if(includeGlobals && [prefs objectForKey:SPQueryFavorites]) {
 		for(id fav in [prefs objectForKey:SPQueryFavorites]) {
-			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger])
+			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger]) {
 				[result addObject:fav];
+				break;
+			}
 		}
 	}
 	

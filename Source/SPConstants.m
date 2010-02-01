@@ -58,11 +58,13 @@ NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";
 NSString *SPReloadAfterEditingRow                = @"ReloadAfterEditingRow";
 NSString *SPReloadAfterRemovingRow               = @"ReloadAfterRemovingRow";
 NSString *SPLoadBlobsAsNeeded                    = @"LoadBlobsAsNeeded";
-NSString *SPFetchCorrectRowCount                 = @"FetchCorrectRowCount";
+NSString *SPTableRowCountQueryLevel              = @"TableRowCountQueryLevel";
+NSString *SPTableRowCountCheapSizeBoundary       = @"TableRowCountCheapLookupSizeBoundary";
 NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
+NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";
@@ -155,6 +157,7 @@ NSString *SPMainToolbarTableContent              = @"SwitchToTableContentToolbar
 NSString *SPMainToolbarCustomQuery               = @"SwitchToRunQueryToolbarItemIdentifier";
 NSString *SPMainToolbarTableInfo                 = @"SwitchToTableInfoToolbarItemIdentifier";
 NSString *SPMainToolbarTableRelations            = @"SwitchToTableRelationsToolbarItemIdentifier";
+NSString *SPMainToolbarTableTriggers             = @"SwitchToTableTriggersToolbarItemIdentifier";
 NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarItemIdentifier";
 
 // Preferences toolbar

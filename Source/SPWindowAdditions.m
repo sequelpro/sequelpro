@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindowAdditions.h"
+#import "TableDocument.h"
 
 @implementation NSWindow (SPWindowAdditions)
 
@@ -32,10 +33,10 @@
 //
 // Returns the height of the currently visible toolbar.
 // -------------------------------------------------------------------------------
-- (float)toolbarHeight
+- (CGFloat)toolbarHeight
 {
     NSRect windowFrame;
-	float toolbarHeight = 0.0;
+	CGFloat toolbarHeight = 0.0;
 	
     if (([self toolbar]) && ([[self toolbar] isVisible])) {
         windowFrame = [NSWindow contentRectForFrameRect:[self frame] styleMask:[self styleMask]];
@@ -60,7 +61,7 @@
 		viewSize.height = [self contentMinSize].height;
 	}
 	
-	float newHeight = (viewSize.height + [self toolbarHeight]);
+	CGFloat newHeight = (viewSize.height + [self toolbarHeight]);
 	
 	// If the title bar is visible add 22 pixels to new height of window.
 	if (visible) { 
@@ -73,6 +74,20 @@
 	frame.size.width  = viewSize.width; 
 	
 	[self setFrame:frame display:YES animate:YES];
+}
+
+// -------------------------------------------------------------------------------
+// Three finger multi-touch right/left swipe event to go back/forward in table history.
+// -------------------------------------------------------------------------------
+- (void)swipeWithEvent:(NSEvent *)anEvent
+{
+	if([[self delegate] isKindOfClass:[TableDocument class]] 
+		&& [[self delegate] valueForKeyPath:@"spHistoryControllerInstance"]
+		&& ![[self delegate] isWorking])
+		if([anEvent deltaX] == -1.0f)
+			[[[self delegate] valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
+		else if([anEvent deltaX] == 1.0f)
+			[[[self delegate] valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goBackInHistory"];
 }
 
 @end

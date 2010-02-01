@@ -28,7 +28,7 @@
 
 typedef struct _CHAR_SETS
 {
-	unsigned int nr;
+	NSUInteger nr;
 	const char	*name;
 	const char	*collation;
 	const char	*description;

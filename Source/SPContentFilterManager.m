@@ -182,7 +182,7 @@
 			NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
 			[d setDictionary:[contentFilters objectAtIndex:i]];
 			NSMutableArray *conjLabel = [[NSMutableArray alloc] init];
-			numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
+			numOfArgs = [[[d objectForKey:@"Clause"] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
 			if(numOfArgs > 1) {
 				if([d objectForKey:@"ConjunctionLabel"]) {
 					[conjLabel addObject:[d objectForKey:@"ConjunctionLabel"]];
@@ -318,7 +318,7 @@
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	[panel setResolvesAliases:YES];
+	// [panel setResolvesAliases:YES];
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
@@ -384,7 +384,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 245);
 }
@@ -392,7 +392,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 120);
 }
@@ -424,9 +424,11 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
-	if([[aTableColumn identifier] isEqualToString:@"MenuLabel"] && [anObject length]) {
-		[[contentFilters objectAtIndex:rowIndex] setObject:[anObject description] forKey:@"MenuLabel"];
-		[contentFilterNameTextField setStringValue:[anObject description]];
+	if([[aTableColumn identifier] isEqualToString:@"MenuLabel"]) {
+		if([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length]) {
+			[[contentFilters objectAtIndex:rowIndex] setObject:anObject forKey:@"MenuLabel"];
+			[contentFilterNameTextField setStringValue:anObject];
+		}
 	}
 
 	[contentFilterTableView reloadData];
@@ -548,7 +550,7 @@
 		[numberOfArgsLabel setHidden:(![[contentFilterTextView string] length])];
 
 		NSUInteger numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
-		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %d", @"Number of arguments: %d"), numOfArgs]];
+		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %lu", @"Number of arguments: %lu"), (unsigned long)numOfArgs]];
 
 		[contentFilterConjunctionTextField setHidden:(numOfArgs < 2)];
 		[contentFilterConjunctionLabel setHidden:(numOfArgs < 2)];
@@ -605,11 +607,11 @@
 /**
  * Return whether or not the supplied rows can be written.
  */
-- (BOOL)tableView:(NSTableView *)tableView writeRows:(NSArray *)rows toPasteboard:(NSPasteboard *)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
 	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
-	NSInteger originalRow = [[rows objectAtIndex:0] intValue];
+	NSUInteger originalRow = [rows firstIndex];
 
 	if(originalRow < 1) return NO;
 
@@ -656,8 +658,17 @@
 	if(row < 1) return NO;
 
 	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPContentFilterPasteboardDragType]] autorelease];
-	NSArray *draggedRows = [NSArray arrayWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"indexdata"]];
+	NSIndexSet *draggedIndexes = [[NSIndexSet alloc] initWithIndexSet:(NSIndexSet *)[unarchiver decodeObjectForKey:@"indexdata"]];
 	[unarchiver finishDecoding];
+
+	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
+	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
+	NSUInteger rowIndex = [draggedIndexes firstIndex];
+	while ( rowIndex != NSNotFound ) {
+		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
+		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
+	}
+	
 
 	NSInteger destinationRow = row;
 	NSInteger offset = 0;
@@ -666,7 +677,7 @@
 
 	for(i=0; i<[draggedRows count]; i++) {
 
-		NSInteger originalRow = [[draggedRows objectAtIndex:i] intValue];
+		NSInteger originalRow = [[draggedRows objectAtIndex:i] integerValue];
 
 		if(originalRow < destinationRow) destinationRow--;
 
@@ -690,7 +701,8 @@
 
 	[contentFilterTableView reloadData];
 	[contentFilterArrayController rearrangeObjects];
-
+	[draggedIndexes release];
+	[draggedRows release];
 	return YES;
 }
 
@@ -700,7 +712,7 @@
 /**
  * Sheet did end method
  */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Is disabled - do we need that?
 	// if ([contextInfo isEqualToString:@"removeAllFavorites"]) {
@@ -735,7 +747,7 @@
 /**
  * Import panel did end method.
  */
-- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if (returnCode == NSOKButton) {
@@ -762,6 +774,7 @@
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
+				if (spf) [spf release];
 				return;
 			}
 
@@ -798,7 +811,7 @@
 /**
  * Save panel did end method.
  */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
 	if([contextInfo isEqualToString:@"exportFilter"]) {
@@ -810,7 +823,7 @@
 			NSMutableArray *filterData = [NSMutableArray array];
 
 	
-			[spfdata setObject:[NSNumber numberWithInt:1] forKey:@"version"];
+			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"content filters" forKey:@"format"];
 			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
 

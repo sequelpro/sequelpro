@@ -62,6 +62,9 @@
 	NSDictionary *currentFavorite;
 
 	IBOutlet NSTextField *editorFontName;
+	IBOutlet NSTextField *globalResultTableFontName;
+
+	NSInteger fontChangeTarget;
 
 	NSToolbar *toolbar;
 	
@@ -77,7 +80,7 @@
 	NSUserDefaults *prefs;
 	
 	BOOL favoriteNameFieldWasTouched;
-	int favoriteType;
+	NSInteger favoriteType;
 }
 
 - (void)applyRevisionChanges;
@@ -89,6 +92,7 @@
 - (IBAction)saveFavorite:(id)sender;
 - (IBAction)updateDefaultFavorite:(id)sender;
 - (IBAction)showCustomQueryFontPanel:(id)sender;
+- (IBAction)showGlobalResultTableFontPanel:(id)sender;
 - (IBAction)setDefaultColors:(id)sender;
 
 // Toolbar item IBAction methods
@@ -103,7 +107,7 @@
 // Other
 - (void)updateDefaultFavoritePopup;
 - (void)selectFavorites:(NSArray *)favorite;
-- (void)selectFavoriteAtIndex:(unsigned int)theIndex;
+- (void)selectFavoriteAtIndex:(NSUInteger)theIndex;
 - (void)changeFont:(id)sender;
 - (IBAction)favoriteTypeDidChange:(id)sender;
 - (void)updateFavoritePasswordsFromField:(NSControl *)passwordControl;

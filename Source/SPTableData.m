@@ -32,6 +32,7 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @implementation SPTableData
 
@@ -43,6 +44,7 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		triggers = [[NSMutableArray alloc] init];
 		
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
@@ -116,6 +118,11 @@
 	return constraints;
 }
 
+- (NSArray *) triggers
+{
+	return (NSArray *)triggers;
+}
+
 /*
  * Retrieve a column with a specified name, using or refreshing the cache as appropriate.
  */
@@ -128,7 +135,7 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	int columnIndex = [columnNames indexOfObject:colName];
+	NSInteger columnIndex = [columnNames indexOfObject:colName];
 	if (columnIndex == NSNotFound) return nil;
 	return [columns objectAtIndex:columnIndex];
 }
@@ -153,7 +160,7 @@
 /*
  * Retrieve a specified column for the current table as a dictionary, using or refreshing the cache as appropriate.
  */
-- (NSDictionary *) columnAtIndex:(int)index
+- (NSDictionary *) columnAtIndex:(NSInteger)index
 {	
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
@@ -308,7 +315,7 @@
 	NSMutableArray *tableColumns, *fieldStrings, *definitionParts;
 	NSMutableDictionary *tableColumn, *tableData;
 	NSString *encodingString;
-	unsigned i, stringStart;
+	NSUInteger i, stringStart;
 	unichar quoteCharacter;
 
 	[columns removeAllObjects];
@@ -320,11 +327,12 @@
 
 	// Retrieve the CREATE TABLE syntax for the table
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
 	
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
@@ -339,13 +347,8 @@
 	
 	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 	
-	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
-		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
-		createTableParser = [[SPSQLParser alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]]; 
-	} else {
-		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
-		createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
-	}
+	tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
 
 	// Extract the fields definition string from the CREATE TABLE syntax
 	fieldsParser = [[SPSQLParser alloc] initWithString:[createTableParser trimAndReturnStringFromCharacter:'(' toCharacter:')' trimmingInclusively:YES returningInclusively:NO skippingBrackets:YES]];
@@ -410,14 +413,14 @@
 			}
 			[fieldsParser setIgnoringCommentStrings:NO];
 			
-			[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
+			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
 			
 			//if column is not null, but doesn't have a default value, set empty string
-			if([[tableColumn objectForKey:@"null"] intValue] == 0 && [[tableColumn objectForKey:@"autoincrement"] intValue] == 0 && ![tableColumn objectForKey:@"default"]) {
+			if([[tableColumn objectForKey:@"null"] integerValue] == 0 && [[tableColumn objectForKey:@"autoincrement"] integerValue] == 0 && ![tableColumn objectForKey:@"default"]) {
 				[tableColumn setObject:@"" forKey:@"default"];
 			}
 			
@@ -453,7 +456,7 @@
 				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
 
-				int nextOffs = 12;
+				NSInteger nextOffs = 12;
 				if( [parts count] > 8 ) {
 					// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
 					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
@@ -561,6 +564,31 @@
 
 	[createTableParser release];
 	[fieldParser release];
+	
+	// Triggers
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
+											  [tableName tickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
+	
+	// Check for any errors, but only display them if a connection still exists
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+							   tableName, [mySQLConnection getLastErrorMessage]]);
+		}
+		
+		return nil;
+	}
+	
+	[triggers removeAllObjects];
+	if( [theResult numOfRows] ) {
+		for(int i=0; i<[theResult numOfRows]; i++){
+			[triggers addObject:[theResult fetchRowAsDictionary]];
+		}
+	}
+	
 
 	tableData = [NSMutableDictionary dictionary];
 	// this will be 'Table' or 'View'
@@ -568,6 +596,7 @@
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
+	[tableData setObject:[NSArray arrayWithArray:triggers] forKey:@"triggers"];
 
 	[encodingString release];
 	[tableColumns release];
@@ -623,7 +652,7 @@
 	NSMutableArray *tableColumns;
 	NSDictionary *resultRow;
 	NSMutableDictionary *tableColumn, *viewData;
-	unsigned i;
+	NSUInteger i;
 
 	// Catch unselected views and return nil
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
@@ -632,11 +661,12 @@
 	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [viewName backtickQuotedString]
 																					]];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
@@ -645,22 +675,16 @@
 	}
 
 	// Retrieve the table syntax string
-	NSArray *syntaxResult = [theResult fetchRowAsArray];
-	
-	if ([[syntaxResult objectAtIndex:1] isKindOfClass:[NSData class]]) {
-		tableCreateSyntax = [[NSString alloc] initWithData:[syntaxResult objectAtIndex:1] encoding:[mySQLConnection encoding]];
-	} else {
-		tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
-	}
-
+	tableCreateSyntax = [[NSString alloc] initWithString:[[theResult fetchRowAsArray] objectAtIndex:1]];
 
 	// Retrieve the SHOW COLUMNS syntax for the table
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
@@ -678,7 +702,7 @@
 		resultRow = [theResult fetchRowAsDictionary];
 
 		// Add the column index and name
-		[tableColumn setObject:[NSNumber numberWithInt:[tableColumns count]] forKey:@"datacolumnindex"];
+		[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 		[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Field"]] forKey:@"name"];
 
 		// Populate type, length, and other available details from the Type columns
@@ -757,12 +781,13 @@
 	}
 	else if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
+		[tableStatusResult setReturnDataAsStrings:YES];
 	}
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
@@ -787,10 +812,10 @@
 			[status setObject:@"n" forKey:@"RowsCountAccurate"];
 		}
 
-		// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(*) FROM `foo`
+		// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(1) FROM `foo`
 		// this happens e.g. for db "information_schema"
 		if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
-			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@", [escapedTableName backtickQuotedString] ]];
+			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [escapedTableName backtickQuotedString] ]];
 			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
 				[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 				[status setObject:@"y" forKey:@"RowsCountAccurate"];
@@ -809,14 +834,14 @@
  */
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts
 {
+	if (![definitionParts count]) return [NSDictionary dictionary];
+
 	SPSQLParser *detailParser;
 	SPSQLParser *fieldParser = [[SPSQLParser alloc] init];
 	NSMutableDictionary *fieldDetails = [[NSMutableDictionary alloc] init];
 	NSMutableArray *detailParts;
 	NSString *detailString;
-	int i, definitionPartsIndex = 0, partsArrayLength;
-
-	if (![definitionParts count]) return [NSDictionary dictionary];
+	NSInteger i, definitionPartsIndex = 0, partsArrayLength;
 
 	// Skip blank items within the definition parts
 	while (definitionPartsIndex < [definitionParts count]
@@ -1008,6 +1033,7 @@
 	NSMutableArray *keyColumns = [NSMutableArray array];
 
 	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ WHERE `key` = 'PRI'", [selectedTable backtickQuotedString]]];
+	[r setReturnDataAsStrings:YES];
 
 	if([r numOfRows] < 1) return nil;
 
@@ -1036,6 +1062,7 @@
 	[columns release];
 	[columnNames release];
 	[constraints release];
+	[triggers release];
 	[status release];
 	
 	if (tableEncoding) [tableEncoding release];

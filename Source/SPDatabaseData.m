@@ -234,7 +234,8 @@ const CHAR_SETS charsets[] =
 	if ([collations count] == 0) {
 		
 		// Try to retrieve the available collations from the database
-		[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema.collations` ORDER BY `collation_name` ASC"]];	
+		if ([connection serverMajorVersion] >= 5)
+			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema.collations` ORDER BY `collation_name` ASC"]];	
 
 		// If that failed, get the list of collations from the hard-coded list
 		if (![collations count]) {
@@ -258,7 +259,7 @@ const CHAR_SETS charsets[] =
  */ 
 - (NSArray *)getDatabaseCollationsForEncoding:(NSString *)encoding
 {
-	if ((characterSetEncoding == nil) || (![characterSetEncoding isEqualToString:encoding]) || ([characterSetCollations count] == 0)) {
+	if (encoding && ((characterSetEncoding == nil) || (![characterSetEncoding isEqualToString:encoding]) || ([characterSetCollations count] == 0))) {
 		
 		[characterSetEncoding release];
 		[characterSetCollations removeAllObjects];
@@ -266,7 +267,8 @@ const CHAR_SETS charsets[] =
 		characterSetEncoding = [[NSString alloc] initWithString:encoding];
 		
 		// Try to retrieve the available collations for the supplied encoding from the database
-		[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];	
+		if ([connection serverMajorVersion] >= 5)
+			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];	
 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
 		if (![characterSetCollations count]) {
@@ -299,6 +301,7 @@ const CHAR_SETS charsets[] =
 			
 			// Check if InnoDB support is enabled
 			MCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			[result setReturnDataAsStrings:YES];
 			
 			if ([result numOfRows] == 1) {
 				if ([[[result fetchRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {
@@ -376,8 +379,9 @@ const CHAR_SETS charsets[] =
 	if ([characterSetEncodings count] == 0) {
 		
 		// Try to retrieve the available character set encodings from the database
-		// Check the information_schema.collations table is accessible
-		[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];	
+		// Check the information_schema.character_sets table is accessible
+		if ([connection serverMajorVersion] >= 5)
+			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];	
 
 		// If that failed, get the list of character set encodings from the hard-coded list
 		if (![characterSetEncodings count]) {
@@ -433,7 +437,7 @@ const CHAR_SETS charsets[] =
 	if ([[connection getLastErrorMessage] isEqualToString:@""]) {
 		[result dataSeek:0];
 
-		for (int i = 0; i < [result numOfRows]; i++)
+		for (NSInteger i = 0; i < [result numOfRows]; i++)
 		{
 			[array addObject:[result fetchRowAsDictionary]];
 		}

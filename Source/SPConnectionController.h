@@ -59,8 +59,8 @@
 	MCPConnection *mySQLConnection;
 	BOOL automaticFavoriteSelection;
 
-	int previousType;
-	int type;
+	NSInteger previousType;
+	NSInteger type;
 	NSString *name;
 	NSString *host;
 	NSString *user;
@@ -106,7 +106,7 @@
 }
 
 @property (readwrite, assign) id delegate;
-@property (readwrite, assign) int type;
+@property (readwrite, assign) NSInteger type;
 @property (readwrite, retain) NSString *name;
 @property (readwrite, retain) NSString *host;
 @property (readwrite, retain) NSString *user;
@@ -132,13 +132,13 @@
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
 - (void)initiateMySQLConnection;
 - (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
-- (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo;
+- (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)addConnectionToDocument;
 
 // Interface interaction
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
-- (void)resizeTabViewToConnectionType:(unsigned int)theType animating:(BOOL)animate;
+- (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 
 // Connection details interaction
 - (BOOL)checkHost;

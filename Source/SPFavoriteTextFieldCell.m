@@ -127,7 +127,7 @@
 	NSRect subFrame = NSMakeRect(0.0, 0.0, [subString size].width, [subString size].height);
 	
 	// Total height of both strings with a 2 pixel separation space
-	float totalHeight = [mainString size].height + [subString size].height + 1.0;
+	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0;
 	
 	cellFrame.origin.y += (cellFrame.size.height - totalHeight) / 2.0;
 	cellFrame.origin.x += 10.0; // Indent main string from image
@@ -138,10 +138,10 @@
 	
 	cellFrame.size.height = totalHeight;
 	
-	int i;
-	float maxWidth = cellFrame.size.width;
-	float mainStringWidth = [mainString size].width;
-	float subStringWidth = [subString size].width;
+	NSInteger i;
+	CGFloat maxWidth = cellFrame.size.width;
+	CGFloat mainStringWidth = [mainString size].width;
+	CGFloat subStringWidth = [subString size].width;
 
 	// Set a right-padding
 	maxWidth -= 10;
@@ -173,9 +173,9 @@
 	NSAttributedString *subString = [[self constructSubStringAttributedString] autorelease];
 
 	// 15 := indention 10 from image to string plus 5 px padding
-	float theWidth = MAX([mainString size].width, [subString size].width) + (([self image] != nil) ? [[self image] size].width : 0) + 15;
+	CGFloat theWidth = MAX([mainString size].width, [subString size].width) + (([self image] != nil) ? [[self image] size].width : 0) + 15;
 
-	float totalHeight = [mainString size].height + [subString size].height + 1.0;
+	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0;
 
 	cellSize.width = theWidth;
 	cellSize.height = totalHeight + 13.0;

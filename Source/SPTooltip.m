@@ -56,10 +56,11 @@
 
 #import "SPTooltip.h"
 #import "SPTextViewAdditions.h"
+#include <tgmath.h>
 
-static int spTooltipCounter = 0;
+static NSInteger spTooltipCounter = 0;
 
-static float slow_in_out (float t)
+static CGFloat slow_in_out (CGFloat t)
 {
 	if(t < 1.0f)
 		t = 1.0f / (1.0f + exp((-t*12.0f)+6.0f));
@@ -157,8 +158,8 @@ static float slow_in_out (float t)
 		NSSize s = [(NSImage *)content size];
 		
 		// Downsize a large image
-		int w = s.width;
-		int h = s.height;
+		NSInteger w = s.width;
+		NSInteger h = s.height;
 		if(w>h) {
 			if(s.width > 200) {
 				w = 200;
@@ -207,7 +208,7 @@ static float slow_in_out (float t)
 	[webPreferences setJavaScriptEnabled:YES];
 
 	NSString *fontName = ([displayOptions objectForKey:@"fontname"]) ? [displayOptions objectForKey:@"fontname"] : @"Lucida Grande";
-	int fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] intValue] : 10;
+	NSInteger fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] integerValue] : 10;
 	if(fontSize < 5) fontSize = 5;
 	
 	NSFont* font = [NSFont fontWithName:fontName size:fontSize];
@@ -325,8 +326,8 @@ static float slow_in_out (float t)
 		// The webview is set to a large initial size and then sized down to fit the content
 		[self setContentSize:NSMakeSize(screenFrame.size.width - screenFrame.size.width / 3.0f , screenFrame.size.height)];
 
-		int height  = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetHeight + document.body.offsetTop;"] intValue];
-		int width   = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetWidth + document.body.offsetLeft;"] intValue];
+		NSInteger height  = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetHeight + document.body.offsetTop;"] integerValue];
+		NSInteger width   = [[[webView windowScriptObject] evaluateWebScript:@"document.body.offsetWidth + document.body.offsetLeft;"] integerValue];
 	
 		[webView setFrameSize:NSMakeSize(width, height)];
 
@@ -361,7 +362,7 @@ static float slow_in_out (float t)
 // ==================
 - (BOOL)shouldCloseForMousePosition:(NSPoint)aPoint
 {
-	float ignorePeriod = 0.05f;
+	CGFloat ignorePeriod = 0.05f;
 	if(-[didOpenAtDate timeIntervalSinceNow] < ignorePeriod)
 		return NO;
 
@@ -372,11 +373,11 @@ static float slow_in_out (float t)
 	}
 
 	NSPoint p = mousePositionWhenOpened;
-	float deltaX = p.x - aPoint.x;
-	float deltaY = p.y - aPoint.y;
-	float dist = sqrtf(deltaX * deltaX + deltaY * deltaY);
+	CGFloat deltaX = p.x - aPoint.x;
+	CGFloat deltaY = p.y - aPoint.y;
+	CGFloat dist = sqrt(deltaX * deltaX + deltaY * deltaY);
 
-	float moveThreshold = 10;
+	CGFloat moveThreshold = 10;
 	return dist > moveThreshold;
 }
 
@@ -389,7 +390,7 @@ static float slow_in_out (float t)
 	BOOL didAcceptMouseMovedEvents = [keyWindow acceptsMouseMovedEvents];
 	[keyWindow setAcceptsMouseMovedEvents:YES];
 	NSEvent* event = nil;
-	int eventType;
+	NSInteger eventType;
 	while(event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES])
 	{
 		eventType = [event type];
@@ -432,7 +433,7 @@ static float slow_in_out (float t)
 
 - (void)animationTick:(id)sender
 {
-	float alpha = 0.97f * (1.0f - 40*slow_in_out(-2.2 * [animationStart timeIntervalSinceNow]));
+	CGFloat alpha = 0.97f * (1.0f - 40*slow_in_out(-2.2 * [animationStart timeIntervalSinceNow]));
 
 	if(alpha > 0.0f && spTooltipCounter==1)
 	{

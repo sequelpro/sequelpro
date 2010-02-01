@@ -26,8 +26,6 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMCopyTable;
-
 @interface SPTableRelations : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;

@@ -44,13 +44,13 @@
 	id sheetEditData;
 	BOOL editSheetWillBeInitialized;
 	BOOL isBlob;
-	int quickLookCloseMarker;
+	NSInteger quickLookCloseMarker;
 	NSStringEncoding encoding;
 	NSString *stringValue;
 	NSString *tmpFileName;
 	NSString *tmpDirPath;
 
-	int counter;
+	NSInteger counter;
 	unsigned long long maxTextLength;
 	BOOL editTextViewWasChanged;
 	BOOL allowUndo;
@@ -61,7 +61,7 @@
 
 	NSDictionary *qlTypes;
 
-	int editSheetReturnCode;
+	NSInteger editSheetReturnCode;
 
 	NSUndoManager *esUndoManager;
 }

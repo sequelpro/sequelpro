@@ -60,7 +60,7 @@
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
-	int currentlyEditingRow;
+	NSInteger currentlyEditingRow;
 	NSUserDefaults *prefs;
 }
 

@@ -38,13 +38,13 @@ enum sptextandlinkcell_drawstates
 	id linkTarget;
 	SEL linkAction;
 	
-	int lastLinkColumn;
-	int lastLinkRow;
-	int drawState;
+	NSInteger lastLinkColumn;
+	NSInteger lastLinkRow;
+	NSInteger drawState;
 }
 
 - (void) setTarget:(id)theTarget action:(SEL)theAction;
-- (int) getClickedColumn;
-- (int) getClickedRow;
+- (NSInteger) getClickedColumn;
+- (NSInteger) getClickedRow;
 
 @end

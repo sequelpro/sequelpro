@@ -73,10 +73,6 @@ enum sp_table_types
 	IBOutlet id toolbarActionsButton;
 	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
-	IBOutlet id tableRenameSheet;
-	IBOutlet id tableRenameField;
-	IBOutlet id tableRenameText;
-	IBOutlet id renameTableButton;
 	IBOutlet id truncateTableButton;
 	IBOutlet id truncateTableContextButton;
 	IBOutlet NSSplitView *tableListSplitView;
@@ -101,7 +97,7 @@ enum sp_table_types
 	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
 	NSMutableArray *filteredTableTypes;
-	int selectedTableType;
+	NSInteger selectedTableType;
 	NSString *selectedTableName;
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;
@@ -130,7 +126,7 @@ enum sp_table_types
 
 // Getters
 - (NSString *)tableName;
-- (int)tableType;
+- (NSInteger)tableType;
 - (NSArray *)tables;
 - (NSArray *)tableTypes;
 - (NSArray *)allTableAndViewNames;
@@ -139,6 +135,8 @@ enum sp_table_types
 - (NSArray *)allFunctionNames;
 - (NSArray *)allProcedureNames;
 - (NSArray *)allDatabaseNames;
+- (NSArray *)allSystemDatabaseNames;
+- (NSString *)selectedDatabase;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

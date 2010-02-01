@@ -10,6 +10,8 @@
 	<integer>1</integer>
 	<key>UseMonospacedFonts</key>
 	<false/>
+	<key>GlobalResultTableFont</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaSSEBVszNmNdBgAAABoAAAD//kwAdQBjAGkAZABhAEcAcgBhAG4AZABlAAAAhAFmC4QBYwCYAZgAmACG</data>
 	<key>CustomQueryMaxHistoryItems</key>
 	<integer>20</integer>
 	<key>ReloadAfterAddingRow</key>
@@ -20,8 +22,10 @@
 	<false/>
 	<key>LoadBlobsAsNeeded</key>
 	<false/>
-	<key>FetchCorrectRowCount</key>
-	<true/>
+	<key>TableRowCountQueryLevel</key>
+	<integer>1</integer>
+	<key>TableRowCountCheapLookupSizeBoundary</key>
+	<integer>5242880</integer>
 	<key>NewFieldsAllowNulls</key>
 	<true/>
 	<key>LimitResults</key>

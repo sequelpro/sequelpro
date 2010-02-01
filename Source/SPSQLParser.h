@@ -42,9 +42,9 @@
  * While some methods may look similar to NSScanner methods, and others look like they could be
  * achieved with Regex libraries or other string parsing libraries, this class was written with
  * the following goals in mind:
- *  - SQL comments, in "/* ... * /", "#" and "--[\s]" form, are ignored automatically while parsing -
+ *  - SQL comments, in "⁄* ... *⁄", "#" and "--[\s]" form, are ignored automatically while parsing -
         *but* are left in the strings in question, to allow (for example) MySQL-version specific query
-		support, eg /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT * /
+		support, eg ⁄*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT *⁄
  *  - Support for quoted strings in most commands, allowing strings quoted with ", ', and ` characters -
         including support for \-escaping of the quote characters within "- and '-terminated strings.
  *  - Optional support for bracket capturing in most commands.  This can allow simpler parsing of strings
@@ -61,11 +61,11 @@
 	id string;
 	unichar *stringCharCache;
 	unichar parsedToChar;
-	long parsedToPosition;
-	long charCacheStart;
-	long charCacheEnd;
+	NSInteger parsedToPosition;
+	NSInteger charCacheStart;
+	NSInteger charCacheEnd;
 	NSString *delimiter;
-	int delimiterLength;
+	NSInteger delimiterLength;
 	BOOL charIsDelimiter;
 	BOOL isDelimiterCommand;
 	BOOL ignoreCommentStrings;
@@ -80,7 +80,7 @@ typedef enum _SPCommentTypes {
 - (void) setIgnoringCommentStrings:(BOOL)ignoringCommentStrings;
 
 /*
- * Removes comments within the current string, trimming "#", "--[/s]", and "/* * /" style strings.
+ * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
  */
 - (void) deleteComments;
 
@@ -223,17 +223,17 @@ typedef enum _SPCommentTypes {
 /*
  * Methods used internally by this class to power the methods above:
  */
-- (long) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
-- (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
-- (long) firstOccurrenceOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
-- (long) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(long)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
-- (long) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(long)index;
-- (long) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(long)index;
+- (NSUInteger) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
+- (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
+- (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
+- (NSUInteger) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
+- (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)index;
+- (NSUInteger) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(NSInteger)index;
 
 /*
  * Cacheing methods to enable a faster alternative to characterAtIndex: when walking strings, and overrides to update.
  */
-- (unichar) charAtIndex:(long)index;
+- (unichar) charAtIndex:(NSInteger)index;
 - (void) clearCharCache;
 - (void) deleteCharactersInRange:(NSRange)aRange;
 - (void) insertString:(NSString *)aString atIndex:(NSUInteger)anIndex;
@@ -241,19 +241,19 @@ typedef enum _SPCommentTypes {
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -
 - (id) init;
-- (id) initWithBytes:(const void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding;
-- (id) initWithBytesNoCopy:(void *)bytes length:(unsigned int)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag;
-- (id) initWithCapacity:(unsigned int)capacity;
-- (id) initWithCharactersNoCopy:(unichar *)chars length:(unsigned int)length freeWhenDone:(BOOL)flag;
+- (id) initWithBytes:(const void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding;
+- (id) initWithBytesNoCopy:(void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag;
+- (id) initWithCapacity:(NSUInteger)capacity;
+- (id) initWithCharactersNoCopy:(unichar *)chars length:(NSUInteger)length freeWhenDone:(BOOL)flag;
 - (id) initWithContentsOfFile:(id)path;
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)enc error:(NSError **)error;
 - (id) initWithCString:(const char *)nullTerminatedCString encoding:(NSStringEncoding)encoding;
 - (id) initWithFormat:(NSString *)format, ...;
 - (id) initWithFormat:(NSString *)format arguments:(va_list)argList;
-- (unsigned int) length;
-- (unichar) characterAtIndex:(unsigned int)index;
+- (NSUInteger) length;
+- (unichar) characterAtIndex:(NSUInteger)index;
 - (id) description;
-- (unsigned int) replaceOccurrencesOfString:(NSString *)target withString:(NSString *)replacement options:(unsigned)opts range:(NSRange)searchRange;
+- (NSUInteger) replaceOccurrencesOfString:(NSString *)target withString:(NSString *)replacement options:(NSUInteger)opts range:(NSRange)searchRange;
 - (void) setString:(NSString *)string;
 - (void) replaceCharactersInRange:(NSRange)range withString:(NSString *)string;
 - (void) dealloc;

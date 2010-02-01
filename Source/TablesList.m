@@ -37,6 +37,7 @@
 #import "NSMutableArray-MultipleSort.h"
 #import "NSNotificationAdditions.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @interface TablesList (PrivateAPI)
 
@@ -44,8 +45,9 @@
 - (void)truncateTable;
 - (void)addTable;
 - (void)copyTable;
-- (void)renameTable;
-- (BOOL)isTableNameValid:(NSString *)tableName;
+- (void)renameTableOfType: (enum sp_table_types)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType;
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
 @end
 
@@ -61,13 +63,10 @@
 {
 	MCPResult *theResult;
 	NSArray *resultRow;
-	int i;
+	NSInteger i;
 	NSString *previousSelectedTable = nil;
-	NSInteger selectedRowIndex;
 	BOOL previousTableListIsSelectable = tableListIsSelectable;
-	
-	selectedRowIndex = [tablesListView selectedRow];
-	
+
 	if (selectedTableName) previousSelectedTable = [[NSString alloc] initWithString:selectedTableName];
 	if (isTableListFiltered) {
 		if (filteredTables) [filteredTables release];
@@ -89,6 +88,9 @@
 		// Notify listeners that a query has started
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
+		// Query the structure of all databases in the background (mainly for completion)
+		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
 		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
@@ -96,19 +98,19 @@
 		if ([theResult numOfFields] == 1) {
 			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 				[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
-				[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+				[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
 			}		
 		} else {
 			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 				resultRow = [theResult fetchRowAsArray];
 				[tables addObject:[resultRow objectAtIndex:0]];
 				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
-					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_VIEW]];
+					[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_VIEW]];
 					tableListContainsViews = YES;
 				} else {
-					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+					[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
 				}
-			}		
+			}
 		}
 		
 		// Reorder the tables in alphabetical order
@@ -119,39 +121,40 @@
 		 * using information_schema gives us more info (for information window perhaps?) but breaks
 		 * backward compatibility with pre 4 I believe. I left the other methods below, in case.
 		 */
-		NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
-		theResult = [mySQLConnection queryString:pQuery];
+		if ([mySQLConnection serverMajorVersion] >= 5) {
+			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
+			theResult = [mySQLConnection queryString:pQuery];
 		
-		// Check for mysql errors - if information_schema is not accessible for some reasons
-		// omit adding procedures and functions
-		if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
-			// add the header row
-			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
-			[theResult dataSeek:0];
+			// Check for mysql errors - if information_schema is not accessible for some reasons
+			// omit adding procedures and functions
+			if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
+				// add the header row
+				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
+				[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
+				[theResult dataSeek:0];
 			
-			if( [theResult numOfFields] == 1 ) {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
-					if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
-					} else {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+				if( [theResult numOfFields] == 1 ) {
+					for( i = 0; i < [theResult numOfRows]; i++ ) {
+						[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
+						if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
+							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_PROC]];
+						} else {
+							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_FUNC]];
+						}
 					}
+				} else {
+					for( i = 0; i < [theResult numOfRows]; i++ ) {
+						resultRow = [theResult fetchRowAsArray];
+						[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
+						if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
+							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_PROC]];
+						} else {
+							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_FUNC]];
+						}
+					}	
 				}
-			} else {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					resultRow = [theResult fetchRowAsArray];
-					[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
-					if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
-					} else {
-						[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
-					}
-				}	
 			}
 		}
-		
 		/*
 		BOOL addedPFHeader = FALSE;
 		NSString *pQuery = [NSString stringWithFormat:@"SHOW PROCEDURE STATUS WHERE db = '%@'",[tableDocumentInstance database]];
@@ -213,19 +216,19 @@
 	} else {
 		[tables insertObject:NSLocalizedString(@"TABLES",@"header for table list") atIndex:0];
 	}
-	[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE] atIndex:0];
+	[tableTypes insertObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE] atIndex:0];
 
 	[tablesListView reloadData];
 	
 	// if the previous selected table still exists, select it
 	if( previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
-		int itemToReselect = [tables indexOfObject:previousSelectedTable];
+		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
 		tableListIsSelectable = YES;
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
 		tableListIsSelectable = previousTableListIsSelectable;
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
-		selectedTableType = [[tableTypes objectAtIndex:itemToReselect] intValue];
+		selectedTableType = [[tableTypes objectAtIndex:itemToReselect] integerValue];
 	} else {
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = nil;
@@ -310,28 +313,28 @@
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
 	NSString *tblTypes;
-	unsigned currentIndex = [indexes lastIndex];
+	NSUInteger currentIndex = [indexes lastIndex];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
-		if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW)
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_VIEW)
 			tblTypes = NSLocalizedString(@"view", @"view");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_TABLE)
+		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE)
 			tblTypes = NSLocalizedString(@"table", @"table");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_PROC)
+		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_PROC)
 			tblTypes = NSLocalizedString(@"procedure", @"procedure");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_FUNC)
+		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_FUNC)
 			tblTypes = NSLocalizedString(@"function", @"function");
 		
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete %@ '%@'?", @"delete table/view message"), tblTypes, [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'. This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'? This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
 	else {
 
 		BOOL areTableTypeEqual = YES;
-		int lastType = [[filteredTableTypes objectAtIndex:currentIndex] intValue];
+		NSInteger lastType = [[filteredTableTypes objectAtIndex:currentIndex] integerValue];
 		while (currentIndex != NSNotFound)
 		{
-			if([[filteredTableTypes objectAtIndex:currentIndex] intValue]!=lastType)
+			if([[filteredTableTypes objectAtIndex:currentIndex] integerValue]!=lastType)
 			{
 				areTableTypeEqual = NO;
 				break;
@@ -359,7 +362,7 @@
 			tblTypes = NSLocalizedString(@"items", @"items");
 
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete selected %@?", @"delete tables/views message"), tblTypes]];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@. This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@? This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
 	}
 		
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
@@ -378,7 +381,7 @@
 	[tableWindow endEditingFor:nil];
 
 	// Detect table type: table or view
-	int tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 	
 	switch (tblType){
 		case SP_TABLETYPE_TABLE:
@@ -413,7 +416,7 @@
 }
 
 /**
- * Renames the currently selected table.
+ * This action starts editing the table name in the table list
  */
 - (IBAction)renameTable:(id)sender
 {
@@ -422,7 +425,15 @@
 	}
 	
 	[tableWindow endEditingFor:nil];
-	[tableRenameField setStringValue:[self tableName]];
+	
+    if ([tablesListView numberOfSelectedRows] != 1) return;
+    if (![[self tableName] length]) return;
+    
+    [tablesListView editColumn:0 row:[tablesListView selectedRow] withEvent:nil select:YES];
+    
+    /*
+    
+    [tableRenameField setStringValue:[self tableName]];
 	[renameTableButton setEnabled:NO];
 	
 	NSString *tableType;
@@ -444,11 +455,13 @@
 	
 	[tableRenameText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename %@ '%@' to:",@"rename item name to:"), tableType, [self tableName]]];
 	
+    
 	[NSApp beginSheet:tableRenameSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"renameTable"];
+    */
 }
 
 /**
@@ -478,11 +491,11 @@
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Truncate table '%@'?", @"truncate table message"), [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
-		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete ALL records in the table '%@'. This operation cannot be undone.", @"truncate table informative message"), [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete ALL records in the table '%@'? This operation cannot be undone.", @"truncate table informative message"), [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
 	} 
 	else {
 		[alert setMessageText:NSLocalizedString(@"Truncate selected tables?", @"truncate tables message")];
-		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL records in the selected tables. This operation cannot be undone.", @"truncate tables informative message")];
+		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL records in the selected tables? This operation cannot be undone.", @"truncate tables informative message")];
 	}
 	
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
@@ -504,11 +517,13 @@
 /**
  * Method for alert sheets.
  */
-- (void)sheetDidEnd:(id)sheet returnCode:(int)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
 
 	if ([contextInfo isEqualToString:@"addRow"]) {
 		alertSheetOpened = NO;
@@ -531,11 +546,6 @@
 	else if ([contextInfo isEqualToString:@"copyTable"]) {
 		if (returnCode == NSOKButton) {
 			[self copyTable];
-		}
-	}
-	else if ([contextInfo isEqualToString:@"renameTable"]) {
-		if (returnCode == NSOKButton) {
-			[self renameTable];
 		}
 	}
 }
@@ -566,21 +576,15 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-
 	id object = [notification object];
 
 	if (object == tableNameField) {
-		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue]]];
+		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue] forType: SP_TABLETYPE_TABLE]];
 	}
 
 	else if (object == copyTableNameField) {
-		[copyTableButton setEnabled:[self isTableNameValid:[copyTableNameField stringValue]]];
+		[copyTableButton setEnabled:[self isTableNameValid:[copyTableNameField stringValue] forType:[self tableType]]];
 	}
-
-	else if (object == tableRenameField) {
-		[renameTableButton setEnabled:[self isTableNameValid:[tableRenameField stringValue]]];
-	}
-
 }
 
 /*
@@ -592,13 +596,10 @@
 
 	// Only RETURN/ENTER will be recognized for Add/Rename/Duplicate sheets to
 	// activate the Add/Rename/Duplicate buttons
-	if([[[notification userInfo] objectForKey:@"NSTextMovement"] intValue] != 0)
+	if([[[notification userInfo] objectForKey:@"NSTextMovement"] integerValue] != 0)
 		return;
 
-	if (object == tableRenameField) {
-		[renameTableButton performClick:object];
-	}
-	else if (object == tableNameField) {
+	if (object == tableNameField) {
 		[addTableButton performClick:object];
 	}
 	else if (object == copyTableNameField) {
@@ -612,9 +613,10 @@
  */
 - (void)updateSelectionWithTaskString:(NSString *)taskString
 {
+	if (![mySQLConnection isConnected]) return;
 
 	// If there is a multiple or blank selection, clear all views directly.
-	if ( [tablesListView numberOfSelectedRows] != 1 || ![[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
+	if ( [tablesListView numberOfSelectedRows] != 1 || ![(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
 		
 		// Update the selection variables and the interface
 		[self performSelectorOnMainThread:@selector(setSelection:) withObject:nil waitUntilDone:YES];
@@ -640,7 +642,7 @@
 }
 
 - (void) updateSelectionTask
-{	
+{
 	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
 	NSString *tableEncoding = nil;
 
@@ -754,12 +756,12 @@
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
 		if([indexes count]) {
-			unsigned int currentIndex = [indexes lastIndex];
+			NSUInteger currentIndex = [indexes lastIndex];
 			BOOL areTableTypeEqual = YES;
-			int lastType = [[filteredTableTypes objectAtIndex:currentIndex] intValue];
+			NSInteger lastType = [[filteredTableTypes objectAtIndex:currentIndex] integerValue];
 			while (currentIndex != NSNotFound)
 			{
-				if ([[filteredTableTypes objectAtIndex:currentIndex] intValue] != lastType)
+				if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] != lastType)
 				{
 					areTableTypeEqual = NO;
 					break;
@@ -830,7 +832,7 @@
 	
 	// Remove the "current selection" item for filtered lists if appropriate
 	if (isTableListFiltered && [tablesListView selectedRow] < [filteredTables count] - 2 && [filteredTables count] > 2
-		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] intValue] == SP_TABLETYPE_NONE
+		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] integerValue] == SP_TABLETYPE_NONE
 		&& [[filteredTables objectAtIndex:[filteredTables count]-2] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
 	{
 		[filteredTables removeObjectsInRange:NSMakeRange([filteredTables count]-2, 2)];
@@ -982,7 +984,7 @@
 /*
  * Returns the currently selected table type, or -1 if no table or multiple tables are selected
  */
-- (int) tableType
+- (NSInteger) tableType
 {
 	return selectedTableType;
 }
@@ -1001,10 +1003,10 @@
 - (NSArray *)allTableAndViewNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	int i;
-	int cnt = [[self tables] count];
+	NSInteger i;
+	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE || [NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_TABLE || [NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_VIEW)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1012,10 +1014,10 @@
 - (NSArray *)allTableNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	int i;
-	int cnt = [[self tables] count];
+	NSInteger i;
+	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_TABLE)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_TABLE)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1023,10 +1025,10 @@
 - (NSArray *)allViewNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	int i;
-	int cnt = [[self tables] count];
+	NSInteger i;
+	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_VIEW)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_VIEW)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	[returnArray sortUsingSelector:@selector(compare:)];
@@ -1035,10 +1037,10 @@
 - (NSArray *)allProcedureNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	int i;
-	int cnt = [[self tables] count];
+	NSInteger i;
+	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_PROC)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_PROC)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1046,10 +1048,10 @@
 - (NSArray *)allFunctionNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	int i;
-	int cnt = [[self tables] count];
+	NSInteger i;
+	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) intValue] == SP_TABLETYPE_FUNC)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_FUNC)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1061,6 +1063,19 @@
 - (NSArray *)allDatabaseNames
 {
 	return [tableDocumentInstance allDatabaseNames];
+}
+
+- (NSString *)selectedDatabase
+{
+	return [tableDocumentInstance database];
+}
+
+/**
+ * Returns an array of all available database names
+ */
+- (NSArray *)allSystemDatabaseNames
+{
+	return [tableDocumentInstance allSystemDatabaseNames];
 }
 
 /**
@@ -1120,13 +1135,13 @@
  */
 - (BOOL)selectTableOrViewWithName:(NSString *)theName
 {
-	int i, tableType;
-	int itemIndex = NSNotFound;
-	int caseInsensitiveItemIndex = NSNotFound;
+	NSInteger i, tableType;
+	NSInteger itemIndex = NSNotFound;
+	NSInteger caseInsensitiveItemIndex = NSNotFound;
 
 	// Loop through the unfiltered tables/views to find the desired item
 	for (i = 0; i < [tables count]; i++) {
-		tableType = [[tableTypes objectAtIndex:i] intValue];
+		tableType = [[tableTypes objectAtIndex:i] integerValue];
 		if (tableType != SP_TABLETYPE_TABLE && tableType != SP_TABLETYPE_VIEW) continue;
 		if ([[tables objectAtIndex:i] isEqualToString:theName]) {
 			itemIndex = i;
@@ -1146,14 +1161,14 @@
 	if (!isTableListFiltered) {
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
 	} else {
-		int filteredIndex = [filteredTables indexOfObject:[tables objectAtIndex:itemIndex]];
+		NSInteger filteredIndex = [filteredTables indexOfObject:[tables objectAtIndex:itemIndex]];
 		if (filteredIndex != NSNotFound) {
 			[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:filteredIndex] byExtendingSelection:NO];
 		} else {
 			[tablesListView deselectAll:nil];
 			if (selectedTableName) [selectedTableName release];
 			selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemIndex]];
-			selectedTableType = [[tableTypes objectAtIndex:itemIndex] intValue];
+			selectedTableType = [[tableTypes objectAtIndex:itemIndex] integerValue];
 			[self updateFilter:self];
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), theName]];
 		}
@@ -1167,7 +1182,7 @@
 /**
  * Returns the number of tables in the current database.
  */
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [filteredTables count];
 }
@@ -1175,7 +1190,7 @@
 /**
  * Returns the table names to be displayed in the tables list table view.
  */
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
 	// During imports the table view sometimes appears to request items beyond the end of the array.
@@ -1197,119 +1212,78 @@
 /**
  * Renames a table (in tables-array and mysql-db).
  */
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if ([selectedTableName isEqualToString:anObject]) {
+	//first trim whitespace whitespace
+    NSString *newTableName = [anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    
+    if ([selectedTableName isEqualToString:newTableName]) {
 		// No changes in table name
-	} 
-	else if ([anObject isEqualToString:@""]) {
-		// Table has no name
-		alertSheetOpened = YES;
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow", NSLocalizedString(@"Empty names are not allowed.", @"message of panel when no name is given for an item"));
-	} 
-	else {
-		if(selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE)
-		{
-			[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [selectedTableName backtickQuotedString], [anObject backtickQuotedString]]];
-		} 
-		else
-		{
-			// procedures and functions can only be renamed if one creates the new one and delete the old one
-			// get the create syntax
-			NSString *tableType;
-			switch (selectedTableType){
-				case SP_TABLETYPE_PROC:
-				tableType = @"PROCEDURE";
-				break;
-				case SP_TABLETYPE_FUNC:
-				tableType = @"FUNCTION";
-				break;
-			}
-			MCPResult *theResult;
-			if (selectedTableType == SP_TABLETYPE_PROC)
-				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [selectedTableName backtickQuotedString]]];
-			else if(selectedTableType == SP_TABLETYPE_FUNC)
-				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [selectedTableName backtickQuotedString]]];
-			else
-				return;
-
-			// Check for errors, only displaying if the connection hasn't been terminated
-			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-				if ([mySQLConnection isConnected]) {
-					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
-									  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving create syntax for '%@'.\n\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
-
-				}
-				return;
-			}
-
-			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
-
-			if ([tableSyntax isKindOfClass:[NSData class]])
-				tableSyntax = [[[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]] autorelease];
-
-			// replace the old name by the new one and drop the old one
-			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", tableType] withString:[anObject backtickQuotedString]]];
-			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-				if ([mySQLConnection isConnected]) {
-					[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[tables objectAtIndex:rowIndex] backtickQuotedString]]];
-				}
-			}
-		}
-		
-		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			// Renamed with success
-			if (isTableListFiltered) {
-				int unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:rowIndex]];
-				[tables replaceObjectAtIndex:unfilteredIndex withObject:anObject];
-			}
-			[filteredTables replaceObjectAtIndex:rowIndex withObject:anObject];
-			if (selectedTableName) [selectedTableName release];
-			selectedTableName = [[NSString alloc] initWithString:anObject];
-			
-			if(selectedTableType == SP_TABLETYPE_FUNC || selectedTableType == SP_TABLETYPE_PROC)
-				return;
-			NSInteger selectedIndex = [tabView indexOfTabViewItem:[tabView selectedTabViewItem]];
-			
-			if (selectedIndex == 0) {
-				[tableSourceInstance loadTable:anObject];
-				structureLoaded = YES;
-				contentLoaded = NO;
-				statusLoaded = NO;
-			} 
-			else if (selectedIndex == 1) {
-				[tableContentInstance loadTable:anObject];
-				structureLoaded = NO;
-				contentLoaded = YES;
-				statusLoaded = NO;
-			} 
-			else if (selectedIndex == 3) {
-				[extendedTableInfoInstance loadTable:anObject];
-				structureLoaded = NO;
-				contentLoaded = NO;
-				statusLoaded = YES;
-			} 
-			else {
-				statusLoaded = NO;
-				structureLoaded = NO;
-				contentLoaded = NO;
-			}
-			
-			// Set window title
-			[tableWindow setTitle:[tableDocumentInstance displaySPName]];
-
-		} 
-		else {
-			// Error while renaming
-			alertSheetOpened = YES;
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-							  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"),
-							  anObject, [mySQLConnection getLastErrorMessage]]);
-		}
+        return;
 	}
+    
+	if ([newTableName isEqualToString:@""]) {
+        // empty table names are not allowed
+        // don't annoy the user about it, just ignore this
+        // this is also how the MacOS Finder handles renaming files
+        return;
+    }
+    
+    if (![self isTableNameValid:newTableName forType:selectedTableType ignoringSelectedTable:YES]) {
+		// Table has invalid name
+        // Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil,
+                          [NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
+        return;
+    }
+    
+    @try {
+        // first: update the database
+        [self renameTableOfType:selectedTableType from:selectedTableName to:newTableName];
+        
+        // second: update the table list
+        if (isTableListFiltered) {
+            NSInteger unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:rowIndex]];
+            [tables replaceObjectAtIndex:unfilteredIndex withObject:newTableName];
+        }
+        [filteredTables replaceObjectAtIndex:rowIndex withObject:newTableName];
+        if (selectedTableName) [selectedTableName release];
+        selectedTableName = [[NSString alloc] initWithString:newTableName];
+        
+        // if the 'table' is a view or a table, reload the currently selected view 
+        if (selectedTableType == SP_TABLETYPE_TABLE || selectedTableType == SP_TABLETYPE_VIEW)
+        {
+            switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
+                case 0:
+                    [tableSourceInstance loadTable:newTableName];
+                    structureLoaded = YES;
+                    contentLoaded = statusLoaded = NO;
+                    break;
+                case 1:
+                    [tableContentInstance loadTable:newTableName];
+                    contentLoaded = YES;
+                    structureLoaded = statusLoaded = NO;
+                    break;
+                case 3:
+                    [extendedTableInfoInstance loadTable:newTableName];
+                    statusLoaded = YES;
+                    structureLoaded = contentLoaded = NO;
+                    break;
+                default:
+                    statusLoaded = structureLoaded = contentLoaded = NO;
+            }
+        }
+    }
+    @catch (NSException * myException) {
+        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [myException reason]);
+    }
+    
+    // Set window title to reflect the new table name
+    [tableWindow setTitle:[tableDocumentInstance displaySPName]];
+    
+    // Query the structure of all databases in the background (mainly for completion)
+    [NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
 }
 
 #pragma mark -
@@ -1372,9 +1346,9 @@
 
 	// Perform no action if the selected table hasn't actually changed - reselection etc
 	if ([tablesListView numberOfSelectedRows] == 1
-		&& [[filteredTables objectAtIndex:[tablesListView selectedRow]] length]
+		&& [(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length]
 		&& [selectedTableName isEqualToString:[filteredTables objectAtIndex:[tablesListView selectedRow]]]
-		&& selectedTableType == [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue])
+		&& selectedTableType == [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue])
 	{
 		return;
 	}
@@ -1383,7 +1357,7 @@
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	NSString *tableName = @"data";
-	if ([tablesListView numberOfSelectedRows] == 1 && [[filteredTables objectAtIndex:[tablesListView selectedRow]] length])
+	if ([tablesListView numberOfSelectedRows] == 1 && [(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length])
 		tableName = [filteredTables objectAtIndex:[tablesListView selectedRow]];
 	[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), tableName]];
 }
@@ -1391,7 +1365,7 @@
 /**
  * Table view delegate method
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
 
 	// Disallow selection while the document is working on a task
@@ -1400,38 +1374,38 @@
 	//return (rowIndex != 0);
 	if( [filteredTableTypes count] == 0 )
 		return (rowIndex != 0 );
-	return ([[filteredTableTypes objectAtIndex:rowIndex] intValue] != SP_TABLETYPE_NONE );
+	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] != SP_TABLETYPE_NONE );
 }
 
 /**
  * Table view delegate method
  */
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(int)rowIndex
+- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
 {
 	// For empty tables - title still present - or while lists are being altered
 	if (rowIndex >= [filteredTableTypes count]) return (rowIndex == 0 );
 
-	return ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE );
+	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_NONE );
 }
 
 /**
  * Table view delegate method
  */
-- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
+- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if (rowIndex > 0 && rowIndex < [filteredTableTypes count]
 		&& [[aTableColumn identifier] isEqualToString:@"tables"]) {
-		if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_VIEW) {
+		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_VIEW) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_TABLE) { 
+		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_TABLE) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_PROC) { 
+		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_PROC) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"proc-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_FUNC) { 
+		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_FUNC) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"func-small"]];
 		}
 	
-		if ([[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE) {
+		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_NONE) {
 			[(ImageAndTextCell*)aCell setImage:nil];
 			[(ImageAndTextCell*)aCell setIndentationLevel:0];
 		} else {
@@ -1447,7 +1421,7 @@
 /**
  * Table view delegate method
  */
-- (float)tableView:(NSTableView *)tableView heightOfRow:(int)row
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	return (row == 0) ? 25 : 17;
 }
@@ -1571,10 +1545,10 @@
 		filteredTables = [[NSMutableArray alloc] init];
 		filteredTableTypes = [[NSMutableArray alloc] init];
 		
-		int i, lastTableType = NSNotFound, tableType;
+		NSInteger i, lastTableType = NSNotFound, tableType;
 		NSRange substringRange;
 		for (i = 0; i < [tables count]; i++) {
-			tableType = [[tableTypes objectAtIndex:i] intValue];
+			tableType = [[tableTypes objectAtIndex:i] integerValue];
 			if (tableType == SP_TABLETYPE_NONE) continue;
 			substringRange = [[tables objectAtIndex:i] rangeOfString:[listFilterField stringValue] options:NSCaseInsensitiveSearch];
 			if (substringRange.location == NSNotFound) continue;
@@ -1587,12 +1561,12 @@
 				} else {
 					[filteredTables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 				}
-				[filteredTableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+				[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
 			} else if ((tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC)
 						&& (lastTableType == NSNotFound || lastTableType == SP_TABLETYPE_TABLE || lastTableType == SP_TABLETYPE_VIEW))
 			{
 				[filteredTables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-				[filteredTableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+				[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
 			}
 			lastTableType = tableType;
 
@@ -1604,15 +1578,15 @@
 		// Add a "no matches" title if nothing matches the current filter settings
 		if (![filteredTables count]) {
 			[filteredTables addObject:NSLocalizedString(@"NO MATCHES",@"header for no matches in filtered list")];
-			[filteredTableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];		
+			[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];		
 		}
 
 		// If the currently selected table isn't present in the filter list, add it as a special entry
 		if (selectedTableName && [filteredTables indexOfObject:selectedTableName] == NSNotFound) {
 			[filteredTables addObject:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")];
-			[filteredTableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+			[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
 			[filteredTables addObject:selectedTableName];
-			[filteredTableTypes addObject:[NSNumber numberWithInt:selectedTableType]];
+			[filteredTableTypes addObject:[NSNumber numberWithInteger:selectedTableType]];
 		}
 		
 		isTableListFiltered = YES;
@@ -1636,8 +1610,8 @@
  */
 - (void) selectTableAtIndex:(NSNumber *)row
 {
-	int rowIndex = [row intValue];
-	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] intValue] == SP_TABLETYPE_NONE)
+	NSInteger rowIndex = [row integerValue];
+	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_NONE)
 		return;
 
 	[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
@@ -1733,7 +1707,9 @@
 	// Start the table filter list collapsed
 	if ([tableListFilterSplitView collapsibleSubview]) {
 		[tableListFilterSplitView setValue:[NSNumber numberWithFloat:[tableListFilterSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 0)];
+		// Set search bar view to the height of 1 instead of 0 to ensure that the view will be visible
+		// after opening a next connection window which has more than 20 tables
+		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 1)];
 		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
 	}
 
@@ -1776,23 +1752,23 @@
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 	
 	// get last index
-	unsigned currentIndex = [indexes lastIndex];
+	NSUInteger currentIndex = [indexes lastIndex];
 	
 	while (currentIndex != NSNotFound)
 	{
-		if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_VIEW) {
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_VIEW) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_TABLE) {
+		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_PROC) {
+		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_PROC) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP PROCEDURE %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] intValue] == SP_TABLETYPE_FUNC) {
+		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_FUNC) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP FUNCTION %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
@@ -1802,7 +1778,7 @@
 		if ([[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
 			//dropped table with success
 			if (isTableListFiltered) {
-				int unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:currentIndex]];
+				NSInteger unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:currentIndex]];
 				[tables removeObjectAtIndex:unfilteredIndex];
 				[tableTypes removeObjectAtIndex:unfilteredIndex];
 			}
@@ -1829,7 +1805,7 @@
 				[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 				currentIndex = NSNotFound;
 			} else {
-				int choice = [alert runModal];
+				NSInteger choice = [alert runModal];
 				if (choice == NSAlertFirstButtonReturn) {
 					currentIndex = [indexes indexLessThanIndex:currentIndex];
 				} else {
@@ -1841,7 +1817,7 @@
 	
 	// Remove the isolated "current selection" item for filtered lists if appropriate
 	if (isTableListFiltered && [filteredTables count] > 1
-		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-1] intValue] == SP_TABLETYPE_NONE
+		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-1] integerValue] == SP_TABLETYPE_NONE
 		&& [[filteredTables objectAtIndex:[filteredTables count]-1] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
 	{
 		[filteredTables removeLastObject];
@@ -1854,6 +1830,10 @@
 	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
 	[tablesListView deselectAll:self];
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 }
 
 /**
@@ -1864,7 +1844,7 @@
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 	
 	// Get last index
-	unsigned currentIndex = [indexes lastIndex];
+	NSUInteger currentIndex = [indexes lastIndex];
 	
 	while (currentIndex != NSNotFound)
 	{
@@ -1872,9 +1852,20 @@
 		
 		// Couldn't truncate table
 		if (![[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error truncating table", @"error truncating table message"), 
-							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]);
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error truncating table", @"error truncating table message") 
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											   otherButton:nil 
+								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), 
+									[filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			// NSArray *buttons = [alert buttons];
+			// // Change the alert's cancel button to have the key equivalent of return
+			// [[buttons objectAtIndex:0] setKeyEquivalent:@"t"];
+			// [[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			// [[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+			[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
 		}
 		
 		// Get next index (beginning from the end)
@@ -1909,9 +1900,9 @@
 	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		
 		// Table creation was successful - insert the new item into the tables list and select it.
-		int addItemAtIndex = NSNotFound;
-		for (int i = 0; i < [tables count]; i++) {
-			int tableType = [[tableTypes objectAtIndex:i] intValue];
+		NSInteger addItemAtIndex = NSNotFound;
+		for (NSInteger i = 0; i < [tables count]; i++) {
+			NSInteger tableType = [[tableTypes objectAtIndex:i] integerValue];
 			if (tableType == SP_TABLETYPE_NONE) continue;
 			if (tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC) {
 				addItemAtIndex = i - 1;
@@ -1924,10 +1915,10 @@
 		}
 		if (addItemAtIndex == NSNotFound) {
 			[tables addObject:tableName];
-			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE]];
+			[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
 		} else {
 			[tables insertObject:tableName atIndex:addItemAtIndex];
-			[tableTypes insertObject:[NSNumber numberWithInt:SP_TABLETYPE_TABLE] atIndex:addItemAtIndex];		
+			[tableTypes insertObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE] atIndex:addItemAtIndex];		
 		}
 		
 		// Set the selected table name and type, and then use updateFilter and updateSelection to update the filter list and selection.
@@ -1937,12 +1928,16 @@
 		[self updateFilter:self];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+
+		// Query the structure of all databases in the background (mainly for completion)
+		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 	} 
 	else {
 		// Error while creating new table
 		alertSheetOpened = YES;
 		
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
 						   tableName, [mySQLConnection getLastErrorMessage]]);
@@ -1962,13 +1957,13 @@
 	NSString *tableType;
 	
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 		return;
 	}
 	
 	BOOL copyTableContent = ([copyTableContentSwitch state] == NSOnState);
 	
-	int tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] intValue];
+	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 	
 	switch (tblType){
 		case SP_TABLETYPE_TABLE:
@@ -1994,10 +1989,11 @@
 												[tableType uppercaseString],
 												[[filteredTables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 												]];
-	
+	[queryResult setReturnDataAsStrings:YES];
+
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-		NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 		
     } else {
@@ -2041,24 +2037,20 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 				if ([mySQLConnection isConnected]) {
-					NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
 				}
 				return;
 			}
 			
-			id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
-			
-			if ([tableSyntax isKindOfClass:[NSData class]])
-				tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
+			[theResult setReturnDataAsStrings:YES];
+			NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
 			
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			
-			[tableSyntax release];
-			
 			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 			
@@ -2067,7 +2059,7 @@
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
@@ -2080,7 +2072,7 @@
 											  ]];
 				
                 if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
-                    NSBeginAlertSheet(
+                    SPBeginAlertSheet(
 									  NSLocalizedString(@"Warning", @"warning"),
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil,
@@ -2096,9 +2088,9 @@
             }
 			
 			// Insert the new item into the tables list and select it.
-			int addItemAtIndex = NSNotFound;
-			for (int i = 0; i < [tables count]; i++) {
-				int tableType = [[tableTypes objectAtIndex:i] intValue];
+			NSInteger addItemAtIndex = NSNotFound;
+			for (NSInteger i = 0; i < [tables count]; i++) {
+				NSInteger tableType = [[tableTypes objectAtIndex:i] integerValue];
 				if (tableType == SP_TABLETYPE_NONE) continue;
 				if ((tableType == SP_TABLETYPE_VIEW || tableType == SP_TABLETYPE_TABLE)
 					&& (tblType == SP_TABLETYPE_PROC || tblType == SP_TABLETYPE_FUNC)) {
@@ -2116,10 +2108,10 @@
 			}
 			if (addItemAtIndex == NSNotFound) {
 				[tables addObject:[copyTableNameField stringValue]];
-				[tableTypes addObject:[NSNumber numberWithInt:tblType]];
+				[tableTypes addObject:[NSNumber numberWithInteger:tblType]];
 			} else {
 				[tables insertObject:[copyTableNameField stringValue] atIndex:addItemAtIndex];
-				[tableTypes insertObject:[NSNumber numberWithInt:tblType] atIndex:addItemAtIndex];		
+				[tableTypes insertObject:[NSNumber numberWithInteger:tblType] atIndex:addItemAtIndex];		
 			}
 			
 			// Set the selected table name and type, and use updateFilter to update the filter list and selection
@@ -2129,131 +2121,152 @@
 			[self updateFilter:self];
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+
+			// Query the structure of all databases in the background (mainly for completion)
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+
 		}
 	}
 }
 
-/**
- * Renames the currently selected object (table, view, procedure, function, etc.).
+/*
+ * Renames a table, view, procedure or function. Also handles only changes in case!
+ * This function ONLY changes the database. It does NOT refresh the views etc.
+ * CAREFUL: This function raises an exception if renaming fails, and does not show an error message.
  */
-- (void)renameTable
+- (void)renameTableOfType: (enum sp_table_types)tableType from:(NSString *)oldTableName to:(NSString *)newTableName
 {
-	if([self tableType] == SP_TABLETYPE_VIEW || [self tableType] == SP_TABLETYPE_TABLE) {
-		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [[self tableName] backtickQuotedString], [[tableRenameField stringValue] backtickQuotedString]]];
-		
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
-							  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while renaming table '%@'.\n\nMySQL said: %@", @"rename table error informative message"), [self tableName], [mySQLConnection getLastErrorMessage]]);
-		}
-		else {
-			// If there was no error, rename the table in our list and reload the table view's data
-			if (isTableListFiltered) {
-				[tables replaceObjectAtIndex:[tables indexOfObject:[self tableName]] withObject:[tableRenameField stringValue]];
-			}
-			[filteredTables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
-			if (selectedTableName) [selectedTableName release];
-			selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
-			[tablesListView reloadData];
-			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
-			return;
-		}
-	} else {
-		// procedures and functions can only be renamed if one creates the new one and delete the old one
-		// get the create syntax
-		MCPResult *theResult;
-		if([self tableType] == SP_TABLETYPE_PROC)
-			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self tableName] backtickQuotedString]]];
-		else if([self tableType] == SP_TABLETYPE_FUNC)
-			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self tableName] backtickQuotedString]]];
-		else
-			return;
-		
-		// Check for errors, only displaying if the connection hasn't been terminated
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			if ([mySQLConnection isConnected]) {
-				NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
-								  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving create syntax for '%@'.\n\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), [self tableName], [mySQLConnection getLastErrorMessage]]);
-			}
-			return;
-		}
-		
-		id tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
-		
-		if ([tableSyntax isKindOfClass:[NSData class]])
-			tableSyntax = [[NSString alloc] initWithData:tableSyntax encoding:[mySQLConnection encoding]];
-		
-		NSString *tableType;
-		
-		switch([self tableType]){
-			case SP_TABLETYPE_TABLE:
-				tableType = NSLocalizedString(@"table",@"table");
-				break;
-			case SP_TABLETYPE_VIEW:
-				tableType = NSLocalizedString(@"view",@"view");
-				break;
-			case SP_TABLETYPE_PROC:
-				tableType = NSLocalizedString(@"procedure",@"procedure");
-				break;
-			case SP_TABLETYPE_FUNC:
-				tableType = NSLocalizedString(@"function",@"function");
-				break;
-		}
-		
-		// replace the old name by the new one and drop the old one
-		[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[tableRenameField stringValue] backtickQuotedString]]];
-		[tableSyntax release];
-		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			if ([mySQLConnection isConnected]) {
-				[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", tableType, [[self tableName] backtickQuotedString]]];
-			}
-		}
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't rename '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [self tableName], [mySQLConnection getLastErrorMessage]]);
-		} else {
-			if (isTableListFiltered) {
-				[tables replaceObjectAtIndex:[tables indexOfObject:[self tableName]] withObject:[tableRenameField stringValue]];
-			}
-			[filteredTables replaceObjectAtIndex:[tablesListView selectedRow] withObject:[tableRenameField stringValue]];
-			if (selectedTableName) [selectedTableName release];
-			selectedTableName = [[NSString alloc] initWithString:[tableRenameField stringValue]];
-			[tablesListView reloadData];
-			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
-			return;
-		}
-	}
-	
-	// Set window title
-	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+    // check if the name really changed
+    if ([oldTableName isEqualToString:newTableName]) return;
+    
+    // check if only the case changed - then we have to do two renames, see http://code.google.com/p/sequel-pro/issues/detail?id=484
+    if ([[oldTableName lowercaseString] isEqualToString:[newTableName lowercaseString]])
+    {
+        // first try finding an unused temporary name
+        // this code should be improved in case we find out that something uses table names like mytable-1, mytable-2, etc.
+        NSString* tempTableName;
+        int tempNumber;
+        for(tempNumber=2; tempNumber<100; tempNumber++) {
+            tempTableName = [NSString stringWithFormat:@"%@-%d",selectedTableName,tempNumber];
+            if ([self isTableNameValid:tempTableName forType:tableType]) break;
+        }
+        if (tempNumber==100) {
+            // we couldn't find a temporary name
+            [NSException raise:@"No Tempname found" format:NSLocalizedString(@"An error occured while renaming '%@'. No temporary name could be found. Please try renaming to something else first.", @"rename table error - no temporary name found"), oldTableName];
+        }
+        
+        [self renameTableOfType:tableType from:oldTableName to:tempTableName];
+        [self renameTableOfType:tableType from:tempTableName to:newTableName];
+        return;
+    }
+    
+    //check if we are trying to rename a TABLE or a VIEW
+    if (tableType == SP_TABLETYPE_VIEW || tableType == SP_TABLETYPE_TABLE) {
+        // we can use the rename table statement
+        [mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [oldTableName backtickQuotedString], [newTableName backtickQuotedString]]];
+        // check for errors
+        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming '%@'.\n\nMySQL said: %@", @"rename table error informative message"), oldTableName, [mySQLConnection getLastErrorMessage]];
+        }
+        return;
+    }
+    
+    //check if we are trying to rename a PROCEDURE or a FUNCTION
+    if (tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC) {
+        // procedures and functions can only be renamed if one creates a new one and deletes the old one
+        
+        // first get the create syntax
+        NSString *stringTableType;
+        switch (tableType){
+            case SP_TABLETYPE_PROC: stringTableType = @"PROCEDURE"; break;
+            case SP_TABLETYPE_FUNC: stringTableType = @"FUNCTION"; break;
+        }
+        
+        MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
+        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't retrieve the syntax for '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't retrieve syntax"), oldTableName, [mySQLConnection getLastErrorMessage]];
+        }
+        [theResult setReturnDataAsStrings:YES];
+        NSString *oldCreateSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+
+        // replace the old name with the new name
+        NSRange rangeOfProcedureName = [oldCreateSyntax rangeOfString: [NSString stringWithFormat:@"%@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
+        if (rangeOfProcedureName.length == 0) {
+            [NSException raise:@"Unknown Syntax" format:NSLocalizedString(@"An error occured while renaming. The CREATE syntax of '%@' could not be parsed.", @"rename error - invalid create syntax"), oldTableName];
+        }
+        NSString *newCreateSyntax = [oldCreateSyntax stringByReplacingCharactersInRange: rangeOfProcedureName
+                                                                             withString: [NSString stringWithFormat:@"%@ %@", stringTableType, [newTableName backtickQuotedString] ] ];
+        [mySQLConnection queryString: newCreateSyntax];
+        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't recreate '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't recreate procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
+        }
+        
+        [mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", stringTableType, [oldTableName backtickQuotedString]]];
+        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't remove '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't remove old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
+        }
+        return;
+    }
+    
+    [NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
 }
+
+
 
 /*
  * Check tableName for length and if the tableName doesn't match
  * against current database table/view names (case-insensitive).
  */
-- (BOOL)isTableNameValid:(NSString *)tableName
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType
+{
+    return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
+}
+
+- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
 {
 	BOOL isValid = YES;
 
-	// Check case-insensitive and delete trailing whitespaces
-	// since 'foo  ' or '   ' are not valid table names
-	NSString *fieldStr = [[tableName stringByMatching:@"(.*?)\\s*$" capture:1] lowercaseString];
+	// delete trailing whitespaces since 'foo  ' or '   ' are not valid table names
+	NSString *fieldStr = [tableName stringByMatching:@"(.*?)\\s*$" capture:1];
+	NSString *lowercaseFieldStr = [fieldStr lowercaseString];
 
 	// If table name has trailing whitespaces return 'no valid'
 	if([fieldStr length] != [tableName length]) return NO;
-
-	if([fieldStr length] > 0) {
-		for(id table in [self allTableAndViewNames]) {
-			if([fieldStr isEqualToString:[table lowercaseString]]) {
-				isValid = NO;
-				break;
-			}
-		}
-	} else {
-		isValid = NO; 
-	}
+    
+    // empty table names are invalid
+	if([fieldStr length] == 0) return NO;
+    
+    
+    NSArray *similarTables;
+    switch (tableType) {
+        case SP_TABLETYPE_VIEW:
+        case SP_TABLETYPE_TABLE:
+            similarTables = [self allTableAndViewNames];
+            break;
+        case SP_TABLETYPE_PROC:
+            similarTables = [self allProcedureNames];
+            break;
+        case SP_TABLETYPE_FUNC:
+            similarTables = [self allFunctionNames];
+            break;
+        default:
+            // if some other table type is given, just return yes
+            // better a mysql error than not being able to change something at all
+            return YES;
+    }
+    
+    for(id table in similarTables) {
+        //compare case insensitive here
+        if([lowercaseFieldStr isEqualToString:[table lowercaseString]]) {
+            if (ignoreSelectedTable) {
+                // if table is the selectedTable, ignore it
+                // we must compare CASE SENSITIVE here!
+                if ([table isEqualToString:selectedTableName]) continue;
+            }
+            isValid = NO;
+            break;
+        }
+    }
 	return isValid;
 }
 

@@ -243,6 +243,8 @@ const OUR_CHARSET our_charsets60[] =
 {
 	if ((self = [super init])) {
 		mEncoding = [MCPConnection defaultMySQLEncoding];
+		mReturnDataAsStrings = NO;
+		mTimeZone = nil;
 		
 		if (mResult) {
 			mysql_free_result(mResult);
@@ -269,6 +271,7 @@ const OUR_CHARSET our_charsets60[] =
 	if ((self = [super init])) {
 		mEncoding = iEncoding;
 		mTimeZone = [iTimeZone retain];
+		mReturnDataAsStrings = NO;
 		
 		if (mResult) {
 			mysql_free_result(mResult);
@@ -303,6 +306,7 @@ const OUR_CHARSET our_charsets60[] =
 	if ((self = [super init])) {
 		mEncoding = iEncoding;
 		mTimeZone = [iTimeZone retain];
+		mReturnDataAsStrings = NO;
 		
 		if (mResult) {
 			mysql_free_result(mResult);
@@ -452,8 +456,9 @@ const OUR_CHARSET our_charsets60[] =
 				case FIELD_TYPE_LONG_BLOB:
 					theCurrentObj = [NSData dataWithBytes:theData length:theLengths[i]];
 					
-					// It is TEXT and NOT BLOB
-					if (!(theField[i].flags & BINARY_FLAG)) { 
+					// If the field is TEXT and NOT BLOB, or if force-return-as-string is
+					// enabled, return a NSString instead of NSData
+					if (mReturnDataAsStrings || !(theField[i].flags & BINARY_FLAG)) { 
 						theCurrentObj = [self stringWithText:theCurrentObj];
 					}
 					
@@ -989,6 +994,19 @@ const OUR_CHARSET our_charsets60[] =
 #pragma mark Conversion
 
 /**
+ * Set whether the result should return data types as strings.  This may be useful
+ * for queries where the result may be returned in either string or data form, but
+ * will be converted to string for display and use anyway.
+ * Note that certain MySQL versions also return data types for strings - eg SHOW
+ * commands like SHOW CREATE TABLE or SHOW VARIABLES, and this conversion can be
+ * necessary there.
+ */
+- (void) setReturnDataAsStrings:(BOOL)alwaysConvertData
+{
+	mReturnDataAsStrings = alwaysConvertData;
+}
+
+/**
  * Use the string encoding to convert the returned NSData to a string (for a TEXT field).
  */
 - (NSString *)stringWithText:(NSData *)theTextData
@@ -1325,14 +1343,10 @@ const OUR_CHARSET our_charsets60[] =
  */
 - (void) dealloc
 {
-	if (mResult) {
-		mysql_free_result(mResult);
-	}
-	
-	if (mNames) {
-		[mNames autorelease];
-	}
-	
+	if (mResult) mysql_free_result(mResult);
+	if (mNames) [mNames autorelease];
+	if (mTimeZone) [mTimeZone release];
+
 	[super dealloc];
 }
 

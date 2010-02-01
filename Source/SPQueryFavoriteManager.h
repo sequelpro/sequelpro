@@ -41,6 +41,7 @@
 	IBOutlet NSPopUpButton *encodingPopUp;
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSTextField *favoriteNameTextField;
+	IBOutlet NSTextField *favoriteTabTriggerTextField;
 	IBOutlet NSTextView  *favoriteQueryTextView;
 	IBOutlet NSButton *removeButton;
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;

@@ -15,17 +15,17 @@
 @implementation NSMutableArray(MultipleSort)
 - (void)sortArrayUsingSelector:(SEL)comparator withPairedMutableArrays:(NSMutableArray *)array1, ...
 {
-	unsigned int stride = 1;
+	NSUInteger stride = 1;
 	BOOL found = NO;
-	unsigned int count = [self count];
-	unsigned int d;
+	NSUInteger count = [self count];
+	NSUInteger d;
 
 	while (stride <= count)
 		stride = stride * STRIDE_FACTOR + 1;
 
 	while (stride > (STRIDE_FACTOR - 1)) {
 		stride = stride / STRIDE_FACTOR;
-		for (unsigned int c = stride; c < count; c++) {
+		for (NSUInteger c = stride; c < count; c++) {
 			found = NO;
 			if (stride > c) break;
 

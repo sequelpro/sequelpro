@@ -27,14 +27,14 @@
 
 @interface SPDataCellFormatter : NSFormatter 
 {
-	int textLimit;
+	NSInteger textLimit;
 }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-	@property int textLimit;
+	@property NSInteger textLimit;
 #else
-	-(int)textLimit;
-	-(void)setTextLimit:(int)limit;
+	-(NSInteger)textLimit;
+	-(void)setTextLimit:(NSInteger)limit;
 #endif
 
 @end

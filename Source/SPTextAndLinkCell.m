@@ -134,7 +134,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	[super drawInteriorWithFrame:textRect inView:controlView];
 
 	// Get the new link state
-	int newDrawState = ([self isHighlighted])?
+	NSInteger newDrawState = ([self isHighlighted])?
 							((([(NSTableView *)[self controlView] editedColumn] != -1
 								|| [[[self controlView] window] firstResponder] == [self controlView])
 								&& [[[self controlView] window] isKeyWindow])?SP_LINKDRAWSTATE_HIGHLIGHT:SP_LINKDRAWSTATE_BACKGROUNDHIGHLIGHT):
@@ -251,7 +251,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 /**
  * Retrieve the last column that recorded a click with the link cell
  */
-- (int) getClickedColumn
+- (NSInteger) getClickedColumn
 {
 	return lastLinkColumn;
 }
@@ -259,7 +259,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 /**
  * Retrieve the last row that recorded a click with the link cell
  */
-- (int) getClickedRow
+- (NSInteger) getClickedRow
 {
 	return lastLinkRow;
 }

@@ -32,6 +32,7 @@
 
 #import "NoodleLineNumberView.h"
 #import "SPArrayAdditions.h"
+#include <tgmath.h>
 
 #define DEFAULT_THICKNESS	22.0
 #define RULER_MARGIN		5.0
@@ -182,9 +183,9 @@
     [self setNeedsDisplay:YES];
 }
 
-- (unsigned)lineNumberForLocation:(float)location
+- (NSUInteger)lineNumberForLocation:(CGFloat)location
 {
-	unsigned		line, count, index, rectCount, i;
+	NSUInteger		line, count, index, rectCount, i;
 	NSRectArray		rects;
 	NSRect			visibleRect;
 	NSLayoutManager	*layoutManager;
@@ -209,7 +210,7 @@
 		
 		for (line = 0; line < count; line++)
 		{
-			index = [NSArrayObjectAtIndex(lines, line) unsignedIntValue];
+			index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
 			
 			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
 								 withinSelectedCharacterRange:nullRange
@@ -236,9 +237,9 @@
     
     if ([view isKindOfClass:[NSTextView class]])
     {
-        unsigned        index, numberOfLines, stringLength, lineEnd, contentEnd;
+        NSUInteger        index, numberOfLines, stringLength, lineEnd, contentEnd;
         NSString        *text;
-        float         oldThickness, newThickness;
+        CGFloat         oldThickness, newThickness;
         
         text = [view string];
         stringLength = [text length];
@@ -255,7 +256,7 @@
         
         do
         {
-            [lineIndices addObject:[NSNumber numberWithUnsignedInt:index]];
+            [lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
             
             index = NSMaxRange([text lineRangeForRange:NSMakeRange(index, 0)]);
             numberOfLines++;
@@ -263,10 +264,10 @@
         while (index < stringLength);
 
         // Check if text ends with a new line.
-        [text getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntValue], 0)];
+        [text getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
         if (contentEnd < lineEnd)
         {
-            [lineIndices addObject:[NSNumber numberWithUnsignedInt:index]];
+            [lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
         }
 
         oldThickness = [self ruleThickness];
@@ -287,9 +288,9 @@
 	}
 }
 
-- (unsigned)lineNumberForCharacterIndex:(unsigned)index inText:(NSString *)text
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text
 {
-    unsigned			left, right, mid, lineStart;
+    NSUInteger			left, right, mid, lineStart;
 	NSMutableArray		*lines;
 
 	lines = [self lineIndices];
@@ -301,7 +302,7 @@
     while ((right - left) > 1)
     {
         mid = (right + left) / 2;
-        lineStart = [NSArrayObjectAtIndex(lines, mid) unsignedIntValue];
+        lineStart = [NSArrayObjectAtIndex(lines, mid) unsignedIntegerValue];
         
         if (index < lineStart)
         {
@@ -327,14 +328,14 @@
             nil];
 }
 
-- (float)requiredThickness
+- (CGFloat)requiredThickness
 {
-    unsigned			lineCount, digits, i;
+    NSUInteger			lineCount, digits, i;
     NSMutableString     *sampleString;
     NSSize              stringSize;
     
     lineCount = [[self lineIndices] count];
-    digits = (unsigned)log10(lineCount) + 1;
+    digits = (NSUInteger)log10(lineCount) + 1;
 	sampleString = [NSMutableString string];
     for (i = 0; i < digits; i++)
     {
@@ -348,7 +349,7 @@
 
 	// Round up the value. There is a bug on 10.4 where the display gets all wonky when scrolling if you don't
 	// return an integral value here.
-    return ceilf(MAX(DEFAULT_THICKNESS, stringSize.width + RULER_MARGIN * 2));
+    return ceil(MAX(DEFAULT_THICKNESS, stringSize.width + RULER_MARGIN * 2));
 }
 
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect
@@ -376,9 +377,9 @@
         NSRect					visibleRect;
         NSRange					range, glyphRange, nullRange;
         NSString				*text, *labelText;
-        unsigned				rectCount, index, line, count;
+        NSUInteger				rectCount, index, line, count;
         NSRectArray				rects;
-        float					ypos, yinset;
+        CGFloat					ypos, yinset;
         NSDictionary			*textAttributes, *currentTextAttributes;
         NSSize					stringSize;
 		NSMutableArray			*lines;
@@ -407,7 +408,7 @@
         
         for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
         {
-            index = [NSArrayObjectAtIndex(lines, line) unsignedIntValue];
+            index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
             
             if (NSLocationInRange(index, range))
             {
@@ -423,7 +424,7 @@
                     ypos = yinset + NSMinY(rects[0]) - NSMinY(visibleRect);
 
                     // Line numbers are internally stored starting at 0
-                    labelText = [NSString stringWithFormat:@"%d", line + 1];
+                    labelText = [NSString stringWithFormat:@"%lu", (unsigned long)(line + 1)];
                     
                     stringSize = [labelText sizeWithAttributes:textAttributes];
 
@@ -448,7 +449,7 @@
 - (void)mouseDown:(NSEvent *)theEvent
 {
 	NSPoint					location;
-	unsigned				line;
+	NSUInteger				line;
 	NSTextView				*view;
 	
     if (![[self clientView] isKindOfClass:[NSTextView class]]) return;
@@ -460,12 +461,12 @@
 	
 	if (line != NSNotFound)
 	{
-		unsigned int selectionStart, selectionEnd;
+		NSUInteger selectionStart, selectionEnd;
 		NSMutableArray *lines = [self lineIndices];
 
-		selectionStart = [[lines objectAtIndex:(line - 1)] unsignedIntValue];
+		selectionStart = [[lines objectAtIndex:(line - 1)] unsignedIntegerValue];
 		if (line < [lines count]) {
-			selectionEnd = [[lines objectAtIndex:line] unsignedIntValue];
+			selectionEnd = [[lines objectAtIndex:line] unsignedIntegerValue];
 		} else {
 			selectionEnd = [[view string] length];
 		}
@@ -476,7 +477,7 @@
 - (void)mouseDragged:(NSEvent *)theEvent
 {
 	NSPoint					location;
-	unsigned				line, startLine, endLine;
+	NSUInteger				line, startLine, endLine;
 	NSTextView				*view;
 	
     if (![[self clientView] isKindOfClass:[NSTextView class]] || dragSelectionStartLine == NSNotFound) return;
@@ -487,7 +488,7 @@
 
 	if (line != NSNotFound)
 	{
-		unsigned int selectionStart, selectionEnd;
+		NSUInteger selectionStart, selectionEnd;
 		NSMutableArray *lines = [self lineIndices];
 		if (line >= dragSelectionStartLine) {
 			startLine = dragSelectionStartLine;
@@ -497,9 +498,9 @@
 			endLine = dragSelectionStartLine;
 		}
 
-		selectionStart = [[lines objectAtIndex:(startLine - 1)] unsignedIntValue];
+		selectionStart = [[lines objectAtIndex:(startLine - 1)] unsignedIntegerValue];
 		if (endLine < [lines count]) {
-			selectionEnd = [[lines objectAtIndex:endLine] unsignedIntValue];
+			selectionEnd = [[lines objectAtIndex:endLine] unsignedIntegerValue];
 		} else {
 			selectionEnd = [[view string] length];
 		}

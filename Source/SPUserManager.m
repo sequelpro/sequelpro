@@ -127,14 +127,14 @@
 	
 	// Select users from the mysql.user table
 	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
-	int rows = [result numOfRows];
+	NSInteger rows = [result numOfRows];
 	
 	if (rows > 0) {
 		// Go to the beginning
 		[result dataSeek:0];
 	}
 	
-	for (int i = 0; i < rows; i++)
+	for (NSInteger i = 0; i < rows; i++)
 	{
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
@@ -148,6 +148,7 @@
 
 	// Attempt to use SHOW PRIVILEGES syntax - supported since 4.1.0
 	result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
+	[result setReturnDataAsStrings:YES];
 	if ([result numOfRows]) {
 		while (privRow = [result fetchRowAsArray]) {
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
@@ -159,6 +160,7 @@
 	// If that fails, base privilege support on the mysql.users columns
 	} else {
 		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM `mysql`.`user`"];
+		[result setReturnDataAsStrings:YES];
 		while (privRow = [result fetchRowAsArray]) {
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
 			if (![privKey hasSuffix:@"_priv"]) continue;
@@ -178,7 +180,7 @@
 	
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
-	for(int i = 0; i < [items count]; i++)
+	for(NSInteger i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
@@ -249,7 +251,7 @@
 		} 
 		else if ([key hasPrefix:@"max"]) // Resource Management restrictions
 		{
-			NSNumber *value = [NSNumber numberWithInt:[[item objectForKey:key] intValue]];
+			NSNumber *value = [NSNumber numberWithInteger:[[item objectForKey:key] integerValue]];
 			[child setValue:value forKey:key];
 		}
 		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
@@ -376,7 +378,7 @@
 
 - (NSArray *)treeSortDescriptors
 {
-	NSSortDescriptor *descriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
+	NSSortDescriptor *descriptor = [[[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES] autorelease];
 	return [NSArray arrayWithObject:descriptor];
 }
 
@@ -587,8 +589,6 @@
 		NSArray *inserted = [[notification userInfo] valueForKey:NSInsertedObjectsKey];
 		NSArray *deleted = [[notification userInfo] valueForKey:NSDeletedObjectsKey];
 		
-		NSLog(@"%d", [inserted count]);
-		
 		if ([inserted count] > 0) {
 			[self insertUsers:inserted];
 		}
@@ -671,7 +671,7 @@
 										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
 			
 			// Create user in database
-			[self.mySqlConnection queryString:[NSString stringWithFormat:createStatement]];
+			[self.mySqlConnection queryString:createStatement];
 			
 			if ([self checkAndDisplayMySqlError]) {
 				[self grantPrivilegesToUser:user];
@@ -702,9 +702,9 @@
 			// in a try/catch check to avoid exceptions for unhandled privs
 			@try {
 				if ([[user valueForKey:key] boolValue] == TRUE) {
-					[grantPrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
+					[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				} else {
-					[revokePrivileges addObject:[NSString stringWithFormat:@"%@", [privilege replaceUnderscoreWithSpace]]];
+					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				}
 			}
 			@catch (NSException * e) {
@@ -718,7 +718,7 @@
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", grantStatement);
-			[self.mySqlConnection queryString:[NSString stringWithFormat:grantStatement]];
+			[self.mySqlConnection queryString:grantStatement];
 			[self checkAndDisplayMySqlError];
 		}
 		
@@ -730,7 +730,7 @@
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", revokeStatement);
-			[self.mySqlConnection queryString:[NSString stringWithFormat:revokeStatement]];
+			[self.mySqlConnection queryString:revokeStatement];
 			[self checkAndDisplayMySqlError];
 		}		
 	}
@@ -812,7 +812,7 @@
 /**
  * Return the maximum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMax - 220);
 }
@@ -820,7 +820,7 @@
 /**
  * Return the minimum possible size of the splitview.
  */
-- (float)splitView:(NSSplitView *)sender constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)offset
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	return (proposedMin + 120);
 }

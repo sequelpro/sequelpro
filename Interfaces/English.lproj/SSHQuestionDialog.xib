@@ -12,6 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="368"/>
 			<integer value="469"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -30,7 +31,7 @@
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1048">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSCustomObject" id="1021">
-				<string key="NSClassName">NSObject</string>
+				<string key="NSClassName">SPSSHTunnel</string>
 			</object>
 			<object class="NSCustomObject" id="1014">
 				<string key="NSClassName">FirstResponder</string>
@@ -48,7 +49,7 @@
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="414427165">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -199,6 +200,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{620, 209}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -441,38 +443,6 @@
 					<int key="connectionID">465</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeSheet:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="819605912"/>
-					</object>
-					<int key="connectionID">466</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeSheet:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="472545742"/>
-					</object>
-					<int key="connectionID">467</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeSheet:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="881553485"/>
-					</object>
-					<int key="connectionID">480</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeSheet:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="920337090"/>
-					</object>
-					<int key="connectionID">481</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">sshPasswordDialog</string>
 						<reference key="source" ref="1021"/>
@@ -503,6 +473,38 @@
 						<reference key="destination" ref="107237198"/>
 					</object>
 					<int key="connectionID">493</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSSHPasswordSheet:</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="881553485"/>
+					</object>
+					<int key="connectionID">494</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSSHPasswordSheet:</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="920337090"/>
+					</object>
+					<int key="connectionID">495</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSSHQuestionSheet:</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="819605912"/>
+					</object>
+					<int key="connectionID">496</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSSHQuestionSheet:</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="472545742"/>
+					</object>
+					<int key="connectionID">497</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -826,9 +828,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{218, 467}, {471, 209}}</string>
+					<string>{{127, 251}, {471, 209}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{218, 467}, {471, 209}}</string>
+					<string>{{127, 251}, {471, 209}}</string>
 					<boolean value="NO"/>
 					<string>{{11, 666}, {480, 270}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -866,7 +868,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">493</int>
+			<int key="maxID">497</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -991,6 +993,50 @@
 						<string key="minorKey">Source/SPWindowAdditions.h</string>
 					</object>
 				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPSSHTunnel</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeSSHPasswordSheet:</string>
+							<string>closeSSHQuestionSheet:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>delegate</string>
+							<string>sshPasswordDialog</string>
+							<string>sshPasswordField</string>
+							<string>sshPasswordKeychainCheckbox</string>
+							<string>sshPasswordText</string>
+							<string>sshQuestionDialog</string>
+							<string>sshQuestionText</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>NSWindow</string>
+							<string>NSSecureTextField</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSWindow</string>
+							<string>NSTextField</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPSSHTunnel.h</string>
+					</object>
+				</object>
 			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
 				<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1043,6 +1089,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSUserInterfaceItemSearching.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSApplication</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">BWToolkitFramework.framework/Headers/NSApplication+BWAdditions.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1515,6 +1568,13 @@
 					<reference key="sourceIdentifier" ref="295094819"/>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">BWToolkitFramework.framework/Headers/NSView+BWAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
@@ -1534,6 +1594,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSWindowScripting.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">BWToolkitFramework.framework/Headers/NSWindow+BWAdditions.h</string>
 					</object>
 				</object>
 			</object>

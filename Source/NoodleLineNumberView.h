@@ -41,7 +41,7 @@
 	NSColor				*backgroundColor;
 
 	// Add support for selection by clicking/dragging
-	unsigned			dragSelectionStartLine;
+	NSUInteger			dragSelectionStartLine;
 }
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
@@ -58,8 +58,8 @@
 - (void)setBackgroundColor:(NSColor *)color;
 - (NSColor *)backgroundColor;
 
-- (unsigned)lineNumberForLocation:(float)location;
+- (NSUInteger)lineNumberForLocation:(CGFloat)location;
 
-- (unsigned)lineNumberForCharacterIndex:(unsigned)index inText:(NSString *)text;
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text;
 
 @end

@@ -56,19 +56,19 @@ enum sphistory_view_types
 - (void)goBackInHistory;
 - (void)goForwardInHistory;
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
-- (unsigned int) currentlySelectedView;
+- (NSUInteger) currentlySelectedView;
 
 // Adding or updating history entries
 - (void) updateHistoryEntries;
 
 // Loading history entries
-- (void) loadEntryAtPosition:(unsigned int)position;
+- (void) loadEntryAtPosition:(NSUInteger)position;
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber;
-- (void) abortEntryLoad;
+- (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool;
 - (void) loadEntryFromMenuItem:(id)theMenuItem;
 
 // History entry details and description
-- (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(int)theIndex;
+- (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(NSInteger)theIndex;
 - (NSString *) nameForHistoryEntryDetails:(NSDictionary *)theEntry;
 
 @end

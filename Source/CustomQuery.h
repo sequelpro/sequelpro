@@ -45,8 +45,11 @@
 #define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
 #define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
 #define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
+#define SP_HISTORY_COPY_MENUITEM_TAG                  300000
+#define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
+#define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
-@class SPQueryFavoriteManager;
+@class SPQueryFavoriteManager, SPDataStorage;
 
 @interface CustomQuery : NSObject 
 {
@@ -69,9 +72,14 @@
 	IBOutlet NSMenuItem *queryHistorySearchMenuItem;
 	IBOutlet id queryHistorySearchFieldView;
 	IBOutlet NSSearchField *queryHistorySearchField;
-
+	IBOutlet NSMenuItem *clearHistoryMenuItem;
+	IBOutlet NSMenuItem *saveHistoryMenuItem;
+	IBOutlet NSMenuItem *copyHistoryMenuItem;
+	IBOutlet NSPopUpButton *encodingPopUp;
+	
 	IBOutlet CMTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
+	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
@@ -82,7 +90,6 @@
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *runAllMenuItem;
-	IBOutlet NSMenuItem *clearHistoryMenuItem;
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
 	IBOutlet NSMenuItem *shiftRightMenuItem;
 	IBOutlet NSMenuItem *completionListMenuItem;
@@ -110,7 +117,7 @@
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
 	NSRange oldThreadedQueryRange;
-	BOOL hasBackgroundAttribute;
+
 	BOOL selectionButtonCanBeEnabled;
 	NSString *mySQLversion;
 	NSTableColumn *sortColumn;
@@ -121,11 +128,13 @@
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
 
-	NSMutableArray *fullResult;
-	pthread_mutex_t fullResultLock;
-	NSInteger fullResultCount;
+	SPDataStorage *resultData;
+	pthread_mutex_t resultDataLock;
+	NSInteger resultDataCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
+	NSInteger editedRow;
+	NSRect editedScrollViewRect;
 
 	BOOL isWorking;
 	BOOL tableReloadAfterEditing;
@@ -158,13 +167,16 @@
 - (IBAction)helpSelectHelpTargetWeb:(id)sender;
 - (IBAction)filterQueryFavorites:(id)sender;
 - (IBAction)filterQueryHistory:(id)sender;
+- (IBAction)saveQueryHistory:(id)sender;
+- (IBAction)copyQueryHistory:(id)sender;
+- (IBAction)clearQueryHistory:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
 - (void)performQueriesTask:(NSDictionary *)taskArguments;
-- (NSString *)queryAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
-- (NSRange)queryRangeAtPosition:(long)position lookBehind:(BOOL *)doLookBehind;
-- (NSRange)queryTextRangeForQuery:(int)anIndex startPosition:(long)position;
+- (NSString *)queryAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
+- (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
 
 // Accessors
 - (NSArray *)currentResult;
@@ -192,6 +204,7 @@
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
-- (unsigned int)numberOfQueries;
+- (NSUInteger)numberOfQueries;
+- (NSString *)buildHistoryString;
 
 @end
