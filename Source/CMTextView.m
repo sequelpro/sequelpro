@@ -1204,7 +1204,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self endSnippetSession];
 		return NO;
 	}
-
+	
+	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
 	NSInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
 	NSInteger foundSnippetIndices[20]; // array to hold nested snippets
@@ -1254,8 +1255,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			currentSnippetIndex = index;
 			isCaretInsideASnippet = YES;
 		}
-		// if that fails start to finish the snippet session
-		if(!isCaretInsideASnippet) snippetControlCounter = -1;
 	}
 	return isCaretInsideASnippet;
 
@@ -2925,20 +2924,25 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Highlight snippets coming from the Query Favorite text macro
 		if(snippetControlCounter > -1) {
-			for(NSUInteger i=0; i<snippetControlMax; i++) {
-				if(snippetControlArray[i][0] > -1) {
-					// choose the colors for the snippet parts
-					if(i == currentSnippetIndex) {
-						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
-						[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
-					} else {
-						[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
-						[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+			// Is the caret still inside a snippet
+			if([self checkForCaretInsideSnippet]) {
+				for(NSUInteger i=0; i<snippetControlMax; i++) {
+					if(snippetControlArray[i][0] > -1) {
+						// choose the colors for the snippet parts
+						if(i == currentSnippetIndex) {
+							[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
+							[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
+						} else {
+							[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
+							[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+						}
+						NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
+						[snippetPath fill];
+						[snippetPath stroke];
 					}
-					NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
-					[snippetPath fill];
-					[snippetPath stroke];
 				}
+			} else {
+				[self endSnippetSession];
 			}
 		}
 
@@ -3156,7 +3160,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
-			if([self checkForCaretInsideSnippet]) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
 			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
 			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
@@ -3194,7 +3197,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						}
 					}
 				}
-			}
 			}
 		}
 
