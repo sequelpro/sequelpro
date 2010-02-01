@@ -243,6 +243,7 @@
 		BCC5CC3C103EEE49007CE557 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B593101602D200F057DE /* libz.dylib */; };
 		BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
+		BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */ = {isa = PBXBuildFile; fileRef = BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -648,6 +649,8 @@
 		BCCBD7FB104408B000D4C50A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SaveSPFAccessory.xib; sourceTree = "<group>"; };
 		BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPSQLTokenizer.l; sourceTree = "<group>"; };
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
+		BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldMapperController.h; sourceTree = "<group>"; };
+		BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldMapperController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -853,6 +856,8 @@
 				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
 				17E641600EF01F15001BC333 /* TablesList.h */,
 				17E641610EF01F15001BC333 /* TablesList.m */,
+				BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */,
+				BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -1802,6 +1807,7 @@
 				5870868410FA3E9C00D58E1C /* SPDataStorage.m in Sources */,
 				584095191107CB6600260CFD /* SPAlertSheets.m in Sources */,
 				29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */,
+				BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

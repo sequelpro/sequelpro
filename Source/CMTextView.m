@@ -788,10 +788,33 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[[NSPrintInfo sharedPrintInfo] setHorizontallyCentered:NO];
 	[[NSPrintInfo sharedPrintInfo] setVerticallyCentered:NO];
 
+	NSRange r = NSMakeRange(0, [[self string] length]);
+
+	// Remove all colors before printing for large text buffer
+	if(r.length > SP_SYNTAX_HILITE_BIAS) {
+		// Cancel all doSyntaxHighlighting requests
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
+		[[self textStorage] removeAttribute:NSForegroundColorAttributeName range:r];
+		[[self textStorage] removeAttribute:kLEXToken range:r];
+		[[self textStorage] ensureAttributesAreFixedInRange:r];
+
+	}
+	[[self textStorage] ensureAttributesAreFixedInRange:r];
+
 	// Setup the print operation with the print info and view
 	NSPrintOperation *printOperation = [NSPrintOperation printOperationWithView:self printInfo:[NSPrintInfo sharedPrintInfo]];
+
+	// Order out print sheet
 	[printOperation runOperationModalForWindow:[self window] delegate:nil didRunSelector:NULL contextInfo:NULL];
 
+}
+
+- (void)printOperationDidRun:(NSPrintOperation *)printOperation  success:(BOOL)success  contextInfo:(void *)contextInfo
+{
+	// Refresh syntax highlighting
+	[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.01];
 }
 
 /*
@@ -2744,7 +2767,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSUInteger strlength     = [selfstr length];
 
 	NSRange textRange;
-		
+
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 	// do highlighting partly (max SP_SYNTAX_HILITE_BIAS*2).
 	// The approach is to take the middle position of the current view port
@@ -2752,11 +2775,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// considering of line starts resp. ends
 	if(strlength > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 	{
-
-		// Cancel all doSyntaxHighlighting requests
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-									selector:@selector(doSyntaxHighlighting) 
-									object:nil];
 
 		// Get the text range currently displayed in the view port
 		NSRect visibleRect = [[[self enclosingScrollView] contentView] documentVisibleRect];
