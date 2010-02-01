@@ -780,6 +780,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark user actions
 
+- (IBAction)printDocument:(id)sender
+{
+
+	// This will scale the view to fit the page without centering it.
+	[[NSPrintInfo sharedPrintInfo] setHorizontalPagination:NSFitPagination];
+	[[NSPrintInfo sharedPrintInfo] setHorizontallyCentered:NO];
+	[[NSPrintInfo sharedPrintInfo] setVerticallyCentered:NO];
+
+	// Setup the print operation with the print info and view
+	NSPrintOperation *printOperation = [NSPrintOperation printOperationWithView:self printInfo:[NSPrintInfo sharedPrintInfo]];
+	[printOperation runOperationModalForWindow:[self window] delegate:nil didRunSelector:NULL contextInfo:NULL];
+
+}
+
 /*
  * Search for the current selection or current word in the MySQL Help 
  */
@@ -2903,49 +2917,54 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void)drawRect:(NSRect)rect {
 
-	// Draw textview's background since due to the snippet highlighting we're responsible for it.
-	[[self queryEditorBackgroundColor] setFill];
-	NSRectFill(rect);
 
-	if([[self delegate] isKindOfClass:[CustomQuery class]]) {
+	// Draw background only for screen display but not while printing
+	if([NSGraphicsContext currentContextDrawingToScreen]) {
 
-		// Highlightes the current query if set in the Pref and no snippet session
-		// and if nothing is selected in the text view
-		if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
-			NSUInteger rectCount;
-			[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
-			NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
-														 withinSelectedCharacterRange: [self queryRange]
-																	  inTextContainer: [self textContainer]
-																			rectCount: &rectCount ];
-			[[self queryHiliteColor] setFill];
-			NSRectFillList(queryRects, rectCount);
-		}
+		// Draw textview's background since due to the snippet highlighting we're responsible for it.
+		[[self queryEditorBackgroundColor] setFill];
+		NSRectFill(rect);
 
-		// Highlight snippets coming from the Query Favorite text macro
-		if(snippetControlCounter > -1) {
-			// Is the caret still inside a snippet
-			if([self checkForCaretInsideSnippet]) {
-				for(NSUInteger i=0; i<snippetControlMax; i++) {
-					if(snippetControlArray[i][0] > -1) {
-						// choose the colors for the snippet parts
-						if(i == currentSnippetIndex) {
-							[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
-							[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
-						} else {
-							[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
-							[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
-						}
-						NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
-						[snippetPath fill];
-						[snippetPath stroke];
-					}
-				}
-			} else {
-				[self endSnippetSession];
+		if([[self delegate] isKindOfClass:[CustomQuery class]]) {
+
+			// Highlightes the current query if set in the Pref and no snippet session
+			// and if nothing is selected in the text view
+			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
+				NSUInteger rectCount;
+				[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
+				NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
+															 withinSelectedCharacterRange: [self queryRange]
+																		  inTextContainer: [self textContainer]
+																				rectCount: &rectCount ];
+				[[self queryHiliteColor] setFill];
+				NSRectFillList(queryRects, rectCount);
 			}
-		}
 
+			// Highlight snippets coming from the Query Favorite text macro
+			if(snippetControlCounter > -1) {
+				// Is the caret still inside a snippet
+				if([self checkForCaretInsideSnippet]) {
+					for(NSUInteger i=0; i<snippetControlMax; i++) {
+						if(snippetControlArray[i][0] > -1) {
+							// choose the colors for the snippet parts
+							if(i == currentSnippetIndex) {
+								[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
+								[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
+							} else {
+								[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
+								[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+							}
+							NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
+							[snippetPath fill];
+							[snippetPath stroke];
+						}
+					}
+				} else {
+					[self endSnippetSession];
+				}
+			}
+
+		}
 	}
 
 	[super drawRect:rect];
@@ -3104,7 +3123,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		|| [menuItem tag] == MENU_EDIT_COPY_AS_SQL ) {
 		return NO;
 	}
-	
+
 	return YES;
 }
 

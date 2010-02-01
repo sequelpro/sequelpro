@@ -2926,7 +2926,12 @@
 	}
 
 	if ([menuItem action] == @selector(printDocument:)) {
-		return ([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1);
+		return (
+			(
+				[self database] != nil 
+					&& [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1
+			)
+			|| [tableWindow firstResponder] == customQueryInstance);
 	}
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {
