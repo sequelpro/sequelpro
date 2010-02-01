@@ -402,7 +402,7 @@
 		// Update the progress text and reset the progress bar to indeterminate status
 		NSString *tableName = [exportTables objectAtIndex:i];
 						
-		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %l (%@): fetching data...", @"text showing that app is fetching data for table dump"), (unsigned long)(i + 1), (unsigned long)tableCount, tableName]];
+		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), (unsigned long)(i + 1), (unsigned long)tableCount, tableName]];
 		[exportProgressText displayIfNeeded];
 		
 		[exportProgressIndicator setIndeterminate:YES];
