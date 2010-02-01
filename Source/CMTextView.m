@@ -52,10 +52,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kAPval         @"linked"
 #define kLEXToken      @"Quoted" // set via lex to indicate a quoted string
 #define kLEXTokenValue @"isMarked"
-#define kSQLkeyword    @"SQLkw"  // attribute for found SQL keywords
+#define kSQLkeyword    @"s"      // attribute for found SQL keywords
 #define kQuote         @"Quote"
 #define kQuoteValue    @"isQuoted"
-#define kValue         @"dummy"
+#define kValue         @"x"
 #define kBTQuote       @"BTQuote"
 #define kBTQuoteValue  @"isBTQuoted"
 
@@ -117,6 +117,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	startListeningToBoundChanges = NO;
+	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
@@ -791,7 +792,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSRange r = NSMakeRange(0, [[self string] length]);
 
 	// Remove all colors before printing for large text buffer
-	if(r.length > SP_SYNTAX_HILITE_BIAS) {
+	if(r.length > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING) {
 		// Cancel all doSyntaxHighlighting requests
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(doSyntaxHighlighting) 
@@ -2882,55 +2883,54 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
-			&& [[textStore attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
+		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
+			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
 			{
-
+		
 				NSString* curTokenString = [selfstr substringWithRange:tokenRange];
-				NSString* upperCaseCurTokenString = [curTokenString uppercaseString];
 				BOOL doIt = NO;
 				@try
 				{
-					doIt = ![[textStore attribute:kSQLkeyword atIndex:tokenEnd+1 effectiveRange:nil] isEqualToString:kValue];
+					doIt = ![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length];
 				} @catch(id ae) { doIt = NO; }
-
-				if(doIt && ![upperCaseCurTokenString isEqualToString:curTokenString])
+		
+				if(doIt)
 				{
 					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
 					[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
-					[self replaceCharactersInRange:tokenRange withString:upperCaseCurTokenString];
+					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
 				}
 			}
-
+		
 		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
-
+		
 		if(!allowToCheckForUpperCase) continue;
-
+		
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
 		if(token < 6)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kLEXToken, kLEXTokenValue, tokenRange);
-
+		
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kSQLkeyword, kValue, tokenRange);
-
+		
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
 		else if(token < 4)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kQuote, kQuoteValue, tokenRange);
-
+		
 		//distinguish backtick quoted word for completion
 		else if(token == SPT_BACKTICK_QUOTED_TEXT)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
-	
+
 }
 
 - (void)drawRect:(NSRect)rect {
@@ -3236,9 +3236,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 		}
+		if([[self textStorage] changeInLength] > 0)
+			textBufferSizeIncreased = YES;
+		else
+			textBufferSizeIncreased = NO;
 
-		[self doSyntaxHighlighting];
+		if([[self textStorage] changeInLength] < SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+			[self doSyntaxHighlighting];
 
+	} else {
+		textBufferSizeIncreased = NO;
 	}
 
 	startListeningToBoundChanges = YES;
