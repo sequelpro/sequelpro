@@ -636,10 +636,12 @@
 {
 	if ([self.managedObjectContext hasChanges])
 	{
-		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-		[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"Continue")];
-		[alert addButtonWithTitle:NSLocalizedString(@"Cancel",@"Cancel")];
-		[alert setMessageText:@"Window has changes.  All changes will be lost!"];
+		//NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+		NSAlert *alert = [NSAlert alertWithMessageText:@"Window has changes.  All changes will be lost!"
+										 defaultButton:NSLocalizedString(@"Continue", @"Continue")
+									   alternateButton:NSLocalizedString(@"Cancel",@"Cancel")
+										   otherButton:nil
+							 informativeTextWithFormat:@"Window has changes.  All changes will be lost!"];
 		[alert setAlertStyle:NSWarningAlertStyle];
 		if ([alert runModal] == NSAlertAlternateReturn) // cancel
 		{
@@ -647,7 +649,6 @@
 		}
 	}
 	[self.managedObjectContext reset];
-	[self _initializeUsers];
 	[treeController fetch:nil];
 
 }
@@ -793,7 +794,7 @@
 
 - (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
 {
-	//[self refresh:nil];
+	[self refresh:nil];
 }
 
 - (BOOL)updateUsers:(NSArray *)updatedUsers

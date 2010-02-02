@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">740</string>
+		<string key="IBDocument.InterfaceBuilderVersion">732</string>
 		<string key="IBDocument.AppKitVersion">1038.25</string>
 		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,8 +15,8 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>740</string>
-				<string>1.2.1</string>
+				<string>732</string>
+				<string>1.2.5</string>
 			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
@@ -391,7 +391,7 @@
 													<reference key="NSSuperview" ref="623571747"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="BWAnchoredButtonCell" key="NSCell" id="956168530">
-														<int key="NSCellFlags">604110336</int>
+														<int key="NSCellFlags">67239424</int>
 														<int key="NSCellFlags2">134348800</int>
 														<string key="NSContents"/>
 														<reference key="NSSupport" ref="26"/>
