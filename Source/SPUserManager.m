@@ -1143,10 +1143,10 @@
 	{
 		if ([[grantedController selectedObjects] count] > 0)
 		{
-			removeSchemaPrivButton.enabled = TRUE;
+			[removeSchemaPrivButton setEnabled:YES];
 			
 		} else {
-			removeSchemaPrivButton.enabled = FALSE;
+			[removeSchemaPrivButton setEnabled:NO];
 		}
 
 	
@@ -1155,9 +1155,9 @@
 	{
 		if ([[availableController selectedObjects] count] > 0)
 		{
-			addSchemaPrivButton.enabled = TRUE;			
+			[addSchemaPrivButton setEnabled:YES];			
 		} else {
-			addSchemaPrivButton.enabled = FALSE;
+			[addSchemaPrivButton setEnabled:NO];
 		}
 
 	}		
