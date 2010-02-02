@@ -1074,7 +1074,8 @@
 			[self _selectParentFromSelection];
 		}
 	} else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
-			   || [[tabViewItem identifier] isEqualToString:@"Resources"]) {
+			   || [[tabViewItem identifier] isEqualToString:@"Resources"]
+			   || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
 		// if the tab is either Global Privs or Resources and we have a user 
 		// selected, then open tree and select first child node.
 		[self _selectFirstChildOfParentNode];
