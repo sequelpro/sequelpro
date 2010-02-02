@@ -67,6 +67,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG 1002
 
 #define SP_SYNTAX_HILITE_BIAS 2000
+#define SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING 20000000
 
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
@@ -2792,6 +2793,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *selfstr        = [self string];
 	NSUInteger strlength     = [selfstr length];
 
+	if(strlength > SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) return;
+
 	NSRange textRange;
 
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
@@ -2990,7 +2993,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			// Highlightes the current query if set in the Pref and no snippet session
 			// and if nothing is selected in the text view
-			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
+			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length && [[self string] length] < SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) {
 				NSUInteger rectCount;
 				[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
 				NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
