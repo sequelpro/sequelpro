@@ -106,6 +106,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) awakeFromNib
 {
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+	[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+
 	// Set self as delegate for the textView's textStorage to enable syntax highlighting,
 	[[self textStorage] setDelegate:self];
 
@@ -125,6 +129,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[scrollView setHasHorizontalRuler:NO];
 	[scrollView setHasVerticalRuler:YES];
 	[scrollView setRulersVisible:YES];
+	[self setAllowsDocumentBackgroundColorChange:YES];
+	[self setContinuousSpellCheckingEnabled:NO];
+	[self setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
+	[self setAutoindentIgnoresEnter:YES];
+	[self setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
+	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
+	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 
 	// Re-define 64 tab stops for a better editing
 	NSFont *tvFont = [self font];
@@ -168,8 +179,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
 	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
 
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
@@ -184,6 +193,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
 
 	// Register observers for the when editor background colors preference changes
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorFont options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryHighlightCurrentQuery options:NSKeyValueObservingOptionNew context:NULL];
@@ -210,6 +220,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
 		[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
+		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorHighlightQueryColor]) {
 		[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
@@ -510,6 +523,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* prefix        = @"";
 	NSString *currentDb     = nil;
 
+	// Break for long stuff
+	if(completionRange.length>100000) return;
+
+
 	NSString* allow; // additional chars which not close the popup
 	if(isDictMode)
 		allow= @"_";
@@ -549,9 +566,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 		NSUInteger start = caretPos;
 		NSInteger backticksCounter = (caretIsInsideBackticks) ? 1 : 0;
-		NSUInteger pointCounter     = 0;
-		NSUInteger firstPoint       = 0;
-		NSUInteger secondPoint      = 0;
+		NSInteger pointCounter     = 0;
+		NSInteger firstPoint       = 0;
+		NSInteger secondPoint      = 0;
 		BOOL rightBacktick         = NO;
 		BOOL leftBacktick          = NO;
 		BOOL doParsing             = YES;
@@ -592,9 +609,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		dbBrowseMode = (pointCounter || backticksCounter);
-		
+
 		if(dbBrowseMode) {
 			parseRange = NSMakeRange(start, caretPos-start);
+
+			// Break for long stuff
+			if(parseRange.length>100000) return;
+
 			NSString *parsedString = [[self string] substringWithRange:parseRange];
 
 			// Check if parsed string is wrapped by ``
@@ -1449,7 +1470,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
+		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
 		{
 			[self makeTextSizeLarger];
 			return;
@@ -1457,6 +1478,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
+			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 			return;
 		}
 	}
@@ -3450,6 +3475,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[result release];
 
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
+}
+
+- (void)changeFont:(id)sender
+{
+	if (prefs && [self font] != nil) {
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:SPCustomQueryEditorFont];
+		NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+		BOOL oldEditable = [self isEditable];
+		[self setEditable:YES];
+		[self setFont:nf];
+		[self setEditable:oldEditable];
+		[self setNeedsDisplay:YES];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
+	}
 }
 
 - (void) dealloc

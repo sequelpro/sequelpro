@@ -1278,19 +1278,11 @@
 
 	// Set up the interface
 
-	[textView setAllowsDocumentBackgroundColorChange:YES];
-
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
-	[textView setContinuousSpellCheckingEnabled:NO];
 	[autoindentMenuItem setState:([prefs boolForKey:SPCustomQueryAutoIndent]?NSOnState:NSOffState)];
-	[textView setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
-	[textView setAutoindentIgnoresEnter:YES];
 	[autopairMenuItem setState:([prefs boolForKey:SPCustomQueryAutoPairCharacters]?NSOnState:NSOffState)];
-	[textView setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
 	[autohelpMenuItem setState:([prefs boolForKey:SPCustomQueryUpdateAutoHelp]?NSOnState:NSOffState)];
-	[textView setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
-	[textView setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
 	{
@@ -2105,18 +2097,6 @@
 			[runSelectionMenuItem setEnabled:YES];
 		}
 	}
-}
-
-/*
- * Save the custom query editor font if it is changed.
- */
-- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
-{
-	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
-	// And check for [textView font] != nil which occurs while awaking from nib.
-	if (prefs && [textView font] != nil)
-		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:SPCustomQueryEditorFont];
-
 }
 
 #pragma mark -
