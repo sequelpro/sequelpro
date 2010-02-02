@@ -2805,39 +2805,57 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Get the text range currently displayed in the view port
 		NSRect visibleRect = [[[self enclosingScrollView] contentView] documentVisibleRect];
 		NSRange visibleRange = [[self layoutManager] glyphRangeForBoundingRectWithoutAdditionalLayout:visibleRect inTextContainer:[self textContainer]];
+
 		if(!visibleRange.length) return;
 
 		// Take roughly the middle position in the current view port
 		NSUInteger curPos = visibleRange.location+(NSUInteger)(visibleRange.length/2);
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
+		// but look for only SP_SYNTAX_HILITE_BIAS chars forwards
 		NSUInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
+		NSInteger lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (end > strlength ) {
 			end = strlength;
 		} else {
-			while(end < strlength) {
+			while(end < strlength && lengthChecker > 0) {
 				if([selfstr characterAtIndex:end]=='\n')
 					break;
 				end++;
+				lengthChecker--;
 			}
 		}
+		if(lengthChecker <= 0)
+			end = curPos + SP_SYNTAX_HILITE_BIAS;
 
-		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
-		NSUInteger start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS
+		// but look for only SP_SYNTAX_HILITE_BIAS chars backwards
+		NSUInteger start, start_temp;
+		if(end <= (SP_SYNTAX_HILITE_BIAS*2))
+		 	start = 0;
+		else
+		 	start = end - (SP_SYNTAX_HILITE_BIAS*2);
+
+		start_temp = start;
+		lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (start > 0)
-			while(start>-1) {
+			while(start>0 && lengthChecker > 0) {
 				if([selfstr characterAtIndex:start]=='\n')
 					break;
 				start--;
+				lengthChecker--;
 			}
-		else
-			start = 0;
+		if(lengthChecker <= 0)
+			start = start_temp;
 
 		textRange = NSMakeRange(start, end-start);
+
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
+
 		if (!textRange.length)
 			return;
+
 	} else {
 		// If text size is less SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 		// process syntax highlighting for the entire text view buffer
@@ -2848,7 +2866,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
 
-	NSUInteger tokenEnd, token;
+	size_t tokenEnd, token;
 	NSRange tokenRange;
 
 	// first remove the old colors and kQuote
