@@ -39,8 +39,8 @@
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
 #import "SPEditorTokens.h"
-extern NSInteger yylex();
-extern NSInteger yyuoffset, yyuleng;
+extern NSUInteger yylex();
+extern NSUInteger yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
@@ -486,7 +486,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	[self breakUndoCoalescing];
 
-	NSInteger caretPos = NSMaxRange([self selectedRange]);
+	NSUInteger caretPos = NSMaxRange([self selectedRange]);
 	// [self setSelectedRange:NSMakeRange(caretPos, 0)];
 	BOOL caretMovedLeft = NO;
 
@@ -543,15 +543,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// This approach counts the number of ` up to the beginning of the current line from caret position
 		NSRange lineHeadRange = [[self string] lineRangeForRange:NSMakeRange(caretPos, 0)];
 		NSString *lineHead = [[self string] substringWithRange:NSMakeRange(lineHeadRange.location, caretPos - lineHeadRange.location)];
-		for(NSInteger i=0; i<[lineHead length]; i++)
+		for(NSUInteger i=0; i<[lineHead length]; i++)
 			if([lineHead characterAtIndex:i]=='`') caretIsInsideBackticks = !caretIsInsideBackticks;
 			
 		NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-		NSInteger start = caretPos;
+		NSUInteger start = caretPos;
 		NSInteger backticksCounter = (caretIsInsideBackticks) ? 1 : 0;
-		NSInteger pointCounter     = 0;
-		NSInteger firstPoint       = 0;
-		NSInteger secondPoint      = 0;
+		NSUInteger pointCounter     = 0;
+		NSUInteger firstPoint       = 0;
+		NSUInteger secondPoint      = 0;
 		BOOL rightBacktick         = NO;
 		BOOL leftBacktick          = NO;
 		BOOL doParsing             = YES;
@@ -886,8 +886,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if(ignLeadingNewLines) // ignore leading empty lines
 	{
-		NSInteger arrayCount = [lineRanges count];
-		NSInteger i;
+		NSUInteger arrayCount = [lineRanges count];
+		NSUInteger i;
 		for (i = 0; i < arrayCount; i++) {
 			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
 				break;
@@ -921,7 +921,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSRange currentLineRange;
 	NSArray *lineRanges;
 	NSString *tabString = @"\t";
-	NSInteger i, indentedLinesLength = 0;
+	NSUInteger i, indentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
 
@@ -974,7 +974,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
 	NSArray *lineRanges;
-	NSInteger i, unindentedLines = 0, unindentedLinesLength = 0;
+	NSUInteger i, unindentedLines = 0, unindentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound) return NO;
 
@@ -1244,7 +1244,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	
 	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
-	NSInteger caretPos = [self selectedRange].location;
+	NSUInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
 	NSInteger foundSnippetIndices[20]; // array to hold nested snippets
 
@@ -1630,7 +1630,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
 		NSRange currentLineRange;
-		NSInteger lineCursorLocation;
+		NSUInteger lineCursorLocation;
 
 		// Extract the current line based on the text caret or selection start position
 		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
@@ -2783,10 +2783,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(!visibleRange.length) return;
 
 		// Take roughly the middle position in the current view port
-		NSInteger curPos = visibleRange.location+(NSInteger)(visibleRange.length/2);
+		NSUInteger curPos = visibleRange.location+(NSUInteger)(visibleRange.length/2);
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
-		NSInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
+		NSUInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
 		if (end > strlength ) {
 			end = strlength;
 		} else {
@@ -2798,7 +2798,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
-		NSInteger start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		NSUInteger start = end - (SP_SYNTAX_HILITE_BIAS*2);
 		if (start > 0)
 			while(start>-1) {
 				if([selfstr characterAtIndex:start]=='\n')
@@ -3198,8 +3198,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
-			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
 			NSInteger i;
 			for(i=0; i<snippetControlMax; i++) {
 				if(snippetControlArray[i][0] > -1
@@ -3215,8 +3215,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
-			NSInteger editStartPosition = [textStore editedRange].location;
-			NSInteger changeInLength = [textStore changeInLength];
+			NSUInteger editStartPosition = [textStore editedRange].location;
+			NSUInteger changeInLength = [textStore changeInLength];
 
 			// Adjust length change to current snippet
 			snippetControlArray[currentSnippetIndex][1] += changeInLength;
