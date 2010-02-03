@@ -126,13 +126,22 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	{ 
 		for ( c = 0; c < numColumns; c++) {
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
-			
+
+			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
+			// and the string representation of any blobs or binary texts.
 			if (cellData) {
 				if ([cellData isNSNull])
 					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
 				else if ([cellData isSPNotLoaded])
 					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
-				else
+				else if ([cellData isKindOfClass:[NSData class]]) {
+					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection encoding]];
+					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+					if (displayString) {
+						[result appendString:displayString];
+						[displayString release];
+					}
+				} else
 					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
 			} else {
 				[result appendString:@"\t"];
@@ -169,7 +178,6 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 
 	NSArray *columns         = [self tableColumns];
 	NSUInteger numColumns    = [columns count];
-	id dataSource            = [self dataSource];
 
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
@@ -215,7 +223,6 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
 
 	NSUInteger rowIndex = [selectedRows firstIndex];
-	NSTableColumn *col = nil;
 	while ( rowIndex != NSNotFound )
 	{
 		[value appendString:@"\t("];
@@ -337,7 +344,6 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	NSArray *columns = [self tableColumns];
 	NSUInteger numColumns = [columns count];
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
-	id dataSource = [self dataSource];
 	
 	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 	NSUInteger c;
@@ -356,12 +362,21 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 		for ( c = 0; c < numColumns; c++) {
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 			
+			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
+			// and the string representation of any blobs or binary texts.
 			if (cellData) {
 				if ([cellData isNSNull])
 					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
 				else if ([cellData isSPNotLoaded])
 					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
-				else
+				else if ([cellData isKindOfClass:[NSData class]]) {
+					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection encoding]];
+					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+					if (displayString) {
+						[result appendString:displayString];
+						[displayString release];
+					}
+				} else
 					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
 			} else {
 				[result appendString:@"\t"];
