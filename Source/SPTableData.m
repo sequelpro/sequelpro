@@ -668,7 +668,7 @@
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
@@ -686,7 +686,7 @@
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;

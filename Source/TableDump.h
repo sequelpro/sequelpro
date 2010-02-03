@@ -105,12 +105,15 @@
 	NSInteger fieldMappingCurrentRow;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
+	
+	NSInteger fieldMapperSheetStatus;
 }
 
 // IBAction methods
 - (IBAction)reloadTables:(id)sender;
 - (IBAction)selectTables:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)closeFieldMapperSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
 

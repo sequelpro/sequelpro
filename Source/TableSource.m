@@ -99,6 +99,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
   
 	//perform queries and load results in array (each row as a dictionary)
 	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[tablesListInstance updateTables:self];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+		[editTableButton setEnabled:NO];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+				   errorMessage]);
+		return;
+	}
+
 	[tableSourceResult setReturnDataAsStrings:YES];
 	
 	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
@@ -108,6 +129,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableSourceResult release];
 
 	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[tablesListInstance updateTables:self];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+		[editTableButton setEnabled:NO];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+				   errorMessage]);
+
+		return;
+	}
 	[indexResult setReturnDataAsStrings:YES];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];

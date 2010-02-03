@@ -103,6 +103,15 @@
 	[exportMultipleXMLTableView reloadData];
 }
 
+- (IBAction)closeFieldMapperSheet:(id)sender
+{
+
+	[NSApp endSheet:fieldMappingSheet returnCode:[sender tag]];
+	// [[self window] orderOut:self];
+	// 
+	//     [NSApp endSheet:fieldMappingSheet];
+}
+
 /**
  * Common method for ending modal sessions
  */
@@ -1190,23 +1199,29 @@
 	// Trigger a table selection and setup
 	[self changeTable:self];
 
+	fieldMapperSheetStatus = 1;
+
 	// Show fieldMapping sheet
 	[NSApp beginSheet:fieldMappingSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
-	   didEndSelector:nil
+	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
 		  contextInfo:nil];
 
-	NSInteger code = [NSApp runModalForWindow:fieldMappingSheet];
-	[NSApp endSheet:fieldMappingSheet];
-	[fieldMappingSheet orderOut:nil];
+	// Wait for fieldMappingSheet
+	while (fieldMapperSheetStatus == 1)
+		usleep(100000);
 
-	// Return success or failure based on confirmation or cancellation
-	if (code) {
-		return TRUE;
-	} else {
+	if(fieldMapperSheetStatus == 2)
+		return YES;
+	else
 		return FALSE;
-	}
+
+}
+- (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet orderOut:self];
+	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
 }
 
 /*
