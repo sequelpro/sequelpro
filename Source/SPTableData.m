@@ -336,6 +336,10 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
+			// If the current table doesn't exist anymore reload table list
+			if([mySQLConnection getLastErrorID] == 1146) {
+				[tableListInstance updateTables:nil];
+			}
 		}
 		
 		return nil;

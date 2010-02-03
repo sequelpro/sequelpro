@@ -1566,10 +1566,15 @@
 		return;
 	}
 
-	NSString *fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
 
 	[compareField removeAllItems];
-	
+
+	NSString *fieldTypeGrouping;
+	if([[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"])
+		fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
+	else
+		return;
+
 	if ( [fieldTypeGrouping isEqualToString:@"date"] ) {
 		compareType = @"date";
 
