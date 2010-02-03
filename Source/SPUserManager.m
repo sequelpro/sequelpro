@@ -254,10 +254,9 @@
 															 inManagedObjectContext:moc];
 	NSArray *props = [privEntityDescription attributeKeys];
 	[availablePrivs removeAllObjects];
-	
 	for (NSString *prop in props)
 	{
-		if ([prop hasSuffix:@"_priv"])
+		if ([prop hasSuffix:@"_priv"] && [[self.privsSupportedByServer objectForKey:prop] boolValue])
 		{
 			NSString *displayName = [[prop stringByReplacingOccurrencesOfString:@"_priv"
 																	 withString:@""] replaceUnderscoreWithSpace];
