@@ -649,6 +649,9 @@
 		}
 	}
 	[self.managedObjectContext reset];
+	[grantedSchemaPrivs removeAllObjects];
+	[grantedTableView reloadData];
+	[self _initializeAvailablePrivs];	
 	[treeController fetch:nil];
 
 }
