@@ -1112,6 +1112,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
 
+	if(snippetControlCounter > -1) {
+		NSBeep();
+		return;
+	}
+
 	NSInteger i;
 
 	// reset snippet array
@@ -1127,7 +1132,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	@try{
 		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
 
-		targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
+		if(targetRange.length)
+			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
 		[snip setString:theSnippet];
 
 		if(snip == nil || ![snip length]) return;
@@ -1222,10 +1228,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self breakUndoCoalescing];
 
 		// Insert favorite query as snippet if any
-		[self setSelectedRange:targetRange];
+		// if(targetRange.length)
+			[self setSelectedRange:targetRange];
 
 		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
 		snippetWasJustInserted = YES;
+
+		[self breakUndoCoalescing];
 		[self insertText:snip];
 
 		// Any snippets defined?

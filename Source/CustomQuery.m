@@ -211,11 +211,14 @@
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
-		if(replaceContent)
+		if(replaceContent) {
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
+			[textView breakUndoCoalescing];
+			[textView insertText:@""];
+		}
 
 		// The actual query strings have been already stored as tooltip
-		[textView insertFavoriteAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:[textView selectedRange]];
+		[textView insertFavoriteAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
 	}
 }
 
@@ -231,7 +234,7 @@
 	if ([queryHistoryButton indexOfSelectedItem] > 6) {
 
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
-
+		[textView breakUndoCoalescing];
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
 		if(replaceContent)
