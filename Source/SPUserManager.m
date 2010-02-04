@@ -474,9 +474,58 @@
 		}
 	}
 	
+	if ([selectedObject parent] != nil && [selectedObject host] == nil)
+	{
+		[selectedObject setValue:@"%" forKey:@"host"];
+		[outlineView reloadItem:selectedObject];
+	}
 	[schemasTableView deselectAll:nil];
 	[grantedTableView deselectAll:nil];
 	[availableTableView deselectAll:nil];
+}
+
+-(BOOL)selectionShouldChangeInOutlineView:(NSOutlineView *)outlineView
+{
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+		// Check parents
+		if ([selectedObject valueForKey:@"parent"] == nil)
+		{
+			NSString *name = [selectedObject valueForKey:@"user"];
+			NSArray *results = [self _fetchUserWithUserName:name];
+			if ([results count] > 1)
+			{
+				NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate User"
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:nil
+												   otherButton:nil
+									 informativeTextWithFormat:@"A user with that name already exists"];
+				[alert runModal];
+				return NO;
+			}
+		}
+		else
+		{
+			NSArray *children = [selectedObject valueForKeyPath:@"parent.children"];
+			NSString *host = [selectedObject valueForKey:@"host"];
+			for (NSManagedObject *child in children)
+			{
+				if (![selectedObject isEqual:child] && [[child valueForKey:@"host"] isEqualToString:host])
+				{
+					NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate Host"
+													 defaultButton:NSLocalizedString(@"OK", @"OK button")
+												   alternateButton:nil
+													   otherButton:nil
+										 informativeTextWithFormat:@"A user with that host already exists"];
+					[alert runModal];
+					return NO;
+				}
+			}
+		}
+		
+	}
+	return YES;
 }
 
 - (NSArray *)treeSortDescriptors
@@ -635,8 +684,7 @@
 {
 	if ([self.managedObjectContext hasChanges])
 	{
-		//NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-		NSAlert *alert = [NSAlert alertWithMessageText:@"Window has changes.  All changes will be lost!"
+		NSAlert *alert = [NSAlert alertWithMessageText:@"Warning!"
 										 defaultButton:NSLocalizedString(@"Continue", @"Continue")
 									   alternateButton:NSLocalizedString(@"Cancel",@"Cancel")
 										   otherButton:nil
@@ -1050,7 +1098,11 @@
 - (BOOL)checkAndDisplayMySqlError
 {
 	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:[self.mySqlConnection getLastErrorMessage]];
+		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" 
+                                         defaultButton:NSLocalizedString(@"OK", @"OK button")
+                                       alternateButton:nil 
+                                           otherButton:nil 
+                             informativeTextWithFormat:[self.mySqlConnection getLastErrorMessage]];
 		[alert runModal];
 		
 		return NO;
