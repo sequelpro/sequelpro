@@ -64,11 +64,12 @@
 	NSInteger parsedToPosition;
 	NSInteger charCacheStart;
 	NSInteger charCacheEnd;
-	NSString *delimiter;
-	NSInteger delimiterLength;
-	BOOL charIsDelimiter;
-	BOOL isDelimiterCommand;
 	BOOL ignoreCommentStrings;
+
+	BOOL supportDelimiters;
+	NSString *delimiter;
+	NSUInteger delimiterLengthMinusOne;
+	BOOL lastMatchIsDelimiter;
 }
 
 typedef enum _SPCommentTypes {
@@ -77,7 +78,23 @@ typedef enum _SPCommentTypes {
 	SPCStyleComment = 2
 } SPCommentType;
 
-- (void) setIgnoringCommentStrings:(BOOL)ignoringCommentStrings;
+/*
+ * Set whether comment strings should be ignored during parsing.
+ * Normally, comment strings are treated as dead space and ignored;
+ * for certain parsing operations, characters within comments need
+ * to be inspected, and setIgnoreCommentStrings can be set to YES to
+ * achieve this.
+ */
+- (void) setIgnoreCommentStrings:(BOOL)ignoringCommentStrings;
+
+/*
+ * Set whether DELIMITER support should be enabled while parsing.
+ * This is off by default; when switched on, delimiters commands will
+ * be parsed out and not returned to the calling class, and any active 
+ * delimiter statements will be used to override the supplied character
+ * for many commands.
+ */
+- (void) setDelimiterSupport:(BOOL)shouldSupportDelimiters;
 
 /*
  * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
@@ -217,8 +234,13 @@ typedef enum _SPCommentTypes {
  */
 - (NSArray *) splitStringByCharacter:(unichar)character skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-- (NSArray *) splitSqlStringByCharacter:(unichar)character;
-- (NSArray *) splitSqlStringIntoRangesByCharacter:(unichar)character;
+/*
+ * As splitStringByCharacter:, but returning only the ranges of queries, stored as NSValues.
+ * Quoted strings are automatically ignored when looking for the characters.
+ * SQL comments are automatically ignored when looking for the characters.
+ * Returns an array with one range covering the entire string if the supplied character is not found.
+ */
+- (NSArray *) splitStringIntoRangesByCharacter:(unichar)character;
 
 /*
  * Methods used internally by this class to power the methods above:
@@ -226,7 +248,6 @@ typedef enum _SPCommentTypes {
 - (NSUInteger) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 - (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 - (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
-- (NSUInteger) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 - (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)index;
 - (NSUInteger) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(NSInteger)index;
 
@@ -250,6 +271,7 @@ typedef enum _SPCommentTypes {
 - (id) initWithCString:(const char *)nullTerminatedCString encoding:(NSStringEncoding)encoding;
 - (id) initWithFormat:(NSString *)format, ...;
 - (id) initWithFormat:(NSString *)format arguments:(va_list)argList;
+- (void) initSQLExtensions;
 - (NSUInteger) length;
 - (unichar) characterAtIndex:(NSUInteger)index;
 - (id) description;

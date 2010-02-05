@@ -2111,6 +2111,7 @@
 			errors = 0;
 
 			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
+			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
 			// Disable updating of the Console Log window for large number of queries
 			// to speed the deletion

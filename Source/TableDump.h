@@ -27,6 +27,13 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
+typedef enum _SPExportModes {
+	SPExportingSQL = 0,
+	SPExportingCSV = 1,
+	SPExportingXML = 2,
+	SPExportingDOT = 3
+} SPExportMode;
+
 @interface TableDump : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
@@ -103,6 +110,7 @@
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
 	NSInteger fieldMappingCurrentRow;
+	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 	

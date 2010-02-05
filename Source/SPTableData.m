@@ -388,7 +388,7 @@
 
 			// Capture the area between the two backticks as the name
 			// Set the parser to ignoreCommentStrings since a field name can contain # or /*
-			[fieldsParser setIgnoringCommentStrings:YES];
+			[fieldsParser setIgnoreCommentStrings:YES];
 			NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
 																	 toCharacter: quoteCharacter
 															 trimmingInclusively: YES
@@ -415,7 +415,7 @@
 																						 ignoringQuotedStrings: NO]
 																];
 			}
-			[fieldsParser setIgnoringCommentStrings:NO];
+			[fieldsParser setIgnoreCommentStrings:NO];
 			
 			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];

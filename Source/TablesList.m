@@ -1750,6 +1750,7 @@
 - (void)removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	[tablesListView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 	
 	// get last index
 	NSUInteger currentIndex = [indexes lastIndex];

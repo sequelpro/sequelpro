@@ -303,7 +303,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		my_bool trueBool = TRUE;
 		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &trueBool);
 	}
-	
+
 	// Set the host as appropriate
 	if (!connectionHost || ![connectionHost length]) {
 		theHost = NULL;

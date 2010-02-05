@@ -67,7 +67,8 @@
 
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-	queries = [queryParser splitSqlStringByCharacter:';'];
+	[queryParser setDelimiterSupport:YES];
+	queries = [queryParser splitStringByCharacter:';'];
 	[queryParser release];
 
 	oldThreadedQueryRange = [textView selectedRange];
@@ -135,7 +136,8 @@
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
-		queries = [queryParser splitSqlStringByCharacter:';'];
+		[queryParser setDelimiterSupport:YES];
+		queries = [queryParser splitStringByCharacter:';'];
 		[queryParser release];
 
 		// Remember query start position for error highlighting
@@ -965,7 +967,8 @@
 	// only if the textView was really changed, otherwise use the cache
 	if([[textView textStorage] editedMask] != 0) {
 		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-		queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
+		[customQueryParser setDelimiterSupport:YES];
+		queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesByCharacter:';']];
 		numberOfQueries = [queries count];
 		if(currentQueryRanges)
 			[currentQueryRanges release];
@@ -1078,7 +1081,8 @@
 
 	// Split the current text into ranges of queries
 	customQueryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:NSMakeRange(position, [[textView string] length]-position)]];
-	queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
+	[customQueryParser setDelimiterSupport:YES];
+	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesByCharacter:';']];
 	[customQueryParser release];
 
 	// Check for a valid index
