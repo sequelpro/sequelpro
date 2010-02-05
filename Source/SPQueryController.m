@@ -584,6 +584,12 @@ static SPQueryController *sharedQueryController = nil;
 {
 	if([historyContainer objectForKey:[fileURL absoluteString]])
 		[historyContainer setObject:historyArray forKey:[fileURL absoluteString]];
+
+	// Inform all opened documents to update the history list
+	for(id doc in [[NSDocumentController sharedDocumentController] documents])
+		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)])
+			[[doc valueForKeyPath:@"customQueryInstance"] historyItemsHaveBeenUpdated:self];
+
 }
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL

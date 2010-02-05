@@ -210,6 +210,9 @@
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
 - (NSUInteger)numberOfQueries;
+
 - (NSString *)buildHistoryString;
+
+- (void)historyItemsHaveBeenUpdated:(id)manager;
 
 @end

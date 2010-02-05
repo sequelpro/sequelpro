@@ -267,8 +267,6 @@
 		currentHistoryOffsetIndex++;
 		if ( numberOfHistoryItems > 0 && currentHistoryOffsetIndex < numberOfHistoryItems && currentHistoryOffsetIndex >= 0) {
 			historyItemWasJustInserted = YES;
-			// if(![textView selectedRange].length)
-			// 	[textView setSelectedRange:currentQueryRange];
 			[textView breakUndoCoalescing];
 			NSString *historyString = [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:currentHistoryOffsetIndex];
 			NSRange rangeOfInsertedString = NSMakeRange([textView selectedRange].location, [historyString length]);
@@ -286,8 +284,6 @@
 		currentHistoryOffsetIndex--;
 		if ( numberOfHistoryItems > 0 && currentHistoryOffsetIndex < numberOfHistoryItems && currentHistoryOffsetIndex >= 0) {
 			historyItemWasJustInserted = YES;
-			// if(![textView selectedRange].length)
-			// 	[textView setSelectedRange:currentQueryRange];
 			[textView breakUndoCoalescing];
 			NSString *historyString = [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:currentHistoryOffsetIndex];
 			NSRange rangeOfInsertedString = NSMakeRange([textView selectedRange].location, [historyString length]);
@@ -721,13 +717,7 @@
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
 
 		// Refresh history popup menu
-		NSMenu* historyMenu = [queryHistoryButton menu];
-		while([queryHistoryButton numberOfItems] > 7)
-			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-		
-		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
-			[historyMenu addItem:historyMenuItem];
-
+		[self historyItemsHaveBeenUpdated:self];
 	}
 
 	// Error checking
@@ -1327,17 +1317,8 @@
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-	{
-		NSMenu* historyMenu = [queryHistoryButton menu];
-		// remove items up to the last separator beginning from the end
-		while([queryHistoryButton numberOfItems] > 7)
-			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+		[self historyItemsHaveBeenUpdated:self];
 
-		// Add history items
-		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
-			[historyMenu addItem:historyMenuItem];
-	}
-	
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
 	
@@ -2713,10 +2694,23 @@
 #pragma mark Query favorites manager delegate methods
 
 /**
+ * Rebuild history popup menu.
+ */
+- (void)historyItemsHaveBeenUpdated:(id)manager
+{
+	// Refresh history popup menu
+	NSMenu* historyMenu = [queryHistoryButton menu];
+	while([queryHistoryButton numberOfItems] > 7)
+		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+	
+	for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
+		[historyMenu addItem:historyMenuItem];
+}
+/**
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
 - (void)queryFavoritesHaveBeenUpdated:(id)manager
-{	
+{
 	NSMenuItem *headerMenuItem;
 	NSMenu *menu = [queryFavoritesButton menu];
 
@@ -2856,18 +2850,8 @@
 
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
 		if (returnCode == NSOKButton) {
-
-			// Remove all history buttons up to the search field and separator beginning from the end
-			while([queryHistoryButton numberOfItems] > 7)
-				[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-
-			// Clear the global history list if doc is Untitled
-			if ([tableDocumentInstance isUntitled])
-				[prefs setObject:[NSArray array] forKey:SPQueryHistory];
-
 			// Remove items in the query controller
 			[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
-
 		}
 		return;
 	}
