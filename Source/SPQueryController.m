@@ -644,6 +644,32 @@ static SPQueryController *sharedQueryController = nil;
 	return [NSMutableArray array];
 }
 
+- (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL
+{
+	if([historyContainer objectForKey:[fileURL absoluteString]]) {
+		NSMutableArray *returnArray = [[NSMutableArray arrayWithCapacity:[[historyContainer objectForKey:[fileURL absoluteString]] count]] autorelease];
+		NSMenuItem *historyMenuItem;
+		for(id history in [historyContainer objectForKey:[fileURL absoluteString]]) {
+			historyMenuItem = [[[NSMenuItem alloc] initWithTitle:([history length] > 64) ? [NSString stringWithFormat:@"%@…", [history substringToIndex:63]] : history
+			 											action:NULL 
+												keyEquivalent:@""] autorelease];
+			[historyMenuItem setToolTip:([history length] > 256) ? [NSString stringWithFormat:@"%@…", [history substringToIndex:255]] : history];
+			[returnArray addObject:historyMenuItem];
+		}
+		
+		return returnArray;
+	}
+
+	return [NSArray array];
+}
+
+- (NSUInteger)numberOfHistoryItemsForFileURL:(NSURL *)fileURL
+{
+	if([historyContainer objectForKey:[fileURL absoluteString]])
+		return [[historyContainer objectForKey:[fileURL absoluteString]] count];
+	else
+		return 0;
+}
 - (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL
 {
 	if([contentFilterContainer objectForKey:[fileURL absoluteString]])

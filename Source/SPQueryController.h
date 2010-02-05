@@ -94,6 +94,8 @@
 
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
+- (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL;
+- (NSUInteger)numberOfHistoryItemsForFileURL:(NSURL *)fileURL;
 - (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL;
 
 - (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals;

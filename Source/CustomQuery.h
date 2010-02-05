@@ -100,6 +100,8 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
+	IBOutlet NSMenuItem *previousHistoryMenuItem;
+	IBOutlet NSMenuItem *nextHistoryMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
@@ -146,6 +148,9 @@
 
 	NSUInteger numberOfQueries;
 	NSUInteger queryTextViewStartPosition;
+
+	NSInteger currentHistoryOffsetIndex;
+	BOOL historyItemWasJustInserted;
 }
 
 // IBAction methods
