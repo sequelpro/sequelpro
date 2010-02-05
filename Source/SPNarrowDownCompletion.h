@@ -58,6 +58,7 @@
 	id theView;
 	
 	NSInteger maxWindowWidth;
+	NSInteger spaceCounter;
 	
 	NSMutableCharacterSet* textualInputCharacters;
 }
