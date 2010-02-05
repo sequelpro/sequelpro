@@ -29,7 +29,6 @@
 
 @interface SPFieldMapperController : NSWindowController {
 
-	IBOutlet id fieldMapperView;
 	IBOutlet id fieldMapperTableView;
 	IBOutlet id tableTargetPopup;
 	IBOutlet id fileSourcePath;
@@ -58,5 +57,6 @@
 - (IBAction)changeTableTarget:(id)sender;
 - (IBAction)changeImportMethod:(id)sender;
 - (IBAction)stepRow:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 
 @end

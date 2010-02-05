@@ -25,6 +25,7 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import "SPFieldMapperController.h"
 #import <MCPKit/MCPKit.h>
 
 typedef enum _SPExportModes {
@@ -115,6 +116,7 @@ typedef enum _SPExportModes {
 	BOOL progressCancelled;
 	
 	NSInteger fieldMapperSheetStatus;
+	SPFieldMapperController *fieldMapperController;
 }
 
 // IBAction methods

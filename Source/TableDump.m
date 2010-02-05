@@ -38,6 +38,7 @@
 #import "RegexKitLite.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "SPFieldMapperController.h"
 
 @implementation TableDump
 
@@ -109,11 +110,7 @@
 
 - (IBAction)closeFieldMapperSheet:(id)sender
 {
-
 	[NSApp endSheet:fieldMappingSheet returnCode:[sender tag]];
-	// [[self window] orderOut:self];
-	// 
-	//     [NSApp endSheet:fieldMappingSheet];
 }
 
 /**
@@ -1216,7 +1213,11 @@
 
 	fieldMapperSheetStatus = 1;
 
+	// if(fieldMapperController) [fieldMapperController release];
+	// fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+
 	// Show fieldMapping sheet
+	// [NSApp beginSheet:[fieldMapperController window]
 	[NSApp beginSheet:fieldMappingSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
@@ -1226,6 +1227,8 @@
 	// Wait for fieldMappingSheet
 	while (fieldMapperSheetStatus == 1)
 		usleep(100000);
+
+	// if(fieldMapperController) [fieldMapperController release];
 
 	if(fieldMapperSheetStatus == 2)
 		return YES;

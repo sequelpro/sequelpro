@@ -37,7 +37,7 @@
  */
 - (id)initWithDelegate:(id)managerDelegate
 {
-	if ((self = [super initWithWindowNibName:@"DataMigrationDialog"])) {
+	if (self = [super initWithWindowNibName:@"DataMigrationDialog"]) {
 
 		fieldMappingCurrentRow = 0;
 		if(managerDelegate == nil) {
@@ -46,15 +46,9 @@
 			return nil;
 		}
 		theDelegate = managerDelegate;
-
 	}
 	
 	return self;
-}
-
-- (void)awakeFromNib
-{
-	
 }
 
 /*
@@ -75,6 +69,11 @@
 
 #pragma mark -
 #pragma mark IBAction methods
+
+- (IBAction)closeSheet:(id)sender
+{
+	[NSApp endSheet:[self window] returnCode:[sender tag]];
+}
 
 - (IBAction)changeTableTarget:(id)sender
 {
@@ -129,6 +128,28 @@
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
 	[rowUpButton setEnabled:(fieldMappingCurrentRow != ([fieldMappingImportArray count]-1))];
+}
+
+#pragma mark -
+#pragma mark Table view datasource methods
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
+{
+	return 0;
+}
+
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	return nil;
+}
+
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
 }
 
 
