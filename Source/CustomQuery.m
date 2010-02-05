@@ -715,9 +715,9 @@
 
 		// Register new history item
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
-
+		
 		// Refresh history popup menu
-		[self historyItemsHaveBeenUpdated:self];
+		[self performSelector:@selector(historyItemsHaveBeenUpdated:) withObject:self afterDelay:0.0];
 	}
 
 	// Error checking
@@ -1317,7 +1317,7 @@
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-		[self historyItemsHaveBeenUpdated:self];
+		[self performSelector:@selector(historyItemsHaveBeenUpdated:) withObject:self afterDelay:0.0];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
@@ -2703,8 +2703,10 @@
 	while([queryHistoryButton numberOfItems] > 7)
 		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
 	
-	for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
-		[historyMenu addItem:historyMenuItem];
+	NSUInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
+	if(numberOfHistoryItems>0)
+		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
+			[historyMenu addItem:historyMenuItem];
 }
 /**
  * Called by the query favorites manager whenever the query favorites have been updated.
