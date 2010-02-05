@@ -338,7 +338,8 @@
 					   tableName, [mySQLConnection getLastErrorMessage]]);
 			// If the current table doesn't exist anymore reload table list
 			if([mySQLConnection getLastErrorID] == 1146) {
-				[tableListInstance updateTables:nil];
+				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
+				[tableListInstance updateTables:self];
 			}
 		}
 		

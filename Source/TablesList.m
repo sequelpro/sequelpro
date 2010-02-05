@@ -221,7 +221,10 @@
 	[tablesListView reloadData];
 	
 	// if the previous selected table still exists, select it
-	if( previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
+	// but not if the update was called from SPTableData since it calls that method
+	// if a selected table doesn't exist - this happens if a table was deleted/renamed by an other user
+	// or if the table name contains characters which are not supported by the current set encoding
+	if( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
 		tableListIsSelectable = YES;
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
