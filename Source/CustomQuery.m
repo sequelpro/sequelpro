@@ -265,7 +265,6 @@
 	if ( sender == previousHistoryMenuItem ) {
 		NSInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
 		currentHistoryOffsetIndex++;
-		NSLog(@"%ld + %ld", numberOfHistoryItems, currentHistoryOffsetIndex);
 		if ( numberOfHistoryItems > 0 && currentHistoryOffsetIndex < numberOfHistoryItems && currentHistoryOffsetIndex >= 0) {
 			historyItemWasJustInserted = YES;
 			// if(![textView selectedRange].length)
@@ -285,7 +284,6 @@
 	if ( sender == nextHistoryMenuItem ) {
 		NSInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
 		currentHistoryOffsetIndex--;
-		NSLog(@"%ld - %ld", numberOfHistoryItems, currentHistoryOffsetIndex);
 		if ( numberOfHistoryItems > 0 && currentHistoryOffsetIndex < numberOfHistoryItems && currentHistoryOffsetIndex >= 0) {
 			historyItemWasJustInserted = YES;
 			// if(![textView selectedRange].length)
