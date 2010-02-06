@@ -1199,6 +1199,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
+			// If inside the snippet hint $(…) is defined run … as BASH command
+			// and replace the snippet hint by the return string of that command
+			if([theHintString isMatchedByRegex:@"(?s)(?<!\\\\)\\s*\\$\\(.*\\)\\s*"]) {
+				NSRange r = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\s*\\$\\((.*)\\)\\s*" capture:1L];
+				if(r.length)
+					[theHintString setString:[self runBashCommand:[theHintString substringWithRange:r]]];
+				else
+					[theHintString setString:@""];
+				[theHintString flushCachedRegexData];
+			}
+
 			[snip replaceCharactersInRange:snipRange withString:theHintString];
 			[snip flushCachedRegexData];
 
@@ -1266,24 +1277,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (NSString *)runBashCommand:(NSString *)command
 {
 
+	BOOL userTerminated = NO;
+
 	NSTask *bashTask = [[NSTask alloc] init];
 	[bashTask setLaunchPath: @"/bin/sh"];
+	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", command, nil]];
 
-	NSArray *arguments;
-	arguments = [NSArray arrayWithObjects: @"-c", command, nil];
-	[bashTask setArguments: arguments];
+	NSPipe *stdout_pipe = [NSPipe pipe];
+	[bashTask setStandardOutput:stdout_pipe];
 
-	NSPipe *pipe;
-	pipe = [NSPipe pipe];
-	[bashTask setStandardOutput: pipe];
-
-	NSFileHandle *file;
-	file = [pipe fileHandleForReading];
+	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
 
 	[bashTask launch];
-	while([bashTask isRunning]) {
-		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                          untilDate:[NSDate distantFuture]
+
+	// Listen to ⌘. to terminate
+	while(1) {
+		if(![bashTask isRunning]) break;
+		NSEvent* event = [NSApp nextEventMatchingMask:NSKeyDownMask
+                                          untilDate:[NSDate distantPast]
                                              inMode:NSDefaultRunLoopMode
                                             dequeue:YES];
 		if(!event) continue;
@@ -1291,29 +1302,45 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
 			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
 				[bashTask terminate];
+				userTerminated = YES;
 				break;
 			}
 		}
-		usleep(10000);
 	}
-	[bashTask waitUntilExit];
-	NSInteger status = [bashTask terminationStatus];
-	NSData *data;
-	data = [file readDataToEndOfFile];
 
-	NSString *string;
-	string = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
-	[bashTask release];
-
-	if (status == 0) {
-		return [string autorelease];
-	} else {
-		NSLog(@"Error: %@", string);
-		[string autorelease];
+	if(userTerminated) {
+		if(bashTask) [bashTask release];
 		NSBeep();
+		NSLog(@"“%@” was terminated by user.", command);
 		return @"";
 	}
 
+	[bashTask waitUntilExit];
+	NSInteger status = [bashTask terminationStatus];
+	NSData *data = [stdout_file readDataToEndOfFile];
+
+	if(data != nil) {
+		NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+		if(bashTask) [bashTask release];
+		if(string != nil) {
+			if (status == 0) {
+				return [string autorelease];
+			} else {
+				NSLog(@"Error for “%@”", command);
+				[string release];
+				NSBeep();
+				return @"";
+			}
+		} else {
+			if(string) [string release];
+			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
+		}
+	} else {
+		if(bashTask) [bashTask release];
+		NSLog(@"Couldn't read data from command “%@”.", command);
+		NSBeep();
+		return @"";
+	}
 
 }
 /*
