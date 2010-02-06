@@ -1260,6 +1260,63 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Run 'command' as BASH script and return the result.
+ * This task can be interrupted by pressing ⌘.
+ */
+- (NSString *)runBashCommand:(NSString *)command
+{
+
+	NSTask *bashTask = [[NSTask alloc] init];
+	[bashTask setLaunchPath: @"/bin/sh"];
+
+	NSArray *arguments;
+	arguments = [NSArray arrayWithObjects: @"-c", command, nil];
+	[bashTask setArguments: arguments];
+
+	NSPipe *pipe;
+	pipe = [NSPipe pipe];
+	[bashTask setStandardOutput: pipe];
+
+	NSFileHandle *file;
+	file = [pipe fileHandleForReading];
+
+	[bashTask launch];
+	while([bashTask isRunning]) {
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                          untilDate:[NSDate distantFuture]
+                                             inMode:NSDefaultRunLoopMode
+                                            dequeue:YES];
+		if(!event) continue;
+		if ([event type] == NSKeyDown) {
+			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+				[bashTask terminate];
+				break;
+			}
+		}
+		usleep(10000);
+	}
+	[bashTask waitUntilExit];
+	NSInteger status = [bashTask terminationStatus];
+	NSData *data;
+	data = [file readDataToEndOfFile];
+
+	NSString *string;
+	string = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+	[bashTask release];
+
+	if (status == 0) {
+		return [string autorelease];
+	} else {
+		NSLog(@"Error: %@", string);
+		[string autorelease];
+		NSBeep();
+		return @"";
+	}
+
+
+}
+/*
  * Checks whether the current caret position in inside of a defined snippet range
  */
 - (BOOL)checkForCaretInsideSnippet

@@ -139,4 +139,6 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 
 - (BOOL)isSnippetMode;
 
+- (NSString *)runBashCommand:(NSString *)command;
+
 @end
