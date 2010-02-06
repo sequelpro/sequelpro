@@ -571,7 +571,7 @@
 	[fieldParser release];
 	
 	// Triggers
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
 											  [tableName tickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	

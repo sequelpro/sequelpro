@@ -664,6 +664,7 @@
 	[tableSourceInstance setConnection:mySQLConnection];
 	[tableContentInstance setConnection:mySQLConnection];
 	[tableRelationsInstance setConnection:mySQLConnection];
+	[tableTriggersInstance setConnection:mySQLConnection];
 	[customQueryInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	[exportControllerInstance setConnection:mySQLConnection];

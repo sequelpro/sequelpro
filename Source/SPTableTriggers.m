@@ -28,8 +28,8 @@
 
 @interface SPTableTriggers (PrivateAPI)
 
-- (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
-- (void)_updateAvailableTableColumns;
+- (void)_toggleConfirmAddTriggerButtonEnabled;
+- (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
 
 @end
 
@@ -54,7 +54,7 @@
  */
 - (void)awakeFromNib
 {
-	// Set the table relation view's vertical gridlines if required
+	// Set the table triggers view's vertical gridlines if required
 	[triggersTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	
 	// Set the strutcture and index view's font
@@ -67,6 +67,11 @@
 	
 	// Register as an observer for the when the UseMonospacedFonts preference changes
 	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(triggerStatementTextDidChange:) 
+												 name:NSTextStorageDidProcessEditingNotification 
+											   object:[triggerStatementTextView textStorage]];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(tableSelectionChanged:) 
@@ -88,41 +93,32 @@
 #pragma mark IB action methods
 
 /**
- * Closes the relation sheet.
+ * Closes the trigers sheet.
  */
-- (IBAction)closeRelationSheet:(id)sender
+- (IBAction)closeTriggerSheet:(id)sender
 {
 	[NSApp endSheet:addTriggerPanel returnCode:0];
 	[addTriggerPanel orderOut:self];
 }
 
 /**
- * Add a new relation using the selected values.
+ * Add a new trigger using the selected values.
  */
-- (IBAction)confirmAddRelation:(id)sender
+- (IBAction)confirmAddTrigger:(id)sender
 {	
-	[self closeRelationSheet:self];
+	[self closeTriggerSheet:self];
 	
-	NSString *thisTable  = [tablesListInstance tableName];
-	NSString *thisColumn = [columnPopUpButton titleOfSelectedItem];
-	NSString *thatTable  = [refTablePopUpButton titleOfSelectedItem];
-	NSString *thatColumn = [refColumnPopUpButton titleOfSelectedItem];
+	NSString *triggerName        = [triggerNameTextField stringValue];
+	NSString *triggerActionTime  = [[triggerActionTimePopUpButton titleOfSelectedItem] uppercaseString];
+	NSString *triggerEvent       = [[triggerEventPopUpButton titleOfSelectedItem] uppercaseString];
+	NSString *triggerStatement   = [triggerStatementTextView string];
 	
-	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD FOREIGN KEY (%@) REFERENCES %@ (%@)", 
-					   [thisTable backtickQuotedString],
-					   [thisColumn backtickQuotedString],
-					   [thatTable backtickQuotedString],
-					   [thatColumn backtickQuotedString]];
-	
-	// If required add ON DELETE
-	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [[onDeletePopUpButton titleOfSelectedItem] uppercaseString]]];
-	}
-	
-	// If required add ON UPDATE
-	if ([onUpdatePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [[onUpdatePopUpButton titleOfSelectedItem] uppercaseString]]];
-	}
+	NSString *query = [NSString stringWithFormat:@"CREATE TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@", 
+					   [triggerName backtickQuotedString],
+					   triggerActionTime,
+					   triggerEvent,
+					   [[tablesListInstance tableName] backtickQuotedString],
+					   triggerStatement];
 	
 	// Execute query
 	[connection queryString:query];
@@ -131,57 +127,21 @@
 	
 	// 0 indicates success
 	if (retCode) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"), [connection getLastErrorMessage]]);		
 	} 
 	else {
-		[self _refreshRelationDataForcingCacheRefresh:YES];
-	} 	
-}
-
-/**
- * Updates the available columns when the user selects a table.
- */
-- (IBAction)selectTableColumn:(id)sender
-{
-	[self _updateAvailableTableColumns];
-}
-
-/**
- * Updates the available columns when the user selects a table.
- */
-- (IBAction)selectReferenceTable:(id)sender
-{
-	[self _updateAvailableTableColumns];
+		[self _refreshTriggerDataForcingCacheRefresh:YES];
+	}
 }
 
 /**
  * Called whenever the user selected to add a new trigger. 
  */
 - (IBAction)addTrigger:(id)sender
-{	
-	// Set up the controls
-	[addTriggerTableBox setTitle:[NSString stringWithFormat:@"Table: %@", [tablesListInstance tableName]]];
-	
-	[columnPopUpButton removeAllItems];
-	[columnPopUpButton addItemsWithTitles:[tableDataInstance columnNames]];
-	
-	[refTablePopUpButton removeAllItems];
-	
-	// Get all InnoDB tables in the current database
-	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-	
-	[result dataSeek:0];
-	
-	for (NSInteger i = 0; i < [result numOfRows]; i++)
-	{		
-		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
-	}
-	
-	[self selectReferenceTable:nil];
-	
+{			
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:tableWindow
 		modalDelegate:self
@@ -196,11 +156,11 @@
 {
 	if ([triggersTableView numberOfSelectedRows] > 0) {
 		
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete relation", @"delete relation message") 
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete trigger", @"delete trigger message") 
 										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone.", @"delete selected relation informative message")];
+							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected triggers? This action cannot be undone.", @"delete selected trigger informative message")];
 		
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		
@@ -211,7 +171,7 @@
 		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 		
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeTrigger"];
 	}
 }
 
@@ -220,7 +180,7 @@
  */
 - (IBAction)refreshTriggers:(id)sender
 {
-	[self _refreshRelationDataForcingCacheRefresh:YES];
+	[self _refreshTriggerDataForcingCacheRefresh:YES];
 }
 
 /**
@@ -228,34 +188,16 @@
  */
 - (void)tableSelectionChanged:(NSNotification *)notification
 {
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations] || ![tableDocumentInstance isWorking];
+	[labelTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Triggers for table: %@", @"triggers for table label"), [tablesListInstance tableName]]];
+	
+	BOOL enableInteraction = ((![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) || (![tableDocumentInstance isWorking]));
 	
 	// To begin enable all interface elements
 	[addTriggerButton setEnabled:enableInteraction];		
 	[refreshTriggersButton setEnabled:enableInteraction];
-	[triggersTableView setEnabled:YES];
+	[triggersTableView setEnabled:YES];	
 	
-	// Get the current table's storage engine
-	NSString *engine = [tableDataInstance statusValueForKey:@"Engine"];
-	
-	if (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
-		
-		// Update the text label
-		[labelTextField setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
-		
-		[addTriggerButton setEnabled:enableInteraction];
-		[refreshTriggersButton setEnabled:enableInteraction];
-		[triggersTableView setEnabled:YES];
-	} 
-	else {
-		[addTriggerButton setEnabled:NO];		
-		[refreshTriggersButton setEnabled:NO];	
-		[triggersTableView setEnabled:NO];
-		
-		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table currently does not support relations. Only tables that use the InnoDB storage engine support them." : @""];
-	}	
-	
-	[self _refreshRelationDataForcingCacheRefresh:NO];
+	[self _refreshTriggerDataForcingCacheRefresh:NO];
 }
 
 #pragma mark -
@@ -275,7 +217,7 @@
 #pragma mark Tableview delegate methods
 
 /**
- * Called whenever the relations table view selection changes.
+ * Called whenever the triggers table view selection changes.
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
@@ -298,7 +240,7 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return ![tableDocumentInstance isWorking];
+	return (![tableDocumentInstance isWorking]);
 }
 
 #pragma mark -
@@ -307,12 +249,10 @@
 /**
  * Disable all content interactive elements during an ongoing task.
  */
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification
-{
-	
+- (void)startDocumentTaskForTab:(NSNotification *)notification
+{	
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) return;
 	
 	[addTriggerButton setEnabled:NO];
 	[refreshTriggersButton setEnabled:NO];
@@ -322,17 +262,16 @@
 /**
  * Enable all content interactive elements after an ongoing task.
  */
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification
-{
-	
+- (void)endDocumentTaskForTab:(NSNotification *)notification
+{		
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) return;
 	
 	if ([triggersTableView isEnabled]) {
 		[addTriggerButton setEnabled:YES];
 		[refreshTriggersButton setEnabled:YES];
 	}
+	
 	[removeTriggerButton setEnabled:([triggersTableView numberOfSelectedRows] > 0)];
 }
 
@@ -344,28 +283,28 @@
  */
 - (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-	if ([contextInfo isEqualToString:@"removeRelation"]) {
+	if ([contextInfo isEqualToString:@"removeTrigger"]) {
 		
 		if (returnCode == NSAlertDefaultReturn) {
 			
-			NSString *thisTable = [tablesListInstance tableName];
+			NSString *database = [tableDocumentInstance database];
 			NSIndexSet *selectedSet = [triggersTableView selectedRowIndexes];
 			
 			NSUInteger row = [selectedSet lastIndex];
 			
 			while (row != NSNotFound) 
 			{
-				NSString *relationName = [[triggerData objectAtIndex:row] objectForKey:@"name"];
-				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
+				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:@"trigger"];
+				NSString *query = [NSString stringWithFormat:@"DROP TRIGGER %@.%@", [database backtickQuotedString], [triggerName backtickQuotedString]];
 				
 				[connection queryString:query];
 				
 				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
 					
-					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
+					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove trigger", @"error removing trigger message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be removed.\n\nMySQL said: %@", @"error removing trigger informative message"), [connection getLastErrorMessage]]);	
 					
 					// Abort loop
 					break;
@@ -374,7 +313,7 @@
 				row = [selectedSet indexLessThanIndex:row];
 			}
 			
-			[self _refreshRelationDataForcingCacheRefresh:YES];
+			[self _refreshTriggerDataForcingCacheRefresh:YES];
 		}
 	} 
 }
@@ -408,13 +347,29 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	// Remove row
-	if ([menuItem action] == @selector(removeRelation:)) {
-		[menuItem setTitle:([triggersTableView numberOfSelectedRows] > 1) ? @"Delete Relations" : @"Delete Relation"];
+	if ([menuItem action] == @selector(removeTrigger:)) {
+		[menuItem setTitle:([triggersTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Delete Triggers", @"delete triggers menu item") : NSLocalizedString(@"Delete Trigger", @"delete trigger menu item")];
 		
 		return ([triggersTableView numberOfSelectedRows] > 0);
 	}
 	
 	return YES;
+}
+
+/**
+ * 
+ */
+- (void)controlTextDidChange:(NSNotification *)notification
+{	
+	[self _toggleConfirmAddTriggerButtonEnabled];
+}
+
+/**
+ * 
+ */
+- (void)triggerStatementTextDidChange:(NSNotification *)notification
+{
+	[self _toggleConfirmAddTriggerButtonEnabled];
 }
 
 #pragma mark -
@@ -425,6 +380,7 @@
 - (void)dealloc
 {	
 	[triggerData release], triggerData = nil;
+	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[super dealloc];
@@ -435,9 +391,18 @@
 @implementation SPTableTriggers (PrivateAPI)
 
 /**
- * Refresh the displayed relations, optionally forcing a refresh of the underlying cache.
+ * Enables or disables the confirm add trigger button based on the values of the trigger's name
+ * and statement fields.
  */
-- (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches
+- (void)_toggleConfirmAddTriggerButtonEnabled
+{
+	[confirmAddTriggerButton setEnabled:(([[triggerNameTextField stringValue] length] > 0) && ([[triggerStatementTextView string] length] > 0))];
+}
+
+/**
+ * Refresh the displayed trigger, optionally forcing a refresh of the underlying cache.
+ */
+- (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches
 {
 	[triggerData removeAllObjects];
 	
@@ -460,56 +425,10 @@
 									 [trigger objectForKey:@"sql_mode"], @"sql_mode",
 									 nil]];
 			
-		}
-		// NSLog(@"Triggers: %@", triggers);
+		}		
 	} 
 	
 	[triggersTableView reloadData];
-}
-
-/**
- * Updates the available table columns that the reference is pointing to. Available columns are those that are
- * within the selected table and are of the same data type as the column the reference is from.
- */
-- (void)_updateAvailableTableColumns
-{
-	NSString *column = [columnPopUpButton titleOfSelectedItem];
-	NSString *table = [refTablePopUpButton titleOfSelectedItem];
-	
-	[tableDataInstance resetAllData];
-	[tableDataInstance updateInformationForCurrentTable];
-	
-	NSDictionary *columnInfo = [[tableDataInstance columnWithName:column] copy];
-	
-	[refColumnPopUpButton setEnabled:NO];
-	[confirmAddTriggerButton setEnabled:NO];
-	
-	[refColumnPopUpButton removeAllItems];
-	
-	[tableDataInstance resetAllData];
-	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
-	
-	NSArray *columns = [tableInfo objectForKey:@"columns"];
-	
-	NSMutableArray *validColumns = [NSMutableArray array];
-	
-	// Only add columns of the same data type
-	for (NSDictionary *column in columns) 
-	{		
-		if ([[columnInfo objectForKey:@"type"] isEqualToString:[column objectForKey:@"type"]]) {
-			[validColumns addObject:[column objectForKey:@"name"]];			
-		}
-	}
-	
-	// Add the valid columns
-	if ([validColumns count] > 0) {
-		[refColumnPopUpButton addItemsWithTitles:validColumns];
-		
-		[refColumnPopUpButton setEnabled:YES];
-		[confirmAddTriggerButton setEnabled:YES];
-	}
-	
-	[columnInfo release];
 }
 
 @end
