@@ -685,8 +685,8 @@
 	if ([self.managedObjectContext hasChanges])
 	{
 		NSAlert *alert = [NSAlert alertWithMessageText:@"Warning!"
-										 defaultButton:NSLocalizedString(@"Continue", @"Continue")
-									   alternateButton:NSLocalizedString(@"Cancel",@"Cancel")
+										 defaultButton:NSLocalizedString(@"Continue", @"continue button")
+									   alternateButton:NSLocalizedString(@"Cancel",@"cancel button")
 										   otherButton:nil
 							 informativeTextWithFormat:@"Window has changes.  All changes will be lost!"];
 		[alert setAlertStyle:NSWarningAlertStyle];

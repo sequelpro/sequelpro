@@ -414,7 +414,7 @@
 {
 	// Remove row
 	if ([menuItem action] == @selector(removeRelation:)) {
-		[menuItem setTitle:([relationsTableView numberOfSelectedRows] > 1) ? @"Delete Relations" : @"Delete Relation"];
+		[menuItem setTitle:([relationsTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Delete Relations", @"delete relations menu item") : NSLocalizedString(@"Delete Relation", @"delete relation menu item")];
 		
 		return ([relationsTableView numberOfSelectedRows] > 0);
 	}
