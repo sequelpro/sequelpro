@@ -1,6 +1,11 @@
 //
+//  $Id$
+//
 //  SPTableTriggers.m
 //  sequel-pro
+//
+//  Created by Marius Ursache
+//  Copyright (c) 2010 Marius Ursache. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -108,10 +113,10 @@
 {	
 	[self closeTriggerSheet:self];
 	
-	NSString *triggerName        = [triggerNameTextField stringValue];
-	NSString *triggerActionTime  = [[triggerActionTimePopUpButton titleOfSelectedItem] uppercaseString];
-	NSString *triggerEvent       = [[triggerEventPopUpButton titleOfSelectedItem] uppercaseString];
-	NSString *triggerStatement   = [triggerStatementTextView string];
+	NSString *triggerName       = [triggerNameTextField stringValue];
+	NSString *triggerActionTime = [[triggerActionTimePopUpButton titleOfSelectedItem] uppercaseString];
+	NSString *triggerEvent      = [[triggerEventPopUpButton titleOfSelectedItem] uppercaseString];
+	NSString *triggerStatement  = [triggerStatementTextView string];
 	
 	NSString *query = [NSString stringWithFormat:@"CREATE TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@", 
 					   [triggerName backtickQuotedString],
@@ -125,7 +130,7 @@
 	
 	NSInteger retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
 	
-	// 0 indicates success
+	// Zero indicates success
 	if (retCode) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
@@ -138,7 +143,7 @@
 }
 
 /**
- * Called whenever the user selected to add a new trigger. 
+ * Displays the add new trigger sheet. 
  */
 - (IBAction)addTrigger:(id)sender
 {			
@@ -176,7 +181,7 @@
 }
 
 /**
- * Trigger a refresh of the displayed relations via the interface.
+ * Trigger a refresh of the displayed triggers via the interface.
  */
 - (IBAction)refreshTriggers:(id)sender
 {
@@ -188,8 +193,6 @@
  */
 - (void)tableSelectionChanged:(NSNotification *)notification
 {
-	[labelTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Triggers for table: %@", @"triggers for table label"), [tablesListInstance tableName]]];
-	
 	BOOL enableInteraction = ((![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) || (![tableDocumentInstance isWorking]));
 	
 	// To begin enable all interface elements
@@ -197,7 +200,26 @@
 	[refreshTriggersButton setEnabled:enableInteraction];
 	[triggersTableView setEnabled:YES];	
 	
-	[self _refreshTriggerDataForcingCacheRefresh:NO];
+	if (([connection serverMajorVersion]   >= 5) &&
+		([connection serverMinorVersion]   >= 0) &&
+		([connection serverReleaseVersion] >= 2)) {
+		
+		// Update the text label
+		[labelTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Triggers for table: %@", @"triggers for table label"), [tablesListInstance tableName]]];
+		
+		[addTriggerButton setEnabled:enableInteraction];
+		[refreshTriggersButton setEnabled:enableInteraction];
+		[triggersTableView setEnabled:YES];
+			
+		[self _refreshTriggerDataForcingCacheRefresh:NO];
+	} 
+	else {
+		[addTriggerButton setEnabled:NO];		
+		[refreshTriggersButton setEnabled:NO];	
+		[triggersTableView setEnabled:NO];
+		
+		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
+	}
 }
 
 #pragma mark -
@@ -225,8 +247,7 @@
 }
 
 /*
- * Double-click action on table cells - for the time being, return
- * NO to disable editing.
+ * Double-click action on table cells - for the time being, return NO to disable editing.
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
@@ -357,7 +378,7 @@
 }
 
 /**
- * 
+ * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's name.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {	
@@ -365,7 +386,7 @@
 }
 
 /**
- * 
+ * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's statement.
  */
 - (void)triggerStatementTextDidChange:(NSNotification *)notification
 {
