@@ -52,6 +52,7 @@
 	IBOutlet NSButton *addSchemaPrivButton;
 	IBOutlet NSButton *removeSchemaPrivButton;
 	
+    IBOutlet NSTextField *userNameTextField;
 		
 	NSMutableArray *schemas;
 	NSMutableArray *grantedSchemaPrivs;

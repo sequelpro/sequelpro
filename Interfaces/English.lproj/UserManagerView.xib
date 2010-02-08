@@ -3966,6 +3966,14 @@
 					</object>
 					<int key="connectionID">892</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">userNameTextField</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1021720165"/>
+					</object>
+					<int key="connectionID">893</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5521,7 +5529,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">892</int>
+			<int key="maxID">893</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5658,6 +5666,7 @@
 							<string>schemasTableView</string>
 							<string>tabView</string>
 							<string>treeController</string>
+							<string>userNameTextField</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5673,6 +5682,7 @@
 							<string>NSTableView</string>
 							<string>NSTabView</string>
 							<string>NSTreeController</string>
+							<string>NSTextField</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">

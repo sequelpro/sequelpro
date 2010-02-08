@@ -555,6 +555,10 @@
 - (IBAction)doApply:(id)sender
 {
 	NSError *error = nil;
+    
+    //Change the first responder to end editing in any field
+    [[self window] makeFirstResponder:self];
+    
 	[[self managedObjectContext] save:&error];
 	
 	if (error != nil) {
@@ -625,6 +629,7 @@
 		
 	[treeController addObject:newItem];
 	[outlineView expandItem:[outlineView itemAtRow:[outlineView selectedRow]]];
+    [[self window] makeFirstResponder:userNameTextField];
 }
 
 - (IBAction)removeUser:(id)sender
@@ -907,22 +912,33 @@
 	{
 		if ([[[user entity] name] isEqualToString:@"Privileges"]) continue;
 		
-		NSString *createStatement;
+		NSString *createStatement = nil;
 
-		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
-			
-			createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@;", 
-										 [[[user parent] valueForKey:@"user"] tickQuotedString], 
-										 [[user valueForKey:@"host"] tickQuotedString],
-										 [[[user parent] valueForKey:@"password"] tickQuotedString]];
-			
-			// Create user in database
-			[self.mySqlConnection queryString:createStatement];
-			
-			if ([self checkAndDisplayMySqlError]) {
-				[self grantPrivilegesToUser:user];
-			}	
+		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) 
+        {
+            createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@", 
+                               [[[user parent] valueForKey:@"user"] tickQuotedString], 
+                               [[user valueForKey:@"host"] tickQuotedString],
+                               [[[user parent] valueForKey:@"password"] tickQuotedString]];
 		}
+        else
+        {
+            if ([user parent] && [[user parent] valueForKey:@"user"])
+            {
+                createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@",
+                                   [[[user parent] valueForKey:@"user"] tickQuotedString],
+                                   [[user valueForKey:@"host"] tickQuotedString]];
+            }
+        }
+        
+        if (createStatement)
+        {
+            // Create user in database
+            [self.mySqlConnection queryString:createStatement];
+            
+            if ([self checkAndDisplayMySqlError]) 
+                [self grantPrivilegesToUser:user];
+        }	
 		
 	}
 	return YES;
