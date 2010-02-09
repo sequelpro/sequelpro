@@ -102,8 +102,8 @@
 	// Concurrent operation queue
 	NSOperationQueue *operationQueue;
 	
-	// Table/export operation mapping 
-	NSMutableDictionary *tableExportMapping;
+	// Exporters 
+	NSMutableArray *exporters;
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

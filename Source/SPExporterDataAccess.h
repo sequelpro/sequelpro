@@ -30,9 +30,14 @@
 @protocol SPExporterDataAccess
 
 /**
- * This method called when an expoter complete it's data conversion process and the operation is effectively 
- * complete. The resulting data can be accessed via SPExporter's exportData method.
+ *
  */
-- (void)exporterDataConversionProcessComplete:(SPExporter *)exporter;
+- (void)exporterProcessWillBegin:(SPExporter *)exporter;
+
+/**
+ * Invoked when an expoter completes it's initial export and data conversion process and the operation is 
+ * effectively complete. The resulting data can be accessed via SPExporter's exportData method.
+ */
+- (void)exporterProcessComplete:(SPExporter *)exporter;
 
 @end

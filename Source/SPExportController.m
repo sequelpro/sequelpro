@@ -53,8 +53,8 @@
 		[self setExportCancelled:NO];
 		
 		tables = [[NSMutableArray alloc] init];
+		exporters = [[NSMutableArray alloc] init];
 		operationQueue = [[NSOperationQueue alloc] init];
-		tableExportMapping = [NSMutableDictionary dictionary];
 	}
 	
 	return self;
@@ -228,17 +228,50 @@
 #pragma mark SPExporterDataAccess protocol methods
 
 /**
+ *
+ */
+- (void)exporterProcessWillBegin:(SPExporter *)exporter
+{
+	//[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), ((unsigned long)(i + 1)), ((unsigned long)tableCount), tableName]];
+	[exportProgressText displayIfNeeded];
+	
+	[exportProgressIndicator setIndeterminate:YES];
+	[exportProgressIndicator setUsesThreadedAnimation:YES];
+	[exportProgressIndicator startAnimation:self];
+	
+	[[SPLogger logger] log:[NSString stringWithFormat:@"Exporter started: %@", exporter]];
+	
+	// Update the progress text and set the progress bar back to determinate
+	//[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing...", @"text showing that app is writing data for table export"), ((unsigned long)(i + 1)), ((unsigned long)tableCount), tableName]];
+	[exportProgressText displayIfNeeded];
+	
+	[exportProgressIndicator stopAnimation:self];
+	[exportProgressIndicator setUsesThreadedAnimation:NO];
+	[exportProgressIndicator setIndeterminate:NO];
+	[exportProgressIndicator setDoubleValue:0];
+	[exportProgressIndicator displayIfNeeded];
+}
+
+/**
  * This method is part of the SPExporterDataAccess protocol. It is called when an expoter completes it's data
  * conversion process and the operation is effectively complete. The resulting data can be accessed via
  * SPExporter's exportData method.
  */
-- (void)exporterDataConversionProcessComplete:(SPExporter *)exporter
+- (void)exporterProcessComplete:(SPExporter *)exporter
 {	
 	// Do something with the data...
 	[[SPLogger logger] log:[NSString stringWithFormat:@"Exporter finished: %@", exporter]];
 	
-	// If there are no more operations in the queue, close the progress sheet
-	if ([[operationQueue operations] count] == 0) {
+	// If required add the next exporter to the operation queue
+	if ([exporters count] > 0) {
+		[operationQueue addOperation:[exporters objectAtIndex:0]];
+	
+		// Remove the exporter we just added to the operation queue from our list of exporters 
+		// so we know it's already been done.
+		[exporters removeObjectAtIndex:0];
+	}
+	// Otherwise if the exporter list is empty, close the progress sheet
+	else {
 		[NSApp endSheet:exportProgressWindow returnCode:0];
 		[exportProgressWindow orderOut:self];
 	}
@@ -278,6 +311,7 @@
 - (void)dealloc
 {	
     [tables release], tables = nil;
+	[exporters release], exporters = nil;
 	[operationQueue release], operationQueue = nil;
 	
 	[super dealloc];
@@ -401,13 +435,6 @@
 		
 		// Update the progress text and reset the progress bar to indeterminate status
 		NSString *tableName = [exportTables objectAtIndex:i];
-						
-		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), (unsigned long)(i + 1), (unsigned long)tableCount, tableName]];
-		[exportProgressText displayIfNeeded];
-		
-		[exportProgressIndicator setIndeterminate:YES];
-		[exportProgressIndicator setUsesThreadedAnimation:YES];
-		[exportProgressIndicator startAnimation:self];
 		
 		// For CSV exports of more than one table, output the name of the table
 		/*if (tableCount > 1) {
@@ -416,6 +443,7 @@
 		
 		// Determine whether this table is a table or a view via the create table command, and get the table details
 		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+		
 		[queryResult setReturnDataAsStrings:YES];
 		
 		if ([queryResult numOfRows]) {
@@ -481,26 +509,19 @@
 		// Set the exporter's generic properties
 		[exporter setConnection:connection];
 		[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemory state] == NSOnState)];
-		
-		// Update the progress text and set the progress bar back to determinate
-		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing...", @"text showing that app is writing data for table export"), (unsigned long)(i + 1), (unsigned long)tableCount, tableName]];
-		[exportProgressText displayIfNeeded];
-		
-		[exportProgressIndicator stopAnimation:self];
-		[exportProgressIndicator setUsesThreadedAnimation:NO];
-		[exportProgressIndicator setIndeterminate:NO];
-		[exportProgressIndicator setDoubleValue:0];
-		[exportProgressIndicator displayIfNeeded];
 				
-		// Start the actual data conversion process by placing the exporter on the operation queue.
-		// Note that although it is highly likely there is no guarantee that the operation will executed 
-		// as soon as it's placed on the queue. There may be a delay if the queue is already executing it's
-		// maximum number of concurrent operations. See the docs for more details.
-		[operationQueue addOperation:exporter];
+		[exporters addObject:exporter];
 		
 		// Add a spacer to the file
 		//[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
 	}
+	
+	// Add the first exporter to the operation queue
+	[operationQueue addOperation:[exporters objectAtIndex:0]];
+	
+	// Remove the exporter we just added to the operation queue from our list of exporters 
+	// so we know it's already been done.
+	[exporters removeObjectAtIndex:0];
 	
 	return YES;
 }

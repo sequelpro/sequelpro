@@ -85,6 +85,9 @@
 		{
 			return;
 		}
+		
+		// Call the delegate's exporterProcessWillBegin: method while passing this exporter to it
+		[[self delegate] performSelectorOnMainThread:@selector(exporterProcessWillBegin:) withObject:self waitUntilDone:NO];
 				
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];

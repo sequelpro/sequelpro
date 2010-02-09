@@ -53,7 +53,7 @@
 		// Default the output encoding to UTF-8
 		[self setExportOutputEncoding:NSUTF8StringEncoding];
 		
-		[self setDidEndSelector:@selector(exporterDataConversionProcessComplete:)];
+		[self setDidEndSelector:@selector(exporterProcessComplete:)];
 	}
 	
 	return self;
