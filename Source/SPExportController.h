@@ -50,6 +50,7 @@
 	IBOutlet id exportInputMatrix;
 	IBOutlet id exportFilePerTableCheck;
 	IBOutlet id exportFilePerTableNote;
+	IBOutlet id exportUseUTF8BOM;
 	IBOutlet id exportProcessLowMemory;
 	
 	// Export progress sheet
