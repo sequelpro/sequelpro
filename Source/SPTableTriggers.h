@@ -1,6 +1,11 @@
 //
+//  $Id$
+//
 //  SPTableTriggers.h
 //  sequel-pro
+//
+//  Created by Marius Ursache
+//  Copyright (c) 2010 Marius Ursache. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,12 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-
-@interface SPTableTriggers : NSObject {
+@interface SPTableTriggers : NSObject 
+{
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
@@ -31,19 +35,19 @@
 	IBOutlet id tableList;
 	IBOutlet id tableWindow;
 	
-	IBOutlet NSButton    *addTriggerButton;
-	IBOutlet NSButton    *removeTriggerButton;	
-	IBOutlet NSButton    *refreshTriggersButton;
-	IBOutlet NSTextField *labelTextField;		
-	IBOutlet NSTableView *triggersTableView;
-	IBOutlet NSPanel     *addTriggerPanel;
+	IBOutlet NSButton      *addTriggerButton;
+	IBOutlet NSButton      *removeTriggerButton;	
+	IBOutlet NSButton      *refreshTriggersButton;
+	IBOutlet NSTableView   *triggersTableView;
+	IBOutlet NSPanel       *addTriggerPanel;
+	IBOutlet NSTextField   *labelTextField;
+	
+	IBOutlet NSTextField   *triggerNameTextField;
+	IBOutlet NSPopUpButton *triggerActionTimePopUpButton;
+	IBOutlet NSPopUpButton *triggerEventPopUpButton;
+	IBOutlet NSTextView    *triggerStatementTextView;
 	
 	IBOutlet NSBox         *addTriggerTableBox;
-	IBOutlet NSPopUpButton *columnPopUpButton;
-	IBOutlet NSPopUpButton *refTablePopUpButton;
-	IBOutlet NSPopUpButton *refColumnPopUpButton;
-	IBOutlet NSPopUpButton *onUpdatePopUpButton;
-	IBOutlet NSPopUpButton *onDeletePopUpButton;
 	IBOutlet NSButton      *confirmAddTriggerButton;
 	
 	MCPConnection *connection;
@@ -56,14 +60,12 @@
 // IB action methods
 - (IBAction)addTrigger:(id)sender;
 - (IBAction)removeTrigger:(id)sender;
-- (IBAction)closeRelationSheet:(id)sender;
-- (IBAction)confirmAddRelation:(id)sender;
-- (IBAction)selectTableColumn:(id)sender;
-- (IBAction)selectReferenceTable:(id)sender;
+- (IBAction)closeTriggerSheet:(id)sender;
+- (IBAction)confirmAddTrigger:(id)sender;
 - (IBAction)refreshTriggers:(id)sender;
 
 // Task interaction
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)notification;
+- (void)endDocumentTaskForTab:(NSNotification *)notification;
 
 @end

@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="14"/>
+			<integer value="12"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -30,7 +30,7 @@
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1000">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSCustomObject" id="1001">
-				<string key="NSClassName">TableDocument</string>
+				<string key="NSClassName">SPFieldMapperController</string>
 			</object>
 			<object class="NSCustomObject" id="1003">
 				<string key="NSClassName">FirstResponder</string>
@@ -174,7 +174,7 @@
 											<object class="NSMutableArray" key="NSTableColumns">
 												<bool key="EncodedWithXMLCoder">YES</bool>
 												<object class="NSTableColumn" id="790992768">
-													<string key="NSIdentifier">value</string>
+													<string key="NSIdentifier">import_value</string>
 													<double key="NSWidth">216</double>
 													<double key="NSMinWidth">15</double>
 													<double key="NSMaxWidth">1000</double>
@@ -250,7 +250,7 @@
 													<reference key="NSTableView" ref="678921094"/>
 												</object>
 												<object class="NSTableColumn" id="185178480">
-													<string key="NSIdentifier">field</string>
+													<string key="NSIdentifier">target_field</string>
 													<double key="NSWidth">220</double>
 													<double key="NSMinWidth">10</double>
 													<double key="NSMaxWidth">3.4028234663852886e+38</double>
@@ -344,7 +344,7 @@
 									<int key="NSsFlags">257</int>
 									<reference key="NSTarget" ref="495172082"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSCurValue">0.037825059145689011</double>
+									<double key="NSCurValue">0.035674519836902618</double>
 									<double key="NSPercent">0.99047619104385376</double>
 								</object>
 								<object class="NSClipView" id="622202999">
@@ -537,21 +537,22 @@
 								<string key="NSKeyEquivalent"/>
 								<int key="NSPeriodicDelay">400</int>
 								<int key="NSPeriodicInterval">75</int>
-								<object class="NSMenuItem" key="NSMenuItem" id="1004582521">
+								<object class="NSMenuItem" key="NSMenuItem" id="604589401">
 									<reference key="NSMenu" ref="519018523"/>
-									<string key="NSTitle">INSERT</string>
+									<string key="NSTitle">UPDATE</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<int key="NSState">1</int>
-									<object class="NSCustomResource" key="NSOnImage" id="597600036">
+									<object class="NSCustomResource" key="NSOnImage" id="74411591">
 										<string key="NSClassName">NSImage</string>
 										<string key="NSResourceName">NSMenuCheckmark</string>
 									</object>
-									<object class="NSCustomResource" key="NSMixedImage" id="577467422">
+									<object class="NSCustomResource" key="NSMixedImage" id="715110738">
 										<string key="NSClassName">NSImage</string>
 										<string key="NSResourceName">NSMenuMixedState</string>
 									</object>
 									<string key="NSAction">_popUpItemAction:</string>
+									<int key="NSTag">2</int>
 									<reference key="NSTarget" ref="1033308908"/>
 								</object>
 								<bool key="NSMenuItemRespectAlignment">YES</bool>
@@ -559,31 +560,31 @@
 									<string key="NSTitle">OtherViews</string>
 									<object class="NSMutableArray" key="NSMenuItems">
 										<bool key="EncodedWithXMLCoder">YES</bool>
-										<reference ref="1004582521"/>
+										<object class="NSMenuItem" id="1004582521">
+											<reference key="NSMenu" ref="519018523"/>
+											<string key="NSTitle">INSERT</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="74411591"/>
+											<reference key="NSMixedImage" ref="715110738"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<reference key="NSTarget" ref="1033308908"/>
+										</object>
 										<object class="NSMenuItem" id="167502619">
 											<reference key="NSMenu" ref="519018523"/>
 											<string key="NSTitle">REPLACE</string>
 											<string key="NSKeyEquiv"/>
 											<int key="NSMnemonicLoc">2147483647</int>
-											<reference key="NSOnImage" ref="597600036"/>
-											<reference key="NSMixedImage" ref="577467422"/>
+											<reference key="NSOnImage" ref="74411591"/>
+											<reference key="NSMixedImage" ref="715110738"/>
 											<string key="NSAction">_popUpItemAction:</string>
 											<int key="NSTag">1</int>
 											<reference key="NSTarget" ref="1033308908"/>
 										</object>
-										<object class="NSMenuItem" id="604589401">
-											<reference key="NSMenu" ref="519018523"/>
-											<string key="NSTitle">UPDATE</string>
-											<string key="NSKeyEquiv"/>
-											<int key="NSMnemonicLoc">2147483647</int>
-											<reference key="NSOnImage" ref="597600036"/>
-											<reference key="NSMixedImage" ref="577467422"/>
-											<string key="NSAction">_popUpItemAction:</string>
-											<int key="NSTag">2</int>
-											<reference key="NSTarget" ref="1033308908"/>
-										</object>
+										<reference ref="604589401"/>
 									</object>
 								</object>
+								<int key="NSSelectedIndex">2</int>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
 								<bool key="NSAltersState">YES</bool>
@@ -703,10 +704,141 @@
 				<string key="NSMinSize">{465, 333}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
+			<object class="NSCustomObject" id="914102730">
+				<string key="NSClassName">TableDump</string>
+			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<object class="NSMutableArray" key="connectionRecords">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableTargetPopup</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="549705971"/>
+					</object>
+					<int key="connectionID">58</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">changeTableTarget:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="549705971"/>
+					</object>
+					<int key="connectionID">59</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">fileSourcePath</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="697948389"/>
+					</object>
+					<int key="connectionID">60</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">importMethodPopup</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="599385609"/>
+					</object>
+					<int key="connectionID">61</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">changeImportMethod:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="599385609"/>
+					</object>
+					<int key="connectionID">62</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">recordCountLabel</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="186404366"/>
+					</object>
+					<int key="connectionID">65</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">rowUpButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="116285743"/>
+					</object>
+					<int key="connectionID">66</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">rowDownButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="834757891"/>
+					</object>
+					<int key="connectionID">67</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">stepRow:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="834757891"/>
+					</object>
+					<int key="connectionID">68</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">stepRow:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="116285743"/>
+					</object>
+					<int key="connectionID">69</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">fieldMapperTableView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="678921094"/>
+					</object>
+					<int key="connectionID">70</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="678921094"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">71</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dataSource</string>
+						<reference key="source" ref="678921094"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">72</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">window</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="420604405"/>
+					</object>
+					<int key="connectionID">76</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSheet:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="341819846"/>
+					</object>
+					<int key="connectionID">83</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeSheet:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="920273776"/>
+					</object>
+					<int key="connectionID">84</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1074,6 +1206,12 @@
 						<reference key="object" ref="922239869"/>
 						<reference key="parent" ref="1052916804"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">80</int>
+						<reference key="object" ref="914102730"/>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">TableDump</string>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1148,13 +1286,14 @@
 					<string>52.IBPluginDependency</string>
 					<string>56.IBPluginDependency</string>
 					<string>57.IBPluginDependency</string>
+					<string>80.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{503, 302}, {465, 311}}</string>
+					<string>{{139, 173}, {465, 311}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{503, 302}, {465, 311}}</string>
+					<string>{{139, 173}, {465, 311}}</string>
 					<integer value="1"/>
 					<string>{{387, 725}, {432, 282}}</string>
 					<integer value="0"/>
@@ -1183,7 +1322,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{234, 355}, {126, 54}}</string>
+					<string>{{302, 438}, {126, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1219,6 +1358,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -1237,7 +1377,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">57</int>
+			<int key="maxID">84</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1263,44 +1403,41 @@
 						<string key="minorKey">Source/SPWindowAdditions.h</string>
 					</object>
 				</object>
+			</object>
+			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
+				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
-					<string key="className">TableDocument</string>
-					<string key="superclassName">NSDocument</string>
+					<string key="className">SPFieldMapperController</string>
+					<string key="superclassName">NSWindowController</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addDatabase:</string>
-							<string>analyzeTable:</string>
-							<string>cancelConnectSheet:</string>
-							<string>checkTable:</string>
-							<string>checksumTable:</string>
-							<string>chooseDatabase:</string>
-							<string>chooseEncoding:</string>
-							<string>chooseFavorite:</string>
-							<string>closeDatabaseSheet:</string>
+							<string>changeImportMethod:</string>
+							<string>changeTableTarget:</string>
 							<string>closeSheet:</string>
-							<string>connect:</string>
-							<string>connectSheetAddToFavorites:</string>
-							<string>connectToDB:</string>
-							<string>copyCreateTableSyntax:</string>
-							<string>export:</string>
-							<string>exportMultipleTables:</string>
-							<string>exportTable:</string>
-							<string>flushPrivileges:</string>
-							<string>flushTable:</string>
-							<string>import:</string>
-							<string>optimizeTable:</string>
-							<string>removeDatabase:</string>
-							<string>removeFavorite:</string>
-							<string>repairTable:</string>
-							<string>setDatabases:</string>
-							<string>showCreateTableSyntax:</string>
-							<string>showVariables:</string>
-							<string>viewContent:</string>
-							<string>viewQuery:</string>
-							<string>viewStatus:</string>
-							<string>viewStructure:</string>
+							<string>stepRow:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>fieldMapperTableView</string>
+							<string>fileSourcePath</string>
+							<string>importMethodPopup</string>
+							<string>recordCountLabel</string>
+							<string>rowDownButton</string>
+							<string>rowUpButton</string>
+							<string>tableTargetPopup</string>
+							<string>theDelegate</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1312,18 +1449,34 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/SPFieldMapperController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">TableDump</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>cancelProgressBar:</string>
+							<string>changeFormat:</string>
+							<string>changeTable:</string>
+							<string>closeFieldMapperSheet:</string>
+							<string>closeSheet:</string>
+							<string>panelSelectionDidChange:</string>
+							<string>reloadTables:</string>
+							<string>selectTables:</string>
+							<string>stepRow:</string>
+							<string>switchInput:</string>
+							<string>switchTab:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1341,61 +1494,67 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addDatabaseButton</string>
-							<string>chooseDatabaseButton</string>
-							<string>connectFavoritesTableView</string>
-							<string>connectProgressBar</string>
-							<string>connectProgressStatusText</string>
-							<string>connectSheet</string>
-							<string>createTableSyntaxWindow</string>
+							<string>addCreateTableSwitch</string>
+							<string>addDropTableSwitch</string>
+							<string>addErrorsSwitch</string>
+							<string>addTableContentSwitch</string>
+							<string>csvFullStreamingSwitch</string>
 							<string>customQueryInstance</string>
-							<string>databaseEncodingButton</string>
-							<string>databaseField</string>
-							<string>databaseNameField</string>
-							<string>databaseSheet</string>
-							<string>dbTablesTableView</string>
-							<string>favoritesButton</string>
-							<string>favoritesController</string>
-							<string>hostField</string>
-							<string>keyChainInstance</string>
-							<string>passwordField</string>
-							<string>portField</string>
-							<string>queryConsoleInstance</string>
-							<string>queryProgressBar</string>
-							<string>sidebarGrabber</string>
-							<string>socketField</string>
-							<string>spExportControllerInstance</string>
-							<string>syntaxView</string>
-							<string>syntaxViewContent</string>
+							<string>errorsSheet</string>
+							<string>errorsView</string>
+							<string>exportCSVView</string>
+							<string>exportDumpTableView</string>
+							<string>exportDumpView</string>
+							<string>exportFieldNamesSwitch</string>
+							<string>exportFieldsEnclosedField</string>
+							<string>exportFieldsEscapedField</string>
+							<string>exportFieldsTerminatedField</string>
+							<string>exportLinesTerminatedField</string>
+							<string>exportMultipleCSVTableView</string>
+							<string>exportMultipleCSVView</string>
+							<string>exportMultipleFieldNamesSwitch</string>
+							<string>exportMultipleFieldsEnclosedField</string>
+							<string>exportMultipleFieldsEscapedField</string>
+							<string>exportMultipleFieldsTerminatedField</string>
+							<string>exportMultipleLinesTerminatedField</string>
+							<string>exportMultipleXMLTableView</string>
+							<string>exportMultipleXMLView</string>
+							<string>exportTabBar</string>
+							<string>exportTableList</string>
+							<string>exportToolbar</string>
+							<string>exportWindow</string>
+							<string>fieldMappingPopup</string>
+							<string>fieldMappingSheet</string>
+							<string>fieldMappingTableView</string>
+							<string>importCSVBox</string>
+							<string>importCSVView</string>
+							<string>importFieldNamesSwitch</string>
+							<string>importFieldsEnclosedField</string>
+							<string>importFieldsEscapedField</string>
+							<string>importFieldsTerminatedField</string>
+							<string>importFormatPopup</string>
+							<string>importLinesTerminatedField</string>
+							<string>multiCSVFullStreamingSwitch</string>
+							<string>multiXMLFullStreamingSwitch</string>
+							<string>recordCountLabel</string>
+							<string>rowDownButton</string>
+							<string>rowUpButton</string>
+							<string>singleProgressBar</string>
+							<string>singleProgressSheet</string>
+							<string>singleProgressText</string>
+							<string>singleProgressTitle</string>
+							<string>sqlFullStreamingSwitch</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
-							<string>tableDumpInstance</string>
+							<string>tableDocumentInstance</string>
 							<string>tableSourceInstance</string>
-							<string>tableStatusInstance</string>
-							<string>tableTabView</string>
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
-							<string>userField</string>
-							<string>variablesSheet</string>
-							<string>variablesTableView</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
 							<string>id</string>
-							<string>NSTableView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSWindow</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSTableView</string>
-							<string>id</string>
-							<string>NSArrayController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1412,7 +1571,39 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>NSTabView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSPopUpButton</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1421,8 +1612,8 @@
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/TableDocument.h</string>
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/TableDump.h</string>
 					</object>
 				</object>
 			</object>

@@ -23,10 +23,40 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#import <MCPKit/MCPKit.h>
 
 
-@interface SPFieldMapperController : NSObject {
+
+@interface SPFieldMapperController : NSWindowController {
+
+	IBOutlet id fieldMapperTableView;
+	IBOutlet id tableTargetPopup;
+	IBOutlet id fileSourcePath;
+	IBOutlet id importMethodPopup;
+	IBOutlet id rowUpButton;
+	IBOutlet id rowDownButton;
+	IBOutlet id recordCountLabel;
+	
+	id theDelegate;
+	
+	NSInteger fieldMappingCurrentRow;
+	NSArray *fieldMappingImportArray;
+	NSArray *fieldMappingArray;
+
+	BOOL fieldMappingImportArrayIsPreview;
+
+	MCPConnection *mySQLConnection;
 
 }
+
+- (id)initWithDelegate:(id)managerDelegate;
+
+- (void)setConnection:(MCPConnection *)theConnection;
+
+// IBAction methods
+- (IBAction)changeTableTarget:(id)sender;
+- (IBAction)changeImportMethod:(id)sender;
+- (IBAction)stepRow:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 
 @end

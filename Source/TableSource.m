@@ -99,6 +99,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
   
 	//perform queries and load results in array (each row as a dictionary)
 	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[tablesListInstance updateTables:self];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+		[editTableButton setEnabled:NO];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+				   errorMessage]);
+		return;
+	}
+
 	[tableSourceResult setReturnDataAsStrings:YES];
 	
 	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
@@ -108,6 +129,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableSourceResult release];
 
 	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[tablesListInstance updateTables:self];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+		[editTableButton setEnabled:NO];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+				   errorMessage]);
+
+		return;
+	}
 	[indexResult setReturnDataAsStrings:YES];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
@@ -778,7 +820,29 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else {
 		alertSheetOpened = YES;
-		
+		if([mySQLConnection getLastErrorID] == 1146) { // If the current table doesn't exist anymore
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+							  NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"), 
+							  selectedTable, [mySQLConnection getLastErrorMessage]]);
+
+			isEditingRow = NO;
+			isEditingNewRow = NO;
+			currentlyEditingRow = -1;
+			[tableFields removeAllObjects];
+			[indexes removeAllObjects];
+			[tableSourceView reloadData];
+			[indexView reloadData];
+			[addFieldButton setEnabled:NO];
+			[copyFieldButton setEnabled:NO];
+			[removeFieldButton setEnabled:NO];
+			[addIndexButton setEnabled:NO];
+			[removeIndexButton setEnabled:NO];
+			[editTableButton setEnabled:NO];
+			[tablesListInstance updateTables:self];
+			return NO;
+		}
 		// Problem: alert sheet doesn't respond to first click
 		if (isEditingNewRow) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
@@ -905,7 +969,7 @@ fetches the result as an array with a dictionary for each row in it
 			currentlyEditingRow = -1;
 		}
 		[tableSourceView reloadData];
-	} 
+	}
 	else if ([contextInfo isEqualToString:@"removeField"] || [contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeFieldAndForeignKey:[contextInfo hasSuffix:@"AndForeignKey"]];
@@ -924,6 +988,8 @@ fetches the result as an array with a dictionary for each row in it
 	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
 		;
 	}
+	else
+		alertSheetOpened = NO;
 }
 
 #pragma mark -

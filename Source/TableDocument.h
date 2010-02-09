@@ -41,6 +41,7 @@
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
 	IBOutlet id tableRelationsInstance;
+	IBOutlet id tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;

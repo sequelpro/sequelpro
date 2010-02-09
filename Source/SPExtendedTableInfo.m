@@ -30,6 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
 #import "TableDocument.h"
+#import "TablesList.h"
 #import "SPAlertSheets.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
@@ -102,7 +103,7 @@
 	
 	if ([connection getLastErrorID] == 0) {
 		// Reload the table's data
-		[self reloadTable:self];
+		[tablesListInstance updateSelectionWithTaskString:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
 	}
 	else {
 		[sender selectItemWithTitle:currentType];

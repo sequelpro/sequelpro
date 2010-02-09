@@ -664,6 +664,7 @@
 	[tableSourceInstance setConnection:mySQLConnection];
 	[tableContentInstance setConnection:mySQLConnection];
 	[tableRelationsInstance setConnection:mySQLConnection];
+	[tableTriggersInstance setConnection:mySQLConnection];
 	[customQueryInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	[exportControllerInstance setConnection:mySQLConnection];
@@ -2183,7 +2184,7 @@
 	[NSApp beginSheet:[userManagerInstance window]
 	   modalForWindow:tableWindow 
 		modalDelegate:userManagerInstance 
-	   didEndSelector:nil
+	   didEndSelector:@selector(userManagerSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
 }
 

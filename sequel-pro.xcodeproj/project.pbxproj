@@ -228,6 +228,7 @@
 		BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC29C37E10501EFD00DD6C6E /* SPQueryController.m */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */; };
 		BC5AD7FF10FB262F008769E3 /* field-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC5AD7FE10FB262F008769E3 /* field-small-square.tiff */; };
 		BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */; };
 		BC675A141072039C00C5ACD4 /* SPContentFilterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */; };
@@ -631,6 +632,7 @@
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC30C010111C98BD002701C9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DataMigrationDialog.xib; sourceTree = "<group>"; };
 		BC5AD7FE10FB262F008769E3 /* field-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "field-small-square.tiff"; sourceTree = "<group>"; };
 		BC65C3B1107CE3EE003F7B02 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ImportAccessory.xib; sourceTree = "<group>"; };
 		BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPContentFilterManager.h; sourceTree = "<group>"; };
@@ -1260,6 +1262,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */,
 				17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */,
 				BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */,
 				BC675A15107203BA00C5ACD4 /* ContentFilterManager.xib */,
@@ -1659,6 +1662,7 @@
 				58C4593810D0674D00E6E13E /* spficon.icns in Resources */,
 				58C4593910D0674E00E6E13E /* sqlicon.icns in Resources */,
 				BC5AD7FF10FB262F008769E3 /* field-small-square.tiff in Resources */,
+				BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1989,6 +1993,14 @@
 				B5E92F180F75B2D100012500 /* English */,
 			);
 			name = ExportDialog.xib;
+			sourceTree = "<group>";
+		};
+		BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BC30C010111C98BD002701C9 /* English */,
+			);
+			name = DataMigrationDialog.xib;
 			sourceTree = "<group>";
 		};
 		BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */ = {

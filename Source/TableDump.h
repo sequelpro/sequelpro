@@ -25,7 +25,15 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
+#import "SPFieldMapperController.h"
 #import <MCPKit/MCPKit.h>
+
+typedef enum _SPExportModes {
+	SPExportingSQL = 0,
+	SPExportingCSV = 1,
+	SPExportingXML = 2,
+	SPExportingDOT = 3
+} SPExportMode;
 
 @interface TableDump : NSObject 
 {
@@ -103,14 +111,19 @@
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingButtonOptions;
 	NSInteger fieldMappingCurrentRow;
+	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
+	
+	NSInteger fieldMapperSheetStatus;
+	SPFieldMapperController *fieldMapperController;
 }
 
 // IBAction methods
 - (IBAction)reloadTables:(id)sender;
 - (IBAction)selectTables:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)closeFieldMapperSheet:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
 

@@ -38,6 +38,7 @@
 #import "RegexKitLite.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "SPFieldMapperController.h"
 
 @implementation TableDump
 
@@ -45,38 +46,42 @@
 #pragma mark IBAction methods
 
 /**
- * Get the tables in db
+ * Update the table lists with the list of tables, retrieved from the
+ * tablesList.  If the user has pressed the reload button, trigger a reload
+ * from the server; otherwise used the cached lists.
+ * Retrieve only tables for all modes except SQL.
  */
 - (IBAction)reloadTables:(id)sender
 {
-	MCPResult *queryResult;
-	NSInteger i;
-	
-	//get tables
+
+	// Trigger a reload if necessary
+	if (sender != self) [tablesListInstance updateTables:self];
+
+	// Clear all existing tables
 	[tables removeAllObjects];
-	queryResult = (MCPResult *)[mySQLConnection listTables];
-	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	NSMutableArray *unsortedTables = [NSMutableArray array];
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[unsortedTables addObject:[[queryResult fetchRowAsArray] objectAtIndex:0]];
+
+	// For all modes, retrieve table and view names
+	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
+	for (id itemName in tablesAndViews) {
+		[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], itemName,  [NSNumber numberWithInt:SP_TABLETYPE_TABLE], nil]];
 	}
-	
-	NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-	NSArray *sortedTables = [unsortedTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
-	[desc release];
-	
-	for ( i = 0 ; i < [sortedTables count]; i++ ) {
-		[tables addObject:
-			[NSMutableArray arrayWithObjects:
-				[NSNumber numberWithBool:YES], 
-				[sortedTables objectAtIndex:i], 
-				nil]];
+
+	// For SQL only, add procedures and functions
+	if (exportMode == SPExportingSQL) {
+		NSArray *procedures = [tablesListInstance allProcedureNames];
+		for (id procName in procedures) {
+			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], procName, [NSNumber numberWithInt:SP_TABLETYPE_PROC], nil]];
+		}
+		NSArray *functions = [tablesListInstance allFunctionNames];
+		for (id funcName in functions) {
+			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], funcName, [NSNumber numberWithInt:SP_TABLETYPE_FUNC], nil]];
+		}	
 	}
-		
-	[exportDumpTableView reloadData];
-	[exportMultipleCSVTableView reloadData];
-	[exportMultipleXMLTableView reloadData];
+
+	// Update interface
+	if (exportMode == SPExportingSQL) [exportDumpTableView reloadData];
+	else if (exportMode == SPExportingCSV) [exportMultipleCSVTableView reloadData];
+	else if (exportMode == SPExportingXML) [exportMultipleXMLTableView reloadData];
 }
 
 /**
@@ -101,6 +106,11 @@
 	[exportDumpTableView reloadData];
 	[exportMultipleCSVTableView reloadData];
 	[exportMultipleXMLTableView reloadData];
+}
+
+- (IBAction)closeFieldMapperSheet:(id)sender
+{
+	[NSApp endSheet:fieldMappingSheet returnCode:[sender tag]];
 }
 
 /**
@@ -151,6 +161,7 @@
 	switch ( tag ) {
 		case 5:
 			// export dump
+			exportMode = SPExportingSQL;
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@_%@.sql", [tableDocumentInstance database], currentDate];
 			[savePanel setRequiredFileType:@"sql"];
@@ -160,6 +171,7 @@
 			
 			// Export the full resultset for the currently selected table to a file in CSV format
 		case 6:
+			exportMode = SPExportingCSV;
 			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
 			[savePanel setAccessoryView:exportCSVView];
 			[csvFullStreamingSwitch setEnabled:YES];
@@ -168,12 +180,14 @@
 			
 			// Export the full resultset for the currently selected table to a file in XML format
 		case 7:
+			exportMode = SPExportingXML;
 			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
 			contextInfo = @"exportTableContentAsXML";
 			break;
 			
 			// Export the current "browse" view to a file in CSV format
 		case 8:
+			exportMode = SPExportingCSV;
 			file = [NSString stringWithFormat:@"%@ view.csv", [tableDocumentInstance table]];
 			[savePanel setAccessoryView:exportCSVView];
 			[csvFullStreamingSwitch setEnabled:NO];
@@ -182,12 +196,14 @@
 			
 			// Export the current "browse" view to a file in XML format
 		case 9:
+			exportMode = SPExportingXML;
 			file = [NSString stringWithFormat:@"%@ view.xml", [tableDocumentInstance table]];
 			contextInfo = @"exportBrowseViewAsXML";
 			break;
 			
 			// Export the current custom query result set to a file in CSV format
 		case 10:
+			exportMode = SPExportingCSV;
 			file = @"customresult.csv";
 			[savePanel setAccessoryView:exportCSVView];
 			[csvFullStreamingSwitch setEnabled:NO];
@@ -196,12 +212,14 @@
 			
 			// Export the current custom query result set to a file in XML format
 		case 11:
+			exportMode = SPExportingXML;
 			file = @"customresult.xml";
 			contextInfo = @"exportCustomResultAsXML";
 			break;
 			
 			// Export multiple tables to a file in CSV format
 		case 12:
+			exportMode = SPExportingCSV;
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
 			[savePanel setAccessoryView:exportMultipleCSVView];
@@ -210,6 +228,7 @@
 			
 			// Export multiple tables to a file in XML format
 		case 13:
+			exportMode = SPExportingXML;
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
 			[savePanel setAccessoryView:exportMultipleXMLView];
@@ -218,6 +237,7 @@
 			
 			// graphviz dot file
 		case 14:
+			exportMode = SPExportingDOT;
 			[self reloadTables:self];
 			file = [NSString stringWithString:[tableDocumentInstance database]];
 			[savePanel setRequiredFileType:@"dot"];
@@ -597,6 +617,7 @@
 
 	// Read in the file in a loop
 	sqlParser = [[SPSQLParser alloc] init];
+	[sqlParser setDelimiterSupport:YES];
 	sqlDataBuffer = [[NSMutableData alloc] init];
 	importPool = [[NSAutoreleasePool alloc] init];
 	while (1) {
@@ -1190,23 +1211,35 @@
 	// Trigger a table selection and setup
 	[self changeTable:self];
 
+	fieldMapperSheetStatus = 1;
+
+	// if(fieldMapperController) [fieldMapperController release];
+	// fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+
 	// Show fieldMapping sheet
+	// [NSApp beginSheet:[fieldMapperController window]
 	[NSApp beginSheet:fieldMappingSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
-	   didEndSelector:nil
+	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
 		  contextInfo:nil];
 
-	NSInteger code = [NSApp runModalForWindow:fieldMappingSheet];
-	[NSApp endSheet:fieldMappingSheet];
-	[fieldMappingSheet orderOut:nil];
+	// Wait for fieldMappingSheet
+	while (fieldMapperSheetStatus == 1)
+		usleep(100000);
 
-	// Return success or failure based on confirmation or cancellation
-	if (code) {
-		return TRUE;
-	} else {
+	// if(fieldMapperController) [fieldMapperController release];
+
+	if(fieldMapperSheetStatus == 2)
+		return YES;
+	else
 		return FALSE;
-	}
+
+}
+- (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet orderOut:self];
+	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
 }
 
 /*
@@ -1326,6 +1359,8 @@
 	NSArray *fieldNames;
 	NSArray *theRow;
 	NSMutableArray *selectedTables = [NSMutableArray array];
+	NSMutableArray *selectedProcs = [NSMutableArray array];
+	NSMutableArray *selectedFuncs = [NSMutableArray array];
 	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
 	NSMutableString *metaString = [NSMutableString string];
 	NSMutableString *cellValue = [NSMutableString string];
@@ -1358,10 +1393,22 @@
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
-	// Copy over the selected table names into a table in preparation for iteration
+	// Copy over the selected item names into tables in preparation for iteration
+	NSMutableArray *targetArray;
 	for ( i = 0 ; i < [tables count] ; i++ ) {
 		if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
-			[selectedTables addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 1)]];
+			switch ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 2) intValue]) {
+				case SP_TABLETYPE_PROC:
+					targetArray = selectedProcs;
+					break;
+				case SP_TABLETYPE_FUNC:
+					targetArray = selectedFuncs;
+					break;
+				default:
+					targetArray = selectedTables;
+					break;
+			}
+			[targetArray addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 1)]];
 		}
 	}
 	
@@ -1660,8 +1707,26 @@
 		// Add an additional separator between tables
 		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 	}
-	
-	for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) {	
+
+	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
+	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
+	while (tableName = [viewSyntaxEnumerator nextObject]) {
+		[metaString setString:@"\n\n"];
+		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
+		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
+		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	}
+
+	// Export procedures and functions
+	for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) {
+
+		// Retrieve the array of selected procedures or functions, and skip export if not selected
+		NSMutableArray *selectedItems;
+		if ([procedureType isEqualToString:@"PROCEDURE"]) selectedItems = selectedProcs;
+		else selectedItems = selectedFuncs;
+		if (![selectedItems count]) continue;
+
+		// Retrieve the definitions
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */;",
 													procedureType,
 													[[tableDocumentInstance database] tickQuotedString]]];
@@ -1674,14 +1739,24 @@
 									  [[tableDocumentInstance database] tickQuotedString]]];
 			[metaString appendString:@"--\n"];
 			[metaString appendString:@"DELIMITER ;;\n"];
-			
+
+			// Loop through the definitions, exporting if enabled
 			for (int t=0; t<[queryResult numOfRows]; t++) {
 				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
+
+				// Only proceed if the item was selected for export
+				if (![selectedItems containsObject:procedureName]) continue;
+
+				// Add the "drop" command if specified in the export dialog
+				if ([addDropTableSwitch state] == NSOnState) {
+					[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", 
+											  procedureType,
+											  [procedureName backtickQuotedString]]];
+				}
 				
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", 
-										  procedureType,
-										  [procedureName backtickQuotedString]]];
+				// Only continue if the "create syntax" is specified in the export dialog
+				if ([addCreateTableSwitch state] == NSOffState) continue;
 				
 				//Definer is user@host but we need to escape it to `user`@`host`
 				NSArray *procedureDefiner = [[proceduresList objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
@@ -1731,15 +1806,6 @@
 			}
 		}
 		
-	}
-
-	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
-	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
-	while (tableName = [viewSyntaxEnumerator nextObject]) {
-		[metaString setString:@"\n\n"];
-		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
-		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
-		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 
 	// Restore unique checks, foreign key checks, and other settings saved at the start

@@ -39,8 +39,8 @@
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
 #import "SPEditorTokens.h"
-extern NSInteger yylex();
-extern NSInteger yyuoffset, yyuleng;
+extern NSUInteger yylex();
+extern NSUInteger yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
@@ -52,10 +52,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kAPval         @"linked"
 #define kLEXToken      @"Quoted" // set via lex to indicate a quoted string
 #define kLEXTokenValue @"isMarked"
-#define kSQLkeyword    @"SQLkw"  // attribute for found SQL keywords
+#define kSQLkeyword    @"s"      // attribute for found SQL keywords
 #define kQuote         @"Quote"
 #define kQuoteValue    @"isQuoted"
-#define kValue         @"dummy"
+#define kValue         @"x"
 #define kBTQuote       @"BTQuote"
 #define kBTQuoteValue  @"isBTQuoted"
 
@@ -67,6 +67,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG 1002
 
 #define SP_SYNTAX_HILITE_BIAS 2000
+#define SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING 20000000
 
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
@@ -106,6 +107,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) awakeFromNib
 {
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+	[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+
 	// Set self as delegate for the textView's textStorage to enable syntax highlighting,
 	[[self textStorage] setDelegate:self];
 
@@ -117,6 +122,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	startListeningToBoundChanges = NO;
+	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
@@ -124,6 +130,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[scrollView setHasHorizontalRuler:NO];
 	[scrollView setHasVerticalRuler:YES];
 	[scrollView setRulersVisible:YES];
+	[self setAllowsDocumentBackgroundColorChange:YES];
+	[self setContinuousSpellCheckingEnabled:NO];
+	[self setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
+	[self setAutoindentIgnoresEnter:YES];
+	[self setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
+	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
+	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 
 	// Re-define 64 tab stops for a better editing
 	NSFont *tvFont = [self font];
@@ -167,8 +180,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
 	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
 
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
@@ -183,6 +194,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
 
 	// Register observers for the when editor background colors preference changes
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorFont options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryHighlightCurrentQuery options:NSKeyValueObservingOptionNew context:NULL];
@@ -209,6 +221,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
 		[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
+		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorHighlightQueryColor]) {
 		[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
@@ -485,7 +500,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	[self breakUndoCoalescing];
 
-	NSInteger caretPos = NSMaxRange([self selectedRange]);
+	NSUInteger caretPos = NSMaxRange([self selectedRange]);
 	// [self setSelectedRange:NSMakeRange(caretPos, 0)];
 	BOOL caretMovedLeft = NO;
 
@@ -508,6 +523,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* currentWord   = [[self string] substringWithRange:completionRange];
 	NSString* prefix        = @"";
 	NSString *currentDb     = nil;
+
+	// Break for long stuff
+	if(completionRange.length>100000) return;
+
 
 	NSString* allow; // additional chars which not close the popup
 	if(isDictMode)
@@ -542,11 +561,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// This approach counts the number of ` up to the beginning of the current line from caret position
 		NSRange lineHeadRange = [[self string] lineRangeForRange:NSMakeRange(caretPos, 0)];
 		NSString *lineHead = [[self string] substringWithRange:NSMakeRange(lineHeadRange.location, caretPos - lineHeadRange.location)];
-		for(NSInteger i=0; i<[lineHead length]; i++)
+		for(NSUInteger i=0; i<[lineHead length]; i++)
 			if([lineHead characterAtIndex:i]=='`') caretIsInsideBackticks = !caretIsInsideBackticks;
 			
 		NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-		NSInteger start = caretPos;
+		NSUInteger start = caretPos;
 		NSInteger backticksCounter = (caretIsInsideBackticks) ? 1 : 0;
 		NSInteger pointCounter     = 0;
 		NSInteger firstPoint       = 0;
@@ -591,9 +610,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		dbBrowseMode = (pointCounter || backticksCounter);
-		
+
 		if(dbBrowseMode) {
 			parseRange = NSMakeRange(start, caretPos-start);
+
+			// Break for long stuff
+			if(parseRange.length>100000) return;
+
 			NSString *parsedString = [[self string] substringWithRange:parseRange];
 
 			// Check if parsed string is wrapped by ``
@@ -791,7 +814,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSRange r = NSMakeRange(0, [[self string] length]);
 
 	// Remove all colors before printing for large text buffer
-	if(r.length > SP_SYNTAX_HILITE_BIAS) {
+	if(r.length > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING) {
 		// Cancel all doSyntaxHighlighting requests
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(doSyntaxHighlighting) 
@@ -885,8 +908,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if(ignLeadingNewLines) // ignore leading empty lines
 	{
-		NSInteger arrayCount = [lineRanges count];
-		NSInteger i;
+		NSUInteger arrayCount = [lineRanges count];
+		NSUInteger i;
 		for (i = 0; i < arrayCount; i++) {
 			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
 				break;
@@ -920,7 +943,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSRange currentLineRange;
 	NSArray *lineRanges;
 	NSString *tabString = @"\t";
-	NSInteger i, indentedLinesLength = 0;
+	NSUInteger i, indentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
 
@@ -973,7 +996,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
 	NSArray *lineRanges;
-	NSInteger i, unindentedLines = 0, unindentedLinesLength = 0;
+	NSUInteger i, unindentedLines = 0, unindentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound) return NO;
 
@@ -1089,6 +1112,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
 
+	if(snippetControlCounter > -1) {
+		NSBeep();
+		return;
+	}
+
 	NSInteger i;
 
 	// reset snippet array
@@ -1104,7 +1132,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	@try{
 		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
 
-		targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
+		if(targetRange.length)
+			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
 		[snip setString:theSnippet];
 
 		if(snip == nil || ![snip length]) return;
@@ -1170,6 +1199,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
+			// If inside the snippet hint $(…) is defined run … as BASH command
+			// and replace the snippet hint by the return string of that command
+			if([theHintString isMatchedByRegex:@"(?s)(?<!\\\\)\\s*\\$\\(.*\\)\\s*"]) {
+				NSRange r = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\s*\\$\\((.*)\\)\\s*" capture:1L];
+				if(r.length)
+					[theHintString setString:[self runBashCommand:[theHintString substringWithRange:r]]];
+				else
+					[theHintString setString:@""];
+				[theHintString flushCachedRegexData];
+			}
+
 			[snip replaceCharactersInRange:snipRange withString:theHintString];
 			[snip flushCachedRegexData];
 
@@ -1199,10 +1239,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self breakUndoCoalescing];
 
 		// Insert favorite query as snippet if any
-		[self setSelectedRange:targetRange];
+		// if(targetRange.length)
+			[self setSelectedRange:targetRange];
 
 		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
 		snippetWasJustInserted = YES;
+
+		[self breakUndoCoalescing];
 		[self insertText:snip];
 
 		// Any snippets defined?
@@ -1228,6 +1271,79 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Run 'command' as BASH script and return the result.
+ * This task can be interrupted by pressing ⌘.
+ */
+- (NSString *)runBashCommand:(NSString *)command
+{
+
+	BOOL userTerminated = NO;
+
+	NSTask *bashTask = [[NSTask alloc] init];
+	[bashTask setLaunchPath: @"/bin/sh"];
+	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", command, nil]];
+
+	NSPipe *stdout_pipe = [NSPipe pipe];
+	[bashTask setStandardOutput:stdout_pipe];
+
+	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
+
+	[bashTask launch];
+
+	// Listen to ⌘. to terminate
+	while(1) {
+		if(![bashTask isRunning]) break;
+		NSEvent* event = [NSApp nextEventMatchingMask:NSKeyDownMask
+                                          untilDate:[NSDate distantPast]
+                                             inMode:NSDefaultRunLoopMode
+                                            dequeue:YES];
+		if(!event) continue;
+		if ([event type] == NSKeyDown) {
+			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+				[bashTask terminate];
+				userTerminated = YES;
+				break;
+			}
+		}
+	}
+
+	if(userTerminated) {
+		if(bashTask) [bashTask release];
+		NSBeep();
+		NSLog(@"“%@” was terminated by user.", command);
+		return @"";
+	}
+
+	[bashTask waitUntilExit];
+	NSInteger status = [bashTask terminationStatus];
+	NSData *data = [stdout_file readDataToEndOfFile];
+
+	if(data != nil) {
+		NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+		if(bashTask) [bashTask release];
+		if(string != nil) {
+			if (status == 0) {
+				return [string autorelease];
+			} else {
+				NSLog(@"Error for “%@”", command);
+				[string release];
+				NSBeep();
+				return @"";
+			}
+		} else {
+			if(string) [string release];
+			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
+		}
+	} else {
+		if(bashTask) [bashTask release];
+		NSLog(@"Couldn't read data from command “%@”.", command);
+		NSBeep();
+		return @"";
+	}
+
+}
+/*
  * Checks whether the current caret position in inside of a defined snippet range
  */
 - (BOOL)checkForCaretInsideSnippet
@@ -1243,7 +1359,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	
 	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
-	NSInteger caretPos = [self selectedRange].location;
+	NSUInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
 	NSInteger foundSnippetIndices[20]; // array to hold nested snippets
 
@@ -1448,7 +1564,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
+		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
 		{
 			[self makeTextSizeLarger];
 			return;
@@ -1456,6 +1572,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
+			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 			return;
 		}
 	}
@@ -1629,7 +1749,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
 		NSRange currentLineRange;
-		NSInteger lineCursorLocation;
+		NSUInteger lineCursorLocation;
 
 		// Extract the current line based on the text caret or selection start position
 		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
@@ -2766,6 +2886,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *selfstr        = [self string];
 	NSUInteger strlength     = [selfstr length];
 
+	if(strlength > SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) return;
+
 	NSRange textRange;
 
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
@@ -2779,39 +2901,57 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Get the text range currently displayed in the view port
 		NSRect visibleRect = [[[self enclosingScrollView] contentView] documentVisibleRect];
 		NSRange visibleRange = [[self layoutManager] glyphRangeForBoundingRectWithoutAdditionalLayout:visibleRect inTextContainer:[self textContainer]];
+
 		if(!visibleRange.length) return;
 
 		// Take roughly the middle position in the current view port
-		NSInteger curPos = visibleRange.location+(NSInteger)(visibleRange.length/2);
+		NSUInteger curPos = visibleRange.location+(NSUInteger)(visibleRange.length/2);
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
-		NSInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
+		// but look for only SP_SYNTAX_HILITE_BIAS chars forwards
+		NSUInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
+		NSInteger lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (end > strlength ) {
 			end = strlength;
 		} else {
-			while(end < strlength) {
+			while(end < strlength && lengthChecker > 0) {
 				if([selfstr characterAtIndex:end]=='\n')
 					break;
 				end++;
+				lengthChecker--;
 			}
 		}
+		if(lengthChecker <= 0)
+			end = curPos + SP_SYNTAX_HILITE_BIAS;
 
-		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
-		NSInteger start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS
+		// but look for only SP_SYNTAX_HILITE_BIAS chars backwards
+		NSUInteger start, start_temp;
+		if(end <= (SP_SYNTAX_HILITE_BIAS*2))
+		 	start = 0;
+		else
+		 	start = end - (SP_SYNTAX_HILITE_BIAS*2);
+
+		start_temp = start;
+		lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (start > 0)
-			while(start>-1) {
+			while(start>0 && lengthChecker > 0) {
 				if([selfstr characterAtIndex:start]=='\n')
 					break;
 				start--;
+				lengthChecker--;
 			}
-		else
-			start = 0;
+		if(lengthChecker <= 0)
+			start = start_temp;
 
 		textRange = NSMakeRange(start, end-start);
+
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
+
 		if (!textRange.length)
 			return;
+
 	} else {
 		// If text size is less SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 		// process syntax highlighting for the entire text view buffer
@@ -2822,7 +2962,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
 
-	NSUInteger tokenEnd, token;
+	size_t tokenEnd, token;
 	NSRange tokenRange;
 
 	// first remove the old colors and kQuote
@@ -2882,55 +3022,54 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
-			&& [[textStore attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
+		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
+			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
 			{
-
+		
 				NSString* curTokenString = [selfstr substringWithRange:tokenRange];
-				NSString* upperCaseCurTokenString = [curTokenString uppercaseString];
 				BOOL doIt = NO;
 				@try
 				{
-					doIt = ![[textStore attribute:kSQLkeyword atIndex:tokenEnd+1 effectiveRange:nil] isEqualToString:kValue];
+					doIt = ![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length];
 				} @catch(id ae) { doIt = NO; }
-
-				if(doIt && ![upperCaseCurTokenString isEqualToString:curTokenString])
+		
+				if(doIt)
 				{
 					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
 					[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
-					[self replaceCharactersInRange:tokenRange withString:upperCaseCurTokenString];
+					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
 				}
 			}
-
+		
 		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
-
+		
 		if(!allowToCheckForUpperCase) continue;
-
+		
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
 		if(token < 6)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kLEXToken, kLEXTokenValue, tokenRange);
-
+		
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kSQLkeyword, kValue, tokenRange);
-
+		
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
 		else if(token < 4)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kQuote, kQuoteValue, tokenRange);
-
+		
 		//distinguish backtick quoted word for completion
 		else if(token == SPT_BACKTICK_QUOTED_TEXT)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
-	
+
 }
 
 - (void)drawRect:(NSRect)rect {
@@ -2947,7 +3086,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			// Highlightes the current query if set in the Pref and no snippet session
 			// and if nothing is selected in the text view
-			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
+			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length && [[self string] length] < SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) {
 				NSUInteger rectCount;
 				[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
 				NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
@@ -3198,8 +3337,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
-			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
 			NSInteger i;
 			for(i=0; i<snippetControlMax; i++) {
 				if(snippetControlArray[i][0] > -1
@@ -3215,8 +3354,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
-			NSInteger editStartPosition = [textStore editedRange].location;
-			NSInteger changeInLength = [textStore changeInLength];
+			NSUInteger editStartPosition = [textStore editedRange].location;
+			NSUInteger changeInLength = [textStore changeInLength];
 
 			// Adjust length change to current snippet
 			snippetControlArray[currentSnippetIndex][1] += changeInLength;
@@ -3236,9 +3375,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 		}
+		if([[self textStorage] changeInLength] > 0)
+			textBufferSizeIncreased = YES;
+		else
+			textBufferSizeIncreased = NO;
 
-		[self doSyntaxHighlighting];
+		if([[self textStorage] changeInLength] < SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+			[self doSyntaxHighlighting];
 
+	} else {
+		textBufferSizeIncreased = NO;
 	}
 
 	startListeningToBoundChanges = YES;
@@ -3443,6 +3589,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[result release];
 
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
+}
+
+- (void)changeFont:(id)sender
+{
+	if (prefs && [self font] != nil) {
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:SPCustomQueryEditorFont];
+		NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+		BOOL oldEditable = [self isEditable];
+		[self setEditable:YES];
+		[self setFont:nf];
+		[self setEditable:oldEditable];
+		[self setNeedsDisplay:YES];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
+	}
 }
 
 - (void) dealloc

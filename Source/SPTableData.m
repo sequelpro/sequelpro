@@ -336,6 +336,11 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
+			// If the current table doesn't exist anymore reload table list
+			if([mySQLConnection getLastErrorID] == 1146) {
+				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
+				[tableListInstance updateTables:self];
+			}
 		}
 		
 		return nil;
@@ -384,7 +389,7 @@
 
 			// Capture the area between the two backticks as the name
 			// Set the parser to ignoreCommentStrings since a field name can contain # or /*
-			[fieldsParser setIgnoringCommentStrings:YES];
+			[fieldsParser setIgnoreCommentStrings:YES];
 			NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
 																	 toCharacter: quoteCharacter
 															 trimmingInclusively: YES
@@ -411,7 +416,7 @@
 																						 ignoringQuotedStrings: NO]
 																];
 			}
-			[fieldsParser setIgnoringCommentStrings:NO];
+			[fieldsParser setIgnoreCommentStrings:NO];
 			
 			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
@@ -566,7 +571,7 @@
 	[fieldParser release];
 	
 	// Triggers
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
 											  [tableName tickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	
@@ -668,7 +673,7 @@
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
@@ -686,7 +691,7 @@
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;

@@ -50,13 +50,13 @@
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView
 {
-    if ((self = [super initWithScrollView:aScrollView orientation:NSVerticalRuler]) != nil)
-    {
-        [self setClientView:[aScrollView documentView]];
+	if ((self = [super initWithScrollView:aScrollView orientation:NSVerticalRuler]) != nil)
+	{
+		[self setClientView:[aScrollView documentView]];
 		lineIndices = nil;
 	}
-	
-    return self;
+
+	return self;
 }
 
 - (void)awakeFromNib
@@ -66,21 +66,21 @@
 
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    if (lineIndices) [lineIndices release];
-    [font release];
-    
-    [super dealloc];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+	if (lineIndices) [lineIndices release];
+	[font release];
+
+	[super dealloc];
 }
 
 - (void)setFont:(NSFont *)aFont
 {
-    if (font != aFont)
-    {
-		[font autorelease];		
+	if (font != aFont)
+	{
+		[font autorelease];
 		font = [aFont retain];
-    }
+	}
 }
 
 - (NSFont *)font
@@ -144,21 +144,21 @@
 
 - (void)setClientView:(NSView *)aView
 {
-	id		oldClientView;
-	
+	id oldClientView;
+
 	oldClientView = [self clientView];
-	
-    if ((oldClientView != aView) && [oldClientView isKindOfClass:[NSTextView class]])
-    {
+
+	if ((oldClientView != aView) && [oldClientView isKindOfClass:[NSTextView class]])
+	{
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)oldClientView textStorage]];
-    }
-    [super setClientView:aView];
-    if ((aView != nil) && [aView isKindOfClass:[NSTextView class]])
-    {
+	}
+	[super setClientView:aView];
+	if ((aView != nil) && [aView isKindOfClass:[NSTextView class]])
+	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)aView textStorage]];
 
 		[self invalidateLineIndices];
-    }
+	}
 }
 
 - (NSMutableArray *)lineIndices
@@ -179,8 +179,8 @@
 {
 	// Invalidate the line indices. They will be recalculated and recached on demand.
 	[self invalidateLineIndices];
-	
-    [self setNeedsDisplay:YES];
+
+	[self setNeedsDisplay:YES];
 }
 
 - (NSUInteger)lineNumberForLocation:(CGFloat)location
@@ -231,60 +231,60 @@
 
 - (void)calculateLines
 {
-    id              view;
+	id view;
 
-    view = [self clientView];
-    
-    if ([view isKindOfClass:[NSTextView class]])
-    {
-        NSUInteger        index, numberOfLines, stringLength, lineEnd, contentEnd;
-        NSString        *text;
-        CGFloat         oldThickness, newThickness;
-        
-        text = [view string];
-        stringLength = [text length];
-        // Switch off line numbering if text larger than 6MB
-        // for performance reasons.
-        // TODO improve performance maybe via threading
-        if(stringLength>6000000)
-                return;
-        if (lineIndices) [lineIndices release];
-        lineIndices = [[NSMutableArray alloc] init];
-        
-        index = 0;
-        numberOfLines = 0;
-        
-        do
-        {
-            [lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-            
-            index = NSMaxRange([text lineRangeForRange:NSMakeRange(index, 0)]);
-            numberOfLines++;
-        }
-        while (index < stringLength);
+	view = [self clientView];
 
-        // Check if text ends with a new line.
-        [text getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
-        if (contentEnd < lineEnd)
-        {
-            [lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-        }
+	if ([view isKindOfClass:[NSTextView class]])
+	{
+		NSUInteger index, numberOfLines, stringLength, lineEnd, contentEnd;
+		NSString *text;
+		CGFloat oldThickness, newThickness;
 
-        oldThickness = [self ruleThickness];
-        newThickness = [self requiredThickness];
-        if (fabs(oldThickness - newThickness) > 1)
-        {
+		text = [view string];
+		stringLength = [text length];
+		// Switch off line numbering if text larger than 6MB
+		// for performance reasons.
+		// TODO improve performance maybe via threading
+		if(stringLength>6000000)
+			return;
+		if (lineIndices) [lineIndices release];
+		lineIndices = [[NSMutableArray alloc] init];
+
+		index = 0;
+		numberOfLines = 0;
+
+		do
+		{
+			[lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
+
+			index = NSMaxRange([text lineRangeForRange:NSMakeRange(index, 0)]);
+			numberOfLines++;
+		}
+		while (index < stringLength);
+
+		// Check if text ends with a new line.
+		[text getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
+		if (contentEnd < lineEnd)
+		{
+			[lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
+		}
+
+		oldThickness = [self ruleThickness];
+		newThickness = [self requiredThickness];
+		if (fabs(oldThickness - newThickness) > 1)
+		{
 			NSInvocation			*invocation;
-			
+
 			// Not a good idea to resize the view during calculations (which can happen during
 			// display). Do a delayed perform (using NSInvocation since arg is a float).
 			invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:@selector(setRuleThickness:)]];
 			[invocation setSelector:@selector(setRuleThickness:)];
 			[invocation setTarget:self];
 			[invocation setArgument:&newThickness atIndex:2];
-			
+
 			[invocation performSelector:@selector(invoke) withObject:nil afterDelay:0.0];
-        }
+		}
 	}
 }
 
@@ -330,26 +330,25 @@
 
 - (CGFloat)requiredThickness
 {
-    NSUInteger			lineCount, digits, i;
-    NSMutableString     *sampleString;
-    NSSize              stringSize;
-    
-    lineCount = [[self lineIndices] count];
-    digits = (NSUInteger)log10(lineCount) + 1;
-	sampleString = [NSMutableString string];
-    for (i = 0; i < digits; i++)
-    {
-        // Use "8" since it is one of the fatter numbers. Anything but "1"
-        // will probably be ok here. I could be pedantic and actually find the fattest
-		// number for the current font but nah.
-        [sampleString appendString:@"8"];
-    }
-    
-    stringSize = [sampleString sizeWithAttributes:[self textAttributes]];
-
-	// Round up the value. There is a bug on 10.4 where the display gets all wonky when scrolling if you don't
-	// return an integral value here.
-    return ceil(MAX(DEFAULT_THICKNESS, stringSize.width + RULER_MARGIN * 2));
+	NSUInteger lineCount = [[self lineIndices] count];
+	if(lineCount < 10)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"8"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 100)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"88"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 1000)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 10000)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"8888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 100000)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"88888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 1000000)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"888888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 10000000)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"8888888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else if(lineCount < 100000000)
+		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"88888888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+	else
+		return 100;
 }
 
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect

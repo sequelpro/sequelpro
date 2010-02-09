@@ -109,6 +109,7 @@
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
 		caseSensitive = YES;
 		filtered = nil;
+		spaceCounter = 0;
 
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
@@ -369,12 +370,13 @@
 - (void)checkSpaceForAllowedCharacter
 {
 	[textualInputCharacters removeCharactersInString:@" "];
-	for(id w in filtered){
-		if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length) {
-			[textualInputCharacters addCharactersInString:@" "];
-			break;
+	if(spaceCounter < 1)
+		for(id w in filtered){
+			if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length) {
+				[textualInputCharacters addCharactersInString:@" "];
+				break;
+			}
 		}
-	}
 }
 
 // ====================
@@ -561,6 +563,7 @@
 				if([mutablePrefix length] == 0 || commaInsertionMode)
 					break;
 
+				spaceCounter = 0;
 				[mutablePrefix deleteCharactersInRange:NSMakeRange([mutablePrefix length]-1, 1)];
 				theCharRange.length--;
 				theParseRange.length--;
@@ -572,12 +575,15 @@
 
 				if(commaInsertionMode)
 					break;
+				if([event keyCode] == 49) // space 
+					spaceCounter++;
 
 				[mutablePrefix appendString:[event characters]];
 				theCharRange.length++;
 				theParseRange.length++;
 				[self filter];
 				[self insertCommonPrefix];
+				
 			}
 			else
 			{

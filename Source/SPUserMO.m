@@ -38,7 +38,10 @@
 
 - (void)setDisplayName:(NSString *)value
 {
-	[self setValue:value forKey:@"host"];
+    if ([self valueForKey:@"parent"] == nil)
+        [self setValue:value forKey:@"user"];
+    else
+        [self setValue:value forKey:@"host"];
 }
 
 - (void)addChildrenObject:(NSManagedObject *)value 

@@ -221,7 +221,10 @@
 	[tablesListView reloadData];
 	
 	// if the previous selected table still exists, select it
-	if( previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
+	// but not if the update was called from SPTableData since it calls that method
+	// if a selected table doesn't exist - this happens if a table was deleted/renamed by an other user
+	// or if the table name contains characters which are not supported by the current set encoding
+	if( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
 		tableListIsSelectable = YES;
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
@@ -675,6 +678,9 @@
 
 	// Notify listeners of the table change now that the state is fully set up.
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
+
+	// Restore view states as appropriate
+	[spHistoryControllerInstance restoreViewStates];
 
 	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
@@ -1750,6 +1756,7 @@
 - (void)removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	[tablesListView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 	
 	// get last index
 	NSUInteger currentIndex = [indexes lastIndex];

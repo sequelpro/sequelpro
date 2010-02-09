@@ -1566,10 +1566,15 @@
 		return;
 	}
 
-	NSString *fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
 
 	[compareField removeAllItems];
-	
+
+	NSString *fieldTypeGrouping;
+	if([[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"])
+		fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
+	else
+		return;
+
 	if ( [fieldTypeGrouping isEqualToString:@"date"] ) {
 		compareType = @"date";
 
@@ -2106,6 +2111,7 @@
 			errors = 0;
 
 			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
+			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
 			// Disable updating of the Console Log window for large number of queries
 			// to speed the deletion
