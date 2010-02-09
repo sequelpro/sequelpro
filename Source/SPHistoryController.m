@@ -26,6 +26,7 @@
 #import "TableContent.h"
 #import "TablesList.h"
 #import "SPHistoryController.h"
+#import "SPStringAdditions.h"
 
 @implementation SPHistoryController
 
@@ -42,6 +43,7 @@
 {
 	if (self = [super init]) {
 		history = [[NSMutableArray alloc] init];
+		tableContentStates = [[NSMutableDictionary alloc] init];
 		historyPosition = NSNotFound;
 		modifyingHistoryState = NO;
 	}
@@ -56,6 +58,7 @@
 
 - (void) dealloc
 {
+	[tableContentStates release];
 	[history release];
 	[super dealloc];
 }
@@ -194,6 +197,21 @@
 	NSDictionary *contentFilter = [tableContentInstance filterSettings];
 	if (!theDatabase) return;
 
+	// If a table is selected, save state information
+	if (theDatabase && theTable) {
+
+		// Save the table content state
+		NSMutableDictionary *contentState = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+												[NSNumber numberWithUnsignedInteger:contentPageNumber], @"page",
+												[NSValue valueWithRect:contentViewport], @"viewport",
+												[NSNumber numberWithBool:contentSortColIsAsc], @"sortIsAsc",
+												nil];
+		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
+		if (contentSelectedIndexSet) [contentState setObject:contentSelectedIndexSet forKey:@"selection"];
+		if (contentFilter) [contentState setObject:contentFilter forKey:@"filter"];
+		[tableContentStates setObject:contentState forKey:[NSString stringWithFormat:@"%@.%@", [theDatabase backtickQuotedString], [theTable backtickQuotedString]]];
+	}
+
 	// If there's any items after the current history position, remove them
 	if (historyPosition != NSNotFound && historyPosition < [history count] - 1) {
 		[history removeObjectsInRange:NSMakeRange(historyPosition + 1, [history count] - historyPosition - 1)];
@@ -287,7 +305,7 @@
 	NSDictionary *historyEntry = [history objectAtIndex:historyPosition];
 
 	// Set table content details for restore
-	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortCol"] boolValue]];
+	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortColIsAsc"] boolValue]];
 	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
 	[tableContentInstance setSelectedRowIndexesToRestore:[historyEntry objectForKey:@"contentSelectedIndexSet"]];
 	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
@@ -387,6 +405,37 @@
 - (void) loadEntryFromMenuItem:(id)theMenuItem
 {
 	[self loadEntryAtPosition:[theMenuItem tag]];
+}
+
+#pragma mark -
+#pragma mark Restoring view states
+
+/**
+ * Check saved view states for the currently selected database and
+ * table (if any), and restore them if present.
+ */
+- (void) restoreViewStates
+{
+	NSString *theDatabase = [theDocument database];
+	NSString *theTable = [theDocument table];
+	NSDictionary *contentState;
+
+	// Return if the history state is currently being modified
+	if (modifyingHistoryState) return;
+
+	// Return if no database or table are selected
+	if (!theDatabase || !theTable) return;
+
+	// Retrieve the saved content state, returning if none was found
+	contentState = [tableContentStates objectForKey:[NSString stringWithFormat:@"%@.%@", [theDatabase backtickQuotedString], [theTable backtickQuotedString]]];
+	if (!contentState) return;
+
+	// Restore the content view state
+	[tableContentInstance setSortColumnNameToRestore:[contentState objectForKey:@"sortCol"] isAscending:[[contentState objectForKey:@"sortIsAsc"] boolValue]];
+	[tableContentInstance setPageToRestore:[[contentState objectForKey:@"page"] unsignedIntegerValue]];
+	[tableContentInstance setSelectedRowIndexesToRestore:[contentState objectForKey:@"selection"]];
+	[tableContentInstance setViewportToRestore:[[contentState objectForKey:@"viewport"] rectValue]];
+	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filter"]];
 }
 
 #pragma mark -
