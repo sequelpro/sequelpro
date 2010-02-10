@@ -395,7 +395,7 @@
 - (BOOL)_exportTables:(NSArray *)exportTables
 {
 	NSUInteger i;
-	NSDictionary *tableDetails;
+	NSDictionary *tableDetails = [NSDictionary dictionary];
 	
 	// Reset the interface
 	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), @"CSV"]];
