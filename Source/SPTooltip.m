@@ -122,7 +122,7 @@ static CGFloat slow_in_out (CGFloat t)
 
 	spTooltipCounter++;
 	
-	SPTooltip* tip = [SPTooltip new];
+	SPTooltip* tip = [SPTooltip new]; // Automatically released on close
 	[tip initMeWithOptions:displayOptions];
 	[tip setFrameTopLeftPoint:point];
 

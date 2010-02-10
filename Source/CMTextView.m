@@ -314,7 +314,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
 		if(dbs != nil && [dbs count]) {
-			NSMutableArray *allDbs = [[NSMutableArray array] autorelease];
+			NSMutableArray *allDbs = [NSMutableArray array];
 			[allDbs addObjectsFromArray:[dbs allKeys]];
 
 			// Add database names having no tables since they don't appear in the information_schema
@@ -356,7 +356,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(!aDbName) {
 				// Try to suggest only items which are uniquely valid for the parsed string
 
-				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIndentifierFor:[aTableName lowercaseString]];
+				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIdentifierFor:[aTableName lowercaseString]];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
 			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:aTableName] && uniqueSchemaKind == 2) {

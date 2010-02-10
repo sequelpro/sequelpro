@@ -848,7 +848,7 @@
 	[connection setValue:versionForPrint forKey:@"version"];
 
 	NSArray *columns, *rows;
-	columns = rows = nil;
+	rows = nil;
 	columns = [self columnNames];
 
 	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 ){

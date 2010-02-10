@@ -45,7 +45,7 @@
 {
 	OSStatus status;
 	SecTrustedApplicationRef sequelProRef, sequelProHelperRef;
-	SecAccessRef passwordAccessRef;
+	SecAccessRef passwordAccessRef = NULL;
 	SecKeychainAttribute attributes[4];
 	SecKeychainAttributeList attList;
 

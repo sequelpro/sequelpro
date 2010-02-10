@@ -1746,7 +1746,10 @@
 				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
 
 				// Only proceed if the item was selected for export
-				if (![selectedItems containsObject:procedureName]) continue;
+				if (![selectedItems containsObject:procedureName]) {
+					[proceduresList release];
+					continue;
+				}
 
 				// Add the "drop" command if specified in the export dialog
 				if ([addDropTableSwitch state] == NSOnState) {
@@ -1756,7 +1759,10 @@
 				}
 				
 				// Only continue if the "create syntax" is specified in the export dialog
-				if ([addCreateTableSwitch state] == NSOffState) continue;
+				if ([addCreateTableSwitch state] == NSOffState) {
+					[proceduresList release];
+					continue;
+				}
 				
 				//Definer is user@host but we need to escape it to `user`@`host`
 				NSArray *procedureDefiner = [[proceduresList objectForKey:@"Definer"] componentsSeparatedByString:@"@"];

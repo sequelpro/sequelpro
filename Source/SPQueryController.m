@@ -653,7 +653,7 @@ static SPQueryController *sharedQueryController = nil;
 - (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL
 {
 	if([historyContainer objectForKey:[fileURL absoluteString]]) {
-		NSMutableArray *returnArray = [[NSMutableArray arrayWithCapacity:[[historyContainer objectForKey:[fileURL absoluteString]] count]] autorelease];
+		NSMutableArray *returnArray = [NSMutableArray arrayWithCapacity:[[historyContainer objectForKey:[fileURL absoluteString]] count]];
 		NSMenuItem *historyMenuItem;
 		for(id history in [historyContainer objectForKey:[fileURL absoluteString]]) {
 			historyMenuItem = [[[NSMenuItem alloc] initWithTitle:([history length] > 64) ? [NSString stringWithFormat:@"%@…", [history substringToIndex:63]] : history

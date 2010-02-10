@@ -2005,19 +2005,21 @@
 		
     } else {
 		//insert new table name in create syntax and create new table
-		NSScanner *scanner = [NSScanner alloc];
+		NSScanner *scanner;
 		NSString *scanString;
 		
 		if(tblType == SP_TABLETYPE_VIEW){
-			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			[scanner release];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		} 
 		else if(tblType == SP_TABLETYPE_TABLE){
-			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			[scanner release];
 			
 			// If there are any InnoDB referencial constraints we need to strip out the names as they must be unique. 
 			// MySQL will generate the new names based on the new table name.
@@ -2062,7 +2064,6 @@
 			}
 			
 		}
-		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table

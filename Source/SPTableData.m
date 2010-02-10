@@ -583,7 +583,9 @@
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							   tableName, [mySQLConnection getLastErrorMessage]]);
 		}
-		
+		[tableColumns release];
+		[encodingString release];
+
 		return nil;
 	}
 	
