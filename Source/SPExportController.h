@@ -26,6 +26,7 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPExporterDataAccess.h"
+#import "SPConstants.h"
 
 #import "SPLogger.h"
 
@@ -104,6 +105,13 @@
 	
 	// Exporters 
 	NSMutableArray *exporters;
+	
+	// Global export file handle
+	NSFileHandle *exportFileHandle;
+	
+	// Export options
+	SPExportType exportType;
+	SPExportSource exportSource;
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

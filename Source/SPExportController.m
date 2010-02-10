@@ -35,7 +35,7 @@
 @interface SPExportController (PrivateAPI)
 
 - (void)_initializeExportUsingSelectedOptions;
-- (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type toMultipleFiles:(BOOL)multipleFiles;
+- (BOOL)_exportTables:(NSArray *)exportTables;
 
 @end
 
@@ -51,6 +51,8 @@
 {
 	if ((self = [super init])) {
 		[self setExportCancelled:NO];
+		
+		exportType = 0;
 		
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
@@ -134,7 +136,12 @@
 - (IBAction)switchInput:(id)sender
 {
 	if ([sender isKindOfClass:[NSMatrix class]]) {
-		[exportTableList setEnabled:([[sender selectedCell] tag] == 3)];
+		NSInteger tag = [[sender selectedCell] tag];
+		
+		[exportFilePerTableCheck setHidden:(tag != 3)];
+		[exportFilePerTableNote  setHidden:(tag != 3)];
+		
+		[exportTableList setEnabled:(tag == 3)];
 	}
 }
 
@@ -262,6 +269,11 @@
 	// Do something with the data...
 	[[SPLogger logger] log:[NSString stringWithFormat:@"Exporter finished: %@", exporter]];
 	
+	// If required create a new file for each table being exported
+	if ((exportSource == SPTableExport) && ([exportFilePerTableCheck state] == NSOnState)) {
+		//NSFileHandle *tableFileHandle = [NSFileHandle fileHandleForWritingAtPath:[exportPathField stringByAppendingPathComponent:[exporter ]];
+	}
+	
 	// If required add the next exporter to the operation queue
 	if ([exporters count] > 0) {
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -327,8 +339,6 @@
 - (void)_initializeExportUsingSelectedOptions
 {
 	// First determine what type of export the user selected
-	SPExportType exportType = 0;
-	
 	for (NSToolbarItem *item in [exportToolbar items])
 	{
 		if ([[item itemIdentifier] isEqualToString:[exportToolbar selectedItemIdentifier]]) {
@@ -338,20 +348,20 @@
 	}
 	
 	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-	SPExportSource exportSource = ([exportInputMatrix selectedRow] + 1);
+	exportSource = ([exportInputMatrix selectedRow] + 1);
 	
 	NSMutableArray *exportTables = [NSMutableArray array];
 	
 	// Get the data depending on the source
 	switch (exportSource) 
 	{
-		case SP_FILTERED_EXPORT:
+		case SPFilteredExport:
 			
 			break;
-		case SP_CUSTOM_QUERY_EXPORT:
+		case SPCustomQueryExport:
 			
 			break;
-		case SP_TABLE_EXPORT:
+		case SPTableExport:
 			// Create an array of tables to export
 			for (NSMutableArray *table in tables)
 			{
@@ -366,14 +376,14 @@
 	// Begin the export based on the type
 	switch (exportSource) 
 	{
-		case SP_FILTERED_EXPORT:
+		case SPFilteredExport:
 			
 			break;
-		case SP_CUSTOM_QUERY_EXPORT:
+		case SPCustomQueryExport:
 			
 			break;
-		case SP_TABLE_EXPORT:
-			[self _exportTables:exportTables asType:exportType toMultipleFiles:[exportFilePerTableCheck state]];
+		case SPTableExport:
+			[self _exportTables:exportTables];
 			break;
 	}
 }
@@ -382,7 +392,7 @@
  * Exports the contents' of the supplied array of tables. Note that this method currently only supports 
  * exporting in CSV and XML formats.
  */
-- (BOOL)_exportTables:(NSArray *)exportTables asType:(SPExportType)type toMultipleFiles:(BOOL)multipleFiles
+- (BOOL)_exportTables:(NSArray *)exportTables
 {
 	NSUInteger i;
 	NSDictionary *tableDetails;
@@ -417,11 +427,6 @@
 									 range:NSMakeRange(0, [csvLineEnd length])];
 	
 	NSUInteger tableCount = [exportTables count];
-	
-	// If 
-	if ((type == SP_CSV_EXPORT) && (!multipleFiles) && (tableCount > 1)) {
-		
-	}
 	
 	/*if ([exportTables count] > 1) {
 		[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
@@ -468,12 +473,12 @@
 		SPCSVExporter *csvExporter;
 		
 		// Based on the type of export create a new instance of the corresponding exporter and set it's specific options
-		switch (type)
+		switch (exportType)
 		{
-			case SP_SQL_EXPORT:
+			case SPSQLExport:
 				
 				break;
-			case SP_CSV_EXPORT:
+			case SPCSVExport:
 				csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
 				
 				[csvExporter setCsvTableName:tableName];
@@ -492,16 +497,16 @@
 				exporter = csvExporter;
 				
 				break;
-			case SP_XML_EXPORT:
+			case SPXMLExport:
 				
 				break;
-			case SP_PDF_EXPORT:
+			case SPPDFExport:
 				
 				break;
-			case SP_HTML_EXPORT:
+			case SPHTMLExport:
 				
 				break;
-			case SP_EXCEL_EXPORT:
+			case SPExcelExport:
 				
 				break;
 		}
