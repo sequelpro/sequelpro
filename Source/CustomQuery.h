@@ -139,10 +139,14 @@
 	NSRect editedScrollViewRect;
 
 	BOOL isWorking;
-	BOOL tableReloadAfterEditing;
+	BOOL tableRowsSelectable;
+	BOOL reloadingExistingResult;
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
+
+	NSIndexSet *selectionIndexToRestore;
+	NSRect selectionViewportToRestore;
 
 	NSString *fieldIDQueryString;
 
@@ -186,6 +190,14 @@
 // Accessors
 - (NSArray *)currentResult;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
+
+// Retrieving and setting table state
+- (NSIndexSet *) resultSelectedRowIndexes;
+- (NSRect) resultViewport;
+- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void) setResultViewportToRestore:(NSRect)theViewport;
+- (void) storeCurrentResultViewForRestoration;
+- (void) clearResultViewDetailsToRestore;
 
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;

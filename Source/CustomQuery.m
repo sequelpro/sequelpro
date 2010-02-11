@@ -77,7 +77,8 @@
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
-	tableReloadAfterEditing = NO;
+	reloadingExistingResult = NO;
+	[self clearResultViewDetailsToRestore];
 
 	// Remember query start position for error highlighting
 	queryTextViewStartPosition = 0;
@@ -150,7 +151,8 @@
 	[textView insertText:@""];
 	[textView setSelectedRange:selectedRange];
 
-	tableReloadAfterEditing = NO;
+	reloadingExistingResult = NO;
+	[self clearResultViewDetailsToRestore];
 
 	[self performQueries:queries withCallback:NULL];
 }
@@ -508,8 +510,8 @@
 		[customQueryView scrollColumnToVisible:0];
 	}
 
-	// Remove all the columns
-	if(!tableReloadAfterEditing) {
+	// Remove all the columns if not reloading the table
+	if(!reloadingExistingResult) {
 		theColumns = [customQueryView tableColumns];
 		while ([theColumns count]) {
 			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
@@ -565,7 +567,7 @@
 			// Add columns corresponding to the query result
 			theColumns = [streamingResult fetchFieldNames];
 
-			if(!tableReloadAfterEditing) {
+			if(!reloadingExistingResult) {
 				for ( j = 0 ; j < [streamingResult numOfFields] ; j++) {
 					NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,j);
 					theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
@@ -711,7 +713,7 @@
 	
 	// add query to history
 	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	if(!tableReloadAfterEditing && [usedQuery length]) {
+	if(!reloadingExistingResult && [usedQuery length]) {
 
 		// Register new history item
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
@@ -874,16 +876,20 @@
 
 	[customQueryView reloadData];
 
-	if(tableReloadAfterEditing) {
-		// scroll to last edited row/view port after refreshing data
-		if(editedRow > -1) {
-			[customQueryView selectRowIndexes:[NSIndexSet indexSetWithIndex:editedRow] byExtendingSelection:NO];
-			[[customQueryScrollView contentView] scrollToPoint:NSMakePoint(editedScrollViewRect.origin.x, editedScrollViewRect.origin.y)];
-			[customQueryScrollView reflectScrolledClipView:[customQueryScrollView contentView]];
-			editedRow = -1;
-		} else {
-			[customQueryView scrollRowToVisible:[customQueryView selectedRow]];
-		}
+	// Restore the result view origin if appropriate
+	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+
+		// Scroll the viewport to the saved location
+		selectionViewportToRestore.size = [customQueryView visibleRect].size;
+		[customQueryView scrollRectToVisible:selectionViewportToRestore];
+	}
+
+	// Restore selection indexes if appropriate
+	if (selectionIndexToRestore) {
+		BOOL previousTableRowsSelectable = tableRowsSelectable;
+		tableRowsSelectable = YES;
+		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+		tableRowsSelectable = previousTableRowsSelectable;
 	}
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
@@ -1351,6 +1357,61 @@
 }
 
 #pragma mark -
+#pragma mark Retrieving and setting table state
+
+/**
+ * Provide a getter for the custom query result table's selected rows index set
+ */
+- (NSIndexSet *) resultSelectedRowIndexes
+{
+	return [customQueryView selectedRowIndexes];
+}
+
+/**
+ * Provide a getter for the custom query result table's current viewport
+ */
+- (NSRect) resultViewport
+{
+	return [customQueryView visibleRect];
+}
+
+/**
+ * Set the selected row indexes to restore on next custom query result table load
+ */
+- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
+{
+	if (selectionIndexToRestore) [selectionIndexToRestore release], selectionIndexToRestore = nil;
+
+	if (theIndexSet) selectionIndexToRestore = [[NSIndexSet alloc] initWithIndexSet:theIndexSet];
+}
+
+/**
+ * Set the viewport to restore on next table load
+ */
+- (void) setResultViewportToRestore:(NSRect)theViewport
+{
+	selectionViewportToRestore = theViewport;
+}
+
+/**
+ * Convenience method for storing all current settings for restoration
+ */
+- (void) storeCurrentResultViewForRestoration
+{
+	[self setResultSelectedRowIndexesToRestore:[self resultSelectedRowIndexes]];
+	[self setResultViewportToRestore:[self resultViewport]];
+}
+
+/**
+ * Convenience method for clearing any settings to restore
+ */
+- (void) clearResultViewDetailsToRestore
+{
+	[self setResultSelectedRowIndexesToRestore:nil];
+	[self setResultViewportToRestore:NSZeroRect];
+}
+
+#pragma mark -
 #pragma mark Field Editing
 
 /*
@@ -1601,7 +1662,8 @@
 			}
 
 			// On success reload table data by executing the last query
-			tableReloadAfterEditing = YES;
+			reloadingExistingResult = YES;
+			[self storeCurrentResultViewForRestoration];
 
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
 			
@@ -1704,7 +1766,8 @@
 	else
 		[queryString appendFormat:@" %@", newOrder];
 
-	tableReloadAfterEditing = YES;
+	reloadingExistingResult = YES;
+	[self storeCurrentResultViewForRestoration];
 	queryIsTableSorter = YES;
 	sortColumn = tableColumn;
 	[self performQueries:[NSArray arrayWithObject:queryString] withCallback:@selector(tableSortCallback)];
@@ -1962,7 +2025,7 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return ![tableDocumentInstance isWorking];
+	return tableRowsSelectable;
 }
 
 #pragma mark -
@@ -2786,6 +2849,7 @@
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery])
 		return;
 
+	tableRowsSelectable = NO;
 	[runSelectionButton setEnabled:NO];
 	[runSelectionMenuItem setEnabled:NO];
 	[runAllButton setEnabled:NO];
@@ -2807,6 +2871,7 @@
 		[runSelectionButton setEnabled:YES];
 		[runSelectionMenuItem setEnabled:YES];
 	}
+	tableRowsSelectable = YES;
 	[runAllButton setEnabled:YES];
 	[runAllMenuItem setEnabled:YES];
 }
@@ -2983,6 +3048,10 @@
 		selectionButtonCanBeEnabled = NO;
 		cqColumnDefinition = nil;
 
+		tableRowsSelectable = YES;
+		selectionIndexToRestore = nil;
+		selectionViewportToRestore = NSZeroRect;
+
 		// init helpHTMLTemplate
 		NSError *error;
 		
@@ -3125,6 +3194,7 @@
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
 	if (cqColumnDefinition) [cqColumnDefinition release];
+	if (selectionIndexToRestore) [selectionIndexToRestore release];
 	
 	[super dealloc];
 }
