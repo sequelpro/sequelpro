@@ -59,8 +59,10 @@
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
 	
 	cell->favoriteName = nil;
-	
     cell->favoriteName = [favoriteName retain];
+
+    cell->favoriteHost = nil;
+    cell->favoriteHost = [favoriteHost retain];
     
 	return cell;
 }
@@ -210,6 +212,7 @@
 - (void)dealloc 
 {	
     [favoriteName release], favoriteName = nil;
+    [favoriteHost release], favoriteHost = nil;
 	
     [super dealloc];
 }
