@@ -27,6 +27,7 @@
 #import "SPConsoleMessage.h"
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
+#import "CustomQuery.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 #define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
@@ -655,7 +656,7 @@ static SPQueryController *sharedQueryController = nil;
 	if([historyContainer objectForKey:[fileURL absoluteString]]) {
 		NSMutableArray *returnArray = [NSMutableArray arrayWithCapacity:[[historyContainer objectForKey:[fileURL absoluteString]] count]];
 		NSMenuItem *historyMenuItem;
-		for(id history in [historyContainer objectForKey:[fileURL absoluteString]]) {
+		for(NSString* history in [historyContainer objectForKey:[fileURL absoluteString]]) {
 			historyMenuItem = [[[NSMenuItem alloc] initWithTitle:([history length] > 64) ? [NSString stringWithFormat:@"%@…", [history substringToIndex:63]] : history
 			 											action:NULL 
 												keyEquivalent:@""] autorelease];

@@ -31,6 +31,7 @@
 #import "SPNarrowDownCompletion.h"
 #import "SPConstants.h"
 #import "SPQueryController.h"
+#import "SPTooltip.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -115,10 +116,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[[self textStorage] setDelegate:self];
 
 	// Set defaults for general usage
-	autoindentEnabled = YES;
+	autoindentEnabled = NO;
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
-	autouppercaseKeywordsEnabled = YES;
+	autouppercaseKeywordsEnabled = NO;
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	startListeningToBoundChanges = NO;
@@ -1112,6 +1113,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
 
+	// Do not allow the insertion of a query favorite if snippets are active
 	if(snippetControlCounter > -1) {
 		NSBeep();
 		return;
@@ -1130,7 +1132,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
 	@try{
-		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
+		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
 
 		if(targetRange.length)
 			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
@@ -1139,16 +1141,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(snip == nil || ![snip length]) return;
 
 		// Replace `${x:…}` by ${x:`…`} for convience 
-		[snip replaceOccurrencesOfRegex:@"`\\$\\{(1?\\d):([^\\{\\}]*)\\}`" withString:@"${$1:`$2`}"];
+		[snip replaceOccurrencesOfRegex:@"`(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}`" withString:@"${$1:`$2`}"];
 		[snip flushCachedRegexData];
 
 		snippetControlCounter = -1;
 		snippetControlMax     = -1;
 		currentSnippetIndex   = -1;
 
+		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
+		snippetWasJustInserted = YES;
+
 		while([snip isMatchedByRegex:re]) {
 			[snip flushCachedRegexData];
 			snippetControlCounter++;
+
 			NSRange snipRange = [snip rangeOfRegex:re capture:0L];
 			NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:re capture:1L]] intValue];
 			NSRange hintRange = [snip rangeOfRegex:re capture:2L];
@@ -1199,16 +1205,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
+			// Handle escaped characters
+			[theHintString replaceOccurrencesOfRegex:@"\\\\(\\$\\(|\\}|\\$SP_)" withString:@"$1"];
+			[theHintString flushCachedRegexData];
+
 			// If inside the snippet hint $(…) is defined run … as BASH command
-			// and replace the snippet hint by the return string of that command
-			if([theHintString isMatchedByRegex:@"(?s)(?<!\\\\)\\s*\\$\\(.*\\)\\s*"]) {
-				NSRange r = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\s*\\$\\((.*)\\)\\s*" capture:1L];
-				if(r.length)
-					[theHintString setString:[self runBashCommand:[theHintString substringWithRange:r]]];
-				else
-					[theHintString setString:@""];
+			// and replace $(…) by the return string of that command. Please note
+			// only one $(…) statement is allowed within one ${…} snippet environment.
+			NSRange tagRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\((.*)\\)"];
+			if(tagRange.length) {
 				[theHintString flushCachedRegexData];
+				NSRange cmdRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\(\\s*(.*)\\s*\\)" capture:1L];
+				if(cmdRange.length)
+					[theHintString replaceCharactersInRange:tagRange withString:[self runBashCommand:[theHintString substringWithRange:cmdRange]]];
+				else
+					[theHintString replaceCharactersInRange:tagRange withString:@""];
 			}
+			[theHintString flushCachedRegexData];
 
 			[snip replaceCharactersInRange:snipRange withString:theHintString];
 			[snip flushCachedRegexData];
@@ -1235,16 +1248,22 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			snippetControlArray[snippetControlMax][2] = 0;
 		}
 
+		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} → ${1:a}
+		NSString *ure = @"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
+		while([snip isMatchedByRegex:ure]) {
+			NSRange escapeRange = [snip rangeOfRegex:ure capture:0L];
+			[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
+			NSUInteger loc = escapeRange.location + targetRange.location;
+			[snip flushCachedRegexData];
+			for(i=0; i<=snippetControlMax; i++)
+				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
+					snippetControlArray[i][0]--;
+		}
+
+		// Insert favorite query by selecting the tab trigger if any
+		[self setSelectedRange:targetRange];
+
 		// Registering for undo
-		[self breakUndoCoalescing];
-
-		// Insert favorite query as snippet if any
-		// if(targetRange.length)
-			[self setSelectedRange:targetRange];
-
-		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
-		snippetWasJustInserted = YES;
-
 		[self breakUndoCoalescing];
 		[self insertText:snip];
 
@@ -1271,32 +1290,34 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
- * Run 'command' as BASH script and return the result.
+ * Run 'command' as BASH command(s) and return the result.
  * This task can be interrupted by pressing ⌘.
  */
 - (NSString *)runBashCommand:(NSString *)command
 {
-
 	BOOL userTerminated = NO;
 
 	NSTask *bashTask = [[NSTask alloc] init];
-	[bashTask setLaunchPath: @"/bin/sh"];
+	[bashTask setLaunchPath: @"/bin/bash"];
 	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", command, nil]];
 
 	NSPipe *stdout_pipe = [NSPipe pipe];
 	[bashTask setStandardOutput:stdout_pipe];
-
 	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
 
+	NSPipe *stderr_pipe = [NSPipe pipe];
+	[bashTask setStandardError:stderr_pipe];
+	NSFileHandle *stderr_file = [stderr_pipe fileHandleForReading];
 	[bashTask launch];
 
 	// Listen to ⌘. to terminate
 	while(1) {
-		if(![bashTask isRunning]) break;
-		NSEvent* event = [NSApp nextEventMatchingMask:NSKeyDownMask
-                                          untilDate:[NSDate distantPast]
-                                             inMode:NSDefaultRunLoopMode
-                                            dequeue:YES];
+		if(![bashTask isRunning] || [bashTask processIdentifier] == 0) break;
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                   untilDate:[NSDate distantPast]
+                                      inMode:NSDefaultRunLoopMode
+                                     dequeue:YES];
+		usleep(10000);
 		if(!event) continue;
 		if ([event type] == NSKeyDown) {
 			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
@@ -1305,8 +1326,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				userTerminated = YES;
 				break;
 			}
+		} else {
+			[NSApp sendEvent:event];
 		}
 	}
+
+	[bashTask waitUntilExit];
 
 	if(userTerminated) {
 		if(bashTask) [bashTask release];
@@ -1315,25 +1340,33 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return @"";
 	}
 
-	[bashTask waitUntilExit];
-	NSInteger status = [bashTask terminationStatus];
-	NSData *data = [stdout_file readDataToEndOfFile];
+	// If return from bash re-activate Sequel Pro
+	[NSApp activateIgnoringOtherApps:YES];
 
-	if(data != nil) {
-		NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+	NSInteger status = [bashTask terminationStatus];
+	NSData *outdata  = [stdout_file readDataToEndOfFile];
+	NSData *errdata  = [stderr_file readDataToEndOfFile];
+
+	if(outdata != nil) {
+		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] description];
+		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
 		if(bashTask) [bashTask release];
-		if(string != nil) {
+		if(stdout != nil) {
 			if (status == 0) {
-				return [string autorelease];
+				return [stdout autorelease];
 			} else {
-				NSLog(@"Error for “%@”", command);
-				[string release];
+				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
+				[stdout release];
+				[error release];
 				NSBeep();
 				return @"";
 			}
 		} else {
-			if(string) [string release];
+			if(stdout) [stdout release];
 			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
+			NSBeep();
 		}
 	} else {
 		if(bashTask) [bashTask release];
@@ -1343,6 +1376,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 }
+
 /*
  * Checks whether the current caret position in inside of a defined snippet range
  */
@@ -2960,8 +2994,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSColor *tokenColor;
 
-	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
-
 	size_t tokenEnd, token;
 	NSRange tokenRange;
 
@@ -3022,7 +3054,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
+		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywordsEnabled && !delBackwardsWasPressed
 			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
