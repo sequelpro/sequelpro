@@ -1229,8 +1229,12 @@
 						}
 					}
 				}
+                [availableTableView setEnabled:YES];
 			}
-		}
+		} else {
+            [availableTableView setEnabled:NO];
+        }
+
 	}
 	else if ([notification object] == grantedTableView)
 	{
