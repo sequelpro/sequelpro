@@ -1132,7 +1132,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
 	@try{
-		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
+		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
 
 		if(targetRange.length)
 			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
@@ -1236,10 +1236,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Adjust successive snippets
 			for(i=0; i<20; i++)
 				if(snippetControlArray[i][0] > -1 && i != snipCnt && snippetControlArray[i][0] > snippetControlArray[snipCnt][0])
-					snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1); // 3 := length(${:)
+					snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1);
 
 		}
-	
+
 		if(snippetControlCounter > -1) {
 			// Store the end for tab out
 			snippetControlMax++;
