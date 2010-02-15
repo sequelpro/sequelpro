@@ -25,8 +25,11 @@
 
 #import "SPFieldMapperController.h"
 #import "SPTableData.h"
+#import "TablesList.h"
 
 @implementation SPFieldMapperController
+
+@synthesize sourcePath;
 
 #pragma mark -
 #pragma mark Initialization
@@ -46,11 +49,27 @@
 			return nil;
 		}
 		theDelegate = managerDelegate;
+		fieldMappingTableColumnNames = [[NSMutableArray alloc] initWithCapacity:1];
 	}
 	
 	return self;
 }
 
+- (void)awakeFromNib
+{
+	[fileSourcePath setURL:[NSURL URLWithString:sourcePath]];
+	[tableTargetPopup removeAllItems];
+	[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
+
+	// Select either the currently selected table, or the first item in the list
+	if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil && ![[[theDelegate valueForKeyPath:@"tablesListInstance"] tableName] isEqualToString:@""]) {
+		[tableTargetPopup selectItemWithTitle:[[theDelegate valueForKeyPath:@"tablesListInstance"] tableName]];
+	} else {
+		[tableTargetPopup selectItemAtIndex:0];
+	}
+	
+	[self changeTableTarget:self];
+}
 /*
  * Set the connection for use.
  * Called by the connect sheet methods.
@@ -64,6 +83,8 @@
 - (void)dealloc
 {
 	if (mySQLConnection) [mySQLConnection release];
+	if (sourcePath) [sourcePath release];
+	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release];
 	[super dealloc];
 }
 
@@ -79,17 +100,18 @@
 {
 	
 	// Remove all the current columns
-	// [fieldMappingTableColumnNames removeAllObjects];
+	[fieldMappingTableColumnNames removeAllObjects];
 
 	// Retrieve the information for the newly selected table using a SPTableData instance
 	SPTableData *selectedTableData = [[SPTableData alloc] init];
 	[selectedTableData setConnection:mySQLConnection];
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
 	if (tableDetails) {
-		// for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
-		// 	[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
-		// }
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
+			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
+		}
 	}
+	NSLog(@"f %@", [fieldMappingTableColumnNames description]);
 	[selectedTableData release];
 
 	// Update the table view
@@ -135,7 +157,7 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
-	return 0;
+	return [fieldMappingTableColumnNames count];
 }
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -145,6 +167,19 @@
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
+	if ([[aTableColumn identifier] isEqualToString:@"target_field"]) {
+		return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
+		
+	}
+	// else if ([[aTableColumn identifier] isEqualToString:@"value"]) {
+	// 	if ([[[aTableColumn dataCell] class] isEqualTo:[NSPopUpButtonCell class]]) {
+	// 		[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
+	// 		[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
+	// 		[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
+	// 	}
+	// 	
+	// 	returnObject = [fieldMappingArray objectAtIndex:rowIndex];
+	// } 
 	return nil;
 }
 

@@ -31,7 +31,7 @@
 
 	IBOutlet id fieldMapperTableView;
 	IBOutlet id tableTargetPopup;
-	IBOutlet id fileSourcePath;
+	IBOutlet NSPathControl *fileSourcePath;
 	IBOutlet id importMethodPopup;
 	IBOutlet id rowUpButton;
 	IBOutlet id rowDownButton;
@@ -42,12 +42,16 @@
 	NSInteger fieldMappingCurrentRow;
 	NSArray *fieldMappingImportArray;
 	NSArray *fieldMappingArray;
+	NSMutableArray *fieldMappingTableColumnNames;
 
 	BOOL fieldMappingImportArrayIsPreview;
 
 	MCPConnection *mySQLConnection;
 
+	NSString *sourcePath;
 }
+
+@property(retain) NSString* sourcePath;
 
 - (id)initWithDelegate:(id)managerDelegate;
 
