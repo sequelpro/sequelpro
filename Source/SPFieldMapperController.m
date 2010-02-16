@@ -202,7 +202,9 @@
 				[type appendFormat:@"(%@)", [column objectForKey:@"length"]];
 			if([column objectForKey:@"values"])
 				[type appendFormat:@"(%@)", [[column objectForKey:@"values"] componentsJoinedByString:@"¦"]];
-			if([column objectForKey:@"default"])
+			if([column objectForKey:@"autoincrement"] && [[column objectForKey:@"autoincrement"] integerValue] == 1)
+				[type appendFormat:@",%@",@"PRIMARY KEY"];
+			else if ([column objectForKey:@"default"])
 				[type appendFormat:@",%@",[column objectForKey:@"default"]];
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
 		}
@@ -235,6 +237,9 @@
 
 	// Disable Import button if no fields are available
 	[importButton setEnabled:([fieldMappingTableColumnNames count] > 0)];
+
+	[alignByPopup selectItemWithTag:0];
+
 	[fieldMapperTableView reloadData];
 
 }
@@ -254,6 +259,30 @@
 	[fieldMapperTableView reloadData];
 }
 
+- (IBAction)changeFieldAlignment:(id)sender
+{
+
+	if(![fieldMappingImportArray count]) return;
+
+	NSInteger i;
+	NSInteger possibleImports = ([NSArrayObjectAtIndex(fieldMappingImportArray, 0) count] > [fieldMappingTableColumnNames count]) ? [fieldMappingTableColumnNames count] : [NSArrayObjectAtIndex(fieldMappingImportArray, 0) count];
+
+	if(possibleImports < 1) return;
+
+	switch([[alignByPopup selectedItem] tag]) {
+		case 0: // file order
+		for(i=0; i<possibleImports; i++)
+			[fieldMappingArray replaceObjectAtIndex:i withObject:[NSNumber numberWithInteger:i]];
+		break;
+		case 1: // reversed file order
+		possibleImports--;
+		for(i=possibleImports; i>=0; i--)
+			[fieldMappingArray replaceObjectAtIndex:possibleImports-i withObject:[NSNumber numberWithInteger:i]];
+		break;
+		
+	}
+	[fieldMapperTableView reloadData];
+}
 /*
  * Displays next/previous row in fieldMapping tableView
  */

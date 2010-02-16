@@ -28,14 +28,15 @@
 @interface SPFieldMapperController : NSWindowController {
 
 	IBOutlet NSTableView *fieldMapperTableView;
-	IBOutlet id tableTargetPopup;
+	IBOutlet NSPopUpButton *tableTargetPopup;
 	IBOutlet NSPathControl *fileSourcePath;
-	IBOutlet id importMethodPopup;
+	IBOutlet NSPopUpButton *importMethodPopup;
 	IBOutlet id rowUpButton;
 	IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
 	IBOutlet id importFieldNamesHeaderSwitch;
 	IBOutlet id importButton;
+	IBOutlet NSPopUpButton *alignByPopup;
 	
 	id theDelegate;
 	id fieldMappingImportArray;
@@ -85,6 +86,7 @@
 // IBAction methods
 - (IBAction)changeTableTarget:(id)sender;
 - (IBAction)changeImportMethod:(id)sender;
+- (IBAction)changeFieldAlignment:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 

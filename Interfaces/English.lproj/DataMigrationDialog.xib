@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="13"/>
+			<integer value="133"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -991,7 +991,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 										<bytes key="NSRGB">MC45Mjk0MTE4Mjg1IDAuOTI5NDExODI4NSAwLjkyOTQxMTgyODUAA</bytes>
 									</object>
 									<object class="NSCursor" key="NSCursor">
-										<string key="NSHotSpot">{1, -1}</string>
+										<string key="NSHotSpot">{4, 4}</string>
 										<int key="NSCursorType">0</int>
 									</object>
 									<int key="NScvFlags">6</int>
@@ -1033,7 +1033,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 							<reference key="NSSuperview" ref="78582513"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="940205369">
-								<int key="NSCellFlags">-1539178944</int>
+								<int key="NSCellFlags">-2076049856</int>
 								<int key="NSCellFlags2">133120</int>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="573115956"/>
@@ -1043,9 +1043,9 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 								<string key="NSKeyEquivalent"/>
 								<int key="NSPeriodicDelay">400</int>
 								<int key="NSPeriodicInterval">75</int>
-								<object class="NSMenuItem" key="NSMenuItem" id="863046035">
+								<object class="NSMenuItem" key="NSMenuItem" id="288483296">
 									<reference key="NSMenu" ref="877368345"/>
-									<string key="NSTitle">matching names</string>
+									<string key="NSTitle">file order</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -1060,18 +1060,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 									<string key="NSTitle">OtherViews</string>
 									<object class="NSMutableArray" key="NSMenuItems">
 										<bool key="EncodedWithXMLCoder">YES</bool>
-										<reference ref="863046035"/>
-										<object class="NSMenuItem" id="288483296">
-											<reference key="NSMenu" ref="877368345"/>
-											<string key="NSTitle">file order</string>
-											<string key="NSKeyEquiv"/>
-											<int key="NSKeyEquivModMask">1048576</int>
-											<int key="NSMnemonicLoc">2147483647</int>
-											<reference key="NSOnImage" ref="884724275"/>
-											<reference key="NSMixedImage" ref="1071040955"/>
-											<string key="NSAction">_popUpItemAction:</string>
-											<reference key="NSTarget" ref="940205369"/>
-										</object>
+										<reference ref="288483296"/>
 										<object class="NSMenuItem" id="771511410">
 											<reference key="NSMenu" ref="877368345"/>
 											<string key="NSTitle">reversed file order</string>
@@ -1080,9 +1069,24 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 											<reference key="NSOnImage" ref="884724275"/>
 											<reference key="NSMixedImage" ref="1071040955"/>
 											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">1</int>
+											<reference key="NSTarget" ref="940205369"/>
+										</object>
+										<object class="NSMenuItem" id="863046035">
+											<reference key="NSMenu" ref="877368345"/>
+											<bool key="NSIsDisabled">YES</bool>
+											<string key="NSTitle">matching names</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="884724275"/>
+											<reference key="NSMixedImage" ref="1071040955"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">2</int>
 											<reference key="NSTarget" ref="940205369"/>
 										</object>
 									</object>
+									<bool key="NSNoAutoenable">YES</bool>
 									<reference key="NSMenuFont" ref="388072550"/>
 								</object>
 								<int key="NSPreferredEdge">1</int>
@@ -1314,6 +1318,22 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 						<reference key="destination" ref="341819846"/>
 					</object>
 					<int key="connectionID">150</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">alignByPopup</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="573115956"/>
+					</object>
+					<int key="connectionID">151</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">changeFieldAlignment:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="573115956"/>
+					</object>
+					<int key="connectionID">152</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1954,9 +1974,9 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{180, 271}, {465, 405}}</string>
+					<string>{{164, 144}, {465, 405}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{180, 271}, {465, 405}}</string>
+					<string>{{164, 144}, {465, 405}}</string>
 					<integer value="1"/>
 					<string>{{387, 725}, {432, 282}}</string>
 					<integer value="0"/>
@@ -1975,7 +1995,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{186, 334}, {161, 54}}</string>
+					<string>{{170, 196}, {161, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2118,7 +2138,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">150</int>
+			<int key="maxID">152</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2154,6 +2174,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>changeFieldAlignment:</string>
 							<string>changeImportMethod:</string>
 							<string>changeTableTarget:</string>
 							<string>closeSheet:</string>
@@ -2165,12 +2186,14 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>alignByPopup</string>
 							<string>fieldMapperTableView</string>
 							<string>fieldMappingImportArray</string>
 							<string>fileSourcePath</string>
@@ -2185,6 +2208,7 @@ cyAKCQluZXcgcm93cyBSRVBMQUNFIElOVE8g4oCmA</bytes>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>NSTableView</string>
 							<string>id</string>
 							<string>NSPathControl</string>
