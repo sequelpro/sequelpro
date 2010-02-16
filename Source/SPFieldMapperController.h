@@ -35,6 +35,7 @@
 	IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
 	IBOutlet id importFieldNamesHeaderSwitch;
+	IBOutlet id importButton;
 	
 	id theDelegate;
 	id fieldMappingImportArray;
@@ -42,6 +43,8 @@
 	NSInteger fieldMappingCurrentRow;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingTableColumnNames;
+	// NSMutableArray *fieldMappingTableDefaultValues;
+	NSMutableArray *fieldMappingTableTypes;
 	NSMutableArray *fieldMappingButtonOptions;
 	NSMutableArray *fieldMappingOperatorOptions;
 	NSMutableArray *fieldMappingOperatorArray;

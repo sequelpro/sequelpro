@@ -50,10 +50,12 @@
 			return nil;
 		}
 		theDelegate = managerDelegate;
-		fieldMappingTableColumnNames = [[NSMutableArray alloc] init];
-		fieldMappingButtonOptions    = [[NSMutableArray alloc] init];
-		fieldMappingOperatorOptions  = [[NSMutableArray alloc] init];
-		fieldMappingOperatorArray    = [[NSMutableArray alloc] init];
+		fieldMappingTableColumnNames   = [[NSMutableArray alloc] init];
+		// fieldMappingTableDefaultValues = [[NSMutableArray alloc] init];
+		fieldMappingTableTypes         = [[NSMutableArray alloc] init];
+		fieldMappingButtonOptions      = [[NSMutableArray alloc] init];
+		fieldMappingOperatorOptions    = [[NSMutableArray alloc] init];
+		fieldMappingOperatorArray      = [[NSMutableArray alloc] init];
 		fieldMappingArray = nil;
 
 		lastDisabledCSVFieldcolumn = [NSNumber numberWithInteger:0];
@@ -61,7 +63,7 @@
 		doImport          = [NSNumber numberWithInteger:0];
 		doNotImport       = [NSNumber numberWithInteger:1];
 		isEqual           = [NSNumber numberWithInteger:2];
-		doImportString    = @"─";
+		doImportString    = @"―";
 		doNotImportString = @" ";
 		isEqualString     = @"=";
 
@@ -105,6 +107,8 @@
 	if (mySQLConnection) [mySQLConnection release];
 	if (sourcePath) [sourcePath release];
 	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release];
+	// if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
+	if (fieldMappingTableTypes) [fieldMappingTableTypes release];
 	if (fieldMappingArray) [fieldMappingArray release];
 	if (fieldMappingButtonOptions) [fieldMappingButtonOptions release];
 	if (fieldMappingOperatorOptions) [fieldMappingOperatorOptions release];
@@ -176,14 +180,31 @@
 
 	// Remove all the current columns
 	[fieldMappingTableColumnNames removeAllObjects];
+	// [fieldMappingTableDefaultValues removeAllObjects];
+	[fieldMappingTableTypes removeAllObjects];
 
 	// Retrieve the information for the newly selected table using a SPTableData instance
 	SPTableData *selectedTableData = [[SPTableData alloc] init];
 	[selectedTableData setConnection:mySQLConnection];
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
+
 	if (tableDetails) {
 		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
+			// if([column objectForKey:@"default"])
+			// 	[fieldMappingTableDefaultValues addObject:[NSString stringWithString:[column objectForKey:@"default"]]];
+			// else
+			// 	[fieldMappingTableDefaultValues addObject:@""];
+			NSMutableString *type = [NSMutableString string];
+			if([column objectForKey:@"type"])
+				[type appendString:[column objectForKey:@"type"]];
+			if([column objectForKey:@"length"])
+				[type appendFormat:@"(%@)", [column objectForKey:@"length"]];
+			if([column objectForKey:@"values"])
+				[type appendFormat:@"(%@)", [[column objectForKey:@"values"] componentsJoinedByString:@"¦"]];
+			if([column objectForKey:@"default"])
+				[type appendFormat:@",%@",[column objectForKey:@"default"]];
+			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
 		}
 	}
 
@@ -212,6 +233,8 @@
 			[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doImport];
 	}
 
+	// Disable Import button if no fields are available
+	[importButton setEnabled:([fieldMappingTableColumnNames count] > 0)];
 	[fieldMapperTableView reloadData];
 
 }
@@ -387,13 +410,26 @@
 		}
 		return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
 	}
+	else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+		NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
+		[b setEditable:NO];
+		[b setAlignment:NSLeftTextAlignment];
+		[b setFont:[NSFont systemFontOfSize:9]];
+		[b setDelegate:self];
+		return b;
+	}
 	else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 		if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 			[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
 			if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
+			return [fieldMappingArray objectAtIndex:rowIndex];
+			// } else {
+			// 	NSString *defaultValue = [fieldMappingTableDefaultValues objectAtIndex:[[fieldMappingArray objectAtIndex:rowIndex] integerValue]];
+			// 	[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:defaultValue];
+			// 	return defaultValue;
+			// }
 		}
-		return [fieldMappingArray objectAtIndex:rowIndex];
 	} 
 	else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
 		if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
