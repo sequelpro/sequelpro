@@ -108,11 +108,6 @@
 	[exportMultipleXMLTableView reloadData];
 }
 
-- (IBAction)closeFieldMapperSheet:(id)sender
-{
-	[NSApp endSheet:fieldMappingSheet returnCode:[sender tag]];
-}
-
 /**
  * Common method for ending modal sessions
  */
@@ -513,39 +508,6 @@
 	[importCSVBox setHidden:![[[importFormatPopup selectedItem] title] isEqualToString:@"CSV"]];
 }
 
-/**
- * When the table in the CSV field mapping sheet is changed, retrieve
- * the columns from the new table and reset the field mapping array.
- */
-- (IBAction)changeTable:(id)sender
-{
-	
-	// Remove all the current columns
-	[fieldMappingTableColumnNames removeAllObjects];
-
-	// Retrieve the information for the newly selected table using a SPTableData instance
-	SPTableData *selectedTableData = [[SPTableData alloc] init];
-	[selectedTableData setConnection:mySQLConnection];
-	NSDictionary *tableDetails = [selectedTableData informationForTable:[fieldMappingPopup titleOfSelectedItem]];
-	if (tableDetails) {
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
-			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
-		}
-	}
-	[selectedTableData release];
-
-	// Update the table view
-	fieldMappingCurrentRow = 0;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-	[self setupFieldMappingArray];
-	[rowDownButton setEnabled:NO];
-	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
-
-	[self updateFieldMappingButtonCell];
-	[fieldMappingTableView reloadData];
-}
-
 - (void)importBackgroundProcess:(NSString*)filename
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -822,7 +784,7 @@
 	BOOL allDataRead = NO;
 	BOOL insertBaseStringHasEntries;
 	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	fieldMappingArray = nil;
 
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
@@ -975,7 +937,7 @@
 				&& ([parsedRows count] >= 100 || (!csvRowArray && allDataRead)))
 			{
 				[self closeAndStopProgressSheet];
-				if (![self buildFieldMappingArrayWithData:parsedRows isPreview:!allDataRead]) {
+				if (![self buildFieldMappingArrayWithData:parsedRows isPreview:!allDataRead ofSoureFile:filename]) {
 					[csvParser release];
 					[csvDataBuffer release];
 					[parsedRows release];
@@ -992,13 +954,13 @@
 				[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 				[singleProgressSheet makeKeyWindow];
 
-				// Set up the field names import string
-				[insertBaseString appendString:@"INSERT INTO "];
-				[insertBaseString appendString:[[fieldMappingPopup titleOfSelectedItem] backtickQuotedString]];
+				// Set up the field names import string for INSERT or REPLACE INTO
+				[insertBaseString appendFormat:@"%@ INTO ", selectedImportMethod];
+				[insertBaseString appendString:[selectedTableTarget backtickQuotedString]];
 				[insertBaseString appendString:@" ("];
 				insertBaseStringHasEntries = NO;
 				for (i = 0; i < [fieldMappingArray count]; i++) {
-					if ([NSArrayObjectAtIndex(fieldMappingArray, i) integerValue] > 0) {
+					if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
 						if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
 						else insertBaseStringHasEntries = YES;
 						[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
@@ -1079,7 +1041,7 @@
 	[csvDataBuffer release];
 	[parsedRows release];
 	[parsePositions release];
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	fieldMappingArray = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
@@ -1103,7 +1065,7 @@
 
 	// If the table selected for import is also selected in the content view,
 	// update the content view - on the main thread to avoid crashes.
-	if ([tablesListInstance tableName] && [[fieldMappingPopup titleOfSelectedItem] isEqualToString:[tablesListInstance tableName]]) {
+	if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
 		if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
 			[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
 		} else {
@@ -1142,7 +1104,7 @@
  * Takes an array of data to show when selecting the field mapping, and an indicator of whether
  * that dataset is complete or a preview of the full data set.
  */
-- (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData
+- (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename
 {
 
 	// Ensure data was provided, or alert than an import error occurred and return false.
@@ -1172,12 +1134,8 @@
 	}
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;
 
-	// Get the list of tables (not views) to display in the field mapping interface
-	[fieldMappingPopup removeAllItems];
-	[fieldMappingPopup addItemsWithTitles:[tablesListInstance allTableNames]];
-
 	// If there's no tables to select, error
-	if (![[fieldMappingPopup itemArray] count]) {
+	if (![[tablesListInstance allTableNames] count]) {
 		[self closeAndStopProgressSheet];
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
@@ -1189,46 +1147,41 @@
 		return FALSE;
 	}
 
-	// Set up tableView buttons
-	NSPopUpButtonCell *buttonCell = [[NSPopUpButtonCell alloc] init];
-	[buttonCell setControlSize:NSSmallControlSize];
-	[buttonCell setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
-	[buttonCell setBordered:NO];
-	[[fieldMappingTableView tableColumnWithIdentifier:@"value"] setDataCell:buttonCell];
-	[buttonCell release];
-
-	// Select either the currently selected table, or the first item in the list
-	if ([tableDocumentInstance table] != nil && ![[tablesListInstance tableName] isEqualToString:@""]) {
-		[fieldMappingPopup selectItemWithTitle:[tablesListInstance tableName]];
-	} else {
-		[fieldMappingPopup selectItemAtIndex:0];
-	}
-	
 	// Set the import array
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
-		
-	// Trigger a table selection and setup
-	[self changeTable:self];
 
 	fieldMapperSheetStatus = 1;
 
-	// if(fieldMapperController) [fieldMapperController release];
-	// fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+	// Init the field mapper controller
+	fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+	[fieldMapperController setConnection:mySQLConnection];
+	[fieldMapperController setSourcePath:filename];
+	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state]];
 
-	// Show fieldMapping sheet
-	// [NSApp beginSheet:[fieldMapperController window]
-	[NSApp beginSheet:fieldMappingSheet
+	// Show field mapper sheet and set the focus to it
+	[NSApp beginSheet:[fieldMapperController window]
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
 		  contextInfo:nil];
 
-	// Wait for fieldMappingSheet
+	[[fieldMapperController window] makeKeyWindow];
+
+	// Wait for field mapper sheet
 	while (fieldMapperSheetStatus == 1)
 		usleep(100000);
 
-	// if(fieldMapperController) [fieldMapperController release];
+	// Get mapping settings
+	fieldMapperOperator  = [NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]];
+	fieldMappingArray    = [NSArray arrayWithArray:[fieldMapperController fieldMappingArray]];
+	selectedTableTarget  = [NSString stringWithString:[fieldMapperController selectedTableTarget]];
+	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
+	fieldMappingTableColumnNames = [NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]];
+	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
+	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
+
+	if(fieldMapperController) [fieldMapperController release];
 
 	if(fieldMapperSheetStatus == 2)
 		return YES;
@@ -1240,69 +1193,6 @@
 {
 	[sheet orderOut:self];
 	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
-}
-
-/*
- * Sets up the fieldMapping array to be shown in the tableView
- */
-- (void)setupFieldMappingArray
-{
-	NSInteger i, value;
-	
-    if (!fieldMappingArray) {
-        fieldMappingArray = [[NSMutableArray alloc] init];
-		
-		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
-			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count] && ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isKindOfClass:[NSNull class]]) {
-				value = i + 1;
-			} else {
-				value = 0;
-			}
-			
-            [fieldMappingArray addObject:[NSNumber numberWithInteger:value]];
-        }
-    }
-	
-    [fieldMappingTableView reloadData];
-}
-
-/*
- * Update the NSButtonCell items for use in the field mapping display
- */
-- (void)updateFieldMappingButtonCell
-{
-	int i;
-	
-	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
-	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
-		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:SPNullValue]]];
-		} else {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
-		}
-	}
-}
-
-- (IBAction)stepRow:(id)sender
-/*
- displays next/previous row in fieldMapping tableView
- */
-{
-	if ( [sender tag] == 0 ) {
-		fieldMappingCurrentRow--;
-	} else {
-		fieldMappingCurrentRow++;
-	}
-	[self updateFieldMappingButtonCell];
-	
-	//-----------[self setupFieldMappingArray];
-	[fieldMappingTableView reloadData];
-	
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
-	
-	// enable/disable buttons
-	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
-	[rowUpButton setEnabled:(fieldMappingCurrentRow != ([fieldMappingImportArray count]-1))];
 }
 
 /*
@@ -1318,15 +1208,16 @@
 	NSInteger mappingArrayCount = [fieldMappingArray count];
 
 	for (i = 0; i < mappingArrayCount; i++) {
-		mapColumn = [NSArrayObjectAtIndex(fieldMappingArray, i) integerValue];
 
 		// Skip unmapped columns
-		if (!mapColumn) continue;
+		if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] > 0) continue;
+
+		mapColumn = [NSArrayObjectAtIndex(fieldMappingArray, i) integerValue];
 
 		if ([valueString length] > 1) [valueString appendString:@","];
 
 		// Append the data
-		cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn - 1);
+		cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
 		if (cellData == [NSNull null]) {
 			[valueString appendString:@"NULL"];
@@ -2794,8 +2685,6 @@
 		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleXMLTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-		[[[fieldMappingTableView tableColumnWithIdentifier:@"0"] dataCell]
-		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 		[errorsView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 	} else {
 		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
@@ -2803,8 +2692,6 @@
 		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
 		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[[[exportMultipleXMLTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[[[fieldMappingTableView tableColumnWithIdentifier:@"0"] dataCell]
 		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		[errorsView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
@@ -2815,7 +2702,7 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
-	return (aTableView == fieldMappingTableView) ? [fieldMappingTableColumnNames count] : [tables count];
+	return [tables count];
 }
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -2826,39 +2713,19 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	id returnObject = nil;
-	
-	if ( aTableView == fieldMappingTableView ) {
-		if ([[aTableColumn identifier] isEqualToString:@"field"]) {
-			returnObject = [fieldMappingTableColumnNames objectAtIndex:rowIndex];
-			
-		} else if ([[aTableColumn identifier] isEqualToString:@"value"]) {
-			if ([[[aTableColumn dataCell] class] isEqualTo:[NSPopUpButtonCell class]]) {
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:NSLocalizedString(@"Do not import", @"text for csv import drop downs")];
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
-			}
-			
-			returnObject = [fieldMappingArray objectAtIndex:rowIndex];
-		} 
+
+	if ( [[aTableColumn identifier] isEqualToString:@"switch"] ) {
+		returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:0];
 	} else {
-		if ( [[aTableColumn identifier] isEqualToString:@"switch"] ) {
-			returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:0];
-		} else {
-			returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:1];
-		}
+		returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:1];
 	}
-	
+
 	return returnObject;
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if ( aTableView == fieldMappingTableView ) {		
-		[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
-	} 
-	else {
-		[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
-	}
+	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
 }
 
 
@@ -2925,8 +2792,6 @@
 	self = [super init];
 	
 	tables = [[NSMutableArray alloc] init];
-	fieldMappingTableColumnNames = [[NSMutableArray alloc] init];
-	fieldMappingButtonOptions = [[NSMutableArray alloc] init];
 	fieldMappingArray = nil;
 	fieldMappingImportArray = nil;
 	fieldMappingImportArrayIsPreview = NO;
@@ -2938,10 +2803,7 @@
 - (void)dealloc
 {	
 	[tables release];
-	[fieldMappingTableColumnNames release];
-	[fieldMappingButtonOptions release];
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
-	if (fieldMappingArray) [fieldMappingArray release];
 	if (prefs) [prefs release];
 	
 	[super dealloc];

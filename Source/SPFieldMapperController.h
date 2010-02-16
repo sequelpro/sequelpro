@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPQueryFavoriteManager.h
+//  SPFieldMapperController.h
 //  sequel-pro
 //
 //  Created by Hans-Jörg Bibiko on February 01, 2010
@@ -25,8 +25,6 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-
-
 @interface SPFieldMapperController : NSWindowController {
 
 	IBOutlet id fieldMapperTableView;
@@ -36,19 +34,33 @@
 	IBOutlet id rowUpButton;
 	IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
+	IBOutlet id importFieldNamesHeaderSwitch;
 	
 	id theDelegate;
+	id fieldMappingImportArray;
 	
 	NSInteger fieldMappingCurrentRow;
-	NSArray *fieldMappingImportArray;
-	NSArray *fieldMappingArray;
+	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingTableColumnNames;
+	NSMutableArray *fieldMappingButtonOptions;
+	NSMutableArray *fieldMappingOperatorOptions;
+	NSMutableArray *fieldMappingOperatorArray;
+	
+	NSNumber *doImport;
+	NSNumber *doNotImport;
+	NSNumber *isEqual;
+	NSString *doImportString;
+	NSString *doNotImportString;
+	NSString *isEqualString;
 
 	BOOL fieldMappingImportArrayIsPreview;
+	BOOL importFieldNamesHeader;
 
 	MCPConnection *mySQLConnection;
 
 	NSString *sourcePath;
+
+	NSUserDefaults *prefs;
 }
 
 @property(retain) NSString* sourcePath;
@@ -56,11 +68,25 @@
 - (id)initWithDelegate:(id)managerDelegate;
 
 - (void)setConnection:(MCPConnection *)theConnection;
+- (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader;
+
+// Getter methods
+- (NSString*)selectedTableTarget;
+- (NSArray*)fieldMapperOperator;
+- (NSString*)selectedImportMethod;
+- (NSArray*)fieldMappingArray;
+- (NSArray*)fieldMappingTableColumnNames;
+- (BOOL)importFieldNamesHeader;
 
 // IBAction methods
 - (IBAction)changeTableTarget:(id)sender;
 - (IBAction)changeImportMethod:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+
+// Others
+- (void)setupFieldMappingArray;
+- (void)updateFieldMappingButtonCell;
+- (void)updateFieldMappingOperatorOptions;
 
 @end
