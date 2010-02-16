@@ -55,6 +55,7 @@
 
 	BOOL fieldMappingImportArrayIsPreview;
 	BOOL importFieldNamesHeader;
+	NSNumber *lastDisabledCSVFieldcolumn;
 
 	MCPConnection *mySQLConnection;
 

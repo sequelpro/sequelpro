@@ -56,11 +56,13 @@
 		fieldMappingOperatorArray    = [[NSMutableArray alloc] init];
 		fieldMappingArray = nil;
 
+		lastDisabledCSVFieldcolumn = [NSNumber numberWithInteger:0];
+
 		doImport          = [NSNumber numberWithInteger:0];
 		doNotImport       = [NSNumber numberWithInteger:1];
 		isEqual           = [NSNumber numberWithInteger:2];
-		doImportString    = @"→";
-		doNotImportString = @"×";
+		doImportString    = @"─";
+		doNotImportString = @" ";
 		isEqualString     = @"=";
 
 		prefs = [NSUserDefaults standardUserDefaults];
@@ -348,13 +350,15 @@
 
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(NSCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
 {
-	if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState)
+	if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
+		if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return @"";
 		if(fieldMappingCurrentRow)
 			return [NSString stringWithFormat:@"%@: %@", 
 				[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description],
 				[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description]];
 		else
 			return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
+	}
 	else if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOffState)
 		return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
 	else if([[aTableColumn identifier] isEqualToString:@"operator"]) {
@@ -386,9 +390,9 @@
 	else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 		if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 			[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
-			[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
+			if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
+				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
 		}
-		
 		return [fieldMappingArray objectAtIndex:rowIndex];
 	} 
 	else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
@@ -396,7 +400,6 @@
 			[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
 			[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingOperatorOptions];
 		}
-		
 		return [fieldMappingOperatorArray objectAtIndex:rowIndex];
 	} 
 	return nil;
@@ -408,7 +411,15 @@
 		[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
 	}
 	else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
-		[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
+		if([fieldMappingOperatorArray objectAtIndex:rowIndex] == anObject) return;
+		if([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) {
+			[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
+			[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:lastDisabledCSVFieldcolumn];
+		} else {
+			if(anObject == doNotImport) lastDisabledCSVFieldcolumn = [fieldMappingArray objectAtIndex:rowIndex];
+			[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
+		}
+		[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
 	}
 }
 
