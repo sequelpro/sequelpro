@@ -37,10 +37,11 @@
 	IBOutlet id importFieldNamesHeaderSwitch;
 	IBOutlet id importButton;
 	IBOutlet NSPopUpButton *alignByPopup;
-	
+	IBOutlet NSMenuItem *matchingNameMenuItem;
+
 	id theDelegate;
 	id fieldMappingImportArray;
-	
+
 	NSInteger fieldMappingCurrentRow;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingTableColumnNames;
@@ -49,7 +50,7 @@
 	NSMutableArray *fieldMappingButtonOptions;
 	NSMutableArray *fieldMappingOperatorOptions;
 	NSMutableArray *fieldMappingOperatorArray;
-	
+
 	NSNumber *doImport;
 	NSNumber *doNotImport;
 	NSNumber *isEqual;
@@ -87,10 +88,13 @@
 - (IBAction)changeTableTarget:(id)sender;
 - (IBAction)changeImportMethod:(id)sender;
 - (IBAction)changeFieldAlignment:(id)sender;
+- (IBAction)changeHasHeaderCheckbox:(id)sender;
 - (IBAction)stepRow:(id)sender;
+- (IBAction)addGlobalSourceVariable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 
 // Others
+- (void)matchHeaderNames;
 - (void)setupFieldMappingArray;
 - (void)updateFieldMappingButtonCell;
 - (void)updateFieldMappingOperatorOptions;

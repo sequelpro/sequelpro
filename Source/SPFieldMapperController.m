@@ -27,6 +27,7 @@
 #import "SPTableData.h"
 #import "TablesList.h"
 #import "SPArrayAdditions.h"
+#import "SPStringAdditions.h"
 #import "SPConstants.h"
 
 @implementation SPFieldMapperController
@@ -95,6 +96,7 @@
 	
 	[importFieldNamesHeaderSwitch setState:importFieldNamesHeader];
 	
+	[self changeHasHeaderCheckbox:self];
 	[self changeTableTarget:self];
 	[[self window] makeFirstResponder:fieldMapperTableView];
 	if([fieldMappingTableColumnNames count])
@@ -162,7 +164,7 @@
 
 - (BOOL)importFieldNamesHeader
 {
-	return importFieldNamesHeader;
+	return ([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO;
 }
 
 #pragma mark -
@@ -279,7 +281,9 @@
 		for(i=possibleImports; i>=0; i--)
 			[fieldMappingArray replaceObjectAtIndex:possibleImports-i withObject:[NSNumber numberWithInteger:i]];
 		break;
-		
+		case 2: // try to align header and table target field names via Levenshtein distance
+		[self matchHeaderNames];
+		break;
 	}
 	[fieldMapperTableView reloadData];
 }
@@ -302,6 +306,46 @@
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
 	[rowUpButton setEnabled:(fieldMappingCurrentRow != ([fieldMappingImportArray count]-1))];
+}
+
+- (IBAction)changeHasHeaderCheckbox:(id)sender
+{
+	[matchingNameMenuItem setEnabled:([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO];
+}
+
+- (IBAction)addGlobalSourceVariable:(id)sender
+{
+
+}
+
+#pragma mark -
+#pragma mark Others
+
+- (void)matchHeaderNames
+{
+	if(![fieldMappingImportArray count]) return;
+
+	NSMutableArray *fileHeaderNames = [NSMutableArray array];
+	[fileHeaderNames setArray:NSArrayObjectAtIndex(fieldMappingImportArray, 0)];
+	NSMutableArray *tableHeaderNames = [NSMutableArray array];
+	[tableHeaderNames setArray:fieldMappingTableColumnNames];
+
+	NSInteger i,j;
+	NSMutableArray *matchedHeaderNames = [NSMutableArray array];
+	for(i=0; i < [tableHeaderNames count]; i++) {
+		CGFloat minDist = 1e6;
+		NSInteger minIndex = 0;
+		for(j=0; j < [fileHeaderNames count]; j++) {
+			NSString *headerName = [NSArrayObjectAtIndex(fileHeaderNames,j) lowercaseString];
+			CGFloat dist = [[NSArrayObjectAtIndex(tableHeaderNames,i) lowercaseString] levenshteinDistanceWithWord:headerName];
+			if(dist < minDist && ![matchedHeaderNames containsObject:headerName]) {
+				minDist = dist;
+				minIndex = j;
+			}
+			if(dist == 0.0f) [matchedHeaderNames addObject:headerName];
+		}
+		[fieldMappingArray replaceObjectAtIndex:i withObject:[NSNumber numberWithInteger:minIndex]];
+	}
 }
 
 /*
