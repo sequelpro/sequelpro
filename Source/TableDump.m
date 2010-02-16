@@ -1041,7 +1041,8 @@
 	[csvDataBuffer release];
 	[parsedRows release];
 	[parsePositions release];
-	fieldMappingArray = nil;
+	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
+	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
@@ -1157,7 +1158,7 @@
 	fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
 	[fieldMapperController setConnection:mySQLConnection];
 	[fieldMapperController setSourcePath:filename];
-	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state]];
+	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
 
 	// Show field mapper sheet and set the focus to it
 	[NSApp beginSheet:[fieldMapperController window]
@@ -1173,8 +1174,8 @@
 		usleep(100000);
 
 	// Get mapping settings
-	fieldMapperOperator  = [NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]];
-	fieldMappingArray    = [NSArray arrayWithArray:[fieldMapperController fieldMappingArray]];
+	fieldMapperOperator  = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
+	fieldMappingArray    = [[NSArray arrayWithArray:[fieldMapperController fieldMappingArray]] retain];
 	selectedTableTarget  = [NSString stringWithString:[fieldMapperController selectedTableTarget]];
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
 	fieldMappingTableColumnNames = [NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]];
@@ -2811,7 +2812,7 @@
 
 - (IBAction)cancelProgressBar:(id)sender
 {
-	progressCancelled = YES;	
+	progressCancelled = YES;
 }
 
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar

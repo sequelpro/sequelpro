@@ -119,10 +119,11 @@
 	[mySQLConnection retain];
 }
 
-- (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader
+- (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader isPreview:(BOOL)isPreview
 {
 	fieldMappingImportArray = theFieldMappingImportArray;
 	importFieldNamesHeader  = hasHeader;
+	fieldMappingImportArrayIsPreview = isPreview;
 }
 
 #pragma mark -
@@ -327,8 +328,16 @@
 			&& [fieldMappingTableColumnNames count]) {
 		NSInteger i;
 		NSNumber *globalValue = doImport;
-		if([fieldMappingOperatorArray objectAtIndex:0] == doImport)
+		if([fieldMappingOperatorArray objectAtIndex:0] == doImport) {
 			globalValue = doNotImport;
+			// NSTextFieldCell *c = [[[NSTextFieldCell alloc] init] autorelease];
+			// [c setStringValue:doNotImportString];
+			// [aTableColumn setHeaderCell:c];
+		} else {
+			// NSTextFieldCell *c = [[[NSTextFieldCell alloc] init] autorelease];
+			// [c setStringValue:doImportString];
+			// [aTableColumn setHeaderCell:c];
+		}
 		[fieldMappingOperatorArray removeAllObjects];
 		for(i=0; i < [fieldMappingTableColumnNames count]; i++)
 			[fieldMappingOperatorArray addObject:globalValue];

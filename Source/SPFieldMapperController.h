@@ -27,7 +27,7 @@
 
 @interface SPFieldMapperController : NSWindowController {
 
-	IBOutlet id fieldMapperTableView;
+	IBOutlet NSTableView *fieldMapperTableView;
 	IBOutlet id tableTargetPopup;
 	IBOutlet NSPathControl *fileSourcePath;
 	IBOutlet id importMethodPopup;
@@ -68,7 +68,7 @@
 - (id)initWithDelegate:(id)managerDelegate;
 
 - (void)setConnection:(MCPConnection *)theConnection;
-- (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader;
+- (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader isPreview:(BOOL)isPreview;
 
 // Getter methods
 - (NSString*)selectedTableTarget;
