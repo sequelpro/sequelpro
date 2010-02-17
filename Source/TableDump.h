@@ -108,6 +108,7 @@ typedef enum _SPExportModes {
 	NSArray *fieldMapperOperator;
 	NSString *selectedTableTarget;
 	NSString *selectedImportMethod;
+	NSString *lastFilename;
 	NSInteger fieldMapperSheetStatus;
 
 	NSUInteger exportMode;

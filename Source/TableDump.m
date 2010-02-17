@@ -496,7 +496,7 @@
 	
 	// Show openPanel
 	[openPanel beginSheetForDirectory:[prefs objectForKey:@"openPath"]
-								 file:nil
+								 file:[lastFilename lastPathComponent]
 					   modalForWindow:tableWindow
 						modalDelegate:self
 					   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
@@ -1089,8 +1089,16 @@
 	// Reset progress cancelled from any previous runs
 	progressCancelled = NO;
 
+	if(lastFilename) [lastFilename release]; lastFilename = nil;
+	lastFilename = [[NSString stringWithString:[sheet filename]] retain];
+
+	if(lastFilename == nil || ![lastFilename length]) {
+		NSBeep();
+		return;
+	}
+
 	// begin import process
-	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:[sheet filename]];
+	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:lastFilename];
 }
 
 - (void)startSQLImportProcessWithFile:(NSString *)filename
@@ -2797,6 +2805,7 @@
 	fieldMappingImportArray = nil;
 	fieldMappingImportArrayIsPreview = NO;
 	prefs = nil;
+	lastFilename = nil;
 	
 	return self;
 }
@@ -2805,6 +2814,7 @@
 {	
 	[tables release];
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
+	if (lastFilename) [lastFilename release];
 	if (prefs) [prefs release];
 	
 	[super dealloc];

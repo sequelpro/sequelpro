@@ -25,6 +25,7 @@
 
 #import "SPFieldMapperController.h"
 #import "SPTableData.h"
+#import "TableDump.h"
 #import "TablesList.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
@@ -315,7 +316,13 @@
 
 - (IBAction)addGlobalSourceVariable:(id)sender
 {
+	
+}
 
+- (IBAction)goBackToFileChooser:(id)sender
+{
+	[NSApp endSheet:[self window] returnCode:[sender tag]];
+	[theDelegate importFile];
 }
 
 #pragma mark -
@@ -494,14 +501,10 @@
 	else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 		if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 			[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
+			[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
+			// Hide csv file column value if user doesn't want to import it
 			if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
-			return [fieldMappingArray objectAtIndex:rowIndex];
-			// } else {
-			// 	NSString *defaultValue = [fieldMappingTableDefaultValues objectAtIndex:[[fieldMappingArray objectAtIndex:rowIndex] integerValue]];
-			// 	[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:defaultValue];
-			// 	return defaultValue;
-			// }
+				return [fieldMappingArray objectAtIndex:rowIndex];
 		}
 	} 
 	else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
@@ -518,9 +521,10 @@
 {
 	if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 		[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
+		// If user changed the csv file column set the operator to doImport
+		[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doImport];
 	}
 	else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
-		if([fieldMappingOperatorArray objectAtIndex:rowIndex] == anObject) return;
 		if([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) {
 			[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
 			[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:lastDisabledCSVFieldcolumn];
@@ -528,8 +532,9 @@
 			if(anObject == doNotImport) lastDisabledCSVFieldcolumn = [fieldMappingArray objectAtIndex:rowIndex];
 			[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
 		}
-		[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
 	}
+	// Refresh table
+	[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
 }
 
 @end

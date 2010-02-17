@@ -92,6 +92,7 @@
 - (IBAction)stepRow:(id)sender;
 - (IBAction)addGlobalSourceVariable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)goBackToFileChooser:(id)sender;
 
 // Others
 - (void)matchHeaderNames;
