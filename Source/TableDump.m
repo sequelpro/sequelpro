@@ -113,7 +113,8 @@
  */
 - (IBAction)closeSheet:(id)sender
 {
-	[NSApp stopModalWithCode:[sender tag]];
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 /**
@@ -734,11 +735,7 @@
 
 	// Display any errors
 	if ([errors length]) {
-		[errorsView setString:errors];
-		[NSApp beginSheet:errorsSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		[NSApp runModalForWindow:errorsSheet];
-		[NSApp endSheet:errorsSheet];
-		[errorsSheet orderOut:nil];
+		[self showErrorSheetWithMessage:errors];
 	}
 
 	// Update available databases
@@ -1051,11 +1048,7 @@
 
 	// Display any errors
 	if ([errors length]) {
-		[errorsView setString:errors];
-		[NSApp beginSheet:errorsSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		[NSApp runModalForWindow:errorsSheet];
-		[NSApp endSheet:errorsSheet];
-		[errorsSheet orderOut:nil];
+		[self showErrorSheetWithMessage:errors];
 	}
 	
     // Import finished Growl notification
@@ -1741,13 +1734,7 @@
 
 	// Show errors sheet if there have been errors
 	if ( [errors length] ) {
-		[errorsView setString:errors];
-		[NSApp beginSheet:errorsSheet
-		   modalForWindow:tableWindow modalDelegate:self
-		   didEndSelector:nil contextInfo:nil];
-		[NSApp runModalForWindow:errorsSheet];
-		[NSApp endSheet:errorsSheet];
-		[errorsSheet orderOut:nil];
+		[self showErrorSheetWithMessage:errors];
 	}
 
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -2556,13 +2543,7 @@
 	
 	// Show the errors sheet if there have been errors
 	if ( [errors length] ) {
-		[errorsView setString:errors];
-		[NSApp beginSheet:errorsSheet
-		   modalForWindow:tableWindow modalDelegate:self
-		   didEndSelector:nil contextInfo:nil];
-		[NSApp runModalForWindow:errorsSheet];		
-		[NSApp endSheet:errorsSheet];
-		[errorsSheet orderOut:nil];
+		[self showErrorSheetWithMessage:errors];
 	}
 
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -2836,6 +2817,17 @@
 	}
 	
     return items;
+}
+
+- (void)showErrorSheetWithMessage:(NSString*)message
+{
+	[errorsView setString:message];
+	[NSApp beginSheet:errorsSheet 
+	   modalForWindow:tableWindow 
+		modalDelegate:self 
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		  contextInfo:nil];
+	[errorsSheet makeKeyWindow];
 }
 
 #pragma mark -

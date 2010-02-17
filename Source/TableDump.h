@@ -162,6 +162,7 @@ typedef enum _SPExportModes {
 
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
+- (void)showErrorSheetWithMessage:(NSString*)message;
 
 // Import/export delegate notifications
 - (void)panelSelectionDidChange:(id)sender;
