@@ -152,6 +152,7 @@ extern NSString *SPCSVImportLineTerminator;
 extern NSString *SPCSVImportFieldEnclosedBy;
 extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
+extern NSString *SPCSVFieldImportMappingAlignment;
 
 // Misc
 extern NSString *SPContentFilters;

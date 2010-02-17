@@ -28,6 +28,7 @@
 @interface SPFieldMapperController : NSWindowController {
 
 	IBOutlet NSTableView *fieldMapperTableView;
+	IBOutlet NSTableView *globalValuesTableView;
 	IBOutlet NSPopUpButton *tableTargetPopup;
 	IBOutlet NSPathControl *fileSourcePath;
 	IBOutlet NSPopUpButton *importMethodPopup;
@@ -39,17 +40,21 @@
 	IBOutlet NSPopUpButton *alignByPopup;
 	IBOutlet NSMenuItem *matchingNameMenuItem;
 
+	IBOutlet id globalValuesSheet;
+	IBOutlet NSButton *addGlobalValueButton;
+	IBOutlet NSButton *removeGlobalValueButton;
+
 	id theDelegate;
 	id fieldMappingImportArray;
 
 	NSInteger fieldMappingCurrentRow;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingTableColumnNames;
-	// NSMutableArray *fieldMappingTableDefaultValues;
 	NSMutableArray *fieldMappingTableTypes;
 	NSMutableArray *fieldMappingButtonOptions;
 	NSMutableArray *fieldMappingOperatorOptions;
 	NSMutableArray *fieldMappingOperatorArray;
+	NSMutableArray *fieldMappingGlobalValues;
 
 	NSNumber *doImport;
 	NSNumber *doNotImport;
@@ -57,6 +62,8 @@
 	NSString *doImportString;
 	NSString *doNotImportString;
 	NSString *isEqualString;
+
+	NSInteger numberOfImportColumns;
 
 	BOOL fieldMappingImportArrayIsPreview;
 	BOOL importFieldNamesHeader;
@@ -94,10 +101,15 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)goBackToFileChooser:(id)sender;
 
+- (IBAction)addGlobalValue:(id)sender;
+- (IBAction)removeGlobalValue:(id)sender;
+- (IBAction)closeGlobalValuesSheet:(id)sender;
+
 // Others
 - (void)matchHeaderNames;
 - (void)setupFieldMappingArray;
 - (void)updateFieldMappingButtonCell;
 - (void)updateFieldMappingOperatorOptions;
+- (void)updateFieldNameAlignment;
 
 @end

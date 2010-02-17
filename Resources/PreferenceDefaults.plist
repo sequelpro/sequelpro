@@ -139,5 +139,7 @@
 	<true/>
 	<key>BlobTextEditorSpellCheckingEnabled</key>
 	<false/>
+	<key>CSVFieldImportMappingAlignment</key>
+	<integer>2</integer>
 </dict>
 </plist>
