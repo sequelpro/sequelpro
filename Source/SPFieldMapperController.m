@@ -353,17 +353,16 @@
 		modalForWindow:[self window] 
 		modalDelegate:self 
 		didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
-	
+	[self addGlobalValue:nil];
 }
 
 // TDOD this won't be called - WHY?  ask HansJB
 // - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
 // 	return NSMakeRect(300,300,50,10);
 // }
-
 - (IBAction)addGlobalValue:(id)sender
 {
-	[fieldMappingGlobalValues addObject:@"<value>"];
+	[fieldMappingGlobalValues addObject:@""];
 	[globalValuesTableView reloadData];
 	[globalValuesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[fieldMappingGlobalValues count]-1-numberOfImportColumns] byExtendingSelection:NO];
 	[globalValuesTableView editColumn:1 row:[fieldMappingGlobalValues count]-1-numberOfImportColumns withEvent:nil select:YES];
@@ -409,6 +408,12 @@
 	[globalValuesTableView validateEditing];
 	if ([globalValuesTableView numberOfSelectedRows] == 1) 
 		[[globalValuesSheet window] makeFirstResponder:globalValuesTableView];
+
+	// Replace the current map pair with the last selected global value
+	if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
+		[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
+		[fieldMapperTableView reloadData];
+	}
 
 	[NSApp endSheet:[globalValuesSheet window] returnCode:[sender tag]];
 }
@@ -493,11 +498,10 @@
 	if([fieldMappingImportArray count] == 0) return;
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
-		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
+		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
-		} else {
+		else
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
-		}
 	}
 
 	// Add global values if any
@@ -571,23 +575,15 @@
 {
 
 	if(aTableView == fieldMapperTableView) {
-		// A click at the operator column's header toggles all operators
+		// A click at the operator column's header toggle all operators
 		if ([[aTableColumn identifier] isEqualToString:@"operator"] 
 				&& [self numberOfRowsInTableView:aTableView]
 				&& [fieldMappingOperatorArray count]
 				&& [fieldMappingTableColumnNames count]) {
 			NSInteger i;
 			NSNumber *globalValue = doImport;
-			if([fieldMappingOperatorArray objectAtIndex:0] == doImport) {
+			if([fieldMappingOperatorArray objectAtIndex:0] == doImport)
 				globalValue = doNotImport;
-				// NSTextFieldCell *c = [[[NSTextFieldCell alloc] init] autorelease];
-				// [c setStringValue:doNotImportString];
-				// [aTableColumn setHeaderCell:c];
-			} else {
-				// NSTextFieldCell *c = [[[NSTextFieldCell alloc] init] autorelease];
-				// [c setStringValue:doImportString];
-				// [aTableColumn setHeaderCell:c];
-			}
 			[fieldMappingOperatorArray removeAllObjects];
 			for(i=0; i < [fieldMappingTableColumnNames count]; i++)
 				[fieldMappingOperatorArray addObject:globalValue];
@@ -616,8 +612,10 @@
 				return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
 
 		}
+
 		else if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOffState)
 			return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
+
 		else if([[aTableColumn identifier] isEqualToString:@"operator"]) {
 			if([aCell objectValue] == doImport)
 				return NSLocalizedString(@"Do import", @"import operator");
@@ -628,6 +626,7 @@
 			else
 				return @"";
 		}
+
 		else if([[aTableColumn identifier] isEqualToString:@"target_field"])
 			return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
 	}
@@ -649,6 +648,7 @@
 			}
 			return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
 		}
+
 		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
 			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
 			[b setEditable:NO];
@@ -657,6 +657,7 @@
 			[b setDelegate:self];
 			return b;
 		}
+
 		else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 				NSPopUpButtonCell *c = [aTableColumn dataCell]; 
@@ -672,6 +673,7 @@
 					return [fieldMappingArray objectAtIndex:rowIndex];
 			}
 		} 
+
 		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
@@ -686,6 +688,7 @@
 		if ([[aTableColumn identifier] isEqualToString:@"value_index"]) {
 			return [NSString stringWithFormat:@"%ld.", numberOfImportColumns + rowIndex + 1];
 		}
+
 		else if ([[aTableColumn identifier] isEqualToString:@"global_value"]) {
 			return [fieldMappingGlobalValues objectAtIndex:numberOfImportColumns + rowIndex];
 		}
@@ -719,6 +722,7 @@
 			if([(NSNumber*)anObject integerValue] > -1)
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doImport];
 		}
+
 		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
 			if([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
@@ -747,4 +751,5 @@
 	}
 
 }
+
 @end

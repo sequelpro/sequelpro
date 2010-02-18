@@ -44,6 +44,7 @@
 	IBOutlet NSButton *addGlobalValueButton;
 	IBOutlet NSButton *removeGlobalValueButton;
 	IBOutlet NSButton *insertNULLValueButton;
+	IBOutlet id replaceAfterSavingCheckBox;
 
 	id theDelegate;
 	id fieldMappingImportArray;
