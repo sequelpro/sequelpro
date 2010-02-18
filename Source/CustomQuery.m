@@ -712,15 +712,9 @@
 	}
 	
 	// add query to history
-	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	if(!reloadingExistingResult && [usedQuery length]) {
-
-		// Register new history item
+	if(!reloadingExistingResult && [usedQuery length])
 		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
-		
-		// Refresh history popup menu
-		[self performSelector:@selector(historyItemsHaveBeenUpdated:) withObject:self afterDelay:0.0];
-	}
+
 
 	// Error checking
 	if ( [mySQLConnection queryCancelled] || ([errors length] && !queryIsTableSorter)) {

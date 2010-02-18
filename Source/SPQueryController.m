@@ -589,7 +589,7 @@ static SPQueryController *sharedQueryController = nil;
 	// Inform all opened documents to update the history list
 	for(id doc in [[NSDocumentController sharedDocumentController] documents])
 		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)])
-			[[doc valueForKeyPath:@"customQueryInstance"] historyItemsHaveBeenUpdated:self];
+				[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];
 
 }
 
