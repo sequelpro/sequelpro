@@ -356,6 +356,11 @@
 	
 }
 
+// TDOD this won't be called - WHY?  ask HansJB
+// - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
+// 	return NSMakeRect(300,300,50,10);
+// }
+
 - (IBAction)addGlobalValue:(id)sender
 {
 	[fieldMappingGlobalValues addObject:@"<value>"];
@@ -654,8 +659,14 @@
 		}
 		else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingButtonOptions];
+				NSPopUpButtonCell *c = [aTableColumn dataCell]; 
+				NSMenu *m = [c menu];
+				[c removeAllItems];
+				[c addItemsWithTitles:fieldMappingButtonOptions];
+				[m addItem:[NSMenuItem separatorItem]];
+				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Add global value…", @"add global value menu item")];
+
 				// Hide csv file column value if user doesn't want to import it
 				if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
 					return [fieldMappingArray objectAtIndex:rowIndex];
@@ -689,6 +700,20 @@
 
 	if(aTableView == fieldMapperTableView) {
 		if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
+			if([anObject integerValue] > [fieldMappingButtonOptions count]) {
+				// Ignore field - set operator to doNotImport
+				if([anObject integerValue] == [fieldMappingButtonOptions count]+1) {
+					lastDisabledCSVFieldcolumn = [fieldMappingArray objectAtIndex:rowIndex];
+					[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doNotImport];
+					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
+				}
+				// Add global value
+				else if([anObject integerValue] == [fieldMappingButtonOptions count]+2) {
+					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
+					[self addGlobalSourceVariable:nil];
+				}
+				return;
+			}
 			[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
 			// If user _changed_ the csv file column set the operator to doImport
 			if([(NSNumber*)anObject integerValue] > -1)
