@@ -105,6 +105,7 @@
 		[fieldMapperTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 
 	[removeGlobalValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] > 0)];
+	[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
 
 	[self updateFieldNameAlignment];
 }
@@ -173,6 +174,11 @@
 - (NSArray*)fieldMappingArray
 {
 	return fieldMappingArray;
+}
+
+- (NSArray*)fieldMappingGlobalValueArray
+{
+	return fieldMappingGlobalValues;
 }
 
 - (NSArray*)fieldMappingTableColumnNames
@@ -377,6 +383,18 @@
 	[[globalValuesSheet window] makeFirstResponder:globalValuesTableView];
 
 	[removeGlobalValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] > 0)];
+	[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
+}
+
+- (IBAction)insertNULLValue:(id)sender;
+{
+	if([globalValuesTableView numberOfSelectedRows] != 1) return;
+
+	[globalValuesTableView abortEditing];
+	[fieldMappingGlobalValues replaceObjectAtIndex:[globalValuesTableView selectedRow]+numberOfImportColumns withObject:[NSNull null]];
+
+	[globalValuesTableView reloadData];
+
 }
 
 - (IBAction)closeGlobalValuesSheet:(id)sender
@@ -396,6 +414,7 @@
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[[globalValuesSheet window] orderOut:self];
+	[self updateFieldMappingButtonCell];
 }
 
 - (void)matchHeaderNames
@@ -466,15 +485,27 @@
 - (void)updateFieldMappingButtonCell
 {
 	NSInteger i;
-	
+	if([fieldMappingImportArray count] == 0) return;
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull]) {
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, [prefs objectForKey:SPNullValue]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
 		} else {
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 		}
 	}
+
+	// Add global values if any
+	if([fieldMappingGlobalValues count]>numberOfImportColumns)
+		for(i; i < [fieldMappingGlobalValues count]; i++) {
+			if ([NSArrayObjectAtIndex(fieldMappingGlobalValues, i) isNSNull])
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+			else
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
+		}
+
+	[fieldMapperTableView reloadData];
+	
 }
 
 /*
@@ -565,13 +596,20 @@
 
 	if(aTableView == fieldMapperTableView) {
 		if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
+
 			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return @"";
+
+			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
+				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"),
+					NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
+
 			if(fieldMappingCurrentRow)
 				return [NSString stringWithFormat:@"%@: %@", 
 					[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description],
 					[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description]];
 			else
 				return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
+
 		}
 		else if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOffState)
 			return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
@@ -680,6 +718,7 @@
 
 	if (object == globalValuesTableView) {
 		[removeGlobalValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] > 0)];
+		[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
 	}
 
 }

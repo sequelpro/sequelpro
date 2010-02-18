@@ -105,11 +105,13 @@ typedef enum _SPExportModes {
 	BOOL fieldMappingImportArrayIsPreview;
 	NSArray *fieldMappingTableColumnNames;
 	NSArray *fieldMappingArray;
+	NSArray *fieldMappingGlobalValueArray;
 	NSArray *fieldMapperOperator;
 	NSString *selectedTableTarget;
 	NSString *selectedImportMethod;
 	NSString *lastFilename;
 	NSInteger fieldMapperSheetStatus;
+	BOOL fieldMappingArrayHasGlobalVariables;
 
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;

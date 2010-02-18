@@ -43,6 +43,7 @@
 	IBOutlet id globalValuesSheet;
 	IBOutlet NSButton *addGlobalValueButton;
 	IBOutlet NSButton *removeGlobalValueButton;
+	IBOutlet NSButton *insertNULLValueButton;
 
 	id theDelegate;
 	id fieldMappingImportArray;
@@ -89,6 +90,7 @@
 - (NSString*)selectedImportMethod;
 - (NSArray*)fieldMappingArray;
 - (NSArray*)fieldMappingTableColumnNames;
+- (NSArray*)fieldMappingGlobalValueArray;
 - (BOOL)importFieldNamesHeader;
 
 // IBAction methods
@@ -103,6 +105,7 @@
 
 - (IBAction)addGlobalValue:(id)sender;
 - (IBAction)removeGlobalValue:(id)sender;
+- (IBAction)insertNULLValue:(id)sender;
 - (IBAction)closeGlobalValuesSheet:(id)sender;
 
 // Others

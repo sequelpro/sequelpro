@@ -782,6 +782,7 @@
 	BOOL insertBaseStringHasEntries;
 	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
 	fieldMappingArray = nil;
+	fieldMappingGlobalValueArray = nil;
 
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
@@ -1039,6 +1040,7 @@
 	[parsedRows release];
 	[parsePositions release];
 	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
+	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release]; fieldMappingGlobalValueArray = nil;
 	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -1154,6 +1156,7 @@
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
 
 	fieldMapperSheetStatus = 1;
+	fieldMappingArrayHasGlobalVariables = NO;
 
 	// Init the field mapper controller
 	fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
@@ -1180,6 +1183,11 @@
 	selectedTableTarget  = [NSString stringWithString:[fieldMapperController selectedTableTarget]];
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
 	fieldMappingTableColumnNames = [NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]];
+	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
+
+	if([fieldMappingGlobalValueArray count] > [fieldMappingArray count])
+		fieldMappingArrayHasGlobalVariables = YES;
+
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
 
@@ -1219,7 +1227,11 @@
 		if ([valueString length] > 1) [valueString appendString:@","];
 
 		// Append the data
-		cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+		// - check for global values
+		if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+			cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
+		else
+			cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
 		if (cellData == [NSNull null]) {
 			[valueString appendString:@"NULL"];
@@ -2783,8 +2795,10 @@
 	
 	tables = [[NSMutableArray alloc] init];
 	fieldMappingArray = nil;
+	fieldMappingGlobalValueArray = nil;
 	fieldMappingImportArray = nil;
 	fieldMappingImportArrayIsPreview = NO;
+	fieldMappingArrayHasGlobalVariables = NO;
 	prefs = nil;
 	lastFilename = nil;
 	
