@@ -1185,7 +1185,7 @@
 	fieldMappingTableColumnNames = [NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]];
 	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
 
-	if([fieldMappingGlobalValueArray count] > [fieldMappingArray count])
+	if([fieldMappingImportArray count] && [fieldMappingGlobalValueArray count] > [NSArrayObjectAtIndex(fieldMappingImportArray,0) count])
 		fieldMappingArrayHasGlobalVariables = YES;
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
