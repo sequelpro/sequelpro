@@ -883,7 +883,7 @@
 		} else if (numberOfArguments == 1) {
 			filterString = [NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]];
 		} else {
-			filterString = [NSString stringWithString:[filter objectForKey:@"Clause"]];
+			filterString = [NSString stringWithString:clause];
 				if(numberOfArguments > 2) {
 					NSLog(@"Filter with more than 2 arguments is not yet supported.");
 					NSBeep();
@@ -902,8 +902,7 @@
 				[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
 		} else {
 			filterString = [NSString stringWithFormat:@"%@ %@", 
-				[[fieldField titleOfSelectedItem] backtickQuotedString], 
-				[filter objectForKey:@"Clause"]];
+				[[fieldField titleOfSelectedItem] backtickQuotedString], clause];
 				if(numberOfArguments > 2) {
 					NSLog(@"Filter with more than 2 arguments is not yet supported.");
 					NSBeep();
