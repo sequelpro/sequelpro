@@ -108,6 +108,7 @@
 	[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
 
 	[self updateFieldNameAlignment];
+
 }
 
 - (void)dealloc
@@ -311,8 +312,9 @@
 	}
 	[fieldMapperTableView reloadData];
 
-	// Remember last field alignment
-	[prefs setInteger:[[alignByPopup selectedItem] tag] forKey:SPCSVFieldImportMappingAlignment];
+	// Remember last field alignment if not "custom order"
+	if([[alignByPopup selectedItem] tag] != 3)
+		[prefs setInteger:[[alignByPopup selectedItem] tag] forKey:SPCSVFieldImportMappingAlignment];
 
 }
 /*
@@ -411,8 +413,17 @@
 
 	// Replace the current map pair with the last selected global value
 	if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
+
 		[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
+
+		// Set corresponding operator to doImport
+		[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
+
 		[fieldMapperTableView reloadData];
+
+		// Set alignment popup to "custom order"
+		[alignByPopup selectItemWithTag:3];
+
 	}
 
 	[NSApp endSheet:[globalValuesSheet window] returnCode:[sender tag]];
@@ -539,7 +550,7 @@
 
 	if([prefs integerForKey:SPCSVFieldImportMappingAlignment]
 			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] >= 0
-			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] < 3) {
+			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] < 4) {
 		alignment = [prefs integerForKey:SPCSVFieldImportMappingAlignment];
 	}
 
@@ -618,11 +629,11 @@
 
 		else if([[aTableColumn identifier] isEqualToString:@"operator"]) {
 			if([aCell objectValue] == doImport)
-				return NSLocalizedString(@"Do import", @"import operator");
+				return NSLocalizedString(@"Import field", @"import field operator tooltip");
 			else if([aCell objectValue] == doNotImport)
-				return NSLocalizedString(@"Do not import", @"do not import operator");
+				return NSLocalizedString(@"Ignore field", @"ignore field operator tooltip");
 			else if([aCell objectValue] == isEqual)
-				return NSLocalizedString(@"Do UPDATE where field contents match", @"do update operator");
+				return NSLocalizedString(@"Do UPDATE where field contents match", @"do update operator tooltip");
 			else
 				return @"";
 		}
@@ -666,6 +677,9 @@
 				[c addItemsWithTitles:fieldMappingButtonOptions];
 				[m addItem:[NSMenuItem separatorItem]];
 				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Ignore all fields", @"ignore all fields menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Import all fields", @"import all fields menu item")];
+				[m addItem:[NSMenuItem separatorItem]];
 				[c addItemWithTitle:NSLocalizedString(@"Add global value…", @"add global value menu item")];
 
 				// Hide csv file column value if user doesn't want to import it
@@ -710,14 +724,38 @@
 					[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doNotImport];
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 				}
-				// Add global value
+				// Ignore all field - set all operator to doNotImport
 				else if([anObject integerValue] == [fieldMappingButtonOptions count]+2) {
+					NSInteger i;
+					NSNumber *globalValue = doNotImport;
+					[fieldMappingOperatorArray removeAllObjects];
+					for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+						[fieldMappingOperatorArray addObject:globalValue];
+					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
+				}
+				// Import all field - set all operator to doImport
+				else if([anObject integerValue] == [fieldMappingButtonOptions count]+3) {
+					NSInteger i;
+					NSNumber *globalValue = doImport;
+					[fieldMappingOperatorArray removeAllObjects];
+					for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+						[fieldMappingOperatorArray addObject:globalValue];
+					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
+				}
+				// Add global value
+				else if([anObject integerValue] == [fieldMappingButtonOptions count]+5) {
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 					[self addGlobalSourceVariable:nil];
 				}
 				return;
 			}
+
+			// If user changed the order set alignment popup to "custom order"
+			if([fieldMappingArray objectAtIndex:rowIndex] != anObject)
+				[alignByPopup selectItemWithTag:3];
+
 			[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
+
 			// If user _changed_ the csv file column set the operator to doImport
 			if([(NSNumber*)anObject integerValue] > -1)
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doImport];
