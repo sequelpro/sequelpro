@@ -2718,7 +2718,9 @@
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
-	if ( [aTableView editedColumn] == columnIndex && [aTableView editedRow] == rowIndex) {
+	if ([aTableView editedColumn] != -1 
+		&& [aTableView editedRow] == rowIndex 
+		&& [[NSArrayObjectAtIndex([aTableView tableColumns], [aTableView editedColumn]) identifier] integerValue] == columnIndex) {
 		[cell setTextColor:[NSColor blackColor]];
 		return;
 	}
@@ -2744,17 +2746,12 @@
 	}
 
 	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]);
-	
-	if (anObject) {
 
-		// Restore NULLs if necessary
-		if ([anObject isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue])
-			anObject = [NSNull null];
-
+	if (anObject)
 		[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:anObject];
-	} else {
+	else
 		[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:@""];
-	}
+
 }
 
 #pragma mark -

@@ -390,6 +390,15 @@
  */
 - (IBAction)insertNULLvalue:(id)sender
 {
+
+	// If self is an edited table cell insert [NSNull null] directly in the table's data source
+	// TODO: up to now only for CMCopyTable
+	if([[[[self delegate] class] description] isEqualToString:@"CMCopyTable"]) {
+		id aTableView = [self delegate];
+		NSUInteger currentEditedColumn = [aTableView editedColumn];
+		NSUInteger currentEditedRow = [aTableView editedRow];
+		[[aTableView delegate] tableView:aTableView setObjectValue:[NSNull null] forTableColumn:[[aTableView tableColumns] objectAtIndex:currentEditedColumn] row:currentEditedRow];
+	}
 	id prefs = [NSUserDefaults standardUserDefaults];
 	if([self respondsToSelector:@selector(insertText:)])
 		if([prefs objectForKey:SPNullValue] && [[prefs objectForKey:SPNullValue] length])
