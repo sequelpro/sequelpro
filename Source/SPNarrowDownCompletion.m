@@ -34,6 +34,7 @@
 #import "ImageAndTextCell.h"
 #import "SPConstants.h"
 #import "RegexKitLite.h"
+#import "CMTextView.h"
 #include <tgmath.h>
 
 @interface NSTableView (MovingSelectedRow)
@@ -442,8 +443,13 @@
 			[newFiltered addObjectsFromArray:suggestions];
 	}
 
-	if(![newFiltered count])
+	if(![newFiltered count]) {
+		if([[self filterString] hasSuffix:@"."]) {
+			[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode];
+			closeMe = YES;
+		}
 		[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
+	}
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 
