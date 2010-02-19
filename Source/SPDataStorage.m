@@ -339,12 +339,11 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 		// If the new column count is higher than the old count, iterate through the existing rows
 		// and pad with nils
 		if (columnCount > numColumns) {
-			while (i > 0) {
-				row = dataStorage[--i];
-				row = (id *)realloc(row, columnPointerByteSize);
+			while (i-- > 0) {
+				dataStorage[i] = (id *)realloc(dataStorage[i], columnPointerByteSize);
 				j = numColumns;
 				while (j < columnCount) {
-					row[j++] = nil;
+					dataStorage[i][j++] = nil;
 				}
 			}
 
@@ -357,7 +356,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 				while (j > columnCount) {
 					if (row[--j]) CFRelease(row[j]);
 				}
-				row = (id *)realloc(row, columnPointerByteSize);
+				dataStorage[i] = (id *)realloc(row, columnPointerByteSize);
 			}
 		}
 	}
