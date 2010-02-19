@@ -809,6 +809,10 @@
 
 	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] integerValue];
 
+	BOOL suppressLeadingTablePlaceholder = NO;
+	if([filter objectForKey:@"SuppressLeadingFieldPlaceholder"])
+		suppressLeadingTablePlaceholder = YES;
+
 	// argument if Filter requires only one argument
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
 
@@ -870,24 +874,41 @@
 	}
 
 	// Construct the filter string according the required number of arguments
-	if (numberOfArguments == 2) {
-		filterString = [NSString stringWithFormat:@"%@ %@", 
-			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[NSString stringWithFormat:clause, 
-				[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
-				[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
-	} else if (numberOfArguments == 1) {
-		filterString = [NSString stringWithFormat:@"%@ %@", 
-			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
+
+	if(suppressLeadingTablePlaceholder) {
+		if (numberOfArguments == 2) {
+			filterString = [NSString stringWithFormat:clause, 
+					[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]];
+		} else if (numberOfArguments == 1) {
+			filterString = [NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]];
+		} else {
+			filterString = [NSString stringWithString:[filter objectForKey:@"Clause"]];
+				if(numberOfArguments > 2) {
+					NSLog(@"Filter with more than 2 arguments is not yet supported.");
+					NSBeep();
+				}
+		}
 	} else {
-		filterString = [NSString stringWithFormat:@"%@ %@", 
-			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[filter objectForKey:@"Clause"]];
-			if(numberOfArguments > 2) {
-				NSLog(@"Filter with more than 2 arguments is not yet supported.");
-				NSBeep();
-			}
+		if (numberOfArguments == 2) {
+			filterString = [NSString stringWithFormat:@"%@ %@", 
+				[[fieldField titleOfSelectedItem] backtickQuotedString], 
+				[NSString stringWithFormat:clause, 
+					[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
+		} else if (numberOfArguments == 1) {
+			filterString = [NSString stringWithFormat:@"%@ %@", 
+				[[fieldField titleOfSelectedItem] backtickQuotedString], 
+				[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
+		} else {
+			filterString = [NSString stringWithFormat:@"%@ %@", 
+				[[fieldField titleOfSelectedItem] backtickQuotedString], 
+				[filter objectForKey:@"Clause"]];
+				if(numberOfArguments > 2) {
+					NSLog(@"Filter with more than 2 arguments is not yet supported.");
+					NSBeep();
+				}
+		}
 	}
 
 	[argument release];

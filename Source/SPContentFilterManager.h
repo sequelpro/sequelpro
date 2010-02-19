@@ -49,6 +49,7 @@
 	IBOutlet id resultingClauseLabel;
 	IBOutlet id resultingClauseContentLabel;
 	IBOutlet id insertPlaceholderButton;
+	IBOutlet id suppressLeadingFiledPlaceholderCheckbox;
 	
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
@@ -75,5 +76,6 @@
 - (IBAction)exportContentFilter:(id)sender;
 - (IBAction)importContentFilterByAdding:(id)sender;
 - (IBAction)closeContentFilterManagerSheet:(id)sender;
+- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender;
 
 @end

@@ -533,6 +533,11 @@
 
 }
 
+- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
+{
+	[contentFilterTextView insertText:@""];
+}
+
 /*
  * Parse clause and update labels accordingly
  */
@@ -568,7 +573,7 @@
 			[c flushCachedRegexData];
 			[c replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:@"<field>"];
 			[c flushCachedRegexData];
-			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"<field> %@", c]];
+			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"%@%@", ([suppressLeadingFiledPlaceholderCheckbox state] == NSOnState) ? @"" : @"<field> ", c]];
 			[c release];
 		}
 
