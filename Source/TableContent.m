@@ -2746,12 +2746,17 @@
 	}
 
 	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]);
+	
+	if (anObject) {
 
-	if (anObject)
+		// Restore NULLs if necessary
+		if ([anObject isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue])
+			anObject = [NSNull null];
+
 		[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:anObject];
-	else
+	} else {
 		[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:@""];
-
+	}
 }
 
 #pragma mark -
