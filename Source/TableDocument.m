@@ -1760,12 +1760,15 @@
 	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SP_TABLETYPE_VIEW) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
 	[createTableSyntaxTextView setEditable:NO];
 
+	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
+
 	// Show variables sheet
 	[NSApp beginSheet:createTableSyntaxWindow
 	   modalForWindow:tableWindow 
 		modalDelegate:self
 	   didEndSelector:nil 
 		  contextInfo:nil];
+
 }
 
 /**
