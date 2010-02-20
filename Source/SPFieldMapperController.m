@@ -218,10 +218,6 @@
 	if (tableDetails) {
 		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
-			// if([column objectForKey:@"default"])
-			// 	[fieldMappingTableDefaultValues addObject:[NSString stringWithString:[column objectForKey:@"default"]]];
-			// else
-			// 	[fieldMappingTableDefaultValues addObject:@""];
 			NSMutableString *type = [NSMutableString string];
 			if([column objectForKey:@"type"])
 				[type appendString:[column objectForKey:@"type"]];
@@ -229,10 +225,16 @@
 				[type appendFormat:@"(%@)", [column objectForKey:@"length"]];
 			if([column objectForKey:@"values"])
 				[type appendFormat:@"(%@)", [[column objectForKey:@"values"] componentsJoinedByString:@"¦"]];
-			if([column objectForKey:@"autoincrement"] && [[column objectForKey:@"autoincrement"] integerValue] == 1)
-				[type appendFormat:@",%@",@"PRIMARY KEY"];
-			else if ([column objectForKey:@"default"])
-				[type appendFormat:@",%@",[column objectForKey:@"default"]];
+
+			if([column objectForKey:@"isprimarykey"]) {
+				[type appendFormat:@",%@",@"PRIMARY"];
+			} else {
+				if([column objectForKey:@"unique"])
+					[type appendFormat:@",%@",@"UNIQUE"];
+				if ([column objectForKey:@"default"])
+					[type appendFormat:@",%@",[column objectForKey:@"default"]];
+			}
+
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
 		}
 	}
@@ -612,8 +614,7 @@
 			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return @"";
 
 			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
-				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"),
-					NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
+				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
 
 			if(fieldMappingCurrentRow)
 				return [NSString stringWithFormat:@"%@: %@", 
@@ -664,6 +665,7 @@
 			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
 			[b setEditable:NO];
 			[b setAlignment:NSLeftTextAlignment];
+			[b setWraps:NO];
 			[b setFont:[NSFont systemFontOfSize:9]];
 			[b setDelegate:self];
 			return b;
