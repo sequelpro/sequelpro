@@ -535,8 +535,8 @@
 	NSString *query;
 	NSMutableString *errors = [NSMutableString string];
 	NSInteger fileChunkMaxLength = 1024 * 1024;
-	NSInteger fileTotalLength = 0;
-	NSInteger fileProcessedLength = 0;
+	NSUInteger fileTotalLength = 0;
+	NSUInteger fileProcessedLength = 0;
 	NSInteger queriesPerformed = 0;
 	NSInteger dataBufferLength = 0;
 	NSInteger dataBufferPosition = 0;
@@ -560,7 +560,7 @@
 	}
 
 	// Grab the file length
-	fileTotalLength = [[[[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES] objectForKey:NSFileSize] integerValue];
+	fileTotalLength = [[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
 
 	// Reset progress interface
@@ -771,8 +771,8 @@
 	NSArray *csvRowArray;
 	NSInteger fileChunkMaxLength = 256 * 1024;
 	NSInteger csvRowsPerQuery = 50;
-	NSInteger csvRowsThisQuery;
-	NSInteger fileTotalLength = 0;
+	NSUInteger csvRowsThisQuery;
+	NSUInteger fileTotalLength = 0;
 	NSInteger rowsImported = 0;
 	NSInteger dataBufferLength = 0;
 	NSInteger dataBufferPosition = 0;
@@ -798,7 +798,7 @@
 	}
 
 	// Grab the file length
-	fileTotalLength = [[[[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES] objectForKey:NSFileSize] integerValue];
+	fileTotalLength = [[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
 
 	// Reset progress interface
