@@ -239,6 +239,8 @@
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
 
+- (void)showConsole:(id)sender;
+
 // Accessor methods
 - (NSString *)host;
 - (NSString *)name;

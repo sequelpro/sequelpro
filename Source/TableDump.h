@@ -110,8 +110,11 @@ typedef enum _SPExportModes {
 	NSString *selectedTableTarget;
 	NSString *selectedImportMethod;
 	NSString *lastFilename;
+	NSString *csvImportHeaderString;
+	NSString *csvImportTailString;
 	NSInteger fieldMapperSheetStatus;
 	BOOL fieldMappingArrayHasGlobalVariables;
+	BOOL csvImportMethodHasTail;
 
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;

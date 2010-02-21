@@ -953,7 +953,7 @@
 				[singleProgressSheet makeKeyWindow];
 
 				// Set up the field names import string for INSERT or REPLACE INTO
-				[insertBaseString appendFormat:@"%@ INTO ", selectedImportMethod];
+				[insertBaseString appendFormat:@"%@", csvImportHeaderString];
 				[insertBaseString appendString:[selectedTableTarget backtickQuotedString]];
 				[insertBaseString appendString:@" ("];
 				insertBaseStringHasEntries = NO;
@@ -993,16 +993,26 @@
 				}
 
 				// Perform the query
-				[mySQLConnection queryString:query];
+				if(csvImportMethodHasTail)
+					[mySQLConnection queryString:[NSString stringWithFormat:@"%@ %@", query, csvImportTailString]];
+				else
+					[mySQLConnection queryString:query];
 				[query release];
 
 				// If an error occurred, run the queries individually to get exact line errors
 				if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+					[tableDocumentInstance showConsole:nil];
 					for (i = 0; i < csvRowsThisQuery; i++) {
 						query = [[NSMutableString alloc] initWithString:insertBaseString];
 						[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
-						[mySQLConnection queryString:query];
+
+						// Perform the query
+						if(csvImportMethodHasTail)
+							[mySQLConnection queryString:[NSString stringWithFormat:@"%@ %@", query, csvImportTailString]];
+						else
+							[mySQLConnection queryString:query];
 						[query release];
+
 						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 							[errors appendString:[NSString stringWithFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
@@ -1039,6 +1049,8 @@
 	[csvDataBuffer release];
 	[parsedRows release];
 	[parsePositions release];
+	if(csvImportTailString) [csvImportTailString release]; csvImportTailString = nil;
+	if(csvImportHeaderString) [csvImportHeaderString release]; csvImportHeaderString = nil;
 	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
 	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release]; fieldMappingGlobalValueArray = nil;
 	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
@@ -1184,6 +1196,9 @@
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
 	fieldMappingTableColumnNames = [NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]];
 	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
+	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
+	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
+	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
 
 	if([fieldMappingImportArray count] && [fieldMappingGlobalValueArray count] > [NSArrayObjectAtIndex(fieldMappingImportArray,0) count])
 		fieldMappingArrayHasGlobalVariables = YES;
@@ -1433,7 +1448,7 @@
 			
 			// Set up a result set in streaming mode
 			streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([sqlFullStreamingSwitch state] == NSOnState)];
-			fieldNames = [streamingResult fetchFieldNames];			
+			fieldNames = [streamingResult fetchFieldNames];
 			
 			// Update the progress text and set the progress bar back to determinate
 			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Dumping...", @"text showing that app is writing data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
@@ -2797,6 +2812,9 @@
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
 	fieldMappingImportArray = nil;
+	csvImportTailString = nil;
+	csvImportHeaderString = nil;
+	csvImportMethodHasTail = NO;
 	fieldMappingImportArrayIsPreview = NO;
 	fieldMappingArrayHasGlobalVariables = NO;
 	prefs = nil;

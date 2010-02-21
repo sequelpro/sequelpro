@@ -192,6 +192,30 @@
 	return ([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO;
 }
 
+- (NSString*)importHeaderString
+{
+	if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"INSERT"]) {
+		return [NSString stringWithFormat:@"INSERT %@%@INTO ", 
+			([delayedCheckBox state] == NSOnState) ? @"DELAYED " : @"",
+			([ignoreCheckBox state] == NSOnState) ? @"IGNORE " : @""
+			];
+	}
+	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"REPLACE"]) {
+		return [NSString stringWithFormat:@"REPLACE %@INTO ", 
+			([delayedCheckBox state] == NSOnState) ? @"DELAYED " : @""
+			];
+	}
+	return @"";
+}
+
+- (NSString*)onupdateString
+{
+	if([onupdateCheckBox state] == NSOnState && [[onupdateTextView string] length])
+		return [NSString stringWithFormat:@"ON DUPLICATE KEY UPDATE %@", [onupdateTextView string]];
+	else
+		return @"";
+}
+
 #pragma mark -
 #pragma mark IBAction methods
 
@@ -278,10 +302,13 @@
 	NSInteger i;
 	// If operator is set to = for UPDATE method replace it by doNotImport
 	if(![[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
+		[advancedButton setEnabled:YES];
 		for(i=0; i<[fieldMappingTableColumnNames count]; i++) {
 			if([fieldMappingOperatorArray objectAtIndex:i] == isEqual)
 				[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doNotImport];
 		}
+	} else {
+		[advancedButton setEnabled:NO];
 	}
 
 	[self updateFieldMappingOperatorOptions];
@@ -351,9 +378,12 @@
 	[theDelegate importFile];
 }
 
+#pragma mark -
+#pragma mark Global Value Sheet
+
 - (IBAction)addGlobalSourceVariable:(id)sender
 {
-	[NSApp beginSheet:[globalValuesSheet window] 
+	[NSApp beginSheet:globalValuesSheet 
 		modalForWindow:[self window] 
 		modalDelegate:self 
 		didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
@@ -388,7 +418,7 @@
 	[globalValuesTableView reloadData];
 
 	// Set focus to favorite list to avoid an unstable state
-	[[globalValuesSheet window] makeFirstResponder:globalValuesTableView];
+	[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
 	[removeGlobalValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] > 0)];
 	[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
@@ -411,7 +441,7 @@
 	// Ensure all changes are stored before ordering out
 	[globalValuesTableView validateEditing];
 	if ([globalValuesTableView numberOfSelectedRows] == 1) 
-		[[globalValuesSheet window] makeFirstResponder:globalValuesTableView];
+		[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
 	// Replace the current map pair with the last selected global value
 	if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
@@ -428,7 +458,66 @@
 
 	}
 
-	[NSApp endSheet:[globalValuesSheet window] returnCode:[sender tag]];
+	[NSApp endSheet:globalValuesSheet returnCode:[sender tag]];
+}
+
+#pragma mark -
+#pragma mark Advanced Sheet
+
+- (IBAction)openAdvancedSheet:(id)sender
+{
+
+	if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"REPLACE"]) {
+		[ignoreCheckBox setEnabled:NO];
+		[onupdateCheckBox setEnabled:NO];
+		[delayedCheckBox setEnabled:YES];
+		[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
+		[onupdateTextView setEditable:NO];
+	}
+	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"INSERT"]) {
+		[ignoreCheckBox setEnabled:YES];
+		[onupdateCheckBox setEnabled:([delayedCheckBox state] == NSOnState) ? NO : YES];
+		[delayedCheckBox setEnabled:([onupdateCheckBox state] == NSOnState) ? NO : YES];
+		if([onupdateCheckBox state] == NSOffState) {
+			[onupdateTextView setEditable:NO];
+			[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
+		} else {
+			[onupdateTextView setEditable:YES];
+			[onupdateTextView setBackgroundColor:[NSColor whiteColor]];
+		}
+	}
+	
+	[advancedSheet makeFirstResponder:ignoreCheckBox];
+	
+	[NSApp beginSheet:advancedSheet 
+		modalForWindow:[self window] 
+		modalDelegate:self 
+		didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+}
+
+- (IBAction)closeAdvancedSheet:(id)sender
+{
+	[NSApp endSheet:advancedSheet returnCode:[sender tag]];
+}
+
+- (IBAction)advancedCheckboxValidation:(id)sender
+{
+
+	if([delayedCheckBox state] == NSOnState)
+		[onupdateCheckBox setState:NO];
+	if([onupdateCheckBox state] == NSOnState) {
+		[delayedCheckBox setState:NO];
+		[onupdateTextView setBackgroundColor:[NSColor whiteColor]];
+		[onupdateTextView setEditable:YES];
+		[advancedSheet makeFirstResponder:onupdateTextView];
+	} else {
+		[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
+		[onupdateTextView setEditable:NO];
+	}
+
+	[onupdateCheckBox setEnabled:([delayedCheckBox state] == NSOnState) ? NO : YES];
+	[delayedCheckBox setEnabled:([onupdateCheckBox state] == NSOnState) ? NO : YES];
+
 }
 
 #pragma mark -
@@ -436,8 +525,9 @@
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	[[globalValuesSheet window] orderOut:self];
-	[self updateFieldMappingButtonCell];
+	[sheet orderOut:self];
+	if (sheet == globalValuesSheet)
+		[self updateFieldMappingButtonCell];
 }
 
 - (void)matchHeaderNames

@@ -24,6 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
+#import "CMTextView.h"
 
 @interface SPFieldMapperController : NSWindowController {
 
@@ -45,6 +46,14 @@
 	IBOutlet NSButton *removeGlobalValueButton;
 	IBOutlet NSButton *insertNULLValueButton;
 	IBOutlet id replaceAfterSavingCheckBox;
+
+	IBOutlet id advancedSheet;
+	IBOutlet id ignoreCheckBox;
+	IBOutlet id delayedCheckBox;
+	IBOutlet id onupdateCheckBox;
+	IBOutlet CMTextView *onupdateTextView;
+	IBOutlet id advancedButton;
+
 
 	id theDelegate;
 	id fieldMappingImportArray;
@@ -93,6 +102,8 @@
 - (NSArray*)fieldMappingTableColumnNames;
 - (NSArray*)fieldMappingGlobalValueArray;
 - (BOOL)importFieldNamesHeader;
+- (NSString*)onupdateString;
+- (NSString*)importHeaderString;
 
 // IBAction methods
 - (IBAction)changeTableTarget:(id)sender;
@@ -101,6 +112,7 @@
 - (IBAction)changeHasHeaderCheckbox:(id)sender;
 - (IBAction)stepRow:(id)sender;
 - (IBAction)addGlobalSourceVariable:(id)sender;
+- (IBAction)openAdvancedSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)goBackToFileChooser:(id)sender;
 
@@ -108,6 +120,9 @@
 - (IBAction)removeGlobalValue:(id)sender;
 - (IBAction)insertNULLValue:(id)sender;
 - (IBAction)closeGlobalValuesSheet:(id)sender;
+- (IBAction)closeAdvancedSheet:(id)sender;
+- (IBAction)advancedCheckboxValidation:(id)sender;
+
 
 // Others
 - (void)matchHeaderNames;
