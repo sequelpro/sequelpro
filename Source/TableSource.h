@@ -35,6 +35,8 @@
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
 	IBOutlet id keySheet;
+	IBOutlet id resetAutoIncrementSheet;
+	IBOutlet id resetAutoIncrementValue;
 	IBOutlet id tableSourceView;
 	IBOutlet id indexView;
 	IBOutlet id addFieldButton;
@@ -73,6 +75,7 @@
 - (IBAction)copyField:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (IBAction)removeIndex:(id)sender;
+- (IBAction)resetAutoIncrement:(id)sender;
 
 // Index sheet methods
 - (IBAction)openIndexSheet:(id)sender;

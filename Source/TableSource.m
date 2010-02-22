@@ -456,6 +456,20 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
 }
 
+- (IBAction)resetAutoIncrement:(id)sender
+{
+
+	// Begin the sheet
+	[NSApp beginSheet:resetAutoIncrementSheet
+	   modalForWindow:tableWindow 
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		  contextInfo:@"resetAutoIncrement"];
+		
+	[resetAutoIncrementValue setStringValue:@"1"];
+
+}
+
 #pragma mark -
 #pragma mark Index sheet methods
 
@@ -925,6 +939,12 @@ fetches the result as an array with a dictionary for each row in it
 		return ([indexView numberOfSelectedRows] == 1);
 	}
 	
+	// Reset AUTO_INCREMENT
+	if ([menuItem action] == @selector(resetAutoIncrement:)) {
+		return NO;
+		return ([indexView numberOfSelectedRows] == 1 );
+	}
+	
 	return YES;
 }
 
@@ -987,6 +1007,11 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
 		;
+	}
+	else if ([contextInfo isEqualToString:@"resetAutoIncrement"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+			// ALTER TABLE tbl_name AUTO_INCREMENT = N
+		}
 	}
 	else
 		alertSheetOpened = NO;

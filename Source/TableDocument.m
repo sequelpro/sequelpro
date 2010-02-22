@@ -3609,6 +3609,27 @@
 }
 
 #pragma mark -
+#pragma mark General sheet delegate methods
+
+- (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
+
+	// Locate the sheet "Reset Auto Increment" just beneath the chosen index row
+	if([[sheet title] isEqualToString:@"Reset Auto Increment"]) {
+
+		id it = [tableSourceInstance valueForKeyPath:@"indexView"];
+		NSRect mwrect = [[NSApp mainWindow] frame];
+		NSRect ltrect = [[tablesListInstance valueForKeyPath:@"tablesListView"] frame];
+		NSRect rowrect = [it rectOfRow:[it selectedRow]];
+		rowrect.size.width = mwrect.size.width - ltrect.size.width;
+		rowrect.origin.y -= [it rowHeight]/2.0f+2;
+		return [it convertRect:rowrect toView:nil];
+
+	} else
+		return rect;
+
+}
+
+#pragma mark -
 #pragma mark SplitView delegate methods
 
 /**
