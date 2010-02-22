@@ -3059,7 +3059,8 @@
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableInfo];
 	[spHistoryControllerInstance updateHistoryEntries];
-	
+	[tableWindow makeFirstResponder:[extendedTableInfoInstance valueForKeyPath:@"tableCreateSyntaxTextView"]];
+
 	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];
 }
 
@@ -3614,7 +3615,9 @@
 - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
 
 	// Locate the sheet "Reset Auto Increment" just centered beneath the chosen index row
-	if([[sheet title] isEqualToString:@"Reset Auto Increment"]) {
+	// if Structure Pane is active
+	if([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 
+			&& [[sheet title] isEqualToString:@"Reset Auto Increment"]) {
 
 		id it = [tableSourceInstance valueForKeyPath:@"indexView"];
 		NSRect mwrect = [[NSApp mainWindow] frame];

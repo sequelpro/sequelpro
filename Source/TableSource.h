@@ -32,12 +32,14 @@
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableInfoInstance;
+	IBOutlet id extendedTableInfoInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
 	IBOutlet id resetAutoIncrementValue;
+	IBOutlet id resetAutoIncrementLine;
 	IBOutlet id tableSourceView;
 	IBOutlet id indexView;
 	IBOutlet id addFieldButton;
@@ -92,6 +94,7 @@
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
+- (void)setAutoIncrementTo:(NSString*)valueAsString;
 
 // Getter methods
 - (NSString *)defaultValueForField:(NSString *)field;

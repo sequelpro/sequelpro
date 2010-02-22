@@ -172,6 +172,11 @@
 	}
 }
 
+- (IBAction)resetAutoIncrement:(id)sender
+{
+	[tableSourceInstance resetAutoIncrement:sender];
+}
+
 #pragma mark -
 #pragma mark Other
  
@@ -185,6 +190,8 @@
 {	
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo] || ![tableDocumentInstance isWorking];
 
+	[resetAutoIncrementResetButton setEnabled:NO];
+
 	// Store the table name away for future use
 	selectedTable = table;
 	
@@ -196,7 +203,7 @@
 	[tableCollationPopUpButton removeAllItems];
 	
 	// No table selected or view selected
-	if ([table isEqualToString:@""] || (!table) || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+	if ((!table) || [table isEqualToString:@""] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
 		
 		[tableTypePopUpButton setEnabled:NO];
 		[tableEncodingPopUpButton setEnabled:NO];
@@ -330,6 +337,11 @@
 	[tableCreateSyntaxTextView insertText:[tableDataInstance tableCreateSyntax]];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
+	
+	// Validate Reset AUTO_INCREMENT button
+	if([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]])
+		[resetAutoIncrementResetButton setEnabled:YES];
+	
 }
 
 /**
@@ -464,13 +476,13 @@
 			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
 			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
 			
-			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
+			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];
 		}
 		// Format numbers
 		else if ([key isEqualToString:@"Rows"] ||
 				 [key isEqualToString:@"Avg_row_length"] || 
 				 [key isEqualToString:@"Auto_increment"]) {
-			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];	
+			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 			value = [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[value longLongValue]]];
