@@ -25,6 +25,7 @@
 
 #import "TableSource.h"
 #import "TableDocument.h"
+#import "SPTableInfo.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "SPSQLParser.h"
@@ -941,8 +942,9 @@ fetches the result as an array with a dictionary for each row in it
 	
 	// Reset AUTO_INCREMENT
 	if ([menuItem action] == @selector(resetAutoIncrement:)) {
-		return NO;
-		return ([indexView numberOfSelectedRows] == 1 );
+		return ([indexView numberOfSelectedRows] == 1 
+			&& [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] 
+			&& [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]);
 	}
 	
 	return YES;
@@ -1010,7 +1012,20 @@ fetches the result as an array with a dictionary for each row in it
 	}
 	else if ([contextInfo isEqualToString:@"resetAutoIncrement"]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			// ALTER TABLE tbl_name AUTO_INCREMENT = N
+
+			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selectedTable backtickQuotedString], [[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]]];
+
+			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+								  NSLocalizedString(@"OK", @"OK button"),
+								  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"), selectedTable, [mySQLConnection getLastErrorMessage]]);	
+			} else {
+				[tableDataInstance resetAllData];
+				[tablesListInstance setStatusRequiresReload:YES];
+				[self loadTable:selectedTable];
+				[tableInfoInstance tableChanged:nil];
+			}
 		}
 	}
 	else

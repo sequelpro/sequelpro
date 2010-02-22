@@ -3613,7 +3613,7 @@
 
 - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
 
-	// Locate the sheet "Reset Auto Increment" just beneath the chosen index row
+	// Locate the sheet "Reset Auto Increment" just centered beneath the chosen index row
 	if([[sheet title] isEqualToString:@"Reset Auto Increment"]) {
 
 		id it = [tableSourceInstance valueForKeyPath:@"indexView"];
@@ -3622,6 +3622,7 @@
 		NSRect rowrect = [it rectOfRow:[it selectedRow]];
 		rowrect.size.width = mwrect.size.width - ltrect.size.width;
 		rowrect.origin.y -= [it rowHeight]/2.0f+2;
+		rowrect.origin.x -= 8;
 		return [it convertRect:rowrect toView:nil];
 
 	} else

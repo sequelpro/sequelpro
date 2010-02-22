@@ -31,6 +31,7 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableDocumentInstance;
+	IBOutlet id tableInfoInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
