@@ -601,10 +601,11 @@ closes the keySheet
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"), 
 								selTable, [mySQLConnection getLastErrorMessage]]);
 	} else {
-		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-		[extendedTableInfoInstance loadTable:selTable];
+		[tableDataInstance resetStatusData];
+		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
+			[tableDataInstance resetAllData];
+			[extendedTableInfoInstance loadTable:selTable];
+		}
 		[tableInfoInstance tableChanged:nil];
 	}
 }

@@ -55,6 +55,7 @@ enum sp_table_types
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
+	IBOutlet id tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id tableWindow;

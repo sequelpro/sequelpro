@@ -32,6 +32,7 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPAlertSheets.h"
+#import "TableSource.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
@@ -174,7 +175,31 @@
 
 - (IBAction)resetAutoIncrement:(id)sender
 {
-	[tableSourceInstance resetAutoIncrement:sender];
+
+	if([sender tag] == 1) {
+		[tableRowAutoIncrement setEditable:YES];
+		[tableRowAutoIncrement selectText:nil];
+	} else {
+		[tableRowAutoIncrement setEditable:NO];
+		[tableSourceInstance resetAutoIncrement:sender];
+	}
+}
+
+- (IBAction)resetAutoIncrementValueWasEdited:(id)sender
+{
+	[tableRowAutoIncrement setEditable:NO];
+	[tableSourceInstance setAutoIncrementTo:[[tableRowAutoIncrement stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+}
+
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command 
+{
+
+	// Listen to ESC to abort editing of auto increment input field
+	if (command == @selector(cancelOperation:) && control == tableRowAutoIncrement) {
+		[tableRowAutoIncrement abortEditing];
+		return YES;
+	}
+	return NO;
 }
 
 #pragma mark -
@@ -235,7 +260,7 @@
 		[tableRowNumber setStringValue:@"Number of rows: "];
 		[tableRowFormat setStringValue:@"Row format: "];	
 		[tableRowAvgLength setStringValue:@"Avg. row length: "];
-		[tableRowAutoIncrement setStringValue:@"Auto increment: "];
+		[tableRowAutoIncrement setStringValue:@""];
 		
 		// Set size values
 		[tableDataSize setStringValue:@"Data size: "]; 
@@ -493,8 +518,10 @@
 			}
 		}
 	}
-		
-	return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];
+	if([key isEqualToString:@"Auto_increment"])
+		return ([value length] > 0) ? value : @"Not available";
+	else
+		return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];
 }
 
 @end

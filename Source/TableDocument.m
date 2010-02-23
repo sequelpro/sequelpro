@@ -3059,6 +3059,13 @@
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableInfo];
 	[spHistoryControllerInstance updateHistoryEntries];
+
+	// Refresh data
+	if([self table] && [[self table] length]) {
+		[tableDataInstance resetAllData];
+		[extendedTableInfoInstance loadTable:[self table]];
+	}
+	
 	[tableWindow makeFirstResponder:[extendedTableInfoInstance valueForKeyPath:@"tableCreateSyntaxTextView"]];
 
 	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];

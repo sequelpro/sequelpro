@@ -28,6 +28,7 @@
 #import "TableSource.h"
 #import "TableContent.h"
 #import "SPTableData.h"
+#import "SPTableInfo.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
 #import "SPStringAdditions.h"
@@ -1881,6 +1882,8 @@
 	
 	// Reload the table's content view to show that it has been truncated 
 	[tableContentInstance reloadTable:self];
+	[tableDataInstance resetStatusData];
+
 }
 
 /**

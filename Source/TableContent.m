@@ -29,6 +29,7 @@
 
 #import "TableContent.h"
 #import "TableDocument.h"
+#import "TableSource.h"
 #import "SPTableInfo.h"
 #import "TablesList.h"
 #import "CMImageView.h"
@@ -49,7 +50,6 @@
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
 #import "SPDataStorage.h"
-#import "TableDocument.h"
 #import "SPAlertSheets.h"
 
 @implementation TableContent
@@ -1386,13 +1386,25 @@
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
+
+	[alert setShowsSuppressionButton:NO];
+	[[alert suppressionButton] setState:NSOffState];
+
 	NSString *contextInfo = @"removerow";
 	
 	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited && !isInterruptedLoad) {
-		
+
 		contextInfo = @"removeallrows";
 		
+		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
+		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
+			[alert setShowsSuppressionButton:YES];
+			[[alert suppressionButton] setState:NSOffState];
+			[[[alert suppressionButton] cell] setControlSize:NSSmallControlSize];
+			[[[alert suppressionButton] cell] setFont:[NSFont systemFontOfSize:11]];
+			[[alert suppressionButton] setTitle:NSLocalizedString(@"Reset AUTO_INCREMENT after deletion?", @"reset auto_increment after deletion of all rows message")];
+		}
+
 		[alert setMessageText:NSLocalizedString(@"Delete all rows?", @"delete all rows message")];
 		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete all the rows from this table? This action cannot be undone.", @"delete all rows informative message")];
 	} 
@@ -2139,7 +2151,13 @@
 		if ( returnCode == NSAlertDefaultReturn ) {
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+
+				// Reset auto increment if suppression button was ticked
+				if([[sheet suppressionButton] state] == NSOnState)
+					[tableSourceInstance setAutoIncrementTo:@"1"];
+
 				[self reloadTable:self];
+
 			} else {
 				[self performSelector:@selector(showErrorSheetWith:)
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
