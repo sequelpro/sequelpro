@@ -991,10 +991,10 @@
 	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
 
 	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
-	BOOL historyStateChanging = [spHistoryControllerInstance modifyingHistoryState];
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
 	if (!historyStateChanging) {
 		[spHistoryControllerInstance updateHistoryEntries];
-		[spHistoryControllerInstance setModifyingHistoryState:YES];
+		[spHistoryControllerInstance setModifyingState:YES];
 	}
 
 	// show error on connection failed
@@ -1018,7 +1018,7 @@
 
 	// Add a history entry
 	if (!historyStateChanging) {
-		[spHistoryControllerInstance setModifyingHistoryState:NO];
+		[spHistoryControllerInstance setModifyingState:NO];
 		[spHistoryControllerInstance updateHistoryEntries];
 	}
 

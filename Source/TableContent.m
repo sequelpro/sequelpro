@@ -1528,17 +1528,33 @@
 	if ([tableDocumentInstance isWorking]) return;
 
 	if ([theArrowCell getClickedColumn] == NSNotFound || [theArrowCell getClickedRow] == NSNotFound) return;
-	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
-
-	// Ensure the clicked cell has foreign key details available
-	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
-	if (!refDictionary) return;
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	// Save existing scroll position and details
+	// If on the main thread, fire up a thread to perform the load while keeping the modification flag
+	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Loading reference...", @"Loading referece task string")];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(clickLinkArrowTask:) toTarget:self withObject:theArrowCell];
+	} else {
+		[self clickLinkArrowTask:theArrowCell];
+	}
+}
+- (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell
+{
+	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
+	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
+
+	// Ensure the clicked cell has foreign key details available
+	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
+	if (!refDictionary) {
+		[linkPool release];
+		return;
+	}
+
+	// Save existing scroll position and details and mark that state is being modified
 	[spHistoryControllerInstance updateHistoryEntries];
+	[spHistoryControllerInstance setModifyingState:YES];
 
 	NSString *targetFilterValue = [tableValues cellDataAtRow:[theArrowCell getClickedRow] column:dataColumnIndex];
 
@@ -1569,6 +1585,14 @@
 			[self setFiltersToRestore:nil];
 		}
 	}
+
+	// End state and ensure a new history entry
+	[spHistoryControllerInstance setModifyingState:NO];
+	[spHistoryControllerInstance updateHistoryEntries];
+
+	// Empty the loading pool and exit the thread
+	[tableDocumentInstance endTask];
+	[linkPool drain];
 }
 
 /**

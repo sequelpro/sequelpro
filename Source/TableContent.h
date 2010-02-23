@@ -137,6 +137,7 @@
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
+- (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)addRowToDB;
