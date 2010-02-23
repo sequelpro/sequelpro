@@ -4393,7 +4393,7 @@
 															</object>
 															<object class="NSTextField" id="140378338">
 																<reference key="NSNextResponder" ref="730602982"/>
-																<int key="NSvFlags">270</int>
+																<int key="NSvFlags">268</int>
 																<string key="NSFrame">{{140, 332}, {160, 14}}</string>
 																<reference key="NSSuperview" ref="730602982"/>
 																<bool key="NSEnabled">YES</bool>
