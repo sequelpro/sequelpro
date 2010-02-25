@@ -54,6 +54,7 @@
 @interface CustomQuery : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
+	IBOutlet id tablesListInstance;
 	IBOutlet id tableWindow;
 
 	IBOutlet id queryFavoritesButton;

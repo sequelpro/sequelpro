@@ -126,6 +126,8 @@ enum sp_table_types
 - (void)selectTableAtIndex:(NSNumber *)row;
 
 // Getters
+- (NSArray *)selectedTableNames;
+- (NSArray *)selectedTableItems;
 - (NSString *)tableName;
 - (NSInteger)tableType;
 - (NSArray *)tables;

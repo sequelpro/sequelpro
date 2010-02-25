@@ -50,6 +50,9 @@
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
 	
+	IBOutlet id statusTableAccessoryView;
+	IBOutlet id statusTableView;
+	
 	IBOutlet SPUserManager *userManagerInstance;
 	
 	IBOutlet NSSearchField *listFilterField;
@@ -157,6 +160,8 @@
 	NSMutableDictionary *spfDocData;
 	
 	NSString *keyChainID;
+	
+	id statusValues;
 }
 
 - (NSString *)getHTMLforPrint;

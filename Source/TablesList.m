@@ -822,6 +822,10 @@
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
 
+		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
+		
+
 		// set window title
 		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
@@ -979,6 +983,36 @@
 
 #pragma mark -
 #pragma mark Getter methods
+
+
+- (NSArray *)selectedTableNames
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE)
+			[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
+
+- (NSArray *)selectedTableItems
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
 
 /**
  * Returns the currently selected table or nil if no table or mulitple tables are selected

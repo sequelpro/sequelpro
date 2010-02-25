@@ -32,6 +32,7 @@
 #import "SPConstants.h"
 #import "SPQueryController.h"
 #import "SPTooltip.h"
+#import "TablesList.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -1181,6 +1182,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				NSString *currentDb = nil;
 				if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
 					currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+
+				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) {
+					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"];
+					if(r.length) {
+						NSArray *selTables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] selectedTableNames];
+						if([selTables count])
+							[theHintString replaceCharactersInRange:r withString:[selTables componentsJoinedAndBacktickQuoted]];
+						else
+							[theHintString replaceCharactersInRange:r withString:@"<tables>"];
+					}
+					[theHintString flushCachedRegexData];
+				}
 
 				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLE"]) {
 					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLE"];
