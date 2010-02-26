@@ -824,6 +824,19 @@
 
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
+		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Analyze Selected Items", @"analyze selected items menu item")];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Optimize Selected Items", @"optimize selected items menu item")];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Selected Items", @"flush selected items menu item")];
+		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Checksum Selected Items", @"checksum selected items menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:NO];
+		[[tableSubMenu itemAtIndex:3] setHidden:NO];
+		[[tableSubMenu itemAtIndex:4] setHidden:NO];
+		[[tableSubMenu itemAtIndex:5] setHidden:NO];
+		[[tableSubMenu itemAtIndex:6] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setHidden:NO];
+		[[tableSubMenu itemAtIndex:9] setHidden:NO];
 		
 
 		// set window title
@@ -898,12 +911,16 @@
 		[[tableSubMenu itemAtIndex:3] setHidden:NO];
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
 		[[tableSubMenu itemAtIndex:4] setHidden:NO];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Repair Table", @"repair table menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
 		[[tableSubMenu itemAtIndex:6] setHidden:NO];
+		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Analyze Table", @"analyze table menu item")];
 		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Optimize Table", @"optimize table menu item")];
 		[[tableSubMenu itemAtIndex:8] setHidden:NO];
 		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
 		[[tableSubMenu itemAtIndex:9] setHidden:NO];
+		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Checksum Table", @"checksum table menu item")];
 
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];

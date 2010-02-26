@@ -1190,7 +1190,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						if([selTables count])
 							[theHintString replaceCharactersInRange:r withString:[selTables componentsJoinedAndBacktickQuoted]];
 						else
-							[theHintString replaceCharactersInRange:r withString:@"<tables>"];
+							[theHintString replaceCharactersInRange:r withString:@"$SP_SELECTED_TABLE"];
 					}
 					[theHintString flushCachedRegexData];
 				}

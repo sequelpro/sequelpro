@@ -52,6 +52,7 @@
 	
 	IBOutlet id statusTableAccessoryView;
 	IBOutlet id statusTableView;
+	IBOutlet id statusTableCopyChecksum;
 	
 	IBOutlet SPUserManager *userManagerInstance;
 	
@@ -243,6 +244,7 @@
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
+- (IBAction)copyChecksumFromSheet:(id)sender;
 
 - (void)showConsole:(id)sender;
 
