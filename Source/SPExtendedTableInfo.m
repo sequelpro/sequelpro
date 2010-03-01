@@ -215,7 +215,7 @@
 {	
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo] || ![tableDocumentInstance isWorking];
 
-	[resetAutoIncrementResetButton setEnabled:NO];
+	[resetAutoIncrementResetButton setHidden:YES];
 
 	// Store the table name away for future use
 	selectedTable = table;
@@ -365,7 +365,7 @@
 	
 	// Validate Reset AUTO_INCREMENT button
 	if([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]])
-		[resetAutoIncrementResetButton setEnabled:YES];
+		[resetAutoIncrementResetButton setHidden:NO];
 	
 }
 
