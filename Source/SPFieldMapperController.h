@@ -54,7 +54,6 @@
 	IBOutlet CMTextView *onupdateTextView;
 	IBOutlet id advancedButton;
 
-
 	id theDelegate;
 	id fieldMappingImportArray;
 
@@ -66,6 +65,7 @@
 	NSMutableArray *fieldMappingOperatorOptions;
 	NSMutableArray *fieldMappingOperatorArray;
 	NSMutableArray *fieldMappingGlobalValues;
+	NSMutableArray *fieldMappingTableDefaultValues;
 
 	NSNumber *doImport;
 	NSNumber *doNotImport;

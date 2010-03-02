@@ -953,7 +953,7 @@
 				[singleProgressSheet makeKeyWindow];
 
 				// Set up the field names import string for INSERT or REPLACE INTO
-				[insertBaseString appendFormat:@"%@", csvImportHeaderString];
+				[insertBaseString appendString:csvImportHeaderString];
 				[insertBaseString appendString:[selectedTableTarget backtickQuotedString]];
 				[insertBaseString appendString:@" ("];
 				insertBaseStringHasEntries = NO;

@@ -53,7 +53,7 @@
 		}
 		theDelegate = managerDelegate;
 		fieldMappingTableColumnNames   = [[NSMutableArray alloc] init];
-		// fieldMappingTableDefaultValues = [[NSMutableArray alloc] init];
+		fieldMappingTableDefaultValues = [[NSMutableArray alloc] init];
 		fieldMappingTableTypes         = [[NSMutableArray alloc] init];
 		fieldMappingButtonOptions      = [[NSMutableArray alloc] init];
 		fieldMappingOperatorOptions    = [[NSMutableArray alloc] init];
@@ -122,6 +122,7 @@
 	if (fieldMappingOperatorOptions) [fieldMappingOperatorOptions release];
 	if (fieldMappingOperatorArray) [fieldMappingOperatorArray release];
 	if (fieldMappingGlobalValues) [fieldMappingGlobalValues release];
+	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
 	[super dealloc];
 }
 
@@ -231,13 +232,14 @@
 
 	// Remove all the current columns
 	[fieldMappingTableColumnNames removeAllObjects];
-	// [fieldMappingTableDefaultValues removeAllObjects];
+	[fieldMappingTableDefaultValues removeAllObjects];
 	[fieldMappingTableTypes removeAllObjects];
 
 	// Retrieve the information for the newly selected table using a SPTableData instance
 	SPTableData *selectedTableData = [[SPTableData alloc] init];
 	[selectedTableData setConnection:mySQLConnection];
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
+	BOOL isReplacePossible = NO;
 
 	if (tableDetails) {
 		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
@@ -252,11 +254,17 @@
 
 			if([column objectForKey:@"isprimarykey"]) {
 				[type appendFormat:@",%@",@"PRIMARY"];
+				[fieldMappingTableDefaultValues addObject:@"auto_increment"];
+				isReplacePossible = YES;
 			} else {
-				if([column objectForKey:@"unique"])
+				if([column objectForKey:@"unique"]) {
 					[type appendFormat:@",%@",@"UNIQUE"];
+					isReplacePossible = YES;
+				}
 				if ([column objectForKey:@"default"])
-					[type appendFormat:@",%@",[column objectForKey:@"default"]];
+					[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
+				else
+					[fieldMappingTableDefaultValues addObject:@"NULL"];
 			}
 
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
@@ -264,6 +272,8 @@
 	}
 
 	[selectedTableData release];
+	[[importMethodPopup menu] setAutoenablesItems:NO];
+	[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:isReplacePossible];
 
 	// Update the table view
 	fieldMappingCurrentRow = 0;
@@ -573,10 +583,9 @@
 - (void)setupFieldMappingArray
 {
 	NSInteger i, value;
-	
-    if (!fieldMappingArray) {
-        fieldMappingArray = [[NSMutableArray alloc] init];
-		
+
+	if (!fieldMappingArray) {
+		fieldMappingArray = [[NSMutableArray alloc] init];
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
 			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count] 
 					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isKindOfClass:[NSNull class]]) {
@@ -588,7 +597,7 @@
 			[fieldMappingArray addObject:[NSNumber numberWithInteger:value]];
 		}
 	}
-	
+
 	[fieldMapperTableView reloadData];
 }
 
@@ -701,7 +710,7 @@
 	if(aTableView == fieldMapperTableView) {
 		if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
 
-			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return @"";
+			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
 
 			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
 				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
@@ -765,6 +774,7 @@
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 				NSPopUpButtonCell *c = [aTableColumn dataCell]; 
 				NSMenu *m = [c menu];
+				[m setAutoenablesItems:NO];
 				[c removeAllItems];
 				[c addItemsWithTitles:fieldMappingButtonOptions];
 				[m addItem:[NSMenuItem separatorItem]];
@@ -773,10 +783,15 @@
 				[c addItemWithTitle:NSLocalizedString(@"Import all fields", @"import all fields menu item")];
 				[m addItem:[NSMenuItem separatorItem]];
 				[c addItemWithTitle:NSLocalizedString(@"Add global value…", @"add global value menu item")];
+				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
+				[[m itemAtIndex:[c numberOfItems]-1] setEnabled:NO];
 
-				// Hide csv file column value if user doesn't want to import it
+				// If user doesn't want to import it show its DEFAULT value otherwise hide it.
 				if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
 					return [fieldMappingArray objectAtIndex:rowIndex];
+				else
+					return [NSNumber numberWithInteger:[c numberOfItems]-1];
+
 			}
 		} 
 
