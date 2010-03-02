@@ -45,12 +45,12 @@ enum sphistory_view_types
 	NSMutableArray *history;
 	NSMutableDictionary *tableContentStates;
 	NSUInteger historyPosition;
-	BOOL modifyingHistoryState;
+	BOOL modifyingState;
 }
 
 @property (readonly) NSUInteger historyPosition;
 @property (readonly) NSMutableArray *history;
-@property (readwrite, assign) BOOL modifyingHistoryState;
+@property (readwrite, assign) BOOL modifyingState;
 
 // Interface interaction
 - (void) updateToolbarItem;

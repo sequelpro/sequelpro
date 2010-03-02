@@ -120,6 +120,7 @@ NSString *SPCSVImportFieldEscapeCharacter        = @"CSVImportFieldEscapeCharact
 NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
+NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";

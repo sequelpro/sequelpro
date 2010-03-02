@@ -41,7 +41,19 @@
     if ([self valueForKey:@"parent"] == nil)
         [self setValue:value forKey:@"user"];
     else
-        [self setValue:value forKey:@"host"];
+    {
+        if (value == nil)
+        {
+            [self setValue:@"%" forKey:@"host"];
+        }
+        else 
+        {
+            [self setValue:value forKey:@"host"];
+        }
+
+
+    }
+
 }
 
 - (void)addChildrenObject:(NSManagedObject *)value 
@@ -66,5 +78,4 @@
     
     [changedObjects release];
 }
-
 @end

@@ -55,6 +55,7 @@ enum sp_table_types
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
+	IBOutlet id tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id tableWindow;
@@ -125,6 +126,8 @@ enum sp_table_types
 - (void)selectTableAtIndex:(NSNumber *)row;
 
 // Getters
+- (NSArray *)selectedTableNames;
+- (NSArray *)selectedTableItems;
 - (NSString *)tableName;
 - (NSInteger)tableType;
 - (NSArray *)tables;

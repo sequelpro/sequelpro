@@ -33,6 +33,7 @@
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "RegexKitLite.h"
 
 @implementation SPTableData
 
@@ -303,7 +304,7 @@
 
 /*
  * Retrieve the CREATE TABLE string for a table and analyse it to extract the field
- * details and table encoding.
+ * details, primary key, unique keys, and table encoding.
  * In future this could also be used to retrieve the majority of index information
  * assuming information like cardinality isn't needed.
  * This function is rather long due to the painful parsing required, but is fast.
@@ -371,7 +372,9 @@
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
 	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
-	
+
+	tableData = [NSMutableDictionary dictionary];
+
 	for (i = 0; i < [fieldStrings count]; i++) {
 
 		// Take this field/key string, trim whitespace from both ends and remove comments
@@ -430,7 +433,9 @@
 			}
 			
 			// Store the column.
-			[tableColumns addObject:[NSDictionary dictionaryWithDictionary:tableColumn]];
+			NSMutableDictionary *d = [NSMutableDictionary dictionaryWithCapacity:1];
+			[d setDictionary:tableColumn];
+			[tableColumns addObject:d];
 
 		// TODO: Otherwise it's a key definition, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
@@ -523,15 +528,36 @@
 				[constraintDetails release];
 			}
 			// primary key
-			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] ) {
+			// add "isprimarykey" to the corresponding tableColumn
+			// add dict root "primarykeyfield" = <field> for faster accessing
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] && [parts count] == 3) {
+				NSString *parsedString = [(NSString*)NSArrayObjectAtIndex(parts, 2) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+				if([parsedString length]>4) {
+					NSString *priFieldName = [[parsedString substringWithRange:NSMakeRange(2,[parsedString length]-4)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+					[tableData setObject:priFieldName forKey:@"primarykeyfield"];
+					for(id tableColumn in tableColumns)
+						if([[tableColumn objectForKey:@"name"] isEqualToString:priFieldName]) {
+							[tableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+							break;
+						}
+				}
 			}
-			// key
-			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"KEY"] ) {
-				/*
-				 NSLog( @"key %@.%@", 
-				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
-				 [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
-				 */
+			// unique keys
+			// add to each corresponding tableColumn the tag "unique" if given
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"UNIQUE"]  && [parts count] == 4) {
+				NSString *parsedString = [(NSString*)NSArrayObjectAtIndex(parts, 3) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+				if([parsedString length]>4) {
+					NSArray *uniqueFieldNames = [parsedString componentsSeparatedByString:@"`,`"];
+					for(NSString* uniq in uniqueFieldNames) {
+						NSString *uniqField = [[uniq stringByReplacingOccurrencesOfRegex:@"^\\(`|`\\)" withString:@""] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+						for(id tableColumn in tableColumns)
+							if([[tableColumn objectForKey:@"name"] isEqualToString:uniqField]) {
+								[tableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+								break;
+							}
+					}
+					
+				}
 			}
 			// who knows
 			else {
@@ -583,7 +609,9 @@
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							   tableName, [mySQLConnection getLastErrorMessage]]);
 		}
-		
+		[tableColumns release];
+		[encodingString release];
+
 		return nil;
 	}
 	
@@ -595,7 +623,6 @@
 	}
 	
 
-	tableData = [NSMutableDictionary dictionary];
 	// this will be 'Table' or 'View'
 	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];

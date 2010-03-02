@@ -31,10 +31,15 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableDocumentInstance;
+	IBOutlet id tableInfoInstance;
+	IBOutlet id extendedTableInfoInstance;
 
 	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
 	IBOutlet id keySheet;
+	IBOutlet id resetAutoIncrementSheet;
+	IBOutlet id resetAutoIncrementValue;
+	IBOutlet id resetAutoIncrementLine;
 	IBOutlet id tableSourceView;
 	IBOutlet id indexView;
 	IBOutlet id addFieldButton;
@@ -73,6 +78,7 @@
 - (IBAction)copyField:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (IBAction)removeIndex:(id)sender;
+- (IBAction)resetAutoIncrement:(id)sender;
 
 // Index sheet methods
 - (IBAction)openIndexSheet:(id)sender;
@@ -88,6 +94,7 @@
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
+- (void)setAutoIncrementTo:(NSString*)valueAsString;
 
 // Getter methods
 - (NSString *)defaultValueForField:(NSString *)field;

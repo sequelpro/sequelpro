@@ -497,7 +497,7 @@
 			if ([results count] > 1)
 			{
 				NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate User"
-												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+												 defaultButton:NSLocalizedString(@"OK", @"OK")
 											   alternateButton:nil
 												   otherButton:nil
 									 informativeTextWithFormat:@"A user with that name already exists"];
@@ -514,7 +514,7 @@
 				if (![selectedObject isEqual:child] && [[child valueForKey:@"host"] isEqualToString:host])
 				{
 					NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate Host"
-													 defaultButton:NSLocalizedString(@"OK", @"OK button")
+													 defaultButton:NSLocalizedString(@"OK", @"OK")
 												   alternateButton:nil
 													   otherButton:nil
 										 informativeTextWithFormat:@"A user with that host already exists"];
@@ -634,6 +634,14 @@
 
 - (IBAction)removeUser:(id)sender
 {
+    NSString *username = [[[treeController selectedObjects] objectAtIndex:0]
+                          valueForKey:@"user"];
+    NSArray *children = [[[treeController selectedObjects] objectAtIndex:0] 
+                         valueForKey:@"children"];
+    for(NSManagedObject *child in children)
+    {
+        [child setPrimitiveValue:username forKey:@"user"];
+    }
 	[treeController remove:sender];
 }
 
@@ -661,7 +669,21 @@
 
 - (IBAction)removeHost:(id)sender
 {
+    // Set the username on the child so that it's accessabile when building
+    // the drop sql command
+    NSManagedObject *child = [[treeController selectedObjects] objectAtIndex:0];
+    NSManagedObject *parent = [child valueForKey:@"parent"];
+    [child setPrimitiveValue:[[child valueForKey:@"parent"] valueForKey:@"user"] forKey:@"user"];
 	[treeController remove:sender];
+    if ([[parent valueForKey:@"children"] count] == 0)
+    {
+        NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
+                                         defaultButton:NSLocalizedString(@"OK", @"OK")
+                                       alternateButton:nil
+                                           otherButton:nil
+                             informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
+        [alert runModal];
+    }
 }
 
 - (IBAction)addSchemaPriv:(id)sender
@@ -690,8 +712,8 @@
 	if ([self.managedObjectContext hasChanges])
 	{
 		NSAlert *alert = [NSAlert alertWithMessageText:@"Warning!"
-										 defaultButton:NSLocalizedString(@"Continue", @"continue button")
-									   alternateButton:NSLocalizedString(@"Cancel",@"cancel button")
+										 defaultButton:NSLocalizedString(@"Continue", @"Continue")
+									   alternateButton:NSLocalizedString(@"Cancel",@"Cancel")
 										   otherButton:nil
 							 informativeTextWithFormat:@"Window has changes.  All changes will be lost!"];
 		[alert setAlertStyle:NSWarningAlertStyle];
@@ -889,7 +911,7 @@
 	NSMutableString *droppedUsers = [NSMutableString string];
 	for (NSManagedObject *user in deletedUsers)
 	{
-		if ([user host] != nil)
+        if (![[[user entity] name] isEqualToString:@"Privileges"] && [user valueForKey:@"host"] != nil)
 		{
 			[droppedUsers appendString:[NSString stringWithFormat:@"%@@%@, ", 
 										[[user valueForKey:@"user"] backtickQuotedString], 
@@ -1115,7 +1137,7 @@
 {
 	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" 
-                                         defaultButton:NSLocalizedString(@"OK", @"OK button")
+                                         defaultButton:NSLocalizedString(@"OK", @"OK")
                                        alternateButton:nil 
                                            otherButton:nil 
                              informativeTextWithFormat:[self.mySqlConnection getLastErrorMessage]];
@@ -1207,8 +1229,12 @@
 						}
 					}
 				}
+                [availableTableView setEnabled:YES];
 			}
-		}
+		} else {
+            [availableTableView setEnabled:NO];
+        }
+
 	}
 	else if ([notification object] == grantedTableView)
 	{

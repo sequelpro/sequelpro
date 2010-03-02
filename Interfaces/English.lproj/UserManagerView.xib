@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="44"/>
+			<integer value="775"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -436,7 +436,7 @@
 												<object class="NSTabViewItem" id="820796939">
 													<string key="NSIdentifier">General</string>
 													<object class="NSView" key="NSView" id="143215913">
-														<reference key="NSNextResponder" ref="716372522"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -565,7 +565,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {480, 414}}</string>
-														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">General</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -1399,7 +1398,7 @@
 												<object class="NSTabViewItem" id="487249930">
 													<string key="NSIdentifier">Schema Privileges</string>
 													<object class="NSView" key="NSView" id="601698335">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="716372522"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1677,7 +1676,6 @@
 																				<int key="NSvFlags">256</int>
 																				<string key="NSFrameSize">{104, 363}</string>
 																				<reference key="NSSuperview" ref="728383964"/>
-																				<bool key="NSEnabled">YES</bool>
 																				<object class="NSTableHeaderView" key="NSHeaderView" id="120612996">
 																					<reference key="NSNextResponder" ref="226879331"/>
 																					<int key="NSvFlags">256</int>
@@ -1699,7 +1697,7 @@
 																						<double key="NSMinWidth">40</double>
 																						<double key="NSMaxWidth">1000</double>
 																						<object class="NSTableHeaderCell" key="NSHeaderCell">
-																							<int key="NSCellFlags">75628096</int>
+																							<int key="NSCellFlags">612499008</int>
 																							<int key="NSCellFlags2">2048</int>
 																							<string key="NSContents">Available Privilige</string>
 																							<reference key="NSSupport" ref="26"/>
@@ -1710,7 +1708,7 @@
 																							<reference key="NSTextColor" ref="579753059"/>
 																						</object>
 																						<object class="NSTextFieldCell" key="NSDataCell" id="1064222866">
-																							<int key="NSCellFlags">337772096</int>
+																							<int key="NSCellFlags">874643008</int>
 																							<int key="NSCellFlags2">2048</int>
 																							<string key="NSContents">Text Cell</string>
 																							<reference key="NSSupport" ref="746597359"/>
@@ -1846,6 +1844,7 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {480, 414}}</string>
+														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Schema Privileges</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -2122,13 +2121,13 @@
 													<reference key="NSTabView" ref="716372522"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="820796939"/>
+											<reference key="NSSelectedTabViewItem" ref="487249930"/>
 											<reference key="NSFont" ref="746597359"/>
 											<int key="NSTvFlags">0</int>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="143215913"/>
+												<reference ref="601698335"/>
 											</object>
 										</object>
 										<object class="NSButton" id="445730006">

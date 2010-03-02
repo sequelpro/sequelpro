@@ -34,6 +34,9 @@
 	IBOutlet TablesList *tablesListInstance;
 	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet SPDatabaseData *databaseDataInstance;
+	IBOutlet id tableSourceInstance;
+
+	IBOutlet id resetAutoIncrementResetButton;
 
 	IBOutlet NSTextField *tableRowNumber;
 	IBOutlet NSTextField *tableRowFormat;
@@ -65,6 +68,8 @@
 - (IBAction)updateTableType:(id)sender;
 - (IBAction)updateTableEncoding:(id)sender;
 - (IBAction)updateTableCollation:(id)sender;
+- (IBAction)resetAutoIncrement:(id)sender;
+- (IBAction)resetAutoIncrementValueWasEdited:(id)sender;
 
 // Others
 - (void)loadTable:(NSString *)table; 

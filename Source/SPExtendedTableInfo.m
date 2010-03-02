@@ -32,6 +32,7 @@
 #import "TableDocument.h"
 #import "TablesList.h"
 #import "SPAlertSheets.h"
+#import "TableSource.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
@@ -172,6 +173,35 @@
 	}
 }
 
+- (IBAction)resetAutoIncrement:(id)sender
+{
+
+	if([sender tag] == 1) {
+		[tableRowAutoIncrement setEditable:YES];
+		[tableRowAutoIncrement selectText:nil];
+	} else {
+		[tableRowAutoIncrement setEditable:NO];
+		[tableSourceInstance resetAutoIncrement:sender];
+	}
+}
+
+- (IBAction)resetAutoIncrementValueWasEdited:(id)sender
+{
+	[tableRowAutoIncrement setEditable:NO];
+	[tableSourceInstance setAutoIncrementTo:[[tableRowAutoIncrement stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+}
+
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command 
+{
+
+	// Listen to ESC to abort editing of auto increment input field
+	if (command == @selector(cancelOperation:) && control == tableRowAutoIncrement) {
+		[tableRowAutoIncrement abortEditing];
+		return YES;
+	}
+	return NO;
+}
+
 #pragma mark -
 #pragma mark Other
  
@@ -185,6 +215,8 @@
 {	
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo] || ![tableDocumentInstance isWorking];
 
+	[resetAutoIncrementResetButton setHidden:YES];
+
 	// Store the table name away for future use
 	selectedTable = table;
 	
@@ -196,7 +228,7 @@
 	[tableCollationPopUpButton removeAllItems];
 	
 	// No table selected or view selected
-	if ([table isEqualToString:@""] || (!table) || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+	if ((!table) || [table isEqualToString:@""] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
 		
 		[tableTypePopUpButton setEnabled:NO];
 		[tableEncodingPopUpButton setEnabled:NO];
@@ -228,7 +260,7 @@
 		[tableRowNumber setStringValue:@"Number of rows: "];
 		[tableRowFormat setStringValue:@"Row format: "];	
 		[tableRowAvgLength setStringValue:@"Avg. row length: "];
-		[tableRowAutoIncrement setStringValue:@"Auto increment: "];
+		[tableRowAutoIncrement setStringValue:@""];
 		
 		// Set size values
 		[tableDataSize setStringValue:@"Data size: "]; 
@@ -330,6 +362,11 @@
 	[tableCreateSyntaxTextView insertText:[tableDataInstance tableCreateSyntax]];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
+	
+	// Validate Reset AUTO_INCREMENT button
+	if([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]])
+		[resetAutoIncrementResetButton setHidden:NO];
+	
 }
 
 /**
@@ -464,13 +501,13 @@
 			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
 			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
 			
-			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];						
+			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];
 		}
 		// Format numbers
 		else if ([key isEqualToString:@"Rows"] ||
 				 [key isEqualToString:@"Avg_row_length"] || 
 				 [key isEqualToString:@"Auto_increment"]) {
-			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];	
+			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 			value = [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[value longLongValue]]];
@@ -481,8 +518,10 @@
 			}
 		}
 	}
-		
-	return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];
+	if([key isEqualToString:@"Auto_increment"])
+		return ([value length] > 0) ? value : @"Not available";
+	else
+		return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];
 }
 
 @end

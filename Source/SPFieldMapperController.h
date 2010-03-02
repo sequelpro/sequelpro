@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPQueryFavoriteManager.h
+//  SPFieldMapperController.h
 //  sequel-pro
 //
 //  Created by Hans-Jörg Bibiko on February 01, 2010
@@ -24,39 +24,111 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-
-
+#import "CMTextView.h"
 
 @interface SPFieldMapperController : NSWindowController {
 
-	IBOutlet id fieldMapperTableView;
-	IBOutlet id tableTargetPopup;
-	IBOutlet id fileSourcePath;
-	IBOutlet id importMethodPopup;
+	IBOutlet NSTableView *fieldMapperTableView;
+	IBOutlet NSTableView *globalValuesTableView;
+	IBOutlet NSPopUpButton *tableTargetPopup;
+	IBOutlet NSPathControl *fileSourcePath;
+	IBOutlet NSPopUpButton *importMethodPopup;
 	IBOutlet id rowUpButton;
 	IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
-	
+	IBOutlet id importFieldNamesHeaderSwitch;
+	IBOutlet id importButton;
+	IBOutlet NSPopUpButton *alignByPopup;
+	IBOutlet NSMenuItem *matchingNameMenuItem;
+
+	IBOutlet id globalValuesSheet;
+	IBOutlet NSButton *addGlobalValueButton;
+	IBOutlet NSButton *removeGlobalValueButton;
+	IBOutlet NSButton *insertNULLValueButton;
+	IBOutlet id replaceAfterSavingCheckBox;
+
+	IBOutlet id advancedSheet;
+	IBOutlet id ignoreCheckBox;
+	IBOutlet id delayedCheckBox;
+	IBOutlet id onupdateCheckBox;
+	IBOutlet CMTextView *onupdateTextView;
+	IBOutlet id advancedButton;
+
+
 	id theDelegate;
-	
+	id fieldMappingImportArray;
+
 	NSInteger fieldMappingCurrentRow;
-	NSArray *fieldMappingImportArray;
-	NSArray *fieldMappingArray;
+	NSMutableArray *fieldMappingArray;
+	NSMutableArray *fieldMappingTableColumnNames;
+	NSMutableArray *fieldMappingTableTypes;
+	NSMutableArray *fieldMappingButtonOptions;
+	NSMutableArray *fieldMappingOperatorOptions;
+	NSMutableArray *fieldMappingOperatorArray;
+	NSMutableArray *fieldMappingGlobalValues;
+
+	NSNumber *doImport;
+	NSNumber *doNotImport;
+	NSNumber *isEqual;
+	NSString *doImportString;
+	NSString *doNotImportString;
+	NSString *isEqualString;
+
+	NSInteger numberOfImportColumns;
 
 	BOOL fieldMappingImportArrayIsPreview;
+	BOOL importFieldNamesHeader;
+	NSNumber *lastDisabledCSVFieldcolumn;
 
 	MCPConnection *mySQLConnection;
 
+	NSString *sourcePath;
+
+	NSUserDefaults *prefs;
 }
+
+@property(retain) NSString* sourcePath;
 
 - (id)initWithDelegate:(id)managerDelegate;
 
 - (void)setConnection:(MCPConnection *)theConnection;
+- (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader isPreview:(BOOL)isPreview;
+
+// Getter methods
+- (NSString*)selectedTableTarget;
+- (NSArray*)fieldMapperOperator;
+- (NSString*)selectedImportMethod;
+- (NSArray*)fieldMappingArray;
+- (NSArray*)fieldMappingTableColumnNames;
+- (NSArray*)fieldMappingGlobalValueArray;
+- (BOOL)importFieldNamesHeader;
+- (NSString*)onupdateString;
+- (NSString*)importHeaderString;
 
 // IBAction methods
 - (IBAction)changeTableTarget:(id)sender;
 - (IBAction)changeImportMethod:(id)sender;
+- (IBAction)changeFieldAlignment:(id)sender;
+- (IBAction)changeHasHeaderCheckbox:(id)sender;
 - (IBAction)stepRow:(id)sender;
+- (IBAction)addGlobalSourceVariable:(id)sender;
+- (IBAction)openAdvancedSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)goBackToFileChooser:(id)sender;
+
+- (IBAction)addGlobalValue:(id)sender;
+- (IBAction)removeGlobalValue:(id)sender;
+- (IBAction)insertNULLValue:(id)sender;
+- (IBAction)closeGlobalValuesSheet:(id)sender;
+- (IBAction)closeAdvancedSheet:(id)sender;
+- (IBAction)advancedCheckboxValidation:(id)sender;
+
+
+// Others
+- (void)matchHeaderNames;
+- (void)setupFieldMappingArray;
+- (void)updateFieldMappingButtonCell;
+- (void)updateFieldMappingOperatorOptions;
+- (void)updateFieldNameAlignment;
 
 @end

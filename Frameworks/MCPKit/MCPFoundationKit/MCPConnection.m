@@ -111,6 +111,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		keepAliveInterval = 60;  
 		
 		theDbStructure = nil;
+		uniqueDbIdentifier = nil;
 		isQueryingDbStructure = NO;
 
 		connectionThreadId     = 0;
@@ -281,7 +282,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 {
 	const char *theLogin = [self cStringFromString:connectionLogin];
 	const char *theHost;
-	const char *thePass;
+	const char *thePass = NULL;
 	const char *theSocket;
 	void	   *theRet;
 	
@@ -380,6 +381,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
+	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
 	
 	[self stopKeepAliveTimer];
 }
@@ -1375,6 +1377,7 @@ void performThreadedKeepAlive(void *ptr)
 		// If this query has failed once already, check the connection
 		if (isQueryRetry) {
 			if (![self checkConnection]) {
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 
 				// Notify that the query has been performed
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
@@ -1536,7 +1539,7 @@ void performThreadedKeepAlive(void *ptr)
 		if (killerConnection) {
 			const char *theLogin = [self cStringFromString:connectionLogin];
 			const char *theHost;
-			const char *thePass;
+			const char *thePass = NULL;
 			const char *theSocket;
 			void *connectionSetupStatus;
 
@@ -1658,7 +1661,7 @@ void performThreadedKeepAlive(void *ptr)
 {
 	if (!mConnected) return NO;
 	
-	MCPResult *theResult = [MCPResult alloc];
+	MCPResult *theResult = nil;
 	MYSQL_RES *theResPtr;
 	
 	[self stopKeepAliveTimer];
@@ -1670,20 +1673,20 @@ void performThreadedKeepAlive(void *ptr)
 	[queryLock lock];
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_dbs(mConnection, NULL)) {
-			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
 		}
 		else {
-			[theResult init];
+			theResult = [[MCPResult alloc] init];
 		}
 	}
 	else {
 		const char *theCDBsName = (const char *)[self cStringFromString:dbsName];
 		
 		if (theResPtr = mysql_list_dbs(mConnection, theCDBsName)) {
-			[theResult initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
 		}
 		else {
-			[theResult init];
+			theResult = [[MCPResult alloc] init];
 		}        
 	}
 	[queryLock unlock];
@@ -1715,7 +1718,7 @@ void performThreadedKeepAlive(void *ptr)
 {
 	if (!mConnected) return NO;
 	
-	MCPResult *theResult = [MCPResult alloc];
+	MCPResult *theResult = nil;
 	MYSQL_RES *theResPtr;
 	
 	[self stopKeepAliveTimer];
@@ -1727,19 +1730,19 @@ void performThreadedKeepAlive(void *ptr)
 	[queryLock lock];
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_tables(mConnection, NULL)) {
-			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
 		}
 		else {
-			[theResult init];
+			theResult = [[MCPResult alloc] init];
 		}
 	}
 	else {
 		const char	*theCTablesName = (const char *)[self cStringFromString:tablesName];
 		if (theResPtr = mysql_list_tables(mConnection, theCTablesName)) {
-			[theResult initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
 		}
 		else {
-			[theResult init];
+			theResult = [[MCPResult alloc] init];
 		}
 	}
 	
@@ -1818,7 +1821,7 @@ void performThreadedKeepAlive(void *ptr)
 		if (structConnection) {
 			const char *theLogin = [self cStringFromString:connectionLogin];
 			const char *theHost;
-			const char *thePass;
+			const char *thePass = NULL;
 			const char *theSocket;
 			void *connectionSetupStatus;
 
@@ -1957,9 +1960,9 @@ void performThreadedKeepAlive(void *ptr)
  * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
  * a db name or a table name.
  */
-- (NSInteger)getUniqueDbIndentifierFor:(NSString*)term
+- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term
 {
-	if([uniqueDbIdentifier objectForKey:term])
+	if(uniqueDbIdentifier && [uniqueDbIdentifier objectForKey:term])
 		return [[uniqueDbIdentifier objectForKey:term] integerValue];
 	else
 		return 0;
@@ -2017,15 +2020,15 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPResult *)listProcesses
 {
-	MCPResult *theResult = [MCPResult alloc];
+	MCPResult *theResult = nil;
 	MYSQL_RES *theResPtr;
 	
 	[queryLock lock];
 	if (theResPtr = mysql_list_processes(mConnection)) {
-		[theResult initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+		theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
 	} 
 	else {
-		[theResult init];
+		theResult = [[MCPResult alloc] init];
 	}
 	[queryLock unlock];
 	
@@ -2395,6 +2398,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (connectionPassword) [connectionPassword release];
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
+	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
 	
 	[super dealloc];
 }

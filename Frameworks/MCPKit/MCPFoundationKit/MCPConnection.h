@@ -230,7 +230,7 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
 - (void)queryDbStructure;
 - (NSDictionary *)getDbStructure;
-- (NSInteger)getUniqueDbIndentifierFor:(NSString*)term;
+- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term;
 
 // Server information
 - (NSString *)clientInfo;

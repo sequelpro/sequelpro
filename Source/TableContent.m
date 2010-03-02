@@ -29,6 +29,7 @@
 
 #import "TableContent.h"
 #import "TableDocument.h"
+#import "TableSource.h"
 #import "SPTableInfo.h"
 #import "TablesList.h"
 #import "CMImageView.h"
@@ -49,7 +50,6 @@
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
 #import "SPDataStorage.h"
-#import "TableDocument.h"
 #import "SPAlertSheets.h"
 
 @implementation TableContent
@@ -809,6 +809,10 @@
 
 	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] integerValue];
 
+	BOOL suppressLeadingTablePlaceholder = NO;
+	if([filter objectForKey:@"SuppressLeadingFieldPlaceholder"])
+		suppressLeadingTablePlaceholder = YES;
+
 	// argument if Filter requires only one argument
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
 
@@ -870,24 +874,40 @@
 	}
 
 	// Construct the filter string according the required number of arguments
-	if (numberOfArguments == 2) {
-		filterString = [NSString stringWithFormat:@"%@ %@", 
-			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[NSString stringWithFormat:clause, 
-				[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
-				[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
-	} else if (numberOfArguments == 1) {
-		filterString = [NSString stringWithFormat:@"%@ %@", 
-			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
+
+	if(suppressLeadingTablePlaceholder) {
+		if (numberOfArguments == 2) {
+			filterString = [NSString stringWithFormat:clause, 
+					[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]];
+		} else if (numberOfArguments == 1) {
+			filterString = [NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]];
+		} else {
+			filterString = [NSString stringWithString:clause];
+				if(numberOfArguments > 2) {
+					NSLog(@"Filter with more than 2 arguments is not yet supported.");
+					NSBeep();
+				}
+		}
 	} else {
-		filterString = [NSString stringWithFormat:@"%@ %@", 
-			[[fieldField titleOfSelectedItem] backtickQuotedString], 
-			[filter objectForKey:@"Clause"]];
-			if(numberOfArguments > 2) {
-				NSLog(@"Filter with more than 2 arguments is not yet supported.");
-				NSBeep();
-			}
+		if (numberOfArguments == 2) {
+			filterString = [NSString stringWithFormat:@"%@ %@", 
+				[[fieldField titleOfSelectedItem] backtickQuotedString], 
+				[NSString stringWithFormat:clause, 
+					[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
+		} else if (numberOfArguments == 1) {
+			filterString = [NSString stringWithFormat:@"%@ %@", 
+				[[fieldField titleOfSelectedItem] backtickQuotedString], 
+				[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
+		} else {
+			filterString = [NSString stringWithFormat:@"%@ %@", 
+				[[fieldField titleOfSelectedItem] backtickQuotedString], clause];
+				if(numberOfArguments > 2) {
+					NSLog(@"Filter with more than 2 arguments is not yet supported.");
+					NSBeep();
+				}
+		}
 	}
 
 	[argument release];
@@ -1366,13 +1386,25 @@
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
+
+	[alert setShowsSuppressionButton:NO];
+	[[alert suppressionButton] setState:NSOffState];
+
 	NSString *contextInfo = @"removerow";
 	
 	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited && !isInterruptedLoad) {
-		
+
 		contextInfo = @"removeallrows";
 		
+		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
+		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
+			[alert setShowsSuppressionButton:YES];
+			[[alert suppressionButton] setState:NSOffState];
+			[[[alert suppressionButton] cell] setControlSize:NSSmallControlSize];
+			[[[alert suppressionButton] cell] setFont:[NSFont systemFontOfSize:11]];
+			[[alert suppressionButton] setTitle:NSLocalizedString(@"Reset AUTO_INCREMENT after deletion?", @"reset auto_increment after deletion of all rows message")];
+		}
+
 		[alert setMessageText:NSLocalizedString(@"Delete all rows?", @"delete all rows message")];
 		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete all the rows from this table? This action cannot be undone.", @"delete all rows informative message")];
 	} 
@@ -1508,17 +1540,33 @@
 	if ([tableDocumentInstance isWorking]) return;
 
 	if ([theArrowCell getClickedColumn] == NSNotFound || [theArrowCell getClickedRow] == NSNotFound) return;
-	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
-
-	// Ensure the clicked cell has foreign key details available
-	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
-	if (!refDictionary) return;
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	// Save existing scroll position and details
+	// If on the main thread, fire up a thread to perform the load while keeping the modification flag
+	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Loading reference...", @"Loading referece task string")];
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(clickLinkArrowTask:) toTarget:self withObject:theArrowCell];
+	} else {
+		[self clickLinkArrowTask:theArrowCell];
+	}
+}
+- (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell
+{
+	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
+	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
+
+	// Ensure the clicked cell has foreign key details available
+	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
+	if (!refDictionary) {
+		[linkPool release];
+		return;
+	}
+
+	// Save existing scroll position and details and mark that state is being modified
 	[spHistoryControllerInstance updateHistoryEntries];
+	[spHistoryControllerInstance setModifyingState:YES];
 
 	NSString *targetFilterValue = [tableValues cellDataAtRow:[theArrowCell getClickedRow] column:dataColumnIndex];
 
@@ -1549,6 +1597,14 @@
 			[self setFiltersToRestore:nil];
 		}
 	}
+
+	// End state and ensure a new history entry
+	[spHistoryControllerInstance setModifyingState:NO];
+	[spHistoryControllerInstance updateHistoryEntries];
+
+	// Empty the loading pool and exit the thread
+	[tableDocumentInstance endTask];
+	[linkPool drain];
 }
 
 /**
@@ -2095,7 +2151,13 @@
 		if ( returnCode == NSAlertDefaultReturn ) {
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+
+				// Reset auto increment if suppression button was ticked
+				if([[sheet suppressionButton] state] == NSOnState)
+					[tableSourceInstance setAutoIncrementTo:@"1"];
+
 				[self reloadTable:self];
+
 			} else {
 				[self performSelector:@selector(showErrorSheetWith:)
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
@@ -2698,7 +2760,9 @@
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
-	if ( [aTableView editedColumn] == columnIndex && [aTableView editedRow] == rowIndex) {
+	if ([aTableView editedColumn] != -1 
+		&& [aTableView editedRow] == rowIndex 
+		&& [[NSArrayObjectAtIndex([aTableView tableColumns], [aTableView editedColumn]) identifier] integerValue] == columnIndex) {
 		[cell setTextColor:[NSColor blackColor]];
 		return;
 	}

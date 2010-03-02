@@ -28,6 +28,7 @@
 #import "TableSource.h"
 #import "TableContent.h"
 #import "SPTableData.h"
+#import "SPTableInfo.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
 #import "SPStringAdditions.h"
@@ -821,6 +822,23 @@
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
 
+		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
+		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Analyze Selected Items", @"analyze selected items menu item")];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Optimize Selected Items", @"optimize selected items menu item")];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Selected Items", @"flush selected items menu item")];
+		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Checksum Selected Items", @"checksum selected items menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:NO];
+		[[tableSubMenu itemAtIndex:3] setHidden:NO];
+		[[tableSubMenu itemAtIndex:4] setHidden:NO];
+		[[tableSubMenu itemAtIndex:5] setHidden:NO];
+		[[tableSubMenu itemAtIndex:6] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setHidden:NO];
+		[[tableSubMenu itemAtIndex:9] setHidden:NO];
+		
+
 		// set window title
 		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
@@ -893,12 +911,16 @@
 		[[tableSubMenu itemAtIndex:3] setHidden:NO];
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
 		[[tableSubMenu itemAtIndex:4] setHidden:NO];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Repair Table", @"repair table menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
 		[[tableSubMenu itemAtIndex:6] setHidden:NO];
+		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Analyze Table", @"analyze table menu item")];
 		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Optimize Table", @"optimize table menu item")];
 		[[tableSubMenu itemAtIndex:8] setHidden:NO];
 		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
 		[[tableSubMenu itemAtIndex:9] setHidden:NO];
+		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Checksum Table", @"checksum table menu item")];
 
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
@@ -978,6 +1000,36 @@
 
 #pragma mark -
 #pragma mark Getter methods
+
+
+- (NSArray *)selectedTableNames
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE)
+			[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
+
+- (NSArray *)selectedTableItems
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
 
 /**
  * Returns the currently selected table or nil if no table or mulitple tables are selected
@@ -1881,6 +1933,8 @@
 	
 	// Reload the table's content view to show that it has been truncated 
 	[tableContentInstance reloadTable:self];
+	[tableDataInstance resetStatusData];
+
 }
 
 /**
@@ -2005,19 +2059,21 @@
 		
     } else {
 		//insert new table name in create syntax and create new table
-		NSScanner *scanner = [NSScanner alloc];
+		NSScanner *scanner;
 		NSString *scanString;
 		
 		if(tblType == SP_TABLETYPE_VIEW){
-			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			[scanner release];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		} 
 		else if(tblType == SP_TABLETYPE_TABLE){
-			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			[scanner release];
 			
 			// If there are any InnoDB referencial constraints we need to strip out the names as they must be unique. 
 			// MySQL will generate the new names based on the new table name.
@@ -2062,7 +2118,6 @@
 			}
 			
 		}
-		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table

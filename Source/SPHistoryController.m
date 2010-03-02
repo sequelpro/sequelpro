@@ -32,7 +32,7 @@
 
 @synthesize history;
 @synthesize historyPosition;
-@synthesize modifyingHistoryState;
+@synthesize modifyingState;
 
 #pragma mark Setup and teardown
 
@@ -45,7 +45,7 @@
 		history = [[NSMutableArray alloc] init];
 		tableContentStates = [[NSMutableDictionary alloc] init];
 		historyPosition = NSNotFound;
-		modifyingHistoryState = NO;
+		modifyingState = NO;
 	}
 	return self;	
 }
@@ -183,7 +183,7 @@
 {
 
 	// Don't modify anything if we're in the process of restoring an old history state
-	if (modifyingHistoryState) return;
+	if (modifyingState) return;
 
 	// Work out the current document details
 	NSString *theDatabase = [theDocument database];
@@ -298,7 +298,7 @@
 	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
 	NSUInteger position = [positionNumber unsignedIntegerValue];
 
-	modifyingHistoryState = YES;
+	modifyingState = YES;
 
 	// Update the position and extract the history entry
 	historyPosition = position;
@@ -317,7 +317,7 @@
 		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SP_VIEW_CONTENT)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
-		modifyingHistoryState = NO;
+		modifyingState = NO;
 		[self updateToolbarItem];
 		[theDocument endTask];
 		[loadPool drain];
@@ -379,7 +379,7 @@
 		}
 	}
 
-	modifyingHistoryState = NO;
+	modifyingState = NO;
 	[self updateToolbarItem];
 
 	// End the task
@@ -394,7 +394,7 @@
 - (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool
 {
 	NSBeep();
-	modifyingHistoryState = NO;
+	modifyingState = NO;
 	[theDocument endTask];
 	if (pool) [pool drain];
 }
@@ -421,7 +421,7 @@
 	NSDictionary *contentState;
 
 	// Return if the history state is currently being modified
-	if (modifyingHistoryState) return;
+	if (modifyingState) return;
 
 	// Return if no database or table are selected
 	if (!theDatabase || !theTable) return;

@@ -108,6 +108,8 @@
 		taskCancellationCallbackSelector = NULL;
 
 		keyChainID = nil;
+		
+		statusValues = nil;
 	}
 
 	return self;
@@ -848,7 +850,7 @@
 	[connection setValue:versionForPrint forKey:@"version"];
 
 	NSArray *columns, *rows;
-	columns = rows = nil;
+	rows = nil;
 	columns = [self columnNames];
 
 	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 ){
@@ -991,10 +993,10 @@
 	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
 
 	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
-	BOOL historyStateChanging = [spHistoryControllerInstance modifyingHistoryState];
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
 	if (!historyStateChanging) {
 		[spHistoryControllerInstance updateHistoryEntries];
-		[spHistoryControllerInstance setModifyingHistoryState:YES];
+		[spHistoryControllerInstance setModifyingState:YES];
 	}
 
 	// show error on connection failed
@@ -1018,7 +1020,7 @@
 
 	// Add a history entry
 	if (!historyStateChanging) {
-		[spHistoryControllerInstance setModifyingHistoryState:NO];
+		[spHistoryControllerInstance setModifyingState:NO];
 		[spHistoryControllerInstance updateHistoryEntries];
 	}
 
@@ -1167,6 +1169,10 @@
 			else
 				[chooseDatabaseButton selectItemAtIndex:0];
 		}
+	}
+	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
+	else if ([contextInfo isEqualToString:@"statusError"]) {
+		if(statusValues) [statusValues release]; statusValues = nil;
 	}
 
 }
@@ -1760,12 +1766,15 @@
 	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SP_TABLETYPE_VIEW) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
 	[createTableSyntaxTextView setEditable:NO];
 
+	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
+
 	// Show variables sheet
 	[NSApp beginSheet:createTableSyntaxWindow
 	   modalForWindow:tableWindow 
 		modalDelegate:self
 	   didEndSelector:nil 
 		  contextInfo:nil];
+
 }
 
 /**
@@ -1850,17 +1859,26 @@
  */
 - (IBAction)checkTable:(id)sender
 {
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [[self table] backtickQuotedString]]];
+
+	NSArray *selectedItems = [tablesListInstance selectedTableItems];
+	id message = nil;
+	
+	if([selectedItems count] == 0) return;
+
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+
+	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to check selected items", @"unable to check selected items message") : NSLocalizedString(@"Unable to check table", @"unable to check table message");
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:@"Unable to check table" 
+			[[NSAlert alertWithMessageText:mText 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to check the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1870,24 +1888,47 @@
 		return;
 	}
 
+	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	BOOL statusOK = YES;
+	for(id res in result) {
+		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+			statusOK = NO;
+			break;
+		}
+	}
+
 	// Process result
-	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if([selectedItems count] == 1) {
+		message = @"";
 
-	NSString *message = @"";
+		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
-	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Check table successfully passed." : @"Check table failed.";
+		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Check table successfully passed.",@"check table successfully passed message") : NSLocalizedString(@"Check table failed.", @"check table failed message");
 
-	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
-
-	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Check table '%@'", [self table]] 
-					 defaultButton:@"OK" 
-				   alternateButton:nil 
-					   otherButton:nil 
-		 informativeTextWithFormat:message] 
-		  beginSheetModalForWindow:tableWindow 
-					 modalDelegate:self 
-					didEndSelector:NULL 
-					   contextInfo:NULL];
+		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+	} else if(statusOK) {
+		message = NSLocalizedString(@"Check of all selected items successfully passed.",@"check of all selected items successfully passed message");
+	}
+	
+	if(message) {
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Check %@", what] 
+						 defaultButton:@"OK" 
+					   alternateButton:nil 
+						   otherButton:nil 
+			 informativeTextWithFormat:message] 
+			  beginSheetModalForWindow:tableWindow 
+						 modalDelegate:self 
+						didEndSelector:NULL 
+						   contextInfo:NULL];
+	} else {
+		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		statusValues = [result retain];
+		NSAlert *alert = [[NSAlert new] autorelease];
+		[alert setInformativeText:message];
+		[alert setMessageText:NSLocalizedString(@"Error while checking selected items", @"error while checking selected items message")];
+		[alert setAccessoryView:statusTableAccessoryView];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+	}
 }
 
 /**
@@ -1895,17 +1936,26 @@
  */
 - (IBAction)analyzeTable:(id)sender
 {
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [[self table] backtickQuotedString]]];
+
+	NSArray *selectedItems = [tablesListInstance selectedTableItems];
+	id message = nil;
+	
+	if([selectedItems count] == 0) return;
+
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+
+	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to analyze selected items", @"unable to analyze selected items message") : NSLocalizedString(@"Unable to analyze table", @"unable to analyze table message");
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:@"Unable to analyze table" 
+			[[NSAlert alertWithMessageText:mText 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to analyze the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1915,24 +1965,47 @@
 		return;
 	}
 
+	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	BOOL statusOK = YES;
+	for(id res in result) {
+		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+			statusOK = NO;
+			break;
+		}
+	}
+
 	// Process result
-	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if([selectedItems count] == 1) {
+		message = @"";
 
-	NSString *message = @"";
+		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
-	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully analyzed table" : @"Analyze table failed.";
+		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully analyzed table.",@"analyze table successfully passed message") : NSLocalizedString(@"Analyze table failed.", @"analyze table failed message");
 
-	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
-
-	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Analyze table '%@'", [self table]] 
-					 defaultButton:@"OK" 
-				   alternateButton:nil 
-					   otherButton:nil 
-		 informativeTextWithFormat:message] 
-		  beginSheetModalForWindow:tableWindow 
-					 modalDelegate:self 
-					didEndSelector:NULL 
-					   contextInfo:NULL];
+		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+	} else if(statusOK) {
+		message = NSLocalizedString(@"Successfully analyzed all selected items.",@"successfully analyzed all selected items message");
+	}
+	
+	if(message) {
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Analyze %@", what] 
+						 defaultButton:@"OK" 
+					   alternateButton:nil 
+						   otherButton:nil 
+			 informativeTextWithFormat:message] 
+			  beginSheetModalForWindow:tableWindow 
+						 modalDelegate:self 
+						didEndSelector:NULL 
+						   contextInfo:NULL];
+	} else {
+		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		statusValues = [result retain];
+		NSAlert *alert = [[NSAlert new] autorelease];
+		[alert setInformativeText:message];
+		[alert setMessageText:NSLocalizedString(@"Error while analyzing selected items", @"error while analyzing selected items message")];
+		[alert setAccessoryView:statusTableAccessoryView];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+	}
 }
 
 /**
@@ -1940,17 +2013,26 @@
  */
 - (IBAction)optimizeTable:(id)sender
 {
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [[self table] backtickQuotedString]]];
+
+	NSArray *selectedItems = [tablesListInstance selectedTableItems];
+	id message = nil;
+
+	if([selectedItems count] == 0) return;
+
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+
+	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to optimze selected items", @"unable to optimze selected items message") : NSLocalizedString(@"Unable to optimze table", @"unable to optimze table message");
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:@"Unable to optimize table" 
+			[[NSAlert alertWithMessageText:mText 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to optimize the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1960,24 +2042,47 @@
 		return;
 	}
 
+	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	BOOL statusOK = YES;
+	for(id res in result) {
+		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+			statusOK = NO;
+			break;
+		}
+	}
+
 	// Process result
-	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if([selectedItems count] == 1) {
+		message = @"";
 
-	NSString *message = @"";
+		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
-	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully optimized table" : @"Optimize table failed.";
+		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully optimized table.",@"optimize table successfully passed message") : NSLocalizedString(@"Optimize table failed.", @"optimize table failed message");
 
-	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+	} else if(statusOK) {
+		message = NSLocalizedString(@"Successfully optimized all selected items.",@"successfully optimized all selected items message");
+	}
 
-	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Optimize table '%@'", [self table]] 
-					 defaultButton:@"OK" 
-				   alternateButton:nil 
-					   otherButton:nil 
-		 informativeTextWithFormat:message] 
-		  beginSheetModalForWindow:tableWindow 
-					 modalDelegate:self 
-					didEndSelector:NULL 
-					   contextInfo:NULL];
+	if(message) {
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Optimize %@", what] 
+						 defaultButton:@"OK" 
+					   alternateButton:nil 
+						   otherButton:nil 
+			 informativeTextWithFormat:message] 
+			  beginSheetModalForWindow:tableWindow 
+						 modalDelegate:self 
+						didEndSelector:NULL 
+						   contextInfo:NULL];
+	} else {
+		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		statusValues = [result retain];
+		NSAlert *alert = [[NSAlert new] autorelease];
+		[alert setInformativeText:message];
+		[alert setMessageText:NSLocalizedString(@"Error while optimizing selected items", @"error while optimizing selected items message")];
+		[alert setAccessoryView:statusTableAccessoryView];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+	}
 }
 
 /**
@@ -1985,17 +2090,25 @@
  */
 - (IBAction)repairTable:(id)sender
 {
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [[self table] backtickQuotedString]]];
+	NSArray *selectedItems = [tablesListInstance selectedTableItems];
+	id message = nil;
+
+	if([selectedItems count] == 0) return;
+
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+
+	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to repair selected items", @"unable to repair selected items message") : NSLocalizedString(@"Unable to repair table", @"unable to repair table message");
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:@"Unable to repair table" 
+			[[NSAlert alertWithMessageText:mText 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to repair the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2005,24 +2118,47 @@
 		return;
 	}
 
+	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	BOOL statusOK = YES;
+	for(id res in result) {
+		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+			statusOK = NO;
+			break;
+		}
+	}
+
 	// Process result
-	NSDictionary *result = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if([selectedItems count] == 1) {
+		message = @"";
 
-	NSString *message = @"";
+		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
-	message = ([[result objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? @"Successfully repaired table" : @"Repair table failed.";
+		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully repaired table.",@"repair table successfully passed message") : NSLocalizedString(@"Repair table failed.", @"repair table failed message");
 
-	message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [result objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+	} else if(statusOK) {
+		message = NSLocalizedString(@"Successfully repaired all selected items.",@"successfully repaired all selected items message");
+	}
 
-	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Repair table '%@'", [self table]] 
-					 defaultButton:@"OK" 
-				   alternateButton:nil 
-					   otherButton:nil 
-		 informativeTextWithFormat:message] 
-		  beginSheetModalForWindow:tableWindow 
-					 modalDelegate:self 
-					didEndSelector:NULL 
-					   contextInfo:NULL];
+	if(message) {
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Repair %@", what] 
+						 defaultButton:@"OK" 
+					   alternateButton:nil 
+						   otherButton:nil 
+			 informativeTextWithFormat:message] 
+			  beginSheetModalForWindow:tableWindow 
+						 modalDelegate:self 
+						didEndSelector:NULL 
+						   contextInfo:NULL];
+	} else {
+		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		statusValues = [result retain];
+		NSAlert *alert = [[NSAlert new] autorelease];
+		[alert setInformativeText:message];
+		[alert setMessageText:NSLocalizedString(@"Error while repairing selected items", @"error while repairing selected items message")];
+		[alert setAccessoryView:statusTableAccessoryView];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+	}
 }
 
 /**
@@ -2030,35 +2166,75 @@
  */
 - (IBAction)flushTable:(id)sender
 {
-	[mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [[self table] backtickQuotedString]]];
+	NSArray *selectedItems = [tablesListInstance selectedTableItems];
+	id message = nil;
+
+	if([selectedItems count] == 0) return;
+
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+
+	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to flush selected items", @"unable to flush selected items message") : NSLocalizedString(@"Unable to flush table", @"unable to flush table message");
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:@"Unable to flush table" 
+			[[NSAlert alertWithMessageText:mText 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while trying to flush the table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
-						       contextInfo:NULL];
+							   contextInfo:NULL];
 		}
 
 		return;
 	}
 
-	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Flush table '%@'", [self table]] 
-					 defaultButton:@"OK" 
-				   alternateButton:nil 
-					   otherButton:nil 
-		 informativeTextWithFormat:@"Table was successfully flushed"] 
-		  beginSheetModalForWindow:tableWindow 
-					 modalDelegate:self 
-					didEndSelector:NULL 
-					   contextInfo:NULL];
+	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	BOOL statusOK = YES;
+	for(id res in result) {
+		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+			statusOK = NO;
+			break;
+		}
+	}
+
+	// Process result
+	if([selectedItems count] == 1) {
+		message = @"";
+
+		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+
+		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully flushed table.",@"flush table successfully passed message") : NSLocalizedString(@"Flush table failed.", @"flush table failed message");
+
+		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+	} else if(statusOK) {
+		message = NSLocalizedString(@"Successfully flushed all selected items.",@"successfully flushed all selected items message");
+	}
+
+	if(message) {
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Flush %@", what] 
+						 defaultButton:@"OK" 
+					   alternateButton:nil 
+						   otherButton:nil 
+			 informativeTextWithFormat:message] 
+			  beginSheetModalForWindow:tableWindow 
+						 modalDelegate:self 
+						didEndSelector:NULL 
+						   contextInfo:NULL];
+	} else {
+		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		statusValues = [result retain];
+		NSAlert *alert = [[NSAlert new] autorelease];
+		[alert setInformativeText:message];
+		[alert setMessageText:NSLocalizedString(@"Error while flushing selected items", @"error while flushing selected items message")];
+		[alert setAccessoryView:statusTableAccessoryView];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+	}
 }
 
 /**
@@ -2066,37 +2242,54 @@
  */
 - (IBAction)checksumTable:(id)sender
 {
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [[self table] backtickQuotedString]]];
+	NSArray *selectedItems = [tablesListInstance selectedTableItems];
+	id message = nil;
+
+	if([selectedItems count] == 0) return;
+
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+
+	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:@"Unable to perform checksum" 
+			[[NSAlert alertWithMessageText:NSLocalizedString(@"Unable to perform the checksum", @"unable to perform the checksum")
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:@"An error occurred while performing the checksum on table '%@'. Please try again.\n\n%@", [self table], [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
 				  beginSheetModalForWindow:tableWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
 		}
+
 		return;
 	}
 
 	// Process result
-	NSString *result = [[[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject] objectForKey:@"Checksum"];
-
-	[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Checksum table '%@'", [self table]] 
-					 defaultButton:@"OK" 
-				   alternateButton:nil 
-					   otherButton:nil 
-		 informativeTextWithFormat:[NSString stringWithFormat:@"Table checksum: %@", result]] 
-		  beginSheetModalForWindow:tableWindow 
-					 modalDelegate:self 
-					didEndSelector:NULL 
-					   contextInfo:NULL];
+	if([selectedItems count] == 1) {
+		message = [[[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject]  objectForKey:@"Checksum"];
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Checksum %@",@"checksum %@ message"), what] 
+						 defaultButton:@"OK" 
+					   alternateButton:nil 
+						   otherButton:nil 
+			 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Table checksum: %@",@"table checksum: %@"), message]] 
+			  beginSheetModalForWindow:tableWindow 
+						 modalDelegate:self 
+						didEndSelector:NULL 
+						   contextInfo:NULL];
+	} else {
+		NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+		statusValues = [result retain];
+		NSAlert *alert = [[NSAlert new] autorelease];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Checksums of %@",@"Checksums of %@ message"), what]];
+		[alert setMessageText:NSLocalizedString(@"Table checksum",@"table checksum message")];
+		[alert setAccessoryView:statusTableAccessoryView];
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+	}
 }
 
 /**
@@ -2941,15 +3134,19 @@
 
 	// table menu items
 	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
-		[menuItem action] == @selector(copyCreateTableSyntax:) ||
-		[menuItem action] == @selector(checkTable:) || 
-		[menuItem action] == @selector(analyzeTable:) || 
+		[menuItem action] == @selector(copyCreateTableSyntax:)) 
+	{
+		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
+	}
+
+	if ([menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 
 		[menuItem action] == @selector(repairTable:) || 
 		[menuItem action] == @selector(flushTable:) ||
-		[menuItem action] == @selector(checksumTable:)) 
+		[menuItem action] == @selector(checkTable:) ||
+		[menuItem action] == @selector(checksumTable:))
 	{
-		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
+		return ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]) ? YES:NO;
 	}
 
 	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
@@ -3056,7 +3253,15 @@
 	[tableTabView selectTabViewItemAtIndex:3];
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableInfo];
 	[spHistoryControllerInstance updateHistoryEntries];
+
+	// Refresh data
+	if([self table] && [[self table] length]) {
+		[tableDataInstance resetAllData];
+		[extendedTableInfoInstance loadTable:[self table]];
+	}
 	
+	[tableWindow makeFirstResponder:[extendedTableInfoInstance valueForKeyPath:@"tableCreateSyntaxTextView"]];
+
 	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];
 }
 
@@ -3606,6 +3811,30 @@
 }
 
 #pragma mark -
+#pragma mark General sheet delegate methods
+
+- (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
+
+	// Locate the sheet "Reset Auto Increment" just centered beneath the chosen index row
+	// if Structure Pane is active
+	if([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 
+			&& [[sheet title] isEqualToString:@"Reset Auto Increment"]) {
+
+		id it = [tableSourceInstance valueForKeyPath:@"indexView"];
+		NSRect mwrect = [[NSApp mainWindow] frame];
+		NSRect ltrect = [[tablesListInstance valueForKeyPath:@"tablesListView"] frame];
+		NSRect rowrect = [it rectOfRow:[it selectedRow]];
+		rowrect.size.width = mwrect.size.width - ltrect.size.width;
+		rowrect.origin.y -= [it rowHeight]/2.0f+2;
+		rowrect.origin.x -= 8;
+		return [it convertRect:rowrect toView:nil];
+
+	} else
+		return rect;
+
+}
+
+#pragma mark -
 #pragma mark SplitView delegate methods
 
 /**
@@ -3651,6 +3880,79 @@
 	// apply the size
 	[chooseDatabaseToolbarItem setMinSize:NSMakeSize(leftPaneWidth, 26)];
 	[chooseDatabaseToolbarItem setMaxSize:NSMakeSize(leftPaneWidth, 32)];
+}
+
+#pragma mark -
+#pragma mark Datasource methods
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+{
+	if(statusTableView && aTableView == statusTableView)
+		return [statusValues count];
+	return 0;
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if(statusTableView && aTableView == statusTableView && rowIndex < [statusValues count]) {
+		if ([[aTableColumn identifier] isEqualToString:@"table_name"]) {
+			if([[statusValues objectAtIndex:rowIndex] objectForKey:@"table_name"])
+				return [[statusValues objectAtIndex:rowIndex] objectForKey:@"table_name"];
+			else if([[statusValues objectAtIndex:rowIndex] objectForKey:@"Table"])
+				return [[statusValues objectAtIndex:rowIndex] objectForKey:@"Table"];
+			return @"";
+		}
+		else if ([[aTableColumn identifier] isEqualToString:@"msg_status"]) {
+			if([[statusValues objectAtIndex:rowIndex] objectForKey:@"Msg_type"])
+				return [[[statusValues objectAtIndex:rowIndex] objectForKey:@"Msg_type"] capitalizedString];
+			return @"";
+		}
+		else if ([[aTableColumn identifier] isEqualToString:@"msg_text"]) {
+			if([[statusValues objectAtIndex:rowIndex] objectForKey:@"Msg_text"]) {
+				[[aTableColumn headerCell] setStringValue:NSLocalizedString(@"Message",@"message column title")];
+				return [[statusValues objectAtIndex:rowIndex] objectForKey:@"Msg_text"];
+			}
+			else if([[statusValues objectAtIndex:rowIndex] objectForKey:@"Checksum"]) {
+				[[aTableColumn headerCell] setStringValue:@"Checksum"];
+				return [[statusValues objectAtIndex:rowIndex] objectForKey:@"Checksum"];
+			}
+			return @"";
+		}
+	}
+	return nil;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	return NO;
+}
+
+
+#pragma mark -
+#pragma mark status accessory view
+
+- (IBAction)copyChecksumFromSheet:(id)sender
+{
+	NSMutableString *tmp = [NSMutableString string];
+	for(id row in statusValues)
+		if([row objectForKey:@"Msg_type"])
+			[tmp appendFormat:@"%@\t%@\t%@\n", [[row objectForKey:@"Table"] description],
+				[[row objectForKey:@"Msg_type"] description],
+				[[row objectForKey:@"Msg_text"] description]];
+		else
+			[tmp appendFormat:@"%@\t%@\n", [[row objectForKey:@"Table"] description],
+				[[row objectForKey:@"Checksum"] description]];
+	if ( [tmp length] )
+	{
+		NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	
+		[pb declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
+			NSStringPboardType, nil]
+				   owner:nil];
+	
+		[pb setString:tmp forType:NSStringPboardType];
+		[pb setString:tmp forType:NSTabularTextPboardType];
+	}
 }
 
 #pragma mark -

@@ -59,8 +59,10 @@
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
 	
 	cell->favoriteName = nil;
-	
     cell->favoriteName = [favoriteName retain];
+
+    cell->favoriteHost = nil;
+    cell->favoriteHost = [favoriteHost retain];
     
 	return cell;
 }
@@ -121,8 +123,8 @@
 	(([self isHighlighted]) && (![[self highlightColorWithFrame:cellFrame inView:controlView] isEqualTo:[NSColor secondarySelectedControlColor]])) ? [self invertFontColors] : [self restoreFontColors];
 	
 	// Construct and get the sub text attributed string
-	NSAttributedString *mainString = [[self attributedStringForFavoriteName] autorelease];
-	NSAttributedString *subString = [[self constructSubStringAttributedString] autorelease];
+	NSAttributedString *mainString = [self attributedStringForFavoriteName];
+	NSAttributedString *subString = [self constructSubStringAttributedString];
 	
 	NSRect subFrame = NSMakeRect(0.0, 0.0, [subString size].width, [subString size].height);
 	
@@ -169,8 +171,8 @@
 - (NSSize)cellSize
 {
 	NSSize cellSize = [super cellSize];
-	NSAttributedString *mainString = [[self attributedStringForFavoriteName] autorelease];
-	NSAttributedString *subString = [[self constructSubStringAttributedString] autorelease];
+	NSAttributedString *mainString = [self attributedStringForFavoriteName];
+	NSAttributedString *subString = [self constructSubStringAttributedString];
 
 	// 15 := indention 10 from image to string plus 5 px padding
 	CGFloat theWidth = MAX([mainString size].width, [subString size].width) + (([self image] != nil) ? [[self image] size].width : 0) + 15;
@@ -210,6 +212,7 @@
 - (void)dealloc 
 {	
     [favoriteName release], favoriteName = nil;
+    [favoriteHost release], favoriteHost = nil;
 	
     [super dealloc];
 }
@@ -225,7 +228,7 @@
 // -------------------------------------------------------------------------------
 - (NSAttributedString *)constructSubStringAttributedString
 {
-	return [[NSAttributedString alloc] initWithString:favoriteHost attributes:[self subStringAttributedStringAttributes]];
+	return [[[NSAttributedString alloc] initWithString:favoriteHost attributes:[self subStringAttributedStringAttributes]] autorelease];
 }
 
 // -------------------------------------------------------------------------------
@@ -235,7 +238,7 @@
 // -------------------------------------------------------------------------------
 - (NSAttributedString *)attributedStringForFavoriteName
 {	
-	return [[NSAttributedString alloc] initWithString:favoriteName attributes:[self mainStringAttributedStringAttributes]];
+	return [[[NSAttributedString alloc] initWithString:favoriteName attributes:[self mainStringAttributedStringAttributes]] autorelease];
 }
 
 // -------------------------------------------------------------------------------

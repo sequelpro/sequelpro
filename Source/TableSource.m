@@ -25,6 +25,7 @@
 
 #import "TableSource.h"
 #import "TableDocument.h"
+#import "SPTableInfo.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "SPSQLParser.h"
@@ -456,6 +457,30 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
 }
 
+- (IBAction)resetAutoIncrement:(id)sender
+{
+
+	if([sender tag] == 1) {
+		
+		[resetAutoIncrementLine setHidden:YES];
+		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 0)
+			[resetAutoIncrementLine setHidden:NO];
+
+		// Begin the sheet
+		[NSApp beginSheet:resetAutoIncrementSheet
+		   modalForWindow:tableWindow 
+			modalDelegate:self
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:@"resetAutoIncrement"];
+
+		[resetAutoIncrementValue setStringValue:@"1"];
+	}
+	else if([sender tag] == 2) {
+		[self setAutoIncrementTo:@"1"];
+	}
+
+}
+
 #pragma mark -
 #pragma mark Index sheet methods
 
@@ -549,6 +574,40 @@ closes the keySheet
 
 	// Set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
+}
+
+- (void)setAutoIncrementTo:(NSString*)valueAsString
+{
+
+	if(valueAsString == nil || ![valueAsString length]) return;
+
+	NSString *selTable = nil;
+
+	// if selectedTable is nil try to get the name from tablesList
+	if(selectedTable == nil || ![selectedTable length])
+		selTable = [tablesListInstance tableName];
+	else
+		selTable = [NSString stringWithString:selectedTable];
+
+	if(selTable == nil || ![selTable length])
+		return;
+
+	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], valueAsString]];
+
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"), 
+								selTable, [mySQLConnection getLastErrorMessage]]);
+	} else {
+		[tableDataInstance resetStatusData];
+		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
+			[tableDataInstance resetAllData];
+			[extendedTableInfoInstance loadTable:selTable];
+		}
+		[tableInfoInstance tableChanged:nil];
+	}
 }
 
 /*
@@ -925,6 +984,13 @@ fetches the result as an array with a dictionary for each row in it
 		return ([indexView numberOfSelectedRows] == 1);
 	}
 	
+	// Reset AUTO_INCREMENT
+	if ([menuItem action] == @selector(resetAutoIncrement:)) {
+		return ([indexView numberOfSelectedRows] == 1 
+			&& [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] 
+			&& [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]);
+	}
+	
 	return YES;
 }
 
@@ -987,6 +1053,11 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
 		;
+	}
+	else if ([contextInfo isEqualToString:@"resetAutoIncrement"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+			[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		}
 	}
 	else
 		alertSheetOpened = NO;

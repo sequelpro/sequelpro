@@ -52,4 +52,5 @@ void SPBeginAlertSheet(
 		contextInfo,
 		[msg stringByReplacingOccurrencesOfString:@"%" withString:@"%%"]
 	);
+	[docWindow makeKeyWindow];
 }

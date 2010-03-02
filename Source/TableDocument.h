@@ -50,6 +50,10 @@
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
 	
+	IBOutlet id statusTableAccessoryView;
+	IBOutlet id statusTableView;
+	IBOutlet id statusTableCopyChecksum;
+	
 	IBOutlet SPUserManager *userManagerInstance;
 	
 	IBOutlet NSSearchField *listFilterField;
@@ -157,6 +161,8 @@
 	NSMutableDictionary *spfDocData;
 	
 	NSString *keyChainID;
+	
+	id statusValues;
 }
 
 - (NSString *)getHTMLforPrint;
@@ -238,6 +244,9 @@
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
+- (IBAction)copyChecksumFromSheet:(id)sender;
+
+- (void)showConsole:(id)sender;
 
 // Accessor methods
 - (NSString *)host;

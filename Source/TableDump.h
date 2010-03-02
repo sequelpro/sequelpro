@@ -44,87 +44,88 @@ typedef enum _SPExportModes {
 	IBOutlet id tableDataInstance;
 	IBOutlet id customQueryInstance;
 
-    IBOutlet id tableWindow;
-	
-    IBOutlet id exportDumpView;
-    IBOutlet id exportCSVView;
-    IBOutlet id exportMultipleCSVView;
-    IBOutlet id exportMultipleXMLView;
-    IBOutlet id exportDumpTableView;
-    IBOutlet id exportMultipleCSVTableView;
-    IBOutlet id exportMultipleXMLTableView;
-    IBOutlet id exportFieldNamesSwitch;
-    IBOutlet id exportFieldsTerminatedField;
-    IBOutlet id exportFieldsEnclosedField;
-    IBOutlet id exportFieldsEscapedField;
-    IBOutlet id exportLinesTerminatedField;
-    IBOutlet id exportMultipleFieldNamesSwitch;
-    IBOutlet id exportMultipleFieldsTerminatedField;
-    IBOutlet id exportMultipleFieldsEnclosedField;
-    IBOutlet id exportMultipleFieldsEscapedField;
-    IBOutlet id exportMultipleLinesTerminatedField;
-	
+	IBOutlet id tableWindow;
+
+	IBOutlet id exportDumpView;
+	IBOutlet id exportCSVView;
+	IBOutlet id exportMultipleCSVView;
+	IBOutlet id exportMultipleXMLView;
+	IBOutlet id exportDumpTableView;
+	IBOutlet id exportMultipleCSVTableView;
+	IBOutlet id exportMultipleXMLTableView;
+	IBOutlet id exportFieldNamesSwitch;
+	IBOutlet id exportFieldsTerminatedField;
+	IBOutlet id exportFieldsEnclosedField;
+	IBOutlet id exportFieldsEscapedField;
+	IBOutlet id exportLinesTerminatedField;
+	IBOutlet id exportMultipleFieldNamesSwitch;
+	IBOutlet id exportMultipleFieldsTerminatedField;
+	IBOutlet id exportMultipleFieldsEnclosedField;
+	IBOutlet id exportMultipleFieldsEscapedField;
+	IBOutlet id exportMultipleLinesTerminatedField;
+
 	// New Export Window
 	IBOutlet id exportWindow;
 	IBOutlet id exportTabBar;
 	IBOutlet id exportToolbar;
 	IBOutlet id	exportTableList;
-	
+
 	IBOutlet id importCSVView;
 	IBOutlet NSPopUpButton *importFormatPopup;
 	IBOutlet id importCSVBox;
-    IBOutlet id importFieldNamesSwitch;
-    IBOutlet id importFieldsTerminatedField;
-    IBOutlet id importFieldsEnclosedField;
-    IBOutlet id importFieldsEscapedField;
-    IBOutlet id importLinesTerminatedField;
-	
-    IBOutlet id addDropTableSwitch;
-    IBOutlet id addCreateTableSwitch;
-    IBOutlet id addTableContentSwitch;
-    IBOutlet id addErrorsSwitch;
-    IBOutlet id sqlFullStreamingSwitch;
-    IBOutlet id csvFullStreamingSwitch;
-    IBOutlet id multiCSVFullStreamingSwitch;
-    IBOutlet id multiXMLFullStreamingSwitch;
-    IBOutlet id errorsSheet;
-    IBOutlet id errorsView;
-    IBOutlet id singleProgressSheet;
-    IBOutlet id singleProgressBar;
-    IBOutlet id singleProgressTitle;
-    IBOutlet id singleProgressText;
-	
-    IBOutlet id fieldMappingSheet;
-	IBOutlet id fieldMappingPopup;
-    IBOutlet id fieldMappingTableView;
-    
-	IBOutlet id rowUpButton;
-    IBOutlet id rowDownButton;
-	IBOutlet id recordCountLabel;
+	IBOutlet id importFieldNamesSwitch;
+	IBOutlet id importFieldsTerminatedField;
+	IBOutlet id importFieldsEnclosedField;
+	IBOutlet id importFieldsEscapedField;
+	IBOutlet id importLinesTerminatedField;
+	IBOutlet id importFieldMapperSheetWindow;
+
+	IBOutlet id addDropTableSwitch;
+	IBOutlet id addCreateTableSwitch;
+	IBOutlet id addTableContentSwitch;
+	IBOutlet id addErrorsSwitch;
+	IBOutlet id sqlFullStreamingSwitch;
+	IBOutlet id csvFullStreamingSwitch;
+	IBOutlet id multiCSVFullStreamingSwitch;
+	IBOutlet id multiXMLFullStreamingSwitch;
+	IBOutlet id errorsSheet;
+	IBOutlet id errorsView;
+	IBOutlet id singleProgressSheet;
+	IBOutlet id singleProgressBar;
+	IBOutlet id singleProgressTitle;
+	IBOutlet id singleProgressText;
 
 	MCPConnection *mySQLConnection;
 
 	NSMutableArray *tables;
+
+	// Field Mapper Controller
+	SPFieldMapperController *fieldMapperController;
 	NSArray *fieldMappingImportArray;
 	BOOL fieldMappingImportArrayIsPreview;
-	NSMutableArray *fieldMappingTableColumnNames;
-	NSMutableArray *fieldMappingArray;
-	NSMutableArray *fieldMappingButtonOptions;
-	NSInteger fieldMappingCurrentRow;
+	NSArray *fieldMappingTableColumnNames;
+	NSArray *fieldMappingArray;
+	NSArray *fieldMappingGlobalValueArray;
+	NSArray *fieldMapperOperator;
+	NSString *selectedTableTarget;
+	NSString *selectedImportMethod;
+	NSString *lastFilename;
+	NSString *csvImportHeaderString;
+	NSString *csvImportTailString;
+	NSInteger fieldMapperSheetStatus;
+	BOOL fieldMappingArrayHasGlobalVariables;
+	BOOL csvImportMethodHasTail;
+
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
-	
-	NSInteger fieldMapperSheetStatus;
-	SPFieldMapperController *fieldMapperController;
+
 }
 
 // IBAction methods
 - (IBAction)reloadTables:(id)sender;
 - (IBAction)selectTables:(id)sender;
 - (IBAction)closeSheet:(id)sender;
-- (IBAction)closeFieldMapperSheet:(id)sender;
-- (IBAction)stepRow:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
 
 // Export methods
@@ -139,11 +140,8 @@ typedef enum _SPExportModes {
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
-- (IBAction)changeTable:(id)sender;
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
-- (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData;
-- (void)setupFieldMappingArray;
-- (void)updateFieldMappingButtonCell;
+- (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
 - (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray;
 
 // Export methods
@@ -169,6 +167,7 @@ typedef enum _SPExportModes {
 
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
+- (void)showErrorSheetWithMessage:(NSString*)message;
 
 // Import/export delegate notifications
 - (void)panelSelectionDidChange:(id)sender;
