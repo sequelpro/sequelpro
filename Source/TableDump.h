@@ -115,6 +115,7 @@ typedef enum _SPExportModes {
 	NSInteger fieldMapperSheetStatus;
 	BOOL fieldMappingArrayHasGlobalVariables;
 	BOOL csvImportMethodHasTail;
+	BOOL insertRemainingRowsAfterUpdate;
 
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;

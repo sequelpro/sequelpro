@@ -1199,6 +1199,7 @@
 	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
 	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
 	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
+	insertRemainingRowsAfterUpdate = [fieldMapperController insertRemainingRowsAfterUpdate];
 
 	if([fieldMappingImportArray count] && [fieldMappingGlobalValueArray count] > [NSArrayObjectAtIndex(fieldMappingImportArray,0) count])
 		fieldMappingArrayHasGlobalVariables = YES;

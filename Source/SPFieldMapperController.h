@@ -37,6 +37,7 @@
 	IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
 	IBOutlet id importFieldNamesHeaderSwitch;
+	IBOutlet id addRemainingDataSwitch;
 	IBOutlet id importButton;
 	IBOutlet NSPopUpButton *alignByPopup;
 	IBOutlet NSMenuItem *matchingNameMenuItem;
@@ -102,6 +103,7 @@
 - (NSArray*)fieldMappingTableColumnNames;
 - (NSArray*)fieldMappingGlobalValueArray;
 - (BOOL)importFieldNamesHeader;
+- (BOOL)insertRemainingRowsAfterUpdate;
 - (NSString*)onupdateString;
 - (NSString*)importHeaderString;
 
@@ -130,5 +132,6 @@
 - (void)updateFieldMappingButtonCell;
 - (void)updateFieldMappingOperatorOptions;
 - (void)updateFieldNameAlignment;
+- (void)validateImportButton;
 
 @end

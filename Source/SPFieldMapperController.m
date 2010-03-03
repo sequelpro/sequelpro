@@ -97,6 +97,8 @@
 	}
 	
 	[importFieldNamesHeaderSwitch setState:importFieldNamesHeader];
+	[addRemainingDataSwitch setHidden:YES];
+	[addRemainingDataSwitch setState:NSOffState];
 	
 	[self changeHasHeaderCheckbox:self];
 	[self changeTableTarget:self];
@@ -191,6 +193,11 @@
 - (BOOL)importFieldNamesHeader
 {
 	return ([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO;
+}
+
+- (BOOL)insertRemainingRowsAfterUpdate
+{
+	return ([addRemainingDataSwitch state] == NSOnState)?YES:NO;
 }
 
 - (NSString*)importHeaderString
@@ -310,16 +317,22 @@
 - (IBAction)changeImportMethod:(id)sender
 {
 	NSInteger i;
+
 	// If operator is set to = for UPDATE method replace it by doNotImport
 	if(![[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
 		[advancedButton setEnabled:YES];
+		[addRemainingDataSwitch setHidden:YES];
 		for(i=0; i<[fieldMappingTableColumnNames count]; i++) {
-			if([fieldMappingOperatorArray objectAtIndex:i] == isEqual)
+			if([fieldMappingOperatorArray objectAtIndex:i] == isEqual) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doNotImport];
+			}
 		}
 	} else {
 		[advancedButton setEnabled:NO];
+		[addRemainingDataSwitch setHidden:NO];
 	}
+
+	[self validateImportButton];
 
 	[self updateFieldMappingOperatorOptions];
 	[fieldMapperTableView reloadData];
@@ -667,6 +680,22 @@
 
 }
 
+- (void)validateImportButton
+{
+	BOOL enableImportButton = YES;
+	if([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
+		enableImportButton = NO;
+		for(id op in fieldMappingOperatorArray) {
+			if(op == isEqual) {
+				enableImportButton = YES;
+				break;
+			}
+		}
+		enableImportButton = NO; // TODO HansJB WIP
+	}
+	[importButton setEnabled:enableImportButton];
+}
+
 #pragma mark -
 #pragma mark Table view datasource methods
 
@@ -699,6 +728,7 @@
 			[fieldMappingOperatorArray removeAllObjects];
 			for(i=0; i < [fieldMappingTableColumnNames count]; i++)
 				[fieldMappingOperatorArray addObject:globalValue];
+			[self validateImportButton];
 			[fieldMapperTableView reloadData];
 		} 
 	}
@@ -786,10 +816,11 @@
 				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
 				[[m itemAtIndex:[c numberOfItems]-1] setEnabled:NO];
 
-				// If user doesn't want to import it show its DEFAULT value otherwise hide it.
+				// If user doesn't want to import it show its DEFAULT value if not
+				// UPDATE was chosen otherwise hide it.
 				if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
 					return [fieldMappingArray objectAtIndex:rowIndex];
-				else
+				else if(![[self selectedImportMethod] isEqualToString:@"UPDATE"])
 					return [NSNumber numberWithInteger:[c numberOfItems]-1];
 
 			}
@@ -854,6 +885,9 @@
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 					[self addGlobalSourceVariable:nil];
 				}
+
+				[self validateImportButton];
+
 				return;
 			}
 
@@ -866,6 +900,9 @@
 			// If user _changed_ the csv file column set the operator to doImport
 			if([(NSNumber*)anObject integerValue] > -1)
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doImport];
+
+			[self validateImportButton];
+
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
@@ -876,6 +913,7 @@
 				if(anObject == doNotImport) lastDisabledCSVFieldcolumn = [fieldMappingArray objectAtIndex:rowIndex];
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
 			}
+			[self validateImportButton];
 		}
 		// Refresh table
 		[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
