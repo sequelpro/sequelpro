@@ -2136,11 +2136,11 @@
 			[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 		} else {
 			if ( !isEditingNewRow ) {
-				[tableValues replaceRowAtIndex:[tableContentView selectedRow] withRowContents:oldRow];
+				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
 				isEditingRow = NO;
 			} else {
 				tableRowsCount--;
-				[tableValues removeRowAtIndex:[tableContentView selectedRow]];
+				[tableValues removeRowAtIndex:currentlyEditingRow];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
