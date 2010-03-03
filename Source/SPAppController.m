@@ -33,6 +33,7 @@
 #import "SPConstants.h"
 
 #import <Sparkle/Sparkle.h>
+#import <FeedbackReporter/FRFeedbackReporter.h>
 
 @implementation SPAppController
 
@@ -74,6 +75,14 @@
 	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
 	
 	isNewFavorite = NO;
+}
+
+/**
+ * Initialisation stuff after launch is complete
+ */
+- (void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 }
 
 /**
