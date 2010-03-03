@@ -124,9 +124,7 @@
 	NSString *newEncoding = [[sender titleOfSelectedItem] stringByMatching:@"^.+\\((.+)\\)$" capture:1L];
 	
 	// Check if the user selected the same encoding
-	if ([currentEncoding isEqualToString:newEncoding]) {
-		return;
-	}
+	if ([currentEncoding isEqualToString:newEncoding]) return;
 	
 	// Alter table's character set encoding
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ CHARACTER SET = %@", [selectedTable backtickQuotedString], newEncoding]];
@@ -153,9 +151,7 @@
 	NSString *currentCollation = [tableDataInstance statusValueForKey:@"Collation"];
 	
 	// Check if the user selected the same collation
-	if ([currentCollation isEqualToString:newCollation]) {
-		return;
-	}
+	if ([currentCollation isEqualToString:newCollation]) return;
 	
 	// Alter table's character set collation
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COLLATE = %@", [selectedTable backtickQuotedString], newCollation]];
@@ -253,20 +249,20 @@
 			[tableCreateSyntaxTextView setEditable:NO];
 		}
 		
-		[tableCreatedAt setStringValue:@"Created at: "];
-		[tableUpdatedAt setStringValue:@"Updated at: "];
+		[tableCreatedAt setStringValue:NSLocalizedString(@"Created at: ", @"table info created at label")];
+		[tableUpdatedAt setStringValue:NSLocalizedString(@"Updated at: ", @"table info updated at label")];
 		
 		// Set row values
-		[tableRowNumber setStringValue:@"Number of rows: "];
-		[tableRowFormat setStringValue:@"Row format: "];	
-		[tableRowAvgLength setStringValue:@"Avg. row length: "];
+		[tableRowNumber setStringValue:NSLocalizedString(@"Number of rows: ", @"table info number of rows label")];
+		[tableRowFormat setStringValue:NSLocalizedString(@"Row format: ", @"table info row format label")];	
+		[tableRowAvgLength setStringValue:NSLocalizedString(@"Avg. row length: ", @"table info average row length label")];
 		[tableRowAutoIncrement setStringValue:@""];
 		
 		// Set size values
-		[tableDataSize setStringValue:@"Data size: "]; 
-		[tableMaxDataSize setStringValue:@"Max data size: "];	
-		[tableIndexSize setStringValue:@"Index size: "]; 
-		[tableSizeFree setStringValue:@"Free data size: "];
+		[tableDataSize setStringValue:NSLocalizedString(@"Data size: ", @"table info data size label")];
+		[tableMaxDataSize setStringValue:NSLocalizedString(@"Max data size: ", @"table info max data size label")];	
+		[tableIndexSize setStringValue:NSLocalizedString(@"Index size: ", @"table info index size label")]; 
+		[tableSizeFree setStringValue:NSLocalizedString(@"Free data size: ", @"table info free data size label")];
 		
 		// Set comments 
 		[tableCommentsTextView setEditable:NO];
@@ -292,7 +288,7 @@
 		[tableTypePopUpButton setEnabled:enableInteraction];
 	}
 	else {
-		[tableTypePopUpButton addItemWithTitle:@"Not available"];
+		[tableTypePopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
 	if (([encodings count] > 0) && ([tableDataInstance tableEncoding])) {
@@ -314,7 +310,7 @@
 		[tableEncodingPopUpButton setEnabled:enableInteraction];
 	}
 	else {
-		[tableEncodingPopUpButton addItemWithTitle:@"Not available"];
+		[tableEncodingPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
 	if (([collations count] > 0) && ([statusFields objectForKey:@"Collation"])) {
@@ -328,7 +324,7 @@
 		[tableCollationPopUpButton setEnabled:enableInteraction];
 	}
 	else {
-		[tableCollationPopUpButton addItemWithTitle:@"Not available"];
+		[tableCollationPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
 	[tableCreatedAt setStringValue:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields withLabel:@"Created at"]];
@@ -364,9 +360,9 @@
 	[tableCreateSyntaxTextView setEditable:NO];
 	
 	// Validate Reset AUTO_INCREMENT button
-	if([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]])
+	if ([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 		[resetAutoIncrementResetButton setHidden:NO];
-	
+	}
 }
 
 /**
@@ -507,7 +503,9 @@
 		else if ([key isEqualToString:@"Rows"] ||
 				 [key isEqualToString:@"Avg_row_length"] || 
 				 [key isEqualToString:@"Auto_increment"]) {
+			
 			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
+			
 			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 			value = [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[value longLongValue]]];
@@ -518,10 +516,13 @@
 			}
 		}
 	}
-	if([key isEqualToString:@"Auto_increment"])
-		return ([value length] > 0) ? value : @"Not available";
-	else
-		return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];
+	
+	if ([key isEqualToString:@"Auto_increment"]) {
+		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
+	}
+	else {
+		return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label")];
+	}
 }
 
 @end

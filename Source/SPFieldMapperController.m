@@ -731,7 +731,7 @@
 			if([aCell objectValue] == doImport)
 				return NSLocalizedString(@"Import field", @"import field operator tooltip");
 			else if([aCell objectValue] == doNotImport)
-				return NSLocalizedString(@"Ignore field", @"ignore field operator tooltip");
+				return NSLocalizedString(@"Ignore field", @"ignore field label");
 			else if([aCell objectValue] == isEqual)
 				return NSLocalizedString(@"Do UPDATE where field contents match", @"do update operator tooltip");
 			else
@@ -778,7 +778,7 @@
 				[c removeAllItems];
 				[c addItemsWithTitles:fieldMappingButtonOptions];
 				[m addItem:[NSMenuItem separatorItem]];
-				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field label")];
 				[c addItemWithTitle:NSLocalizedString(@"Ignore all fields", @"ignore all fields menu item")];
 				[c addItemWithTitle:NSLocalizedString(@"Import all fields", @"import all fields menu item")];
 				[m addItem:[NSMenuItem separatorItem]];

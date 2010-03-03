@@ -497,7 +497,7 @@
 			if ([results count] > 1)
 			{
 				NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate User"
-												 defaultButton:NSLocalizedString(@"OK", @"OK")
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												   otherButton:nil
 									 informativeTextWithFormat:@"A user with that name already exists"];
@@ -514,7 +514,7 @@
 				if (![selectedObject isEqual:child] && [[child valueForKey:@"host"] isEqualToString:host])
 				{
 					NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate Host"
-													 defaultButton:NSLocalizedString(@"OK", @"OK")
+													 defaultButton:NSLocalizedString(@"OK", @"OK button")
 												   alternateButton:nil
 													   otherButton:nil
 										 informativeTextWithFormat:@"A user with that host already exists"];
@@ -678,7 +678,7 @@
     if ([[parent valueForKey:@"children"] count] == 0)
     {
         NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
-                                         defaultButton:NSLocalizedString(@"OK", @"OK")
+                                         defaultButton:NSLocalizedString(@"OK", @"OK button")
                                        alternateButton:nil
                                            otherButton:nil
                              informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
@@ -712,8 +712,8 @@
 	if ([self.managedObjectContext hasChanges])
 	{
 		NSAlert *alert = [NSAlert alertWithMessageText:@"Warning!"
-										 defaultButton:NSLocalizedString(@"Continue", @"Continue")
-									   alternateButton:NSLocalizedString(@"Cancel",@"Cancel")
+										 defaultButton:NSLocalizedString(@"Continue", @"continue button")
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 										   otherButton:nil
 							 informativeTextWithFormat:@"Window has changes.  All changes will be lost!"];
 		[alert setAlertStyle:NSWarningAlertStyle];
@@ -1137,7 +1137,7 @@
 {
 	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" 
-                                         defaultButton:NSLocalizedString(@"OK", @"OK")
+                                         defaultButton:NSLocalizedString(@"OK", @"OK button")
                                        alternateButton:nil 
                                            otherButton:nil 
                              informativeTextWithFormat:[self.mySqlConnection getLastErrorMessage]];
