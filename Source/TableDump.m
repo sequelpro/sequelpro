@@ -954,17 +954,19 @@
 
 				// Set up the field names import string for INSERT or REPLACE INTO
 				[insertBaseString appendString:csvImportHeaderString];
-				[insertBaseString appendString:[selectedTableTarget backtickQuotedString]];
-				[insertBaseString appendString:@" ("];
-				insertBaseStringHasEntries = NO;
-				for (i = 0; i < [fieldMappingArray count]; i++) {
-					if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
-						if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
-						else insertBaseStringHasEntries = YES;
-						[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+				if(!importMethodIsUpdate) {
+					[insertBaseString appendString:[selectedTableTarget backtickQuotedString]];
+					[insertBaseString appendString:@" ("];
+					insertBaseStringHasEntries = NO;
+					for (i = 0; i < [fieldMappingArray count]; i++) {
+						if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
+							if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
+							else insertBaseStringHasEntries = YES;
+							[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+						}
 					}
+					[insertBaseString appendString:@") VALUES\n"];
 				}
-				[insertBaseString appendString:@") VALUES\n"];
 
 				// Remove the header row from the data set if appropriate
 				if ([importFieldNamesSwitch state] == NSOnState) {
@@ -983,26 +985,53 @@
 					|| (!csvRowArray && allDataRead && [parsedRows count]))
 			{
 				if (progressCancelled) break;
-				query = [[NSMutableString alloc] initWithString:insertBaseString];
 				csvRowsThisQuery = 0;
-				for (i = 0; i < csvRowsPerQuery && i < [parsedRows count]; i++) {
-					if (i > 0) [query appendString:@",\n"];
-					[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
-					csvRowsThisQuery++;
-					if ([query length] > 250000) break;
+				if(!importMethodIsUpdate) {
+					query = [[NSMutableString alloc] initWithString:insertBaseString];
+					for (i = 0; i < csvRowsPerQuery && i < [parsedRows count]; i++) {
+						if (i > 0) [query appendString:@",\n"];
+						[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
+						csvRowsThisQuery++;
+						if ([query length] > 250000) break;
+					}
+
+					// Perform the query
+					if(csvImportMethodHasTail)
+						[mySQLConnection queryString:[NSString stringWithFormat:@"%@ %@", query, csvImportTailString]];
+					else
+						[mySQLConnection queryString:query];
+					[query release];
+				} else {
+					for (i = 0; i < [parsedRows count]; i++) {
+						if (progressCancelled) break;
+						query = [[NSMutableString alloc] initWithString:insertBaseString];
+						[query appendString:[self mappedUpdateSetStatementStringForRowArray:[parsedRows objectAtIndex:i]]];
+
+						// Perform the query
+						if(csvImportMethodHasTail)
+							[mySQLConnection queryString:[NSString stringWithFormat:@"%@ %@", query, csvImportTailString]];
+						else
+							[mySQLConnection queryString:query];
+						[query release];
+
+						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+							[tableDocumentInstance showConsole:nil];
+							[errors appendString:[NSString stringWithFormat:
+								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
+								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
+						}
+						rowsImported++;
+						csvRowsThisQuery++;
+						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
+						[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+							[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+					}
 				}
-
-				// Perform the query
-				if(csvImportMethodHasTail)
-					[mySQLConnection queryString:[NSString stringWithFormat:@"%@ %@", query, csvImportTailString]];
-				else
-					[mySQLConnection queryString:query];
-				[query release];
-
 				// If an error occurred, run the queries individually to get exact line errors
-				if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				if (!importMethodIsUpdate && ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 					[tableDocumentInstance showConsole:nil];
 					for (i = 0; i < csvRowsThisQuery; i++) {
+						if (progressCancelled) break;
 						query = [[NSMutableString alloc] initWithString:insertBaseString];
 						[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
 
@@ -1053,6 +1082,7 @@
 	if(csvImportHeaderString) [csvImportHeaderString release]; csvImportHeaderString = nil;
 	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
 	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release]; fieldMappingGlobalValueArray = nil;
+	if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release]; fieldMappingTableColumnNames = nil;
 	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -1189,17 +1219,30 @@
 	while (fieldMapperSheetStatus == 1)
 		usleep(100000);
 
-	// Get mapping settings
+	// Get mapping settings and preset some global variables
 	fieldMapperOperator  = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
 	fieldMappingArray    = [[NSArray arrayWithArray:[fieldMapperController fieldMappingArray]] retain];
 	selectedTableTarget  = [NSString stringWithString:[fieldMapperController selectedTableTarget]];
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
-	fieldMappingTableColumnNames = [NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]];
+	fieldMappingTableColumnNames = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]] retain];
 	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
 	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
 	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
 	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
 	insertRemainingRowsAfterUpdate = [fieldMapperController insertRemainingRowsAfterUpdate];
+	importMethodIsUpdate = ([selectedImportMethod isEqualToString:@"UPDATE"]) ? YES : NO;
+
+	// Error checking
+	if(    ![fieldMapperOperator count] 
+		|| ![fieldMappingArray count] 
+		|| ![selectedImportMethod length] 
+		|| ![selectedTableTarget length]
+		|| ![csvImportHeaderString length])
+	{
+		if(fieldMapperController) [fieldMapperController release];
+		NSBeep();
+		return FALSE;
+	}
 
 	if([fieldMappingImportArray count] && [fieldMappingGlobalValueArray count] > [NSArrayObjectAtIndex(fieldMappingImportArray,0) count])
 		fieldMappingArrayHasGlobalVariables = YES;
@@ -1215,10 +1258,78 @@
 		return FALSE;
 
 }
+
 - (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[sheet orderOut:self];
 	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
+}
+
+/*
+ * Construct the SET and WHERE clause for a CSV row, based on the field mapping array 
+ * for the import method "UPDATE".
+ */
+- (NSString *) mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray
+{
+
+	NSMutableString *setString = [NSMutableString stringWithString:@""];
+	NSMutableString *whereString = [NSMutableString stringWithString:@"WHERE "];
+
+	NSInteger i, j;
+	NSInteger mapColumn;
+	id cellData;
+	NSInteger mappingArrayCount = [fieldMappingArray count];
+
+	for (i = 0; i < mappingArrayCount; i++) {
+
+		// Skip unmapped columns
+		if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 1 ) continue;
+
+		mapColumn = [NSArrayObjectAtIndex(fieldMappingArray, i) integerValue];
+
+		// SET clause
+		if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0 ) {
+			if ([setString length] > 1) [setString appendString:@","];
+			[setString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+			[setString appendString:@"="];
+			// Append the data
+			// - check for global values
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
+			else
+				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+			if (cellData == [NSNull null]) {
+				[setString appendString:@"NULL"];
+			} else {
+				[setString appendString:@"'"];
+				[setString appendString:[mySQLConnection prepareString:cellData]];
+				[setString appendString:@"'"];
+			}
+		}
+		// WHERE clause
+		else if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 2 )
+		{
+			if ([whereString length] > 7) [whereString appendString:@" AND "];
+			[whereString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+			// Append the data
+			// - check for global values
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
+			else
+				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+			if (cellData == [NSNull null]) {
+				[whereString appendString:@" IS NULL"];
+			} else {
+				[whereString appendString:@"="];
+				[whereString appendString:@"'"];
+				[whereString appendString:[mySQLConnection prepareString:cellData]];
+				[whereString appendString:@"'"];
+			}
+		}
+	}
+	return [NSString stringWithFormat:@"%@ %@", setString, whereString];
 }
 
 /*
@@ -2803,8 +2914,7 @@
 	[self switchTab:[[exportToolbar items] objectAtIndex:0]];
 	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
 }
-	
-//last but not least
+
 - (id)init;
 {
 	self = [super init];
@@ -2812,12 +2922,16 @@
 	tables = [[NSMutableArray alloc] init];
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
+	fieldMappingTableColumnNames = nil;
 	fieldMappingImportArray = nil;
 	csvImportTailString = nil;
 	csvImportHeaderString = nil;
 	csvImportMethodHasTail = NO;
 	fieldMappingImportArrayIsPreview = NO;
 	fieldMappingArrayHasGlobalVariables = NO;
+	importMethodIsUpdate = NO;
+	insertRemainingRowsAfterUpdate = NO;
+	
 	prefs = nil;
 	lastFilename = nil;
 	

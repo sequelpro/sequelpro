@@ -162,7 +162,7 @@
 
 - (NSString*)selectedTableTarget
 {
-	return [tableTargetPopup titleOfSelectedItem];
+	return ([tableTargetPopup titleOfSelectedItem] == nil) ? @"" : [tableTargetPopup titleOfSelectedItem];
 }
 
 - (NSArray*)fieldMapperOperator
@@ -172,7 +172,7 @@
 
 - (NSString*)selectedImportMethod
 {
-	return [importMethodPopup titleOfSelectedItem];
+	return ([importMethodPopup titleOfSelectedItem] == nil) ? @"" : [importMethodPopup titleOfSelectedItem];
 }
 
 - (NSArray*)fieldMappingArray
@@ -212,6 +212,9 @@
 		return [NSString stringWithFormat:@"REPLACE %@INTO ", 
 			([delayedCheckBox state] == NSOnState) ? @"DELAYED " : @""
 			];
+	}
+	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
+		return [NSString stringWithFormat:@"UPDATE %@ SET ", [[self selectedTableTarget] backtickQuotedString]];
 	}
 	return @"";
 }
@@ -330,6 +333,7 @@
 	} else {
 		[advancedButton setEnabled:NO];
 		[addRemainingDataSwitch setHidden:NO];
+		[addRemainingDataSwitch setEnabled:NO]; // TODO HansJB
 	}
 
 	[self validateImportButton];
@@ -383,7 +387,7 @@
 	
 	[fieldMapperTableView reloadData];
 	
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld of %@%lu records", @"%ld of %@%lu records"), (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 	
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
@@ -691,7 +695,6 @@
 				break;
 			}
 		}
-		enableImportButton = NO; // TODO HansJB WIP
 	}
 	[importButton setEnabled:enableImportButton];
 }
@@ -897,8 +900,8 @@
 
 			[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
 
-			// If user _changed_ the csv file column set the operator to doImport
-			if([(NSNumber*)anObject integerValue] > -1)
+			// If user _changed_ the csv file column set the operator to doImport if not set to =
+			if([(NSNumber*)anObject integerValue] > -1 && NSArrayObjectAtIndex(fieldMappingOperatorArray, rowIndex) != isEqual)
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doImport];
 
 			[self validateImportButton];
