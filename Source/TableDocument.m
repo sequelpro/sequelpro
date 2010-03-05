@@ -500,7 +500,7 @@
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"include_session"];
 	}
 
-	[self setFileURL:[NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	[self setFileURL:[NSURL fileURLWithPath:path]];
 	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
 
 	if([spf objectForKey:SPQueryFavorites])
@@ -2426,7 +2426,7 @@
 		[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
 		[newTableDocument makeWindowControllers];
 		[newTableDocument showWindows];
-		[newTableDocument initWithConnectionFile:[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		[newTableDocument initWithConnectionFile:[[self fileURL] path]];
 	}
 }
 
@@ -2457,8 +2457,7 @@
  */
 - (BOOL)isUntitled
 {
-	// Check whether fileURL path begins with a '/'
-	return ([[[self fileURL] absoluteString] hasPrefix:@"/"]) ? NO : YES;
+	return ([[self fileURL] isFileURL]) ? NO : YES;
 }
 
 #pragma mark -
@@ -2553,9 +2552,9 @@
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
 	// Auto-save preferences to spf file based connection
-	if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled])
+	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled])
 		if(_isConnected && ![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES]) {
-			NSLog(@"Preference data for file ‘%@’ could not be saved.", [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+			NSLog(@"Preference data for file ‘%@’ could not be saved.", [[self fileURL] path]);
 			NSBeep();
 		}
 
@@ -2609,7 +2608,7 @@
 
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
+		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO];
 			return;
 		}
@@ -2646,7 +2645,7 @@
 		[panel setAccessoryView:saveConnectionAccessory];
 
 		// Set file name
-		if([[[self fileURL] absoluteString] length])
+		if([[[self fileURL] path] length])
 			filename = [self displayName];
 		else
 			filename = [NSString stringWithFormat:@"%@", [self name]];
@@ -2742,7 +2741,7 @@
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
 
 	if(fileName == nil)
-		fileName = [[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		fileName = [[self fileURL] path]; //[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
 	// Store save panel settings or take them from spfDocData
 	if(!saveInBackground) {
@@ -2764,7 +2763,7 @@
 	if(saveOnlyPreferences) {
 
 		// Check URL for safety reasons
-		if(![[[self fileURL] absoluteString] length] || [self isUntitled]) {
+		if(![[[self fileURL] path] length] || [self isUntitled]) {
 			NSLog(@"Couldn't save data. No file URL found!");
 			NSBeep();
 			return NO;
@@ -3010,9 +3009,9 @@
 	[preferences setObject:[spfdata objectForKey:SPQueryHistory] forKey:SPQueryHistory];
 	[preferences setObject:[spfdata objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
 	[preferences setObject:[spfdata objectForKey:SPContentFilters] forKey:SPContentFilters];
-	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] andContextInfo:preferences];
+	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL fileURLWithPath:fileName] andContextInfo:preferences];
 
-	[self setFileURL:[NSURL URLWithString:[fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	[self setFileURL:[NSURL fileURLWithPath:fileName]];
 	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
 	[tableWindow setTitle:[self displaySPName]];
@@ -3687,7 +3686,7 @@
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) return NO;
 
 	// Auto-save spf file based connection and return whether the save was successful
-	if([self fileURL] && [[[self fileURL] absoluteString] length] && ![self isUntitled]) {
+	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled]) {
 		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
 		if(isSaved)
 			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
@@ -3736,7 +3735,7 @@
  */
 - (BOOL)isDocumentEdited
 {
-	return ([self fileURL] && [[[self fileURL] absoluteString] length] && [self isUntitled] && ([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]
+	return ([self fileURL] && [[[self fileURL] path] length] && [self isUntitled] && ([[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] count]
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"number"] count]
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"date"] count]
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"string"] count])
@@ -3750,12 +3749,12 @@
 {
 	if (!_isConnected) {
 		return [NSString stringWithFormat:@"%@%@", 
-				([[[self fileURL] absoluteString] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : @"", @"Sequel Pro"];
+				([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[self fileURL] path] lastPathComponent]] : @"", @"Sequel Pro"];
 
 	} 
 		
 	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
-		([[[self fileURL] absoluteString] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
+		([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
 		mySQLVersion,
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
@@ -3767,7 +3766,7 @@
 - (NSString *)displayName
 {
 	if(!_isConnected) return [self displaySPName];
-	return [[[[self fileURL] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+	return [[[self fileURL] path] lastPathComponent];
 }
 
 #pragma mark -

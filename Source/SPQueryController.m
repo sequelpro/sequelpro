@@ -620,7 +620,7 @@ static SPQueryController *sharedQueryController = nil;
 
 	// Save history items coming from each Untitled document in the global Preferences successively
 	// regardingless of the source document.
-	if(![[fileURL absoluteString] hasPrefix:@"/"]) {
+	if(![fileURL isFileURL]) {
 
 		// Remove all duplicates by using a NSPopUpButton
 		NSPopUpButton *uniquifier = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0,0,0,0) pullsDown:YES];

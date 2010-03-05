@@ -29,6 +29,7 @@
 @interface SPFieldMapperController : NSWindowController {
 
 	IBOutlet NSTableView *fieldMapperTableView;
+	IBOutlet id fieldMapperTableScrollView;
 	IBOutlet NSTableView *globalValuesTableView;
 	IBOutlet NSPopUpButton *tableTargetPopup;
 	IBOutlet NSPathControl *fileSourcePath;
@@ -39,7 +40,11 @@
 	IBOutlet id importFieldNamesHeaderSwitch;
 	IBOutlet id addRemainingDataSwitch;
 	IBOutlet id importButton;
+	IBOutlet id advancedBox;
 	IBOutlet NSPopUpButton *alignByPopup;
+	IBOutlet id alignByPopupLabel;
+	IBOutlet id importMethodLabel;
+	IBOutlet id advancedLabel;
 	IBOutlet NSMenuItem *matchingNameMenuItem;
 
 	IBOutlet id globalValuesSheet;
@@ -48,14 +53,25 @@
 	IBOutlet NSButton *insertNULLValueButton;
 	IBOutlet id replaceAfterSavingCheckBox;
 
-	IBOutlet id advancedSheet;
 	IBOutlet id ignoreCheckBox;
+	IBOutlet id ignoreUpdateCheckBox;
 	IBOutlet id delayedCheckBox;
+	IBOutlet id delayedReplaceCheckBox;
 	IBOutlet id onupdateCheckBox;
+	IBOutlet id lowPriorityCheckBox;
+	IBOutlet id lowPriorityReplaceCheckBox;
+	IBOutlet id lowPriorityUpdateCheckBox;
+	IBOutlet id highPriorityCheckBox;
 	IBOutlet CMTextView *onupdateTextView;
+
 	IBOutlet id advancedButton;
 
+	IBOutlet id advancedInsertView;
+	IBOutlet id advancedReplaceView;
+	IBOutlet id advancedUpdateView;
+
 	id theDelegate;
+	id customQueryInstance;
 	id fieldMappingImportArray;
 
 	NSInteger fieldMappingCurrentRow;
@@ -79,6 +95,7 @@
 
 	BOOL fieldMappingImportArrayIsPreview;
 	BOOL importFieldNamesHeader;
+	BOOL showAdvancedView;
 	NSNumber *lastDisabledCSVFieldcolumn;
 
 	MCPConnection *mySQLConnection;
@@ -86,6 +103,11 @@
 	NSString *sourcePath;
 
 	NSUserDefaults *prefs;
+	
+	NSInteger heightOffset;
+	NSUInteger windowMinWidth;
+	NSUInteger windowMinHeigth;
+
 }
 
 @property(retain) NSString* sourcePath;
@@ -122,11 +144,11 @@
 - (IBAction)removeGlobalValue:(id)sender;
 - (IBAction)insertNULLValue:(id)sender;
 - (IBAction)closeGlobalValuesSheet:(id)sender;
-- (IBAction)closeAdvancedSheet:(id)sender;
 - (IBAction)advancedCheckboxValidation:(id)sender;
 
 
 // Others
+- (void)resizeWindowByHeightDelta:(NSInteger)delta;
 - (void)matchHeaderNames;
 - (void)setupFieldMappingArray;
 - (void)updateFieldMappingButtonCell;

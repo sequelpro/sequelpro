@@ -990,7 +990,7 @@
 					query = [[NSMutableString alloc] initWithString:insertBaseString];
 					for (i = 0; i < csvRowsPerQuery && i < [parsedRows count]; i++) {
 						if (i > 0) [query appendString:@",\n"];
-						[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
+						[query appendString:[[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]] description]];
 						csvRowsThisQuery++;
 						if ([query length] > 250000) break;
 					}
@@ -1004,6 +1004,7 @@
 				} else {
 					for (i = 0; i < [parsedRows count]; i++) {
 						if (progressCancelled) break;
+
 						query = [[NSMutableString alloc] initWithString:insertBaseString];
 						[query appendString:[self mappedUpdateSetStatementStringForRowArray:[parsedRows objectAtIndex:i]]];
 
