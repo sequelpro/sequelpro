@@ -350,8 +350,10 @@
 		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:YES];
 	} else {
 		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
-		if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"])
+		if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
 			[importMethodPopup selectItemWithTitle:@"INSERT"];
+			[self changeImportMethod:nil];
+		}
 	}
 
 	[self updateFieldNameAlignment];
@@ -407,7 +409,6 @@
 	// If operator is set to = for UPDATE method replace it by doNotImport
 	if(![[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
 		[advancedButton setEnabled:YES];
-		[addRemainingDataSwitch setHidden:YES];
 		for(i=0; i<[fieldMappingTableColumnNames count]; i++) {
 			if([fieldMappingOperatorArray objectAtIndex:i] == isEqual) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doNotImport];
@@ -553,8 +554,9 @@
 
 		[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
 
-		// Set corresponding operator to doImport
-		[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
+		// Set corresponding operator to doImport if not set to isEqual
+		if([fieldMappingOperatorArray objectAtIndex:[fieldMapperTableView selectedRow]] != isEqual)
+			[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
 
 		[fieldMapperTableView reloadData];
 
@@ -573,8 +575,10 @@
 {
 	showAdvancedView = !showAdvancedView;
 	if(showAdvancedView) {
+		[advancedButton setState:NSOnState];
 		[self changeImportMethod:nil];
 	} else {
+		[advancedButton setState:NSOffState];
 		[advancedBox setHidden:YES];
 		[advancedReplaceView setHidden:YES];
 		[advancedUpdateView setHidden:YES];
@@ -952,6 +956,8 @@
 				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field label")];
 				[c addItemWithTitle:NSLocalizedString(@"Ignore all fields", @"ignore all fields menu item")];
 				[c addItemWithTitle:NSLocalizedString(@"Import all fields", @"import all fields menu item")];
+				if([[self selectedImportMethod] isEqualToString:@"UPDATE"])
+					[c addItemWithTitle:NSLocalizedString(@"Match field", @"match field menu item")];
 				[m addItem:[NSMenuItem separatorItem]];
 				[c addItemWithTitle:NSLocalizedString(@"Add global value…", @"add global value menu item")];
 				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
@@ -1021,12 +1027,15 @@
 						[fieldMappingOperatorArray addObject:globalValue];
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 				}
+				else if([[self selectedImportMethod] isEqualToString:@"UPDATE"] && [anObject integerValue] == [fieldMappingButtonOptions count]+4) {
+					[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:isEqual];
+					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
+				}
 				// Add global value
-				else if([anObject integerValue] == [fieldMappingButtonOptions count]+5) {
+				else if([anObject integerValue] == ([[self selectedImportMethod] isEqualToString:@"UPDATE"]) ? [fieldMappingButtonOptions count]+6 : [fieldMappingButtonOptions count]+5) {
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 					[self addGlobalSourceVariable:nil];
 				}
-
 				[self validateImportButton];
 
 				return;
