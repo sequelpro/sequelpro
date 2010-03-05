@@ -416,7 +416,6 @@
 		}
 	} else {
 		[advancedButton setEnabled:YES];
-		[addRemainingDataSwitch setEnabled:NO]; // TODO HansJB
 	}
 
 	[self validateImportButton];

@@ -766,6 +766,7 @@
 	NSMutableString *query;
 	NSMutableString *errors = [NSMutableString string];
 	NSMutableString *insertBaseString = [NSMutableString string];
+	NSMutableString *insertRemainingBaseString = [NSMutableString string];
 	NSMutableArray *parsedRows = [[NSMutableArray alloc] init];
 	NSMutableArray *parsePositions = [[NSMutableArray alloc] init];
 	NSArray *csvRowArray;
@@ -1002,6 +1003,20 @@
 						[mySQLConnection queryString:query];
 					[query release];
 				} else {
+					if(insertRemainingRowsAfterUpdate) {
+						[insertRemainingBaseString setString:@"INSERT INTO "];
+						[insertRemainingBaseString appendString:[selectedTableTarget backtickQuotedString]];
+						[insertRemainingBaseString appendString:@" ("];
+						insertBaseStringHasEntries = NO;
+						for (i = 0; i < [fieldMappingArray count]; i++) {
+							if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
+								if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
+								else insertBaseStringHasEntries = YES;
+								[insertRemainingBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+							}
+						}
+						[insertRemainingBaseString appendString:@") VALUES\n"];
+					}
 					for (i = 0; i < [parsedRows count]; i++) {
 						if (progressCancelled) break;
 
@@ -1021,6 +1036,25 @@
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
 								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
 						}
+
+						if ( insertRemainingRowsAfterUpdate && ![mySQLConnection affectedRows]) {
+							query = [[NSMutableString alloc] initWithString:insertRemainingBaseString];
+							[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
+
+							// Perform the query
+							if(csvImportMethodHasTail)
+								[mySQLConnection queryString:[NSString stringWithFormat:@"%@ %@", query, csvImportTailString]];
+							else
+								[mySQLConnection queryString:query];
+							[query release];
+
+							if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+								[errors appendString:[NSString stringWithFormat:
+									NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
+									(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
+							}
+						}
+
 						rowsImported++;
 						csvRowsThisQuery++;
 						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
