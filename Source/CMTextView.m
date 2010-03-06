@@ -3097,6 +3097,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableArray *myArrayOfTabs;
 	NSMutableParagraphStyle *paragraphStyle;
 
+	BOOL oldEditableStatus = [self isEditable];
+	[self setEditable:YES];
+
 	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
@@ -3130,6 +3133,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setDefaultParagraphStyle:paragraphStyle];
 	[paragraphStyle release];
 	[self setFont:tvFont];
+
+	[self setEditable:oldEditableStatus];
+
 }
 
 - (void)drawRect:(NSRect)rect {
