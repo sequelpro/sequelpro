@@ -420,7 +420,7 @@
 /**
  * Anonymises the preferences dictionary before feedback submission
  */
-- (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
+- (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
 {
 	[preferences removeObjectsForKeys:[NSArray arrayWithObjects:@"ContentFilters",
 																@"favorites",
