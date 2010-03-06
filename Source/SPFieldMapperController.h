@@ -62,6 +62,7 @@
 	IBOutlet id lowPriorityReplaceCheckBox;
 	IBOutlet id lowPriorityUpdateCheckBox;
 	IBOutlet id highPriorityCheckBox;
+	IBOutlet id skipexistingRowsCheckBox;
 	IBOutlet CMTextView *onupdateTextView;
 
 	IBOutlet id advancedButton;
@@ -96,6 +97,8 @@
 	BOOL fieldMappingImportArrayIsPreview;
 	BOOL importFieldNamesHeader;
 	BOOL showAdvancedView;
+	BOOL targetTableHasPrimaryKey;
+	NSString *primaryKeyField;
 	NSNumber *lastDisabledCSVFieldcolumn;
 
 	MCPConnection *mySQLConnection;

@@ -112,11 +112,14 @@
 	[lowPriorityReplaceCheckBox setState:NO];
 	[lowPriorityUpdateCheckBox setState:NO];
 	[highPriorityCheckBox setState:NO];
-
-	[advancedButton setState:NSOffState];
+	[skipexistingRowsCheckBox setState:NO];
+	[skipexistingRowsCheckBox setEnabled:NO];
+	[advancedButton setState:NO];
 	[advancedBox setHidden:YES];
 
 	showAdvancedView = NO;
+	targetTableHasPrimaryKey = NO;
+	primaryKeyField = nil;
 	heightOffset = 0;
 	[advancedReplaceView setHidden:YES];
 	[advancedUpdateView setHidden:YES];
@@ -283,6 +286,7 @@
 	SPTableData *selectedTableData = [[SPTableData alloc] init];
 	[selectedTableData setConnection:mySQLConnection];
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
+	targetTableHasPrimaryKey = NO;
 	BOOL isReplacePossible = NO;
 	// NSLog(@"d %@", tableDetails);
 	if (tableDetails) {
@@ -303,7 +307,8 @@
 				} else {
 					[fieldMappingTableDefaultValues addObject:@"0"];
 				}
-				isReplacePossible = YES;
+				targetTableHasPrimaryKey = YES;
+				primaryKeyField = [tableDetails objectForKey:@"primarykeyfield"];
 			} else {
 				if([column objectForKey:@"unique"]) {
 					[type appendFormat:@",%@",@"UNIQUE"];
@@ -324,7 +329,8 @@
 
 	[selectedTableData release];
 	[[importMethodPopup menu] setAutoenablesItems:NO];
-	[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:isReplacePossible];
+	[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:(targetTableHasPrimaryKey|isReplacePossible)];
+	[skipexistingRowsCheckBox setEnabled:targetTableHasPrimaryKey];
 
 	// Update the table view
 	fieldMappingCurrentRow = 0;
@@ -604,16 +610,40 @@
 		[lowPriorityReplaceCheckBox setState:NO];
 		return;
 	}
+	if(sender == skipexistingRowsCheckBox) { 
+		if([skipexistingRowsCheckBox state] == NSOnState) {
+			[delayedCheckBox setState:NO];
+			[delayedCheckBox setEnabled:NO];
+			[onupdateCheckBox setState:YES];
+			[onupdateCheckBox setEnabled:NO];
+			[onupdateTextView setEditable:YES];
+			[onupdateTextView setSelectedRange:NSMakeRange(0,[[onupdateTextView string] length])];
+			[onupdateTextView insertText:[NSString stringWithFormat:@"%@ = %@", [primaryKeyField backtickQuotedString], [primaryKeyField backtickQuotedString]]];
+			[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
+			[onupdateTextView setEditable:NO];
+		} else {
+			[delayedCheckBox setEnabled:YES];
+			[onupdateCheckBox setState:NO];
+			[onupdateCheckBox setEnabled:YES];
+			BOOL oldEditableState = [onupdateTextView isEditable];
+			[onupdateTextView setEditable:YES];
+			[onupdateTextView setSelectedRange:NSMakeRange(0,[[onupdateTextView string] length])];
+			[onupdateTextView insertText:@""];
+			[onupdateTextView setEditable:oldEditableState];
+		}
+	}
 
 	if(sender == lowPriorityCheckBox && [lowPriorityCheckBox state] == NSOnState) {
 		[highPriorityCheckBox setState:NO];
 		[delayedCheckBox setState:NO];
-		[onupdateCheckBox setEnabled:YES];
+		if([skipexistingRowsCheckBox state] == NSOffState)
+			[onupdateCheckBox setEnabled:YES];
 	}
 	if(sender == highPriorityCheckBox && [highPriorityCheckBox state] == NSOnState) {
 		[lowPriorityCheckBox setState:NO];
 		[delayedCheckBox setState:NO];
-		[onupdateCheckBox setEnabled:YES];
+		if([skipexistingRowsCheckBox state] == NSOffState)
+			[onupdateCheckBox setEnabled:YES];
 	}
 	if(sender == delayedCheckBox) {
 		if([delayedCheckBox state] == NSOnState) {
@@ -631,7 +661,7 @@
 		[onupdateTextView setEditable:YES];
 		[[self window] makeFirstResponder:onupdateTextView];
 	}
-	if([onupdateCheckBox state] == NSOffState) {
+	if([onupdateCheckBox state] == NSOffState && [skipexistingRowsCheckBox state] == NSOffState) {
 		[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
 		[onupdateTextView setEditable:NO];
 	}

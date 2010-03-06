@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="12"/>
+			<integer value="11"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -937,7 +937,7 @@
 								<reference key="NSSupport" ref="388072550"/>
 								<reference key="NSControlView" ref="148795893"/>
 								<int key="NSButtonFlags">-2038284033</int>
-								<int key="NSButtonFlags2">134217857</int>
+								<int key="NSButtonFlags2">436207745</int>
 								<string key="NSAlternateContents"/>
 								<string key="NSKeyEquivalent"></string>
 								<int key="NSPeriodicDelay">200</int>
@@ -1025,6 +1025,28 @@
 							<int key="NSvFlags">293</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSButton" id="80724644">
+									<reference key="NSNextResponder" ref="219742831"/>
+									<int key="NSvFlags">268</int>
+									<string key="NSFrame">{{227, 62}, {134, 18}}</string>
+									<reference key="NSSuperview" ref="219742831"/>
+									<bool key="NSEnabled">YES</bool>
+									<object class="NSButtonCell" key="NSCell" id="843921917">
+										<int key="NSCellFlags">-2080244224</int>
+										<int key="NSCellFlags2">131072</int>
+										<string key="NSContents">Skip existing rows</string>
+										<reference key="NSSupport" ref="26"/>
+										<reference key="NSControlView" ref="80724644"/>
+										<int key="NSButtonFlags">1211912703</int>
+										<int key="NSButtonFlags2">2</int>
+										<reference key="NSNormalImage" ref="294469764"/>
+										<reference key="NSAlternateImage" ref="728464408"/>
+										<string key="NSAlternateContents"/>
+										<string key="NSKeyEquivalent"/>
+										<int key="NSPeriodicDelay">200</int>
+										<int key="NSPeriodicInterval">25</int>
+									</object>
+								</object>
 								<object class="NSScrollView" id="952580067">
 									<reference key="NSNextResponder" ref="219742831"/>
 									<int key="NSvFlags">274</int>
@@ -2257,6 +2279,22 @@
 					</object>
 					<int key="connectionID">395</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">skipexistingRowsCheckBox</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="80724644"/>
+					</object>
+					<int key="connectionID">398</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">advancedCheckboxValidation:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="80724644"/>
+					</object>
+					<int key="connectionID">399</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2943,6 +2981,7 @@
 							<reference ref="16766984"/>
 							<reference ref="403613444"/>
 							<reference ref="952580067"/>
+							<reference ref="80724644"/>
 						</object>
 						<reference key="parent" ref="78582513"/>
 						<string key="objectName">Advanced View for INSERT</string>
@@ -3156,6 +3195,20 @@
 						<reference key="object" ref="365850666"/>
 						<reference key="parent" ref="317672858"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">396</int>
+						<reference key="object" ref="80724644"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="843921917"/>
+						</object>
+						<reference key="parent" ref="219742831"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">397</int>
+						<reference key="object" ref="843921917"/>
+						<reference key="parent" ref="80724644"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -3294,6 +3347,9 @@
 					<string>39.IBPluginDependency</string>
 					<string>392.IBPluginDependency</string>
 					<string>393.IBPluginDependency</string>
+					<string>396.IBAttributePlaceholdersKey</string>
+					<string>396.IBPluginDependency</string>
+					<string>397.IBPluginDependency</string>
 					<string>40.IBPluginDependency</string>
 					<string>41.IBPluginDependency</string>
 					<string>42.IBPluginDependency</string>
@@ -3326,9 +3382,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{99, 328}, {522, 348}}</string>
+					<string>{{361, 389}, {522, 348}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{99, 328}, {522, 348}}</string>
+					<string>{{361, 389}, {522, 348}}</string>
 					<integer value="1"/>
 					<string>{{387, 725}, {432, 282}}</string>
 					<boolean value="NO"/>
@@ -3378,7 +3434,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="148795893"/>
-							<string key="toolTip">Go back to file chooser (⌥←)</string>
+							<string key="toolTip">Go back to file chooser (⇧⌥⌘←)</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3537,6 +3593,16 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="80724644"/>
+							<string key="toolTip">Do not import existing rows identified by the PRIMARY KEY</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3583,7 +3649,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">395</int>
+			<int key="maxID">399</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3666,6 +3732,7 @@
 							<string>advancedUpdateView</string>
 							<string>alignByPopup</string>
 							<string>alignByPopupLabel</string>
+							<string>customQueryInstance</string>
 							<string>delayedCheckBox</string>
 							<string>delayedReplaceCheckBox</string>
 							<string>fieldMapperTableScrollView</string>
@@ -3693,6 +3760,7 @@
 							<string>replaceAfterSavingCheckBox</string>
 							<string>rowDownButton</string>
 							<string>rowUpButton</string>
+							<string>skipexistingRowsCheckBox</string>
 							<string>tableTargetPopup</string>
 							<string>theDelegate</string>
 						</object>
@@ -3707,6 +3775,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSPopUpButton</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3729,9 +3798,10 @@
 							<string>id</string>
 							<string>NSMenuItem</string>
 							<string>id</string>
-							<string>id</string>
+							<string>CMTextView</string>
 							<string>id</string>
 							<string>NSButton</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
