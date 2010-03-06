@@ -101,6 +101,7 @@ NSString *SPCustomQueryAutoUppercaseKeywords     = @"CustomQueryAutoUppercaseKey
 NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
 NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
 NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
+NSString *SPCustomQueryEditorTabStopWidth        = @"CustomQueryEditorTabStopWidth";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";

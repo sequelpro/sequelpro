@@ -284,7 +284,7 @@
 	[selectedTableData setConnection:mySQLConnection];
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
 	BOOL isReplacePossible = NO;
-
+	// NSLog(@"d %@", tableDetails);
 	if (tableDetails) {
 		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
@@ -298,17 +298,24 @@
 
 			if([column objectForKey:@"isprimarykey"]) {
 				[type appendFormat:@",%@",@"PRIMARY"];
-				[fieldMappingTableDefaultValues addObject:@"auto_increment"];
+				if([[[column objectForKey:@"autoincrement"] description] isEqualToString:@"1"]) {
+					[fieldMappingTableDefaultValues addObject:@"auto_increment"];
+				} else {
+					[fieldMappingTableDefaultValues addObject:@"0"];
+				}
 				isReplacePossible = YES;
 			} else {
 				if([column objectForKey:@"unique"]) {
 					[type appendFormat:@",%@",@"UNIQUE"];
 					isReplacePossible = YES;
 				}
-				if ([column objectForKey:@"default"])
-					[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
+				if([[[column objectForKey:@"onupdatetimestamp"] description] isEqualToString:@"1"])
+					[fieldMappingTableDefaultValues addObject:@"time_stamp"];
 				else
-					[fieldMappingTableDefaultValues addObject:@"NULL"];
+					if ([column objectForKey:@"default"])
+						[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
+					else
+						[fieldMappingTableDefaultValues addObject:@"NULL"];
 			}
 
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];

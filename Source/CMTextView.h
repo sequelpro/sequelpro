@@ -121,6 +121,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (BOOL) autouppercaseKeywords;
 - (void) setAutohelp:(BOOL)enableAutohelp;
 - (BOOL) autohelp;
+- (void) setTabStops;
 - (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
 - (void) autoHelp;

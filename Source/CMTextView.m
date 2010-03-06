@@ -140,40 +140,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 
-	// Re-define 64 tab stops for a better editing
-	NSFont *tvFont = [self font];
-	float firstColumnInch = 0.5, otherColumnInch = 0.5, pntPerInch = 72.0;
-	NSInteger i;
-	NSTextTab *aTab;
-	NSMutableArray *myArrayOfTabs;
-	NSMutableParagraphStyle *paragraphStyle;
-	myArrayOfTabs = [NSMutableArray arrayWithCapacity:64];
-	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:firstColumnInch*pntPerInch];
-	[myArrayOfTabs addObject:aTab];
-	[aTab release];
-	for(i=1; i<64; i++) {
-		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:(firstColumnInch*pntPerInch) + ((float)i * otherColumnInch * pntPerInch)];
-		[myArrayOfTabs addObject:aTab];
-		[aTab release];
-	}
-	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-	[paragraphStyle setTabStops:myArrayOfTabs];
-	// Soft wrapped lines are indented slightly
-	[paragraphStyle setHeadIndent:4.0];
+	// Re-define tab stops for a better editing
+	[self setTabStops];
 
-	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
-	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
-
-	NSRange range = NSMakeRange(0, [[self textStorage] length]);
-	if ([self shouldChangeTextInRange:range replacementString:nil]) {
-		[[self textStorage] setAttributes:textAttributes range: range];
-		[self didChangeText];
-	}
-	[self setTypingAttributes:textAttributes];
-	[self setDefaultParagraphStyle:paragraphStyle];
-	[paragraphStyle release];
-	[self setFont:tvFont];
-	
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
@@ -207,6 +176,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorNumericColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorVariableColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTextColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
 
 }
 
@@ -262,6 +232,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self setTextColor:[self otherTextColor]];
 		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorTabStopWidth]) {
+		[self setTabStops];
 	}
 }
 
@@ -3115,6 +3087,49 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	}
 
+}
+
+- (void) setTabStops
+{
+	NSFont *tvFont = [self font];
+	NSInteger i;
+	NSTextTab *aTab;
+	NSMutableArray *myArrayOfTabs;
+	NSMutableParagraphStyle *paragraphStyle;
+
+	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
+	if(tabStopWidth < 1) tabStopWidth = 1;
+
+	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	tabWidth = (float)tabStopWidth * tabWidth;
+
+	NSInteger numberOfTabs = 256/tabStopWidth;
+	myArrayOfTabs = [NSMutableArray arrayWithCapacity:numberOfTabs];
+	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth];
+	[myArrayOfTabs addObject:aTab];
+	[aTab release];
+	for(i=1; i<numberOfTabs; i++) {
+		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth + ((float)i * tabWidth)];
+		[myArrayOfTabs addObject:aTab];
+		[aTab release];
+	}
+	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+	[paragraphStyle setTabStops:myArrayOfTabs];
+	// Soft wrapped lines are indented slightly
+	[paragraphStyle setHeadIndent:4.0];
+
+	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
+	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+
+	NSRange range = NSMakeRange(0, [[self textStorage] length]);
+	if ([self shouldChangeTextInRange:range replacementString:nil]) {
+		[[self textStorage] setAttributes:textAttributes range: range];
+		[self didChangeText];
+	}
+	[self setTypingAttributes:textAttributes];
+	[self setDefaultParagraphStyle:paragraphStyle];
+	[paragraphStyle release];
+	[self setFont:tvFont];
 }
 
 - (void)drawRect:(NSRect)rect {

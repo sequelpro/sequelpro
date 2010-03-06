@@ -84,6 +84,8 @@
 	<false/>
 	<key>CustomQueryUpdateAutoHelp</key>
 	<false/>
+	<key>CustomQueryEditorTabStopWidth</key>
+	<integer>4</integer>
 	<key>CustomQueryAutoHelpDelay</key>
 	<real>1</real>
 	<key>lastSqlFileEncoding</key>

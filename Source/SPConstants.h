@@ -133,6 +133,7 @@ extern NSString *SPCustomQueryAutoUppercaseKeywords;
 extern NSString *SPCustomQueryUpdateAutoHelp;
 extern NSString *SPCustomQueryAutoHelpDelay;
 extern NSString *SPCustomQueryHighlightCurrentQuery;
+extern NSString *SPCustomQueryEditorTabStopWidth;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;
