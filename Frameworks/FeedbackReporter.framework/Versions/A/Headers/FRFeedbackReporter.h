@@ -16,18 +16,23 @@
 
 #import <Cocoa/Cocoa.h>
 
+@protocol FRFeedbackReporterDelegate
+@optional
+- (NSDictionary*) customParametersForFeedbackReport;
+- (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;
+@end
+
 @interface FRFeedbackReporter : NSObject {
 
     @private
-        NSLock *modalLock;
         id feedbackController;
-        id delegate;
+        id<FRFeedbackReporterDelegate> delegate;
 }
 
 + (FRFeedbackReporter *)sharedReporter;
 
-- (id) delegate;
-- (void) setDelegate:(id) delegate;
+- (id<FRFeedbackReporterDelegate>) delegate;
+- (void) setDelegate:(id<FRFeedbackReporterDelegate>) delegate;
 
 - (BOOL) reportFeedback;
 - (BOOL) reportIfCrash;
@@ -35,6 +40,3 @@
 
 @end
 
-@interface NSObject (FRFeedbackReporterDelegate)
-- (NSDictionary*) customParametersForFeedbackReport;
-@end

@@ -55,6 +55,9 @@
 // Getters
 - (SPPreferenceController *)preferenceController;
 
+// Feedback controller delegate methods
+- (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;
+
 // Others
 - (NSString *)contentOfFile:(NSString *)aPath;
 
