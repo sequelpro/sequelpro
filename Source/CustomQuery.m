@@ -1679,6 +1679,7 @@
 
 	// Prevent sorting while a query is running
 	if ([tableDocumentInstance isWorking]) return;
+	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
