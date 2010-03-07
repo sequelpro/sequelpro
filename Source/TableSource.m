@@ -1032,7 +1032,7 @@ fetches the result as an array with a dictionary for each row in it
 									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 				isEditingRow = NO;
 			} else {
-				[tableFields removeObjectAtIndex:[tableSourceView selectedRow]];
+				[tableFields removeObjectAtIndex:currentlyEditingRow];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
