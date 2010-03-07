@@ -84,6 +84,7 @@ extern NSString *SPDefaultEncoding;
 extern NSString *SPUseMonospacedFonts;
 extern NSString *SPDisplayTableViewVerticalGridlines;
 extern NSString *SPCustomQueryMaxHistoryItems;
+extern NSString *SPDisplayServerVersionInWindowTitle;
 
 // Tables Prefpane
 extern NSString *SPReloadAfterAddingRow;

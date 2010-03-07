@@ -52,6 +52,7 @@ NSString *SPDefaultEncoding                      = @"DefaultEncoding";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
 NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
+NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
 // Tables Prefpane
 NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";

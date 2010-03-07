@@ -3753,9 +3753,9 @@
 
 	} 
 		
-	return [NSString stringWithFormat:@"%@(MySQL %@) %@%@%@", 
+	return [NSString stringWithFormat:@"%@%@ %@%@%@", 
 		([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
-		mySQLVersion,
+		([prefs boolForKey:SPDisplayServerVersionInWindowTitle]) ? [NSString stringWithFormat:@"(MySQL %@)", mySQLVersion] : @"",
 		[self name],
 		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
 		([[self table] length]?[NSString stringWithFormat:@"/%@",[self table]]:@"")];

@@ -143,5 +143,7 @@
 	<false/>
 	<key>CSVFieldImportMappingAlignment</key>
 	<integer>2</integer>
+	<key>DisplayServerVersionInWindowTitle</key>
+	<true/>
 </dict>
 </plist>
