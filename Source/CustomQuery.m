@@ -222,7 +222,7 @@
 		}
 
 		// The actual query strings have been already stored as tooltip
-		[textView insertFavoriteAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
+		[textView insertAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
 	}
 }
 
@@ -325,9 +325,9 @@
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
 		if([[NSApp currentEvent] modifierFlags] & (NSControlKeyMask))
-			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
-			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
 	}
 
 	// "Editor font..." menu item to bring up the font panel

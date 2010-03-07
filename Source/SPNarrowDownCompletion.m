@@ -136,7 +136,7 @@
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
-	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete
 {
 	if(self = [self init])
 	{
@@ -144,6 +144,8 @@
 		// Set filter string 
 		if(aUserString)
 			[mutablePrefix appendString:aUserString];
+
+		autoCompletionMode = autoComplete;
 
 		fuzzyMode = fuzzySearch;
 		if(fuzzyMode)
@@ -371,6 +373,7 @@
 - (void)checkSpaceForAllowedCharacter
 {
 	[textualInputCharacters removeCharactersInString:@" "];
+	if(autoCompletionMode) return;
 	if(spaceCounter < 1)
 		for(id w in filtered){
 			if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length) {
@@ -444,11 +447,16 @@
 	}
 
 	if(![newFiltered count]) {
-		if([[self filterString] hasSuffix:@"."]) {
-			[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode];
+		if(autoCompletionMode) {
 			closeMe = YES;
+			return;
+		} else {
+			if([[self filterString] hasSuffix:@"."]) {
+				[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+				closeMe = YES;
+			}
+			[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
 		}
-		[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
 	}
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
@@ -615,6 +623,7 @@
 			[NSApp sendEvent:event];
 		}
 	}
+	[theView setCompletionIsOpen:NO];
 	[self close];
 	usleep(70); // tiny delay to suppress while continously pressing of ESC overlapping
 }
@@ -665,6 +674,8 @@
 	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
+	else if([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"])
+		[theView insertAsSnippet:@"(${1:})" atRange:[theView selectedRange]];
 }
 
 - (void)completeAndInsertSnippet

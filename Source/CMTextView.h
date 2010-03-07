@@ -73,6 +73,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 	NSInteger currentSnippetIndex;
 	BOOL snippetWasJustInserted;
 
+	BOOL completionIsOpen;
 
 	NSColor *queryHiliteColor;
 	NSColor *queryEditorBackgroundColor;
@@ -99,6 +100,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 @property(retain) NSColor* otherTextColor;
 @property(assign) NSRange queryRange;
 @property(assign) BOOL shouldHiliteQuery;
+@property(assign) BOOL completionIsOpen;
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
@@ -128,12 +130,13 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (void) doSyntaxHighlighting;
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode;
+- (void) doAutoCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
 
 - (BOOL)checkForCaretInsideSnippet;
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
+- (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
 
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;

@@ -98,6 +98,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize otherTextColor;
 @synthesize queryRange;
 @synthesize shouldHiliteQuery;
+@synthesize completionIsOpen;
 
 /*
  * Sort function (mainly used to sort the words in the textView)
@@ -126,6 +127,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	startListeningToBoundChanges = NO;
 	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
+	completionIsOpen = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -177,6 +179,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorVariableColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTextColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords options:NSKeyValueObservingOptionNew context:NULL];
 
 }
 
@@ -234,6 +237,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorTabStopWidth]) {
 		[self setTabStops];
+	} else if ([keyPath isEqualToString:SPCustomQueryAutoUppercaseKeywords]) {
+		[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 	}
 }
 
@@ -467,7 +472,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch
+- (void) doAutoCompletion
+{
+	NSRange r = [self selectedRange];
+
+	if(![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
+
+	if(r.location) {
+		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
+			return;
+	 	if(![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[[self string] characterAtIndex:r.location-1]])
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+	}
+}
+
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
 {
 
 	if(![self isEditable]) return;
@@ -475,7 +494,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self breakUndoCoalescing];
 
 	NSUInteger caretPos = NSMaxRange([self selectedRange]);
-	// [self setSelectedRange:NSMakeRange(caretPos, 0)];
+
 	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
@@ -501,13 +520,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Break for long stuff
 	if(completionRange.length>100000) return;
 
-
 	NSString* allow; // additional chars which not close the popup
 	if(isDictMode)
 		allow= @"_";
 	else
 		allow= @"_. ";
-
 
 	BOOL dbBrowseMode = NO;
 	NSInteger backtickMode = 0; // 0 none, 1 rigth only, 2 left only, 3 both
@@ -669,7 +686,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					withDbName:dbName
 					withTableName:tableName
 					selectedDb:currentDb
-					caretMovedLeft:caretMovedLeft];
+					caretMovedLeft:caretMovedLeft
+					autoComplete:autoCompleteMode];
 	
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
@@ -685,6 +703,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	pos.y -= [[self font] pointSize]*1.25;
 	
 	[completionPopUp setCaretPos:pos];
+	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
 	[completionPopUp insertCommonPrefix];
 
@@ -1083,7 +1102,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Inserts a chosen query favorite and initialze a snippet session if user defined any
  */
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
+- (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
 
 	// Do not allow the insertion of a query favorite if snippets are active
@@ -1496,14 +1515,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
+
+		// Cancel autocompletion trigger
+		if([prefs boolForKey:SPCustomQueryAutoComplete])
+			[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doAutoCompletion) 
+									object:nil];
+
 		if(curFlags==(NSControlKeyMask))
-			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
-			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
 		return;
 	}
 	if (insertedCharacter == NSF5FunctionKey && [self isEditable]){ // F5 for completion based on spell checker
-		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
+		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO autoCompleteMode:NO];
 		return;
 	}
 
@@ -1557,7 +1583,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(snippetControlCounter < 0 && [[[self window] delegate] fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[[[self window] delegate] fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
-				[self insertFavoriteAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
+				[self insertAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
 				return;
 			}
 		}
@@ -3390,6 +3416,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
 	}
+
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+	// Start autocompletion if enabled
+	if([prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1)
+		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] retain] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)

@@ -103,6 +103,8 @@ NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
 NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
 NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
 NSString *SPCustomQueryEditorTabStopWidth        = @"CustomQueryEditorTabStopWidth";
+NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
+NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";
