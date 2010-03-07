@@ -671,11 +671,16 @@
 {
 	[theView setSelectedRange:theCharRange];
 	[theView insertText:aString];
+	
 	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
-	else if([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"])
-		[theView insertAsSnippet:@"(${1:})" atRange:[theView selectedRange]];
+	// If it's a function insert () snippet
+	else if([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] && ![aString hasSuffix:@")"]) {
+		[theView insertText:@"()"];
+		[theView performSelector:@selector(moveLeft:)];
+		// [theView insertAsSnippet:@"(${1:})" atRange:[theView selectedRange]];
+	}
 }
 
 - (void)completeAndInsertSnippet
