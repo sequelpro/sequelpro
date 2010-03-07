@@ -504,7 +504,7 @@
 	
 	[prefsController showWindow:self];
 	[prefsController displayFavoritePreferences:self];
-	if ([favoritesTable selectedRow] != -1) [prefsController selectFavoriteAtIndex:([favoritesTable selectedRow] - 1)];	
+	if ([favoritesTable numberOfSelectedRows]) [prefsController selectFavoriteAtIndex:([favoritesTable selectedRow] - 1)];	
 }
 
 /**

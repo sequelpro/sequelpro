@@ -325,16 +325,20 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 - (IBAction)copyField:(id)sender
 {
 	NSMutableDictionary *tempRow;
+	NSUInteger rowToCopy;
 
-	if ( ![tableSourceView numberOfSelectedRows] ) {
-		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableSourceView numberOfRows]-1] byExtendingSelection:NO];
+	// Store the row to duplicate, as saveRowOnDeselect and subsequent reloads may trigger a deselection
+	if ([tableSourceView numberOfSelectedRows]) {
+		rowToCopy = [tableSourceView selectedRow];
+	} else {
+		rowToCopy = [tableSourceView numberOfRows]-1;
 	}
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 	
 	//add copy of selected row and go in edit mode
-	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:[tableSourceView selectedRow]]];
+	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:rowToCopy]];
 	[tempRow setObject:[[tempRow objectForKey:@"Field"] stringByAppendingString:@"Copy"] forKey:@"Field"];
 	[tempRow setObject:@"" forKey:@"Key"];
 	[tempRow setObject:@"None" forKey:@"Extra"];
