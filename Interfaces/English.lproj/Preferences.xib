@@ -3721,6 +3721,28 @@ AQAAAAA</bytes>
 							<int key="NSPeriodicInterval">25</int>
 						</object>
 					</object>
+					<object class="NSButton" id="782193237">
+						<reference key="NSNextResponder" ref="1033452264"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{257, 86}, {186, 18}}</string>
+						<reference key="NSSuperview" ref="1033452264"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="131748905">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">0</int>
+							<string key="NSContents">Insert function arguments</string>
+							<reference key="NSSupport" ref="320262838"/>
+							<reference key="NSControlView" ref="782193237"/>
+							<int key="NSButtonFlags">1211912703</int>
+							<int key="NSButtonFlags2">2</int>
+							<reference key="NSNormalImage" ref="752798171"/>
+							<reference key="NSAlternateImage" ref="888311049"/>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">200</int>
+							<int key="NSPeriodicInterval">25</int>
+						</object>
+					</object>
 					<object class="NSButton" id="827082642">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">268</int>
@@ -3869,7 +3891,7 @@ AQAAAAA</bytes>
 					<object class="NSButton" id="774563613">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">-2147483380</int>
-						<string key="NSFrame">{{257, 91}, {197, 18}}</string>
+						<string key="NSFrame">{{257, 24}, {197, 18}}</string>
 						<reference key="NSSuperview" ref="1033452264"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="420702000">
@@ -4041,8 +4063,7 @@ AQAAAAA</bytes>
 			<object class="NSUserDefaultsController" id="151174232">
 				<object class="NSMutableArray" key="NSDeclaredKeys">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>CustomQueryAutoComplete</string>
-					<string>CustomQueryAutoCompleteDelay</string>
+					<string>CustomQueryFunctionCompletionInsertsArguments</string>
 				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
@@ -6314,6 +6335,22 @@ AQAAAAA</bytes>
 					</object>
 					<int key="connectionID">1541</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: values.CustomQueryFunctionCompletionInsertsArguments</string>
+						<reference key="source" ref="782193237"/>
+						<reference key="destination" ref="151174232"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="782193237"/>
+							<reference key="NSDestination" ref="151174232"/>
+							<string key="NSLabel">value: values.CustomQueryFunctionCompletionInsertsArguments</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">values.CustomQueryFunctionCompletionInsertsArguments</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1545</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -7320,7 +7357,6 @@ AQAAAAA</bytes>
 							<reference ref="571822117"/>
 							<reference ref="1030846368"/>
 							<reference ref="397485802"/>
-							<reference ref="774563613"/>
 							<reference ref="16021182"/>
 							<reference ref="140155660"/>
 							<reference ref="659498064"/>
@@ -7337,6 +7373,8 @@ AQAAAAA</bytes>
 							<reference ref="892250776"/>
 							<reference ref="184945490"/>
 							<reference ref="827082642"/>
+							<reference ref="774563613"/>
+							<reference ref="782193237"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Editor</string>
@@ -8936,6 +8974,20 @@ AQAAAAA</bytes>
 						<reference key="object" ref="201150384"/>
 						<reference key="parent" ref="1009372112"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1542</int>
+						<reference key="object" ref="782193237"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="131748905"/>
+						</object>
+						<reference key="parent" ref="1033452264"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1543</int>
+						<reference key="object" ref="131748905"/>
+						<reference key="parent" ref="782193237"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -9166,6 +9218,8 @@ AQAAAAA</bytes>
 					<string>1525.IBPluginDependency</string>
 					<string>1526.IBPluginDependency</string>
 					<string>1527.IBPluginDependency</string>
+					<string>1542.IBPluginDependency</string>
+					<string>1543.IBPluginDependency</string>
 					<string>17.IBEditorWindowLastContentRect</string>
 					<string>17.IBPluginDependency</string>
 					<string>17.IBUserGuides</string>
@@ -9658,6 +9712,8 @@ AQAAAAA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{571, 222}, {500, 280}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableArray">
@@ -10041,7 +10097,7 @@ AQAAAAA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1541</int>
+			<int key="maxID">1545</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

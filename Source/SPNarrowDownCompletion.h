@@ -62,6 +62,9 @@
 	NSInteger spaceCounter;
 	
 	NSMutableCharacterSet* textualInputCharacters;
+
+	NSUserDefaults *prefs;
+
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 

@@ -137,6 +137,7 @@ extern NSString *SPCustomQueryHighlightCurrentQuery;
 extern NSString *SPCustomQueryEditorTabStopWidth;
 extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
+extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;

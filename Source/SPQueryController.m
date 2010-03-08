@@ -103,6 +103,44 @@ static SPQueryController *sharedQueryController = nil;
 		favoritesContainer = [[NSMutableDictionary alloc] init];
 		historyContainer = [[NSMutableDictionary alloc] init];
 		contentFilterContainer = [[NSMutableDictionary alloc] init];
+		completionKeywordList = nil;
+		completionFunctionList = nil;
+		functionArgumentSnippets = nil;
+
+		NSError *readError = nil;
+		NSString *convError = nil;
+		NSPropertyListFormat format;
+		NSDictionary *completionPlist;
+		NSData *completionTokensData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"CompletionTokens.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
+			options:NSMappedRead error:&readError];
+
+		
+		completionPlist = [NSDictionary dictionaryWithDictionary:[NSPropertyListSerialization propertyListFromData:completionTokensData 
+				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
+
+		if(completionPlist == nil || readError != nil || convError != nil) {
+			NSLog(@"Error while reading “CompletionTokens.plist”:\n%@\n%@", [readError localizedDescription], convError);
+			NSBeep();
+		} else {
+			if([completionPlist objectForKey:@"core_keywords"]) {
+				completionKeywordList = [[NSArray arrayWithArray:[completionPlist objectForKey:@"core_keywords"]] retain];
+			} else {
+				NSLog(@"No “core_keywords” array found.");
+				NSBeep();
+			}
+			if([completionPlist objectForKey:@"core_builtin_functions"]) {
+				completionFunctionList = [[NSArray arrayWithArray:[completionPlist objectForKey:@"core_builtin_functions"]] retain];
+			} else {
+				NSLog(@"No “core_builtin_functions” array found.");
+				NSBeep();
+			}
+			if([completionPlist objectForKey:@"function_argument_snippets"]) {
+				functionArgumentSnippets = [[NSDictionary dictionaryWithDictionary:[completionPlist objectForKey:@"function_argument_snippets"]] retain];
+			} else {
+				NSLog(@"No “function_argument_snippets” dictionary found.");
+				NSBeep();
+			}
+		}
 
 	}
 	
@@ -463,6 +501,30 @@ static SPQueryController *sharedQueryController = nil;
 }
 
 #pragma mark -
+#pragma mark Completion List Controller
+
+- (NSArray*)functionList
+{
+	if(completionFunctionList != nil && [completionFunctionList count])
+		return completionFunctionList;
+	return [NSArray array];
+}
+
+- (NSArray*)keywordList
+{
+	if(completionKeywordList != nil && [completionKeywordList count])
+		return completionKeywordList;
+	return [NSArray array];
+}
+
+- (NSString*)argumentSnippetForFunction:(NSString*)func
+{
+	if(functionArgumentSnippets && [functionArgumentSnippets objectForKey:[func uppercaseString]])
+		return [functionArgumentSnippets objectForKey:[func uppercaseString]];
+	return @"";
+}
+
+#pragma mark -
 #pragma mark DocumentsController
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
@@ -735,7 +797,10 @@ static SPQueryController *sharedQueryController = nil;
 	[favoritesContainer release], favoritesContainer = nil;
 	[historyContainer release], historyContainer = nil;
 	[contentFilterContainer release], contentFilterContainer = nil;
-	
+
+	if(completionKeywordList) [completionKeywordList release];
+	if(completionFunctionList) [completionFunctionList release];
+	if(functionArgumentSnippets) [functionArgumentSnippets release];
 	[super dealloc];
 }
 

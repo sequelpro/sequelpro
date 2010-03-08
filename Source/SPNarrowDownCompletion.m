@@ -33,6 +33,7 @@
 #import "SPStringAdditions.h"
 #import "ImageAndTextCell.h"
 #import "SPConstants.h"
+#import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "CMTextView.h"
 #include <tgmath.h>
@@ -111,6 +112,8 @@
 		caseSensitive = YES;
 		filtered = nil;
 		spaceCounter = 0;
+
+		prefs = [NSUserDefaults standardUserDefaults];
 
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
@@ -451,11 +454,15 @@
 			closeMe = YES;
 			return;
 		} else {
+			if([theView completionWasReinvokedAutomatically]) return;
 			if([[self filterString] hasSuffix:@"."]) {
+				[theView setCompletionWasReinvokedAutomatically:YES];
 				[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
 				closeMe = YES;
+				return;
+			} else {
+				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
 			}
-			[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
 		}
 	}
 
@@ -656,15 +663,15 @@
 			[commonPrefix setString:tempPrefix];
 	}
 
-	// if(![commonPrefix length]) return;
-
-	NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
-	[mutablePrefix appendString:toInsert];
-	theCharRange.length += [toInsert length];
-	theParseRange.length += [toInsert length];
-	[theView insertText:[toInsert lowercaseString]];
-	[self checkSpaceForAllowedCharacter];
-
+	// Insert common prefix automatically
+	if([[self filterString] length] < [commonPrefix length]) {
+		NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
+		[mutablePrefix appendString:toInsert];
+		theCharRange.length += [toInsert length];
+		theParseRange.length += [toInsert length];
+		[theView insertText:[toInsert lowercaseString]];
+		[self checkSpaceForAllowedCharacter];
+	}
 }
 
 - (void)insert_text:(NSString* )aString
@@ -675,11 +682,12 @@
 	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
-	// If it's a function insert () snippet
-	else if([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] && ![aString hasSuffix:@")"]) {
-		[theView insertText:@"()"];
-		[theView performSelector:@selector(moveLeft:)];
-		// [theView insertAsSnippet:@"(${1:})" atRange:[theView selectedRange]];
+	// If it's a function insert () and if given arguments as snippets
+	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] && ![aString hasSuffix:@")"]) {
+		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
+		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];
+		if([functionArgumentSnippet length] == 2)
+			[theView performSelector:@selector(moveLeft:)];
 	}
 }
 

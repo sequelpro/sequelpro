@@ -51,6 +51,10 @@
 	NSMutableDictionary *contentFilterContainer;
 	NSUInteger numberOfMaxAllowedHistory;
 
+	NSArray *completionKeywordList;
+	NSArray *completionFunctionList;
+	NSDictionary *functionArgumentSnippets;
+
 	NSUserDefaults *prefs;
 	NSDateFormatter *dateFormatter;
 }
@@ -77,6 +81,11 @@
 - (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection;
 
 - (NSUInteger)consoleMessageCount;
+
+// Completion List Controller
+- (NSArray*)functionList;
+- (NSArray*)keywordList;
+- (NSString*)argumentSnippetForFunction:(NSString*)func;
 
 // DocumentsController
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;

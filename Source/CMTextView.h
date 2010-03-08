@@ -74,6 +74,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 	BOOL snippetWasJustInserted;
 
 	BOOL completionIsOpen;
+	BOOL completionWasReinvokedAutomatically;
 
 	NSColor *queryHiliteColor;
 	NSColor *queryEditorBackgroundColor;
@@ -101,6 +102,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 @property(assign) NSRange queryRange;
 @property(assign) BOOL shouldHiliteQuery;
 @property(assign) BOOL completionIsOpen;
+@property(assign) BOOL completionWasReinvokedAutomatically;
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
@@ -110,9 +112,6 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
-// - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
-- (NSArray *) keywords;
-- (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
 - (BOOL) autoindent;
 - (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;

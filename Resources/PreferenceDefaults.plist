@@ -86,6 +86,8 @@
 	<false/>
 	<key>CustomQueryEditorTabStopWidth</key>
 	<integer>4</integer>
+	<key>CustomQueryFunctionCompletionInsertsArguments</key>
+	<true/>
 	<key>CustomQueryAutoComplete</key>
 	<false/>
 	<key>CustomQueryAutoCompleteDelay</key>
