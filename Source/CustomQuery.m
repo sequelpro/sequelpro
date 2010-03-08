@@ -713,8 +713,7 @@
 	
 	// add query to history
 	if(!reloadingExistingResult && [usedQuery length])
-		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
-
+		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
 
 	// Error checking
 	if ( [mySQLConnection queryCancelled] || ([errors length] && !queryIsTableSorter)) {
@@ -2886,6 +2885,16 @@
 {
 	return [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] componentsJoinedByString:@";\n"];
 }
+
+/**
+ * Add a query string to the file/global history, via the query controller.
+ * Single argument allows calls on the main thread.
+ */
+- (void)addHistoryEntry:(NSString *)entryString
+{
+	[[SPQueryController sharedQueryController] addHistory:entryString forFileURL:[tableDocumentInstance fileURL]];
+}
+
 /*
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */

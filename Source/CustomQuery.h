@@ -225,6 +225,7 @@
 - (NSUInteger)numberOfQueries;
 
 - (NSString *)buildHistoryString;
+- (void)addHistoryEntry:(NSString *)entryString;
 
 - (void)historyItemsHaveBeenUpdated:(id)manager;
 
