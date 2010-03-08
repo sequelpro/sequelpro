@@ -328,7 +328,7 @@
 	// Assumes that the child has already been initialized with values from the
 	// global user table.
 	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user='%@' and d.host='%@'", 
+	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user = '%@' and d.host = '%@'", 
 							 [[child parent] valueForKey:@"user"], [child valueForKey:@"host"]];
 	MCPResult *queryResults = [self.mySqlConnection queryString:queryString];
 	if ([queryResults numOfRows] > 0)
@@ -995,7 +995,7 @@
 	// Grant privileges
 	if ([grantPrivileges count] > 0)
 	{
-		NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@;",
+		NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
 									[grantPrivileges componentsJoinedByCommas],
 									dbName,
 									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
@@ -1008,7 +1008,7 @@
 	// Revoke privileges
 	if ([revokePrivileges count] > 0)
 	{
-		NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@;",
+		NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
 									 [revokePrivileges componentsJoinedByCommas],
 									 dbName,
 									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
@@ -1050,7 +1050,7 @@
 		// Grant privileges
 		if ([grantPrivileges count] > 0)
 		{
-			NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@;",
+			NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@",
 										[grantPrivileges componentsJoinedByCommas],
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
@@ -1062,7 +1062,7 @@
 		// Revoke privileges
 		if ([revokePrivileges count] > 0)
 		{
-			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* FROM %@@%@;",
+			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* FROM %@@%@",
 										 [revokePrivileges componentsJoinedByCommas],
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
