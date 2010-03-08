@@ -1621,7 +1621,7 @@
 									<reference key="NSMenu" ref="1056168652"/>
 									<string key="NSTitle">Filter Content...</string>
 									<string key="NSKeyEquiv">f</string>
-									<int key="NSKeyEquivModMask">1572864</int>
+									<int key="NSKeyEquivModMask">1310720</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -4711,7 +4711,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{389, 259}, {280, 283}}</string>
+					<string>{{470, 265}, {280, 283}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -4796,7 +4796,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{325, 463}, {237, 273}}</string>
+					<string>{{514, 275}, {237, 273}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4822,7 +4822,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{375, 533}, {255, 203}}</string>
+					<string>{{564, 345}, {255, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -4919,7 +4919,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{772, 23}, {235, 333}}</string>
+					<string>{{428, 215}, {235, 333}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -5619,6 +5619,7 @@
 							<string>removeSchemaPrivButton</string>
 							<string>schemaController</string>
 							<string>schemasTableView</string>
+							<string>splitViewButtonBar</string>
 							<string>tabView</string>
 							<string>treeController</string>
 							<string>userNameTextField</string>
@@ -5635,6 +5636,7 @@
 							<string>NSButton</string>
 							<string>NSArrayController</string>
 							<string>NSTableView</string>
+							<string>BWAnchoredButtonBar</string>
 							<string>NSTabView</string>
 							<string>NSTreeController</string>
 							<string>NSTextField</string>
