@@ -89,7 +89,7 @@
 	<key>CustomQueryFunctionCompletionInsertsArguments</key>
 	<true/>
 	<key>CustomQueryAutoComplete</key>
-	<false/>
+	<true/>
 	<key>CustomQueryAutoCompleteDelay</key>
 	<real>1.5</real>
 	<key>CustomQueryAutoHelpDelay</key>

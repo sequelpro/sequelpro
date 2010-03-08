@@ -715,7 +715,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[completionPopUp setCaretPos:pos];
 	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
-	[completionPopUp insertCommonPrefix];
+	if(!autoCompleteMode)
+		[completionPopUp insertCommonPrefix];
 
 }
 
@@ -1103,10 +1104,48 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(snippetControlArray[currentSnippetIndex][2] == 0) {
 				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
 				NSRange r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
-				if(r1.location == r2.location && r1.length == r2.length)
+				if(r1.location == r2.location && r1.length == r2.length) {
 					[self setSelectedRange:r2];
-				else
+					NSString *snip = [[self string] substringWithRange:r2];
+					if([snip length] > 2 && [snip hasPrefix:@"¦"] && [snip hasSuffix:@"¦"]) {
+						NSArray *list = [[snip substringWithRange:NSMakeRange(1,[snip length]-2)] componentsSeparatedByString:@"¦"];
+						NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
+						for(id w in list)
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
+						
+						SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+										alreadyTyped:@"" 
+										staticPrefix:@"" 
+										additionalWordCharacters:@"_." 
+										caseSensitive:NO
+										charRange:r2
+										parseRange:r2
+										inView:self
+										dictMode:NO
+										dbMode:NO
+										tabTriggerMode:[self isSnippetMode]
+										fuzzySearch:NO
+										backtickMode:NO
+										withDbName:@""
+										withTableName:@""
+										selectedDb:@""
+										caretMovedLeft:NO
+										autoComplete:NO];
+
+						//Get the NSPoint of the first character of the current word
+						NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
+						NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+						boundingRect = [self convertRect: boundingRect toView: NULL];
+						NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+						// Adjust list location to be under the current word or insertion point
+						pos.y -= [[self font] pointSize]*1.25;
+						[completionPopUp setCaretPos:pos];
+						completionIsOpen = YES;
+						[completionPopUp orderFront:self];
+					}
+				} else {
 					[self endSnippetSession];
+				}
 			}
 		} else { // for safety reasons
 			[self endSnippetSession];

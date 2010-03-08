@@ -223,7 +223,6 @@
 			<string>FUNCTION</string>
 			<string>GEOMETRY</string>
 			<string>GEOMETRYCOLLECTION</string>
-			<string>GET_FORMAT</string>
 			<string>GLOBAL</string>
 			<string>GRANT</string>
 			<string>GRANTS</string>
@@ -833,6 +832,7 @@
 			<string>MAKETIME</string>
 			<string>MAKE_SET</string>
 			<string>MASTER_POS_WAIT</string>
+			<string>MATCH</string>
 			<string>MAX</string>
 			<string>MBRCONTAINS</string>
 			<string>MBRDISJOINT</string>
@@ -1005,7 +1005,7 @@
 			<key>LEAST</key>
 			<string>${1:value1}, ${2:value2}</string>
 			<key>MATCH</key>
-			<string>${1:col} AGAINST ${2:expr}</string>
+			<string>${1:col_list} AGAINST ${2:expr}${3: ${4:¦IN BOOLEAN MODE¦IN NATURAL LANGUAGE MODE¦IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION¦WITH QUERY EXPANSION¦}}</string>
 			<key>DES_DECRYPT</key>
 			<string>${1:crypt_str}${2:, ${3:key_str}}</string>
 			<key>DECODE</key>
@@ -1095,7 +1095,7 @@
 			<key>PERIOD_DIFF</key>
 			<string>${1:P1}, ${2:P2}</string>
 			<key>DES_ENCRYPT</key>
-			<string>${1:str},${2:key_num|key_str}</string>
+			<string>${1:str}${2:, ${3:¦key_num¦key_str¦}}</string>
 			<key>STR_TO_DATE</key>
 			<string>${1:str}, ${2:format}</string>
 			<key>DATE_SUB</key>
@@ -1113,7 +1113,7 @@
 			<key>AES_ENCRYPT</key>
 			<string>${1:str}, ${2:key_str}</string>
 			<key>GET_FORMAT</key>
-			<string>${1:DATE|TIME|DATETIME}, ${2:'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'}</string>
+			<string>${1:¦DATE¦TIME¦DATETIME¦}, ${2:¦'EUR'¦'USA'¦'JIS'¦'ISO'¦'INTERNAL'¦}</string>
 			<key>FIELD</key>
 			<string>${1:str}, ${2:str1}</string>
 			<key>MAKETIME</key>
