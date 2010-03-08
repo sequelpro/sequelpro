@@ -49,9 +49,6 @@
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled;
 - (void) _initializeAvailablePrivs;
 
-
-
-
 @end
 
 @implementation SPUserManager
@@ -65,7 +62,7 @@
 @synthesize grantedSchemaPrivs;
 @synthesize availablePrivs;
 
--(id)init
+- (id)init
 {
 	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
 		
@@ -82,10 +79,10 @@
 								@"Replication_client_priv", @"Repl_client_priv",
 								nil];
 	}
+	
 	schemas = [[NSMutableArray alloc] init];
 	availablePrivs = [[NSMutableArray alloc] init];
 	grantedSchemaPrivs = [[NSMutableArray alloc] init]; 
-	
 	
 	return self;
 }
@@ -247,7 +244,8 @@
 	[treeController rearrangeObjects];
 }
 
-- (void) _initializeAvailablePrivs {
+- (void) _initializeAvailablePrivs 
+{
 	// Initialize available privileges
 	NSManagedObjectContext *moc = self.managedObjectContext;
 	NSEntityDescription *privEntityDescription = [NSEntityDescription entityForName:@"Privileges"
@@ -525,12 +523,14 @@
 		}
 		
 	}
+	
 	return YES;
 }
 
 - (NSArray *)treeSortDescriptors
 {
 	NSSortDescriptor *descriptor = [[[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES] autorelease];
+	
 	return [NSArray arrayWithObject:descriptor];
 }
 
@@ -787,7 +787,8 @@
 	{
 		return ([[treeController selectedObjects] count] > 0);
 	}
-	return TRUE;
+	
+	return YES;
 }
 
 - (void)_selectParentFromSelection
@@ -996,7 +997,7 @@
 	if ([grantPrivileges count] > 0)
 	{
 		NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
-									[grantPrivileges componentsJoinedByCommas],
+									[[grantPrivileges componentsJoinedByCommas] uppercaseString],
 									dbName,
 									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
@@ -1009,7 +1010,7 @@
 	if ([revokePrivileges count] > 0)
 	{
 		NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
-									 [revokePrivileges componentsJoinedByCommas],
+									 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
 									 dbName,
 									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
@@ -1051,7 +1052,7 @@
 		if ([grantPrivileges count] > 0)
 		{
 			NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@",
-										[grantPrivileges componentsJoinedByCommas],
+										[[grantPrivileges componentsJoinedByCommas] uppercaseString],
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", grantStatement);
@@ -1063,7 +1064,7 @@
 		if ([revokePrivileges count] > 0)
 		{
 			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* FROM %@@%@",
-										 [revokePrivileges componentsJoinedByCommas],
+										 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
 			DLog(@"%@", revokeStatement);

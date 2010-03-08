@@ -97,6 +97,6 @@
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 - (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
 
-
 - (NSArray *)treeSortDescriptors;
+
 @end

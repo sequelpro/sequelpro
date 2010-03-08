@@ -50,10 +50,7 @@
         {
             [self setValue:value forKey:@"host"];
         }
-
-
     }
-
 }
 
 - (void)addChildrenObject:(NSManagedObject *)value 
@@ -78,4 +75,5 @@
     
     [changedObjects release];
 }
+
 @end
