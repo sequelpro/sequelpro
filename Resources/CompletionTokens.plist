@@ -1005,7 +1005,7 @@
 			<key>LEAST</key>
 			<string>${1:value1}, ${2:value2}</string>
 			<key>MATCH</key>
-			<string>${1:col_list} AGAINST ${2:expr}${3: ${4:¦IN BOOLEAN MODE¦IN NATURAL LANGUAGE MODE¦IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION¦WITH QUERY EXPANSION¦}}</string>
+			<string>${1:col_list}) AGAINST (${2:expr}${3: ${4:¦IN BOOLEAN MODE¦IN NATURAL LANGUAGE MODE¦IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION¦WITH QUERY EXPANSION¦}}</string>
 			<key>DES_DECRYPT</key>
 			<string>${1:crypt_str}${2:, ${3:key_str}}</string>
 			<key>DECODE</key>
