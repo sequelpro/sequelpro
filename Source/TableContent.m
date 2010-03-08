@@ -3219,7 +3219,7 @@
 	}
 	
 	// Duplicate row
-	if ([menuItem action] == @selector(copyRow:)) {		
+	if ([menuItem action] == @selector(copyRow:)) {
 		return ([tableContentView numberOfSelectedRows] == 1);
 	}
 	
@@ -3231,7 +3231,22 @@
  */
 - (void)makeContentFilterHaveFocus
 {
-	[tableWindow makeFirstResponder:argumentField];
+
+	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
+
+	if([filter objectForKey:@"NumberOfArguments"]) {
+		NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] integerValue];
+		switch(numOfArgs) {
+			case 2:
+			[tableWindow makeFirstResponder:firstBetweenField];
+			break;
+			case 1:
+			[tableWindow makeFirstResponder:argumentField];
+			break;
+			default:
+			[tableWindow makeFirstResponder:compareField];
+		}
+	}
 }
 
 #pragma mark -

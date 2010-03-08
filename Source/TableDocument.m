@@ -2337,7 +2337,7 @@
 {
 	[self viewContent:self];
 	
-	[tableContentInstance makeContentFilterHaveFocus];
+	[tableContentInstance performSelector:@selector(makeContentFilterHaveFocus) withObject:nil afterDelay:0.1];
 }
 
 #pragma mark -
