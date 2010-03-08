@@ -2474,7 +2474,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Start autocompletion if enabled
-	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1)
+	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore editedRange].length)
 		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] retain] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
