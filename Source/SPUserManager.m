@@ -30,6 +30,7 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPGrowlController.h"
+#import "SPConnectionController.h"
 
 #define COLUMNIDNAME @"NameColumn"
 
@@ -121,6 +122,9 @@
 	
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
+	
+	// Set the button delegate 
+	[splitViewButtonBar setSplitViewDelegate:self];
 	
 	[self _initializeUsers];
 	[self _initializeSchemaPrivs];
@@ -1183,7 +1187,7 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
-	return (proposedMax - 220);
+	return (proposedMax - 555);
 }
 
 /**
@@ -1196,6 +1200,7 @@
 
 #pragma mark -
 #pragma mark TableView Delegate Methods
+
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
 	if ([notification object] == schemasTableView)

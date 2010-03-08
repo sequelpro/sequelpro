@@ -24,7 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class MCPConnection;
+@class MCPConnection, BWAnchoredButtonBar;
 
 @interface SPUserManager : NSWindowController 
 {	
@@ -53,7 +53,9 @@
 	IBOutlet NSButton *removeSchemaPrivButton;
 	
     IBOutlet NSTextField *userNameTextField;
-		
+
+	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
+	
 	NSMutableArray *schemas;
 	NSMutableArray *grantedSchemaPrivs;
 	NSMutableArray *availablePrivs;
