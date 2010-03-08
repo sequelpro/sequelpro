@@ -2853,6 +2853,7 @@
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
+		[tableDocumentInstance endTask];
 		[sortPool drain];
 		return;
 	}
