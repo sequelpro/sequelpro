@@ -34,11 +34,10 @@
 #import "MCPConnectionProxy.h"
 
 #include <unistd.h>
-#include <setjmp.h>
 #include <mach/mach_time.h>
 
-static jmp_buf pingTimeoutJumpLocation;
-static void forcePingTimeout(int signalNumber);
+BOOL lastPingSuccess;
+BOOL pingActive;
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
@@ -98,9 +97,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		connectionPassword = nil;
 		keepAliveTimer = nil;
 		keepAliveThread = NULL;
+		pingThread = NULL;
 		connectionProxy = nil;
 		connectionStartTime = -1;
 		lastQueryExecutedAtTime = CGFLOAT_MAX;
+		lastDelegateDecisionForLostConnection = NSNotFound;
 		queryCancelled = NO;
 		queryCancelUsedReconnect = NO;
 		serverVersionString = nil;
@@ -120,6 +121,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
+		lastPingSuccess		   = NO;
+		delegateSupportsConnectionLostDecisions = NO;
+		delegateResponseToWillQueryString = NO;
 		
 		// Enable delegate query logging by default
 		delegateQueryLogging = YES;
@@ -202,6 +206,36 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	
 	// Check that the delegate implements willQueryString:connection: and cache the result as its used very frequently.
 	delegateResponseToWillQueryString = [delegate respondsToSelector:@selector(willQueryString:connection:)];
+
+	// Check whether the delegate supports returning a connection lost action decision
+	delegateSupportsConnectionLostDecisions = [delegate respondsToSelector:@selector(connectionLost:)];
+}
+
+/**
+ * Ask the delegate for the connection lost decision, on the main thread.
+ */
+- (MCPConnectionCheck)delegateDecisionForLostConnection
+{
+
+	// Return the "Disconnect" decision if the delegate doesn't support connectionLost: checks
+	if (!delegateSupportsConnectionLostDecisions) return MCPConnectionCheckDisconnect;
+
+	lastDelegateDecisionForLostConnection = NSNotFound;
+
+	// If on the main thread, ask the delegate directly.  Perform this in an NSLock to confirm thread safety,
+	// as this method may be called within itself.
+	if ([NSThread isMainThread]) {
+		NSLock *delegateDecisionLock = [[NSLock alloc] init];
+		[delegateDecisionLock lock];
+		lastDelegateDecisionForLostConnection = [delegate connectionLost:self];
+		[delegateDecisionLock unlock];
+
+	// Otherwise call ourself on the main thread, waiting until the reply is received.
+	} else {
+		[self performSelectorOnMainThread:@selector(delegateDecisionForLostConnection) withObject:nil waitUntilDone:YES];
+	}
+
+	return lastDelegateDecisionForLostConnection;
 }
 
 #pragma mark -
@@ -376,7 +410,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	mConnected = NO;
 
 	if (connectionProxy) {
-		[connectionProxy disconnect];
+		[connectionProxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
 	}
 	
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
@@ -384,6 +418,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
 	
 	[self stopKeepAliveTimer];
+	if (pingThread != NULL) pthread_cancel(pingThread), pingThread = NULL;
 }
 
 /**
@@ -483,8 +518,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
 		// Ask delegate what to do
-		if (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) {
-			failureDecision = [delegate connectionLost:self];
+		if (delegateSupportsConnectionLostDecisions) {
+			failureDecision = [self delegateDecisionForLostConnection];
 		}
 		
 		switch (failureDecision) {				
@@ -523,8 +558,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	// If the connection doesn't appear to be responding, show a dialog asking how to proceed
 	if (!connectionVerified) {
 		
-		// Ask delegate what to do
-		MCPConnectionCheck failureDecision = (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) ? [delegate connectionLost:self] : MCPConnectionCheckDisconnect;
+		// Ask delegate what to do, defaulting to "disconnect".
+		MCPConnectionCheck failureDecision = MCPConnectionCheckDisconnect;
+		if (delegateSupportsConnectionLostDecisions) {
+			failureDecision = [self delegateDecisionForLostConnection];
+		}
 		
 		switch (failureDecision) {
 			// 'Reconnect' has been selected. Request a reconnect, and retry.
@@ -554,71 +592,54 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 }
 
 /**
- * This function provides a method of pinging the remote server while running a SIGALRM
- * to enforce the specified connection time.  This is low-level but effective, and required
- * because low-level net reads can block indefintely if the remote server disappears or on
- * network issues - setting the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix"
- * ping, but cause long queries to be terminated.
+ * This function provides a method of pinging the remote server while also enforcing
+ * the specified connection time.  This is required because low-level net reads can
+ * block indefinitely if the remote server disappears or on network issues - setting
+ * the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix" ping, but cause
+ * long queries to be terminated.
  * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
  */
 - (BOOL)pingConnection
 {
-	struct sigaction timeoutAction;
-	NSDate *startDate = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
-	BOOL pingSuccess = FALSE;
-	
-	// Construct the SIGALRM to fire after the connection timeout if it isn't cleared, calling the forcePingTimeout function.
-	timeoutAction.sa_handler = forcePingTimeout;
-	sigemptyset(&timeoutAction.sa_mask);
-	timeoutAction.sa_flags = 0;
-	sigaction(SIGALRM, &timeoutAction, NULL);
-	alarm(connectionTimeout+1);
-
+	// Set up a query lock
 	[queryLock lock];
-	
-	// Set up a "restore point", returning 0; if longjmp is used later with this reference, execution
-	// jumps back to this point and returns a nonzero value, so this function evaluates to false when initially
-	// set and true if it's called again.
-	if (setjmp(pingTimeoutJumpLocation)) {
-		
-		// The connection timed out - we want to return false.
-		pingSuccess = FALSE;
-		
-		// On direct execution:
-	} else {
-		
-		// Run mysql_ping, which returns 0 on success, and otherwise an error.
-		pingSuccess = (BOOL)(! mysql_ping(mConnection));
 
-		// If the ping failed within a second, try another one; this is because a terminated-but-then
-		// restored connection is at times restored or functional after a ping, but the ping still returns
-		// an error.  This additional check ensures the returned status is correct with minimal other effect.
-		if (!pingSuccess && ([startDate timeIntervalSinceNow] > -1)) {
-			pingSuccess = (BOOL)(! mysql_ping(mConnection));
-		}
+	uint64_t currentTime_t;
+	Nanoseconds elapsedTime;
+	uint64_t pingStartTime_t = mach_absolute_time();
+	lastPingSuccess = FALSE;
+	pingActive = YES;
+
+	// Create a pthread for the ping, so we can force it to end after the connection timeout
+	pthread_create(&pingThread, NULL, (void *)&pingConnectionTask, (void *)mConnection);
+
+	// Loop tightly until the ping responds, or the elapsed time exceeds the connection timeout
+	while (pingActive) {
+		currentTime_t = mach_absolute_time() - pingStartTime_t;
+		elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+		if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > connectionTimeout) break;
+		usleep(400);
 	}
-	
+
+	// If the connection timed out, kill the thread and set status to failed
+	if (pingActive) {
+		pthread_cancel(pingThread);
+		lastPingSuccess = FALSE;
+	}
+
 	[queryLock unlock];
 
-	// Reset and clear the SIGALRM used to check connection timeouts.
-	alarm(0);
-	timeoutAction.sa_handler = SIG_IGN;
-	sigemptyset(&timeoutAction.sa_mask);
-	timeoutAction.sa_flags = 0;
-	sigaction(SIGALRM, &timeoutAction, NULL);
-	
-	[startDate release];
-	
-	return pingSuccess;
+	return lastPingSuccess;
 }
 
 /**
- * This function is paired with pingConnection, and provides a method of enforcing the connection
- * timeout when mysql_ping does not respect the specified limits.
+ * This function is paired with pingConnection, and performs the keepalive ping in a pthread,
+ * allowing the thread to be cancelled if it does not respond.
  */
-static void forcePingTimeout(int signalNumber)
+void pingConnectionTask(void *ptr)
 {
-	longjmp(pingTimeoutJumpLocation, 1);
+	lastPingSuccess = (BOOL)(!mysql_ping((MYSQL *)ptr));
+	pingActive = NO;
 }
 
 /**
