@@ -3225,6 +3225,16 @@
 	return YES;
 }
 
+/**
+ * Makes the content filter field have focus by making it the first responder.
+ */
+- (void)makeContentFilterHaveFocus
+{
+	[tableWindow makeFirstResponder:argumentField];
+}
+
+#pragma mark -
+
 // Last but not least
 - (void)dealloc
 {

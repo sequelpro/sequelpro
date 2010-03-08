@@ -2330,6 +2330,16 @@
 	}
 }
 
+/**
+ * Switches to the content view and makes the filter field the first responder (has focus).
+ */
+- (IBAction)focusOnTableContentFilter:(id)sender
+{
+	[self viewContent:self];
+	
+	[tableContentInstance makeContentFilterHaveFocus];
+}
+
 #pragma mark -
 #pragma mark Other Methods
 
@@ -3170,6 +3180,11 @@
 	// Clear console
 	if ([menuItem action] == @selector(clearConsole:)) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
+	}
+	
+	// Focus on table content filter
+	if ([menuItem action] == @selector(focusOnTableContentFilter:)) {
+		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
 	}
 
 	return [super validateMenuItem:menuItem];

@@ -226,6 +226,7 @@
 - (IBAction)checksumTable:(id)sender;
 - (IBAction)saveCreateSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
+- (IBAction)focusOnTableContentFilter:(id)sender;
 
 // Other methods
 - (void) setQueryMode:(NSInteger)theQueryMode;
