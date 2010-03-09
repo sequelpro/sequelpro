@@ -1141,7 +1141,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 	}
-	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE"]) {
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS"]) {
 
 		NSString *currentDb = nil;
 		NSString *currentTable = nil;
