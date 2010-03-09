@@ -618,6 +618,26 @@
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="1063983207"/>
 														</object>
+														<object class="NSMenuItem" id="190127525">
+															<reference key="NSMenu" ref="217968621"/>
+															<string key="NSTitle">list template (fuzzy search)</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
+														<object class="NSMenuItem" id="915013440">
+															<reference key="NSMenu" ref="217968621"/>
+															<string key="NSTitle">list separator</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
 														<object class="NSMenuItem" id="465218922">
 															<reference key="NSMenu" ref="217968621"/>
 															<bool key="NSIsDisabled">YES</bool>
@@ -660,10 +680,62 @@
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="1063983207"/>
 														</object>
+														<object class="NSMenuItem" id="825914912">
+															<reference key="NSMenu" ref="217968621"/>
+															<bool key="NSIsDisabled">YES</bool>
+															<bool key="NSIsSeparator">YES</bool>
+															<string key="NSTitle"/>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
+														<object class="NSMenuItem" id="385598013">
+															<reference key="NSMenu" ref="217968621"/>
+															<string key="NSTitle">table name list</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
+														<object class="NSMenuItem" id="844132671">
+															<reference key="NSMenu" ref="217968621"/>
+															<string key="NSTitle">table name list (fuzzy search)</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
+														<object class="NSMenuItem" id="827337733">
+															<reference key="NSMenu" ref="217968621"/>
+															<string key="NSTitle">database names as list</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
+														<object class="NSMenuItem" id="781935079">
+															<reference key="NSMenu" ref="217968621"/>
+															<string key="NSTitle">database names as list (fuzzy search)</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<reference key="NSOnImage" ref="451328194"/>
+															<reference key="NSMixedImage" ref="770393621"/>
+															<string key="NSAction">_popUpItemAction:</string>
+															<reference key="NSTarget" ref="1063983207"/>
+														</object>
 													</object>
 													<reference key="NSMenuFont" ref="1071840538"/>
 												</object>
-												<int key="NSSelectedIndex">4</int>
+												<int key="NSSelectedIndex">15</int>
 												<bool key="NSPullDown">YES</bool>
 												<int key="NSPreferredEdge">1</int>
 												<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1911,6 +1983,13 @@
 							<reference ref="816443132"/>
 							<reference ref="613928550"/>
 							<reference ref="866231750"/>
+							<reference ref="190127525"/>
+							<reference ref="915013440"/>
+							<reference ref="827337733"/>
+							<reference ref="781935079"/>
+							<reference ref="825914912"/>
+							<reference ref="385598013"/>
+							<reference ref="844132671"/>
 						</object>
 						<reference key="parent" ref="1063983207"/>
 					</object>
@@ -1957,6 +2036,41 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">326</int>
 						<reference key="object" ref="866231750"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">327</int>
+						<reference key="object" ref="190127525"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">328</int>
+						<reference key="object" ref="915013440"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">329</int>
+						<reference key="object" ref="827337733"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">330</int>
+						<reference key="object" ref="781935079"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">331</int>
+						<reference key="object" ref="825914912"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">332</int>
+						<reference key="object" ref="385598013"/>
+						<reference key="parent" ref="217968621"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">333</int>
+						<reference key="object" ref="844132671"/>
 						<reference key="parent" ref="217968621"/>
 					</object>
 				</object>
@@ -2068,6 +2182,19 @@
 					<string>325.IBPluginDependency</string>
 					<string>326.IBAttributePlaceholdersKey</string>
 					<string>326.IBPluginDependency</string>
+					<string>327.IBAttributePlaceholdersKey</string>
+					<string>327.IBPluginDependency</string>
+					<string>328.IBAttributePlaceholdersKey</string>
+					<string>328.IBPluginDependency</string>
+					<string>329.IBAttributePlaceholdersKey</string>
+					<string>329.IBPluginDependency</string>
+					<string>330.IBAttributePlaceholdersKey</string>
+					<string>330.IBPluginDependency</string>
+					<string>331.IBPluginDependency</string>
+					<string>332.IBAttributePlaceholdersKey</string>
+					<string>332.IBPluginDependency</string>
+					<string>333.IBAttributePlaceholdersKey</string>
+					<string>333.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2220,7 +2347,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{371, 195}, {216, 142}}</string>
+					<string>{{371, 83}, {260, 254}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -2291,6 +2418,75 @@ b2YgdGFiIHNuaXBwZXRzXQ</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="190127525"/>
+							<string type="base64-UTF8" key="toolTip">wqbCpmHCpmLCpsKmIOKAkyBzdWNoIGEgc25pcHBldCB3aWxsIGJlIHNob3duIGFzIGNvbXBsZXRpb24g
+bGlzdCB3aXRoIHRoZSBpdGVtcyDigJxh4oCdIGFuZCDigJxi4oCdIGluIGZ1enp5IHNlYXJjaCBtb2Rl
+Cgpbb25seSBhdmFpbGFibGUgaW5zaWRlIG9mIHRhYiBzbmlwcGV0c10</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="915013440"/>
+							<string type="base64-UTF8" key="toolTip">wqYg4oCTIGxpc3Qgc2VwYXJhdG9yCgpbb25seSBhdmFpbGFibGUgaW5zaWRlIG9mIHRhYiBzbmlwcGV0
+c10</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="827337733"/>
+							<string type="base64-UTF8" key="toolTip">wqYkU1BfQVNMSVNUX0FMTF9EQVRBQkFTRVPCpiDigJMgc3VjaCBhIHNuaXBwZXQgd2lsbCBiZSBzaG93
+biBhcyBjb21wbGV0aW9uIGxpc3Qgd2l0aCBhbGwgZGF0YWJhc2UgbmFtZXMgZnJvbSB0aGUgY3VycmVu
+dCBjb25uZWN0aW9uCgpbb25seSBhdmFpbGFibGUgaW5zaWRlIG9mIHRhYiBzbmlwcGV0c10</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="781935079"/>
+							<string type="base64-UTF8" key="toolTip">wqbCpiRTUF9BU0xJU1RfQUxMX0RBVEFCQVNFU8KmwqYg4oCTIHN1Y2ggYSBzbmlwcGV0IHdpbGwgYmUg
+c2hvd24gYXMgY29tcGxldGlvbiBsaXN0IHdpdGggYWxsIGRhdGFiYXNlIG5hbWVzIGZyb20gdGhlIGN1
+cnJlbnQgY29ubmVjdGlvbiBpbiBmdXp6eSBzZWFyY2ggbW9kZQoKW29ubHkgYXZhaWxhYmxlIGluc2lk
+ZSBvZiB0YWIgc25pcHBldHNdA</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="385598013"/>
+							<string type="base64-UTF8" key="toolTip">wqYkU1BfQVNMSVNUX0FMTF9UQUJMRVPCpiDigJMgc3VjaCBhIHNuaXBwZXQgd2lsbCBiZSBzaG93biBh
+cyBjb21wbGV0aW9uIGxpc3Qgd2l0aCBhbGwgdGFibGUgbmFtZXMgKGluY2wuIHZpZXdzKSBmcm9tIHRo
+ZSBjdXJyZW50IHNlbGVjdGVkIGRhdGFiYXNlCgpbb25seSBhdmFpbGFibGUgaW5zaWRlIG9mIHRhYiBz
+bmlwcGV0c10</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="844132671"/>
+							<string type="base64-UTF8" key="toolTip">wqbCpiRTUF9BU0xJU1RfQUxMX1RBQkxFU8KmwqYg4oCTIHN1Y2ggYSBzbmlwcGV0IHdpbGwgYmUgc2hv
+d24gYXMgY29tcGxldGlvbiBsaXN0IHdpdGggYWxsIHRhYmxlIG5hbWVzIChpbmNsLiB2aWV3cykgZnJv
+bSB0aGUgY3VycmVudCBzZWxlY3RlZCBkYXRhYmFzZSBpbiBmdXp6eSBzZWFyY2ggbW9kZQoKW29ubHkg
+YXZhaWxhYmxlIGluc2lkZSBvZiB0YWIgc25pcHBldHNdA</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -2309,7 +2505,7 @@ b2YgdGFiIHNuaXBwZXRzXQ</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">326</int>
+			<int key="maxID">333</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

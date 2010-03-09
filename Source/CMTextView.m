@@ -1108,32 +1108,84 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				if(r1.location == r2.location && r1.length == r2.length) {
 					[self setSelectedRange:r2];
 					NSString *snip = [[self string] substringWithRange:r2];
-					if([snip length] > 2 && [snip hasPrefix:@"¦"] && [snip hasSuffix:@"¦"]) {
-						NSArray *list = [[snip substringWithRange:NSMakeRange(1,[snip length]-2)] componentsSeparatedByString:@"¦"];
-						NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
-						for(id w in list)
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
-						
-						SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
-										alreadyTyped:@"" 
-										staticPrefix:@"" 
-										additionalWordCharacters:@"_." 
-										caseSensitive:NO
-										charRange:r2
-										parseRange:r2
-										inView:self
-										dictMode:NO
-										dbMode:NO
-										tabTriggerMode:[self isSnippetMode]
-										fuzzySearch:NO
-										backtickMode:NO
-										withDbName:@""
-										withTableName:@""
-										selectedDb:@""
-										caretMovedLeft:NO
-										autoComplete:NO
-										oneColumn:YES];
+					
+ 					if([snip length] > 2 && [snip hasPrefix:@"¦"] && [snip hasSuffix:@"¦"]) {
+						BOOL fuzzySearchMode = ([snip hasPrefix:@"¦¦"] && [snip hasSuffix:@"¦¦"]) ? YES : NO;
+						NSInteger offset = (fuzzySearchMode) ? 2 : 1;
+						NSRange insertRange = NSMakeRange(r2.location,0);
+						SPNarrowDownCompletion* completionPopUp;
+						NSString *newSnip = [snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))];
+						if([newSnip hasPrefix:@"$SP_ASLIST_"]) {
+							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:5] autorelease];
+							NSArray *arr = nil;
+							if([newSnip isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
+								arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
+								if(arr == nil) {
+									arr = [NSArray array];
+								}
+								for(id w in arr)
+									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
+							}
+							else if([newSnip isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
+								arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
+								if(arr == nil) {
+									arr = [NSArray array];
+								}
+								for(id w in arr)
+									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+								arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
+								if(arr == nil) {
+									arr = [NSArray array];
+								}
+								for(id w in arr)
+									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+							}
 
+							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+											alreadyTyped:@"" 
+											staticPrefix:@"" 
+											additionalWordCharacters:@"_." 
+											caseSensitive:NO
+											charRange:insertRange
+											parseRange:insertRange
+											inView:self
+											dictMode:NO
+											dbMode:YES
+											tabTriggerMode:[self isSnippetMode]
+											fuzzySearch:fuzzySearchMode
+											backtickMode:NO
+											withDbName:@""
+											withTableName:@""
+											selectedDb:@""
+											caretMovedLeft:NO
+											autoComplete:NO
+											oneColumn:NO];
+						} else {
+							NSArray *list = [[snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))] componentsSeparatedByString:@"¦"];
+							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
+							for(id w in list)
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
+						
+							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+											alreadyTyped:@"" 
+											staticPrefix:@"" 
+											additionalWordCharacters:@"_." 
+											caseSensitive:NO
+											charRange:insertRange
+											parseRange:insertRange
+											inView:self
+											dictMode:NO
+											dbMode:NO
+											tabTriggerMode:[self isSnippetMode]
+											fuzzySearch:fuzzySearchMode
+											backtickMode:NO
+											withDbName:@""
+											withTableName:@""
+											selectedDb:@""
+											caretMovedLeft:NO
+											autoComplete:NO
+											oneColumn:YES];
+						}
 						//Get the NSPoint of the first character of the current word
 						NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
 						NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];

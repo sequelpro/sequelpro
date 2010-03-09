@@ -750,6 +750,7 @@
 
 - (void)insert_text:(NSString* )aString
 {
+
 	[theView setSelectedRange:theCharRange];
 	[theView insertText:aString];
 	
