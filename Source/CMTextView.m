@@ -508,7 +508,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
-	if([[self string] length] && caretPos > 0 && [[self string] characterAtIndex:caretPos-1] == '`') {
+	if(!autoCompleteMode && [[self string] length] && caretPos > 0 && [[self string] characterAtIndex:caretPos-1] == '`') {
 		if([[self string] length] > caretPos && [[self string] characterAtIndex:caretPos] == '`') {
 			;
 		} else {
