@@ -55,10 +55,13 @@
     IBOutlet NSTextField *userNameTextField;
 
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
-	
+
 	NSMutableArray *schemas;
 	NSMutableArray *grantedSchemaPrivs;
 	NSMutableArray *availablePrivs;
+	
+	NSArray *treeSortDescriptors;
+	NSSortDescriptor *treeSortDescriptor;
 }
 
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
@@ -67,6 +70,7 @@
 @property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain) NSMutableDictionary *privsSupportedByServer;
 
+@property (nonatomic, retain) NSArray *treeSortDescriptors;
 @property (nonatomic, retain) NSMutableArray *schemas;
 @property (nonatomic, retain) NSMutableArray *grantedSchemaPrivs;
 @property (nonatomic, retain) NSMutableArray *availablePrivs;
@@ -98,7 +102,5 @@
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 - (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
-
-- (NSArray *)treeSortDescriptors;
 
 @end
