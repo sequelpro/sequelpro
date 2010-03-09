@@ -2465,7 +2465,7 @@
 		[textView showCompletionListFor:@"$SP_ASLIST_ALL_TABLES" atRange:insertRange fuzzySearch:NO];
 		break;
 		case 8002:
-		[textView showCompletionListFor:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE" atRange:insertRange fuzzySearch:NO];
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_FIELDS" atRange:insertRange fuzzySearch:NO];
 		break;
 	}
 }
