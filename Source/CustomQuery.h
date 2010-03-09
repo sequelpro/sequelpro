@@ -180,6 +180,7 @@
 - (IBAction)saveQueryHistory:(id)sender;
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
+- (IBAction)showCompletionList:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;

@@ -535,7 +535,7 @@
 				closeMe = YES;
 				return;
 			} else {
-				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
+				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No item found", @"no item found message"), @"display", @"", @"noCompletion", nil]];
 			}
 		}
 	}
@@ -751,7 +751,12 @@
 - (void)insert_text:(NSString* )aString
 {
 
-	[theView setSelectedRange:theCharRange];
+	NSRange r = [theView selectedRange];
+	if(r.length)
+		[theView setSelectedRange:r];
+	else
+		[theView setSelectedRange:theCharRange];
+
 	[theView insertText:aString];
 	
 	// If completion string contains backticks move caret out of the backticks

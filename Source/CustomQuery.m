@@ -2454,6 +2454,21 @@
 	[self helpTargetValidation];
 }
 
+- (IBAction)showCompletionList:(id)sender
+{
+	NSRange insertRange = NSMakeRange([textView selectedRange].location, 0);
+	switch([sender tag]) {
+		case 8000:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_DATABASES" atRange:insertRange fuzzySearch:NO];
+		break;
+		case 8001:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_TABLES" atRange:insertRange fuzzySearch:NO];
+		break;
+		case 8002:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE" atRange:insertRange fuzzySearch:NO];
+		break;
+	}
+}
 /*
  * Show the data for "HELP 'currentWord' invoked by autohelp"
  */

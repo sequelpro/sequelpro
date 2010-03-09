@@ -137,6 +137,8 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (BOOL)checkForCaretInsideSnippet;
 - (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
 
+- (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode;
+
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 

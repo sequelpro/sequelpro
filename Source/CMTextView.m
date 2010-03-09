@@ -1081,6 +1081,159 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Shows pre-defined completion list
+ */
+- (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode
+{
+
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+	NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:0] autorelease];
+	NSArray *arr = nil;
+	if([kind isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
+		NSString *currentDb = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+
+		if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
+			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			for(id table in sortedTables) {
+				NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
+				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+				switch(structtype) {
+					case 0:
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", [NSString stringWithFormat:@"%@.%@",currentDb,table], @"isRef", nil]];
+					break;
+					case 1:
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", [NSString stringWithFormat:@"%@.%@",currentDb,table], @"isRef", nil]];
+					break;
+				}
+			}
+		} else {
+			arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
+			if(arr == nil) {
+				arr = [NSArray array];
+			}
+			for(id w in arr)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
+		}
+	}
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
+		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
+		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+	}
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE"]) {
+
+		NSString *currentDb = nil;
+		NSString *currentTable = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
+			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+		if(currentDb != nil && currentTable != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:currentTable]) {
+			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
+			NSArray *allFields = [theTable allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			for(id field in sortedFields) {
+				if(![field hasPrefix:@"  "]) {
+					NSString *typ = [theTable objectForKey:field];
+					// Check if type definition contains a , if so replace the bracket content by … and add 
+					// the bracket content as "list" key to prevend the token field to split them by ,
+					if(typ && [typ rangeOfString:@","].length) {
+						NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
+						NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							field, @"display", 
+							@"field-small-square", @"image", 
+							[NSString stringWithFormat:@"%@⇠%@",currentTable,currentDb], @"path", 
+							t, @"type", 
+							lst, @"list", 
+							[NSString stringWithFormat:@"%@.%@.%@",currentDb,currentTable,field], @"isRef", 
+							nil]];
+					} else {
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							field, @"display", 
+							@"field-small-square", @"image", 
+							[NSString stringWithFormat:@"%@⇠%@",currentTable,currentDb], @"path", 
+							typ, @"type", 
+							[NSString stringWithFormat:@"%@.%@.%@",currentDb,currentTable,field], @"isRef", 
+							nil]];
+					}
+				}
+			}
+			[desc release];
+		} else {
+			arr = [NSArray arrayWithArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
+			if(arr == nil) {
+				arr = [NSArray array];
+			}
+			for(id w in arr)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];
+		}
+	}
+	else {
+		NSLog(@"“%@” is not a valid completion list", kind);
+		NSBeep();
+		return;
+	}
+
+	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+					alreadyTyped:@"" 
+					staticPrefix:@"" 
+					additionalWordCharacters:@"_." 
+					caseSensitive:NO
+					charRange:aRange
+					parseRange:aRange
+					inView:self
+					dictMode:NO
+					dbMode:YES
+					tabTriggerMode:[self isSnippetMode]
+					fuzzySearch:fuzzySearchMode
+					backtickMode:NO
+					withDbName:@""
+					withTableName:@""
+					selectedDb:@""
+					caretMovedLeft:NO
+					autoComplete:NO
+					oneColumn:NO];
+
+	//Get the NSPoint of the first character of the current word
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
+	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+	boundingRect = [self convertRect: boundingRect toView: NULL];
+	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+	// Adjust list location to be under the current word or insertion point
+	pos.y -= [[self font] pointSize]*1.25;
+	[completionPopUp setCaretPos:pos];
+	completionIsOpen = YES;
+	[completionPopUp orderFront:self];
+
+}
+
+/*
  * Selects the current snippet defined by “currentSnippetIndex”
  */
 - (void)selectCurrentSnippet
@@ -1116,50 +1269,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						SPNarrowDownCompletion* completionPopUp;
 						NSString *newSnip = [snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))];
 						if([newSnip hasPrefix:@"$SP_ASLIST_"]) {
-							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:5] autorelease];
-							NSArray *arr = nil;
-							if([newSnip isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
-								arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
-								if(arr == nil) {
-									arr = [NSArray array];
-								}
-								for(id w in arr)
-									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
-							}
-							else if([newSnip isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
-								arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
-								if(arr == nil) {
-									arr = [NSArray array];
-								}
-								for(id w in arr)
-									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
-								arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
-								if(arr == nil) {
-									arr = [NSArray array];
-								}
-								for(id w in arr)
-									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
-							}
-
-							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
-											alreadyTyped:@"" 
-											staticPrefix:@"" 
-											additionalWordCharacters:@"_." 
-											caseSensitive:NO
-											charRange:insertRange
-											parseRange:insertRange
-											inView:self
-											dictMode:NO
-											dbMode:YES
-											tabTriggerMode:[self isSnippetMode]
-											fuzzySearch:fuzzySearchMode
-											backtickMode:NO
-											withDbName:@""
-											withTableName:@""
-											selectedDb:@""
-											caretMovedLeft:NO
-											autoComplete:NO
-											oneColumn:NO];
+							[self showCompletionListFor:newSnip atRange:NSMakeRange(r2.location, 0) fuzzySearch:fuzzySearchMode];
+							return;
 						} else {
 							NSArray *list = [[snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))] componentsSeparatedByString:@"¦"];
 							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
@@ -1185,17 +1296,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											caretMovedLeft:NO
 											autoComplete:NO
 											oneColumn:YES];
+							//Get the NSPoint of the first character of the current word
+							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
+							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+							boundingRect = [self convertRect: boundingRect toView: NULL];
+							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+							// Adjust list location to be under the current word or insertion point
+							pos.y -= [[self font] pointSize]*1.25;
+							[completionPopUp setCaretPos:pos];
+							completionIsOpen = YES;
+							[completionPopUp orderFront:self];
 						}
-						//Get the NSPoint of the first character of the current word
-						NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
-						NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-						boundingRect = [self convertRect: boundingRect toView: NULL];
-						NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-						// Adjust list location to be under the current word or insertion point
-						pos.y -= [[self font] pointSize]*1.25;
-						[completionPopUp setCaretPos:pos];
-						completionIsOpen = YES;
-						[completionPopUp orderFront:self];
 					}
 				} else {
 					[self endSnippetSession];
