@@ -298,6 +298,64 @@
 	return [filtered count];
 }
 
+- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
+{
+	if([[aTableColumn identifier] isEqualToString:@"image"]) {
+		if(!dictMode) {
+			NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+			if([imageName hasPrefix:@"dummy"])
+				return @"";
+			if([imageName hasPrefix:@"table-view"])
+				return @"view";
+			if([imageName hasPrefix:@"table"])
+				return @"table";
+			if([imageName hasPrefix:@"database"])
+				return @"database";
+			if([imageName hasPrefix:@"func"])
+				return @"function";
+			if([imageName hasPrefix:@"proc"])
+				return @"procedure";
+			if([imageName hasPrefix:@"field"])
+				return @"field";
+		}
+		return @"";
+	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+	} else if ([[aTableColumn identifier] isEqualToString:@"list"] || [[aTableColumn identifier] isEqualToString:@"type"]) {
+		if(dictMode) {
+			return @"";
+		} else {
+			if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
+				NSMutableString *tt = [NSMutableString string];
+				[tt appendString:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""];
+				[tt appendString:@"\n"];
+				[tt appendString:NSLocalizedString(@"Type Declaration:", @"type declaration header")];
+				[tt appendString:@"\n"];
+				[tt appendString:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"]];
+				return tt;
+			} else {
+				return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
+			}
+			return @"";
+		}
+
+	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+		if(dictMode) {
+			return @"";
+		} else {
+			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
+				NSMutableString *tt = [NSMutableString string];
+				[tt setString:NSLocalizedString(@"Schema path:", @"schema path header for completion tooltip")];
+				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects])
+					[tt appendFormat:@"\n• %@",p];
+				return tt;
+			}
+			return @"";
+		}
+	}
+	return @"";
+}
+
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;

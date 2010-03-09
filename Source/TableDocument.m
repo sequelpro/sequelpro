@@ -2340,6 +2340,14 @@
 	[tableContentInstance performSelector:@selector(makeContentFilterHaveFocus) withObject:nil afterDelay:0.1];
 }
 
+/**
+ * Makes the tables list filter field the first responder.
+ */
+- (IBAction)focusOnTableListFilter:(id)sender
+{
+	[tablesListInstance performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.1];
+}
+
 #pragma mark -
 #pragma mark Other Methods
 
@@ -3185,6 +3193,11 @@
 	// Focus on table content filter
 	if ([menuItem action] == @selector(focusOnTableContentFilter:)) {
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
+	}
+
+	// Focus on table list filter
+	if ([menuItem action] == @selector(focusOnTableListFilter:)) {
+		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 20); 
 	}
 
 	return [super validateMenuItem:menuItem];

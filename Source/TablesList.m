@@ -1584,6 +1584,14 @@
 }
 
 /**
+ * Set focus to table list filter search field
+ */
+- (void) makeTableListFilterHaveFocus
+{
+	[tableWindow makeFirstResponder:listFilterField];
+}
+
+/**
  * Update the filter search.
  */
 - (IBAction) updateFilter:(id)sender

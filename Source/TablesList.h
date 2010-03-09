@@ -124,6 +124,7 @@ enum sp_table_types
 - (void)updateSelectionTask;
 - (void)setSelection:(NSDictionary *)selectionDetails;
 - (void)selectTableAtIndex:(NSNumber *)row;
+- (void)makeTableListFilterHaveFocus;
 
 // Getters
 - (NSArray *)selectedTableNames;
